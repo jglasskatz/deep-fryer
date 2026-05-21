@@ -1,0 +1,26 @@
+{
+  "name": "@deep-fryer/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./scoring": "./src/scoring.ts",
+    "./types": "./src/types.ts",
+    "./validators": "./src/validators.ts",
+    "./framework-defaults": "./src/framework-defaults.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
