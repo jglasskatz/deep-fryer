@@ -364,5 +364,11 @@ export function Doughnut({
     };
   }, [social, ecological, size, margin, selectedKey, onSelect, onHover]);
 
-  return <div ref={containerRef} className={className} style={{ position: 'relative' }} />;
+  return (
+    <div
+      ref={containerRef}
+      className={className}
+      style={{ position: 'relative', width: '100%', maxWidth: size }}
+    />
+  );
 }
