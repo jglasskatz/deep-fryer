@@ -1,3 +1,4 @@
+import { SiteHeader } from '@/components/site-header/SiteHeader';
 import {
   ARCHITECTURE_NODES,
   CONNECTIONS,
@@ -147,12 +148,11 @@ export default function ArchitecturePage() {
   const plannedConns = CONNECTIONS.filter((c) => c.type === 'planned').length;
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-12">
-      <header>
-        <p className="text-xs uppercase tracking-widest text-[color:var(--color-muted)]">
-          deep-fryer · internal
-        </p>
-        <h1 className="mt-1 text-3xl font-bold">Architecture</h1>
+    <>
+      <SiteHeader variant="architecture" />
+      <main className="mx-auto max-w-6xl px-6 py-12">
+        <header>
+          <h1 className="text-3xl font-bold">Architecture</h1>
         <p className="mt-3 max-w-2xl text-[color:var(--color-muted)]">
           System map for the deep-fryer monorepo. Generated following the{' '}
           <code className="rounded bg-black/5 px-1 py-0.5 text-xs">architecture-visualizer</code>{' '}
@@ -207,5 +207,6 @@ export default function ArchitecturePage() {
         <code className="font-mono">apps/web/app/architecture/architecture-data.ts</code>
       </footer>
     </main>
+    </>
   );
 }
