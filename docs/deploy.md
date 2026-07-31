@@ -1,6 +1,12 @@
 # Deploying deep-fryer
 
-This is a pnpm-workspace monorepo. The deployable surface is `apps/web` (the Next.js app). `packages/db`, `packages/core`, and `packages/mcp` are workspace dependencies — they ship as TS source and Next compiles them via `transpilePackages`.
+This is a pnpm-workspace monorepo with two deployable surfaces (SPEC §4):
+
+- `apps/web` — the Next.js app (public + review planes) → **Vercel**
+- `apps/worker` — the research plane → **Fly.io/Railway** (long-running agent
+  sessions can't live on Vercel; the web app enqueues, the worker executes)
+
+Workspace packages ship as TS source; Next compiles them via `transpilePackages`.
 
 ## Vercel (production)
 
@@ -26,6 +32,21 @@ The deployed URL (`deep-fryer-<hash>.vercel.app`) should serve:
 - `/embed/santacruz` — embed placeholder
 
 If `/santacruz` renders the chart and the tooltip works, the deploy is healthy.
+
+## Worker (Fly.io / Railway)
+
+Build from `apps/worker/Dockerfile` (repo root as build context). Required env:
+`DATABASE_URL`, `ANTHROPIC_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`.
+Production isolation and the egress allowlist proxy are documented in
+[`apps/worker/README.md`](../apps/worker/README.md). Run migrations before the
+first deploy: `DATABASE_URL=... pnpm --filter @deep-fryer/db db:migrate`.
+
+## Supabase
+
+Create a project, enable the Google OAuth provider, and set the env vars from
+`.env.example` in both Vercel and the worker. Storage buckets
+(`tenant-<slug>`) are created automatically at first evidence upload or by
+`import-santa-cruz`.
 
 ## Custom domain (later)
 
