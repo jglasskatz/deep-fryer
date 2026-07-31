@@ -215,7 +215,7 @@ export const ARCHITECTURE_NODES: ArchitectureNode[] = [
     iconPath: ICONS.code,
     tech: 'TypeScript',
     description:
-      'Shared types for tenants, dimensions, indicators, outreach contacts. Mirrors the DIMENSION DATA SHAPE jsonb in SPEC.md §5.',
+      'Shared types for tenants, dimensions, indicators, outreach contacts. Mirrors the DIMENSION DATA SHAPE jsonb in SPEC.md §7.',
     details: {
       fileCount: 1,
       linesOfCode: '~60',

@@ -47,7 +47,7 @@ Then open:
 - The actual `<Doughnut>` D3 component — not ported yet; the tenant page shows
   a placeholder list of mock dimensions instead of the chart.
 
-These all land in subsequent M0 steps (see `SPEC.md` §13).
+These all land in subsequent M0 steps (see `SPEC.md` §12).
 
 ## Workspace layout
 
