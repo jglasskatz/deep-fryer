@@ -14,6 +14,9 @@
     "@deep-fryer/contract": "workspace:*",
     "@deep-fryer/core": "workspace:*",
     "@deep-fryer/db": "workspace:*",
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.46.1",
+    "drizzle-orm": "^0.36.4",
     "next": "^15.0.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
