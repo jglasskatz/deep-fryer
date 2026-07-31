@@ -18,7 +18,8 @@
   "dependencies": {
     "@deep-fryer/core": "workspace:*",
     "@deep-fryer/db": "workspace:*",
-    "@supabase/supabase-js": "^2.46.1"
+    "@supabase/supabase-js": "^2.46.1",
+    "drizzle-orm": "^0.36.4"
   },
   "devDependencies": {
     "tsx": "^4.19.2",
