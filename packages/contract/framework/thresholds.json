@@ -1,0 +1,131 @@
+{
+  "version": "0.2.0",
+  "functions": {
+    "higher_is_better": "Shortfall grows as the value falls below the target floor: level_pct = (target − value) ⁄ scale × 100. scale defaults to |target|.",
+    "lower_is_better": "Overshoot grows as the value rises above the target ceiling: level_pct = (value − target) ⁄ scale × 100. scale defaults to |target|; scale is required when target = 0.",
+    "band": "Safe inside [low, high]; distance outside the band relative to its width: below → (low − value) ⁄ (high − low) × 100, above → (value − high) ⁄ (high − low) × 100, inside → negative distance to the nearer edge relative to width."
+  },
+  "thresholds": {
+    "food.food-insecurity-rate": {
+      "target": 5,
+      "function": "lower_is_better",
+      "rationale": "Best-performing US counties hold overall food insecurity near 5% (Feeding America Map the Meal Gap); treating that as the local floor of what is achievable."
+    },
+    "health.uninsured-rate": {
+      "target": 5,
+      "function": "lower_is_better",
+      "rationale": "States with near-universal coverage programs reach ~3–5% uninsured among under-65s (KFF); 5% marks the boundary of adequate access."
+    },
+    "health.life-expectancy": {
+      "target": 80,
+      "function": "higher_is_better",
+      "rationale": "80 years approximates the current OECD frontier and top-quartile US county performance (CDC/NCHS USALEEP)."
+    },
+    "education.hs-attainment": {
+      "target": 95,
+      "function": "higher_is_better",
+      "rationale": "95% adult secondary attainment is the practical ceiling observed in high-performing US metros (ACS S1501); below it, attainment gaps concentrate in marginalized groups."
+    },
+    "income-work.poverty-rate": {
+      "target": 8,
+      "function": "lower_is_better",
+      "rationale": "8% is roughly the floor achieved by US metros with strong labor markets and safety nets (ACS S1701); below-target performance indicates broadly shared income security."
+    },
+    "income-work.unemployment-rate": {
+      "target": 4,
+      "function": "lower_is_better",
+      "rationale": "4% approximates full employment in the US labor-market literature (CBO natural rate estimates)."
+    },
+    "water-sanitation.safe-drinking-water": {
+      "target": 100,
+      "function": "higher_is_better",
+      "rationale": "Safe drinking water is a binary right: any population served by a system in health-based violation (EPA SDWIS) is a shortfall."
+    },
+    "energy.energy-burden": {
+      "target": 6,
+      "function": "lower_is_better",
+      "rationale": "Energy burden above 6% of income is the standard affordability threshold in DOE/ACEEE burden studies."
+    },
+    "networks.broadband-access": {
+      "target": 95,
+      "function": "higher_is_better",
+      "rationale": "95% household subscription is the level at which broadband functions as universal infrastructure (ACS S2801 top performers; FCC universal-service goal)."
+    },
+    "housing.cost-burdened-renters": {
+      "target": 30,
+      "function": "lower_is_better",
+      "rationale": "The 30%-of-income standard defines cost burden (HUD); a healthy market keeps the share of burdened renter households at or below ~30% (pre-2000 US norm)."
+    },
+    "housing.homelessness-rate": {
+      "target": 10,
+      "function": "lower_is_better",
+      "scale": 10,
+      "rationale": "10 per 10,000 approximates the rate in US communities that have reached functional zero for major subpopulations (HUD PIT counts); the goal is zero, but 10/10k marks the boundary between crisis and managed response."
+    },
+    "gender-equality.gender-pay-ratio": {
+      "target": 95,
+      "function": "higher_is_better",
+      "rationale": "Median-earnings parity within 5% (ACS S2002) is the observed frontier after occupational-mix effects; the aspiration is 100%."
+    },
+    "social-equity.gini-index": {
+      "target": 0.4,
+      "function": "lower_is_better",
+      "rationale": "Gini above 0.40 is the conventional warning level for social cohesion (UN-Habitat); most equitable US metros sit near 0.40 (ACS B19083)."
+    },
+    "political-voice.voter-turnout": {
+      "target": 70,
+      "function": "higher_is_better",
+      "rationale": "70% registered-voter turnout in general elections matches high-participation US states and OECD democracies."
+    },
+    "peace-justice.violent-crime-rate": {
+      "target": 4,
+      "function": "lower_is_better",
+      "rationale": "4 per 1,000 approximates the violent-crime rate of the safest quartile of US cities (FBI UCR/NIBRS)."
+    },
+    "climate-change.ghg-per-capita": {
+      "target": 2.5,
+      "function": "lower_is_better",
+      "rationale": "~2.5 tCO2e per person per year is the 2030 waypoint on a 1.5°C-compatible per-capita pathway (IPCC AR6 / C40 headline target)."
+    },
+    "ocean-acidification.aragonite-saturation": {
+      "target": 3,
+      "function": "higher_is_better",
+      "rationale": "Ω aragonite ≥ 3 supports shell-forming organisms; below ~3 coastal ecosystems show stress, and Ω 1 is dissolution (planetary-boundary literature, Feely et al.)."
+    },
+    "chemical-pollution.tri-releases-per-capita": {
+      "target": 1,
+      "function": "lower_is_better",
+      "rationale": "1 lb per resident per year of TRI on-site releases approximates the best-quartile of US counties with reporting industry (EPA TRI); zero is the aspiration."
+    },
+    "nitrogen-phosphorus-loading.nitrate-groundwater": {
+      "target": 5,
+      "function": "lower_is_better",
+      "rationale": "5 mg/L NO3-N is half the EPA MCL (10 mg/L) and the level at which ecological effects and treatment costs begin; background levels are <1 mg/L."
+    },
+    "freshwater-withdrawals.residential-gpcd": {
+      "target": 55,
+      "function": "lower_is_better",
+      "rationale": "55 gallons per capita per day is California's indoor residential efficiency standard (AB 1668), a defensible sustainable-use benchmark for western US municipalities."
+    },
+    "land-conversion.natural-land-conversion": {
+      "target": 0.5,
+      "function": "lower_is_better",
+      "rationale": "Holding natural-land loss below 0.5% per decade approximates no-net-loss once restoration is counted; sustained faster conversion is incompatible with local ecological integrity."
+    },
+    "biodiversity-loss.protected-land-share": {
+      "target": 30,
+      "function": "higher_is_better",
+      "rationale": "30% durably protected by 2030 is the Kunming-Montreal Global Biodiversity Framework target, downscaled directly to the jurisdiction."
+    },
+    "air-pollution.pm25-annual": {
+      "target": 5,
+      "function": "lower_is_better",
+      "rationale": "5 µg/m³ annual mean is the WHO 2021 air-quality guideline; the US NAAQS (9 µg/m³) is a regulatory floor, not a health-based target."
+    },
+    "ozone-depletion.ods-phaseout-compliance": {
+      "target": 100,
+      "function": "higher_is_better",
+      "rationale": "The Montreal Protocol phaseout is the operative boundary; a locality's contribution is compliance. Most portraits will report this dimension as a data gap with a global-context note."
+    }
+  }
+}

@@ -1,7 +1,9 @@
-import { Doughnut, type DoughnutDimension } from '@/components/doughnut/Doughnut';
-import { SiteHeader } from '@/components/site-header/SiteHeader';
-import { mockTenant } from '@/lib/mock-data';
 import { notFound } from 'next/navigation';
+import { SiteHeader } from '@/components/site-header/SiteHeader';
+import { PortraitDoughnut } from '@/components/doughnut/PortraitDoughnut';
+import { getPortrait, hasDatabase } from '@/lib/data';
+
+export const dynamic = 'force-dynamic';
 
 export default async function TenantPage({
   params,
@@ -9,39 +11,53 @@ export default async function TenantPage({
   params: Promise<{ tenant: string }>;
 }) {
   const { tenant } = await params;
-
-  if (tenant !== mockTenant.slug) {
-    notFound();
-  }
-
-  const social: DoughnutDimension[] = mockTenant.dimensions
-    .filter((d) => d.ring === 'social')
-    .map((d) => ({ ring: d.ring, slug: d.slug, name: d.name, viz_level: d.viz_level }));
-
-  const ecological: DoughnutDimension[] = mockTenant.dimensions
-    .filter((d) => d.ring === 'ecological')
-    .map((d) => ({ ring: d.ring, slug: d.slug, name: d.name, viz_level: d.viz_level }));
+  const portrait = await getPortrait(tenant);
+  if (!portrait) notFound();
 
   return (
     <>
-      <SiteHeader variant="tenant" tenant={{ slug: mockTenant.slug, name: mockTenant.name }} />
-    <main className="mx-auto max-w-5xl px-6 py-12">
-      <header>
-        <h1 className="text-3xl font-bold">{mockTenant.name}</h1>
-        <p className="mt-1 text-sm text-[color:var(--color-muted)]">
-          {mockTenant.region} · pop. {mockTenant.population.toLocaleString()}
+      <SiteHeader
+        variant="tenant"
+        tenant={{ slug: portrait.tenant.slug, name: portrait.tenant.name }}
+      />
+      <main className="mx-auto max-w-5xl px-6 py-12">
+        <header>
+          <h1 className="text-3xl font-bold">{portrait.tenant.name}</h1>
+          <p className="mt-1 text-sm text-[color:var(--color-muted)]">
+            {portrait.tenant.region}
+            {portrait.tenant.population
+              ? ` · pop. ${portrait.tenant.population.toLocaleString()}`
+              : null}
+          </p>
+          {portrait.tenant.description ? (
+            <p className="mt-4 max-w-2xl">{portrait.tenant.description}</p>
+          ) : null}
+        </header>
+
+        <section className="mt-10 flex justify-center">
+          <PortraitDoughnut
+            tenantSlug={portrait.tenant.slug}
+            dimensions={portrait.dimensions}
+            size={720}
+          />
+        </section>
+
+        <p className="mt-6 text-center text-sm text-[color:var(--color-muted)]">
+          {hasDatabase()
+            ? 'Click a segment for indicators, evidence, actions, and discussion.'
+            : 'Demo data — set DATABASE_URL and publish versions for real content.'}
         </p>
-        <p className="mt-4 max-w-2xl">{mockTenant.description}</p>
-      </header>
 
-      <section className="mt-10 flex justify-center">
-        <Doughnut social={social} ecological={ecological} size={720} />
-      </section>
-
-      <p className="mt-6 text-center text-sm text-[color:var(--color-muted)]">
-        Click a segment for details. Mock data — real data lands once Supabase is wired up.
-      </p>
-    </main>
+        <nav className="mt-4 text-center text-sm">
+          <a className="underline" href={`/${portrait.tenant.slug}/methodology`}>
+            Methodology
+          </a>
+          <span className="mx-2 text-[color:var(--color-muted)]">·</span>
+          <a className="underline" href={`/${portrait.tenant.slug}/outreach`}>
+            Get involved
+          </a>
+        </nav>
+      </main>
     </>
   );
 }

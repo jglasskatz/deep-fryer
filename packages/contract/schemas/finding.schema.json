@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://deep-fryer.io/schemas/finding.schema.json",
+  "title": "Finding",
+  "description": "One immutable research output for an indicator: either a sourced value or a first-class data gap. This is the payload a research session must emit per indicator; the verifier and review plane consume it as-is.",
+  "oneOf": [{ "$ref": "#/$defs/indicatorFinding" }, { "$ref": "#/$defs/gapFinding" }],
+  "$defs": {
+    "indicatorFinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind", "indicator_slug", "name", "value", "unit", "year", "target",
+        "level_pct", "scoring", "source", "source_url", "source_tier",
+        "evidence", "confidence", "geographic_scale"
+      ],
+      "properties": {
+        "kind": { "const": "indicator" },
+        "indicator_slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "name": { "type": "string", "minLength": 1 },
+        "value": { "type": ["number", "string"] },
+        "unit": { "type": "string" },
+        "year": { "type": "integer", "minimum": 1900, "maximum": 2100 },
+        "target": { "type": ["number", "string"] },
+        "level_pct": { "type": "number" },
+        "scoring": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["threshold_ref", "function", "inputs", "worked_math"],
+          "properties": {
+            "threshold_ref": { "type": "string" },
+            "function": { "enum": ["higher_is_better", "lower_is_better", "band"] },
+            "inputs": {
+              "type": "object",
+              "description": "The exact numbers fed to the mapping function (value, target, scale, low, high…).",
+              "additionalProperties": { "type": "number" }
+            },
+            "worked_math": {
+              "type": "string",
+              "description": "The arithmetic written out, e.g. 'level_pct = (12.4 − 5) ⁄ 5 × 100 = +148.0'."
+            }
+          }
+        },
+        "source": { "type": "string", "minLength": 1 },
+        "source_url": { "type": "string", "format": "uri" },
+        "source_tier": {
+          "type": "integer", "minimum": 1,
+          "description": "Which source-priority tier (portrait config) this source satisfied."
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["snapshot_path", "captured_at"],
+          "properties": {
+            "snapshot_path": { "type": "string", "description": "Tenant-storage path of the page screenshot captured at retrieval time." },
+            "pdf_path": { "type": "string", "description": "Tenant-storage path of the source PDF, when the source is a document." },
+            "captured_at": { "type": "string", "format": "date-time" }
+          }
+        },
+        "confidence": { "enum": ["high", "medium", "low"] },
+        "geographic_scale": { "enum": ["city", "county", "regional", "state", "national", "global"] },
+        "notes": { "type": "string", "description": "Session's caveats about the value (methodology quirks, denominator choices…)." }
+      }
+    },
+    "gapFinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "indicator_slug", "reason", "scales_tried", "searched_at"],
+      "properties": {
+        "kind": { "const": "gap" },
+        "indicator_slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "reason": { "type": "string", "minLength": 1, "description": "Why no acceptable value exists, e.g. 'no city-level data exists; county series discontinued 2019'." },
+        "scales_tried": {
+          "type": "array", "minItems": 1,
+          "items": { "enum": ["city", "county", "regional", "state", "national", "global"] }
+        },
+        "tiers_tried": { "type": "array", "items": { "type": "integer", "minimum": 1 } },
+        "searched_at": { "type": "string", "format": "date-time" },
+        "nearest_data": { "type": "string", "description": "The closest thing that was found but rejected, and why it was rejected." }
+      }
+    }
+  }
+}

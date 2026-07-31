@@ -1,9 +1,5 @@
 #!/usr/bin/env tsx
-import {
-  socialFrameworkDimensions,
-  ecologicalFrameworkDimensions,
-} from '@deep-fryer/core';
-import { db } from '@deep-fryer/db';
+import { getDb, provisionTenant, tenantBySlug } from '@deep-fryer/db';
 
 interface CreateTenantArgs {
   slug: string;
@@ -14,18 +10,47 @@ interface CreateTenantArgs {
   ownerEmail: string;
 }
 
+/**
+ * Resolve (or invite) the owner in Supabase auth. Local dev without Supabase
+ * env provisions the tenant with no member and prints a warning — RLS-gated
+ * surfaces need a real Supabase project.
+ */
+async function resolveOwner(email: string): Promise<string | undefined> {
+  const url = process.env.SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) {
+    console.warn('SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set — skipping owner membership.');
+    return undefined;
+  }
+  const { createClient } = await import('@supabase/supabase-js');
+  const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
+
+  const { data, error } = await admin.auth.admin.listUsers({ perPage: 1000 });
+  if (error) throw new Error(`Supabase listUsers failed: ${error.message}`);
+  const existing = data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+  if (existing) return existing.id;
+
+  const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email);
+  if (inviteError) throw new Error(`Supabase invite failed: ${inviteError.message}`);
+  console.log(`Invited ${email} via Supabase auth.`);
+  return invited.user.id;
+}
+
 async function createTenant(args: CreateTenantArgs): Promise<void> {
-  // TODO: implement in a follow-up session.
-  // 1. Insert tenant row.
-  // 2. Look up or invite the owner user via Supabase auth admin API; insert tenant_member.
-  // 3. Seed dimensions from socialFrameworkDimensions + ecologicalFrameworkDimensions.
-  // 4. Create an initial empty draft dimension_version for each.
-  // 5. Audit-log the creation.
-  void args;
-  void db;
-  void socialFrameworkDimensions;
-  void ecologicalFrameworkDimensions;
-  throw new Error('create-tenant: not implemented yet');
+  const db = getDb();
+
+  const existing = await tenantBySlug(db, args.slug);
+  if (existing) {
+    throw new Error(`tenant '${args.slug}' already exists`);
+  }
+
+  const ownerUserId = await resolveOwner(args.ownerEmail);
+  const { tenant, dimensions } = await provisionTenant(db, { ...args, ownerUserId });
+
+  console.log(`Created tenant '${tenant.slug}' (${tenant.id})`);
+  console.log(`  ${dimensions.length} framework dimensions seeded with initial draft versions`);
+  console.log(`  owner: ${ownerUserId ? args.ownerEmail : '(none — no Supabase env)'}`);
+  console.log(`Public page will render at /${tenant.slug} once versions are published.`);
 }
 
 function parseArgs(argv: string[]): CreateTenantArgs {
@@ -52,4 +77,9 @@ function parseArgs(argv: string[]): CreateTenantArgs {
 }
 
 const args = parseArgs(process.argv.slice(2));
-await createTenant(args);
+createTenant(args)
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });

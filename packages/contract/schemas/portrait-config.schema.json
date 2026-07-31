@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://deep-fryer.io/schemas/portrait-config.schema.json",
+  "title": "PortraitConfig",
+  "description": "The per-tenant portrait layer (SPEC.md §6): everything that determines research behavior and scoring. Every human judgment lives here as data; prompts consume it and never embed judgment.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["region", "source_priority", "recency", "scale_policy"],
+  "properties": {
+    "region": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "definition"],
+      "properties": {
+        "name": { "type": "string" },
+        "definition": { "type": "string", "description": "Precise geographic definition: municipal boundary, county, service area…" },
+        "context_notes": { "type": "string", "description": "Owner-supplied notes injected into the region-context session: institutions, data portals, local framing." }
+      }
+    },
+    "source_priority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tiers"],
+      "properties": {
+        "tiers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["tier", "name", "description"],
+            "properties": {
+              "tier": { "type": "integer", "minimum": 1 },
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "examples": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      },
+      "description": "Ordered source tiers. A session must exhaust tier N before accepting tier N+1, and every finding records the tier that satisfied it."
+    },
+    "recency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default_max_age_years"],
+      "properties": {
+        "default_max_age_years": { "type": "integer", "minimum": 1 },
+        "per_dimension": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 1 },
+          "description": "Dimension slug → max acceptable data age in years."
+        }
+      }
+    },
+    "scale_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default_accepted"],
+      "properties": {
+        "default_accepted": {
+          "type": "array", "minItems": 1,
+          "items": { "enum": ["city", "county", "regional", "state", "national", "global"] },
+          "description": "Acceptable geographic scales in preference order."
+        },
+        "per_dimension": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array", "minItems": 1,
+            "items": { "enum": ["city", "county", "regional", "state", "national", "global"] }
+          }
+        }
+      }
+    },
+    "threshold_overrides": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target", "rationale"],
+        "properties": {
+          "target": { "type": "number" },
+          "scale": { "type": "number", "exclusiveMinimum": 0 },
+          "function": { "enum": ["higher_is_better", "lower_is_better", "band"] },
+          "low": { "type": "number" },
+          "high": { "type": "number" },
+          "rationale": { "type": "string", "minLength": 1, "description": "Required. Rendered verbatim on the public methodology page." }
+        }
+      },
+      "description": "threshold_ref → override. Overrides the framework default; never mutates it."
+    }
+  }
+}

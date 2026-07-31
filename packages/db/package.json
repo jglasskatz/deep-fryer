@@ -20,6 +20,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@deep-fryer/contract": "workspace:*",
     "@deep-fryer/core": "workspace:*",
     "drizzle-orm": "^0.36.4",
     "postgres": "^3.4.5"
