@@ -1,6 +1,12 @@
 import { createHash } from 'node:crypto';
 import type { FrameworkIndicator, PortraitConfig } from '@deep-fryer/contract';
-import { resolveThreshold, type ResearchPlan, type Ring } from '@deep-fryer/core';
+import {
+  acceptedScales,
+  maxDataAgeYears,
+  resolveThreshold,
+  type ResearchPlan,
+  type Ring,
+} from '@deep-fryer/core';
 import { agentTemplate, fillTemplate, pluginVersion, skill } from './plugin.js';
 
 export interface PlanDimensionSpec {
@@ -19,8 +25,15 @@ export interface RenderPlanInput {
 
 export const REGION_BRIEF_PLACEHOLDER = '{{region_brief}}';
 
+// Session execution policy (SPEC.md §8): tool allowlists and budgets are
+// research-plane policy, named here so the rendered plan and the worker
+// cannot disagree about what runs.
 const DIMENSION_TOOLS = ['WebSearch', 'WebFetch', 'mcp__evidence__capture_evidence'];
 const REGION_TOOLS = ['WebSearch', 'WebFetch'];
+export const VERIFIER_TOOLS = ['WebFetch'];
+export const DEFAULT_SESSION_MAX_TURNS = 60;
+export const VERIFIER_MAX_TURNS = 12;
+export const DEFAULT_SESSION_MODEL = 'claude-sonnet-5';
 
 function renderTiers(config: PortraitConfig): string {
   return config.source_priority.tiers
@@ -79,14 +92,14 @@ export function renderPlan(input: RenderPlanInput): ResearchPlan {
     },
   ];
 
+  const researcherTemplate = agentTemplate('dimension-researcher');
   for (const spec of input.dimensions) {
-    const maxAge =
-      config.recency.per_dimension?.[spec.slug] ?? config.recency.default_max_age_years;
-    const scales = config.scale_policy.per_dimension?.[spec.slug] ?? config.scale_policy.default_accepted;
+    const maxAge = maxDataAgeYears(config.recency, spec.slug);
+    const scales = acceptedScales(config.scale_policy, spec.slug);
 
     const prompt =
       `${skillsBlock}\n\n---\n\n` +
-      fillTemplate(agentTemplate('dimension-researcher'), {
+      fillTemplate(researcherTemplate, {
         region_brief: REGION_BRIEF_PLACEHOLDER,
         dimension_name: spec.name,
         dimension_ring: spec.ring === 'social' ? 'social foundation' : 'ecological ceiling',

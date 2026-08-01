@@ -1,10 +1,5 @@
-import { framework, defaultPortraitConfig, getThreshold } from '@deep-fryer/contract';
-import {
-  defaultNotifications,
-  defaultRetention,
-  defaultReviewPolicy,
-  type DimensionData,
-} from '@deep-fryer/core';
+import { framework, getThreshold } from '@deep-fryer/contract';
+import { defaultTenantConfig, type DimensionData } from '@deep-fryer/core';
 import { eq } from 'drizzle-orm';
 import type { getDb } from './client.js';
 import {
@@ -57,41 +52,33 @@ export async function provisionTenant(db: Db, args: ProvisionTenantArgs) {
     });
   }
 
-  const portrait = defaultPortraitConfig(args.name, args.region ?? args.name);
-  const configRows = [
-    { key: 'region', value: portrait.region },
-    { key: 'source_priority', value: portrait.source_priority },
-    { key: 'recency', value: portrait.recency },
-    { key: 'scale_policy', value: portrait.scale_policy },
-    { key: 'threshold_overrides', value: {} },
-    { key: 'review_policy', value: defaultReviewPolicy },
-    { key: 'retention', value: defaultRetention },
-    { key: 'notifications', value: defaultNotifications },
-  ];
+  const config = defaultTenantConfig(args.name, args.region ?? args.name);
   await db.insert(tenantConfig).values(
-    configRows.map((row) => ({
+    Object.entries(config).map(([key, value]) => ({
       tenantId: tenant.id,
-      key: row.key,
-      value: row.value,
+      key,
+      value,
       updatedBy: args.ownerUserId,
     })),
   );
 
-  const created: { dimensionId: string; slug: string }[] = [];
-  let order = 0;
-  for (const dim of framework.dimensions) {
-    const [dimension] = await db
-      .insert(dimensions)
-      .values({
+  const insertedDims = await db
+    .insert(dimensions)
+    .values(
+      framework.dimensions.map((dim, order) => ({
         tenantId: tenant.id,
         ring: dim.ring,
         slug: dim.slug,
         canonicalSlug: dim.canonical_slug,
-        displayOrder: order++,
-      })
-      .returning();
-    if (!dimension) throw new Error(`dimension insert returned no row for ${dim.slug}`);
+        displayOrder: order,
+      })),
+    )
+    .returning();
+  const dimIdBySlug = new Map(insertedDims.map((d) => [d.slug, d.id]));
 
+  const versionRows = framework.dimensions.map((dim) => {
+    const dimensionId = dimIdBySlug.get(dim.slug);
+    if (!dimensionId) throw new Error(`dimension insert missing for ${dim.slug}`);
     const data: DimensionData = {
       name: dim.name,
       icon: dim.icon,
@@ -110,21 +97,16 @@ export async function provisionTenant(db: Db, args: ProvisionTenantArgs) {
       })),
       actions: [],
     };
-
-    const [version] = await db
-      .insert(dimensionVersions)
-      .values({
-        dimensionId: dimension.id,
-        versionNum: 1,
-        status: 'draft',
-        data,
-        origin: 'import',
-        createdBy: args.ownerUserId,
-      })
-      .returning();
-    if (!version) throw new Error(`version insert returned no row for ${dim.slug}`);
-    created.push({ dimensionId: dimension.id, slug: dim.slug });
-  }
+    return {
+      dimensionId,
+      versionNum: 1,
+      status: 'draft' as const,
+      data,
+      origin: 'import' as const,
+      createdBy: args.ownerUserId,
+    };
+  });
+  await db.insert(dimensionVersions).values(versionRows);
 
   await db.insert(auditLog).values({
     tenantId: tenant.id,
@@ -132,10 +114,13 @@ export async function provisionTenant(db: Db, args: ProvisionTenantArgs) {
     entity: 'tenant',
     entityId: tenant.id,
     action: 'provision',
-    after: { slug: args.slug, name: args.name, dimensions: created.length },
+    after: { slug: args.slug, name: args.name, dimensions: insertedDims.length },
   });
 
-  return { tenant, dimensions: created };
+  return {
+    tenant,
+    dimensions: insertedDims.map((d) => ({ dimensionId: d.id, slug: d.slug })),
+  };
 }
 
 export async function tenantBySlug(db: Db, slug: string) {

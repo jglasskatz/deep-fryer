@@ -1,11 +1,30 @@
 import { createHash } from 'node:crypto';
-import { chromium } from 'playwright-core';
+import { chromium, type Browser } from 'playwright-core';
 import type { TenantStorage } from './storage.js';
 
 export interface CaptureResult {
   snapshot_path: string;
   pdf_path?: string;
   captured_at: string;
+}
+
+// One browser per worker process; each capture gets an isolated context.
+// Launching Chromium per capture would cost seconds on every source a run
+// touches. closeEvidenceBrowser() runs at the end of each research run.
+let browserPromise: Promise<Browser> | null = null;
+
+function browser(): Promise<Browser> {
+  browserPromise ??= chromium.launch({
+    executablePath: process.env.CHROMIUM_PATH || undefined,
+  });
+  return browserPromise;
+}
+
+export async function closeEvidenceBrowser(): Promise<void> {
+  if (!browserPromise) return;
+  const b = await browserPromise;
+  browserPromise = null;
+  await b.close();
 }
 
 /**
@@ -20,17 +39,17 @@ export async function captureEvidence(
   const capturedAt = new Date().toISOString();
   const hash = createHash('sha256').update(url).digest('hex').slice(0, 12);
 
-  const browser = await chromium.launch({
-    executablePath: process.env.CHROMIUM_PATH || undefined,
+  const context = await (await browser()).newContext({
+    viewport: { width: 1280, height: 1600 },
   });
   let snapshotPath: string;
   try {
-    const page = await browser.newPage({ viewport: { width: 1280, height: 1600 } });
+    const page = await context.newPage();
     await page.goto(url, { waitUntil: 'networkidle', timeout: 45_000 });
     const png = await page.screenshot({ fullPage: true });
     snapshotPath = await storage.put(`evidence/${hash}.png`, Buffer.from(png), 'image/png');
   } finally {
-    await browser.close();
+    await context.close();
   }
 
   let pdfPath: string | undefined;

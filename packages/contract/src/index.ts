@@ -82,8 +82,19 @@ export function getThreshold(ref: string): Threshold | undefined {
   return thresholds.thresholds[ref];
 }
 
-export function frameworkDimension(slug: string): FrameworkDimension | undefined {
-  return framework.dimensions.find((d) => d.slug === slug);
+/**
+ * Resolve a tenant dimension to its framework dimension. Custom dimensions
+ * map back via canonical_slug (SPEC.md §2), so the canonical slug wins when
+ * present; both planning and rescoring use this one resolver.
+ */
+export function frameworkDimension(
+  slug: string,
+  canonicalSlug?: string | null,
+): FrameworkDimension | undefined {
+  return (
+    framework.dimensions.find((d) => d.slug === (canonicalSlug ?? slug)) ??
+    framework.dimensions.find((d) => d.slug === slug)
+  );
 }
 
 /**

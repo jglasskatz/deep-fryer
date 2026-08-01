@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { ReviewCard } from '@/components/admin/ReviewCard';
 import { requireAdminPage } from '@/lib/admin-guard';
+import { evidenceBase } from '@/lib/data';
 import { reviewQueue } from '@/lib/review-data';
 
 export const dynamic = 'force-dynamic';
@@ -18,10 +19,6 @@ export default async function ReviewQueuePage({
   const ctx = await requireAdminPage(tenant, 'editor');
 
   const { completeRuns, selectedRun, cards } = await reviewQueue(ctx.tenant.id, run);
-
-  const evidenceBase = process.env.NEXT_PUBLIC_SUPABASE_URL
-    ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/tenant-${tenant}`
-    : `/evidence/${tenant}`;
 
   return (
     <>
@@ -82,7 +79,7 @@ export default async function ReviewQueuePage({
                   approvedVersionNum={card.approvedVersionNum}
                   sessionId={card.sessionId}
                   canReadTranscript={ctx.role === 'owner'}
-                  evidenceBase={evidenceBase}
+                  evidenceBase={evidenceBase(tenant)}
                 />
               ))}
               {cards.length === 0 && selectedRun ? (

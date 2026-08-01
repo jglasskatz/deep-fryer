@@ -7,22 +7,14 @@ import {
   commentVotes,
   getDb,
   moderationActions,
-  tenants,
+  tenantBySlug,
 } from '@deep-fryer/db';
-import { getAuth, getRole, roleAtLeast } from './auth';
+import { requireTenantRole, requireUserId } from './auth';
 import { configValue } from './admin-data';
 
-/** Local-dev poster identity when Supabase auth is not configured. */
-const DEV_USER_ID = '00000000-0000-0000-0000-000000000001';
-
-async function posterId(): Promise<string> {
-  const auth = await getAuth();
-  if (auth.userId) return auth.userId;
-  if (auth.devMode) return DEV_USER_ID;
-  throw new Error('sign in to participate in the discussion');
-}
-
+// The v1 anti-spam floor (SPEC.md §10).
 const RATE_LIMIT_PER_MINUTE = 5;
+const MAX_COMMENT_LENGTH = 10_000;
 
 export async function postComment(input: {
   tenantSlug: string;
@@ -32,12 +24,12 @@ export async function postComment(input: {
 }) {
   const body = input.body.trim();
   if (!body) throw new Error('empty comment');
-  if (body.length > 10_000) throw new Error('comment too long');
+  if (body.length > MAX_COMMENT_LENGTH) throw new Error('comment too long');
 
   const db = getDb();
-  const [tenant] = await db.select().from(tenants).where(eq(tenants.slug, input.tenantSlug));
+  const tenant = await tenantBySlug(db, input.tenantSlug);
   if (!tenant) throw new Error('unknown tenant');
-  const authorId = await posterId();
+  const authorId = await requireUserId();
 
   // v1 anti-spam floor (SPEC.md §10): per-user rate limit…
   const recent = await db
@@ -113,7 +105,7 @@ export async function voteComment(input: {
   vote: 1 | -1 | 0;
 }) {
   const db = getDb();
-  const userId = await posterId();
+  const userId = await requireUserId();
 
   if (input.vote === 0) {
     await db
@@ -139,12 +131,8 @@ export async function moderateComment(input: {
   reason?: string;
 }) {
   const db = getDb();
-  const [tenant] = await db.select().from(tenants).where(eq(tenants.slug, input.tenantSlug));
-  if (!tenant) throw new Error('unknown tenant');
-
-  const role = await getRole(tenant.id);
-  if (!roleAtLeast(role, 'moderator')) throw new Error('requires moderator role');
-  const actorId = await posterId();
+  const { tenant } = await requireTenantRole(input.tenantSlug, 'moderator');
+  const actorId = await requireUserId();
 
   const [comment] = await db.select().from(comments).where(eq(comments.id, input.commentId));
   if (!comment || comment.tenantId !== tenant.id) throw new Error('unknown comment');

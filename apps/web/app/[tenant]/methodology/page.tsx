@@ -21,12 +21,11 @@ export default async function MethodologyPage({
   const portrait = await getPortrait(tenant);
   if (!portrait) notFound();
 
-  const config = hasDatabase()
-    ? await (async () => {
-        const t = await adminTenant(tenant);
-        return t ? await tenantConfigMap(t.id) : {};
-      })()
-    : {};
+  let config: Awaited<ReturnType<typeof tenantConfigMap>> = {};
+  if (hasDatabase()) {
+    const t = await adminTenant(tenant);
+    if (t) config = await tenantConfigMap(t.id);
+  }
 
   const overrides = config.threshold_overrides ?? {};
   const refreshed = portrait.dimensions

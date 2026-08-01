@@ -1,5 +1,11 @@
 import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
-import type { PortraitConfig, TenantConfigKey, TenantConfigMap } from '@deep-fryer/core';
+import {
+  defaultTenantConfig,
+  maxDataAgeYears,
+  type PortraitConfig,
+  type TenantConfigKey,
+  type TenantConfigMap,
+} from '@deep-fryer/core';
 import {
   auditLog,
   comments,
@@ -7,19 +13,20 @@ import {
   dimensionVersions,
   findings,
   getDb,
+  latestVersionsByDimension,
   researchRuns,
   researchSessions,
-  tenants,
+  tenantBySlug,
   tenantConfig,
   type Dimension,
   type DimensionVersion,
   type Tenant,
 } from '@deep-fryer/db';
 
-export async function adminTenant(slug: string): Promise<Tenant | null> {
-  const db = getDb();
-  const [tenant] = await db.select().from(tenants).where(eq(tenants.slug, slug));
-  return tenant ?? null;
+const CONFIG_FALLBACK = defaultTenantConfig('', '');
+
+export function adminTenant(slug: string): Promise<Tenant | null> {
+  return tenantBySlug(getDb(), slug);
 }
 
 export interface DimensionWithVersions {
@@ -38,25 +45,16 @@ export async function tenantDimensions(tenantId: string): Promise<DimensionWithV
 
   if (dims.length === 0) return [];
   const versionIds = dims.flatMap((d) => (d.publishedVersionId ? [d.publishedVersionId] : []));
-  const published = versionIds.length
-    ? await db.select().from(dimensionVersions).where(inArray(dimensionVersions.id, versionIds))
-    : [];
+  const [published, latestByDim] = await Promise.all([
+    versionIds.length
+      ? db.select().from(dimensionVersions).where(inArray(dimensionVersions.id, versionIds))
+      : Promise.resolve([] as DimensionVersion[]),
+    latestVersionsByDimension(
+      db,
+      dims.map((d) => d.id),
+    ),
+  ]);
   const publishedById = new Map(published.map((v) => [v.id, v]));
-
-  const latestRows = await db
-    .select()
-    .from(dimensionVersions)
-    .where(
-      inArray(
-        dimensionVersions.dimensionId,
-        dims.map((d) => d.id),
-      ),
-    )
-    .orderBy(desc(dimensionVersions.versionNum));
-  const latestByDim = new Map<string, DimensionVersion>();
-  for (const v of latestRows) {
-    if (!latestByDim.has(v.dimensionId)) latestByDim.set(v.dimensionId, v);
-  }
 
   return dims.map((dimension) => ({
     dimension,
@@ -65,6 +63,16 @@ export async function tenantDimensions(tenantId: string): Promise<DimensionWithV
       : null,
     latest: latestByDim.get(dimension.id) ?? null,
   }));
+}
+
+/** Lean id→slug map for pages that need nothing else. */
+export async function dimensionSlugMap(tenantId: string): Promise<Map<string, string>> {
+  const db = getDb();
+  const rows = await db
+    .select({ id: dimensions.id, slug: dimensions.slug })
+    .from(dimensions)
+    .where(eq(dimensions.tenantId, tenantId));
+  return new Map(rows.map((r) => [r.id, r.slug]));
 }
 
 export async function dimensionById(dimensionId: string) {
@@ -123,10 +131,11 @@ export interface StalenessRow {
   stale: boolean;
 }
 
-export async function stalenessOverview(tenantId: string): Promise<StalenessRow[]> {
-  const withVersions = await tenantDimensions(tenantId);
-  const map = await tenantConfigMap(tenantId);
-  const recency = map.recency ?? { default_max_age_years: 5 };
+/** Pure over already-fetched data so pages never re-run the dimension queries. */
+export function stalenessOverview(
+  withVersions: DimensionWithVersions[],
+  recency: PortraitConfig['recency'] = CONFIG_FALLBACK.recency,
+): StalenessRow[] {
   const currentYear = new Date().getFullYear();
 
   return withVersions.map(({ dimension, published }) => {
@@ -134,8 +143,7 @@ export async function stalenessOverview(tenantId: string): Promise<StalenessRow[
       .map((i) => i.year)
       .filter((y): y is number => typeof y === 'number');
     const newestYear = years.length ? Math.max(...years) : null;
-    const maxAgeYears =
-      recency.per_dimension?.[dimension.slug] ?? recency.default_max_age_years;
+    const maxAgeYears = maxDataAgeYears(recency, dimension.slug);
     return {
       dimensionId: dimension.id,
       slug: dimension.slug,

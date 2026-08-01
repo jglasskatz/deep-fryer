@@ -4,6 +4,7 @@ import {
   commentCounts,
   recentAudit,
   stalenessOverview,
+  tenantConfigMap,
   tenantDimensions,
   tenantRuns,
 } from '@/lib/admin-data';
@@ -19,13 +20,14 @@ export default async function TenantAdminPage({
   const { tenant } = await params;
   const ctx = await requireAdminPage(tenant, 'viewer');
 
-  const [dims, staleness, runs, audit, discussed] = await Promise.all([
+  const [dims, config, runs, audit, discussed] = await Promise.all([
     tenantDimensions(ctx.tenant.id),
-    stalenessOverview(ctx.tenant.id),
+    tenantConfigMap(ctx.tenant.id),
     tenantRuns(ctx.tenant.id),
     recentAudit(ctx.tenant.id, 10),
     commentCounts(ctx.tenant.id),
   ]);
+  const staleness = stalenessOverview(dims, config.recency);
   const staleBySlug = new Map(staleness.map((s) => [s.slug, s]));
   const activeRuns = runs.filter((r) => r.status === 'planned' || r.status === 'running');
 

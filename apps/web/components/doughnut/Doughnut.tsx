@@ -19,9 +19,7 @@ export interface DoughnutProps {
   social: DoughnutDimension[];
   ecological: DoughnutDimension[];
   size?: number;
-  onSelect?: (dim: (DoughnutDimension & { ring: Ring }) | null) => void;
-  onHover?: (dim: DoughnutDimension | null, ring: Ring | null) => void;
-  className?: string;
+  onSelect?: (dim: DoughnutDimension | null) => void;
 }
 
 function statusLabel(level: number | null): string {
@@ -39,16 +37,8 @@ function statusLabel(level: number | null): string {
  * (the canonical visual, SPEC.md §4). Social dimensions draw on the inner
  * ring, ecological on the outer; viz_level uses the -100..150 scale.
  */
-export function Doughnut({
-  social,
-  ecological,
-  size = 640,
-  onSelect,
-  onHover,
-  className,
-}: DoughnutProps) {
+export function Doughnut({ social, ecological, size = 640, onSelect }: DoughnutProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const rendererRef = useRef<DoughnutRenderer | null>(null);
   const [tooltip, setTooltip] = useState<{
     dim: DoughnutDimension;
     x: number;
@@ -88,14 +78,11 @@ export function Doughnut({
         } else {
           setTooltip(null);
         }
-        onHover?.(dim, dim?.ring ?? null);
       },
       onSelect: (hit) => {
-        const dim = resolve(hit);
-        onSelect?.(dim ? { ...dim } : null);
+        onSelect?.(resolve(hit));
       },
     });
-    rendererRef.current = renderer;
 
     for (const d of social) {
       renderer.addDimension('inner', d.name, d.viz_level ?? 'NaN');
@@ -106,13 +93,11 @@ export function Doughnut({
 
     return () => {
       renderer.destroy();
-      rendererRef.current = null;
     };
-  }, [social, ecological, size, byName, onSelect, onHover]);
+  }, [social, ecological, size, byName, onSelect]);
 
   return (
     <div
-      className={className}
       style={{ position: 'relative', width: '100%', maxWidth: size }}
       onMouseLeave={() => setTooltip(null)}
     >

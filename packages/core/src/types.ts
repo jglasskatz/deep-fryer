@@ -9,12 +9,7 @@ import type {
 export type Ring = 'social' | 'ecological';
 export type Confidence = 'high' | 'medium' | 'low';
 export type Role = 'owner' | 'editor' | 'viewer' | 'moderator';
-export type VersionStatus = 'draft' | 'published' | 'archived';
-export type VersionOrigin = 'research' | 'human' | 'import';
-export type ResearchRunStatus = 'planned' | 'running' | 'complete' | 'failed';
-export type ResearchSessionStatus = 'queued' | 'running' | 'complete' | 'failed';
 export type ResearchSessionKind = 'region_context' | 'dimension';
-export type ModerationAction = 'remove' | 'restore' | 'lock';
 export type ContentSupported = 'pass' | 'fail' | 'uncertain';
 
 export type { GeographicScale, MappingFunctionName, PortraitConfig, SourceTier, Threshold };

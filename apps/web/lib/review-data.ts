@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import {
   dimensions,
   dimensionVersions,
@@ -67,17 +67,17 @@ export async function reviewQueue(tenantId: string, runId?: string): Promise<Rev
     : [];
   const approvedByDim = new Map(approvedVersions.map((v) => [v.dimensionId, v.versionNum]));
 
-  const latestVersions = dimensionIds.length
+  const latestNames = dimensionIds.length
     ? await db
-        .select()
+        .selectDistinctOn([dimensionVersions.dimensionId], {
+          dimensionId: dimensionVersions.dimensionId,
+          name: sql<string>`${dimensionVersions.data}->>'name'`,
+        })
         .from(dimensionVersions)
         .where(inArray(dimensionVersions.dimensionId, dimensionIds))
-        .orderBy(desc(dimensionVersions.versionNum))
+        .orderBy(dimensionVersions.dimensionId, desc(dimensionVersions.versionNum))
     : [];
-  const nameByDim = new Map<string, string>();
-  for (const v of latestVersions) {
-    if (!nameByDim.has(v.dimensionId)) nameByDim.set(v.dimensionId, v.data.name);
-  }
+  const nameByDim = new Map(latestNames.map((r) => [r.dimensionId, r.name]));
 
   const sessionByDim = new Map(
     sessions.filter((s) => s.dimensionId).map((s) => [s.dimensionId as string, s.id]),

@@ -1,10 +1,15 @@
 import type { PortraitConfig } from '@deep-fryer/contract';
 import {
+  acceptedScales,
   findingPayloadSchema,
+  isFlagged,
+  maxDataAgeYears,
   type ContentSupported,
   type FindingPayload,
   type FindingVerification,
 } from '@deep-fryer/core';
+
+export { isFlagged };
 
 /**
  * Deterministic checks run before the verifier subagent (SPEC.md §8 Verify):
@@ -33,13 +38,12 @@ export async function deterministicChecks(
     };
   }
 
-  const maxAge =
-    config.recency.per_dimension?.[dimensionSlug] ?? config.recency.default_max_age_years;
+  const maxAge = maxDataAgeYears(config.recency, dimensionSlug);
   const recencyOk = new Date().getFullYear() - payload.year <= maxAge;
 
-  const scales =
-    config.scale_policy.per_dimension?.[dimensionSlug] ?? config.scale_policy.default_accepted;
-  const scaleOk = scales.includes(payload.geographic_scale);
+  const scaleOk = acceptedScales(config.scale_policy, dimensionSlug).includes(
+    payload.geographic_scale,
+  );
 
   const urlOk = await fetchUrl(payload.source_url);
 
@@ -71,15 +75,6 @@ export function mergeVerification(
   return {
     ...checks,
     content_supported: verdict?.content_supported ?? 'uncertain',
-    verifier_note:
-      verdict?.verifier_note ??
-      (verdict ? undefined : 'verifier session did not return a verdict'),
+    verifier_note: verdict ? verdict.verifier_note : 'verifier session did not return a verdict',
   };
-}
-
-/** A finding is red-flagged for review when any check fails (never dropped). */
-export function isFlagged(v: FindingVerification): boolean {
-  return (
-    !v.schema_ok || !v.url_ok || !v.recency_ok || !v.scale_ok || v.content_supported !== 'pass'
-  );
 }

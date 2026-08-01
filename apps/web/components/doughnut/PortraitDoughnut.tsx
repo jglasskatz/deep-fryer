@@ -23,10 +23,9 @@ export function PortraitDoughnut({
 }) {
   const router = useRouter();
 
-  const { social, ecological, slugByName } = useMemo(() => {
+  const { social, ecological } = useMemo(() => {
     const social: DoughnutDimension[] = [];
     const ecological: DoughnutDimension[] = [];
-    const slugByName = new Map<string, string>();
     for (const d of [...dimensions].sort((a, b) => a.display_order - b.display_order)) {
       const first = d.data.indicators[0];
       const entry: DoughnutDimension = {
@@ -40,26 +39,22 @@ export function PortraitDoughnut({
         year: first?.year ?? undefined,
         source: first?.source || undefined,
       };
-      slugByName.set(`${d.ring}:${d.data.name}`, d.slug);
       (d.ring === 'social' ? social : ecological).push(entry);
     }
-    return { social, ecological, slugByName };
+    return { social, ecological };
   }, [dimensions]);
 
   const handleSelect = useCallback(
     (dim: DoughnutDimension | null) => {
       if (!dim) return;
-      const slug = slugByName.get(`${dim.ring}:${dim.name}`) ?? dim.slug;
-      const href = linkBase
-        ? `${linkBase}/${slug}`
-        : `/${tenantSlug}/dim/${slug}`;
+      const href = linkBase ? `${linkBase}/${dim.slug}` : `/${tenantSlug}/dim/${dim.slug}`;
       if (linkBase?.startsWith('http')) {
         window.open(href, '_blank', 'noopener');
       } else {
         router.push(href);
       }
     },
-    [router, slugByName, tenantSlug, linkBase],
+    [router, tenantSlug, linkBase],
   );
 
   return (

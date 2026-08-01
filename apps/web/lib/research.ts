@@ -1,11 +1,10 @@
 import { and, eq, inArray, isNull } from 'drizzle-orm';
-import { framework } from '@deep-fryer/contract';
+import { frameworkDimension } from '@deep-fryer/contract';
 import {
   dimensions,
-  dimensionVersions,
   getDb,
+  latestVersion,
   researchRuns,
-  tenants,
 } from '@deep-fryer/db';
 import {
   enqueueResearchApply,
@@ -48,20 +47,13 @@ export async function createPlannedRun(input: {
 
   const specs: PlanDimensionSpec[] = [];
   for (const dim of dims) {
-    const frameworkDim = framework.dimensions.find(
-      (fd) => fd.slug === (dim.canonicalSlug ?? dim.slug) || fd.slug === dim.slug,
-    );
+    const frameworkDim = frameworkDimension(dim.slug, dim.canonicalSlug);
     let indicators = frameworkDim?.indicators ?? [];
     let name = frameworkDim?.name ?? dim.slug;
 
     if (!frameworkDim) {
       // Custom dimension: research whatever indicators its latest version names.
-      const [latest] = await db
-        .select()
-        .from(dimensionVersions)
-        .where(eq(dimensionVersions.dimensionId, dim.id))
-        .orderBy(dimensionVersions.versionNum)
-        .limit(1);
+      const latest = await latestVersion(db, dim.id);
       name = latest?.data.name ?? dim.slug;
       indicators = (latest?.data.indicators ?? []).map((ind) => ({
         slug: ind.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
@@ -109,10 +101,4 @@ export async function applyRun(tenantId: string, runId: string) {
   if (run.status !== 'planned') throw new Error(`run is ${run.status}, not planned`);
   await enqueueResearchApply(runId);
   return run;
-}
-
-export async function tenantIdBySlug(slug: string): Promise<string | null> {
-  const db = getDb();
-  const [tenant] = await db.select().from(tenants).where(eq(tenants.slug, slug));
-  return tenant?.id ?? null;
 }

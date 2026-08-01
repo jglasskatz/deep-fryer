@@ -24,28 +24,28 @@ export default async function DimensionDrilldownPage({
   const { sort: sortRaw } = await searchParams;
   const sort = sortRaw === 'new' ? 'new' : 'top';
 
-  const portrait = await getPortrait(tenant);
+  const [portrait, resolved, auth] = await Promise.all([
+    getPortrait(tenant),
+    hasDatabase() ? dimensionForPublicSlug(tenant, slug) : Promise.resolve(null),
+    getAuth(),
+  ]);
   if (!portrait) notFound();
   const dim = portrait.dimensions.find((d) => d.slug === slug);
   if (!dim) notFound();
   const data = dim.data;
 
   let thread = null;
-  let viewerId: string | null = null;
-  let canPost = false;
   let isModerator = false;
-  let dimensionId: string | null = null;
-  if (hasDatabase()) {
-    const resolved = await dimensionForPublicSlug(tenant, slug);
-    if (resolved) {
-      dimensionId = resolved.dimension.id;
-      const auth = await getAuth();
-      viewerId = auth.userId;
-      canPost = Boolean(auth.userId) || auth.devMode;
-      const role = await getRole(resolved.tenant.id);
-      isModerator = roleAtLeast(role, 'moderator');
-      thread = await dimensionThread(resolved.tenant.id, resolved.dimension.id, viewerId, sort);
-    }
+  const viewerId = auth.userId;
+  const canPost = Boolean(auth.userId) || auth.devMode;
+  const dimensionId = resolved?.dimension.id ?? null;
+  if (resolved) {
+    const [role, threadResult] = await Promise.all([
+      getRole(resolved.tenant.id),
+      dimensionThread(resolved.tenant.id, resolved.dimension.id, viewerId, sort),
+    ]);
+    isModerator = roleAtLeast(role, 'moderator');
+    thread = threadResult;
   }
 
   return (

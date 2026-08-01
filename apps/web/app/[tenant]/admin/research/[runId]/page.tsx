@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
-import { runWithSessions, tenantDimensions } from '@/lib/admin-data';
+import { dimensionSlugMap, runWithSessions } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
 import { applyResearchAction } from '@/lib/research-actions';
 
@@ -19,8 +19,7 @@ export default async function RunDetailPage({
   if (!data || data.run.tenantId !== ctx.tenant.id) notFound();
   const { run, sessions, findings } = data;
 
-  const dims = await tenantDimensions(ctx.tenant.id);
-  const slugById = new Map(dims.map(({ dimension }) => [dimension.id, dimension.slug]));
+  const slugById = await dimensionSlugMap(ctx.tenant.id);
   const sessionBySlug = new Map(
     sessions.map((s) => [
       s.kind === 'region_context' ? 'region_context' : (slugById.get(s.dimensionId ?? '') ?? ''),

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { CommentView } from '@/lib/discussion';
 import { moderateComment, postComment, voteComment } from '@/lib/discussion-actions';
+import { useAction } from '@/lib/use-action';
 
 function handle(authorId: string, viewerId: string | null): string {
   if (viewerId && authorId === viewerId) return 'you';
@@ -30,21 +31,8 @@ export function Thread({
   const router = useRouter();
   const params = useSearchParams();
   const [body, setBody] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
-
-  const act = (fn: () => Promise<unknown>) => {
-    setError(null);
-    startTransition(async () => {
-      try {
-        await fn();
-        router.refresh();
-      } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
-      }
-    });
-  };
+  const { run: act, pending, error } = useAction();
 
   const setSort = (s: 'top' | 'new') => {
     const next = new URLSearchParams(params);

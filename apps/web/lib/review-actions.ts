@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { and, desc, eq, max } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import {
   deriveVizLevel,
   type DimensionData,
@@ -9,34 +9,26 @@ import {
   type Indicator,
 } from '@deep-fryer/core';
 import {
-  auditLog,
+  appendDimensionVersion,
   dimensions,
-  dimensionVersions,
   findings,
   getDb,
+  latestVersion,
   researchSessions,
-  tenants,
 } from '@deep-fryer/db';
-import { getAuth, requireRole } from './auth';
+import { getAuth, requireTenantRole } from './auth';
+import { audit } from './audit';
 import { publishVersion } from './actions';
 import { planResearchAction } from './research-actions';
 
-async function tenantOrThrow(slug: string) {
+async function dimensionInTenantOrThrow(tenantId: string, dimensionId: string) {
   const db = getDb();
-  const [tenant] = await db.select().from(tenants).where(eq(tenants.slug, slug));
-  if (!tenant) throw new Error(`unknown tenant '${slug}'`);
-  return tenant;
-}
-
-async function latestVersion(dimensionId: string) {
-  const db = getDb();
-  const [latest] = await db
+  const [dimension] = await db
     .select()
-    .from(dimensionVersions)
-    .where(eq(dimensionVersions.dimensionId, dimensionId))
-    .orderBy(desc(dimensionVersions.versionNum))
-    .limit(1);
-  return latest ?? null;
+    .from(dimensions)
+    .where(and(eq(dimensions.id, dimensionId), eq(dimensions.tenantId, tenantId)));
+  if (!dimension) throw new Error('unknown dimension');
+  return dimension;
 }
 
 /**
@@ -52,15 +44,9 @@ export async function approveFindings(input: {
   dimensionId: string;
   publish?: boolean;
 }) {
-  const tenant = await tenantOrThrow(input.tenantSlug);
-  await requireRole(tenant.id, 'editor');
+  const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
   const db = getDb();
-
-  const [dimension] = await db
-    .select()
-    .from(dimensions)
-    .where(and(eq(dimensions.id, input.dimensionId), eq(dimensions.tenantId, tenant.id)));
-  if (!dimension) throw new Error('unknown dimension');
+  const dimension = await dimensionInTenantOrThrow(tenant.id, input.dimensionId);
 
   const runFindings = await db
     .select({ finding: findings })
@@ -71,7 +57,7 @@ export async function approveFindings(input: {
     );
   if (runFindings.length === 0) throw new Error('no findings for this dimension in this run');
 
-  const base = await latestVersion(dimension.id);
+  const base = await latestVersion(db, dimension.id);
 
   const indicators: Indicator[] = [];
   const gaps: DimensionGap[] = [];
@@ -115,40 +101,22 @@ export async function approveFindings(input: {
     justice_spotlight: base?.data.justice_spotlight,
   };
 
-  const maxRows = await db
-    .select({ maxVersion: max(dimensionVersions.versionNum) })
-    .from(dimensionVersions)
-    .where(eq(dimensionVersions.dimensionId, dimension.id));
-  const maxVersion = maxRows[0]?.maxVersion ?? 0;
-
   const auth = await getAuth();
-  const [version] = await db
-    .insert(dimensionVersions)
-    .values({
-      dimensionId: dimension.id,
-      versionNum: maxVersion + 1,
-      status: 'draft',
-      data,
-      vizLevel: deriveVizLevel(data),
-      origin: 'research',
-      researchRunId: input.runId,
-      createdBy: auth.userId,
-    })
-    .returning();
-  if (!version) throw new Error('version insert failed');
+  const version = await appendDimensionVersion(db, {
+    dimensionId: dimension.id,
+    status: 'draft',
+    data,
+    vizLevel: deriveVizLevel(data),
+    origin: 'research',
+    researchRunId: input.runId,
+    createdBy: auth.userId,
+  });
 
-  await db.insert(auditLog).values({
-    tenantId: tenant.id,
-    userId: auth.userId,
-    entity: 'dimension_version',
-    entityId: version.id,
-    action: 'approve_findings',
-    after: {
-      dimension: dimension.slug,
-      run_id: input.runId,
-      indicators: indicators.length,
-      gaps: gaps.length,
-    },
+  await audit(tenant.id, 'dimension_version', version.id, 'approve_findings', null, {
+    dimension: dimension.slug,
+    run_id: input.runId,
+    indicators: indicators.length,
+    gaps: gaps.length,
   });
 
   if (input.publish) {
@@ -185,20 +153,15 @@ export async function flagGap(input: {
   indicator: string;
   reason: string;
 }) {
-  const tenant = await tenantOrThrow(input.tenantSlug);
-  await requireRole(tenant.id, 'editor');
+  const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
   const db = getDb();
 
   const reason = input.reason.trim();
   if (!reason) throw new Error('a reason is required to flag a data gap');
 
-  const [dimension] = await db
-    .select()
-    .from(dimensions)
-    .where(and(eq(dimensions.id, input.dimensionId), eq(dimensions.tenantId, tenant.id)));
-  if (!dimension) throw new Error('unknown dimension');
+  const dimension = await dimensionInTenantOrThrow(tenant.id, input.dimensionId);
 
-  const base = await latestVersion(dimension.id);
+  const base = await latestVersion(db, dimension.id);
   if (!base) throw new Error('dimension has no versions');
 
   const data: DimensionData = {
@@ -220,34 +183,20 @@ export async function flagGap(input: {
     ],
   };
 
-  const maxRows = await db
-    .select({ maxVersion: max(dimensionVersions.versionNum) })
-    .from(dimensionVersions)
-    .where(eq(dimensionVersions.dimensionId, dimension.id));
-
   const auth = await getAuth();
-  const [version] = await db
-    .insert(dimensionVersions)
-    .values({
-      dimensionId: dimension.id,
-      versionNum: (maxRows[0]?.maxVersion ?? 0) + 1,
-      status: 'draft',
-      data,
-      vizLevel: null,
-      origin: 'human',
-      changeNote: `Flagged as data gap: ${reason}`,
-      createdBy: auth.userId,
-    })
-    .returning();
-  if (!version) throw new Error('version insert failed');
+  const version = await appendDimensionVersion(db, {
+    dimensionId: dimension.id,
+    status: 'draft',
+    data,
+    vizLevel: null,
+    origin: 'human',
+    changeNote: `Flagged as data gap: ${reason}`,
+    createdBy: auth.userId,
+  });
 
-  await db.insert(auditLog).values({
-    tenantId: tenant.id,
-    userId: auth.userId,
-    entity: 'dimension_version',
-    entityId: version.id,
-    action: 'flag_gap',
-    after: { dimension: dimension.slug, reason },
+  await audit(tenant.id, 'dimension_version', version.id, 'flag_gap', null, {
+    dimension: dimension.slug,
+    reason,
   });
 
   await publishVersion({ tenantSlug: input.tenantSlug, versionId: version.id });

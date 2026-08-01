@@ -1,10 +1,6 @@
 import { z } from 'zod';
 
-export const ringSchema = z.enum(['social', 'ecological']);
 export const confidenceSchema = z.enum(['high', 'medium', 'low']);
-export const roleSchema = z.enum(['owner', 'editor', 'viewer', 'moderator']);
-export const versionStatusSchema = z.enum(['draft', 'published', 'archived']);
-export const versionOriginSchema = z.enum(['research', 'human', 'import']);
 export const geographicScaleSchema = z.enum([
   'city',
   'county',
@@ -14,7 +10,6 @@ export const geographicScaleSchema = z.enum([
   'global',
 ]);
 export const mappingFunctionSchema = z.enum(['higher_is_better', 'lower_is_better', 'band']);
-export const contentSupportedSchema = z.enum(['pass', 'fail', 'uncertain']);
 
 export const indicatorScoringSchema = z.object({
   threshold_ref: z.string(),
@@ -65,26 +60,6 @@ export const dimensionDataSchema = z.object({
   justice_spotlight: z.string().optional(),
 });
 
-export const outreachContactDataSchema = z.object({
-  org: z.string(),
-  person: z.string().optional(),
-  phone: z.string().optional(),
-  email: z.string().optional(),
-  website: z.string().optional(),
-  address: z.string().optional(),
-  tags: z.array(z.string()),
-  data_needs: z.array(z.string()),
-  why: z.string().optional(),
-  draft_message: z.string().optional(),
-});
-
-export const tenantBrandingSchema = z.object({
-  logo_url: z.string().optional(),
-  primary_color: z.string().optional(),
-  font: z.string().optional(),
-  footer_html: z.string().optional(),
-});
-
 // ---- Findings (the research boundary; mirrors contract/schemas/finding.schema.json) ----
 
 export const indicatorFindingPayloadSchema = z.object({
@@ -120,15 +95,6 @@ export const findingPayloadSchema = z.discriminatedUnion('kind', [
   indicatorFindingPayloadSchema,
   gapFindingPayloadSchema,
 ]);
-
-export const findingVerificationSchema = z.object({
-  url_ok: z.boolean(),
-  schema_ok: z.boolean(),
-  recency_ok: z.boolean(),
-  scale_ok: z.boolean(),
-  content_supported: contentSupportedSchema,
-  verifier_note: z.string().optional(),
-});
 
 // ---- Tenant config (SPEC.md §6; portrait keys mirror portrait-config.schema.json) ----
 
@@ -196,5 +162,3 @@ export const tenantConfigSchemas = {
   retention: retentionConfigSchema,
   notifications: notificationConfigSchema,
 } as const;
-
-export type TenantConfigSchemaKey = keyof typeof tenantConfigSchemas;

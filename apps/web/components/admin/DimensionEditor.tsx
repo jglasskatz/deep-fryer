@@ -1,15 +1,19 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import type { Confidence, DimensionData, GeographicScale, Indicator } from '@deep-fryer/core';
 import { saveDimensionEdit } from '@/lib/actions';
+import { useAction } from '@/lib/use-action';
 
 const CONFIDENCES: Confidence[] = ['high', 'medium', 'low'];
 const SCALES: GeographicScale[] = ['city', 'county', 'regional', 'state', 'national', 'global'];
 
 const field =
   'w-full rounded border border-black/20 bg-white px-2 py-1 text-sm';
+
+/** Form input → indicator value: empty is null, numeric strings are numbers. */
+const parseValueInput = (raw: string): number | string | null =>
+  raw === '' ? null : Number.isFinite(Number(raw)) && raw.trim() !== '' ? Number(raw) : raw;
 
 export function DimensionEditor({
   tenantSlug,
@@ -20,11 +24,9 @@ export function DimensionEditor({
   dimensionId: string;
   initial: DimensionData;
 }) {
-  const router = useRouter();
   const [data, setData] = useState<DimensionData>(initial);
   const [changeNote, setChangeNote] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const { run, pending, error } = useAction();
 
   const setIndicator = (idx: number, patch: Partial<Indicator>) => {
     setData((d) => ({
@@ -33,18 +35,11 @@ export function DimensionEditor({
     }));
   };
 
-  const save = () => {
-    setError(null);
-    startTransition(async () => {
-      try {
-        await saveDimensionEdit({ tenantSlug, dimensionId, data, changeNote });
-        setChangeNote('');
-        router.refresh();
-      } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
-      }
+  const save = () =>
+    run(async () => {
+      await saveDimensionEdit({ tenantSlug, dimensionId, data, changeNote });
+      setChangeNote('');
     });
-  };
 
   return (
     <div className="space-y-6">
@@ -120,13 +115,7 @@ export function DimensionEditor({
                   <input
                     className={field}
                     value={ind.value ?? ''}
-                    onChange={(e) => {
-                      const raw = e.target.value;
-                      const num = Number(raw);
-                      setIndicator(i, {
-                        value: raw === '' ? null : Number.isFinite(num) && raw.trim() !== '' ? num : raw,
-                      });
-                    }}
+                    onChange={(e) => setIndicator(i, { value: parseValueInput(e.target.value) })}
                   />
                 </label>
                 <label className="block text-xs">
@@ -145,14 +134,7 @@ export function DimensionEditor({
                   <input
                     className={field}
                     value={ind.target ?? ''}
-                    onChange={(e) => {
-                      const raw = e.target.value;
-                      const num = Number(raw);
-                      setIndicator(i, {
-                        target:
-                          raw === '' ? null : Number.isFinite(num) && raw.trim() !== '' ? num : raw,
-                      });
-                    }}
+                    onChange={(e) => setIndicator(i, { target: parseValueInput(e.target.value) })}
                   />
                 </label>
                 <label className="block text-xs">

@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 import type { Role } from '@deep-fryer/core';
-import { getDb, tenantMembers } from '@deep-fryer/db';
+import { getDb, tenantBySlug, tenantMembers, type Tenant } from '@deep-fryer/db';
 import { supabaseConfigured, supabaseServer } from './supabase';
 
 export interface AuthContext {
@@ -50,4 +50,29 @@ export async function requireRole(tenantId: string, min: Role): Promise<Role> {
     throw new Error(`requires ${min} role on this tenant`);
   }
   return role as Role;
+}
+
+/**
+ * The standard server-action preamble: resolve the tenant and gate on role
+ * in one place, so no action can forget the check or vary its shape.
+ */
+export async function requireTenantRole(
+  tenantSlug: string,
+  min: Role,
+): Promise<{ tenant: Tenant; role: Role }> {
+  const tenant = await tenantBySlug(getDb(), tenantSlug);
+  if (!tenant) throw new Error(`unknown tenant '${tenantSlug}'`);
+  const role = await requireRole(tenant.id, min);
+  return { tenant, role };
+}
+
+/** Local-dev identity when Supabase auth is not configured. */
+export const DEV_USER_ID = '00000000-0000-0000-0000-000000000001';
+
+/** The acting user id for writes that require an author (comments, votes). */
+export async function requireUserId(): Promise<string> {
+  const auth = await getAuth();
+  if (auth.userId) return auth.userId;
+  if (auth.devMode) return DEV_USER_ID;
+  throw new Error('sign in to continue');
 }

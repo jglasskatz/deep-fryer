@@ -14,8 +14,11 @@ import {
   mergeVerification,
   renderVerifierPrompt,
   REGION_BRIEF_PLACEHOLDER,
+  VERIFIER_MAX_TURNS,
+  VERIFIER_TOOLS,
   type ApplyJobPayload,
 } from '@deep-fryer/research';
+import { closeEvidenceBrowser } from '../evidence.js';
 import { extractJson, runSession } from '../session.js';
 import { tenantStorage } from '../storage.js';
 
@@ -130,11 +133,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
 
       const verifierUsage = { input_tokens: 0, output_tokens: 0 };
       for (const raw of rawFindings) {
-        const { payload, checks } = await deterministicChecks(
-          raw,
-          config,
-          spec.dimension_slug ?? dimension.slug,
-        );
+        const { payload, checks } = await deterministicChecks(raw, config, dimension.slug);
 
         let verdict: { content_supported: ContentSupported; verifier_note?: string } | null;
         if (payload?.kind === 'indicator') {
@@ -191,6 +190,8 @@ export const researchApply: Task = async (rawPayload, helpers) => {
         ),
       );
     await finish('failed');
+  } finally {
+    await closeEvidenceBrowser().catch(() => {});
   }
 };
 
@@ -207,7 +208,11 @@ async function runVerifier(
     source_url: payload.source_url,
   });
   try {
-    const result = await runSession({ prompt, allowedTools: ['WebFetch'], maxTurns: 12 });
+    const result = await runSession({
+      prompt,
+      allowedTools: VERIFIER_TOOLS,
+      maxTurns: VERIFIER_MAX_TURNS,
+    });
     acc.input_tokens += result.usage.input_tokens;
     acc.output_tokens += result.usage.output_tokens;
     const parsed = extractJson(result.resultText) as {

@@ -10,18 +10,19 @@
  *   pnpm import-santa-cruz --from /path/to/doughnut-santa-cruz \
  *     [--jurisdiction city_santa_cruz] [--slug santacruz]
  */
-import { copyFile, mkdir, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { and, eq, isNull, max } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import type { DimensionData, Ring } from '@deep-fryer/core';
 import {
+  appendDimensionVersion,
   dimensions,
-  dimensionVersions,
   getDb,
   provisionTenant,
   tenantBySlug,
 } from '@deep-fryer/db';
+import { tenantStorage, type TenantStorage } from '@deep-fryer/research';
 
 interface ScEntry {
   name: string;
@@ -84,56 +85,19 @@ async function loadJurisdictions(repoPath: string): Promise<Record<string, ScJur
   return fn() as Record<string, ScJurisdiction>;
 }
 
-interface EvidenceMigrator {
-  migrate(localPath: string, destName: string): Promise<string | null>;
-  describe(): string;
-}
-
-function makeEvidenceMigrator(tenantSlug: string): EvidenceMigrator {
-  const url = process.env.SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (url && serviceKey) {
-    const bucket = `tenant-${tenantSlug}`;
-    let clientPromise: Promise<import('@supabase/supabase-js').SupabaseClient> | null = null;
-    const client = () => {
-      clientPromise ??= import('@supabase/supabase-js').then(async ({ createClient }) => {
-        const c = createClient(url, serviceKey, { auth: { persistSession: false } });
-        const { data: buckets } = await c.storage.listBuckets();
-        if (!buckets?.some((b) => b.name === bucket)) {
-          await c.storage.createBucket(bucket, { public: true });
-        }
-        return c;
-      });
-      return clientPromise;
-    };
-    return {
-      describe: () => `Supabase storage bucket ${bucket}`,
-      async migrate(localPath, destName) {
-        const c = await client();
-        const storagePath = `evidence/${destName}`;
-        const body = await readFile(localPath);
-        const { error } = await c.storage
-          .from(bucket)
-          .upload(storagePath, body, { upsert: true, contentType: 'image/png' });
-        if (error) {
-          console.warn(`  ! upload failed for ${destName}: ${error.message}`);
-          return null;
-        }
-        return storagePath;
-      },
-    };
+/** Thin wrapper over the shared tenant storage (same backend as the worker). */
+async function migrateEvidence(
+  storage: TenantStorage,
+  localPath: string,
+  destName: string,
+): Promise<string | null> {
+  try {
+    const body = await readFile(localPath);
+    return await storage.put(`evidence/${destName}`, body, 'image/png');
+  } catch (err) {
+    console.warn(`  ! upload failed for ${destName}: ${err instanceof Error ? err.message : err}`);
+    return null;
   }
-
-  const publicDir = path.join(process.cwd(), 'apps', 'web', 'public', 'evidence', tenantSlug);
-  return {
-    describe: () => `${publicDir} (no Supabase env — local copy)`,
-    async migrate(localPath, destName) {
-      await mkdir(path.join(publicDir, 'evidence'), { recursive: true });
-      const storagePath = `evidence/${destName}`;
-      await copyFile(localPath, path.join(publicDir, storagePath));
-      return storagePath;
-    },
-  };
 }
 
 async function main() {
@@ -161,36 +125,31 @@ async function main() {
     console.log(`Tenant '${args.slug}' exists — importing new versions on top`);
   }
 
-  const migrator = makeEvidenceMigrator(args.slug);
-  console.log(`Evidence destination: ${migrator.describe()}`);
+  const storage = await tenantStorage(args.slug, {
+    localFallbackDir: path.join(process.cwd(), 'apps', 'web', 'public', 'evidence', args.slug),
+  });
+  console.log(`Evidence destination: ${storage.describe()}`);
 
   const importedAt = new Date().toISOString();
   let imported = 0;
   let withEvidence = 0;
 
+  // The tenant's dimensions are fully known up front — one query, not one per entry.
+  const existingDims = await db
+    .select()
+    .from(dimensions)
+    .where(eq(dimensions.tenantId, tenant.id));
+  const dimByKey = new Map(existingDims.map((d) => [`${d.ring}:${d.slug}`, d]));
+  let nextDisplayOrder = Math.max(0, ...existingDims.map((d) => d.displayOrder)) + 1;
+
   for (const ring of ['social', 'ecological'] as Ring[]) {
-    const entries = jurisdiction[ring === 'social' ? 'social' : 'ecological'];
-    for (const entry of entries) {
+    for (const entry of jurisdiction[ring]) {
       const slug = slugify(entry.name);
 
-      let [dimension] = await db
-        .select()
-        .from(dimensions)
-        .where(
-          and(
-            eq(dimensions.tenantId, tenant.id),
-            eq(dimensions.ring, ring),
-            eq(dimensions.slug, slug),
-          ),
-        );
-
+      let dimension = dimByKey.get(`${ring}:${slug}`);
       if (!dimension) {
         // Custom dimension outside the framework (e.g. "waste & materials"):
         // created without canonical_slug, appended to display order.
-        const [{ maxOrder }] = await db
-          .select({ maxOrder: max(dimensions.displayOrder) })
-          .from(dimensions)
-          .where(eq(dimensions.tenantId, tenant.id));
         [dimension] = await db
           .insert(dimensions)
           .values({
@@ -198,10 +157,11 @@ async function main() {
             ring,
             slug,
             canonicalSlug: null,
-            displayOrder: (maxOrder ?? 0) + 1,
+            displayOrder: nextDisplayOrder++,
           })
           .returning();
         if (!dimension) throw new Error(`failed to create custom dimension ${slug}`);
+        dimByKey.set(`${ring}:${slug}`, dimension);
         console.log(`  + custom dimension '${entry.name}' (${slug})`);
       }
 
@@ -209,7 +169,7 @@ async function main() {
       if (entry.screenshot) {
         const local = path.join(args.from, 'docs', entry.screenshot);
         if (existsSync(local)) {
-          evidencePath = await migrator.migrate(local, path.basename(entry.screenshot));
+          evidencePath = await migrateEvidence(storage, local, path.basename(entry.screenshot));
           if (evidencePath) withEvidence++;
         } else {
           console.warn(`  ! screenshot missing on disk: ${entry.screenshot}`);
@@ -240,24 +200,14 @@ async function main() {
         actions: entry.actions ?? [],
       };
 
-      const [{ maxVersion }] = await db
-        .select({ maxVersion: max(dimensionVersions.versionNum) })
-        .from(dimensionVersions)
-        .where(eq(dimensionVersions.dimensionId, dimension.id));
-
-      const [version] = await db
-        .insert(dimensionVersions)
-        .values({
-          dimensionId: dimension.id,
-          versionNum: (maxVersion ?? 0) + 1,
-          status: 'published',
-          data,
-          vizLevel: typeof entry.level === 'number' ? entry.level : null,
-          origin: 'import',
-          publishedAt: new Date(),
-        })
-        .returning();
-      if (!version) throw new Error(`failed to insert version for ${slug}`);
+      const version = await appendDimensionVersion(db, {
+        dimensionId: dimension.id,
+        status: 'published',
+        data,
+        vizLevel: typeof entry.level === 'number' ? entry.level : null,
+        origin: 'import',
+        publishedAt: new Date(),
+      });
 
       await db
         .update(dimensions)
@@ -269,15 +219,19 @@ async function main() {
 
   // Archive framework dimensions the SC portrait has no data for, so the
   // public doughnut shows the portrait as curated, not empty gray wedges.
-  const allDims = await db
-    .select()
-    .from(dimensions)
-    .where(and(eq(dimensions.tenantId, tenant.id), isNull(dimensions.archivedAt)));
-  for (const d of allDims) {
-    if (!d.publishedVersionId) {
-      await db.update(dimensions).set({ archivedAt: new Date() }).where(eq(dimensions.id, d.id));
-      console.log(`  archived empty framework dimension '${d.slug}'`);
-    }
+  const archived = await db
+    .update(dimensions)
+    .set({ archivedAt: new Date() })
+    .where(
+      and(
+        eq(dimensions.tenantId, tenant.id),
+        isNull(dimensions.archivedAt),
+        isNull(dimensions.publishedVersionId),
+      ),
+    )
+    .returning({ slug: dimensions.slug });
+  for (const d of archived) {
+    console.log(`  archived empty framework dimension '${d.slug}'`);
   }
 
   console.log(`Imported ${imported} dimensions (${withEvidence} with evidence snapshots).`);

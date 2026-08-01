@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { planResearchAction } from '@/lib/research-actions';
+import { useAction } from '@/lib/use-action';
 
 export interface RunnableDimension {
   id: string;
@@ -19,8 +20,7 @@ export function NewRunForm({
 }) {
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set(dimensions.map((d) => d.id)));
-  const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const { run, pending, error } = useAction();
 
   const toggle = (id: string) => {
     setSelected((s) => {
@@ -31,20 +31,14 @@ export function NewRunForm({
     });
   };
 
-  const plan = () => {
-    setError(null);
-    startTransition(async () => {
-      try {
-        const { runId } = await planResearchAction({
-          tenantSlug,
-          dimensionIds: [...selected],
-        });
-        router.push(`/${tenantSlug}/admin/research/${runId}`);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
-      }
+  const plan = () =>
+    run(async () => {
+      const { runId } = await planResearchAction({
+        tenantSlug,
+        dimensionIds: [...selected],
+      });
+      router.push(`/${tenantSlug}/admin/research/${runId}`);
     });
-  };
 
   return (
     <div className="rounded border border-black/15 p-4">

@@ -1,8 +1,6 @@
 import { notFound } from 'next/navigation';
-import { eq } from 'drizzle-orm';
-import { getDb, tenants } from '@deep-fryer/db';
 import { EmbedFrame } from '@/components/embed/EmbedFrame';
-import { getPortrait, hasDatabase } from '@/lib/data';
+import { getPortrait, tenantEmbedOrigins } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,15 +19,11 @@ export default async function EmbedPage({
   const { tenant } = await params;
   const { origin } = await searchParams;
 
-  const portrait = await getPortrait(tenant);
+  const [portrait, allowedOrigins] = await Promise.all([
+    getPortrait(tenant),
+    tenantEmbedOrigins(tenant),
+  ]);
   if (!portrait) notFound();
-
-  let allowedOrigins: string[] = [];
-  if (hasDatabase()) {
-    const db = getDb();
-    const [row] = await db.select().from(tenants).where(eq(tenants.slug, tenant));
-    allowedOrigins = row?.embedOrigins ?? [];
-  }
 
   const parentOrigin = origin ?? null;
   const originAllowed =

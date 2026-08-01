@@ -13,19 +13,32 @@ export function pluginDir(): string {
   return path.resolve(here, '..', '..', '..', 'vendor', 'open-doughnut', 'plugin');
 }
 
+// The vendored files are immutable within a process; cache reads (renderPlan
+// hits the researcher template once per dimension, on the web request path).
+const fileCache = new Map<string, string>();
+
+function readCached(filePath: string): string {
+  let content = fileCache.get(filePath);
+  if (content === undefined) {
+    content = readFileSync(filePath, 'utf8');
+    fileCache.set(filePath, content);
+  }
+  return content;
+}
+
 export function pluginVersion(): string {
-  const manifest = JSON.parse(readFileSync(path.join(pluginDir(), 'plugin.json'), 'utf8')) as {
+  const manifest = JSON.parse(readCached(path.join(pluginDir(), 'plugin.json'))) as {
     version: string;
   };
   return manifest.version;
 }
 
 export function agentTemplate(name: 'region-context' | 'dimension-researcher' | 'verifier'): string {
-  return readFileSync(path.join(pluginDir(), 'agents', `${name}.md`), 'utf8');
+  return readCached(path.join(pluginDir(), 'agents', `${name}.md`));
 }
 
 export function skill(name: 'methodology' | 'source-evaluation' | 'evidence-capture'): string {
-  return readFileSync(path.join(pluginDir(), 'skills', `${name}.md`), 'utf8');
+  return readCached(path.join(pluginDir(), 'skills', `${name}.md`));
 }
 
 /** Fill {{placeholders}}; unknown placeholders are left intact (e.g. {{region_brief}} until apply). */

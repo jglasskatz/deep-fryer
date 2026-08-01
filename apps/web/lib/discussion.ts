@@ -5,7 +5,7 @@ import {
   dimensions,
   getDb,
   moderationActions,
-  tenants,
+  tenantBySlug,
   type Comment,
 } from '@deep-fryer/db';
 
@@ -27,7 +27,7 @@ export type CommentSort = 'top' | 'new';
 
 export async function dimensionForPublicSlug(tenantSlug: string, dimSlug: string) {
   const db = getDb();
-  const [tenant] = await db.select().from(tenants).where(eq(tenants.slug, tenantSlug));
+  const tenant = await tenantBySlug(db, tenantSlug);
   if (!tenant) return null;
   const [dimension] = await db
     .select()
@@ -57,30 +57,33 @@ export async function dimensionThread(
   if (rows.length === 0) return [];
 
   const ids = rows.map((c) => c.id);
-  const votes = await db
-    .select({
-      commentId: commentVotes.commentId,
-      score: sql<number>`coalesce(sum(${commentVotes.vote}), 0)::int`,
-    })
-    .from(commentVotes)
-    .where(inArray(commentVotes.commentId, ids))
-    .groupBy(commentVotes.commentId);
+  const [votes, myVotes, modActions] = await Promise.all([
+    db
+      .select({
+        commentId: commentVotes.commentId,
+        score: sql<number>`coalesce(sum(${commentVotes.vote}), 0)::int`,
+      })
+      .from(commentVotes)
+      .where(inArray(commentVotes.commentId, ids))
+      .groupBy(commentVotes.commentId),
+    viewerId
+      ? db
+          .select()
+          .from(commentVotes)
+          .where(and(inArray(commentVotes.commentId, ids), eq(commentVotes.userId, viewerId)))
+      : Promise.resolve([]),
+    // A thread is locked when its latest lock/restore moderation action is a lock.
+    db
+      .select({
+        commentId: moderationActions.commentId,
+        action: moderationActions.action,
+      })
+      .from(moderationActions)
+      .where(inArray(moderationActions.commentId, ids))
+      .orderBy(desc(moderationActions.ts)),
+  ]);
   const scoreById = new Map(votes.map((v) => [v.commentId, v.score]));
-
-  const myVotes = viewerId
-    ? await db
-        .select()
-        .from(commentVotes)
-        .where(and(inArray(commentVotes.commentId, ids), eq(commentVotes.userId, viewerId)))
-    : [];
   const myVoteById = new Map(myVotes.map((v) => [v.commentId, v.vote]));
-
-  // A thread is locked when its latest lock/restore moderation action is a lock.
-  const modActions = await db
-    .select()
-    .from(moderationActions)
-    .where(inArray(moderationActions.commentId, ids))
-    .orderBy(desc(moderationActions.ts));
   const lockedById = new Map<string, boolean>();
   for (const action of modActions) {
     if (lockedById.has(action.commentId)) continue;
@@ -116,9 +119,8 @@ export async function dimensionThread(
   const byScore = (a: CommentView, b: CommentView) => b.score - a.score;
   const byNew = (a: CommentView, b: CommentView) => b.createdAt.getTime() - a.createdAt.getTime();
   top.sort(sort === 'top' ? byScore : byNew);
-  for (const t of top) t.replies.sort(byNew);
-  // Replies were collected newest-first; present them oldest-first.
-  for (const t of top) t.replies.reverse();
+  // Replies read oldest-first.
+  for (const t of top) t.replies.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
   return top;
 }

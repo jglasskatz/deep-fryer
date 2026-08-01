@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import type {
-  NotificationConfig,
-  PortraitConfig,
-  RetentionConfig,
-  ReviewPolicyConfig,
-  TenantConfigKey,
+import {
+  defaultNotifications,
+  defaultRetention,
+  defaultReviewPolicy,
+  type NotificationConfig,
+  type PortraitConfig,
+  type RetentionConfig,
+  type ReviewPolicyConfig,
+  type TenantConfigKey,
 } from '@deep-fryer/core';
 import { updateConfig } from '@/lib/actions';
 
@@ -134,17 +137,11 @@ export function SettingsForms({
     region ?? { name: '', definition: '', context_notes: '' },
   );
   const [recencyYears, setRecencyYears] = useState(recency?.default_max_age_years ?? 5);
-  const [review, setReview] = useState<ReviewPolicyConfig>(
-    reviewPolicy ?? {
-      require_approval: 'all',
-      dual_review_on_edits: false,
-      first_post_requires_approval: false,
-    },
+  const [review, setReview] = useState<ReviewPolicyConfig>(reviewPolicy ?? defaultReviewPolicy);
+  const [retentionDays, setRetentionDays] = useState(
+    retention?.transcript_days ?? defaultRetention.transcript_days,
   );
-  const [retentionDays, setRetentionDays] = useState(retention?.transcript_days ?? 2555);
-  const [notif, setNotif] = useState<NotificationConfig>(
-    notifications ?? { email_on_run_complete: true, email_on_flagged_finding: true },
-  );
+  const [notif, setNotif] = useState<NotificationConfig>(notifications ?? defaultNotifications);
 
   return (
     <div className="space-y-6">

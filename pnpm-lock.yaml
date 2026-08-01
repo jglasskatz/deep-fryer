@@ -193,6 +193,9 @@ importers:
       '@deep-fryer/core':
         specifier: workspace:*
         version: link:../core
+      '@supabase/supabase-js':
+        specifier: ^2.46.1
+        version: 2.111.0
       graphile-worker:
         specifier: ^0.16.6
         version: 0.16.6(typescript@5.9.3)

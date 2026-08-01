@@ -1,9 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { eq, inArray } from 'drizzle-orm';
-import { getDb, outreachContacts, outreachContactVersions, tenants } from '@deep-fryer/db';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
-import { getPortrait, hasDatabase } from '@/lib/data';
+import { getPortrait, publishedOutreachContacts } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,33 +11,11 @@ export default async function OutreachPage({
   params: Promise<{ tenant: string }>;
 }) {
   const { tenant } = await params;
-  const portrait = await getPortrait(tenant);
+  const [portrait, contacts] = await Promise.all([
+    getPortrait(tenant),
+    publishedOutreachContacts(tenant),
+  ]);
   if (!portrait) notFound();
-
-  let contacts: { org: string; website?: string; why?: string; tags: string[] }[] = [];
-  if (hasDatabase()) {
-    const db = getDb();
-    const [t] = await db.select().from(tenants).where(eq(tenants.slug, tenant));
-    if (t) {
-      const rows = await db
-        .select()
-        .from(outreachContacts)
-        .where(eq(outreachContacts.tenantId, t.id));
-      const publishedIds = rows.flatMap((r) => (r.publishedVersionId ? [r.publishedVersionId] : []));
-      if (publishedIds.length) {
-        const versions = await db
-          .select()
-          .from(outreachContactVersions)
-          .where(inArray(outreachContactVersions.id, publishedIds));
-        contacts = versions.map((v) => ({
-          org: v.data.org,
-          website: v.data.website,
-          why: v.data.why,
-          tags: v.data.tags,
-        }));
-      }
-    }
-  }
 
   return (
     <>

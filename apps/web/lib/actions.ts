@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { and, eq, max } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import {
   computeScoring,
   deriveVizLevel,
@@ -14,43 +14,16 @@ import {
 } from '@deep-fryer/core';
 import { frameworkDimension } from '@deep-fryer/contract';
 import {
-  auditLog,
+  appendDimensionVersion,
   dimensions,
   dimensionVersions,
   getDb,
+  latestVersion,
   tenantConfig,
-  tenants,
 } from '@deep-fryer/db';
-import { getAuth, requireRole } from './auth';
+import { getAuth, requireTenantRole } from './auth';
+import { audit } from './audit';
 import { configValue } from './admin-data';
-
-async function tenantOrThrow(slug: string) {
-  const db = getDb();
-  const [tenant] = await db.select().from(tenants).where(eq(tenants.slug, slug));
-  if (!tenant) throw new Error(`unknown tenant '${slug}'`);
-  return tenant;
-}
-
-async function audit(
-  tenantId: string,
-  entity: string,
-  entityId: string,
-  action: string,
-  before: unknown,
-  after: unknown,
-) {
-  const db = getDb();
-  const auth = await getAuth();
-  await db.insert(auditLog).values({
-    tenantId,
-    userId: auth.userId,
-    entity,
-    entityId,
-    action,
-    before: before ?? null,
-    after: after ?? null,
-  });
-}
 
 /**
  * Re-run the thresholds engine over numeric indicators (SPEC.md §8 Scoring):
@@ -60,9 +33,10 @@ async function audit(
 function rescore(
   data: DimensionData,
   dimensionSlug: string,
+  canonicalSlug: string | null,
   overrides: Record<string, { target: number; rationale: string }> | null,
 ): DimensionData {
-  const frameworkDim = frameworkDimension(dimensionSlug);
+  const frameworkDim = frameworkDimension(dimensionSlug, canonicalSlug);
   const indicators: Indicator[] = data.indicators.map((ind) => {
     const ref =
       ind.scoring?.threshold_ref ??
@@ -99,8 +73,7 @@ export interface SaveDimensionEditInput {
  * research.
  */
 export async function saveDimensionEdit(input: SaveDimensionEditInput) {
-  const tenant = await tenantOrThrow(input.tenantSlug);
-  await requireRole(tenant.id, 'editor');
+  const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
   const db = getDb();
 
   const changeNote = input.changeNote.trim();
@@ -114,23 +87,7 @@ export async function saveDimensionEdit(input: SaveDimensionEditInput) {
     .where(and(eq(dimensions.id, input.dimensionId), eq(dimensions.tenantId, tenant.id)));
   if (!dimension) throw new Error('unknown dimension');
 
-  const maxRows = await db
-    .select({ maxVersion: max(dimensionVersions.versionNum) })
-    .from(dimensionVersions)
-    .where(eq(dimensionVersions.dimensionId, dimension.id));
-  const maxVersion = maxRows[0]?.maxVersion ?? null;
-
-  const [previous] = maxVersion
-    ? await db
-        .select()
-        .from(dimensionVersions)
-        .where(
-          and(
-            eq(dimensionVersions.dimensionId, dimension.id),
-            eq(dimensionVersions.versionNum, maxVersion),
-          ),
-        )
-    : [];
+  const previous = await latestVersion(db, dimension.id);
 
   // Value changes need supporting sources (SPEC.md §7 immutability contract).
   if (previous) {
@@ -147,24 +104,19 @@ export async function saveDimensionEdit(input: SaveDimensionEditInput) {
   }
 
   const overrides = await configValue(tenant.id, 'threshold_overrides');
-  const rescored = rescore(parsed, dimension.slug, overrides);
+  const rescored = rescore(parsed, dimension.slug, dimension.canonicalSlug, overrides);
   const vizLevel = deriveVizLevel(rescored) ?? previous?.vizLevel ?? null;
 
   const auth = await getAuth();
-  const [version] = await db
-    .insert(dimensionVersions)
-    .values({
-      dimensionId: dimension.id,
-      versionNum: (maxVersion ?? 0) + 1,
-      status: 'draft',
-      data: rescored,
-      vizLevel,
-      origin: 'human',
-      changeNote,
-      createdBy: auth.userId,
-    })
-    .returning();
-  if (!version) throw new Error('version insert failed');
+  const version = await appendDimensionVersion(db, {
+    dimensionId: dimension.id,
+    status: 'draft',
+    data: rescored,
+    vizLevel,
+    origin: 'human',
+    changeNote,
+    createdBy: auth.userId,
+  });
 
   await audit(tenant.id, 'dimension_version', version.id, 'create_human_version', null, {
     dimension: dimension.slug,
@@ -186,8 +138,7 @@ export async function publishVersion(input: {
   versionId: string;
   revert?: boolean;
 }) {
-  const tenant = await tenantOrThrow(input.tenantSlug);
-  await requireRole(tenant.id, 'editor');
+  const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
   const db = getDb();
 
   const [version] = await db
@@ -240,8 +191,7 @@ export async function updateConfig(input: {
   key: TenantConfigKey;
   value: unknown;
 }) {
-  const tenant = await tenantOrThrow(input.tenantSlug);
-  await requireRole(tenant.id, 'owner');
+  const { tenant } = await requireTenantRole(input.tenantSlug, 'owner');
   const db = getDb();
 
   const schema = tenantConfigSchemas[input.key];

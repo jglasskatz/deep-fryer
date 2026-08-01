@@ -7,6 +7,11 @@ export async function middleware(request: NextRequest) {
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anonKey) return NextResponse.next();
 
+  // Anonymous traffic (most public/embed requests) has no session to refresh
+  // — skip the Supabase round trip entirely.
+  const hasAuthCookie = request.cookies.getAll().some((c) => c.name.startsWith('sb-'));
+  if (!hasAuthCookie) return NextResponse.next();
+
   let response = NextResponse.next({ request });
   const supabase = createServerClient(url, anonKey, {
     cookies: {

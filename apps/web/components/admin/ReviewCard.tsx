@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import type { FindingPayload, FindingVerification } from '@deep-fryer/core';
+import { isFlagged, type FindingPayload, type FindingVerification } from '@deep-fryer/core';
 import { approveFindings, flagGap, reResearchDimension } from '@/lib/review-actions';
+import { useAction } from '@/lib/use-action';
 
 export interface ReviewFinding {
   id: string;
@@ -50,26 +51,14 @@ export function ReviewCard({
   evidenceBase: string;
 }) {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
   const [gapReason, setGapReason] = useState('');
-  const [pending, startTransition] = useTransition();
+  const { run: act, pending, error } = useAction();
 
-  const act = (fn: () => Promise<unknown>) => {
-    setError(null);
-    startTransition(async () => {
-      try {
-        await fn();
-        router.refresh();
-      } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
-      }
-    });
-  };
-
+  // Gap cards always warrant review attention; sourced findings use the
+  // shared red-flag predicate (SPEC.md §8: flagged, never dropped).
   const flagged = findings.filter(
-    (f) => f.verification && (f.payload.kind === 'gap' || f.verification.content_supported !== 'pass' ||
-      !f.verification.schema_ok || !f.verification.url_ok || !f.verification.recency_ok || !f.verification.scale_ok),
+    (f) => f.payload.kind === 'gap' || (f.verification && isFlagged(f.verification)),
   ).length;
 
   return (

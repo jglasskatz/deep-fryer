@@ -5,6 +5,7 @@ import path from 'node:path';
 import { createSdkMcpServer, query, tool } from '@anthropic-ai/claude-agent-sdk';
 import { z } from 'zod';
 import type { SessionTokenUsage } from '@deep-fryer/core';
+import { DEFAULT_SESSION_MAX_TURNS, DEFAULT_SESSION_MODEL } from '@deep-fryer/research';
 import { captureEvidence } from './evidence.js';
 import type { TenantStorage } from './storage.js';
 
@@ -15,7 +16,7 @@ export interface SessionResult {
   succeeded: boolean;
 }
 
-const MODEL = () => process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-5';
+const MODEL = () => process.env.ANTHROPIC_MODEL ?? DEFAULT_SESSION_MODEL;
 
 /**
  * One research session = one Agent SDK session in a scratch workspace
@@ -80,7 +81,7 @@ export async function runSession(input: {
         cwd: workspace,
         allowedTools: input.allowedTools,
         permissionMode: 'bypassPermissions',
-        maxTurns: input.maxTurns ?? 60,
+        maxTurns: input.maxTurns ?? DEFAULT_SESSION_MAX_TURNS,
         ...(Object.keys(mcpServers).length ? { mcpServers } : {}),
       },
     });

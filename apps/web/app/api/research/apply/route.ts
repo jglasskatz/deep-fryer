@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { getDb, tenantBySlug } from '@deep-fryer/db';
 import { getRole, roleAtLeast } from '@/lib/auth';
-import { applyRun, tenantIdBySlug } from '@/lib/research';
+import { applyRun } from '@/lib/research';
 
 const bodySchema = z.object({
   tenant: z.string(),
@@ -12,15 +13,15 @@ const bodySchema = z.object({
 export async function POST(request: Request) {
   try {
     const body = bodySchema.parse(await request.json());
-    const tenantId = await tenantIdBySlug(body.tenant);
-    if (!tenantId) return NextResponse.json({ error: 'unknown tenant' }, { status: 404 });
+    const tenant = await tenantBySlug(getDb(), body.tenant);
+    if (!tenant) return NextResponse.json({ error: 'unknown tenant' }, { status: 404 });
 
-    const role = await getRole(tenantId);
+    const role = await getRole(tenant.id);
     if (!roleAtLeast(role, 'editor')) {
       return NextResponse.json({ error: 'requires editor role' }, { status: 403 });
     }
 
-    const run = await applyRun(tenantId, body.run_id);
+    const run = await applyRun(tenant.id, body.run_id);
     return NextResponse.json({ run_id: run.id, enqueued: true });
   } catch (err) {
     return NextResponse.json(
