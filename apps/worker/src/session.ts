@@ -79,8 +79,9 @@ export async function runSession(input: {
       options: {
         model: MODEL(),
         cwd: workspace,
+        // No permission bypass: the explicit allowlist from the rendered plan
+        // is the entire tool surface (SPEC §8); everything else is denied.
         allowedTools: input.allowedTools,
-        permissionMode: 'bypassPermissions',
         maxTurns: input.maxTurns ?? DEFAULT_SESSION_MAX_TURNS,
         ...(Object.keys(mcpServers).length ? { mcpServers } : {}),
       },
