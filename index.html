@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Santa Cruz Doughnut Economics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f8f9fc;
+            --bg-card: #ffffff;
+            --text: #111827;
+            --text-muted: #6b7280;
+            --text-faint: #9ca3af;
+            --border: #e5e7eb;
+            --accent: #059669;
+            --accent-light: #d1fae5;
+            --accent-dark: #047857;
+            --header-from: #064e3b;
+            --header-to: #059669;
+            --panel-bg: #ffffff;
+            --metric-bg: #f9fafb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.08);
+            --radius: 12px;
+        }
+        html.dark {
+            --bg: #0c0f1a;
+            --bg-card: #151926;
+            --text: #e5e7eb;
+            --text-muted: #9ca3af;
+            --text-faint: #6b7280;
+            --border: #1e2235;
+            --accent: #34d399;
+            --accent-light: #064e3b;
+            --accent-dark: #6ee7b7;
+            --header-from: #0a1628;
+            --header-to: #064e3b;
+            --panel-bg: #151926;
+            --metric-bg: #0f1220;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            transition: background 0.3s, color 0.3s;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--header-from) 0%, var(--header-to) 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .header-left h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        .header-left p { opacity: 0.65; font-size: 0.78rem; font-weight: 400; }
+        .header-right { display: flex; align-items: center; gap: 0.5rem; }
+
+        /* Header buttons */
+        .theme-toggle {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            padding: 0.4rem 0.65rem;
+            color: rgba(255,255,255,0.9);
+            cursor: pointer;
+            font-size: 0.82rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .theme-toggle:hover { background: rgba(255,255,255,0.18); }
+        .theme-icon { font-size: 1rem; line-height: 1; }
+
+        /* Jurisdiction switcher */
+        .jurisdiction-switcher {
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 2px;
+        }
+        .jurisdiction-btn {
+            padding: 0.4rem 0.85rem;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .jurisdiction-btn:hover { color: white; background: rgba(255,255,255,0.08); }
+        .jurisdiction-btn.active {
+            background: rgba(255,255,255,0.18);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            min-height: calc(100vh - 56px);
+        }
+        .doughnut-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 1rem 1rem 1rem;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Jurisdiction info */
+        .jurisdiction-info { text-align: center; margin-bottom: 0.5rem; }
+        .jurisdiction-info h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+        }
+        .jurisdiction-info .pop {
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            margin-top: 0.05rem;
+            font-weight: 400;
+        }
+        .jurisdiction-info .desc {
+            color: var(--text-faint);
+            font-size: 0.75rem;
+            max-width: 480px;
+            margin: 0.1rem auto 0;
+            line-height: 1.35;
+        }
+
+        /* Doughnut canvas — fully responsive */
+        #doughnutDiv {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+        #doughnutCanvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            cursor: crosshair;
+        }
+        .doughnut-hint {
+            text-align: center;
+            color: var(--text-faint);
+            font-size: 0.72rem;
+            margin-top: 0.25rem;
+            font-weight: 400;
+            flex-shrink: 0;
+        }
+
+        /* Summary strip */
+        .summary-strip {
+            display: flex;
+            gap: 0.4rem;
+            margin-top: 0.35rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .summary-chip {
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .chip-good { background: #dcfce7; color: #166534; }
+        .chip-caution { background: #fef9c3; color: #854d0e; }
+        .chip-bad { background: #fee2e2; color: #991b1b; }
+        .chip-unknown { background: var(--metric-bg); color: var(--text-faint); border: 1px solid var(--border); }
+        html.dark .chip-good { background: #052e16; color: #4ade80; }
+        html.dark .chip-caution { background: #422006; color: #fbbf24; }
+        html.dark .chip-bad { background: #450a0a; color: #f87171; }
+
+        /* Links */
+        .page-links {
+            display: flex;
+            gap: 0.4rem;
+            margin-top: 0.35rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .page-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.35rem 0.85rem;
+            background: var(--bg-card);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .page-link:hover { color: var(--accent); border-color: var(--accent); }
+
+        /* Detail Panel */
+        .detail-panel {
+            background: var(--panel-bg);
+            border-left: 1px solid var(--border);
+            overflow-y: auto;
+            max-height: calc(100vh - 56px);
+            position: sticky;
+            top: 0;
+            transition: background 0.3s;
+        }
+        .detail-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-faint);
+            font-size: 0.85rem;
+            padding: 2.5rem;
+            text-align: center;
+            gap: 0.75rem;
+        }
+        .detail-empty-icon { font-size: 2.5rem; opacity: 0.25; }
+        .detail-content { padding: 1.25rem; }
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .detail-ring {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .ring-ecological { background: #ef4444; }
+        .ring-social { background: #22c55e; }
+        .detail-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: capitalize;
+            letter-spacing: -0.01em;
+        }
+        .detail-status {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            margin-left: auto;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+        .status-good { background: #dcfce7; color: #166534; }
+        .status-caution { background: #fef9c3; color: #854d0e; }
+        .status-bad { background: #fee2e2; color: #991b1b; }
+        .status-severe { background: #ef4444; color: white; }
+        .status-unknown { background: var(--metric-bg); color: var(--text-faint); border: 1px solid var(--border); }
+        html.dark .status-good { background: #052e16; color: #4ade80; }
+        html.dark .status-caution { background: #422006; color: #fbbf24; }
+        html.dark .status-bad { background: #450a0a; color: #f87171; }
+        html.dark .status-severe { background: #7f1d1d; color: #fca5a5; }
+
+        .detail-metric {
+            background: var(--metric-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .detail-metric .label {
+            font-size: 0.68rem;
+            color: var(--text-faint);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+        .detail-metric .value {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text);
+            margin-top: 0.1rem;
+            letter-spacing: -0.02em;
+        }
+        .detail-metric .year { font-size: 0.72rem; color: var(--text-faint); margin-top: 0.1rem; }
+        .detail-metric .target { font-size: 0.8rem; color: #7c3aed; margin-top: 0.25rem; font-weight: 500; }
+        html.dark .detail-metric .target { color: #a78bfa; }
+        .detail-metric .context {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.35rem;
+            line-height: 1.5;
+        }
+
+        .detail-source { margin-bottom: 0.75rem; }
+        .detail-source h4 {
+            font-size: 0.68rem;
+            color: var(--text-faint);
+            margin-bottom: 0.35rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+        .detail-source a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 0.82rem;
+            display: block;
+            margin-bottom: 0.15rem;
+            font-weight: 500;
+        }
+        .detail-source a:hover { text-decoration: underline; }
+        .source-screenshot {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-top: 0.4rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .source-screenshot:hover { transform: scale(1.02); }
+
+        .detail-actions { margin-top: 0.75rem; }
+        .detail-actions h4 {
+            font-size: 0.68rem;
+            color: var(--accent);
+            margin-bottom: 0.35rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+        .detail-actions ul { list-style: none; }
+        .detail-actions li {
+            padding: 0.4rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.82rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.4rem;
+            line-height: 1.45;
+            color: var(--text-muted);
+        }
+        .detail-actions li::before {
+            content: "\2192";
+            color: var(--accent);
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.88);
+            z-index: 1000;
+            cursor: pointer;
+            justify-content: center;
+            align-items: center;
+        }
+        .lightbox.active { display: flex; }
+        .lightbox img { max-width: 90%; max-height: 90%; border-radius: 8px; }
+
+        /* Responsive */
+        @media (max-width: 960px) {
+            .main-layout { grid-template-columns: 1fr; }
+            .detail-panel {
+                max-height: none;
+                border-left: none;
+                border-top: 1px solid var(--border);
+                position: relative;
+            }
+            header { padding: 0.75rem 1rem; }
+            .doughnut-section { padding: 0.75rem 0.75rem; }
+            .header-left h1 { font-size: 1rem; }
+        }
+        @media (max-width: 600px) {
+            .jurisdiction-switcher { flex-wrap: wrap; }
+            .jurisdiction-btn { font-size: 0.72rem; padding: 0.3rem 0.6rem; }
+            .page-links { gap: 0.3rem; }
+            .page-link { font-size: 0.7rem; padding: 0.3rem 0.6rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <div>
+                <h1>Santa Cruz Doughnut Economics</h1>
+                <p>A portrait of social and ecological wellbeing</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="jurisdiction-switcher">
+                <button class="jurisdiction-btn active" data-key="santacruz">City of Santa Cruz</button>
+                <button class="jurisdiction-btn" data-key="sc-county">Santa Cruz County</button>
+                <button class="jurisdiction-btn" data-key="watsonville">City of Watsonville</button>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
+                <span class="theme-icon" id="themeIcon">&#9790;</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <div class="doughnut-section">
+            <div class="jurisdiction-info">
+                <h2 id="jurisdictionName"></h2>
+                <div class="pop" id="jurisdictionPop"></div>
+                <div class="desc" id="jurisdictionDesc"></div>
+            </div>
+            <div id="doughnutDiv">
+                <canvas id="doughnutCanvas">Your browser does not support canvas.</canvas>
+            </div>
+            <div class="doughnut-hint">Click any segment to see details, sources, and actions</div>
+            <div class="summary-strip" id="summaryStrip"></div>
+            <div class="page-links">
+                
+                
+                
+                
+                
+            </div>
+        </div>
+
+        <div class="detail-panel" id="detailPanel">
+            <div class="detail-empty" id="detailEmpty">
+                <div class="detail-empty-icon">&#9737;</div>
+                Select a dimension on the doughnut to explore data, primary sources, and ways to take action.
+            </div>
+            <div class="detail-content" id="detailContent" style="display:none;"></div>
+        </div>
+    </div>
+
+    <div class="lightbox" id="lightbox">
+        <img id="lightboxImg" src="" alt="Source document">
+    </div>
+
+    <script src="doughnut.js?5.1"></script>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
