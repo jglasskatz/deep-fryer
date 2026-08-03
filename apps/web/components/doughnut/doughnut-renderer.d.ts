@@ -35,6 +35,7 @@ export class DoughnutRenderer {
   ): void;
   clearDoughnut(): void;
   isEmptyDoughnut(): boolean;
+  setColours(number: 1 | 2, style: 1 | 2, inner: string, outer: string): void;
   update(): void;
   destroy(): void;
   export(): string;

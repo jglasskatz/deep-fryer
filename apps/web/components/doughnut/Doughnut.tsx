@@ -84,6 +84,10 @@ export function Doughnut({ social, ecological, size = 640, onSelect }: DoughnutP
       },
     });
 
+    // The live SC site's color mode (app.js): the red 'global' gradient for
+    // shortfall/overshoot wedges. Part of the canonical visual.
+    renderer.setColours(2, 1, '#883251', '#E096C6');
+
     for (const d of social) {
       renderer.addDimension('inner', d.name, d.viz_level ?? 'NaN');
     }

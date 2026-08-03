@@ -44,3 +44,4 @@ next-env.d.ts
 # Local evidence copies (dev fallback for tenant storage)
 apps/web/public/evidence/
 .ccr-ca.crt
+static-export/

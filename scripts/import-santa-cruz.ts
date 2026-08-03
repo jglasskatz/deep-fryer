@@ -140,13 +140,23 @@ async function main() {
     .from(dimensions)
     .where(eq(dimensions.tenantId, tenant.id));
   const dimByKey = new Map(existingDims.map((d) => [`${d.ring}:${d.slug}`, d]));
-  let nextDisplayOrder = Math.max(0, ...existingDims.map((d) => d.displayOrder)) + 1;
 
   for (const ring of ['social', 'ecological'] as Ring[]) {
+    let ringOrder = 0;
     for (const entry of jurisdiction[ring]) {
       const slug = slugify(entry.name);
+      // Preserve the source portrait's wedge order (the live SC site's
+      // ordering is canonical for imported portraits, not framework order).
+      const displayOrder = (ring === 'ecological' ? 100 : 0) + ringOrder++;
 
       let dimension = dimByKey.get(`${ring}:${slug}`);
+      if (dimension && dimension.displayOrder !== displayOrder) {
+        await db
+          .update(dimensions)
+          .set({ displayOrder })
+          .where(eq(dimensions.id, dimension.id));
+        dimension = { ...dimension, displayOrder };
+      }
       if (!dimension) {
         // Custom dimension outside the framework (e.g. "waste & materials"):
         // created without canonical_slug, appended to display order.
@@ -157,7 +167,7 @@ async function main() {
             ring,
             slug,
             canonicalSlug: null,
-            displayOrder: nextDisplayOrder++,
+            displayOrder,
           })
           .returning();
         if (!dimension) throw new Error(`failed to create custom dimension ${slug}`);
