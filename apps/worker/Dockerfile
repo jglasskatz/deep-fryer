@@ -1,6 +1,8 @@
-# Research-plane worker (SPEC.md §4): long-running agent sessions cannot live
-# on Vercel; this image runs on Fly.io/Railway next to Postgres.
-FROM node:22-slim AS base
+# Research-plane worker (SPEC.md §4): runs as its own DigitalOcean container
+# (App Platform worker or droplet compose service), decoupled from the web
+# app by the Postgres-backed queue.
+ARG NODE_IMAGE=node:22-slim
+FROM ${NODE_IMAGE} AS base
 
 # Chromium for Playwright evidence capture (decision D).
 RUN apt-get update && apt-get install -y --no-install-recommends \

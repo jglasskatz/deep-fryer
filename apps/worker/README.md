@@ -21,8 +21,8 @@ open-doughnut plugin.
 
 ## Isolation & provenance (production deploy)
 
-- One Fly.io machine (or Railway service) per worker; `WORKER_CONCURRENCY=1`
-  keeps one session per container at a time. Scale out with more machines —
+- One container instance per worker (App Platform worker or compose replica); `WORKER_CONCURRENCY=1`
+  keeps one session per container at a time. Scale out with more replicas —
   sessions are independent.
 - Outbound egress goes through the allowlist proxy (`HTTPS_PROXY`): no
   paywall circumvention, and every fetched URL is logged at the

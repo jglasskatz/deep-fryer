@@ -68,8 +68,8 @@ Data flows upward only through verification and review: research produces findin
 | Storage | Supabase Storage, one bucket per tenant | Evidence snapshots, source PDFs |
 | Viz | Canvas renderer (`doughnut.js`) from `doughnut-santa-cruz`, wrapped as a React component | **Decided:** the canvas visual (what the live SC site renders) is canonical. deep-fryer's M0 D3 port is replaced. |
 | UI kit | Tailwind + shadcn/ui | |
-| Web hosting | Vercel | Web app only |
-| **Research runtime** | **Worker service on Fly.io/Railway** running the Claude Agent SDK in ephemeral sandboxed containers | Vercel cannot host long-running agent sessions. The web app enqueues; the worker executes. |
+| Web hosting | DigitalOcean (dockerized Next.js, App Platform or droplet) | Web app only; decided over Vercel — self-hosted containers |
+| **Research runtime** | **Dockerized worker service on DigitalOcean** running the Claude Agent SDK in sandboxed containers | Kept separate from the web app: the queue decouples request/response from long-running agent sessions. The web app enqueues; the worker executes. |
 | Research workflow | The OSS `doughnut` Claude Code plugin (vendored) | Identical artifact the community runs |
 | Job queue | Postgres-backed queue (e.g. graphile-worker) | One infra dependency fewer than a hosted queue |
 | MCP | Custom MCP server (later milestone) | Lets Claude Code users drive the hosted product |

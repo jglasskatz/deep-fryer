@@ -2,7 +2,7 @@
 
 A multi-tenant SaaS for building and hosting Doughnut Economics portraits for municipalities — a civic engagement and governance tool. AI does the research labor backstage and never appears in the public experience: residents see a doughnut, evidence, actions, and a discussion.
 
-Status: **v2 build** — see [`SPEC.md`](./SPEC.md) for the full design. Milestones M0–M5 are implemented; deployment provisioning (Supabase project, Vercel, worker host) is what remains to go live.
+Status: **v2 build** — see [`SPEC.md`](./SPEC.md) for the full design. Milestones M0–M5 are implemented; deployment provisioning (Supabase project + DigitalOcean containers, see [`docs/deploy.md`](./docs/deploy.md)) is what remains to go live.
 
 ## What's a doughnut portrait?
 
