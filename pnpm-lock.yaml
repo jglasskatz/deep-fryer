@@ -8,12 +8,18 @@ importers:
 
   .:
     dependencies:
+      '@deep-fryer/contract':
+        specifier: workspace:*
+        version: link:packages/contract
       '@deep-fryer/core':
         specifier: workspace:*
         version: link:packages/core
       '@deep-fryer/db':
         specifier: workspace:*
         version: link:packages/db
+      '@deep-fryer/research':
+        specifier: workspace:*
+        version: link:packages/research
       '@keel_flow/core':
         specifier: ^0.2.0
         version: 0.2.0

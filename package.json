@@ -26,7 +26,9 @@
     "@keel_flow/pack-research": "workspace:^",
     "@keel_flow/schema": "^0.2.0",
     "@supabase/supabase-js": "^2.46.1",
-    "drizzle-orm": "^0.36.4"
+    "drizzle-orm": "^0.36.4",
+    "@deep-fryer/contract": "workspace:*",
+    "@deep-fryer/research": "workspace:*"
   },
   "devDependencies": {
     "@keel_flow/cli": "^0.2.0",
