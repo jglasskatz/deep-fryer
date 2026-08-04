@@ -33,30 +33,41 @@ export const researchApply: Task = async (rawPayload, helpers) => {
   const { runId } = rawPayload as ApplyJobPayload;
   const db = getDb();
 
-  const [run] = await db.select().from(researchRuns).where(eq(researchRuns.id, runId));
+  // Atomic claim: only the transition planned → running executes the plan.
+  // A no-op claim means either a duplicate/stale job or a crash-interrupted
+  // run redelivered by the queue — the latter is settled as failed below so
+  // it can never sit in `running` forever.
+  const [run] = await db
+    .update(researchRuns)
+    .set({ status: 'running' })
+    .where(and(eq(researchRuns.id, runId), eq(researchRuns.status, 'planned')))
+    .returning();
   if (!run) {
-    helpers.logger.error(`run ${runId} not found`);
+    const [existing] = await db.select().from(researchRuns).where(eq(researchRuns.id, runId));
+    if (!existing) {
+      helpers.logger.error(`run ${runId} not found`);
+    } else if (existing.status === 'running') {
+      helpers.logger.error(`run ${runId} was interrupted mid-run; marking failed`);
+      await db
+        .update(researchSessions)
+        .set({ status: 'failed', completedAt: new Date() })
+        .where(
+          and(
+            eq(researchSessions.runId, runId),
+            inArray(researchSessions.status, ['queued', 'running']),
+          ),
+        );
+      await db
+        .update(researchRuns)
+        .set({ status: 'failed', completedAt: new Date() })
+        .where(and(eq(researchRuns.id, runId), eq(researchRuns.status, 'running')));
+    } else {
+      helpers.logger.warn(`run ${runId} is ${existing.status}; skipping`);
+    }
     return;
   }
-  if (run.status !== 'planned') {
-    helpers.logger.warn(`run ${runId} is ${run.status}; skipping`);
-    return;
-  }
-  const [tenant] = await db.select().from(tenants).where(eq(tenants.id, run.tenantId));
-  if (!tenant) throw new Error(`tenant ${run.tenantId} missing`);
 
-  await db.update(researchRuns).set({ status: 'running' }).where(eq(researchRuns.id, runId));
-
-  const plan = run.plan;
-  const config = run.configSnapshot;
-  const storage = await tenantStorage(tenant.slug);
   const usage: RunTokenUsage = {};
-
-  const tenantDims = await db
-    .select()
-    .from(dimensions)
-    .where(eq(dimensions.tenantId, tenant.id));
-  const dimBySlug = new Map(tenantDims.map((d) => [d.slug, d]));
 
   const finish = async (status: 'complete' | 'failed') => {
     await db
@@ -66,6 +77,19 @@ export const researchApply: Task = async (rawPayload, helpers) => {
   };
 
   try {
+    const [tenant] = await db.select().from(tenants).where(eq(tenants.id, run.tenantId));
+    if (!tenant) throw new Error(`tenant ${run.tenantId} missing`);
+
+    const plan = run.plan;
+    const config = run.configSnapshot;
+    const storage = await tenantStorage(tenant.slug);
+
+    const tenantDims = await db
+      .select()
+      .from(dimensions)
+      .where(eq(dimensions.tenantId, tenant.id));
+    const dimBySlug = new Map(tenantDims.map((d) => [d.slug, d]));
+
     // Phase 0: region context.
     const regionSpec = plan.sessions.find((s) => s.kind === 'region_context');
     let regionBrief = '(no region brief produced)';

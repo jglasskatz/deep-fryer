@@ -10,5 +10,9 @@ export interface ApplyJobPayload {
 export async function enqueueResearchApply(runId: string): Promise<void> {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error('DATABASE_URL is not set');
-  await quickAddJob({ connectionString }, APPLY_TASK, { runId } satisfies ApplyJobPayload);
+  // jobKey dedupes concurrent applies of the same run: two racing POSTs
+  // collapse to one job instead of two workers executing the same plan.
+  await quickAddJob({ connectionString }, APPLY_TASK, { runId } satisfies ApplyJobPayload, {
+    jobKey: runId,
+  });
 }
