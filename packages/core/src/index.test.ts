@@ -118,3 +118,74 @@ describe('pctToVizLevel', () => {
     expect(pctToVizLevel(200)).toBe(150);
   });
 });
+
+describe('config helpers', () => {
+  const recency = { default_max_age_years: 5, per_dimension: { housing: 2 } };
+  const scales = { default_accepted: ['city', 'county'] as const, per_dimension: { 'ozone-depletion': ['global'] as const } };
+
+  it('resolves per-dimension recency and scale overrides identically everywhere', async () => {
+    const { maxDataAgeYears, acceptedScales } = await import('./config.js');
+    expect(maxDataAgeYears(recency, 'housing')).toBe(2);
+    expect(maxDataAgeYears(recency, 'food')).toBe(5);
+    expect(acceptedScales(scales as never, 'ozone-depletion')).toEqual(['global']);
+    expect(acceptedScales(scales as never, 'food')).toEqual(['city', 'county']);
+  });
+
+  it('isFlagged flags any failed check or non-pass verdict', async () => {
+    const { isFlagged } = await import('./config.js');
+    const ok = { url_ok: true, schema_ok: true, recency_ok: true, scale_ok: true, content_supported: 'pass' as const };
+    expect(isFlagged(ok)).toBe(false);
+    expect(isFlagged({ ...ok, url_ok: false })).toBe(true);
+    expect(isFlagged({ ...ok, content_supported: 'uncertain' })).toBe(true);
+  });
+
+  it('tenantBucketName is the single naming convention', async () => {
+    const { tenantBucketName } = await import('./config.js');
+    expect(tenantBucketName('nyc')).toBe('tenant-nyc');
+  });
+});
+
+describe('config defaults ↔ schema key list', () => {
+  it('defaultTenantConfig produces exactly the keys tenantConfigSchemas validates', async () => {
+    const { defaultTenantConfig } = await import('./config-defaults.js');
+    const { tenantConfigSchemas } = await import('./validators.js');
+    const defaults = defaultTenantConfig('X', 'X');
+    expect(Object.keys(defaults).sort()).toEqual(Object.keys(tenantConfigSchemas).sort());
+    for (const [key, schema] of Object.entries(tenantConfigSchemas)) {
+      expect(schema.safeParse(defaults[key as keyof typeof defaults]).success, key).toBe(true);
+    }
+  });
+});
+
+describe('finding payload validators', () => {
+  it('accepts a gap and rejects an indicator missing evidence', async () => {
+    const { findingPayloadSchema } = await import('./validators.js');
+    expect(
+      findingPayloadSchema.safeParse({
+        kind: 'gap',
+        indicator_slug: 'x-y',
+        reason: 'none exists',
+        scales_tried: ['city'],
+        searched_at: new Date().toISOString(),
+      }).success,
+    ).toBe(true);
+    expect(
+      findingPayloadSchema.safeParse({
+        kind: 'indicator',
+        indicator_slug: 'x-y',
+        name: 'X',
+        value: 1,
+        unit: 'u',
+        year: 2025,
+        target: 2,
+        level_pct: -50,
+        scoring: { threshold_ref: 'a.b', function: 'lower_is_better', inputs: {}, worked_math: 'x' },
+        source: 's',
+        source_url: 'https://example.gov',
+        source_tier: 1,
+        confidence: 'high',
+        geographic_scale: 'city',
+      }).success,
+    ).toBe(false);
+  });
+});

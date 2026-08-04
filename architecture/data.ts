@@ -1,13 +1,14 @@
 import type { ArchitectureMap } from "@keel_flow/schema";
-import { SCHEMA_VERSION } from "@keel_flow/schema";
 
 // deep-fryer's keel architecture map. The bounded contexts are SPEC §3's
 // three planes plus the shared contract; the research plane's agents and
 // tools are first-class nodes so pack-research principles attach where the
 // work happens. keel verify pattern-matches the 6-space `id:` lines — keep
 // the formatting.
+// Type-only imports keep this file runtime-dependency-free so the keel CLI
+// can load it under any module system; bump alongside @keel_flow/schema.
 const data: ArchitectureMap = {
-  schemaVersion: SCHEMA_VERSION,
+  schemaVersion: "0.4.0",
   layers: [
     { id: "frontend", label: "Web", description: "Next.js app: public + review planes", color: "#477020" },
     { id: "research", label: "Research plane", description: "Worker, queue, and plan/apply orchestration", color: "#883251" },

@@ -123,3 +123,26 @@ describe('deterministicChecks', () => {
     expect(isFlagged(verification)).toBe(true);
   });
 });
+
+describe('plugin loader', () => {
+  it('fills known placeholders and preserves unknown ones', async () => {
+    const { fillTemplate, pluginVersion } = await import('./plugin.js');
+    expect(fillTemplate('a {{x}} and {{region_brief}}', { x: 'B' })).toBe('a B and {{region_brief}}');
+    expect(pluginVersion()).toMatch(/^\d+\.\d+\.\d+$/);
+  });
+});
+
+describe('tenant storage (local backend)', () => {
+  it('writes under the fallback dir and returns the storage path', async () => {
+    const { tenantStorage } = await import('./storage.js');
+    const { mkdtempSync, readFileSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const dir = mkdtempSync(join(tmpdir(), 'df-storage-'));
+    const storage = await tenantStorage('t1', { localFallbackDir: dir });
+    const p = await storage.put('evidence/a.png', Buffer.from('png'), 'image/png');
+    expect(p).toBe('evidence/a.png');
+    expect(readFileSync(join(dir, 'evidence/a.png'), 'utf8')).toBe('png');
+    expect(storage.describe()).toContain(dir);
+  });
+});

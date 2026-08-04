@@ -1,9 +1,10 @@
 /**
  * Architecture data for deep-fryer.
  *
- * Generated following the architecture-visualizer skill schema at
- * /Users/joe/Dev/architecture-visualizer/. Re-run after major topology
- * changes (new packages, new layers, new external services wired up).
+ * Generated with the architecture-visualizer skill. Re-run after major
+ * topology changes (new packages, new layers, new external services wired
+ * up); the keel architecture map at architecture/data.ts is the source of
+ * truth for structure.
  */
 
 export interface LayerConfig {
