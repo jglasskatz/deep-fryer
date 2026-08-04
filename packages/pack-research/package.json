@@ -1,0 +1,26 @@
+{
+  "name": "@keel_flow/pack-research",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Research-workflow principles for Keel: sourcing discipline, verification independence, gap honesty, and the human review gate",
+  "keywords": ["keel", "principles", "research", "verification"],
+  "files": ["dist", "README.md"],
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": { ".": { "import": "./src/index.ts", "types": "./src/index.ts" } },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@keel_flow/schema": "^0.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  }
+}

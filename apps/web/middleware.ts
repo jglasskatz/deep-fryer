@@ -1,0 +1,38 @@
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse, type NextRequest } from 'next/server';
+
+/** Standard Supabase session refresh; a no-op when Supabase env is unset. */
+export async function middleware(request: NextRequest) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) return NextResponse.next();
+
+  // Anonymous traffic (most public/embed requests) has no session to refresh
+  // — skip the Supabase round trip entirely.
+  const hasAuthCookie = request.cookies.getAll().some((c) => c.name.startsWith('sb-'));
+  if (!hasAuthCookie) return NextResponse.next();
+
+  let response = NextResponse.next({ request });
+  const supabase = createServerClient(url, anonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        for (const { name, value } of cookiesToSet) {
+          request.cookies.set(name, value);
+        }
+        response = NextResponse.next({ request });
+        for (const { name, value, options } of cookiesToSet) {
+          response.cookies.set(name, value, options);
+        }
+      },
+    },
+  });
+  await supabase.auth.getUser();
+  return response;
+}
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|embed.js|evidence/).*)'],
+};

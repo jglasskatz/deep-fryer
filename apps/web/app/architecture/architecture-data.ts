@@ -1,9 +1,10 @@
 /**
  * Architecture data for deep-fryer.
  *
- * Generated following the architecture-visualizer skill schema at
- * /Users/joe/Dev/architecture-visualizer/. Re-run after major topology
- * changes (new packages, new layers, new external services wired up).
+ * Generated with the architecture-visualizer skill. Re-run after major
+ * topology changes (new packages, new layers, new external services wired
+ * up); the keel architecture map at architecture/data.ts is the source of
+ * truth for structure.
  */
 
 export interface LayerConfig {
@@ -159,9 +160,9 @@ export const ARCHITECTURE_NODES: ArchitectureNode[] = [
     label: 'Doughnut Viz',
     layer: 'frontend',
     iconPath: ICONS.zap,
-    tech: 'Client Component · D3',
+    tech: 'Client Component · Canvas',
     description:
-      'Interactive D3-rendered doughnut chart, ported from doughnut-santa-cruz. Handles segment hover/select, tooltips, and color-coded shortfall/overshoot bars.',
+      'Canonical canvas doughnut vendored from doughnut-santa-cruz (doughnut.js), wrapped as a React component. Handles segment hover/select, tooltips, and shortfall/overshoot bars.',
     details: {
       fileCount: 1,
       linesOfCode: '~300',
@@ -215,7 +216,7 @@ export const ARCHITECTURE_NODES: ArchitectureNode[] = [
     iconPath: ICONS.code,
     tech: 'TypeScript',
     description:
-      'Shared types for tenants, dimensions, indicators, outreach contacts. Mirrors the DIMENSION DATA SHAPE jsonb in SPEC.md §5.',
+      'Shared types for tenants, dimensions, indicators, outreach contacts. Mirrors the DIMENSION DATA SHAPE jsonb in SPEC.md §7.',
     details: {
       fileCount: 1,
       linesOfCode: '~60',
@@ -247,7 +248,7 @@ export const ARCHITECTURE_NODES: ArchitectureNode[] = [
     iconPath: ICONS.zap,
     tech: 'Pure function',
     description:
-      'Maps the rich shortfall_pct / overshoot_pct indicator data to a single -100..150 viz value the D3 chart consumes.',
+      'Maps indicator level_pcts from the thresholds engine to the single -100..150 viz value the canvas chart consumes (worst_of default).',
     details: {
       fileCount: 1,
       linesOfCode: '~20',

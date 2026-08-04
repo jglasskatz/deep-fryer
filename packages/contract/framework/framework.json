@@ -1,0 +1,246 @@
+{
+  "version": "0.2.0",
+  "rings": ["social", "ecological"],
+  "lenses": [
+    { "slug": "local_social", "name": "Local aspiration", "question": "What would it mean for the people of this place to thrive?" },
+    { "slug": "local_ecological", "name": "Local ecology", "question": "What would it mean for this place to thrive within its natural habitat?" },
+    { "slug": "global_social", "name": "Global responsibility (social)", "question": "What would it mean for this place to respect the wellbeing of people worldwide?" },
+    { "slug": "global_ecological", "name": "Global responsibility (ecological)", "question": "What would it mean for this place to respect the health of the whole planet?" }
+  ],
+  "dimensions": [
+    {
+      "slug": "food",
+      "ring": "social",
+      "canonical_slug": "food",
+      "name": "Food",
+      "icon": "utensils",
+      "description": "Food security and nutrition access.",
+      "indicators": [
+        { "slug": "food-insecurity-rate", "name": "Food insecurity rate", "unit": "% of residents", "threshold_ref": "food.food-insecurity-rate" }
+      ]
+    },
+    {
+      "slug": "health",
+      "ring": "social",
+      "canonical_slug": "health",
+      "name": "Health",
+      "icon": "heart-pulse",
+      "description": "Healthcare access and health outcomes.",
+      "indicators": [
+        { "slug": "uninsured-rate", "name": "Residents without health insurance", "unit": "% of residents under 65", "threshold_ref": "health.uninsured-rate" },
+        { "slug": "life-expectancy", "name": "Life expectancy at birth", "unit": "years", "threshold_ref": "health.life-expectancy" }
+      ]
+    },
+    {
+      "slug": "education",
+      "ring": "social",
+      "canonical_slug": "education",
+      "name": "Education",
+      "icon": "graduation-cap",
+      "description": "Educational attainment, quality, and equity.",
+      "indicators": [
+        { "slug": "hs-attainment", "name": "Adults with a high-school credential", "unit": "% of residents 25+", "threshold_ref": "education.hs-attainment" }
+      ]
+    },
+    {
+      "slug": "income-work",
+      "ring": "social",
+      "canonical_slug": "income_work",
+      "name": "Income & Work",
+      "icon": "briefcase",
+      "description": "Poverty, employment, and living wage.",
+      "indicators": [
+        { "slug": "poverty-rate", "name": "Residents below the poverty line", "unit": "% of residents", "threshold_ref": "income-work.poverty-rate" },
+        { "slug": "unemployment-rate", "name": "Unemployment rate", "unit": "% of labor force", "threshold_ref": "income-work.unemployment-rate" }
+      ]
+    },
+    {
+      "slug": "water-sanitation",
+      "ring": "social",
+      "canonical_slug": "water_sanitation",
+      "name": "Water & Sanitation",
+      "icon": "droplets",
+      "description": "Access to clean water and sanitation.",
+      "indicators": [
+        { "slug": "safe-drinking-water", "name": "Population served by water systems with no health-based violations", "unit": "% of served population", "threshold_ref": "water-sanitation.safe-drinking-water" }
+      ]
+    },
+    {
+      "slug": "energy",
+      "ring": "social",
+      "canonical_slug": "energy",
+      "name": "Energy",
+      "icon": "zap",
+      "description": "Affordable, reliable, clean energy access.",
+      "indicators": [
+        { "slug": "energy-burden", "name": "Median energy burden of low-income households", "unit": "% of household income", "threshold_ref": "energy.energy-burden" }
+      ]
+    },
+    {
+      "slug": "networks",
+      "ring": "social",
+      "canonical_slug": "networks",
+      "name": "Networks",
+      "icon": "network",
+      "description": "Social capital, internet access, community connections.",
+      "indicators": [
+        { "slug": "broadband-access", "name": "Households with a broadband subscription", "unit": "% of households", "threshold_ref": "networks.broadband-access" }
+      ]
+    },
+    {
+      "slug": "housing",
+      "ring": "social",
+      "canonical_slug": "housing",
+      "name": "Housing",
+      "icon": "home",
+      "description": "Affordable, adequate housing and freedom from homelessness.",
+      "indicators": [
+        { "slug": "cost-burdened-renters", "name": "Renter households paying over 30% of income on housing", "unit": "% of renter households", "threshold_ref": "housing.cost-burdened-renters" },
+        { "slug": "homelessness-rate", "name": "Residents experiencing homelessness", "unit": "per 10,000 residents", "threshold_ref": "housing.homelessness-rate" }
+      ]
+    },
+    {
+      "slug": "gender-equality",
+      "ring": "social",
+      "canonical_slug": "gender_equality",
+      "name": "Gender Equality",
+      "icon": "venus-mars",
+      "description": "Pay equity, representation, and safety.",
+      "indicators": [
+        { "slug": "gender-pay-ratio", "name": "Women's median earnings as a share of men's", "unit": "%", "threshold_ref": "gender-equality.gender-pay-ratio" }
+      ]
+    },
+    {
+      "slug": "social-equity",
+      "ring": "social",
+      "canonical_slug": "social_equity",
+      "name": "Social Equity",
+      "icon": "scale",
+      "description": "Income inequality and racial equity.",
+      "indicators": [
+        { "slug": "gini-index", "name": "Income inequality (Gini index)", "unit": "index 0–1", "threshold_ref": "social-equity.gini-index" }
+      ]
+    },
+    {
+      "slug": "political-voice",
+      "ring": "social",
+      "canonical_slug": "political_voice",
+      "name": "Political Voice",
+      "icon": "megaphone",
+      "description": "Voter turnout and civic engagement.",
+      "indicators": [
+        { "slug": "voter-turnout", "name": "Turnout of registered voters, most recent general election", "unit": "% of registered voters", "threshold_ref": "political-voice.voter-turnout" }
+      ]
+    },
+    {
+      "slug": "peace-justice",
+      "ring": "social",
+      "canonical_slug": "peace_justice",
+      "name": "Peace & Justice",
+      "icon": "shield",
+      "description": "Safety, incarceration, and institutional trust.",
+      "indicators": [
+        { "slug": "violent-crime-rate", "name": "Violent crime rate", "unit": "per 1,000 residents", "threshold_ref": "peace-justice.violent-crime-rate" }
+      ]
+    },
+    {
+      "slug": "climate-change",
+      "ring": "ecological",
+      "canonical_slug": "climate_change",
+      "name": "Climate Change",
+      "icon": "thermometer-sun",
+      "description": "Greenhouse gas emissions per capita.",
+      "indicators": [
+        { "slug": "ghg-per-capita", "name": "Community greenhouse gas emissions per capita", "unit": "tCO2e per resident per year", "threshold_ref": "climate-change.ghg-per-capita" }
+      ]
+    },
+    {
+      "slug": "ocean-acidification",
+      "ring": "ecological",
+      "canonical_slug": "ocean_acidification",
+      "name": "Ocean Acidification",
+      "icon": "waves",
+      "description": "Marine pH and CO2 absorption impacts.",
+      "indicators": [
+        { "slug": "aragonite-saturation", "name": "Coastal aragonite saturation state (Ω)", "unit": "Ω aragonite", "threshold_ref": "ocean-acidification.aragonite-saturation" }
+      ]
+    },
+    {
+      "slug": "chemical-pollution",
+      "ring": "ecological",
+      "canonical_slug": "chemical_pollution",
+      "name": "Chemical Pollution",
+      "icon": "flask-conical",
+      "description": "Pesticide use and toxic releases.",
+      "indicators": [
+        { "slug": "tri-releases-per-capita", "name": "Toxic Release Inventory on-site releases per capita", "unit": "lbs per resident per year", "threshold_ref": "chemical-pollution.tri-releases-per-capita" }
+      ]
+    },
+    {
+      "slug": "nitrogen-phosphorus-loading",
+      "ring": "ecological",
+      "canonical_slug": "nitrogen_phosphorus_loading",
+      "name": "Nitrogen & Phosphorus Loading",
+      "icon": "sprout",
+      "description": "Fertilizer runoff and groundwater contamination.",
+      "indicators": [
+        { "slug": "nitrate-groundwater", "name": "Nitrate concentration in local groundwater", "unit": "mg/L NO3-N", "threshold_ref": "nitrogen-phosphorus-loading.nitrate-groundwater" }
+      ]
+    },
+    {
+      "slug": "freshwater-withdrawals",
+      "ring": "ecological",
+      "canonical_slug": "freshwater_withdrawals",
+      "name": "Freshwater Withdrawals",
+      "icon": "droplet",
+      "description": "Water use vs sustainable yield.",
+      "indicators": [
+        { "slug": "residential-gpcd", "name": "Residential water use", "unit": "gallons per capita per day", "threshold_ref": "freshwater-withdrawals.residential-gpcd" }
+      ]
+    },
+    {
+      "slug": "land-conversion",
+      "ring": "ecological",
+      "canonical_slug": "land_conversion",
+      "name": "Land Conversion",
+      "icon": "trees",
+      "description": "Development of natural land.",
+      "indicators": [
+        { "slug": "natural-land-conversion", "name": "Natural land converted to developed use", "unit": "% per decade", "threshold_ref": "land-conversion.natural-land-conversion" }
+      ]
+    },
+    {
+      "slug": "biodiversity-loss",
+      "ring": "ecological",
+      "canonical_slug": "biodiversity_loss",
+      "name": "Biodiversity Loss",
+      "icon": "bird",
+      "description": "Species decline and habitat loss.",
+      "indicators": [
+        { "slug": "protected-land-share", "name": "Land under durable conservation protection", "unit": "% of jurisdiction land area", "threshold_ref": "biodiversity-loss.protected-land-share" }
+      ]
+    },
+    {
+      "slug": "air-pollution",
+      "ring": "ecological",
+      "canonical_slug": "air_pollution",
+      "name": "Air Pollution",
+      "icon": "wind",
+      "description": "PM2.5 and ozone levels.",
+      "indicators": [
+        { "slug": "pm25-annual", "name": "Annual mean PM2.5 concentration", "unit": "µg/m³", "threshold_ref": "air-pollution.pm25-annual" }
+      ]
+    },
+    {
+      "slug": "ozone-depletion",
+      "ring": "ecological",
+      "canonical_slug": "ozone_depletion",
+      "name": "Ozone Layer Depletion",
+      "icon": "sun",
+      "description": "Stratospheric ozone (largely global, not local). Local portraits usually report this as a data gap or a compliance statement.",
+      "indicators": [
+        { "slug": "ods-phaseout-compliance", "name": "Compliance with ozone-depleting-substance phaseout", "unit": "% of tracked ODS phased out", "threshold_ref": "ozone-depletion.ods-phaseout-compliance" }
+      ]
+    }
+  ]
+}

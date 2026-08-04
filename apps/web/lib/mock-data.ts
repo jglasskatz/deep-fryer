@@ -1,51 +1,64 @@
-import type { Ring } from '@deep-fryer/core';
+import type { PublishedPortrait } from './portrait';
 
-export interface MockDimension {
-  ring: Ring;
-  slug: string;
-  name: string;
-  icon: string;
-  viz_level: number;
-}
+/**
+ * Demo portrait served when DATABASE_URL is unset, so the app runs with zero
+ * infrastructure. Real deployments read published versions from Postgres.
+ */
+const dim = (
+  ring: 'social' | 'ecological',
+  slug: string,
+  name: string,
+  viz_level: number,
+  display_order: number,
+): PublishedPortrait['dimensions'][number] => ({
+  slug,
+  ring,
+  canonical_slug: slug.replace(/-/g, '_'),
+  display_order,
+  viz_level,
+  data: {
+    name,
+    icon: '',
+    description: '',
+    context: 'Demo data — run the Santa Cruz import or a research run for real content.',
+    indicators: [],
+    actions: [],
+  },
+  published_at: null,
+  version_num: 1,
+});
 
-export interface MockTenant {
-  slug: string;
-  name: string;
-  region: string;
-  population: number;
-  description: string;
-  dimensions: MockDimension[];
-}
-
-export const mockTenant: MockTenant = {
-  slug: 'santacruz',
-  name: 'City of Santa Cruz',
-  region: 'CA, USA',
-  population: 65000,
-  description:
-    'Coastal city of ~65,000 on Monterey Bay, home to UC Santa Cruz and a global biodiversity hotspot.',
+export const mockPortrait: PublishedPortrait = {
+  tenant: {
+    slug: 'santacruz',
+    name: 'City of Santa Cruz',
+    region: 'CA, USA',
+    population: 65000,
+    description:
+      'Coastal city of ~65,000 on Monterey Bay, home to UC Santa Cruz and a global biodiversity hotspot.',
+    branding: null,
+  },
   dimensions: [
-    { ring: 'social', slug: 'food', name: 'Food', icon: 'utensils', viz_level: 35 },
-    { ring: 'social', slug: 'health', name: 'Health', icon: 'heart-pulse', viz_level: 20 },
-    { ring: 'social', slug: 'education', name: 'Education', icon: 'graduation-cap', viz_level: -10 },
-    { ring: 'social', slug: 'income-work', name: 'Income & Work', icon: 'briefcase', viz_level: 60 },
-    { ring: 'social', slug: 'water-sanitation', name: 'Water & Sanitation', icon: 'droplets', viz_level: 5 },
-    { ring: 'social', slug: 'energy', name: 'Energy', icon: 'zap', viz_level: 40 },
-    { ring: 'social', slug: 'networks', name: 'Networks', icon: 'network', viz_level: 15 },
-    { ring: 'social', slug: 'housing', name: 'Housing', icon: 'home', viz_level: 140 },
-    { ring: 'social', slug: 'gender-equality', name: 'Gender Equality', icon: 'venus-mars', viz_level: 45 },
-    { ring: 'social', slug: 'social-equity', name: 'Social Equity', icon: 'scale', viz_level: 70 },
-    { ring: 'social', slug: 'political-voice', name: 'Political Voice', icon: 'megaphone', viz_level: -20 },
-    { ring: 'social', slug: 'peace-justice', name: 'Peace & Justice', icon: 'shield', viz_level: 30 },
-
-    { ring: 'ecological', slug: 'climate-change', name: 'Climate Change', icon: 'thermometer-sun', viz_level: 110 },
-    { ring: 'ecological', slug: 'ocean-acidification', name: 'Ocean Acidification', icon: 'waves', viz_level: 65 },
-    { ring: 'ecological', slug: 'chemical-pollution', name: 'Chemical Pollution', icon: 'flask-conical', viz_level: 80 },
-    { ring: 'ecological', slug: 'nitrogen-phosphorus-loading', name: 'Nitrogen & Phosphorus Loading', icon: 'sprout', viz_level: 90 },
-    { ring: 'ecological', slug: 'freshwater-withdrawals', name: 'Freshwater Withdrawals', icon: 'droplet', viz_level: 55 },
-    { ring: 'ecological', slug: 'land-conversion', name: 'Land Conversion', icon: 'trees', viz_level: 40 },
-    { ring: 'ecological', slug: 'biodiversity-loss', name: 'Biodiversity Loss', icon: 'bird', viz_level: 75 },
-    { ring: 'ecological', slug: 'air-pollution', name: 'Air Pollution', icon: 'wind', viz_level: 25 },
-    { ring: 'ecological', slug: 'ozone-depletion', name: 'Ozone Layer Depletion', icon: 'sun', viz_level: -30 },
+    dim('social', 'food', 'Food', 35, 0),
+    dim('social', 'health', 'Health', 20, 1),
+    dim('social', 'education', 'Education', -10, 2),
+    dim('social', 'income-work', 'Income & Work', 60, 3),
+    dim('social', 'water-sanitation', 'Water & Sanitation', 5, 4),
+    dim('social', 'energy', 'Energy', 40, 5),
+    dim('social', 'networks', 'Networks', 15, 6),
+    dim('social', 'housing', 'Housing', 140, 7),
+    dim('social', 'gender-equality', 'Gender Equality', 45, 8),
+    dim('social', 'social-equity', 'Social Equity', 70, 9),
+    dim('social', 'political-voice', 'Political Voice', -20, 10),
+    dim('social', 'peace-justice', 'Peace & Justice', 30, 11),
+    dim('ecological', 'climate-change', 'Climate Change', 110, 12),
+    dim('ecological', 'ocean-acidification', 'Ocean Acidification', 65, 13),
+    dim('ecological', 'chemical-pollution', 'Chemical Pollution', 80, 14),
+    dim('ecological', 'nitrogen-phosphorus-loading', 'Nitrogen & Phosphorus Loading', 90, 15),
+    dim('ecological', 'freshwater-withdrawals', 'Freshwater Withdrawals', 55, 16),
+    dim('ecological', 'land-conversion', 'Land Conversion', 40, 17),
+    dim('ecological', 'biodiversity-loss', 'Biodiversity Loss', 75, 18),
+    dim('ecological', 'air-pollution', 'Air Pollution', 25, 19),
+    dim('ecological', 'ozone-depletion', 'Ozone Layer Depletion', -30, 20),
   ],
 };

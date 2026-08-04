@@ -1,0 +1,49 @@
+# deep-fryer self-hosted deployment (SPEC §4): web + worker containers.
+# Point DATABASE_URL and the Supabase vars at your Supabase project, or use
+# the bundled postgres for a fully local stack:  docker compose --profile local up
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgres://postgres:postgres@db:5432/deep_fryer}
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgres://postgres:postgres@db:5432/deep_fryer}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-5}
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-1}
+    restart: unless-stopped
+
+  # Local-only Postgres (profile: local). Production uses Supabase's Postgres.
+  db:
+    image: postgres:16
+    profiles: ['local']
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: deep_fryer
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - '54322:5432'
+
+volumes:
+  pgdata:

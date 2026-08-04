@@ -2,6 +2,7 @@
   "name": "deep-fryer",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@9.12.0",
   "engines": {
     "node": ">=20"
@@ -11,9 +12,24 @@
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "create-tenant": "tsx scripts/create-tenant.ts"
+    "create-tenant": "tsx scripts/create-tenant.ts",
+    "import-santa-cruz": "tsx scripts/import-santa-cruz.ts",
+    "research-verify": "tsx scripts/research-verify.ts",
+    "test": "pnpm -r --if-present test"
+  },
+  "dependencies": {
+    "@deep-fryer/core": "workspace:*",
+    "@deep-fryer/db": "workspace:*",
+    "@keel_flow/core": "^0.2.0",
+    "@keel_flow/pack-agent-topology": "^0.2.0",
+    "@keel_flow/pack-general-se": "^0.2.0",
+    "@keel_flow/pack-research": "workspace:^",
+    "@keel_flow/schema": "^0.2.0",
+    "@supabase/supabase-js": "^2.46.1",
+    "drizzle-orm": "^0.36.4"
   },
   "devDependencies": {
+    "@keel_flow/cli": "^0.2.0",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3"
   }

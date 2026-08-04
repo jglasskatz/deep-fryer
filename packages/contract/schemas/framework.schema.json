@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://deep-fryer.io/schemas/framework.schema.json",
+  "title": "Framework",
+  "description": "The shape of framework/framework.json: rings, lenses, and the default dimensions with their default indicators.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "rings", "lenses", "dimensions"],
+  "properties": {
+    "version": { "type": "string" },
+    "rings": { "type": "array", "items": { "enum": ["social", "ecological"] } },
+    "lenses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["slug", "name", "question"],
+        "properties": {
+          "slug": { "type": "string" },
+          "name": { "type": "string" },
+          "question": { "type": "string" }
+        }
+      }
+    },
+    "dimensions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["slug", "ring", "canonical_slug", "name", "icon", "description", "indicators"],
+        "properties": {
+          "slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "ring": { "enum": ["social", "ecological"] },
+          "canonical_slug": { "type": "string" },
+          "name": { "type": "string" },
+          "icon": { "type": "string" },
+          "description": { "type": "string" },
+          "indicators": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["slug", "name", "unit", "threshold_ref"],
+              "properties": {
+                "slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+                "name": { "type": "string" },
+                "unit": { "type": "string" },
+                "threshold_ref": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

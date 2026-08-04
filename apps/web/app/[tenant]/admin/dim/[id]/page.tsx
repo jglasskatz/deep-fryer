@@ -1,0 +1,104 @@
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { SiteHeader } from '@/components/site-header/SiteHeader';
+import { DimensionEditor } from '@/components/admin/DimensionEditor';
+import { dimensionById, versionTimeline } from '@/lib/admin-data';
+import { requireAdminPage } from '@/lib/admin-guard';
+import { publishVersion } from '@/lib/actions';
+
+export const dynamic = 'force-dynamic';
+
+export default async function DimensionAdminPage({
+  params,
+}: {
+  params: Promise<{ tenant: string; id: string }>;
+}) {
+  const { tenant, id } = await params;
+  const ctx = await requireAdminPage(tenant, 'editor');
+
+  const dimension = await dimensionById(id);
+  if (!dimension || dimension.tenantId !== ctx.tenant.id) notFound();
+  const versions = await versionTimeline(dimension.id);
+  const latest = versions[0];
+  if (!latest) notFound();
+
+  return (
+    <>
+      <SiteHeader variant="admin" tenant={{ slug: ctx.tenant.slug, name: ctx.tenant.name }} />
+      <main className="mx-auto max-w-6xl px-6 py-10">
+        <p className="text-sm">
+          <Link className="underline" href={`/${tenant}/admin`}>
+            ← Admin
+          </Link>
+        </p>
+        <h1 className="mt-2 text-2xl font-bold">
+          {latest.data.name}
+          <span className="ml-2 text-sm font-normal text-[color:var(--color-muted)]">
+            {dimension.ring} · {dimension.slug}
+          </span>
+        </h1>
+
+        <div className="mt-8 grid grid-cols-[1fr_320px] gap-10">
+          <section>
+            <h2 className="text-lg font-semibold">Edit (creates a new version)</h2>
+            <div className="mt-4">
+              <DimensionEditor
+                tenantSlug={tenant}
+                dimensionId={dimension.id}
+                initial={latest.data}
+              />
+            </div>
+          </section>
+
+          <aside>
+            <h2 className="text-lg font-semibold">Version timeline</h2>
+            <ul className="mt-4 space-y-3">
+              {versions.map((v) => {
+                const isPublished = dimension.publishedVersionId === v.id;
+                return (
+                  <li key={v.id} className="rounded border border-black/15 p-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">v{v.versionNum}</span>
+                      <span
+                        className={
+                          isPublished
+                            ? 'rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-900'
+                            : 'rounded bg-black/5 px-1.5 py-0.5 text-xs'
+                        }
+                      >
+                        {isPublished ? 'published' : v.status}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-[color:var(--color-muted)]">
+                      {v.origin}
+                      {' · '}
+                      {v.createdAt.toISOString().slice(0, 10)}
+                      {v.vizLevel !== null ? ` · viz ${v.vizLevel}` : ''}
+                    </p>
+                    {v.changeNote ? <p className="mt-1 text-xs italic">“{v.changeNote}”</p> : null}
+                    {!isPublished ? (
+                      <form
+                        action={async () => {
+                          'use server';
+                          await publishVersion({
+                            tenantSlug: tenant,
+                            versionId: v.id,
+                            revert: v.status === 'archived',
+                          });
+                        }}
+                      >
+                        <button className="mt-2 rounded border px-2 py-1 text-xs hover:bg-black/5">
+                          {v.status === 'archived' ? 'Revert to this version' : 'Publish'}
+                        </button>
+                      </form>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          </aside>
+        </div>
+      </main>
+    </>
+  );
+}

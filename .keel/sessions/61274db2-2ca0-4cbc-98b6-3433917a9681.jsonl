@@ -1,0 +1,2 @@
+{"sessionId":"61274db2-2ca0-4cbc-98b6-3433917a9681","parentEventId":null,"workspaceId":null,"triggeredBy":{"kind":"user"},"kind":"session.start","payload":{"command":"verify","ref":"main...HEAD","hasSpec":false},"id":"191d2848-b573-4b33-b261-733efae87f70","ts":"2026-08-04T05:22:00.626Z"}
+{"sessionId":"61274db2-2ca0-4cbc-98b6-3433917a9681","parentEventId":null,"workspaceId":null,"triggeredBy":{"kind":"user"},"kind":"session.end","payload":{"exitCode":2,"error":"arch-load-failed"},"id":"29492e61-b72e-4c34-9d47-180f10583a5c","ts":"2026-08-04T05:22:01.500Z"}

@@ -17,9 +17,11 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@deep-fryer/contract": "workspace:*",
     "@deep-fryer/core": "workspace:*",
     "drizzle-orm": "^0.36.4",
     "postgres": "^3.4.5"
@@ -27,6 +29,7 @@
   "devDependencies": {
     "@types/node": "^22.9.0",
     "drizzle-kit": "^0.28.1",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
   }
 }

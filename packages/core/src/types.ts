@@ -1,8 +1,33 @@
+import type {
+  GeographicScale,
+  MappingFunctionName,
+  PortraitConfig,
+  SourceTier,
+  Threshold,
+} from '@deep-fryer/contract';
+
 export type Ring = 'social' | 'ecological';
 export type Confidence = 'high' | 'medium' | 'low';
-export type Role = 'owner' | 'editor' | 'viewer';
-export type VersionStatus = 'draft' | 'published' | 'archived';
-export type GeographicScale = 'city' | 'county' | 'state' | 'national';
+export type Role = 'owner' | 'editor' | 'viewer' | 'moderator';
+export type ResearchSessionKind = 'region_context' | 'dimension';
+export type ContentSupported = 'pass' | 'fail' | 'uncertain';
+
+export type { GeographicScale, MappingFunctionName, PortraitConfig, SourceTier, Threshold };
+
+/** Show-your-work scoring record: the thresholds engine fills this in. */
+export interface IndicatorScoring {
+  threshold_ref: string;
+  function: MappingFunctionName;
+  inputs: Record<string, number>;
+  worked_math: string;
+}
+
+/** Evidence snapshot captured at retrieval time (SPEC.md §8). */
+export interface IndicatorEvidence {
+  snapshot_path: string;
+  pdf_path?: string;
+  captured_at: string;
+}
 
 export interface Indicator {
   name: string;
@@ -10,13 +35,23 @@ export interface Indicator {
   unit: string;
   year: number | null;
   target: number | string | null;
-  shortfall_pct?: number;
-  overshoot_pct?: number;
+  level_pct?: number;
+  scoring?: IndicatorScoring;
   source: string;
   source_url: string;
-  source_doc_path?: string;
+  source_tier?: number;
+  evidence?: IndicatorEvidence;
   confidence: Confidence;
   geographic_scale: GeographicScale;
+  supporting_source_url?: string;
+}
+
+/** Data gaps are first-class findings, not errors (SPEC.md §8). */
+export interface DimensionGap {
+  indicator: string;
+  reason: string;
+  scales_tried: GeographicScale[];
+  searched_at: string;
 }
 
 export interface DimensionData {
@@ -25,6 +60,7 @@ export interface DimensionData {
   description: string;
   context: string;
   indicators: Indicator[];
+  gaps?: DimensionGap[];
   actions: string[];
   policy_spotlight?: string;
   justice_spotlight?: string;
@@ -50,10 +86,101 @@ export interface TenantBranding {
   footer_html?: string;
 }
 
-export interface FrameworkDimension {
-  slug: string;
-  canonical_slug: string;
-  name: string;
-  icon: string;
-  description: string;
+// ---- Behavior config layer (SPEC.md §6) ----
+
+export interface ReviewPolicyConfig {
+  /** 'all' = everything human-gated (default); 'none' reserved for internal dogfooding. */
+  require_approval: 'all' | 'none';
+  dual_review_on_edits: boolean;
+  first_post_requires_approval: boolean;
 }
+
+export interface RetentionConfig {
+  transcript_days: number;
+}
+
+export interface NotificationConfig {
+  email_on_run_complete: boolean;
+  email_on_flagged_finding: boolean;
+}
+
+/** All tenant_config keys with their value types. */
+export interface TenantConfigMap {
+  region: PortraitConfig['region'];
+  source_priority: PortraitConfig['source_priority'];
+  recency: PortraitConfig['recency'];
+  scale_policy: PortraitConfig['scale_policy'];
+  threshold_overrides: NonNullable<PortraitConfig['threshold_overrides']>;
+  review_policy: ReviewPolicyConfig;
+  retention: RetentionConfig;
+  notifications: NotificationConfig;
+}
+
+export type TenantConfigKey = keyof TenantConfigMap;
+
+// ---- Research plane types (SPEC.md §7–8) ----
+
+export interface FindingVerification {
+  url_ok: boolean;
+  schema_ok: boolean;
+  recency_ok: boolean;
+  scale_ok: boolean;
+  content_supported: ContentSupported;
+  verifier_note?: string;
+}
+
+export interface IndicatorFindingPayload {
+  kind: 'indicator';
+  indicator_slug: string;
+  name: string;
+  value: number | string;
+  unit: string;
+  year: number;
+  target: number | string;
+  level_pct: number;
+  scoring: IndicatorScoring;
+  source: string;
+  source_url: string;
+  source_tier: number;
+  evidence: IndicatorEvidence;
+  confidence: Confidence;
+  geographic_scale: GeographicScale;
+  notes?: string;
+}
+
+export interface GapFindingPayload {
+  kind: 'gap';
+  indicator_slug: string;
+  reason: string;
+  scales_tried: GeographicScale[];
+  tiers_tried?: number[];
+  searched_at: string;
+  nearest_data?: string;
+}
+
+export type FindingPayload = IndicatorFindingPayload | GapFindingPayload;
+
+/** One rendered session spec inside a research plan — inspectable before spend. */
+export interface PlannedSession {
+  kind: ResearchSessionKind;
+  dimension_slug?: string;
+  prompt: string;
+  tool_allowlist: string[];
+  output_schema_ref: string;
+  config_hash: string;
+}
+
+export interface ResearchPlan {
+  sessions: PlannedSession[];
+  config_hash: string;
+  plugin_version: string;
+}
+
+export interface SessionTokenUsage {
+  input_tokens: number;
+  output_tokens: number;
+  cache_read_tokens?: number;
+  cache_write_tokens?: number;
+}
+
+export type RunTokenUsage = Record<string, SessionTokenUsage>;

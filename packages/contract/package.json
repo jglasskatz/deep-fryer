@@ -1,0 +1,27 @@
+{
+  "name": "@deep-fryer/contract",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./framework": "./framework/framework.json",
+    "./thresholds": "./framework/thresholds.json",
+    "./schemas/finding": "./schemas/finding.schema.json",
+    "./schemas/portrait-config": "./schemas/portrait-config.schema.json",
+    "./schemas/framework": "./schemas/framework.schema.json"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "lint": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "@types/node": "^22.9.0",
+    "vitest": "^2.1.8"
+  }
+}
