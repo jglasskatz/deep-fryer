@@ -18,6 +18,10 @@
   "dependencies": {
     "@deep-fryer/core": "workspace:*",
     "@deep-fryer/db": "workspace:*",
+    "@keel_flow/core": "^0.2.0",
+    "@keel_flow/pack-agent-topology": "^0.2.0",
+    "@keel_flow/pack-general-se": "^0.2.0",
+    "@keel_flow/schema": "^0.2.0",
     "@supabase/supabase-js": "^2.46.1",
     "drizzle-orm": "^0.36.4"
   },

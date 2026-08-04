@@ -14,6 +14,18 @@ importers:
       '@deep-fryer/db':
         specifier: workspace:*
         version: link:packages/db
+      '@keel_flow/core':
+        specifier: ^0.2.0
+        version: 0.2.0
+      '@keel_flow/pack-agent-topology':
+        specifier: ^0.2.0
+        version: 0.2.0(typescript@5.9.3)
+      '@keel_flow/pack-general-se':
+        specifier: ^0.2.0
+        version: 0.2.0(typescript@5.9.3)
+      '@keel_flow/schema':
+        specifier: ^0.2.0
+        version: 0.2.0
       '@supabase/supabase-js':
         specifier: ^2.46.1
         version: 2.111.0
@@ -184,6 +196,22 @@ importers:
       typescript:
         specifier: ^5.6.3
         version: 5.9.3
+
+  packages/pack-research:
+    dependencies:
+      '@keel_flow/schema':
+        specifier: ^0.2.0
+        version: 0.2.0
+    devDependencies:
+      '@types/node':
+        specifier: ^22.9.0
+        version: 22.19.19
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.19.19)(lightningcss@1.32.0)
 
   packages/research:
     dependencies:
@@ -1091,6 +1119,18 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@keel_flow/core@0.2.0':
+    resolution: {integrity: sha512-ib1NgP9/U685o0VEX1WmptKUcfKWe3WYjX94ofKdyDuAACh+U/nqIHXtP+GTJQVzvkYfwK9IAy1sIHY4nhe9WA==}
+
+  '@keel_flow/pack-agent-topology@0.2.0':
+    resolution: {integrity: sha512-+Fk4FGUeZ16B6EsIqMnFQ9Hx/BALm0XUNH06lZ7IMi8jb5OjyWCr+6Ywo0qZyu2d45k0btQLtzYyyGjLfe26mw==}
+
+  '@keel_flow/pack-general-se@0.2.0':
+    resolution: {integrity: sha512-WrURO5DWW/sE6K+tzoB7kBmSJj0ubMvwByyzkPgxl0UtCcbU/Jqo8Q1KRkmQ7lyREnrLTjYnYS0zUTHU/gEsAg==}
+
+  '@keel_flow/schema@0.2.0':
+    resolution: {integrity: sha512-2NfDzirBXOEufObDcAYnUnXmmjecAwhVIXA1YXyjCDexLiVvvFKC/qLogCLxqtUphLwRAcIyXGLBODTA2x9Zsw==}
 
   '@modelcontextprotocol/sdk@1.30.0':
     resolution: {integrity: sha512-xKd8OIzlqNzcqcNumGAa6g+PW2kjD5vrpcKOnfldAUPP3j7lnqMPwlTXQm8gF+UwH72z0lqaRbjr9hqGz0eITA==}
@@ -4096,6 +4136,31 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@keel_flow/core@0.2.0':
+    dependencies:
+      '@keel_flow/schema': 0.2.0
+      zod: 3.25.76
+
+  '@keel_flow/pack-agent-topology@0.2.0(typescript@5.9.3)':
+    dependencies:
+      '@keel_flow/pack-general-se': 0.2.0(typescript@5.9.3)
+      '@keel_flow/schema': 0.2.0
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
+  '@keel_flow/pack-general-se@0.2.0(typescript@5.9.3)':
+    dependencies:
+      '@keel_flow/schema': 0.2.0
+      '@typescript-eslint/typescript-estree': 8.60.0(typescript@5.9.3)
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
+  '@keel_flow/schema@0.2.0':
+    dependencies:
+      zod: 3.25.76
 
   '@modelcontextprotocol/sdk@1.30.0(zod@3.25.76)':
     dependencies:
