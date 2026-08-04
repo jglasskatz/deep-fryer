@@ -78,8 +78,12 @@ first (22 sessions) vs all six portraits (132 sessions).
    failures, re-plan targeted re-research with reviewer notes where findings
    are weak, and fan out additional reviewer agents to audit samples of
    findings against their sources.
-5. Persist before the container dies: `pg_dump` the database, collect
+5. Gate before persisting: run `pnpm research-verify --tenant <slug>` — it blocks
+   until every dimension is dispositioned in the review queue, then blocks
+   again until a named human records approval (`--approve --approved-by`),
+   hash-bound to the exact findings reviewed.
+6. Persist before the container dies: `pg_dump` the database, collect
    `apps/web/public/evidence/`, run `scripts/export-static.ts`, and push all
    of it to a new branch `nyc-research` on this repo.
-6. Report to the user: findings counts, verification verdicts, gaps, and
+7. Report to the user: findings counts, verification verdicts, gaps, and
    where to review (`/{slug}/admin/review`).
