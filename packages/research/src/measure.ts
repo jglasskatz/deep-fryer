@@ -268,6 +268,11 @@ export const DENOMINATORS: Record<string, Denominator> = {
   // Planetary boundaries with no municipal decomposition at all.
   'aragonite-saturation': 'non-additive',
   'ods-phaseout-compliance': 'non-additive',
+  // Absolute counts (NYC custom indicators): boroughs sum to the city, they
+  // do not population-weight to it. Excluded until the instrument grows a
+  // sum-reconciliation mode.
+  'traffic-deaths': 'non-additive',
+  'new-affordable-homes-per-year': 'non-additive',
 };
 
 export interface ReconciliationInput {
