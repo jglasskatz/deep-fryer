@@ -77,11 +77,12 @@ async function plan() {
     throw new Error(`found ${dims.length} of ${dimSlugs.length} dimensions`);
   }
 
-  // Campaign plans (--all-dims) carry the NYC custom indicators so the new
-  // threshold refs are actually researched, not just configured.
-  const { CUSTOM_INDICATORS } = allDims
-    ? await import('./nyc-portrait-config.js')
-    : { CUSTOM_INDICATORS: {} as Record<string, never[]> };
+  // Campaign plans carry the NYC custom indicators so the new threshold refs
+  // are actually researched, not just configured. --no-custom for slices that
+  // must match earlier calibration plans exactly.
+  const { CUSTOM_INDICATORS } = process.argv.includes('--no-custom')
+    ? { CUSTOM_INDICATORS: {} as Record<string, never[]> }
+    : await import('./nyc-portrait-config.js');
 
   const specs: PlanDimensionSpec[] = dims.map((dim) => {
     const fw = frameworkDimension(dim.slug, dim.canonicalSlug);

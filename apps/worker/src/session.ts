@@ -18,16 +18,31 @@ export interface SessionResult {
 
 /**
  * Transient transport failures ("Connection closed mid-response", overloaded,
- * 5xx) kill an entire session; without a retry, one blip fails a whole run.
- * One retry, only when the session produced an unsuccessful result. Usage
+ * 5xx) and turn-cap exhaustion kill an entire session. The SDK surfaces some
+ * of these as THROWN errors, not unsuccessful results — so the retry must
+ * catch throws, and a double failure must return a failed result rather than
+ * propagate, or one bad session kills the surrounding 21-session run. Usage
  * from both attempts is summed — the spend was real either way.
  */
 export async function runSessionWithRetry(
   input: Parameters<typeof runSession>[0],
 ): Promise<SessionResult> {
-  const first = await runSession(input);
+  const attempt = async (): Promise<SessionResult> => {
+    try {
+      return await runSession(input);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return {
+        resultText: '',
+        transcript: gzipSync(JSON.stringify({ type: 'session_error', message })),
+        usage: { input_tokens: 0, output_tokens: 0 },
+        succeeded: false,
+      };
+    }
+  };
+  const first = await attempt();
   if (first.succeeded) return first;
-  const second = await runSession(input);
+  const second = await attempt();
   return {
     ...second,
     usage: {
