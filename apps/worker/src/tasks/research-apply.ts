@@ -238,6 +238,10 @@ async function runVerifier(
       prompt,
       allowedTools: VERIFIER_TOOLS,
       maxTurns: VERIFIER_MAX_TURNS,
+      // The adversarial reviewer runs on the strongest model regardless of the
+      // researcher's model — a constant, maximally-skeptical judge, so strategy
+      // comparisons measure the researcher, never the leniency of its grader.
+      model: process.env.VERIFIER_MODEL ?? 'claude-opus-5',
     });
     acc.input_tokens += result.usage.input_tokens;
     acc.output_tokens += result.usage.output_tokens;
