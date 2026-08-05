@@ -8,8 +8,14 @@ citation — it cannot make the fetched page contain the number.
 
 - Indicator: {{indicator_name}}
 - Claimed value: {{claimed_value}} {{unit}} ({{year}})
+- Geography of the claim: {{geography}}
 - Source: {{source_name}}
 - Source URL: {{source_url}}
+
+The source may report the same indicator for several geographies (citywide,
+per borough, per county). Judge the claim against the figure for the
+geography named above — a differing figure for a different geography is not
+a contradiction.
 
 ## Your job
 

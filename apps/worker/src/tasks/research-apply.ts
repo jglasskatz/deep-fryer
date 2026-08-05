@@ -161,7 +161,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
 
         let verdict: { content_supported: ContentSupported; verifier_note?: string } | null;
         if (payload?.kind === 'indicator') {
-          verdict = await runVerifier(payload, verifierUsage);
+          verdict = await runVerifier(payload, config.region.name, verifierUsage);
         } else if (payload?.kind === 'gap') {
           verdict = {
             content_supported: 'uncertain',
@@ -221,6 +221,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
 
 async function runVerifier(
   payload: Extract<FindingPayload, { kind: 'indicator' }>,
+  regionName: string,
   acc: { input_tokens: number; output_tokens: number },
 ): Promise<{ content_supported: ContentSupported; verifier_note?: string } | null> {
   const prompt = renderVerifierPrompt({
@@ -228,6 +229,7 @@ async function runVerifier(
     claimed_value: String(payload.value),
     unit: payload.unit,
     year: String(payload.year),
+    geography: `${regionName} (${payload.geographic_scale} scale)`,
     source_name: payload.source,
     source_url: payload.source_url,
   });

@@ -136,6 +136,7 @@ export function renderVerifierPrompt(input: {
   claimed_value: string;
   unit: string;
   year: string;
+  geography: string;
   source_name: string;
   source_url: string;
 }): string {
@@ -144,6 +145,7 @@ export function renderVerifierPrompt(input: {
     claimed_value: input.claimed_value,
     unit: input.unit,
     year: input.year,
+    geography: input.geography,
     source_name: input.source_name,
     source_url: input.source_url,
   });
