@@ -71,8 +71,14 @@ valid, publishable result. Never substitute a non-compliant value.
 ## Output
 
 Return ONLY a JSON array of finding objects conforming to the finding schema
-(`finding.schema.json`): one `kind: "indicator"` or `kind: "gap"` object per
-indicator listed above, in order. No prose before or after the JSON.
+below: one `kind: "indicator"` or `kind: "gap"` object per indicator listed
+above, in order. No prose before or after the JSON. Use exactly these field
+names — a finding that does not validate against the schema is rejected
+regardless of research quality.
+
+```json
+{{finding_schema}}
+```
 
 After the findings, you may NOT add commentary. Notes belong in the `notes`
 field of each finding.

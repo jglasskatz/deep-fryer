@@ -19,7 +19,7 @@ import {
   type ApplyJobPayload,
 } from '@deep-fryer/research';
 import { closeEvidenceBrowser } from '../evidence.js';
-import { extractJson, runSession } from '../session.js';
+import { extractJson, runSession, runSessionWithRetry } from '../session.js';
 import { tenantStorage } from '../storage.js';
 
 /**
@@ -99,7 +99,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
         .values({ runId, kind: 'region_context', status: 'running', startedAt: new Date() })
         .returning();
       if (!row) throw new Error('session insert failed');
-      const result = await runSession({
+      const result = await runSessionWithRetry({
         prompt: regionSpec.prompt,
         allowedTools: regionSpec.tool_allowlist,
       });
@@ -138,7 +138,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
       if (!row) throw new Error('session insert failed');
 
       const prompt = spec.prompt.split(REGION_BRIEF_PLACEHOLDER).join(regionBrief);
-      const result = await runSession({
+      const result = await runSessionWithRetry({
         prompt,
         allowedTools: spec.tool_allowlist,
         storage,

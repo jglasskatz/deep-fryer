@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import findingSchema from '@deep-fryer/contract/schemas/finding' with { type: 'json' };
 import type { FrameworkIndicator, PortraitConfig } from '@deep-fryer/contract';
 import {
   acceptedScales,
@@ -111,6 +112,10 @@ export function renderPlan(input: RenderPlanInput): ResearchPlan {
         max_age_years: String(maxAge),
         accepted_scales: scales.join(' → '),
         thresholds_block: renderThresholds(spec, config),
+        // The session has no filesystem access to the contract package, so the
+        // schema must travel in the prompt — a named reference alone leaves the
+        // model to guess field names, and every guess fails the schema gate.
+        finding_schema: JSON.stringify(findingSchema, null, 1),
       });
 
     sessions.push({

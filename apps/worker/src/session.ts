@@ -16,6 +16,31 @@ export interface SessionResult {
   succeeded: boolean;
 }
 
+/**
+ * Transient transport failures ("Connection closed mid-response", overloaded,
+ * 5xx) kill an entire session; without a retry, one blip fails a whole run.
+ * One retry, only when the session produced an unsuccessful result. Usage
+ * from both attempts is summed — the spend was real either way.
+ */
+export async function runSessionWithRetry(
+  input: Parameters<typeof runSession>[0],
+): Promise<SessionResult> {
+  const first = await runSession(input);
+  if (first.succeeded) return first;
+  const second = await runSession(input);
+  return {
+    ...second,
+    usage: {
+      input_tokens: first.usage.input_tokens + second.usage.input_tokens,
+      output_tokens: first.usage.output_tokens + second.usage.output_tokens,
+      cache_read_tokens:
+        (first.usage.cache_read_tokens ?? 0) + (second.usage.cache_read_tokens ?? 0),
+      cache_write_tokens:
+        (first.usage.cache_write_tokens ?? 0) + (second.usage.cache_write_tokens ?? 0),
+    },
+  };
+}
+
 const MODEL = () => process.env.ANTHROPIC_MODEL ?? DEFAULT_SESSION_MODEL;
 
 /**
