@@ -84,6 +84,10 @@ async function plan() {
     ? { CUSTOM_INDICATORS: {} as Record<string, never[]> }
     : await import('./nyc-portrait-config.js');
 
+  // --notes '{"dim-slug": "reviewer note", ...}' — injected verbatim into the
+  // rerun session prompts (SPEC §8 Rerun).
+  const notes = JSON.parse(arg('notes') ?? '{}') as Record<string, string>;
+
   const specs: PlanDimensionSpec[] = dims.map((dim) => {
     const fw = frameworkDimension(dim.slug, dim.canonicalSlug);
     if (!fw) throw new Error(`no framework dimension for ${dim.slug}`);
@@ -93,6 +97,7 @@ async function plan() {
       ring: dim.ring,
       name: fw.name,
       indicators: [...fw.indicators, ...(CUSTOM_INDICATORS[dim.slug] ?? [])],
+      reviewerNotes: notes[dim.slug],
     };
   });
 
