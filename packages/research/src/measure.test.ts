@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { framework } from '@deep-fryer/contract';
 import {
+  CUSTOM_INDICATOR_SLUGS,
   DENOMINATORS,
   NEGATIVE_CONTROLS,
   reconcileBoroughs,
@@ -275,8 +276,9 @@ describe('slug maps track the framework', () => {
   // Both maps are keyed by indicator slug. A framework rename would silently
   // disable the reconciliation rule or the control, so fail loudly instead.
   it('only classifies denominators for indicators that exist', () => {
+    const known = [...frameworkSlugs, ...CUSTOM_INDICATOR_SLUGS];
     for (const slug of Object.keys(DENOMINATORS)) {
-      expect(frameworkSlugs).toContain(slug);
+      expect(known).toContain(slug);
     }
   });
 

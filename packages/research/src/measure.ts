@@ -275,6 +275,13 @@ export const DENOMINATORS: Record<string, Denominator> = {
   'new-affordable-homes-per-year': 'non-additive',
 };
 
+/**
+ * Indicator slugs classified above that are portrait-level custom indicators
+ * (tenant config), not framework indicators. The guard test accepts exactly
+ * framework ∪ this list, so a typo in a framework slug still fails loudly.
+ */
+export const CUSTOM_INDICATOR_SLUGS = ['traffic-deaths', 'new-affordable-homes-per-year'];
+
 export interface ReconciliationInput {
   city: ScoredFinding[];
   boroughs: { tenantSlug: string; population: number; findings: ScoredFinding[] }[];
