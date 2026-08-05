@@ -117,13 +117,19 @@ export const researchApply: Task = async (rawPayload, helpers) => {
       }
     }
 
-    // Dimension sessions, sequentially (per-session container isolation is
-    // the deploy layer's concern; concurrency here is a config knob later).
-    for (const spec of plan.sessions.filter((s) => s.kind === 'dimension')) {
+    // Dimension sessions are independent once the region brief exists (each
+    // has its own session row, insert-only findings, per-session usage keys,
+    // and evidence captures run in isolated browser contexts), so they run
+    // under a bounded pool. RESEARCH_SESSION_CONCURRENCY=1 restores the old
+    // serial behavior; the practical ceiling is API throughput.
+    const sessionConcurrency = Math.max(1, Number(process.env.RESEARCH_SESSION_CONCURRENCY ?? 3));
+    const dimensionSpecs = plan.sessions.filter((s) => s.kind === 'dimension');
+
+    const processDimension = async (spec: (typeof dimensionSpecs)[number]) => {
       const dimension = spec.dimension_slug ? dimBySlug.get(spec.dimension_slug) : undefined;
       if (!dimension) {
         helpers.logger.error(`dimension ${spec.dimension_slug} not found; skipping session`);
-        continue;
+        return;
       }
       const [row] = await db
         .insert(researchSessions)
@@ -198,7 +204,18 @@ export const researchApply: Task = async (rawPayload, helpers) => {
           completedAt: new Date(),
         })
         .where(eq(researchSessions.id, row.id));
-    }
+    };
+
+    // Bounded pool: next session starts as soon as a slot frees.
+    let cursor = 0;
+    await Promise.all(
+      Array.from({ length: Math.min(sessionConcurrency, dimensionSpecs.length) }, async () => {
+        while (cursor < dimensionSpecs.length) {
+          const spec = dimensionSpecs[cursor++]!;
+          await processDimension(spec);
+        }
+      }),
+    );
 
     await finish('complete');
     helpers.logger.info(`run ${runId} complete`);
