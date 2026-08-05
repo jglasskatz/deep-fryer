@@ -60,8 +60,51 @@ rejection — the TCOL 62% claim confirmed on value and geography but failed
 on year attribution (researcher wrote 2024; the inaugural report is
 explicitly 2022 data). That is exactly the review card a human should see.
 
-**Opus-orchestrated arm: pending** (runs planned, execute after the borough
-campaign drains the queue). Judgment deferred until its scorecard exists.
+## Final comparison — sonnet vs opus-orchestrated (same slice, same opus judge)
+
+| Metric | sonnet | opus-orchestrated |
+|---|---|---|
+| Coverage | 0.67 | 0.67 |
+| Verified accuracy | 0.50 | **0.88** |
+| **Yield** | 0.33 | **0.58** |
+| Verifier-failed values | 2 (incl. one true fabrication) | **0** |
+| Tier-1 share (self-reported) | 0.88 | 0.38 |
+| Tokens per verified finding | 43.7k | 32.0k |
+| Replication | 3 exact value+source convergences; 2 contested | identical convergence; 1 contested |
+
+Reading the numbers honestly:
+
+- **Opus orchestration nearly doubles yield**, entirely via verified accuracy.
+  Its standout behavior: where Sonnet declared a gap (borough aragonite
+  saturation), both Opus replicates independently found the same
+  peer-reviewed Long Island Sound measurement (Ω = 1.09), labeled it
+  `regional` — a scale the config accepts for that dimension — and passed
+  verification. Deeper source discovery, honestly labeled.
+- **The negative-control "fabrications" in the opus arm are miscalibrated
+  controls, not fabrications**: the control counts any value as invented,
+  but a sourced, verified, regional-scale value is exactly what the scale
+  policy permits. Fix: controls must exempt findings whose
+  `geographic_scale` is an accepted non-borough scale with a real source.
+  (The sonnet arm's ODS "99%" remains a true fabrication — unsourced, failed.)
+- **Tokens ≠ dollars.** Token cost-per-verified favors the opus arm (32k vs
+  44k) but Opus tokens price ~5× Sonnet, so the opus arm is roughly 3-4×
+  more expensive per verified finding in dollar terms.
+- **Lower tier-1 share** in the opus arm reflects its willingness to go to
+  tier-3 science when tier-1 has nothing — correct behavior under the
+  tiers-exhausted-in-order rule, but audit the tier trail on a sample.
+
+**Recommendation — tiered strategy:**
+1. **Bulk/annual refresh: Sonnet researchers + Opus adversarial verifier.**
+   Cheapest; values that pass are right (production campaign hit ~71%
+   verified accuracy); gaps are honest; the review queue catches the rest.
+2. **Hard dimensions, contested indicators, and re-research: Opus
+   orchestrating Sonnet scouts.** Its 88% verified accuracy and
+   source-discovery depth is worth the premium precisely where Sonnet
+   returns gaps or flags.
+3. **Verifier: always Opus** — the constant, maximally-skeptical judge.
+4. Session parallelism (RESEARCH_SESSION_CONCURRENCY) is a pure win at
+   either tier — cross-session parallelism has no accuracy cost; only
+   within-session turn count does.
 
 ## Open improvements, ranked
 
