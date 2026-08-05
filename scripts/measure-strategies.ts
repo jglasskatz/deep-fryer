@@ -58,26 +58,30 @@ async function portraitConfig(tenantId: string): Promise<PortraitConfig> {
 async function plan() {
   const db = getDb();
   const tenantSlug = arg('tenant') ?? 'bronx';
+  const allDims = process.argv.includes('--all-dims');
   const dimSlugs = (arg('dims') ?? '').split(',').filter(Boolean);
-  if (!dimSlugs.length) throw new Error('--dims required');
+  if (!dimSlugs.length && !allDims) throw new Error('--dims or --all-dims required');
 
   const tenant = await tenantBySlug(db, tenantSlug);
   if (!tenant) throw new Error(`tenant ${tenantSlug} not found`);
   const config = await portraitConfig(tenant.id);
 
+  const where = [eq(dimensions.tenantId, tenant.id), isNull(dimensions.archivedAt)];
+  if (!allDims) where.push(inArray(dimensions.slug, dimSlugs));
   const dims = await db
     .select()
     .from(dimensions)
-    .where(
-      and(
-        eq(dimensions.tenantId, tenant.id),
-        inArray(dimensions.slug, dimSlugs),
-        isNull(dimensions.archivedAt),
-      ),
-    );
-  if (dims.length !== dimSlugs.length) {
+    .where(and(...where))
+    .orderBy(dimensions.displayOrder);
+  if (!allDims && dims.length !== dimSlugs.length) {
     throw new Error(`found ${dims.length} of ${dimSlugs.length} dimensions`);
   }
+
+  // Campaign plans (--all-dims) carry the NYC custom indicators so the new
+  // threshold refs are actually researched, not just configured.
+  const { CUSTOM_INDICATORS } = allDims
+    ? await import('./nyc-portrait-config.js')
+    : { CUSTOM_INDICATORS: {} as Record<string, never[]> };
 
   const specs: PlanDimensionSpec[] = dims.map((dim) => {
     const fw = frameworkDimension(dim.slug, dim.canonicalSlug);
@@ -87,7 +91,7 @@ async function plan() {
       slug: dim.slug,
       ring: dim.ring,
       name: fw.name,
-      indicators: fw.indicators,
+      indicators: [...fw.indicators, ...(CUSTOM_INDICATORS[dim.slug] ?? [])],
     };
   });
 

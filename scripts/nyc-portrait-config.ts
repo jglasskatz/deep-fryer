@@ -99,6 +99,85 @@ export const thresholdOverrides = {
 } satisfies Record<string, { target: number; scale?: number; function: string; rationale: string }>;
 
 // ---------------------------------------------------------------------------
+// Custom NYC indicators: attach the new threshold refs above to their
+// dimensions so research sessions actually receive them in the indicator
+// list. Merged into the framework defaults at campaign-plan time.
+// ---------------------------------------------------------------------------
+export const CUSTOM_INDICATORS: Record<
+  string,
+  Array<{ slug: string; name: string; unit: string; threshold_ref: string }>
+> = {
+  'income-work': [
+    {
+      slug: 'below-tcol-share',
+      name: 'Share of residents below the NYC True Cost of Living',
+      unit: '% of residents',
+      threshold_ref: 'income-work.below-tcol-share',
+    },
+  ],
+  education: [
+    {
+      slug: 'class-size-compliance',
+      name: 'Classes at or under the class-size caps',
+      unit: '% of classes',
+      threshold_ref: 'education.class-size-compliance',
+    },
+  ],
+  housing: [
+    {
+      slug: 'new-affordable-homes-per-year',
+      name: 'New permanently affordable homes per year',
+      unit: 'homes/year',
+      threshold_ref: 'housing.new-affordable-homes-per-year',
+    },
+  ],
+  'peace-justice': [
+    {
+      slug: 'traffic-deaths',
+      name: 'Traffic deaths (Vision Zero)',
+      unit: 'deaths/year',
+      threshold_ref: 'peace-justice.traffic-deaths',
+    },
+  ],
+  'climate-change': [
+    {
+      slug: 'ghg-reduction-vs-2005',
+      name: 'Citywide GHG reduction vs 2005',
+      unit: '% reduction',
+      threshold_ref: 'climate-change.ghg-reduction-vs-2005',
+    },
+    {
+      slug: 'll97-over-2030-cap-share',
+      name: 'LL97-covered buildings over their 2030 emissions cap',
+      unit: '% of covered buildings',
+      threshold_ref: 'climate-change.ll97-over-2030-cap-share',
+    },
+  ],
+  'chemical-pollution': [
+    {
+      slug: 'landfill-reduction-vs-2005',
+      name: 'Reduction in landfill-bound waste vs 2005',
+      unit: '% reduction',
+      threshold_ref: 'chemical-pollution.landfill-reduction-vs-2005',
+    },
+  ],
+  'land-conversion': [
+    {
+      slug: 'tree-canopy-pct',
+      name: 'Tree canopy cover',
+      unit: '% of land area',
+      threshold_ref: 'land-conversion.tree-canopy-pct',
+    },
+    {
+      slug: 'park-access-share',
+      name: 'Residents within walking distance of a park',
+      unit: '% of residents',
+      threshold_ref: 'land-conversion.park-access-share',
+    },
+  ],
+};
+
+// ---------------------------------------------------------------------------
 // Source-priority tiers — framework structure, NYC-pinned examples.
 // ---------------------------------------------------------------------------
 export const sourcePriority = {
@@ -268,10 +347,12 @@ async function main() {
   }
 }
 
-main().then(
-  () => process.exit(0),
-  (err) => {
-    console.error(err);
-    process.exit(1);
-  },
-);
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().then(
+    () => process.exit(0),
+    (err) => {
+      console.error(err);
+      process.exit(1);
+    },
+  );
+}
