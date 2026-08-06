@@ -26,11 +26,15 @@ export function FamilyNav({ currentSlug }: { currentSlug?: string }) {
         <span className="mx-1 text-black/15">|</span>
         <Link
           href="/compare"
-          className={`whitespace-nowrap rounded-full px-3 py-1 hover:bg-black/5 ${
-            currentSlug === undefined ? 'bg-black/10 font-medium' : 'text-[color:var(--color-muted)]'
-          }`}
+          className="whitespace-nowrap rounded-full px-3 py-1 text-[color:var(--color-muted)] hover:bg-black/5"
         >
           Compare ⇆
+        </Link>
+        <Link
+          href="/insights"
+          className="whitespace-nowrap rounded-full px-3 py-1 text-[color:var(--color-muted)] hover:bg-black/5"
+        >
+          Insights
         </Link>
       </nav>
     </div>

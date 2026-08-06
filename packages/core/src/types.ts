@@ -99,6 +99,12 @@ export interface RetentionConfig {
   transcript_days: number;
 }
 
+/** Per-tenant feature flags (SPEC §6 behavior layer). */
+export interface FeaturesConfig {
+  /** Editors may request additional research runs from the public insights surface. */
+  request_research: boolean;
+}
+
 export interface NotificationConfig {
   email_on_run_complete: boolean;
   email_on_flagged_finding: boolean;
@@ -114,6 +120,7 @@ export interface TenantConfigMap {
   review_policy: ReviewPolicyConfig;
   retention: RetentionConfig;
   notifications: NotificationConfig;
+  features: FeaturesConfig;
 }
 
 export type TenantConfigKey = keyof TenantConfigMap;

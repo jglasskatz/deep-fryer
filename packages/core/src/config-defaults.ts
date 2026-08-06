@@ -1,5 +1,6 @@
 import { defaultPortraitConfig } from '@deep-fryer/contract';
 import type {
+  FeaturesConfig,
   NotificationConfig,
   RetentionConfig,
   ReviewPolicyConfig,
@@ -15,6 +16,10 @@ export const defaultReviewPolicy: ReviewPolicyConfig = {
 
 export const defaultRetention: RetentionConfig = {
   transcript_days: 365 * 7,
+};
+
+export const defaultFeatures: FeaturesConfig = {
+  request_research: false,
 };
 
 export const defaultNotifications: NotificationConfig = {
@@ -38,5 +43,6 @@ export function defaultTenantConfig(regionName: string, regionDefinition: string
     review_policy: defaultReviewPolicy,
     retention: defaultRetention,
     notifications: defaultNotifications,
+    features: defaultFeatures,
   };
 }

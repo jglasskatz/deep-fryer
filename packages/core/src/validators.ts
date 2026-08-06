@@ -151,6 +151,10 @@ export const notificationConfigSchema = z.object({
   email_on_flagged_finding: z.boolean(),
 });
 
+export const featuresConfigSchema = z.object({
+  request_research: z.boolean(),
+});
+
 /** Per-key validators for the tenant_config table — the settings write path. */
 export const tenantConfigSchemas = {
   region: regionConfigSchema,
@@ -161,4 +165,5 @@ export const tenantConfigSchemas = {
   review_policy: reviewPolicyConfigSchema,
   retention: retentionConfigSchema,
   notifications: notificationConfigSchema,
+  features: featuresConfigSchema,
 } as const;
