@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { FamilyNav } from './FamilyNav';
+import { inNycFamily } from '@/lib/nyc-family';
 
 type Variant = 'landing' | 'tenant' | 'admin' | 'architecture';
 
@@ -116,6 +118,9 @@ export function SiteHeader({ variant, tenant }: SiteHeaderProps) {
           )}
         </nav>
       </div>
+      {variant !== 'landing' && tenant && inNycFamily(tenant.slug) && (
+        <FamilyNav currentSlug={tenant.slug} />
+      )}
     </header>
   );
 }
