@@ -118,6 +118,41 @@ export const researchPrinciples: PrincipleWithCheck[] = [
     severity: "critical",
   },
 
+  // ---- Delegation context (field-verified, deep-fryer NYC campaign 2026-08;
+  // measurements in that repo's docs/strategy-findings.md) ----
+  {
+    id: "contract-travels-in-context",
+    description:
+      "A schema, spec, or output contract the delegate must conform to is included verbatim in the delegated context — never merely named",
+    rationale:
+      "A named artifact the agent cannot read is not a contract: sessions told to conform to finding.schema.json by name failed the schema gate on 100% of findings despite substantively sound research; inlining the schema took conformance to 100% (deep-fryer NYC campaign)",
+    severity: "critical",
+  },
+  {
+    id: "verifier-receives-claim-frame",
+    description:
+      "An independent verifier receives the claim's full frame — geography, period, unit, scale — not just the value and its source",
+    rationale:
+      "A borough claim was rejected as 'contradicted' by the same document's citywide figure because the verifier was never told which geography the claim covered; frame-blind verification is a systematic false-negative generator at multi-region scale (deep-fryer verifier-geography incident)",
+    severity: "critical",
+  },
+  {
+    id: "verified-discoveries-seed-reruns",
+    description:
+      "Reruns and follow-up sessions inject previously verified sources, corrections, and basis decisions as notes; from-scratch rediscovery is a defect, not diligence",
+    rationale:
+      "Fix-up sessions given audit corrections as reviewer notes resolved all four rejected findings in one pass and converged with independently verified values; the same sessions without notes had produced the errors (deep-fryer NYC fix-up runs)",
+    severity: "warning",
+  },
+  {
+    id: "verify-against-the-archived-exhibit",
+    description:
+      "When a source was snapshotted at retrieval, verification judges the claim against the archived exhibit first, refetching only to corroborate",
+    rationale:
+      "Refetch-only verification returned 'uncertain' on bot-blocked primary sources the researcher had already captured — suppressing measured accuracy on exactly the most authoritative tier — while auditors reading the captured exhibits adjudicated the same claims decisively (deep-fryer 403/tier-1 paradox)",
+    severity: "warning",
+  },
+
   // ---- Verification ----
   {
     id: "verifier-independent-and-grounded",

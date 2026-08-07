@@ -77,6 +77,22 @@ implements it as `scripts/research-verify.ts`.
   content hash; changed findings void it (GitHub stale-approval semantics;
   21 CFR Part 11 signature binding).
 
+## Field-verified additions (2026-08)
+
+Four principles were added from measured incidents in this repo's own NYC
+campaign rather than external literature — each is traceable to a specific
+measured failure and its fix in `docs/strategy-findings.md`:
+
+- **contract-travels-in-context** — schema referenced by name: 0% gate
+  conformance; schema inlined: 100%. Largest single quality lever measured.
+- **verifier-receives-claim-frame** — geography-blind verification rejected a
+  correct borough claim against the same document's citywide figure.
+- **verified-discoveries-seed-reruns** — audit-corrections-as-notes resolved
+  all four rejected findings in one rerun pass.
+- **verify-against-the-archived-exhibit** — refetch-only verification marked
+  bot-blocked tier-1 sources 'uncertain' that auditors reading the captured
+  snapshots adjudicated decisively.
+
 ## Key sources
 
 Anthropic, "How we built our multi-agent research system" ·
