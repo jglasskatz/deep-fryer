@@ -88,15 +88,17 @@ async function plan() {
   // rerun session prompts (SPEC §8 Rerun).
   const notes = JSON.parse(arg('notes') ?? '{}') as Record<string, string>;
 
+  const { CUSTOM_DIMENSIONS } = await import('./nyc-portrait-config.js');
   const specs: PlanDimensionSpec[] = dims.map((dim) => {
     const fw = frameworkDimension(dim.slug, dim.canonicalSlug);
-    if (!fw) throw new Error(`no framework dimension for ${dim.slug}`);
+    const custom = CUSTOM_DIMENSIONS[dim.slug];
+    if (!fw && !custom) throw new Error(`no framework or custom dimension for ${dim.slug}`);
     return {
       dimensionId: dim.id,
       slug: dim.slug,
       ring: dim.ring,
-      name: fw.name,
-      indicators: [...fw.indicators, ...(CUSTOM_INDICATORS[dim.slug] ?? [])],
+      name: fw?.name ?? custom!.name,
+      indicators: [...(fw?.indicators ?? []), ...(CUSTOM_INDICATORS[dim.slug] ?? [])],
       reviewerNotes: notes[dim.slug],
     };
   });

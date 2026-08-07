@@ -96,6 +96,25 @@ export const thresholdOverrides = {
     rationale:
       'Vision Zero (adopted 2014): zero traffic deaths. Scored as distance from zero relative to the 2013 pre-Vision-Zero baseline of 299 deaths; 2025 hit a record-low 205.',
   },
+  // Extreme heat replaces ozone-layer depletion (owner decision, 2026-08-07).
+  // Precedent: Amsterdam left ozone N/A; Cornwall omitted it outright ("a
+  // global scale issue [that] cannot easily be measured or tackled at a local
+  // scale", State of the Doughnut 2020 p.8, verified); the Earth Commission's
+  // sub-global safe-and-just boundaries (Nature 2023) carry no ozone boundary.
+  'extreme-heat.hvi-high-share': {
+    target: 0,
+    scale: 100,
+    function: 'lower_is_better',
+    rationale:
+      "Share of residents living in the DOHMH Heat Vulnerability Index's two highest classes (4-5). The HVI is the City's own published vulnerability instrument; the June 2026 extreme-heat executive order and Cool Neighborhoods commitments adopt eliminating high heat vulnerability as the direction of travel, so the boundary is zero share in the highest-vulnerability classes.",
+  },
+  'extreme-heat.heat-exacerbated-deaths': {
+    target: 0,
+    scale: 500,
+    function: 'lower_is_better',
+    rationale:
+      'Heat-exacerbated deaths per year (DOHMH heat mortality report; ~489/yr 2014-2023 average, citywide). Zero heat deaths is the only defensible ceiling for a preventable-death hazard (HealthyNYC premature-mortality mandate, LL93 of 2024; June 2026 heat EO); scored as distance from zero relative to the ~500/yr current baseline, Vision-Zero style.',
+  },
 } satisfies Record<string, { target: number; scale?: number; function: string; rationale: string }>;
 
 // ---------------------------------------------------------------------------
@@ -175,6 +194,30 @@ export const CUSTOM_INDICATORS: Record<
       threshold_ref: 'land-conversion.park-access-share',
     },
   ],
+  'extreme-heat': [
+    {
+      slug: 'hvi-high-share',
+      name: 'Residents in the highest heat-vulnerability classes (HVI 4-5)',
+      unit: '% of residents',
+      threshold_ref: 'extreme-heat.hvi-high-share',
+    },
+    {
+      slug: 'heat-exacerbated-deaths',
+      name: 'Heat-exacerbated deaths per year',
+      unit: 'deaths/year',
+      threshold_ref: 'extreme-heat.heat-exacerbated-deaths',
+    },
+  ],
+};
+
+/** Custom (non-framework) dimensions for the NYC family: slug → display name + ring. */
+export const CUSTOM_DIMENSIONS: Record<string, { name: string; ring: 'social' | 'ecological'; description: string }> = {
+  'extreme-heat': {
+    name: 'Extreme Heat',
+    ring: 'ecological',
+    description:
+      "New York's deadliest climate hazard: heat vulnerability and heat-attributable deaths, borough by borough. Replaces ozone-layer depletion, which no municipality can measure or move.",
+  },
 };
 
 // ---------------------------------------------------------------------------
