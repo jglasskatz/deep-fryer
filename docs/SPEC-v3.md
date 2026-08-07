@@ -44,9 +44,17 @@ re-research runs with reviewer notes (the §8 rerun path):
 Acceptance: `reconcile-nyc.ts` shows ≤1 flag exceeding tolerance, and that
 flag is documented as a genuine definitional impossibility, not drift.
 
-### 1.2 Extreme heat wedge
+### 1.2 Extreme heat wedge **[D: replaces ozone-layer depletion]**
 
-New **custom dimension** `extreme-heat` (ecological ring) on all six tenants —
+New **custom dimension** `extreme-heat` (ecological ring) on all six tenants,
+**replacing ozone-layer depletion** — the one permanently-unmeasurable wedge.
+Precedent (verified): Amsterdam left ozone N/A; Cornwall omitted it outright
+("a global scale issue [that] cannot easily be measured or tackled at a local
+scale"); the TCI methodology itself swapped boundaries for data-available
+pressures; the Earth Commission's sub-global safe-and-just boundaries
+(Nature 2023) carry no ozone boundary. Ozone dimensions are archived, never
+deleted. **Flood exposure** is the designated next ceiling candidate once
+nyc.gov floodplain population counts are verifiable **[D]**. Heat is also
 the one ecological topic the administration has personally executive-ordered.
 Indicators: heat-vulnerability index distribution (population-weighted, never
 a mean rank), heat-exacerbated deaths (citywide, regional scale, labeled),
