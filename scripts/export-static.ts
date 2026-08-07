@@ -12,6 +12,7 @@ import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { eq, isNotNull } from 'drizzle-orm';
+import { formatIndicatorValue } from '@deep-fryer/core';
 import { dimensions, dimensionVersions, getDb, tenants } from '@deep-fryer/db';
 
 interface ExportEntry {
@@ -77,9 +78,9 @@ async function main() {
         name: version.data.name,
         level: version.vizLevel,
         indicator: ind?.name,
-        value: ind?.value,
+        value: ind ? formatIndicatorValue(ind.value, ind.unit) : undefined,
         year: ind?.year,
-        target: ind?.target,
+        target: ind ? formatIndicatorValue(ind.target, ind.unit) : undefined,
         context: version.data.context,
         source: ind?.source,
         sourceUrl: ind?.source_url,

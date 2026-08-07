@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 import { Doughnut, type DoughnutDimension } from './Doughnut';
+import { formatIndicatorValue } from '@deep-fryer/core';
 import type { PublishedDimension } from '@/lib/portrait';
 
 /**
@@ -35,7 +36,9 @@ export function PortraitDoughnut({
         viz_level: d.viz_level,
         indicator: first?.name,
         value:
-          first?.value === null || first?.value === undefined ? undefined : String(first.value),
+          first?.value === null || first?.value === undefined
+            ? undefined
+            : formatIndicatorValue(first.value, first.unit),
         year: first?.year ?? undefined,
         source: first?.source || undefined,
       };
