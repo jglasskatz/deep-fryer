@@ -96,6 +96,34 @@ export const findingPayloadSchema = z.discriminatedUnion('kind', [
   gapFindingPayloadSchema,
 ]);
 
+// ---- Reviewer notes (verification admin mode, SPEC.md §9) ----
+
+export const reviewReasonCodeSchema = z.enum([
+  'wrong_value',
+  'wrong_source',
+  'outdated',
+  'wrong_scale',
+  'misread_source',
+  'better_source_exists',
+  'methodology_issue',
+  'gap_confirmed',
+  'other',
+]);
+
+/** The machine-readable half of a reviewer note; prose lives beside it. */
+export const reviewAnnotationSchema = z
+  .object({
+    reason_code: reviewReasonCodeSchema.optional(),
+    suggested_source_url: z.string().url().optional(),
+    suggested_value: z.union([z.number(), z.string()]).optional(),
+    suggested_unit: z.string().optional(),
+    suggested_year: z.number().int().min(1900).max(2100).optional(),
+    tags: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+export const dispositionStateSchema = z.enum(['verified', 'rejected', 'needs_rework']);
+
 // ---- Tenant config (SPEC.md §6; portrait keys mirror portrait-config.schema.json) ----
 
 export const sourceTierSchema = z.object({

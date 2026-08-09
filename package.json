@@ -15,6 +15,7 @@
     "create-tenant": "tsx scripts/create-tenant.ts",
     "import-santa-cruz": "tsx scripts/import-santa-cruz.ts",
     "research-verify": "tsx scripts/research-verify.ts",
+    "seed-verify-fixture": "tsx scripts/seed-verify-fixture.ts",
     "test": "pnpm -r --if-present test",
     "export:nyc": "tsx scripts/export-nyc.ts"
   },

@@ -197,6 +197,18 @@ audit_log                                       // unchanged from v0
 
 **Immutability contract:** rows in `findings` and research-origin `dimension_versions` are never updated. A human edit creates a new version (`origin='human'`, `change_note` required, `supporting_source_url` required for value changes — human edits meet the same provenance bar as research). The diff between a research version and the subsequent human version *is* the reviewer overlay, reconstructable forever.
 
+```sql
+-- Verification admin mode (§9): reviewer dispositions & notes    // NEW table
+review_notes { id, tenant_id, run_id, dimension_id?, finding_id?,
+               disposition?: verified|rejected|needs_rework,
+               annotation jsonb?,      -- machine-readable: reason_code (contract vocabulary),
+                                       -- suggested_source_url/value/year, tags
+               note text?,             -- free-form reviewer prose
+               reviewer_id?, reviewer_label, created_at }
+```
+
+`review_notes` is append-only under the same trigger discipline as `findings`: re-dispositioning appends, the latest row per (run, finding) wins, and the who-overrode-whom history survives. A row without a disposition is pure commentary (run-, dimension-, or finding-scoped). CHECKs: every row carries substance (disposition, annotation, or note); dispositions require a finding; rejection requires a reason code or note.
+
 ## 8. The research plane
 
 Runs on the worker service; executes the vendored OSS plugin via the Claude Agent SDK. Terraform-shaped:
@@ -226,6 +238,18 @@ Admin at `/{tenant}/admin`. The review queue is the primary experience:
 - Settings surfaces all §6 config as forms. Overview shows staleness flags and most-discussed dimensions.
 
 Action items and narrative content ("what needs doing / how to get involved") are drafted by research sessions from approved data and flow through the same review queue as a card type.
+
+### Verification admin mode (`/{tenant}/admin/verify`)
+
+The expert layer over the review queue — the run-level verification loop that the queue's per-dimension cards don't carry:
+
+- **One gate, two surfaces.** The staged gate (deterministic → verifier rates → review completeness → hash-bound confirmation) lives in `@deep-fryer/research` as `computeGateReport()`; the `/admin/verify/{runId}` dashboard and the `research-verify` CLI call the same function, so their numbers cannot disagree. A golden-hash test pins `contentHash()` byte compatibility.
+- **Explore.** Rollups mirror the CLI (unsupported rate vs the 5% bar, uncertain vs 25%, tier-1/2 share vs 50%, evidence coverage, schema failures); a cross-dimension triage table filters by verification state; each finding expands to the claim beside its archived evidence exhibit, the worked math, the exact producing prompt from the stored plan, and the config bars it was judged against.
+- **Disposition loop** (`review_notes`, §7). Every flagged finding needs an individual human verdict — verified / rejected / needs-rework — before its dimension can be approved (review-disposes-each-flag); the seeded spot-check sample of auto-passed findings must be inspected too. Verdicts carry a machine-readable annotation (controlled reason-code vocabulary in the contract package, suggested corrections, tags) alongside free-form notes; reviewers also jot standalone commentary at run or finding scope, visible to each other. Approve materializes only non-rejected findings — a verifier `fail` can no longer publish silently; the expert overrides the verifier only by an explicit `verified` disposition, with their note as the record.
+- **Machine-readable all the way down.** Re-research serializes the run's dispositions and annotations into the next plan's reviewer notes as JSON (verified-discoveries-seed-reruns); the gate consumes dispositions as first-class review evidence; reason-code rollups feed quality metrics.
+- **Hash-bound approval** (approval-binds-to-content). The web approval writes the same `research_verify.approve` audit record as the CLI — named approver, content hash, spot-check attestation — so either surface approves and the other sees it; any change to the findings strands both as stale.
+
+Reviewer access rides the `editor` role behind a single `VERIFY_ROLE` constant (`apps/web/lib/verify-guard.ts`) — a dedicated least-privilege `verifier` role is a one-line switch plus a role-enum migration when needed.
 
 ## 10. The public plane
 

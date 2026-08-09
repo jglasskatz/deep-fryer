@@ -30,6 +30,16 @@ export default async function ReviewQueuePage({
           </Link>
         </p>
         <h1 className="mt-2 text-2xl font-bold">Review queue</h1>
+        {selectedRun ? (
+          <p className="mt-1 text-sm">
+            <Link className="underline" href={`/${tenant}/admin/verify/${selectedRun.id}`}>
+              Open the verify view for this run →
+            </Link>{' '}
+            <span className="text-[color:var(--color-muted)]">
+              rollups, per-finding dispositions, and the hash-bound approval gate
+            </span>
+          </p>
+        ) : null}
 
         {completeRuns.length === 0 ? (
           <p className="mt-6 text-sm text-[color:var(--color-muted)]">
@@ -80,6 +90,7 @@ export default async function ReviewQueuePage({
                   sessionId={card.sessionId}
                   canReadTranscript={ctx.role === 'owner'}
                   evidenceBase={evidenceBase(tenant)}
+                  dispositions={card.dispositions}
                 />
               ))}
               {cards.length === 0 && selectedRun ? (

@@ -9,6 +9,7 @@
     ".": "./src/index.ts",
     "./framework": "./framework/framework.json",
     "./thresholds": "./framework/thresholds.json",
+    "./review-reasons": "./framework/review-reasons.json",
     "./schemas/finding": "./schemas/finding.schema.json",
     "./schemas/portrait-config": "./schemas/portrait-config.schema.json",
     "./schemas/framework": "./schemas/framework.schema.json"

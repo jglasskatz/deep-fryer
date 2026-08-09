@@ -1,4 +1,5 @@
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { currentDispositions, isFlagged } from '@deep-fryer/core';
 import {
   dimensions,
   dimensionVersions,
@@ -6,10 +7,19 @@ import {
   getDb,
   researchRuns,
   researchSessions,
+  reviewNotes,
   type Dimension,
   type Finding,
   type ResearchRun,
 } from '@deep-fryer/db';
+
+export interface DispositionSummary {
+  verified: number;
+  rejected: number;
+  needsRework: number;
+  /** Flagged findings with no individual disposition — these block approval. */
+  openFlags: number;
+}
 
 export interface ReviewCardData {
   dimension: Dimension;
@@ -18,6 +28,7 @@ export interface ReviewCardData {
   sessionId: string | null;
   /** Set when this run's findings were already approved into a version. */
   approvedVersionNum: number | null;
+  dispositions: DispositionSummary;
 }
 
 export interface ReviewQueueData {
@@ -83,16 +94,34 @@ export async function reviewQueue(tenantId: string, runId?: string): Promise<Rev
     sessions.filter((s) => s.dimensionId).map((s) => [s.dimensionId as string, s.id]),
   );
 
+  const noteRows = await db
+    .select()
+    .from(reviewNotes)
+    .where(eq(reviewNotes.runId, selectedRun.id));
+  const dispositionByFinding = new Map(
+    currentDispositions(noteRows).map((d) => [d.findingId, d]),
+  );
+
   const cards: ReviewCardData[] = dimensionIds
     .map((dimId) => {
       const dimension = dimById.get(dimId);
       if (!dimension) return null;
+      const dimFindings = runFindings.filter((f) => f.dimensionId === dimId);
+      const summary: DispositionSummary = { verified: 0, rejected: 0, needsRework: 0, openFlags: 0 };
+      for (const f of dimFindings) {
+        const d = dispositionByFinding.get(f.id);
+        if (d?.state === 'verified') summary.verified += 1;
+        else if (d?.state === 'rejected') summary.rejected += 1;
+        else if (d?.state === 'needs_rework') summary.needsRework += 1;
+        else if (!f.verification || isFlagged(f.verification)) summary.openFlags += 1;
+      }
       return {
         dimension,
         dimensionName: nameByDim.get(dimId) ?? dimension.slug,
-        findings: runFindings.filter((f) => f.dimensionId === dimId),
+        findings: dimFindings,
         sessionId: sessionByDim.get(dimId) ?? null,
         approvedVersionNum: approvedByDim.get(dimId) ?? null,
+        dispositions: summary,
       };
     })
     .filter((c): c is ReviewCardData => c !== null)

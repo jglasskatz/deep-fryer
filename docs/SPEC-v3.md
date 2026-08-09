@@ -207,6 +207,16 @@ when a worker starts; the insights form copy says so.
 
 ## W4 — Review & insights depth
 
+> **Shipped since this was written:** the *human* half of this section landed
+> as the verification admin mode (`/admin/verify` + append-only
+> `review_notes` + the shared gate library; SPEC.md §9). Human dispositions
+> (verified/rejected/needs_rework) with machine-readable annotations now gate
+> approval, and rejected findings are excluded from materialization. 4.1's
+> `finding_audits` remains the *machine*-audit design; when built, it should
+> converge on the same append-only pattern and reason-code vocabulary
+> (`@deep-fryer/contract` review-reasons.json), with machine adjudications
+> rendered beside — never in place of — human dispositions.
+
 ### 4.1 Machine audit as product **[D: stored + one-click, policy-driven]**
 
 New table:

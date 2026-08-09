@@ -191,3 +191,39 @@ export interface SessionTokenUsage {
 }
 
 export type RunTokenUsage = Record<string, SessionTokenUsage>;
+
+// ---- Verification admin mode (SPEC.md §9): reviewer notes & dispositions ----
+
+/** A reviewer's verdict on one finding. Append-only; latest row wins. */
+export type DispositionState = 'verified' | 'rejected' | 'needs_rework';
+
+/**
+ * Controlled vocabulary for machine-readable review reasons. Labels and
+ * descriptions live as data in @deep-fryer/contract (review-reasons.json);
+ * this union is the type-level mirror and the two are guard-tested together.
+ */
+export type ReviewReasonCode =
+  | 'wrong_value'
+  | 'wrong_source'
+  | 'outdated'
+  | 'wrong_scale'
+  | 'misread_source'
+  | 'better_source_exists'
+  | 'methodology_issue'
+  | 'gap_confirmed'
+  | 'other';
+
+/**
+ * The structured half of a reviewer note — everything a machine consumer
+ * (re-research prompts, the verify gate, quality rollups) can act on without
+ * parsing prose. Free-form thoughts ride alongside in the note text column,
+ * never inside this object.
+ */
+export interface ReviewAnnotation {
+  reason_code?: ReviewReasonCode;
+  suggested_source_url?: string;
+  suggested_value?: number | string;
+  suggested_unit?: string;
+  suggested_year?: number;
+  tags?: string[];
+}

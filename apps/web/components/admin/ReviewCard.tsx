@@ -27,6 +27,13 @@ function Badge({ ok, label, title }: { ok: boolean; label: string; title?: strin
   );
 }
 
+export interface CardDispositions {
+  verified: number;
+  rejected: number;
+  needsRework: number;
+  openFlags: number;
+}
+
 export function ReviewCard({
   tenantSlug,
   runId,
@@ -38,6 +45,7 @@ export function ReviewCard({
   sessionId,
   canReadTranscript,
   evidenceBase,
+  dispositions,
 }: {
   tenantSlug: string;
   runId: string;
@@ -49,6 +57,7 @@ export function ReviewCard({
   sessionId: string | null;
   canReadTranscript: boolean;
   evidenceBase: string;
+  dispositions: CardDispositions;
 }) {
   const router = useRouter();
   const [notes, setNotes] = useState('');
@@ -60,6 +69,13 @@ export function ReviewCard({
   const flagged = findings.filter(
     (f) => f.payload.kind === 'gap' || (f.verification && isFlagged(f.verification)),
   ).length;
+  // Approval is blocked while flagged findings lack individual dispositions
+  // or sit in needs_rework (review-disposes-each-flag) — the server enforces
+  // this too; the UI just says so up front.
+  const approveBlocked = dispositions.openFlags > 0 || dispositions.needsRework > 0;
+  const blockedTitle = approveBlocked
+    ? `${dispositions.openFlags} open flag(s), ${dispositions.needsRework} needs-rework — disposition each in Verify first`
+    : undefined;
 
   return (
     <div className="rounded-lg border border-black/15 p-4">
@@ -69,12 +85,26 @@ export function ReviewCard({
           <span className="ml-2 text-xs font-normal text-[color:var(--color-muted)]">{ring}</span>
         </h3>
         <div className="flex items-center gap-2 text-xs">
+          {dispositions.verified + dispositions.rejected + dispositions.needsRework > 0 ? (
+            <span className="rounded bg-black/10 px-2 py-0.5">
+              {dispositions.verified} verified · {dispositions.rejected} rejected
+              {dispositions.needsRework ? ` · ${dispositions.needsRework} rework` : ''}
+            </span>
+          ) : null}
           {approvedVersionNum ? (
             <span className="rounded bg-green-100 px-2 py-0.5 text-green-900">
               approved → v{approvedVersionNum}
             </span>
+          ) : dispositions.openFlags > 0 ? (
+            <Link
+              className="rounded bg-red-100 px-2 py-0.5 text-red-900 underline"
+              href={`/${tenantSlug}/admin/verify/${runId}`}
+              title="Disposition each in the verify view"
+            >
+              {dispositions.openFlags} open flag{dispositions.openFlags === 1 ? '' : 's'}
+            </Link>
           ) : flagged > 0 ? (
-            <span className="rounded bg-red-100 px-2 py-0.5 text-red-900">{flagged} flagged</span>
+            <span className="rounded bg-black/10 px-2 py-0.5">{flagged} flagged · dispositioned</span>
           ) : null}
           {canReadTranscript && sessionId ? (
             <a
@@ -99,14 +129,16 @@ export function ReviewCard({
       <div className="mt-4 flex flex-wrap items-start gap-2 border-t border-black/10 pt-3">
         <button
           className="rounded bg-black px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
-          disabled={pending}
+          disabled={pending || approveBlocked}
+          title={blockedTitle}
           onClick={() => act(() => approveFindings({ tenantSlug, runId, dimensionId }))}
         >
           Approve as draft
         </button>
         <button
           className="rounded bg-green-700 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
-          disabled={pending}
+          disabled={pending || approveBlocked}
+          title={blockedTitle}
           onClick={() => act(() => approveFindings({ tenantSlug, runId, dimensionId, publish: true }))}
         >
           Approve &amp; publish
@@ -139,6 +171,7 @@ export function ReviewCard({
                     tenantSlug,
                     dimensionId,
                     notes,
+                    fromRunId: runId,
                   });
                   router.push(`/${tenantSlug}/admin/research/${newRun}`);
                 })
@@ -221,6 +254,7 @@ function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; evidenc
           {v ? (
             <>
               <Badge ok={v.url_ok} label="url" />
+              <Badge ok={v.schema_ok} label="schema" />
               <Badge ok={v.recency_ok} label="recency" />
               <Badge ok={v.scale_ok} label="scale" />
               <Badge

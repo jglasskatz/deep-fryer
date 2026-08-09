@@ -1,0 +1,51 @@
+{
+  "version": "1.0.0",
+  "description": "Controlled vocabulary for machine-readable reviewer annotations (SPEC.md §9 verification admin mode). Codes are stable identifiers consumed by re-research prompts, the verify gate, and quality rollups; labels and descriptions are for reviewer UI. The type-level mirror is ReviewReasonCode in @deep-fryer/core, guard-tested against this file.",
+  "reasons": [
+    {
+      "code": "wrong_value",
+      "label": "Wrong value",
+      "description": "The reported number does not match what the cited source says."
+    },
+    {
+      "code": "wrong_source",
+      "label": "Wrong source",
+      "description": "The citation points at a page or document that does not carry this claim."
+    },
+    {
+      "code": "outdated",
+      "label": "Outdated",
+      "description": "A newer vintage of the same series exists and should be used."
+    },
+    {
+      "code": "wrong_scale",
+      "label": "Wrong geography",
+      "description": "The value covers a different geography than the portrait's region (e.g. citywide where the borough was required)."
+    },
+    {
+      "code": "misread_source",
+      "label": "Misread source",
+      "description": "The source is right but was misinterpreted — wrong table, wrong denominator, wrong universe, or unit confusion."
+    },
+    {
+      "code": "better_source_exists",
+      "label": "Better source exists",
+      "description": "A higher-tier or more authoritative source publishes this indicator (source-tiers-exhausted-in-order)."
+    },
+    {
+      "code": "methodology_issue",
+      "label": "Methodology issue",
+      "description": "The scoring math, threshold mapping, or indicator definition is questionable for this claim."
+    },
+    {
+      "code": "gap_confirmed",
+      "label": "Gap confirmed",
+      "description": "The reviewer confirms no acceptable data exists — the honest gap stands (gaps-outrank-guesses)."
+    },
+    {
+      "code": "other",
+      "label": "Other",
+      "description": "None of the codes fit — the note text carries the reasoning."
+    }
+  ]
+}

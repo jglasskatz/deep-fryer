@@ -21,6 +21,7 @@ import type {
   FindingVerification,
   OutreachContactData,
   ResearchPlan,
+  ReviewAnnotation,
   RunTokenUsage,
   PortraitConfig,
   TenantBranding,
@@ -47,6 +48,11 @@ export const researchSessionKindEnum = pgEnum('research_session_kind', [
   'dimension',
 ]);
 export const moderationActionEnum = pgEnum('moderation_action', ['remove', 'restore', 'lock']);
+export const reviewDispositionEnum = pgEnum('review_disposition', [
+  'verified',
+  'rejected',
+  'needs_rework',
+]);
 
 const bytea = customType<{ data: Buffer; driverData: Buffer }>({
   dataType() {
@@ -197,6 +203,42 @@ export const findings = pgTable(
   (t) => ({
     dimensionIdx: index('findings_dimension_idx').on(t.dimensionId),
     sessionIdx: index('findings_session_idx').on(t.sessionId),
+  }),
+);
+
+/**
+ * Reviewer notes & dispositions (verification admin mode, SPEC.md §9).
+ * Append-only like findings — re-dispositioning appends a new row and the
+ * latest row per (run, finding) wins, so the full who-overrode-whom history
+ * survives. A row without a disposition is pure commentary: a reviewer
+ * jotting thoughts at run, dimension, or finding scope. Structured
+ * machine-readable content rides in `annotation`; prose in `note`.
+ * Substance CHECKs, the immutability trigger, and RLS live in migration
+ * 0003_review_note_policies.
+ */
+export const reviewNotes = pgTable(
+  'review_notes',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    runId: uuid('run_id')
+      .notNull()
+      .references(() => researchRuns.id, { onDelete: 'cascade' }),
+    dimensionId: uuid('dimension_id').references(() => dimensions.id),
+    findingId: uuid('finding_id').references(() => findings.id),
+    disposition: reviewDispositionEnum('disposition'),
+    annotation: jsonb('annotation').$type<ReviewAnnotation>(),
+    note: text('note'),
+    reviewerId: uuid('reviewer_id'),
+    /** Email or name at disposition time — the identity survives member churn. */
+    reviewerLabel: text('reviewer_label').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    runIdx: index('review_notes_run_idx').on(t.runId),
+    findingIdx: index('review_notes_finding_idx').on(t.runId, t.findingId, t.createdAt),
   }),
 );
 
@@ -393,7 +435,7 @@ export const researchSessionsRelations = relations(researchSessions, ({ one, man
   findings: many(findings),
 }));
 
-export const findingsRelations = relations(findings, ({ one }) => ({
+export const findingsRelations = relations(findings, ({ one, many }) => ({
   session: one(researchSessions, {
     fields: [findings.sessionId],
     references: [researchSessions.id],
@@ -401,6 +443,26 @@ export const findingsRelations = relations(findings, ({ one }) => ({
   dimension: one(dimensions, {
     fields: [findings.dimensionId],
     references: [dimensions.id],
+  }),
+  reviewNotes: many(reviewNotes),
+}));
+
+export const reviewNotesRelations = relations(reviewNotes, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [reviewNotes.tenantId],
+    references: [tenants.id],
+  }),
+  run: one(researchRuns, {
+    fields: [reviewNotes.runId],
+    references: [researchRuns.id],
+  }),
+  dimension: one(dimensions, {
+    fields: [reviewNotes.dimensionId],
+    references: [dimensions.id],
+  }),
+  finding: one(findings, {
+    fields: [reviewNotes.findingId],
+    references: [findings.id],
   }),
 }));
 
@@ -506,6 +568,8 @@ export type ResearchSession = typeof researchSessions.$inferSelect;
 export type NewResearchSession = typeof researchSessions.$inferInsert;
 export type Finding = typeof findings.$inferSelect;
 export type NewFinding = typeof findings.$inferInsert;
+export type ReviewNote = typeof reviewNotes.$inferSelect;
+export type NewReviewNote = typeof reviewNotes.$inferInsert;
 export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
 export type CommentVote = typeof commentVotes.$inferSelect;

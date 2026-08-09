@@ -1,4 +1,5 @@
 import frameworkJson from '../framework/framework.json';
+import reviewReasonsJson from '../framework/review-reasons.json';
 import thresholdsJson from '../framework/thresholds.json';
 
 export type Ring = 'social' | 'ecological';
@@ -75,8 +76,21 @@ export interface PortraitConfig {
   threshold_overrides?: Record<string, Partial<Threshold> & { target: number; rationale: string }>;
 }
 
+export interface ReviewReason {
+  code: string;
+  label: string;
+  description: string;
+}
+
+export interface ReviewReasons {
+  version: string;
+  description: string;
+  reasons: ReviewReason[];
+}
+
 export const framework: Framework = frameworkJson as Framework;
 export const thresholds: Thresholds = thresholdsJson as Thresholds;
+export const reviewReasons: ReviewReasons = reviewReasonsJson as ReviewReasons;
 
 export function getThreshold(ref: string): Threshold | undefined {
   return thresholds.thresholds[ref];
