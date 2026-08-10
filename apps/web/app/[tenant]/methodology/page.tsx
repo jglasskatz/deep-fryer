@@ -74,6 +74,13 @@ export default async function MethodologyPage({
                 </li>
               ))}
             </ol>
+            <p className="mt-2 text-sm">
+              Every cited source is archived at the moment it was read — browse the{' '}
+              <Link className="underline" href={`/${tenant}/sources`}>
+                source library
+              </Link>
+              .
+            </p>
           </section>
         ) : null}
 
@@ -125,6 +132,13 @@ export default async function MethodologyPage({
         {refreshed.length > 0 ? (
           <section className="mt-8">
             <h2 className="text-lg font-semibold">Last refreshed</h2>
+            <p className="mt-1 text-sm">
+              See how the portrait has changed over time on the{' '}
+              <Link className="underline" href={`/${tenant}/progress`}>
+                progress page
+              </Link>
+              .
+            </p>
             <ul className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
               {refreshed.map((r) => (
                 <li key={r.name} className="flex justify-between">

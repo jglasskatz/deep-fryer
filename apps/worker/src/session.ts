@@ -6,7 +6,7 @@ import { createSdkMcpServer, query, tool } from '@anthropic-ai/claude-agent-sdk'
 import { z } from 'zod';
 import type { SessionTokenUsage } from '@deep-fryer/core';
 import { DEFAULT_SESSION_MAX_TURNS, DEFAULT_SESSION_MODEL } from '@deep-fryer/research';
-import { captureEvidence } from './evidence.js';
+import { captureEvidence, type SourceCaptureRecord } from './evidence.js';
 import type { TenantStorage } from './storage.js';
 
 export interface SessionResult {
@@ -95,6 +95,12 @@ export async function runSession(input: {
   prompt: string;
   allowedTools: string[];
   storage?: TenantStorage;
+  /**
+   * Best-effort knowledge-base recorder for each evidence capture (SPEC.md
+   * §8 source library). Errors are swallowed — a db blip must never void a
+   * capture mid-session; the backfill script sweeps any gaps later.
+   */
+  onCapture?: (record: SourceCaptureRecord) => Promise<void>;
   maxTurns?: number;
   model?: string;
 }): Promise<SessionResult> {
@@ -120,7 +126,20 @@ export async function runSession(input: {
           },
           async (args) => {
             try {
-              const result = await captureEvidence(storage, args.url, args.pdf_url);
+              const record = await captureEvidence(storage, args.url, args.pdf_url);
+              if (input.onCapture) {
+                await input.onCapture(record).catch((err) => {
+                  console.error('source record failed (capture kept):', err);
+                });
+              }
+              // The model sees ONLY the evidence-field paths: extra fields
+              // here would tempt it to copy them into `evidence`, which the
+              // finding schema closes with additionalProperties:false.
+              const result = {
+                snapshot_path: record.snapshot_path,
+                pdf_path: record.pdf_path,
+                captured_at: record.captured_at,
+              };
               return { content: [{ type: 'text', text: JSON.stringify(result) }] };
             } catch (err) {
               return {

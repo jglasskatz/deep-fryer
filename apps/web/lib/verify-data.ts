@@ -17,6 +17,7 @@ import {
   researchRuns,
   researchSessions,
   reviewNotes,
+  sourcesBySnapshotPaths,
   tenants,
   type Finding,
   type ResearchRun,
@@ -113,6 +114,8 @@ export interface VerifyRunData {
   /** Run-scoped commentary (no finding attached), oldest first. */
   runNotes: ReviewNote[];
   dispositions: CurrentDisposition[];
+  /** evidence.snapshot_path → source-library row id, for archived-text links. */
+  sourceIds: Record<string, string>;
 }
 
 export async function verifyRun(tenantId: string, runId: string): Promise<VerifyRunData | null> {
@@ -220,6 +223,14 @@ export async function verifyRun(tenantId: string, runId: string): Promise<Verify
     ]),
   );
 
+  const evidencePaths = runFindings.flatMap((f) =>
+    f.payload.kind === 'indicator' && f.payload.evidence?.snapshot_path
+      ? [f.payload.evidence.snapshot_path]
+      : [],
+  );
+  const sourceRows = await sourcesBySnapshotPaths(db, tenantId, [...new Set(evidencePaths)]);
+  const sourceIds = Object.fromEntries([...sourceRows].map(([path, s]) => [path, s.id]));
+
   return {
     run,
     report,
@@ -227,5 +238,6 @@ export async function verifyRun(tenantId: string, runId: string): Promise<Verify
     dimensionContexts,
     runNotes: noteRows.filter((n) => !n.findingId),
     dispositions,
+    sourceIds,
   };
 }

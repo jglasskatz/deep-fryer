@@ -95,6 +95,7 @@ export default async function VerifyRunPage({
             findings={data.findings}
             contexts={contexts}
             evidenceBase={evidenceBase(tenant)}
+            sourceIds={data.sourceIds}
           />
         </div>
       </main>

@@ -53,7 +53,8 @@
           "properties": {
             "snapshot_path": { "type": "string", "description": "Tenant-storage path of the page screenshot captured at retrieval time." },
             "pdf_path": { "type": "string", "description": "Tenant-storage path of the source PDF, when the source is a document." },
-            "captured_at": { "type": "string", "format": "date-time" }
+            "captured_at": { "type": "string", "format": "date-time" },
+            "quote": { "type": "string", "minLength": 12, "description": "The exact passage from the source that contains the reported figure, copied verbatim - checked mechanically against the archived source text. Omit when the figure only appears in a chart or image, and say so in notes." }
           }
         },
         "confidence": { "enum": ["high", "medium", "low"] },

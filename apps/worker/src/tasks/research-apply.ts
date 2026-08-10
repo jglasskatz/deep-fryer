@@ -1,12 +1,20 @@
 import type { Task } from 'graphile-worker';
 import { and, eq, inArray } from 'drizzle-orm';
-import type { ContentSupported, FindingPayload, RunTokenUsage } from '@deep-fryer/core';
+import {
+  quoteSupported,
+  type ContentSupported,
+  type FindingPayload,
+  type RunTokenUsage,
+} from '@deep-fryer/core';
 import {
   dimensions,
   findings,
   getDb,
+  recordSource,
+  reconcileSourceTier,
   researchRuns,
   researchSessions,
+  sourcesBySnapshotPaths,
   tenants,
 } from '@deep-fryer/db';
 import {
@@ -148,6 +156,28 @@ export const researchApply: Task = async (rawPayload, helpers) => {
         prompt,
         allowedTools: spec.tool_allowlist,
         storage,
+        // Every capture becomes a knowledge-base row (SPEC.md §8 source
+        // library). Idempotent on (tenant, url_hash, content_hash), so the
+        // retry re-capturing an unchanged page collapses into one row.
+        onCapture: async (rec) => {
+          await recordSource(db, {
+            tenantId: tenant.id,
+            url: rec.url,
+            urlHash: rec.url_hash,
+            contentHash: rec.content_hash,
+            title: rec.title,
+            mediaType: rec.media_type,
+            text: rec.text,
+            textSource: rec.text_source,
+            extraction: 'capture',
+            snapshotPath: rec.snapshot_path,
+            pdfPath: rec.pdf_path ?? null,
+            capturedAt: new Date(rec.captured_at),
+            runId,
+            sessionId: row.id,
+            dimensionId: dimension.id,
+          });
+        },
       });
       usage[row.id] = result.usage;
 
@@ -164,6 +194,27 @@ export const researchApply: Task = async (rawPayload, helpers) => {
       const verifierUsage = { input_tokens: 0, output_tokens: 0 };
       for (const raw of rawFindings) {
         const { payload, checks } = await deterministicChecks(raw, config, dimension.slug);
+
+        // verify-against-the-archived-exhibit: the claimed supporting quote
+        // must appear in the text extracted at capture time. No source text →
+        // quote_ok stays undefined (unknowable ≠ failed).
+        if (payload?.kind === 'indicator' && payload.evidence?.quote) {
+          const src = (
+            await sourcesBySnapshotPaths(db, tenant.id, [payload.evidence.snapshot_path])
+          ).get(payload.evidence.snapshot_path);
+          if (src?.text) {
+            checks.quote_ok = quoteSupported(payload.evidence.quote, src.text);
+          }
+        }
+        // The most authoritative citation wins the source's tier (LEAST).
+        if (payload?.kind === 'indicator' && payload.evidence?.snapshot_path) {
+          await reconcileSourceTier(
+            db,
+            tenant.id,
+            payload.evidence.snapshot_path,
+            payload.source_tier,
+          );
+        }
 
         let verdict: { content_supported: ContentSupported; verifier_note?: string } | null;
         if (payload?.kind === 'indicator') {

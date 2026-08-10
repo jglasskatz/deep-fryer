@@ -317,6 +317,29 @@ describe('computeGateReport stages', () => {
   });
 });
 
+describe('quote_ok (verify-against-the-archived-exhibit)', () => {
+  it('a mismatched quote warns but never blocks; missing quotes are rollup-only', () => {
+    const mismatch = row({
+      payload: indicator({ evidence: { snapshot_path: 'e/x.png', captured_at: 'now', quote: 'a quoted passage of sufficient length' } }),
+      verification: verification({ quote_ok: false }),
+    });
+    const noQuote = row(); // no evidence.quote at all
+    const report = computeGateReport(input({ findings: [mismatch, noQuote], ...reviewed() }));
+    const quoteViolations = report.violations.filter((v) =>
+      v.message.includes('verify-against-the-archived-exhibit'),
+    );
+    expect(quoteViolations).toHaveLength(1);
+    expect(quoteViolations[0]!.severity).toBe('warning');
+    expect(quoteViolations[0]!.findingId).toBe(mismatch.id);
+    expect(report.rollups.quoteMismatch).toBe(1);
+    expect(report.rollups.quoteMissing).toBe(1);
+    // Warnings alone never make the run critical.
+    expect(
+      report.violations.filter((v) => v.severity === 'critical' && v.stage !== 'confirmation'),
+    ).toHaveLength(0);
+  });
+});
+
 describe('review-reasons vocabulary', () => {
   it('contract JSON and the core type enum carry the same codes', () => {
     const contractCodes = reviewReasons.reasons.map((r) => r.code).sort();

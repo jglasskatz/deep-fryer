@@ -15,5 +15,10 @@ Rules:
   paths).
 - Put the returned `snapshot_path` / `pdf_path` and `captured_at` into the
   finding's `evidence` field verbatim.
+- Alongside the returned paths, put the exact passage containing the figure
+  into `evidence.quote`, copied verbatim from the page — it is checked
+  mechanically against the archived source text, so do not paraphrase,
+  re-punctuate, or splice sentences. If the figure only appears in a chart,
+  table image, or map, omit `quote` and say so in the finding's `notes`.
 - If capture fails (site blocks rendering), say so in the finding's notes —
   the verifier and reviewer will weigh it.

@@ -16,12 +16,16 @@
     "import-santa-cruz": "tsx scripts/import-santa-cruz.ts",
     "research-verify": "tsx scripts/research-verify.ts",
     "seed-verify-fixture": "tsx scripts/seed-verify-fixture.ts",
+    "backfill-sources": "tsx scripts/backfill-sources.ts",
+    "seed-demo-history": "tsx scripts/seed-demo-history.ts",
     "test": "pnpm -r --if-present test",
     "export:nyc": "tsx scripts/export-nyc.ts"
   },
   "dependencies": {
+    "@deep-fryer/contract": "workspace:*",
     "@deep-fryer/core": "workspace:*",
     "@deep-fryer/db": "workspace:*",
+    "@deep-fryer/research": "workspace:*",
     "@keel_flow/core": "^0.2.0",
     "@keel_flow/pack-agent-topology": "^0.2.0",
     "@keel_flow/pack-general-se": "^0.2.0",
@@ -29,8 +33,7 @@
     "@keel_flow/schema": "^0.2.0",
     "@supabase/supabase-js": "^2.46.1",
     "drizzle-orm": "^0.36.4",
-    "@deep-fryer/contract": "workspace:*",
-    "@deep-fryer/research": "workspace:*"
+    "unpdf": "^1.3.2"
   },
   "devDependencies": {
     "@keel_flow/cli": "^0.2.0",

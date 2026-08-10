@@ -58,8 +58,11 @@ level_pct semantics: 0 = at the boundary, positive = shortfall/overshoot
 For each accepted source, call the `capture_evidence` tool with the source
 URL (and the direct PDF URL when the source is a document). It stores a
 snapshot next to the claim and returns the storage paths — put them in the
-finding's `evidence` field. A finding without captured evidence will be
-rejected by verification.
+finding's `evidence` field, along with `evidence.quote`: the exact passage
+containing the figure, copied verbatim (it is checked mechanically against
+the archived text; omit it only when the figure appears solely in a chart or
+image, and note that). A finding without captured evidence will be rejected
+by verification.
 
 ## Data gaps are findings
 

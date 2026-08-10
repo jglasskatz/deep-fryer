@@ -53,6 +53,14 @@ export default async function TenantPage({
             Methodology
           </a>
           <span className="mx-2 text-[color:var(--color-muted)]">·</span>
+          <a className="underline" href={`/${portrait.tenant.slug}/sources`}>
+            Sources
+          </a>
+          <span className="mx-2 text-[color:var(--color-muted)]">·</span>
+          <a className="underline" href={`/${portrait.tenant.slug}/progress`}>
+            Progress
+          </a>
+          <span className="mx-2 text-[color:var(--color-muted)]">·</span>
           <a className="underline" href={`/${portrait.tenant.slug}/outreach`}>
             Get involved
           </a>

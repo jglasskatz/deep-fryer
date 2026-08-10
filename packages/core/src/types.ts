@@ -27,6 +27,8 @@ export interface IndicatorEvidence {
   snapshot_path: string;
   pdf_path?: string;
   captured_at: string;
+  /** The exact passage containing the figure, copied verbatim from the source. */
+  quote?: string;
 }
 
 export interface Indicator {
@@ -134,6 +136,12 @@ export interface FindingVerification {
   scale_ok: boolean;
   content_supported: ContentSupported;
   verifier_note?: string;
+  /**
+   * Does evidence.quote appear in the text archived at capture time
+   * (verify-against-the-archived-exhibit)? Absent when the finding carries
+   * no quote or the source yielded no text — unknowable ≠ failed.
+   */
+  quote_ok?: boolean;
 }
 
 export interface IndicatorFindingPayload {

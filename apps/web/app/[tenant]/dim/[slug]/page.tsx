@@ -5,6 +5,9 @@ import { Thread } from '@/components/discussion/Thread';
 import { evidenceUrl, getPortrait, hasDatabase } from '@/lib/data';
 import { dimensionForPublicSlug, dimensionThread } from '@/lib/discussion';
 import { getAuth, getRole, roleAtLeast } from '@/lib/auth';
+import { sourceIdsForEvidence } from '@/lib/source-data';
+import { dimensionHistory } from '@/lib/progress-data';
+import { Sparkline, type SparkPoint } from '@/components/progress/Sparkline';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,6 +51,35 @@ export default async function DimensionDrilldownPage({
     thread = threadResult;
   }
 
+  // Citations link into the source library when the exhibit has a KB row.
+  let sourceIds: Record<string, string> = {};
+  if (resolved) {
+    const paths = data.indicators.flatMap((ind) =>
+      ind.evidence?.snapshot_path ? [ind.evidence.snapshot_path] : [],
+    );
+    if (paths.length) sourceIds = await sourceIdsForEvidence(resolved.tenant.id, paths);
+  }
+
+  // Value history across publication eras — the x axis is the data vintage
+  // (indicator.year); a hollow point marks a same-vintage revision.
+  const history = resolved ? await dimensionHistory(tenant, slug) : [];
+  const sparkFor = (name: string): SparkPoint[] => {
+    const byYear = new Map<number, SparkPoint>();
+    for (const point of history) {
+      const ind = point.indicators.find((i) => i.name === name);
+      if (!ind || ind.year === null || ind.value === null) continue;
+      const value = Number(ind.value);
+      if (!Number.isFinite(value)) continue;
+      const prev = byYear.get(ind.year);
+      byYear.set(ind.year, {
+        year: ind.year,
+        value,
+        revised: prev !== undefined && prev.value !== value,
+      });
+    }
+    return [...byYear.values()].sort((a, b) => a.year - b.year);
+  };
+
   return (
     <>
       <SiteHeader
@@ -83,6 +115,20 @@ export default async function DimensionDrilldownPage({
                 {ind.target !== null ? `target: ${ind.target}` : 'no target set'}
                 {ind.geographic_scale ? ` · ${ind.geographic_scale} data` : ''}
               </p>
+              {(() => {
+                const spark = sparkFor(ind.name);
+                return spark.length >= 2 ? (
+                  <div className="mt-1 text-[color:var(--color-muted)]">
+                    <Sparkline points={spark} />
+                    <span className="ml-2 align-top text-[11px]">
+                      {spark[0]!.year}–{spark[spark.length - 1]!.year} ·{' '}
+                      <Link className="underline" href={`/${tenant}/progress`}>
+                        progress
+                      </Link>
+                    </span>
+                  </div>
+                ) : null;
+              })()}
               {ind.source ? (
                 <p className="mt-2 text-sm">
                   Source:{' '}
@@ -94,6 +140,22 @@ export default async function DimensionDrilldownPage({
                     ind.source
                   )}
                 </p>
+              ) : null}
+              {ind.evidence?.quote ? (
+                <blockquote className="mt-2 border-l-2 border-black/20 pl-3 text-sm italic">
+                  “{ind.evidence.quote}”
+                  {sourceIds[ind.evidence.snapshot_path] ? (
+                    <>
+                      {' '}
+                      <Link
+                        className="not-italic underline"
+                        href={`/${tenant}/sources/${sourceIds[ind.evidence.snapshot_path]}?q=${encodeURIComponent(ind.evidence.quote)}`}
+                      >
+                        read in the archived source →
+                      </Link>
+                    </>
+                  ) : null}
+                </blockquote>
               ) : null}
               {ind.evidence ? (
                 <figure className="mt-3">

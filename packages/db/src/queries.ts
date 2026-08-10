@@ -15,6 +15,35 @@ export async function publishedDoughnut<T = unknown>(db: Db, slug: string): Prom
   return result[0]?.portrait ?? null;
 }
 
+/**
+ * The portrait as it stood at `at` (SPEC.md §10 /progress): identical shape
+ * to publishedDoughnut, resolved from publication history (published_at
+ * survives archive, so past eras reconstruct exactly).
+ */
+export async function publishedDoughnutAsOf<T = unknown>(
+  db: Db,
+  slug: string,
+  at: Date,
+): Promise<T | null> {
+  // postgres-js can't bind a Date on the raw execute path — send ISO text.
+  const result = await db.execute<{ portrait: T | null }>(
+    sql`SELECT published_doughnut_asof(${slug}, ${at.toISOString()}::timestamptz) AS portrait`,
+  );
+  return result[0]?.portrait ?? null;
+}
+
+/** Distinct publish days for a tenant — the candidate progress eras. */
+export async function publishedSnapshotDates(db: Db, tenantId: string): Promise<Date[]> {
+  const rows = await db.execute<{ day: string }>(sql`
+    SELECT DISTINCT date_trunc('day', v.published_at) AS day
+      FROM dimension_versions v
+      JOIN dimensions d ON d.id = v.dimension_id
+     WHERE d.tenant_id = ${tenantId} AND v.published_at IS NOT NULL
+     ORDER BY 1
+  `);
+  return [...rows].map((r) => new Date(r.day));
+}
+
 /** Newest version of one dimension, or null. */
 export async function latestVersion(
   db: Db,

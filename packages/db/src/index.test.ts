@@ -41,6 +41,71 @@ describe.skipIf(!hasDb)('db integration', () => {
     await db.delete(tenants).where(eq(tenants.id, tenant.id));
   });
 
+  it('published_doughnut_asof reconstructs past eras from publication history', async () => {
+    const { getDb, provisionTenant, appendDimensionVersion, latestVersion, publishedDoughnut, publishedDoughnutAsOf, publishedSnapshotDates } =
+      await import('./index.js');
+    const { dimensions, tenants } = await import('./schema.js');
+    const { eq } = await import('drizzle-orm');
+    const db = getDb();
+    const slug = `t-${Date.now().toString(36)}-asof`;
+    const { tenant, dimensions: dims } = await provisionTenant(db, { slug, name: 'Asof City' });
+
+    try {
+      const dimId = dims[0]!.dimensionId;
+      const t1 = new Date('2025-01-15T12:00:00Z');
+      const t2 = new Date('2026-01-15T12:00:00Z');
+      const seed = await latestVersion(db, dimId);
+
+      const v1 = await appendDimensionVersion(db, {
+        dimensionId: dimId,
+        status: 'archived',
+        data: { ...seed!.data, context: 'era one' },
+        origin: 'human',
+        changeNote: 'v1',
+        publishedAt: t1,
+      });
+      const v2 = await appendDimensionVersion(db, {
+        dimensionId: dimId,
+        status: 'published',
+        data: { ...seed!.data, context: 'era two' },
+        origin: 'human',
+        changeNote: 'v2',
+        publishedAt: t2,
+      });
+      await db
+        .update(dimensions)
+        .set({ publishedVersionId: v2.id })
+        .where(eq(dimensions.id, dimId));
+
+      type Portrait = { dimensions: { slug: string; version_num: number; data: { context: string } }[] };
+      const asofMid = await publishedDoughnutAsOf<Portrait>(db, slug, new Date('2025-06-01'));
+      const asofNow = await publishedDoughnutAsOf<Portrait>(db, slug, new Date('2026-06-01'));
+      const before = await publishedDoughnutAsOf<Portrait>(db, slug, new Date('2024-06-01'));
+      expect(asofMid?.dimensions.find((d) => d.version_num === v1.versionNum)?.data.context).toBe('era one');
+      expect(asofNow?.dimensions.find((d) => d.version_num === v2.versionNum)?.data.context).toBe('era two');
+      expect(before?.dimensions).toHaveLength(0);
+
+      // Shape parity with published_doughnut (same keys per dimension).
+      const current = await publishedDoughnut<Portrait>(db, slug);
+      const a = asofNow!.dimensions[0]!;
+      const c = current!.dimensions[0]!;
+      expect(Object.keys(a).sort()).toEqual(Object.keys(c).sort());
+
+      // A dimension archived AFTER T still appears at T; not after archive.
+      const t3 = new Date('2026-03-01T00:00:00Z');
+      await db.update(dimensions).set({ archivedAt: t3 }).where(eq(dimensions.id, dimId));
+      const preArchive = await publishedDoughnutAsOf<Portrait>(db, slug, new Date('2026-02-01'));
+      const postArchive = await publishedDoughnutAsOf<Portrait>(db, slug, new Date('2026-06-01'));
+      expect(preArchive?.dimensions.some((d) => d.data.context === 'era two')).toBe(true);
+      expect(postArchive?.dimensions.some((d) => d.data.context === 'era two')).toBe(false);
+
+      const days = await publishedSnapshotDates(db, tenant.id);
+      expect(days.length).toBeGreaterThanOrEqual(2);
+    } finally {
+      await db.delete(tenants).where(eq(tenants.id, tenant.id));
+    }
+  });
+
   it('review_notes: append-only with substance and reject-reason constraints', async () => {
     const { getDb, provisionTenant } = await import('./index.js');
     const { findings, researchRuns, researchSessions, reviewNotes, tenants } =

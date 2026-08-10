@@ -22,6 +22,9 @@ export const indicatorEvidenceSchema = z.object({
   snapshot_path: z.string(),
   pdf_path: z.string().optional(),
   captured_at: z.string(),
+  // Load-bearing: this zod mirror is non-strict but STRIPPING — without the
+  // key here, safeParse would silently drop the quote before insert.
+  quote: z.string().optional(),
 });
 
 export const indicatorSchema = z.object({

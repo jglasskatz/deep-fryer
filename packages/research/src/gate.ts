@@ -83,6 +83,10 @@ export interface GateRollups {
   schemaFailed: number;
   missingVerification: number;
   flagged: number;
+  /** Indicator findings that carry no evidence.quote (observational only). */
+  quoteMissing: number;
+  /** Quotes that were NOT found in the archived source text. */
+  quoteMismatch: number;
 }
 
 export interface GateReport {
@@ -154,6 +158,8 @@ export function computeGateReport(input: GateInput): GateReport {
   let urlBroken = 0;
   let schemaFailed = 0;
   let missingVerification = 0;
+  let quoteMissing = 0;
+  let quoteMismatch = 0;
   for (const f of findings) {
     if (!f.verification) {
       missingVerification += 1;
@@ -177,6 +183,18 @@ export function computeGateReport(input: GateInput): GateReport {
           'deterministic',
           'warning',
           `${label(f)}: source URL did not resolve — snapshot is the surviving record; needs review disposition`,
+          f.id,
+        );
+      }
+      // Warning, never critical: image-heavy sources legitimately can't quote.
+      if (!f.payload.evidence?.quote) {
+        quoteMissing += 1;
+      } else if (f.verification.quote_ok === false) {
+        quoteMismatch += 1;
+        v(
+          'deterministic',
+          'warning',
+          `${label(f)}: supporting quote not found in the archived source text (verify-against-the-archived-exhibit)`,
           f.id,
         );
       }
@@ -356,6 +374,8 @@ export function computeGateReport(input: GateInput): GateReport {
       schemaFailed,
       missingVerification,
       flagged,
+      quoteMissing,
+      quoteMismatch,
     },
     unreviewedDimensionIds: unreviewed,
     approval,

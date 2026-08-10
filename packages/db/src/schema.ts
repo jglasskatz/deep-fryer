@@ -9,6 +9,7 @@ import {
   timestamp,
   real,
   bigserial,
+  boolean,
   primaryKey,
   unique,
   index,
@@ -145,6 +146,8 @@ export const dimensionVersions = pgTable(
   },
   (t) => ({
     uniqDimVersion: unique('dimension_versions_dim_version_uniq').on(t.dimensionId, t.versionNum),
+    // published_doughnut_asof scans latest published_at <= T per dimension.
+    publishedIdx: index('dimension_versions_published_idx').on(t.dimensionId, t.publishedAt),
   }),
 );
 
@@ -203,6 +206,57 @@ export const findings = pgTable(
   (t) => ({
     dimensionIdx: index('findings_dimension_idx').on(t.dimensionId),
     sessionIdx: index('findings_session_idx').on(t.sessionId),
+  }),
+);
+
+/**
+ * Source knowledge base (SPEC.md §8): every evidence capture becomes a
+ * content-hashed, text-extracted row so citations can link to the actual
+ * text and the corpus is searchable. The tsvector column + GIN index, RLS,
+ * and the provenance-guard trigger (only source_tier and text_public may
+ * change after insert) live in migration 0005_sources_policies. Idempotency
+ * key (tenant, url_hash, content_hash) absorbs session retries and re-runs
+ * of unchanged pages.
+ */
+export const sources = pgTable(
+  'sources',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    /** '' allowed: Santa Cruz imports may have no source URL. */
+    url: text('url').notNull(),
+    /** sha256(url).slice(0,12) — the evidence filename stem scheme. */
+    urlHash: text('url_hash').notNull(),
+    /** 64-hex sha256 of normalized title+text; PNG bytes when text is null. */
+    contentHash: text('content_hash').notNull(),
+    title: text('title'),
+    mediaType: text('media_type').$type<'html' | 'pdf'>().notNull().default('html'),
+    /** Extracted text, truncated to SOURCE_TEXT_MAX_CHARS at write time. */
+    text: text('text'),
+    textSource: text('text_source').$type<'html' | 'pdf'>(),
+    extraction: text('extraction').$type<'capture' | 'backfill'>().notNull().default('capture'),
+    snapshotPath: text('snapshot_path').notNull(),
+    pdfPath: text('pdf_path'),
+    capturedAt: timestamp('captured_at', { withTimezone: true }).notNull(),
+    runId: uuid('run_id').references(() => researchRuns.id),
+    sessionId: uuid('session_id').references(() => researchSessions.id),
+    dimensionId: uuid('dimension_id').references(() => dimensions.id),
+    /** Reconciled from findings after the session (LEAST wins). */
+    sourceTier: integer('source_tier'),
+    /** null = derive from tier (<=2 → public full text). Explicit override wins. */
+    textPublic: boolean('text_public'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    uniqTenantUrlContent: unique('sources_tenant_url_content_uniq').on(
+      t.tenantId,
+      t.urlHash,
+      t.contentHash,
+    ),
+    tenantDimensionIdx: index('sources_tenant_dimension_idx').on(t.tenantId, t.dimensionId),
+    tenantSnapshotIdx: index('sources_tenant_snapshot_idx').on(t.tenantId, t.snapshotPath),
   }),
 );
 
@@ -447,6 +501,25 @@ export const findingsRelations = relations(findings, ({ one, many }) => ({
   reviewNotes: many(reviewNotes),
 }));
 
+export const sourcesRelations = relations(sources, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [sources.tenantId],
+    references: [tenants.id],
+  }),
+  run: one(researchRuns, {
+    fields: [sources.runId],
+    references: [researchRuns.id],
+  }),
+  session: one(researchSessions, {
+    fields: [sources.sessionId],
+    references: [researchSessions.id],
+  }),
+  dimension: one(dimensions, {
+    fields: [sources.dimensionId],
+    references: [dimensions.id],
+  }),
+}));
+
 export const reviewNotesRelations = relations(reviewNotes, ({ one }) => ({
   tenant: one(tenants, {
     fields: [reviewNotes.tenantId],
@@ -570,6 +643,8 @@ export type Finding = typeof findings.$inferSelect;
 export type NewFinding = typeof findings.$inferInsert;
 export type ReviewNote = typeof reviewNotes.$inferSelect;
 export type NewReviewNote = typeof reviewNotes.$inferInsert;
+export type Source = typeof sources.$inferSelect;
+export type NewSource = typeof sources.$inferInsert;
 export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
 export type CommentVote = typeof commentVotes.$inferSelect;

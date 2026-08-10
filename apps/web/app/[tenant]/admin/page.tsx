@@ -44,6 +44,9 @@ export default async function TenantAdminPage({
             <Link className="rounded border px-3 py-1.5 hover:bg-black/5" href={`/${tenant}/admin/verify`}>
               Verify
             </Link>
+            <Link className="rounded border px-3 py-1.5 hover:bg-black/5" href={`/${tenant}/admin/sources`}>
+              Sources
+            </Link>
             <Link className="rounded border px-3 py-1.5 hover:bg-black/5" href={`/${tenant}/admin/research`}>
               Research runs
             </Link>

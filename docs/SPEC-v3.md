@@ -216,6 +216,13 @@ when a worker starts; the insights form copy says so.
 > converge on the same append-only pattern and reason-code vocabulary
 > (`@deep-fryer/contract` review-reasons.json), with machine adjudications
 > rendered beside — never in place of — human dispositions.
+>
+> **Also shipped [D]:** the source knowledge base (SPEC.md §8/§10 — capture-time
+> text extraction, content-hashed immutable exhibits, `evidence.quote` +
+> `quote_ok`, Postgres FTS now / pgvector deferred, tiered public exposure:
+> full text for tier 1–2, excerpts for 3–4, admin-only corpus search) and the
+> progress view (SPEC.md §10 — `published_doughnut_asof`, `/{tenant}/progress`
+> with the vintage-vs-revision honesty rule, drilldown sparklines).
 
 ### 4.1 Machine audit as product **[D: stored + one-click, policy-driven]**
 

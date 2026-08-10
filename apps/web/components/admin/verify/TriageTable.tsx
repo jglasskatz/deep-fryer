@@ -108,12 +108,15 @@ export function TriageTable({
   findings,
   contexts,
   evidenceBase,
+  sourceIds = {},
 }: {
   tenantSlug: string;
   runId: string;
   findings: TriageFinding[];
   contexts: Record<string, TriageDimensionContext>;
   evidenceBase: string;
+  /** evidence.snapshot_path → source-library id for archived-text links. */
+  sourceIds?: Record<string, string>;
 }) {
   const [filter, setFilter] = useState<Filter>('all');
   const [openId, setOpenId] = useState<string | null>(null);
@@ -151,6 +154,7 @@ export function TriageTable({
             tenantSlug={tenantSlug}
             runId={runId}
             evidenceBase={evidenceBase}
+            sourceIds={sourceIds}
             open={openId === f.finding.id}
             onToggle={() => setOpenId(openId === f.finding.id ? null : f.finding.id)}
           />
@@ -169,6 +173,7 @@ function TriageRow({
   tenantSlug,
   runId,
   evidenceBase,
+  sourceIds,
   open,
   onToggle,
 }: {
@@ -177,6 +182,7 @@ function TriageRow({
   tenantSlug: string;
   runId: string;
   evidenceBase: string;
+  sourceIds: Record<string, string>;
   open: boolean;
   onToggle: () => void;
 }) {
@@ -217,6 +223,13 @@ function TriageRow({
                 label={`source ${v.content_supported}`}
                 title={v.verifier_note}
               />
+              {v.quote_ok !== undefined ? (
+                <Chip
+                  ok={v.quote_ok}
+                  label="quote"
+                  title="Does evidence.quote appear in the archived source text?"
+                />
+              ) : null}
             </>
           ) : v && p.kind === 'gap' ? (
             <span className="rounded bg-black/10 px-1.5 py-0.5 text-[11px]" title={v.verifier_note}>
@@ -240,6 +253,7 @@ function TriageRow({
           tenantSlug={tenantSlug}
           runId={runId}
           evidenceBase={evidenceBase}
+          sourceIds={sourceIds}
         />
       ) : null}
     </div>
@@ -252,12 +266,14 @@ function FindingDetail({
   tenantSlug,
   runId,
   evidenceBase,
+  sourceIds,
 }: {
   item: TriageFinding;
   context: TriageDimensionContext | undefined;
   tenantSlug: string;
   runId: string;
   evidenceBase: string;
+  sourceIds: Record<string, string>;
 }) {
   const { finding } = item;
   const p = finding.payload;
@@ -286,6 +302,29 @@ function FindingDetail({
                 </a>{' '}
                 · tier {p.source_tier} · {p.geographic_scale} · {p.confidence} confidence
               </p>
+              {p.evidence?.quote ? (
+                <blockquote
+                  className={`mt-2 border-l-2 pl-2 text-xs italic ${
+                    v?.quote_ok === false ? 'border-red-400 text-red-900' : 'border-black/20'
+                  }`}
+                >
+                  “{p.evidence.quote}”
+                  {v?.quote_ok === false ? ' — NOT found in the archived text' : ''}
+                  {sourceIds[p.evidence.snapshot_path] ? (
+                    <>
+                      {' '}
+                      <a
+                        className="not-italic underline"
+                        href={`/${tenantSlug}/sources/${sourceIds[p.evidence.snapshot_path]}?q=${encodeURIComponent(p.evidence.quote)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        open archived text
+                      </a>
+                    </>
+                  ) : null}
+                </blockquote>
+              ) : null}
               {v?.verifier_note ? (
                 <p
                   className={`mt-2 rounded p-2 text-xs ${
