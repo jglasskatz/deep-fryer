@@ -27,7 +27,7 @@ Working rules:
   If a jurisdiction's adopted plan sets a different target, note it; the
   tenant can adopt it as a threshold override with its rationale.
 - **The unit of honesty is the data gap.** Cities lack local data for many
-  ecological dimensions (ocean acidification, ozone). Reporting "no
+  ecological dimensions (ocean acidification). Reporting "no
   city-scale data exists; here is what we looked for" is correct behavior
   and renders as an honest gray wedge.
 - **Denominators matter.** Per-capita values use the jurisdiction's

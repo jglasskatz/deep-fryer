@@ -156,7 +156,9 @@ export function defaultPortraitConfig(regionName: string, regionDefinition: stri
       per_dimension: {
         'climate-change': ['city', 'county', 'regional'],
         'ocean-acidification': ['city', 'county', 'regional', 'global'],
-        'ozone-depletion': ['city', 'county', 'regional', 'state', 'national', 'global'],
+        // Heat vulnerability is mapped locally, but mortality surveillance is
+        // often published at county/regional/state level.
+        'extreme-heat': ['city', 'county', 'regional', 'state'],
       },
     },
   };

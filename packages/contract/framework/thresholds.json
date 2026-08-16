@@ -122,10 +122,17 @@
       "function": "lower_is_better",
       "rationale": "5 µg/m³ annual mean is the WHO 2021 air-quality guideline; the US NAAQS (9 µg/m³) is a regulatory floor, not a health-based target."
     },
-    "ozone-depletion.ods-phaseout-compliance": {
-      "target": 100,
-      "function": "higher_is_better",
-      "rationale": "The Montreal Protocol phaseout is the operative boundary; a locality's contribution is compliance. Most portraits will report this dimension as a data gap with a global-context note."
+    "extreme-heat.hvi-high-share": {
+      "target": 0,
+      "scale": 100,
+      "function": "lower_is_better",
+      "rationale": "Share of residents living in the two highest classes of the jurisdiction's adopted heat-vulnerability index (e.g. NYC DOHMH HVI 4-5). Where a heat-vulnerability instrument exists it is the government's own statement of who heat endangers, and eliminating high vulnerability is the adopted direction of travel — so the boundary is zero share in the highest classes."
+    },
+    "extreme-heat.heat-mortality-per-100k": {
+      "target": 0,
+      "scale": 6,
+      "function": "lower_is_better",
+      "rationale": "Heat-attributable deaths per 100,000 residents per year, from the health department's heat mortality reporting. Zero is the only defensible ceiling for a preventable-death hazard (Vision-Zero style); scored as distance from zero against a large-US-city baseline of ~6 per 100k (NYC 2014-2023 average ≈ 5.9). Override the scale per tenant where a local baseline is published."
     }
   }
 }
