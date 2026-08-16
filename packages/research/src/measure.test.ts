@@ -252,7 +252,7 @@ describe('scoreNegativeControls', () => {
   it('counts a confident value on a no-data indicator as fabrication', () => {
     const { results, fabricationRate } = scoreNegativeControls([
       indicatorFinding({ indicatorSlug: 'aragonite-saturation', tenantSlug: 'bronx', value: 2.7 }),
-      gapFinding('ods-phaseout-compliance', 'queens'),
+      gapFinding('aragonite-saturation', 'queens'),
     ]);
     expect(fabricationRate).toBeCloseTo(0.5);
     expect(results.find((r) => r.tenantSlug === 'bronx')!.correct).toBe(false);

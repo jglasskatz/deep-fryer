@@ -265,9 +265,11 @@ export const DENOMINATORS: Record<string, Denominator> = {
   'nitrate-groundwater': 'non-additive',
   'protected-land-share': 'non-additive',
   'natural-land-conversion': 'non-additive',
-  // Planetary boundaries with no municipal decomposition at all.
+  // Planetary boundaries with no municipal decomposition at all. (The ozone
+  // ODS-compliance indicator lived here until the framework retired the
+  // dimension for extreme-heat, whose share/per-100k indicators default to
+  // the population denominator.)
   'aragonite-saturation': 'non-additive',
-  'ods-phaseout-compliance': 'non-additive',
   // Absolute counts (NYC custom indicators): boroughs sum to the city, they
   // do not population-weight to it. Excluded until the instrument grows a
   // sum-reconciliation mode.
@@ -382,11 +384,9 @@ export const NEGATIVE_CONTROLS: NegativeControl[] = [
     rationale:
       'Ocean chemistry has no borough decomposition; any borough-specific Ω value is fabricated.',
   },
-  {
-    indicatorSlug: 'ods-phaseout-compliance',
-    rationale:
-      'Montreal Protocol compliance is tracked nationally by treaty party; no municipality reports it.',
-  },
+  // The second control (ozone ODS phaseout — tracked nationally by treaty
+  // party) retired with the dimension when extreme-heat replaced it; add a
+  // new un-researchable control if the framework ever grows one.
 ];
 
 export interface ControlResult {
