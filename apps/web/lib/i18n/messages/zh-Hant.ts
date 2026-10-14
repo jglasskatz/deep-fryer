@@ -294,10 +294,10 @@ export const zhHant: Messages = {
     navLabel: '緊急情況',
     metaTitle: '緊急情況 · {name}',
     title: '緊急情況與災害：{name}',
-    intro: '官方警報、本區面對的威脅、已制定的計劃，以及求助途徑。',
+    intro: '官方警報、本地區面對的威脅、已制定的計劃，以及求助途徑。',
     empty: '本畫像尚未發布緊急情況資訊。',
     alertsTitle: '生效中的警報',
-    alertsNone: '截至{time}，本區沒有生效中的天氣警報。',
+    alertsNone: '截至{time}，本地區沒有生效中的天氣警報。',
     alertsChecked: '最後檢查時間：{time}。',
     alertsStale: '最近未能連接官方警報資料來源。請直接查閱美國國家氣象局的資訊。',
     alertsSavedCopy:

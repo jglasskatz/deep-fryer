@@ -303,7 +303,7 @@ export const ko: Messages = {
     intro: '공식 경보, 이 지역이 직면한 위협 요인, 이미 마련된 계획, 도움을 받을 수 있는 곳을 안내합니다.',
     empty: '이 프로필에는 아직 게시된 비상 정보가 없습니다.',
     alertsTitle: '발효 중인 경보',
-    alertsNone: '{time} 기준, 이 지역에 발효 중인 기상 경보가 없습니다.',
+    alertsNone: '{time} 기준, 이 지역에 발효 중인 기상특보가 없습니다.',
     alertsChecked: '마지막 확인: {time}.',
     alertsStale: '최근 공식 경보 정보를 받아오지 못했습니다. 미국 국립기상청에서 직접 확인하십시오.',
     alertsSavedCopy:
