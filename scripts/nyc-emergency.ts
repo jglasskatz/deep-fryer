@@ -53,7 +53,12 @@ import { emergencyPlans, getDb, hazards, tenantConfig, tenants } from '@deep-fry
 
 /**
  * NWS zones (UGC) per borough: the county (NYC + county FIPS) and the public
- * forecast zone(s) covering it. Queens is split into two forecast zones.
+ * forecast zone(s) covering it, all issued by WFO New York (OKX, Upton).
+ * Zone numbers follow the NWS service change notices: SCN 99-37 lists
+ * NYZ072 New York, NYZ073 Bronx, NYZ074 Richmond, NYZ075 Kings and NYZ076
+ * Queens; SCN 10-45 split Queens into NYZ176 Northern Queens and NYZ178
+ * Southern Queens; the March 2023 change only moved boundaries over water.
+ * The preflight's alerts check confirms api.weather.gov answers for them.
  */
 const BOROUGH_ZONES = {
   manhattan: { county: 'NYC061', zones: ['NYZ072'], names: 'New York County; New York (Manhattan)' },

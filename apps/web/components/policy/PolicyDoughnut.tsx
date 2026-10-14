@@ -66,9 +66,10 @@ export function PolicyDoughnut({
           ))}
         </ul>
         <p className="mt-2 text-center text-xs text-[color:var(--color-muted)]">
-          In “With this policy”, every impacted wedge takes its direction’s colour. A wedge changes
-          size only where the analysis quantified one of its published indicators; the rest are
-          direction only. Gray wedges have no published data.
+          In “With this policy”, every impacted dimension’s name (and its wedge, where it has one)
+          takes its direction’s colour. A wedge changes size only where the analysis quantified one
+          of its published indicators; the rest are direction only. Gray wedges have no published
+          data.
         </p>
       </div>
     </figure>

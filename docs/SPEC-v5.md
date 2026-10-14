@@ -96,10 +96,15 @@ Impacts without a quantified projection change no wedge size; they are
 "direction only".
 
 **The flashing doughnut:** the doughnut alternates between *now* and *with
-this policy* (2.4-second cycle, a slow alternation, not a strobe). Every
-impacted wedge is tinted while shown in the policy state — green for
-improves, red for worsens, amber for mixed — so direction-only impacts flash
-too; quantified ones also change size. Controls: pause/play, and a static
+this policy* (2.4-second cycle, a slow alternation, not a strobe). In the
+policy state every impacted dimension's name is drawn on a pill of its
+direction's colour — green for improves, red for worsens, amber for mixed —
+and its wedge, where it has one, takes the same colour; so direction-only
+impacts flash too, a dimension with no shortfall or overshoot (no wedge) is
+still marked, and a highlight is never mistaken for the red of an ordinary
+wedge. Quantified impacts also change size — unless another indicator is
+the dimension's worst (a dimension is drawn at its worst indicator), which
+the caption and the impacts table say in words. Controls: pause/play, and a static
 choice of *now* / *with policy*. Reduced-motion readers get the static
 *with policy* view. The impacts table is the accessible equivalent of the
 chart and lists every impact with its rationale, confidence, and sources.
@@ -132,7 +137,9 @@ staff curation at `/{tenant}/admin/emergency`.
    doughnut dimensions it threatens (with impact level), the plans that
    address it, and — when an active alert matches the hazard's NWS event
    types — an "active now" badge. Selecting a hazard flashes its threatened
-   dimensions on the doughnut ("threats in terms of risk/impact").
+   dimensions on the doughnut ("threats in terms of risk/impact"): each
+   threatened dimension's name on a pill coloured by impact level (high,
+   moderate, low), the same marking as §2.
 4. **Existing plans** — the jurisdiction's adopted plans (hazard mitigation,
    heat, coastal storm…): title, agency, year, plain-language summary, link,
    and the languages each is published in ("surfacing existing plans,
@@ -158,15 +165,19 @@ emergency_phone, info_phone }`, public). Hazards, plans, and resources have
 `published`; only published rows are public (RLS). Editors curate.
 
 **NYC [P]:** `scripts/nyc-emergency.ts` proposes the NWS county and
-forecast zones (NYC061/NYZ072 Manhattan, NYC005/NYZ073 Bronx,
+forecast zones (numbers per the NWS service change notices SCN 99-37 and
+SCN 10-45, which split Queens) (NYC061/NYZ072 Manhattan, NYC005/NYZ073 Bronx,
 NYC085/NYZ074 Staten Island, NYC047/NYZ075 Brooklyn, NYC081/NYZ176/NYZ178
 Queens — whole city: all of them), Notify NYC, and hazards from the NYC
 Hazard Mitigation Plan's hazard list. Like the NYC portrait config, it is a
 dry run until `--apply`; it writes hazards **unpublished** so ratings are a
 staff decision, and it refuses to write any plan link that does not answer.
 
-**The preflight (SPEC-v4) gains a check** that `api.weather.gov` answers for
-the configured zones.
+**The preflight (SPEC-v4) gains checks** that `api.weather.gov` answers for
+the configured zones, that both county and forecast zones are listed, and
+that every zone exists (its `/zones/county|forecast/{id}` record answers) —
+the alerts endpoint accepts any well-formed code, so a mistyped zone would
+otherwise read "no alerts" forever.
 
 ## 4. Theme and the fryer
 

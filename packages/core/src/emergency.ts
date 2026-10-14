@@ -565,6 +565,34 @@ export function nwsZoneCoverageVerdict(zones: readonly string[]): Verdict {
     : { status: 'warn', detail: 'county codes only — add the forecast zones (e.g. NYZ072) for heat, winter, coastal flood, wind, and air quality alerts' };
 }
 
+/**
+ * The NWS record for one zone: county codes (NYC061) live under
+ * /zones/county, public forecast zones (NYZ072) under /zones/forecast. The
+ * alerts endpoint accepts any well-formed code, so only this lookup tells a
+ * real zone from a mistyped or retired one.
+ */
+export function nwsZoneUrl(zone: string): string {
+  if (!UGC_RE.test(zone)) throw new Error(`not an NWS UGC code: ${zone}`);
+  return `https://api.weather.gov/zones/${COUNTY_ZONE_RE.test(zone) ? 'county' : 'forecast'}/${zone}`;
+}
+
+/**
+ * Preflight verdict for the zone lookups: a zone the NWS does not know (404)
+ * would silently never receive an alert, so it fails; any other non-200 is
+ * a warning (the service may be degraded, not the configuration wrong).
+ */
+export function nwsZonesVerdict(lookups: readonly { zone: string; status: number }[]): Verdict {
+  const unknown = lookups.filter((l) => l.status === 404).map((l) => l.zone);
+  if (unknown.length) {
+    return { status: 'fail', detail: `unknown to the NWS: ${unknown.join(', ')} — fix them at /{portrait}/admin/emergency` };
+  }
+  const other = lookups.filter((l) => l.status !== 200);
+  if (other.length) {
+    return { status: 'warn', detail: `could not confirm ${other.map((l) => `${l.zone} (${l.status})`).join(', ')}` };
+  }
+  return { status: 'pass', detail: `${lookups.length} zone(s) known to the NWS` };
+}
+
 /** Preflight verdict for one portrait's feed (scripts/preflight.ts). */
 export function nwsFeedVerdict(
   zones: readonly string[],

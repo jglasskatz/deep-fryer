@@ -81,7 +81,16 @@ describe('impactDoughnut', () => {
     const summary = impactsSummary(dimensions);
     expect(summary).toContain('Improves: Housing and Air Pollution.');
     expect(summary).toContain('Worsens: Energy.');
-    expect(summary).toContain('Wedge size changes for Housing; other impacts are direction only.');
+    expect(summary).toContain('Wedge size changes for Housing. Other impacts are direction only.');
+    // A quantified dimension whose wedge keeps its size is not called resized.
+    const unmoved = impactsSummary(
+      impactDoughnut(portrait, [
+        projection({ dimension_slug: 'housing', current_viz: 123.3, projected_viz: 123.3 }),
+        projection({ dimension_slug: 'energy', current_viz: 80, projected_viz: 60 }),
+      ]).dimensions,
+    );
+    expect(unmoved).toContain('Wedge size changes for Energy. Housing was quantified but keeps the same size');
+    expect(unmoved).not.toContain('direction only');
     expect(impactsSummary(impactDoughnut(portrait, []).dimensions)).toContain(
       'No published dimension is projected to change.',
     );
@@ -113,6 +122,21 @@ describe('impactGroups', () => {
     projection({ dimension_slug: 'air-pollution', current_viz: 40 }),
     projection({ dimension_slug: 'energy', current_viz: 80 }),
   ];
+
+  it('flags a quantified change that leaves the wedge at its worst indicator', () => {
+    const groups = impactGroups(result, [
+      ...projections.filter((p) => p.dimension_slug !== 'housing'),
+      projection({
+        dimension_slug: 'housing',
+        current_viz: 74,
+        projected_viz: 74.01,
+        indicator_changes: [{ indicator: RENT, unit: '%', current_value: 52, projected_value: 46, projected_year: 2030 }],
+      }),
+    ]);
+    expect(groups.find((g) => g.slug === 'housing')!.wedgeUnchanged).toBe(true);
+    // Moved wedges, and dimensions with nothing re-scored, are not flagged.
+    expect(impactGroups(result, projections).map((g) => g.wedgeUnchanged)).toEqual([false, false, false, false]);
+  });
 
   it('groups impacts by dimension in framework order, keeping "no effect" impacts', () => {
     const groups = impactGroups(result, projections);

@@ -24,7 +24,7 @@ const data: ArchitectureMap = {
       tech: "Next.js 15 / React 19 (PWA)",
       description: "Public doughnut + drilldowns + progress + discussion, the admin review queue where research findings are dispositioned, organization hubs, onboarding, members, and billing pages. Server actions return { ok, error } results; Node-runtime middleware applies the nonce CSP and per-tenant embed frame-ancestors",
       keyFiles: ["apps/web/app", "apps/web/lib/review-actions.ts", "apps/web/middleware.ts", "apps/web/lib/action-result.ts"],
-      keyFunctionality: ["published portraits", "review cards", "approve/edit/re-research/flag-gap", "§6 config forms", "family compare/insights/progress", "self-serve trial onboarding", "members + invitations", "security headers"],
+      keyFunctionality: ["published portraits", "review cards", "approve/edit/re-research/flag-gap", "§6 config forms", "family compare/insights/progress", "self-serve trial onboarding", "members + invitations", "security headers", "policy analysis and emergency curation admin pages"],
       fileCount: 120,
       linesOfCode: "~13k",
       principles: {
@@ -44,7 +44,7 @@ const data: ArchitectureMap = {
       tech: "Auth.js v5 / Drizzle adapter",
       description: "Sign-in (Google, Microsoft Entra ID from the ID token alone, email magic link) with revocable database sessions; tenant and organization roles; email-bound invitations; dev mode refused in production. The production environment rules live in core (deploy-env) and are shared by the boot-time assertion and the operator preflight, which also verifies OAuth client credentials against the live providers",
       keyFiles: ["apps/web/auth.ts", "apps/web/lib/auth.ts", "apps/web/lib/invitations.ts", "apps/web/lib/member-actions.ts", "apps/web/lib/env.ts", "packages/core/src/deploy-env.ts", "packages/core/src/preflight.ts", "scripts/preflight.ts"],
-      keyFunctionality: ["database sessions", "org owners own every portrait", "hash-only invitation tokens", "last-owner guard", "boot-time env assertion", "live-provider preflight"],
+      keyFunctionality: ["database sessions", "org owners own every portrait", "hash-only invitation tokens", "last-owner guard", "boot-time env assertion", "live-provider preflight (incl. NWS feed and zone existence)"],
       fileCount: 8,
       linesOfCode: "~900",
       principles: {
@@ -131,9 +131,9 @@ const data: ArchitectureMap = {
       label: "Policy analysis",
       layer: "research",
       tech: "Claude Agent SDK session + thresholds engine",
-      description: "Staff paste a policy brief; one quota-gated worker session (web tools only, brief fenced with a per-run boundary) drafts per-dimension impacts (schema-validated after recoverable slips are fixed and noted, sources cited), quantified projections are re-scored with the published thresholds, and the admin view flashes the affected wedges between now and with-policy. The analysis row and its job commit in one transaction; queued analyses can be cancelled, and a sweep settles any whose job can no longer run. Editors and owners only, at the database too; never shown as measurement",
+      description: "Staff paste a policy brief; one quota-gated worker session (web tools only, brief fenced with a per-run boundary) drafts per-dimension impacts (schema-validated after recoverable slips are fixed and noted, sources cited), quantified projections are re-scored with the published thresholds, and the admin view flashes the affected dimensions (name pills, and wedges where they have size) between now and with-policy, saying in words when a quantified change cannot move a wedge drawn at its worst indicator. The analysis row and its job commit in one transaction; queued analyses can be cancelled, and a sweep settles any whose job can no longer run. Editors and owners only, at the database too; never shown as measurement",
       keyFiles: ["packages/core/src/policy.ts", "apps/worker/src/tasks/policy-analyze.ts", "apps/web/lib/policy.ts", "apps/web/lib/policy-actions.ts", "apps/web/app/[tenant]/admin/policy", "apps/web/components/policy", "apps/web/components/doughnut/ImpactDoughnut.tsx", "packages/db/migrations/0009_policy_adjustments_editor_read.sql"],
-      keyFunctionality: ["policy brief input", "projected impacts by dimension", "re-scoring with published thresholds", "flashing doughnut", "one research session per analysis", "transactional enqueue, cancel, and stale-job sweep"],
+      keyFunctionality: ["policy brief input", "projected impacts by dimension", "re-scoring with published thresholds", "flashing doughnut", "worst-indicator note for unmoved wedges", "one research session per analysis", "transactional enqueue, cancel, and stale-job sweep"],
       fileCount: 12,
       linesOfCode: "~1.5k",
       principles: {
@@ -152,7 +152,7 @@ const data: ArchitectureMap = {
       tech: "NWS CAP alerts + curated hazards/plans/resources",
       description: "Public, translated /{tenant}/emergency: official NWS alerts re-displayed as issued (worker cron, egress-guarded), staff-rated threats by likelihood x severity with the doughnut dimensions they put at risk, adopted plans, help and mutual-aid resources, and save-for-offline. Staff curate at /{tenant}/admin/emergency",
       keyFiles: ["packages/core/src/emergency.ts", "apps/worker/src/tasks/alerts-sync.ts", "apps/web/lib/emergency.ts", "apps/web/lib/emergency-actions.ts", "apps/web/app/[tenant]/emergency", "apps/web/app/[tenant]/admin/emergency", "apps/web/components/emergency", "scripts/nyc-emergency.ts"],
-      keyFunctionality: ["official alerts by UGC zone", "risk matrix", "hazard -> dimension impacts", "plans and resources", "offline copy"],
+      keyFunctionality: ["official alerts by UGC zone", "zone existence preflight", "risk matrix", "hazard -> dimension impacts marked on the doughnut", "plans and resources", "offline copy"],
       fileCount: 14,
       linesOfCode: "~2k",
       principles: {

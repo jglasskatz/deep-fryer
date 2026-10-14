@@ -247,12 +247,22 @@ export function impactsSummary(dims: ImpactDimension[]): string {
   if (improves.length) parts.push(`Improves: ${list(improves)}.`);
   if (worsens.length) parts.push(`Worsens: ${list(worsens)}.`);
   if (mixed.length) parts.push(`Mixed: ${list(mixed)}.`);
-  const resized = dims.filter((d) => d.alternate !== null).map((d) => d.name);
-  parts.push(
-    resized.length
-      ? `Wedge size changes for ${list(resized)}; other impacts are direction only.`
-      : 'No impact was quantified, so wedges change colour but not size.',
-  );
+  const quantified = dims.filter((d) => d.alternate !== null);
+  const resized = quantified.filter((d) => !sameLevel(d.alternate, d.current)).map((d) => d.name);
+  // Quantified, yet drawn at the same size: the dimension's worst indicator
+  // is another one (deriveVizLevel, worst_of). Saying "changes size" here
+  // would describe a change the reader cannot see.
+  const unmoved = quantified.filter((d) => sameLevel(d.alternate, d.current)).map((d) => d.name);
+  if (resized.length) parts.push(`Wedge size changes for ${list(resized)}.`);
+  if (unmoved.length) {
+    parts.push(
+      `${list(unmoved)} ${unmoved.length === 1 ? 'was' : 'were'} quantified but keep${unmoved.length === 1 ? 's' : ''} ` +
+        'the same size, because a dimension is drawn at its worst indicator.',
+    );
+  }
+  const directionOnly = improves.length + worsens.length + mixed.length - quantified.length;
+  if (!quantified.length) parts.push('No impact was quantified, so wedges change colour but not size.');
+  else if (directionOnly > 0) parts.push('Other impacts are direction only.');
   parts.push('The impacts table lists every impact.');
   return parts.join(' ');
 }
@@ -280,6 +290,13 @@ export interface ImpactGroup {
   direction: ImpactDirection;
   currentViz: number | null;
   projectedViz: number | null;
+  /**
+   * An indicator was re-scored but the wedge keeps its size. A dimension is
+   * drawn at its worst indicator (deriveVizLevel, worst_of), so a projected
+   * change to any other indicator cannot move it; the page says so rather
+   * than leave a quantified impact looking like it did nothing.
+   */
+  wedgeUnchanged: boolean;
   rows: ImpactRow[];
 }
 
@@ -303,12 +320,15 @@ export function impactGroups(
     .sort(([a], [b]) => frameworkOrder(a) - frameworkOrder(b))
     .map(([slug, impacts]) => {
       const p = bySlug.get(slug);
+      const projectedViz = p?.projected_viz ?? null;
       return {
         slug,
         name: dimensionName(slug),
         direction: p?.direction ?? 'none',
         currentViz: p?.current_viz ?? null,
-        projectedViz: p?.projected_viz ?? null,
+        projectedViz,
+        wedgeUnchanged:
+          projectedViz !== null && (p?.indicator_changes.length ?? 0) > 0 && sameLevel(p!.current_viz, projectedViz),
         rows: impacts.map((impact) => impactRow(impact, p)),
       };
     });

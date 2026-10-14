@@ -130,7 +130,8 @@ then rate and publish hazards, plans, and help resources. The worker
 refreshes alerts every five minutes from `api.weather.gov` — allow that host
 in the worker's egress proxy, and set `SUPPORT_EMAIL` (or `EMAIL_FROM`): the
 NWS requires a contact in the User-Agent. The preflight checks the feed for
-every configured portrait. NYC:
+every configured portrait and looks up every zone's NWS record, so a
+mistyped or retired code fails there instead of showing "no alerts". NYC:
 
 ```bash
 docker compose run --rm migrate node --import tsx ../../scripts/nyc-emergency.ts           # review the proposal

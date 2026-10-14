@@ -30,7 +30,25 @@ SOFTWARE.
 //   - import() returns the error count instead of alert()
 //   - a level may carry a highlight colour (policy impacts, hazards), and
 //     setLevels() applies many levels with one redraw (animation frames)
+//   - a highlighted dimension's label is drawn on a pill of its colour, so
+//     the dimension stays marked when its wedge has no size (no shortfall or
+//     overshoot) and a highlight cannot be mistaken for the red of an
+//     ordinary shortfall/overshoot wedge
 // Drawing math is unchanged.
+
+// Black or white text, whichever contrasts more with a #rrggbb fill
+// (WCAG relative luminance).
+function _readableOn(hex) {
+    const m = /^#([0-9a-f]{6})$/i.exec(hex);
+    if (!m) return "white";
+    const n = parseInt(m[1], 16);
+    const lin = (c) => {
+        c /= 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    };
+    const L = 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+    return (L + 0.05) / 0.05 > 1.05 / (L + 0.05) ? "black" : "white";
+}
 
 class _DoughnutDimensions {
     constructor(type, maxVal) {
@@ -495,8 +513,36 @@ export class DoughnutRenderer {
         let arcStart = 0;
         for (let arc = 0; arc < dimensions.length(); arc++) {
             let arcEnd = arcStart + arcDegrees;
-            this._writeDim(dimensions.get(arc).name, radius, arcStart + (arcDegrees / 2), colour);
+            const dim = dimensions.get(arc);
+            const angle = arcStart + (arcDegrees / 2);
+            const marked = dim.levels.find((l) => l.colour);
+            if (marked) {
+                this._writeMarkedDim(dim.name, radius, angle, marked.colour);
+            } else {
+                this._writeDim(dim.name, radius, angle, colour);
+            }
             arcStart = arcEnd;
+        }
+    }
+
+    // A highlighted dimension's label: the text on a rounded pill of the
+    // highlight colour, in whichever of black/white reads better on it.
+    _writeMarkedDim(text, radius, angle, fill) {
+        const x = this._middleX + radius * Math.cos(angle);
+        let y = this._middleY + radius * Math.sin(angle);
+        const parts = this._splitText(text);
+        const width = Math.max(...parts.map((p) => this._ctx.measureText(p).width));
+        const pad = Math.max(3, Math.round(this._textSize * 0.3));
+        const top = y - this._textSize * 0.85 - pad;
+        const height = parts.length * this._textSize + pad * 2;
+        this._ctx.fillStyle = fill;
+        this._ctx.beginPath();
+        this._ctx.roundRect(x - width / 2 - pad, top, width + pad * 2, height, pad + 2);
+        this._ctx.fill();
+        this._ctx.fillStyle = _readableOn(fill);
+        for (const part of parts) {
+            this._ctx.fillText(part, x, y);
+            y = y + this._textSize;
         }
     }
 

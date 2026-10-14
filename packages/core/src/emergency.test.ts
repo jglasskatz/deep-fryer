@@ -14,6 +14,8 @@ import {
   nwsAlertRecordUrl,
   nwsAlertsUrl,
   nwsFeedVerdict,
+  nwsZonesVerdict,
+  nwsZoneUrl,
   nwsZoneCoverageVerdict,
   nwsRequestHeaders,
   nwsUserAgent,
@@ -285,6 +287,16 @@ describe('NWS requests', () => {
     expect(nwsFeedVerdict(['NYC061'], 503, {}).status).toBe('fail');
     // Counties alone answer, but miss the alerts issued by forecast zone.
     expect(nwsZoneCoverageVerdict(['NYC061']).status).toBe('warn');
+    // Zone lookups: county and forecast codes resolve to their own records.
+    expect(nwsZoneUrl('NYC061')).toBe('https://api.weather.gov/zones/county/NYC061');
+    expect(nwsZoneUrl('NYZ176')).toBe('https://api.weather.gov/zones/forecast/NYZ176');
+    expect(() => nwsZoneUrl('NY061')).toThrow();
+    expect(nwsZonesVerdict([{ zone: 'NYC061', status: 200 }, { zone: 'NYZ076', status: 404 }])).toEqual({
+      status: 'fail',
+      detail: 'unknown to the NWS: NYZ076 — fix them at /{portrait}/admin/emergency',
+    });
+    expect(nwsZonesVerdict([{ zone: 'NYZ072', status: 503 }]).status).toBe('warn');
+    expect(nwsZonesVerdict([{ zone: 'NYZ072', status: 200 }]).status).toBe('pass');
     expect(nwsZoneCoverageVerdict(['NYZ072']).status).toBe('warn');
     expect(nwsZoneCoverageVerdict(['NYC061', 'NYZ072'])).toEqual({ status: 'pass', detail: 'county and forecast zones' });
     expect(nwsFeedVerdict(['NYC061'], 200, '<html>').status).toBe('fail');

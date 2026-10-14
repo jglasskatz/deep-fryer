@@ -22,6 +22,8 @@ import {
   emergencyConfigSchema,
   nwsAlertsUrl,
   nwsFeedVerdict,
+  nwsZonesVerdict,
+  nwsZoneUrl,
   nwsZoneCoverageVerdict,
   nwsRequestHeaders,
   STRIPE_WEBHOOK_EVENTS,
@@ -260,6 +262,19 @@ async function alertsChecks() {
     // A feed that answers can still miss most alerts if only one kind of zone is listed.
     record('alerts', `NWS zone kinds: ${slugs.join(', ')}`.slice(0, 46), nwsZoneCoverageVerdict(zones));
   }
+  // The feed accepts any well-formed code, so a mistyped or retired zone
+  // answers "no alerts" forever; each zone's own record proves it exists.
+  await guarded('alerts', 'NWS zones exist', async () => {
+    const zones = [...new Set(portraits.flatMap((p) => p.zones))];
+    const lookups = await Promise.all(
+      zones.map(async (zone) => {
+        const res = await fetch(nwsZoneUrl(zone), { headers, signal: AbortSignal.timeout(15_000) });
+        await res.body?.cancel();
+        return { zone, status: res.status };
+      }),
+    );
+    return nwsZonesVerdict(lookups);
+  });
 }
 
 async function webChecks() {

@@ -107,7 +107,7 @@ export default async function PolicyAnalysisPage({
             </dd>
           </div>
           <div className="flex gap-1">
-            <dt>Started:</dt>
+            <dt>Requested:</dt>
             <dd>{when(analysis.createdAt)}</dd>
           </div>
           {analysis.completedAt ? (
@@ -313,6 +313,12 @@ function ImpactRowGroup({ group, onDoughnut }: { group: ImpactGroup; onDoughnut:
                   Not published on this portrait
                 </span>
               ) : null}
+              {group.wedgeUnchanged ? (
+                <span className="mt-1 block text-xs font-normal text-[color:var(--color-muted)]">
+                  Wedge unchanged: a dimension is drawn at its worst indicator, and another indicator stays further
+                  out.
+                </span>
+              ) : null}
             </th>
           ) : null}
           <td className="py-2 pr-4 whitespace-nowrap">
@@ -323,7 +329,7 @@ function ImpactRowGroup({ group, onDoughnut }: { group: ImpactGroup; onDoughnut:
           <td className="py-2 pr-4">
             <IndicatorChangeCell row={row} />
           </td>
-          <td className="py-2 pr-4">{row.impact.rationale}</td>
+          <td className="min-w-[14rem] py-2 pr-4">{row.impact.rationale}</td>
           <td className="py-2 pr-4">
             <SourceList sources={row.impact.sources} />
           </td>
@@ -339,9 +345,10 @@ function IndicatorChangeCell({ row }: { row: ImpactRow }) {
     return (
       <>
         <span className="block">{change.indicator}</span>
-        <span className="block whitespace-nowrap font-medium tabular-nums">
-          {formatIndicatorValue(change.current_value, change.unit)} →{' '}
-          {formatIndicatorValue(change.projected_value, change.unit)}
+        {/* Each value stays on one line; the pair may wrap at the arrow so long units leave room for the rationale. */}
+        <span className="block font-medium tabular-nums">
+          <span className="whitespace-nowrap">{formatIndicatorValue(change.current_value, change.unit)}</span> →{' '}
+          <span className="whitespace-nowrap">{formatIndicatorValue(change.projected_value, change.unit)}</span>
         </span>
         {/* The values above carry the unit; the projection's year completes the claim. */}
         <span className="block text-xs text-[color:var(--color-muted)]">
