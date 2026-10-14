@@ -113,7 +113,7 @@ const data: ArchitectureMap = {
       label: "Language access",
       layer: "frontend",
       tech: "Typed message catalogs + locale-prefixed routes",
-      description: "The public plane in English and the ten NYC Local Law 30 languages (Chinese in both scripts): locale-prefixed URLs resolved by middleware, typed catalogs every translation must satisfy, RTL for Arabic and Urdu, framework vocabulary translated inside published content, an English-content notice with the organization's language access contact, localized embeds and offline page",
+      description: "The public plane in English and the ten NYC Local Law 30 languages (Chinese in both scripts): locale-prefixed URLs resolved by middleware, typed catalogs every translation must satisfy, RTL for Arabic and Urdu, framework vocabulary translated inside published content, an English-content notice with the organization's language access contact, localized embeds and offline page, and the emergency view, theme menu, and update prompt in every language (machine-assisted, reviewed per language family; certified review is an owner step)",
       keyFiles: ["apps/web/lib/i18n", "apps/web/components/i18n"],
       keyFunctionality: ["/{lang}/… routing + remembered choice", "hreflang alternates", "catalog completeness, placeholder, and plural checks", "language switcher", "language access contact (311)"],
       fileCount: 20,
