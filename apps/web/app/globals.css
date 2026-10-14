@@ -21,3 +21,13 @@ body {
   color: var(--color-fg);
   font-family: var(--font-sans);
 }
+
+/*
+ * English research content on a right-to-left page (Arabic, Urdu): lay it
+ * out left-to-right and isolate it, so its punctuation stays where English
+ * puts it instead of jumping to the far side of the sentence.
+ */
+[dir='rtl'] [lang='en'] {
+  direction: ltr;
+  unicode-bidi: isolate;
+}

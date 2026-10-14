@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
 import { ServiceWorkerRegistrar } from '@/components/pwa/ServiceWorkerRegistrar';
 import { appUrl } from '@/lib/env';
+import { LOCALES } from '@/lib/i18n/locales';
+import { isLocalizablePath, localizeHref } from '@/lib/i18n/routing';
+import { getI18n, getRequestPath } from '@/lib/i18n/server';
 // Inter ships with the app (all Latin, Cyrillic, Greek and Vietnamese
 // subsets, each loaded only when a page uses it) rather than through
 // next/font/google: builds need no network access to Google, and the
@@ -11,7 +14,7 @@ import { appUrl } from '@/lib/env';
 import '@fontsource-variable/inter';
 import './globals.css';
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   metadataBase: new URL(appUrl()),
   title: { default: 'deep-fryer — Doughnut Economics portraits for cities', template: '%s · deep-fryer' },
   description:
@@ -29,6 +32,20 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Pages that exist in every language list their translations (hreflang), so
+ * search engines send a Spanish speaker to /es/… and the English page stays
+ * the default. Pages may override title/description; alternates stay.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const path = (await getRequestPath()).split('?')[0]!;
+  if (!isLocalizablePath(path)) return baseMetadata;
+  const languages: Record<string, string> = { 'x-default': path };
+  for (const l of LOCALES) languages[l.code] = localizeHref(l.code, path);
+  const { locale } = await getI18n();
+  return { ...baseMetadata, alternates: { canonical: localizeHref(locale, path), languages } };
+}
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -42,8 +59,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // Reading request headers makes every page dynamic, which the per-request
   // CSP nonce requires (middleware.ts); Next stamps the nonce on its scripts.
   await headers();
+  const { info } = await getI18n();
   return (
-    <html lang="en">
+    <html lang={info.code} dir={info.dir}>
       <body className="min-h-screen antialiased">
         {children}
         <ServiceWorkerRegistrar />

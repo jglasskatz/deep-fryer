@@ -1,4 +1,5 @@
-import { PROGRESS_STATUS_LABEL, type ProgressStatus } from '@deep-fryer/core';
+import type { ProgressStatus } from '@deep-fryer/core';
+import { getI18n } from '@/lib/i18n/server';
 
 /** Status is always written out, never conveyed by color alone (WCAG 1.4.1). */
 const STYLE: Record<ProgressStatus, string> = {
@@ -13,19 +14,12 @@ const STYLE: Record<ProgressStatus, string> = {
   no_data: 'border border-dashed border-black/30 text-black/60',
 };
 
-export function StatusChip({ status }: { status: ProgressStatus }) {
+/** The written-out status in the reader's language (lib/i18n catalogs). */
+export async function StatusChip({ status }: { status: ProgressStatus }) {
+  const { m } = await getI18n();
   return (
     <span className={`inline-block whitespace-nowrap rounded px-1.5 py-0.5 text-xs font-medium ${STYLE[status]}`}>
-      {PROGRESS_STATUS_LABEL[status]}
+      {m.status[status]}
     </span>
   );
 }
-
-export const STATUS_EXPLAINER: Partial<Record<ProgressStatus, string>> = {
-  met: 'At or past the adopted target.',
-  on_track: 'Moving toward the target at least as fast as a straight line from the baseline to the due date.',
-  off_track: 'Improving, but slower than the pace the due date requires.',
-  improving: 'Closer to the target than at the baseline (the goal has no due date).',
-  worsening: 'Further from the target than at the baseline.',
-  baseline_only: 'Only the baseline measurement exists so far; the next refresh will show the trend.',
-};

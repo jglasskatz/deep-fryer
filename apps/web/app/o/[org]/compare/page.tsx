@@ -6,6 +6,10 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { PortraitDoughnut } from '@/components/doughnut/PortraitDoughnut';
 import { getPortrait } from '@/lib/data';
 import { familyByOrgSlug } from '@/lib/family';
+import { dimensionLabel, localizeDimensions, nounForms } from '@/lib/i18n/content';
+import { doughnutLabels } from '@/lib/i18n/doughnut';
+import { fmt } from '@/lib/i18n/format';
+import { getI18n } from '@/lib/i18n/server';
 import type { PublishedPortrait } from '@/lib/portrait';
 
 export async function generateMetadata({
@@ -13,13 +17,14 @@ export async function generateMetadata({
 }: {
   params: Promise<{ org: string }>;
 }): Promise<Metadata> {
-  const family = await familyByOrgSlug((await params).org);
-  return { title: family ? `Compare · ${family.organization.name}` : 'Compare' };
+  const [family, { m }] = await Promise.all([familyByOrgSlug((await params).org), getI18n()]);
+  return { title: family ? fmt(m.compare.metaTitle, { org: family.organization.name }) : m.nav.compare };
 }
 
 export const dynamic = 'force-dynamic';
 
 interface IndicatorRow {
+  dimensionSlug: string;
   dimension: string;
   ring: string;
   indicator: string;
@@ -43,6 +48,7 @@ function buildRows(
         let row = bySlugKey.get(key);
         if (!row) {
           row = {
+            dimensionSlug: d.slug,
             dimension: d.data.name,
             ring: d.ring,
             indicator: ind.name,
@@ -90,11 +96,12 @@ function outsideSafeCount(p: PublishedPortrait): number {
  */
 export default async function ComparePage({ params }: { params: Promise<{ org: string }> }) {
   const { org } = await params;
-  const family = await familyByOrgSlug(org);
+  const [family, { m, href }] = await Promise.all([familyByOrgSlug(org), getI18n()]);
   if (!family || family.members.length < 2) notFound();
   const FAMILY = family.members;
   const whole = family.whole;
-  const noun = family.noun;
+  const { singular: noun, plural: nouns } = nounForms(m, family.noun);
+  const labels = doughnutLabels(m);
 
   const entries = await Promise.all(
     FAMILY.map(async (m) => [m.slug, await getPortrait(m.slug)] as const),
@@ -109,34 +116,36 @@ export default async function ComparePage({ params }: { params: Promise<{ org: s
       <SiteHeader variant="org" family={family} familyView="compare" org={family.organization} />
       <main id="main" className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <h1 className="text-3xl font-bold">
-          {FAMILY.length} doughnuts, one {whole ? 'jurisdiction' : 'family'}: {family.organization.name}
+          {fmt(whole ? m.compare.titleJurisdiction : m.compare.titleFamily, {
+            n: FAMILY.length,
+            org: family.organization.name,
+          })}
         </h1>
         <p className="mt-2 max-w-3xl text-sm text-[color:var(--color-muted)]">
-          The same social foundation and ecological ceiling, measured {FAMILY.length} times
-          {whole ? ` — the whole jurisdiction and each ${noun}` : ''} — against identical
-          thresholds anchored in adopted local goals. Wedges pointing out overshoot the ceiling;
-          wedges pointing in fall short of the foundation; gray is an honest data gap.
+          {fmt(whole ? m.compare.introJurisdiction : m.compare.introFamily, { n: FAMILY.length, noun })}
         </p>
 
         <section className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
-          {FAMILY.map((m) => {
-            const p = portraits[m.slug];
+          {FAMILY.map((member) => {
+            const p = portraits[member.slug];
             if (!p) return null;
             return (
-              <div key={m.slug} className="rounded-lg border border-black/10 p-3">
-                <div className="flex items-baseline justify-between">
-                  <Link href={`/${m.slug}`} className="font-semibold hover:underline">
-                    {m.name}
+              <div key={member.slug} className="rounded-lg border border-black/10 p-3">
+                <div className="flex items-baseline justify-between gap-2">
+                  <Link href={href(`/${member.slug}`)} className="font-semibold hover:underline">
+                    {member.name}
                   </Link>
                   <span className="text-xs text-[color:var(--color-muted)]">
-                    {outsideSafeCount(p)}/{p.dimensions.length} wedges outside safe zone
+                    {fmt(m.compare.wedgesOutside, { n: outsideSafeCount(p), total: p.dimensions.length })}
                   </span>
                 </div>
                 <div className="mt-2 flex justify-center">
                   <PortraitDoughnut
-                    tenantSlug={m.slug}
-                    tenantName={m.name}
-                    dimensions={p.dimensions}
+                    tenantSlug={member.slug}
+                    tenantName={member.name}
+                    dimensions={localizeDimensions(m, p.dimensions)}
+                    linkBase={`${href(`/${member.slug}`)}/dim`}
+                    labels={labels}
                     size={320}
                   />
                 </div>
@@ -146,43 +155,44 @@ export default async function ComparePage({ params }: { params: Promise<{ org: s
         </section>
 
         <section className="mt-12">
-          <h2 className="text-xl font-semibold">Where the {noun}s diverge most</h2>
+          <h2 className="text-xl font-semibold">{fmt(m.compare.divergeTitle, { nouns })}</h2>
           <p className="mt-1 text-sm text-[color:var(--color-muted)]">
-            Published indicators compared across {noun}s, ranked by spread between the
-            best- and worst-placed {noun}.
-            {whole ? ' The whole-jurisdiction column is its own published figure, not an average.' : ''}
+            {fmt(m.compare.divergeIntro, { noun, nouns })}
+            {whole ? ` ${m.compare.wholeColumn}` : ''}
           </p>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-black/15 text-left">
-                  <th className="py-2 pr-3 font-medium">Indicator</th>
-                  {FAMILY.map((m) => (
-                    <th key={m.slug} className="px-2 py-2 text-right font-medium">
-                      {m.short}
+                <tr className="border-b border-black/15">
+                  <th className="py-2 pe-3 text-start font-medium">{m.compare.indicator}</th>
+                  {FAMILY.map((member) => (
+                    <th key={member.slug} className="px-2 py-2 text-end font-medium">
+                      {member.short}
                     </th>
                   ))}
-                  <th className="py-2 pl-3 text-right font-medium">Spread</th>
+                  <th className="py-2 ps-3 text-end font-medium">{m.compare.spread}</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.slice(0, 14).map((row) => (
                   <tr key={`${row.dimension}-${row.indicator}`} className="border-b border-black/5">
-                    <td className="py-2 pr-3">
-                      <div className="font-medium">{row.indicator}</div>
+                    <td className="py-2 pe-3">
+                      <div lang="en" className="font-medium">
+                        {row.indicator}
+                      </div>
                       <div className="text-xs text-[color:var(--color-muted)]">
-                        {row.dimension} · {row.unit}
+                        {dimensionLabel(m, row.dimensionSlug, row.dimension)} · <span lang="en">{row.unit}</span>
                       </div>
                     </td>
-                    {FAMILY.map((m) => {
-                      const v = row.values[m.slug];
-                      const isMin = m.slug === row.minSlug;
-                      const isMax = m.slug === row.maxSlug;
+                    {FAMILY.map((member) => {
+                      const v = row.values[member.slug];
+                      const isMin = member.slug === row.minSlug;
+                      const isMax = member.slug === row.maxSlug;
                       return (
                         <td
-                          key={m.slug}
-                          className={`px-2 py-2 text-right tabular-nums ${
-                            m.slug === whole ? 'text-[color:var(--color-muted)]' : ''
+                          key={member.slug}
+                          className={`px-2 py-2 text-end tabular-nums ${
+                            member.slug === whole ? 'text-[color:var(--color-muted)]' : ''
                           } ${isMax ? 'font-semibold text-red-700' : ''} ${
                             isMin ? 'font-semibold text-green-700' : ''
                           }`}
@@ -197,7 +207,7 @@ export default async function ComparePage({ params }: { params: Promise<{ org: s
                         </td>
                       );
                     })}
-                    <td className="py-2 pl-3 text-right tabular-nums text-[color:var(--color-muted)]">
+                    <td dir="ltr" className="py-2 ps-3 text-end tabular-nums text-[color:var(--color-muted)]">
                       {Math.abs(row.values[row.minSlug] ?? 0) < 1
                         ? `Δ ${(row.values[row.maxSlug]! - (row.values[row.minSlug] ?? 0)).toFixed(1)}`
                         : Math.abs(row.spreadPct) >= 1
@@ -209,11 +219,7 @@ export default async function ComparePage({ params }: { params: Promise<{ org: s
               </tbody>
             </table>
           </div>
-          <p className="mt-3 text-xs text-[color:var(--color-muted)]">
-            Red = the {noun} furthest from the target, green = closest, for each row.
-            Jurisdiction-wide indicators (identical across {noun}s) drop out of this table by
-            construction.
-          </p>
+          <p className="mt-3 text-xs text-[color:var(--color-muted)]">{fmt(m.compare.legend, { noun, nouns })}</p>
         </section>
       </main>
     </>

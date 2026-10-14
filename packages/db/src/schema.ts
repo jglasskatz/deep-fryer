@@ -152,6 +152,12 @@ export const organizations = pgTable('organizations', {
    * ("borough" for NYC, "district", "ward"…); null reads as "portrait".
    */
   memberNoun: text('member_noun'),
+  /**
+   * Language access contact shown on every translated public page
+   * ("For free help in your language, contact: …") — NYC: "311". Short and
+   * language-neutral: a phone number, short code, email, or URL. Public.
+   */
+  languageHelp: text('language_help'),
   /** Government buyers are usually tax-exempt; mirrored to the Stripe customer. */
   taxExempt: boolean('tax_exempt').notNull().default(false),
   stripeCustomerId: text('stripe_customer_id').unique(),

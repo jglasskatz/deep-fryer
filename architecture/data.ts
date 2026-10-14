@@ -109,6 +109,24 @@ const data: ArchitectureMap = {
       },
     },
     {
+      id: "language-access",
+      label: "Language access",
+      layer: "frontend",
+      tech: "Typed message catalogs + locale-prefixed routes",
+      description: "The public plane in English and the ten NYC Local Law 30 languages (Chinese in both scripts): locale-prefixed URLs resolved by middleware, typed catalogs every translation must satisfy, RTL for Arabic and Urdu, framework vocabulary translated inside published content, an English-content notice with the organization's language access contact, localized embeds and offline page",
+      keyFiles: ["apps/web/lib/i18n", "apps/web/components/i18n"],
+      keyFunctionality: ["/{lang}/… routing + remembered choice", "hreflang alternates", "catalog completeness, placeholder, and plural checks", "language switcher", "language access contact (311)"],
+      fileCount: 20,
+      linesOfCode: "~4k",
+      principles: {
+        upholds: [
+          { id: "single-source-of-truth", reason: "en.ts is the one source; every catalog is typed against it, and the embed loader and offline page are tested against the same locale list" },
+          { id: "wrong-way-impossible", reason: "Middleware always overwrites the locale header, so a client cannot choose a page's language except through its URL" },
+        ],
+        violates: [],
+      },
+    },
+    {
       id: "research-worker",
       label: "Research worker",
       layer: "research",
@@ -226,6 +244,7 @@ const data: ArchitectureMap = {
     { from: "web-app", to: "progress-engine", type: "uses", label: "progress pages + open-data exports" },
     { from: "progress-engine", to: "shared-contract", type: "grounds-on", label: "thresholds + target years" },
     { from: "service-worker", to: "web-app", type: "uses", label: "caches anonymous public pages" },
+    { from: "web-app", to: "language-access", type: "uses", label: "locale, catalogs, localized links" },
     { from: "research-worker", to: "dimension-researcher", type: "calls", label: "spawns per dimension" },
     { from: "research-worker", to: "verifier-agent", type: "calls", label: "spawns per finding" },
     { from: "dimension-researcher", to: "capture-evidence-tool", type: "tool-call", label: "snapshots accepted sources" },
@@ -233,7 +252,7 @@ const data: ArchitectureMap = {
     { from: "research-verify-gate", to: "web-app", type: "uses", label: "requires review-queue dispositions" },
   ],
   contexts: [
-    { id: "public-plane", label: "Public plane", description: "No AI visible; published versions only", nodeIds: ["web-app", "progress-engine", "service-worker"] },
+    { id: "public-plane", label: "Public plane", description: "No AI visible; published versions only", nodeIds: ["web-app", "progress-engine", "service-worker", "language-access"] },
     { id: "accounts-billing", label: "Accounts & billing", description: "Who may act, and what the organization's plan allows", nodeIds: ["accounts", "billing"] },
     { id: "review-plane", label: "Review plane", description: "Human gate between research and publication", nodeIds: ["web-app", "research-verify-gate"] },
     { id: "research-plane", label: "Research plane", description: "Backstage research execution", nodeIds: ["research-worker", "dimension-researcher", "verifier-agent", "capture-evidence-tool"] },

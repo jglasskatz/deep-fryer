@@ -6,6 +6,11 @@ import type { CommentView } from '@/lib/discussion';
 import { moderateComment, postComment, voteComment } from '@/lib/discussion-actions';
 import { useAction } from '@/lib/use-action';
 import { unwrap } from '@/lib/action-result';
+import { fmt, rich } from '@/lib/i18n/format';
+import type { Messages } from '@/lib/i18n/messages/en';
+
+/** The thread's words in the reader's language (lib/i18n catalogs). */
+export type ThreadLabels = Messages['discussion'] & { signIn: string };
 
 export function Thread({
   tenantSlug,
@@ -15,6 +20,8 @@ export function Thread({
   canPost,
   isModerator,
   sort,
+  labels,
+  signInHref,
 }: {
   tenantSlug: string;
   dimensionId: string;
@@ -23,6 +30,9 @@ export function Thread({
   canPost: boolean;
   isModerator: boolean;
   sort: 'top' | 'new';
+  labels: ThreadLabels;
+  /** Sign-in link that returns to this page in the reader's language. */
+  signInHref: string;
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -39,15 +49,16 @@ export function Thread({
   return (
     <section className="mt-10">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Discussion</h2>
-        <div className="flex gap-1 text-xs">
+        <h2 className="text-lg font-semibold">{labels.title}</h2>
+        <div role="group" aria-label={labels.sortLabel} className="flex gap-1 text-xs">
           {(['top', 'new'] as const).map((s) => (
             <button
               key={s}
               onClick={() => setSort(s)}
+              aria-pressed={sort === s}
               className={`rounded px-2 py-1 ${sort === s ? 'bg-black text-white' : 'border hover:bg-black/5'}`}
             >
-              {s}
+              {s === 'top' ? labels.sortTop : labels.sortNew}
             </button>
           ))}
         </div>
@@ -58,7 +69,8 @@ export function Thread({
           <textarea
             className="w-full rounded border border-black/20 px-3 py-2 text-sm"
             rows={3}
-            placeholder="What should the city do about this? Keep it civil and on topic."
+            aria-label={labels.title}
+            placeholder={labels.placeholder}
             value={body}
             onChange={(e) => setBody(e.target.value)}
           />
@@ -69,31 +81,38 @@ export function Thread({
               act(async () => {
                 const res = unwrap(await postComment({ tenantSlug, dimensionId, body }));
                 setBody('');
-                setNotice(
-                  res.pendingApproval
-                    ? 'Posted — your first comment is awaiting moderator approval.'
-                    : null,
-                );
+                setNotice(res.pendingApproval ? labels.pendingApproval : null);
               })
             }
           >
-            Post
+            {labels.post}
           </button>
         </div>
       ) : (
         <p className="mt-4 text-sm text-[color:var(--color-muted)]">
-          <a className="underline" href={`/login?next=${encodeURIComponent(`/${tenantSlug}`)}`}>
-            Sign in
-          </a>{' '}
-          to join the discussion.
+          {rich(labels.signInToJoin, {
+            link: (
+              <a className="underline" href={signInHref}>
+                {labels.signIn}
+              </a>
+            ),
+          })}
         </p>
       )}
-      {notice ? <p className="mt-2 text-sm text-green-800">{notice}</p> : null}
-      {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}
+      {notice ? (
+        <p role="status" className="mt-2 text-sm text-green-800">
+          {notice}
+        </p>
+      ) : null}
+      {error ? (
+        <p role="alert" className="mt-2 text-sm text-red-700">
+          {error}
+        </p>
+      ) : null}
 
       <ul className="mt-6 space-y-4">
         {comments.length === 0 ? (
-          <li className="text-sm text-[color:var(--color-muted)]">No comments yet.</li>
+          <li className="text-sm text-[color:var(--color-muted)]">{labels.empty}</li>
         ) : (
           comments.map((c) => (
             <CommentItem
@@ -106,6 +125,7 @@ export function Thread({
               isModerator={isModerator}
               act={act}
               pending={pending}
+              labels={labels}
             />
           ))
         )}
@@ -123,6 +143,7 @@ function CommentItem({
   isModerator,
   act,
   pending,
+  labels,
   isReply = false,
 }: {
   c: CommentView;
@@ -133,6 +154,7 @@ function CommentItem({
   isModerator: boolean;
   act: (fn: () => Promise<unknown>, opts?: { refresh?: boolean }) => void;
   pending: boolean;
+  labels: ThreadLabels;
   isReply?: boolean;
 }) {
   const [replyOpen, setReplyOpen] = useState(false);
@@ -144,42 +166,56 @@ function CommentItem({
     );
 
   return (
-    <li className={isReply ? 'ml-8' : ''}>
+    <li className={isReply ? 'ms-8' : ''}>
       <div className="rounded border border-black/10 p-3">
         <div className="flex items-center gap-3 text-xs text-[color:var(--color-muted)]">
           <span className="font-medium text-[color:var(--color-fg,black)]">
-            {c.mine ? 'you' : c.author}
+            {c.mine ? labels.you : c.author}
           </span>
           <span>{c.createdAt.toISOString().slice(0, 10)}</span>
-          {c.locked ? <span className="rounded bg-black/10 px-1.5 py-0.5">locked</span> : null}
-          {c.removed ? <span className="rounded bg-black/10 px-1.5 py-0.5">removed</span> : null}
+          {c.locked ? <span className="rounded bg-black/10 px-1.5 py-0.5">{labels.locked}</span> : null}
+          {c.removed ? <span className="rounded bg-black/10 px-1.5 py-0.5">{labels.removed}</span> : null}
         </div>
-        <p className="mt-2 whitespace-pre-wrap text-sm">
-          {c.removed ? <em className="text-[color:var(--color-muted)]">[removed by moderators]</em> : c.body}
-        </p>
+        {c.removed ? (
+          <p className="mt-2 text-sm">
+            <em className="text-[color:var(--color-muted)]">{labels.removedBody}</em>
+          </p>
+        ) : (
+          // Comments are residents' own words in whatever language they wrote;
+          // dir="auto" lets an Arabic comment read right-to-left on an English page.
+          <p dir="auto" className="mt-2 whitespace-pre-wrap text-sm">
+            {c.body}
+          </p>
+        )}
         <div className="mt-2 flex items-center gap-3 text-xs">
           <button
             className={`rounded px-1.5 py-0.5 ${c.myVote === 1 ? 'bg-black text-white' : 'border hover:bg-black/5'}`}
             disabled={!canPost || pending}
             onClick={() => vote(1)}
+            aria-label={labels.upvote}
+            aria-pressed={c.myVote === 1}
           >
-            ▲
+            <span aria-hidden>▲</span>
           </button>
-          <span className="font-medium">{c.score}</span>
+          <span className="font-medium" aria-label={fmt(labels.score, { n: c.score })}>
+            {c.score}
+          </span>
           <button
             className={`rounded px-1.5 py-0.5 ${c.myVote === -1 ? 'bg-black text-white' : 'border hover:bg-black/5'}`}
             disabled={!canPost || pending}
             onClick={() => vote(-1)}
+            aria-label={labels.downvote}
+            aria-pressed={c.myVote === -1}
           >
-            ▼
+            <span aria-hidden>▼</span>
           </button>
           {!isReply && canPost && !c.locked ? (
-            <button className="underline" onClick={() => setReplyOpen((o) => !o)}>
-              reply
+            <button className="underline" aria-expanded={replyOpen} onClick={() => setReplyOpen((o) => !o)}>
+              {labels.reply}
             </button>
           ) : null}
           {isModerator ? (
-            <span className="ml-auto flex gap-2">
+            <span className="ms-auto flex gap-2">
               {c.removed ? (
                 <button
                   className="underline"
@@ -189,13 +225,13 @@ function CommentItem({
                     )
                   }
                 >
-                  restore
+                  {labels.restore}
                 </button>
               ) : (
                 <button
                   className="underline"
                   onClick={() => {
-                    const reason = window.prompt('Reason for removal (logged publicly to staff):');
+                    const reason = window.prompt(labels.removeReason);
                     if (reason !== null) {
                       act(() =>
                         moderateComment({ tenantSlug, commentId: c.id, action: 'remove', reason }),
@@ -203,14 +239,14 @@ function CommentItem({
                     }
                   }}
                 >
-                  remove
+                  {labels.remove}
                 </button>
               )}
               {!isReply && !c.locked ? (
                 <button
                   className="underline"
                   onClick={() => {
-                    const reason = window.prompt('Reason for locking this thread:');
+                    const reason = window.prompt(labels.lockReason);
                     if (reason !== null) {
                       act(() =>
                         moderateComment({ tenantSlug, commentId: c.id, action: 'lock', reason }),
@@ -218,7 +254,7 @@ function CommentItem({
                     }
                   }}
                 >
-                  lock
+                  {labels.lock}
                 </button>
               ) : null}
             </span>
@@ -230,6 +266,7 @@ function CommentItem({
             <textarea
               className="w-full rounded border border-black/20 px-2 py-1 text-sm"
               rows={2}
+              aria-label={labels.replyLabel}
               value={replyBody}
               onChange={(e) => setReplyBody(e.target.value)}
             />
@@ -251,7 +288,7 @@ function CommentItem({
                 })
               }
             >
-              Reply
+              {labels.replySubmit}
             </button>
           </div>
         ) : null}
@@ -270,6 +307,7 @@ function CommentItem({
               isModerator={isModerator}
               act={act}
               pending={pending}
+              labels={labels}
               isReply
             />
           ))}

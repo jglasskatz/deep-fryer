@@ -22,6 +22,7 @@ are the first things to review.
 | Deploy | Supabase + containers | Droplet + compose: Postgres, SeaweedFS, migrate job, web, worker, Caddy |
 | Access control | RLS defined, app connects as owner | RLS **enforced**: user-driven queries run as `deep_fryer_app` with the caller's id |
 | Notifications | Config only | Worker emails run-complete, failed-run, and flagged-finding notices |
+| Languages | English | Public plane in English + the ten NYC Local Law 30 languages |
 
 ## 2. Organizations, roles, onboarding
 
@@ -157,9 +158,16 @@ bucket administration) and anonymous (object reads only, no listing).
   alone; sparklines carry their values.
 - Open data (NYC Local Law 11 of 2012): every published number is available
   as CSV/JSON.
-- Language access (Local Law 30 of 2017) is **not** addressed: UI and
-  research content are English-only. Required before NYC agency adoption of
-  the public plane; tracked as the next NYC-specific workstream.
+- Language access (NYC Local Law 30 of 2017): the public plane is served in
+  English plus the ten designated citywide languages (Chinese in Traditional
+  and Simplified), at locale-prefixed URLs (`/es/nyc`), right-to-left for
+  Arabic and Urdu. Chrome, explanations, statuses, and the framework's own
+  vocabulary are translated; research content (indicators, findings,
+  sources, comments) stays as published, with a notice and the
+  organization's language access contact (NYC: 311). Catalogs are
+  machine-assisted drafts pending certified review — see
+  docs/language-access.md. **[P]** what is translated vs. published as-is;
+  staff surfaces English-only.
 
 ## Open questions
 

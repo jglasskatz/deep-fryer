@@ -5,11 +5,14 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { MembersPanel } from '@/components/admin/MembersPanel';
 import { PortraitForm } from '@/components/onboarding/PortraitForm';
 import { UsageMeter } from '@/components/billing/UsageMeter';
+import { LanguageHelpForm } from '@/components/admin/LanguageHelpForm';
 import { getAuth, getOrgRole } from '@/lib/auth';
 import { billingSummary, WARNING_COPY } from '@/lib/billing';
 import { getPortrait } from '@/lib/data';
 import { familyByOrgSlug } from '@/lib/family';
 import { organizationMembersList, pendingInvitations } from '@/lib/member-data';
+import { fmt, fmtPlural } from '@/lib/i18n/format';
+import { getI18n } from '@/lib/i18n/server';
 
 export async function generateMetadata({
   params,
@@ -17,7 +20,7 @@ export async function generateMetadata({
   params: Promise<{ org: string }>;
 }): Promise<Metadata> {
   const family = await familyByOrgSlug((await params).org);
-  return { title: family?.organization.name ?? 'Organization' };
+  return { title: family?.organization.name ?? 'deep-fryer' };
 }
 
 /**
@@ -27,7 +30,7 @@ export async function generateMetadata({
  */
 export default async function OrgPage({ params }: { params: Promise<{ org: string }> }) {
   const { org: orgSlug } = await params;
-  const family = await familyByOrgSlug(orgSlug);
+  const [family, { m, locale, href }] = await Promise.all([familyByOrgSlug(orgSlug), getI18n()]);
   if (!family) notFound();
   const orgId = family.organization.id;
 
@@ -55,20 +58,20 @@ export default async function OrgPage({ params }: { params: Promise<{ org: strin
       <main id="main" className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
         <h1 className="text-3xl font-bold">{family.organization.name}</h1>
         <p className="mt-1 text-sm text-[color:var(--color-muted)]">
-          {family.members.length} portrait{family.members.length === 1 ? '' : 's'}
+          {fmtPlural(locale, m.org.portraitCount, family.members.length)}
           {family.members.length > 1 ? (
             <>
               {' · '}
-              <Link className="underline" href={`/o/${orgSlug}/compare`}>
-                compare
+              <Link className="underline" href={href(`/o/${orgSlug}/compare`)}>
+                {m.nav.compare}
               </Link>
               {' · '}
-              <Link className="underline" href={`/o/${orgSlug}/insights`}>
-                insights
+              <Link className="underline" href={href(`/o/${orgSlug}/insights`)}>
+                {m.nav.insights}
               </Link>
               {' · '}
-              <Link className="underline" href={`/o/${orgSlug}/progress`}>
-                progress
+              <Link className="underline" href={href(`/o/${orgSlug}/progress`)}>
+                {m.nav.progress}
               </Link>
             </>
           ) : null}
@@ -80,7 +83,7 @@ export default async function OrgPage({ params }: { params: Promise<{ org: strin
               <h2 id="plan" className="text-lg font-semibold">
                 {summary.plan ? `${summary.plan.name} plan` : 'No plan'}
                 {summary.subscription ? (
-                  <span className="ml-2 text-sm font-normal text-[color:var(--color-muted)]">
+                  <span className="ms-2 text-sm font-normal text-[color:var(--color-muted)]">
                     {summary.subscription.status} · {summary.subscription.collection} · renews{' '}
                     {summary.subscription.currentPeriodEnd.toISOString().slice(0, 10)}
                   </span>
@@ -111,10 +114,10 @@ export default async function OrgPage({ params }: { params: Promise<{ org: strin
 
         <section className="mt-8" aria-labelledby="portraits">
           <h2 id="portraits" className="text-lg font-semibold">
-            Portraits
+            {m.org.portraits}
           </h2>
           <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {portraits.map(({ m, p }) => {
+            {portraits.map(({ m: member, p }) => {
               const dims = p?.dimensions ?? [];
               const outside = dims.filter((d) => (d.viz_level ?? 0) > 0).length;
               const gaps = dims.filter((d) => d.viz_level === null).length;
@@ -124,25 +127,29 @@ export default async function OrgPage({ params }: { params: Promise<{ org: strin
                 .sort()
                 .at(-1);
               return (
-                <li key={m.slug} className="rounded-lg border border-black/10 p-4">
-                  <Link href={`/${m.slug}`} className="font-semibold hover:underline">
-                    {m.name}
+                <li key={member.slug} className="rounded-lg border border-black/10 p-4">
+                  <Link href={href(`/${member.slug}`)} className="font-semibold hover:underline">
+                    {member.name}
                   </Link>
                   <p className="mt-1 text-xs text-[color:var(--color-muted)]">
                     {dims.length === 0
-                      ? 'Nothing published yet'
-                      : `${outside} of ${dims.length} dimensions outside the safe space${gaps ? ` · ${gaps} data gaps` : ''}`}
+                      ? m.org.nothingPublished
+                      : `${fmtPlural(locale, m.org.outsideSafeSpace, outside, { total: dims.length })}${
+                          gaps ? ` · ${fmtPlural(locale, m.org.dataGaps, gaps)}` : ''
+                        }`}
                   </p>
                   {updated ? (
-                    <p className="text-xs text-[color:var(--color-muted)]">Updated {updated.slice(0, 10)}</p>
+                    <p className="text-xs text-[color:var(--color-muted)]">
+                      {fmt(m.common.updated, { date: updated.slice(0, 10) })}
+                    </p>
                   ) : null}
                   <p className="mt-2 flex gap-3 text-xs">
-                    <Link className="underline" href={`/${m.slug}/progress`}>
-                      Progress
+                    <Link className="underline" href={href(`/${member.slug}/progress`)}>
+                      {m.nav.progress}
                     </Link>
                     {isOrgMember || auth.devMode ? (
-                      <Link className="underline" href={`/${m.slug}/admin`}>
-                        Admin
+                      <Link className="underline" href={`/${member.slug}/admin`}>
+                        {m.common.admin}
                       </Link>
                     ) : null}
                   </p>
@@ -167,6 +174,9 @@ export default async function OrgPage({ params }: { params: Promise<{ org: strin
                   <PortraitForm mode="add" orgSlug={orgSlug} />
                 </div>
               </details>
+            </section>
+            <section className="mt-10">
+              <LanguageHelpForm orgSlug={orgSlug} initial={family.organization.languageHelp} />
             </section>
             <section className="mt-10" aria-labelledby="org-people">
               <h2 id="org-people" className="text-lg font-semibold">

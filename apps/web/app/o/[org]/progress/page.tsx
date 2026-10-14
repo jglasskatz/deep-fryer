@@ -6,14 +6,17 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { StatusChip } from '@/components/progress/StatusChip';
 import { familyByOrgSlug } from '@/lib/family';
 import { tenantProgress, type ProgressRow } from '@/lib/progress';
+import { dimensionLabel, nounForms } from '@/lib/i18n/content';
+import { fmt, fmtPlural, rich } from '@/lib/i18n/format';
+import { getI18n } from '@/lib/i18n/server';
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ org: string }>;
 }): Promise<Metadata> {
-  const family = await familyByOrgSlug((await params).org);
-  return { title: family ? `Progress · ${family.organization.name}` : 'Progress' };
+  const [family, { m }] = await Promise.all([familyByOrgSlug((await params).org), getI18n()]);
+  return { title: family ? fmt(m.familyProgress.metaTitle, { org: family.organization.name }) : m.nav.progress };
 }
 
 const GOOD: ProgressStatus[] = ['met', 'on_track', 'improving'];
@@ -26,8 +29,9 @@ const BAD: ProgressStatus[] = ['off_track', 'worsening'];
  */
 export default async function FamilyProgressPage({ params }: { params: Promise<{ org: string }> }) {
   const { org } = await params;
-  const family = await familyByOrgSlug(org);
+  const [family, { m, locale, href }] = await Promise.all([familyByOrgSlug(org), getI18n()]);
   if (!family) notFound();
+  const { singular: noun } = nounForms(m, family.noun);
 
   const progress = await Promise.all(family.members.map((m) => tenantProgress(m.slug)));
   const byMember = new Map(
@@ -55,33 +59,44 @@ export default async function FamilyProgressPage({ params }: { params: Promise<{
       return r && r.status !== 'no_target';
     }),
   );
-  const baselineLabel = progress.find((p) => p)?.config.baseline_label ?? 'first published measurement';
+  const baselineLabel = progress.find((p) => p)?.config.baseline_label ?? '—';
 
   return (
     <>
       <SiteHeader variant="org" family={family.members.length > 1 ? family : null} familyView="progress" org={family.organization} />
       <main id="main" className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-        <h1 className="text-3xl font-bold">Progress across {family.organization.name}</h1>
+        <h1 className="text-3xl font-bold">{fmt(m.familyProgress.title, { org: family.organization.name })}</h1>
         <p className="mt-2 max-w-3xl text-sm text-[color:var(--color-muted)]">
-          Each adopted goal, for {family.members.length === 1 ? 'the portrait' : `every ${family.noun}`},
-          measured from a common baseline: {baselineLabel}.
+          {rich(family.members.length === 1 ? m.familyProgress.introOne : m.familyProgress.introMany, {
+            noun,
+            baseline: <span lang="en">{baselineLabel}</span>,
+          })}
         </p>
 
-        <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-label="Summary by portrait">
-          {family.members.map((m, i) => {
+        <section
+          className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+          aria-label={m.familyProgress.summaryByPortrait}
+        >
+          {family.members.map((member, i) => {
             const rows = progress[i]?.rows ?? [];
             const c = summarizeProgress(rows);
             const good = GOOD.reduce((n, s) => n + c[s], 0);
             const bad = BAD.reduce((n, s) => n + c[s], 0);
             return (
-              <Link key={m.slug} href={`/${m.slug}/progress`} className="rounded-lg border border-black/10 p-4 hover:bg-black/[0.02]">
-                <div className="font-semibold">{m.name}</div>
+              <Link
+                key={member.slug}
+                href={href(`/${member.slug}/progress`)}
+                className="rounded-lg border border-black/10 p-4 hover:bg-black/[0.02]"
+              >
+                <div className="font-semibold">{member.name}</div>
                 <div className="mt-1 text-sm">
-                  <span className="text-green-800">{good} on course</span>
+                  <span className="text-green-800">{fmtPlural(locale, m.familyProgress.onCourse, good)}</span>
                   {' · '}
-                  <span className="text-red-800">{bad} slipping</span>
+                  <span className="text-red-800">{fmtPlural(locale, m.familyProgress.slipping, bad)}</span>
                   {' · '}
-                  <span className="text-[color:var(--color-muted)]">{c.baseline_only} baseline only</span>
+                  <span className="text-[color:var(--color-muted)]">
+                    {fmtPlural(locale, m.familyProgress.baselineOnly, c.baseline_only)}
+                  </span>
                 </div>
               </Link>
             );
@@ -90,17 +105,17 @@ export default async function FamilyProgressPage({ params }: { params: Promise<{
 
         <section className="mt-10" aria-labelledby="matrix">
           <h2 id="matrix" className="text-xl font-semibold">
-            Goals × {family.noun}s
+            {fmt(m.familyProgress.matrixTitle, { noun })}
           </h2>
           <div className="mt-3 overflow-x-auto">
             <table className="w-full min-w-[820px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-black/15 text-left text-xs">
-                  <th className="py-2 pr-3 font-medium">Goal</th>
-                  {family.members.map((m) => (
-                    <th key={m.slug} className="px-2 py-2 font-medium">
-                      <Link href={`/${m.slug}/progress`} className="hover:underline" title={m.name}>
-                        {m.short}
+                <tr className="border-b border-black/15 text-xs">
+                  <th className="py-2 pe-3 text-start font-medium">{m.familyProgress.goal}</th>
+                  {family.members.map((member) => (
+                    <th key={member.slug} className="px-2 py-2 text-start font-medium">
+                      <Link href={href(`/${member.slug}/progress`)} className="hover:underline" title={member.name}>
+                        {member.short}
                       </Link>
                     </th>
                   ))}
@@ -109,20 +124,28 @@ export default async function FamilyProgressPage({ params }: { params: Promise<{
               <tbody>
                 {goals.map(({ key, row }) => (
                   <tr key={key} className="border-b border-black/5 align-top">
-                    <td className="py-2 pr-3">
-                      <span className="block text-xs text-[color:var(--color-muted)]">{row.dimensionName}</span>
-                      <span className="font-medium">{row.indicator}</span>
+                    <td className="py-2 pe-3">
+                      <span className="block text-xs text-[color:var(--color-muted)]">
+                        {dimensionLabel(m, row.dimensionSlug, row.dimensionName)}
+                      </span>
+                      <span lang="en" className="font-medium">
+                        {row.indicator}
+                      </span>
                       {row.target !== null ? (
                         <span className="block text-xs text-[color:var(--color-muted)]">
-                          target {formatIndicatorValue(row.target, row.unit)}
-                          {row.targetYear ? ` by ${row.targetYear}` : ''}
+                          {row.targetYear
+                            ? fmt(m.familyProgress.targetBy, {
+                                value: formatIndicatorValue(row.target, row.unit),
+                                year: row.targetYear,
+                              })
+                            : fmt(m.familyProgress.target, { value: formatIndicatorValue(row.target, row.unit) })}
                         </span>
                       ) : null}
                     </td>
-                    {family.members.map((m) => {
-                      const r = byMember.get(m.slug)?.get(key);
+                    {family.members.map((member) => {
+                      const r = byMember.get(member.slug)?.get(key);
                       return (
-                        <td key={m.slug} className="px-2 py-2">
+                        <td key={member.slug} className="px-2 py-2">
                           {r ? (
                             <>
                               <StatusChip status={r.status} />
@@ -143,7 +166,7 @@ export default async function FamilyProgressPage({ params }: { params: Promise<{
                 {goals.length === 0 ? (
                   <tr>
                     <td colSpan={family.members.length + 1} className="py-4 text-[color:var(--color-muted)]">
-                      Nothing published yet.
+                      {m.familyProgress.nothingPublished}
                     </td>
                   </tr>
                 ) : null}

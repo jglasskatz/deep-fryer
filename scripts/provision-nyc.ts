@@ -124,6 +124,10 @@ async function main() {
     .set({
       name: ORG_NAME,
       memberNoun: 'borough',
+      // Local Law 30: every translated page points residents to free
+      // interpretation; NYC 311 provides it in 175+ languages. Kept if an
+      // owner has since set something else in the app.
+      languageHelp: org.languageHelp ?? '311',
       taxExempt: true,
       billingEmail: arg('billing-email') ?? org.billingEmail,
     })

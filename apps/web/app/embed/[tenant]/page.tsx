@@ -3,6 +3,9 @@ import { EmbedFrame } from '@/components/embed/EmbedFrame';
 import { getPortrait } from '@/lib/data';
 import { embedOriginsFor } from '@/lib/embed-policy';
 import { appUrl } from '@/lib/env';
+import { localizeDimensions } from '@/lib/i18n/content';
+import { doughnutLabels } from '@/lib/i18n/doughnut';
+import { getI18n } from '@/lib/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,9 +26,10 @@ export default async function EmbedPage({
   const { tenant } = await params;
   const { origin } = await searchParams;
 
-  const [portrait, allowedOrigins] = await Promise.all([
+  const [portrait, allowedOrigins, { m, href }] = await Promise.all([
     getPortrait(tenant),
     embedOriginsFor(tenant),
+    getI18n(),
   ]);
   if (!portrait) notFound();
 
@@ -36,9 +40,10 @@ export default async function EmbedPage({
       <EmbedFrame
         tenantSlug={tenant}
         tenantName={portrait.tenant.name}
-        dimensions={portrait.dimensions}
+        dimensions={localizeDimensions(m, portrait.dimensions)}
         parentOrigin={parentOrigin}
-        hostBase={appUrl()}
+        portraitUrl={`${appUrl()}${href(`/${tenant}`)}`}
+        labels={doughnutLabels(m)}
       />
     </main>
   );

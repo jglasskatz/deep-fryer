@@ -37,6 +37,19 @@ export const RESERVED_SLUGS = new Set([
   'sw.js',
   'terms',
   '_next',
+  // Language prefixes of the public plane (apps/web/lib/i18n/locales.ts):
+  // /es/nyc is NYC in Spanish, so no portrait may be called "es".
+  'ar',
+  'bn',
+  'es',
+  'fr',
+  'ht',
+  'ko',
+  'pl',
+  'ru',
+  'ur',
+  'zh-hans',
+  'zh-hant',
 ]);
 
 const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,46}[a-z0-9])?$/;

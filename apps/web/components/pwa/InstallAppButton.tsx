@@ -8,7 +8,7 @@ import { getPwaState, getServerPwaState, setPwaState, subscribePwa } from './pwa
  * prompt (Chromium/Edge/Android). Safari users install from the share sheet;
  * nothing is shown there rather than a button that cannot work.
  */
-export function InstallAppButton({ className }: { className?: string }) {
+export function InstallAppButton({ className, label = 'Install app' }: { className?: string; label?: string }) {
   const { installPrompt } = useSyncExternalStore(subscribePwa, getPwaState, getServerPwaState);
   if (!installPrompt) return null;
   return (
@@ -21,7 +21,7 @@ export function InstallAppButton({ className }: { className?: string }) {
         setPwaState({ installPrompt: null });
       }}
     >
-      Install app
+      {label}
     </button>
   );
 }

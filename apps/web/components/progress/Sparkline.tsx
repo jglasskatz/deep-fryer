@@ -1,4 +1,5 @@
 import type { SeriesPoint } from '@deep-fryer/core';
+import { fmt } from '@/lib/i18n/format';
 
 /**
  * A server-rendered trend line: data points by data year, the target as a
@@ -10,6 +11,7 @@ export function Sparkline({
   target,
   baselineYear,
   unit,
+  labels,
   width = 140,
   height = 36,
 }: {
@@ -17,6 +19,8 @@ export function Sparkline({
   target: number | null;
   baselineYear: number | null;
   unit: string;
+  /** Catalog templates for the accessible label: `Trend: {points}`, `target {value}`. */
+  labels: { trend: string; target: string };
   width?: number;
   height?: number;
 }) {
@@ -28,7 +32,10 @@ export function Sparkline({
   const pad = 4;
   const x = (year: number) => (maxY === minY ? width / 2 : pad + ((year - minY) / (maxY - minY)) * (width - 2 * pad));
   const y = (v: number) => (maxV === minV ? height / 2 : height - pad - ((v - minV) / (maxV - minV)) * (height - 2 * pad));
-  const label = `Trend: ${series.map((p) => `${p.year}: ${p.value.toLocaleString('en-US')}`).join(', ')}${unit ? ` (${unit})` : ''}${target !== null ? `; target ${target.toLocaleString('en-US')}` : ''}`;
+  // Values keep one number format across languages so they match the open
+  // data files (SPEC-v4 §7).
+  const points = `${series.map((p) => `${p.year}: ${p.value.toLocaleString('en-US')}`).join(', ')}${unit ? ` (${unit})` : ''}`;
+  const label = `${fmt(labels.trend, { points })}${target !== null ? `; ${fmt(labels.target, { value: target.toLocaleString('en-US') })}` : ''}`;
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={label} className="overflow-visible">
       {target !== null ? (

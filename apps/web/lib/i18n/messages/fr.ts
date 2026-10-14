@@ -1,0 +1,328 @@
+import type { Messages } from './en';
+
+/** French (fr) — draft for certified review (docs/language-access.md). */
+export const fr: Messages = {
+  common: {
+    skipToContent: 'Aller au contenu',
+    breadcrumb: 'Fil d’Ariane',
+    mainNav: 'Navigation principale',
+    menu: 'Menu',
+    accountMenu: 'Menu du compte',
+    accountAndPortraits: 'Compte et portraits',
+    installApp: 'Installer l’application',
+    signOut: 'Se déconnecter',
+    signIn: 'Se connecter',
+    back: '← {name}',
+    noData: 'Aucune donnée',
+    updated: 'Mis à jour : {date}',
+    socialFoundation: 'Plancher social',
+    ecologicalCeiling: 'Plafond écologique',
+    admin: 'Administration',
+  },
+  nav: {
+    progress: 'Avancement',
+    methodology: 'Méthodologie',
+    getInvolved: 'Participer',
+    compare: 'Comparer',
+    insights: 'Analyses',
+    familyPortraits: 'Portraits : {org}',
+  },
+  language: {
+    label: 'Langue',
+    choose: 'Choisissez une langue',
+    contentNotice:
+      'Les titres et les explications de la page sont traduits. Les résultats de recherche, les sources et les commentaires des résidents sont publiés en anglais.',
+    help: 'Pour obtenir de l’aide gratuite dans votre langue, contactez : {contact}',
+  },
+  doughnut: {
+    chartLabel: 'Graphique en donut des dimensions du plancher social et du plafond écologique',
+    summary:
+      '{name} : {outside} sur {total} dimensions hors de l’espace sûr et juste. Vous trouverez ci-dessous une liste de liens vers chaque dimension.',
+    summaryWithGaps:
+      '{name} : {outside} sur {total} dimensions hors de l’espace sûr et juste ; {gaps} sans données. Vous trouverez ci-dessous une liste de liens vers chaque dimension.',
+    portrait: 'Portrait Doughnut',
+    dimensionsOf: 'Dimensions : {name}',
+    dataNeeded: 'Données requises',
+    year: 'Année : {year}',
+    source: 'Source : {source}',
+    fullPortrait: 'Portrait complet et discussion',
+    level: {
+      unknown: 'Inconnu',
+      noProblem: 'Aucun problème',
+      underControl: 'Maîtrisé',
+      onTrack: 'En bonne voie',
+      needsAttention: 'À surveiller',
+      critical: 'Critique',
+      severe: 'Très grave',
+    },
+  },
+  /** Doughnut Economics dimensions, by framework slug. */
+  dimensions: {
+    food: 'Alimentation',
+    health: 'Santé',
+    education: 'Éducation',
+    'income-work': 'Revenus et travail',
+    'water-sanitation': 'Eau et assainissement',
+    energy: 'Énergie',
+    networks: 'Réseaux',
+    housing: 'Logement',
+    'gender-equality': 'Égalité des genres',
+    'social-equity': 'Équité sociale',
+    'political-voice': 'Voix politique',
+    'peace-justice': 'Paix et justice',
+    'climate-change': 'Changement climatique',
+    'ocean-acidification': 'Acidification des océans',
+    'chemical-pollution': 'Pollution chimique',
+    'nitrogen-phosphorus-loading': 'Charge en azote et en phosphore',
+    'freshwater-withdrawals': 'Prélèvements d’eau douce',
+    'land-conversion': 'Conversion des terres',
+    'biodiversity-loss': 'Perte de biodiversité',
+    'air-pollution': 'Pollution de l’air',
+    'ozone-depletion': 'Appauvrissement de la couche d’ozone',
+  },
+  /**
+   * Geographic scale of a figure. Each label completes "à l’échelle …"
+   * (feminine "échelle": "données à l’échelle municipale", "à l’échelle du
+   * comté") and also reads on its own in a comma-separated list.
+   */
+  scales: {
+    city: 'municipale',
+    county: 'du comté',
+    regional: 'régionale',
+    state: 'de l’État',
+    national: 'nationale',
+    global: 'mondiale',
+  },
+  /**
+   * All nouns are masculine. "arrondissement" starts with a vowel, so
+   * sentences never put an eliding article ("le", "de", "du") directly
+   * before `{noun}`/`{nouns}`; "chaque", "par", "les", "des" and "tous les"
+   * are safe.
+   */
+  nouns: {
+    portrait: { singular: 'portrait', plural: 'portraits' },
+    borough: { singular: 'arrondissement', plural: 'arrondissements' },
+    district: { singular: 'district', plural: 'districts' },
+    ward: { singular: 'district électoral', plural: 'districts électoraux' },
+    neighborhood: { singular: 'quartier', plural: 'quartiers' },
+    county: { singular: 'comté', plural: 'comtés' },
+  },
+  status: {
+    met: 'Cible atteinte',
+    on_track: 'En bonne voie',
+    off_track: 'En retard',
+    improving: 'En amélioration',
+    worsening: 'En dégradation',
+    no_change: 'Sans changement',
+    baseline_only: 'Référence seule',
+    no_target: 'Sans cible',
+    no_data: 'Aucune donnée',
+  },
+  statusExplainer: {
+    met: 'La cible adoptée est atteinte ou dépassée.',
+    on_track:
+      'Progresse vers la cible au moins aussi vite qu’une trajectoire linéaire allant de la valeur de référence à l’échéance.',
+    off_track: 'S’améliore, mais plus lentement que le rythme exigé par l’échéance.',
+    improving: 'Plus proche de la cible que la valeur de référence (l’objectif n’a pas d’échéance).',
+    worsening: 'Plus éloigné de la cible que la valeur de référence.',
+    baseline_only:
+      'Seule la mesure de référence existe pour l’instant ; la prochaine mise à jour indiquera la tendance.',
+  },
+  portrait: {
+    population: 'population : {n}',
+    clickHint: 'Sélectionnez un segment pour afficher les indicateurs, les preuves, les actions et la discussion.',
+    demoHint:
+      'Données de démonstration — définissez DATABASE_URL et publiez des versions pour afficher du contenu réel.',
+  },
+  dimension: {
+    updated: 'mis à jour : {date}',
+    target: 'cible : {value}',
+    noTarget: 'aucune cible fixée',
+    scaleData: 'données à l’échelle {scale}',
+    source: 'Source : {source}',
+    snapshotAlt: 'Capture de la source pour {name}, réalisée le {date}',
+    snapshotCaptured: 'Capture de la source réalisée le {date}',
+    originalDocument: 'document original',
+    dataGap: 'Lacune de données',
+    searchedAt: 'Échelles consultées : {scales}',
+    whatYouCanDo: 'Ce que vous pouvez faire',
+  },
+  discussion: {
+    title: 'Discussion',
+    sortTop: 'populaires',
+    sortNew: 'récents',
+    sortLabel: 'Trier les commentaires',
+    placeholder: 'Que devrait faire la ville à ce sujet ? Restez courtois et ne vous écartez pas du sujet.',
+    post: 'Publier',
+    pendingApproval: 'Publié — votre premier commentaire est en attente d’approbation par un modérateur.',
+    signInToJoin: '{link} pour participer à la discussion.',
+    empty: 'Aucun commentaire pour le moment.',
+    you: 'vous',
+    locked: 'verrouillé',
+    removed: 'supprimé',
+    removedBody: '[supprimé par les modérateurs]',
+    upvote: 'D’accord',
+    downvote: 'Pas d’accord',
+    score: 'Score : {n}',
+    reply: 'répondre',
+    replyLabel: 'Votre réponse',
+    replySubmit: 'Répondre',
+    restore: 'rétablir',
+    remove: 'supprimer',
+    lock: 'verrouiller',
+    removeReason: 'Motif de la suppression (consigné dans un journal visible par le personnel) :',
+    lockReason: 'Motif du verrouillage de cette discussion :',
+  },
+  progress: {
+    metaTitle: 'Avancement · {name}',
+    metaDescription: 'Où en est {name} par rapport aux objectifs adoptés.',
+    title: 'Avancement : {name}',
+    baseline: 'Référence :',
+    intro:
+      'Les cibles sont les seuils publiés du portrait — des objectifs locaux adoptés, lorsqu’ils existent — et, lorsqu’un objectif a une échéance, l’avancement est évalué par rapport à une trajectoire linéaire allant de la valeur de référence à cette date.',
+    nothingPublished: 'Rien n’a encore été publié pour ce portrait.',
+    summary: 'Résumé',
+    tracked: 'indicateurs suivis',
+    withDueDate: {
+      one: '{n} avec échéance',
+      many: '{n} avec échéance',
+      other: '{n} avec échéance',
+    },
+    statusesMeaning: 'Signification des statuts',
+    gapsTitle: 'Ce que nous ne pouvons pas encore mesurer',
+    gapsIntro:
+      'Des lacunes reconnues en toute transparence : des données qu’aucun organisme ne publie à cette échelle géographique. Chacune est une demande — leur publication permettrait à ce portrait d’en assurer le suivi.',
+    openData: 'Données ouvertes',
+    openDataIntro:
+      'Les mêmes chiffres, dans un format lisible par machine, pour les portails de données ouvertes et les dossiers du conseil municipal : {files}.',
+    methodologyLink: 'Méthodologie : {link}.',
+    thresholdsAndRationales: 'seuils et justifications',
+    columns: {
+      indicator: 'Indicateur',
+      baseline: 'Référence',
+      latest: 'Dernière valeur',
+      target: 'Cible',
+      status: 'Statut',
+      trend: 'Tendance',
+    },
+    scaleFigure: 'chiffre à l’échelle {scale}',
+    earliest: '(première valeur disponible)',
+    sameAsBaseline: 'identique à la référence',
+    byYear: 'd’ici {year}',
+    needsPerYear: 'nécessite {change} par an',
+    trend: 'Tendance : {points}',
+    trendTarget: 'cible {value}',
+  },
+  methodology: {
+    title: 'Méthodologie',
+    intro:
+      'Ce portrait suit l’approche de déclinaison locale de Doughnut Economics (l’économie du donut) : un plancher social (ne pas l’atteindre constitue un déficit, représenté vers le centre) et un plafond écologique (le franchir constitue un dépassement, représenté vers l’extérieur). Chaque indicateur a une cible explicite assortie d’une justification écrite, présentée ci-dessous. Lorsque ce portrait utilise une cible différente de la valeur par défaut du cadre, la justification locale est indiquée.',
+    geography: 'Périmètre géographique',
+    sourcePriority: 'Priorité des sources',
+    sourcePriorityIntro:
+      'Les données proviennent du niveau de priorité le plus élevé disponible ; un niveau inférieur n’est utilisé que lorsque tous les niveaux supérieurs ont été épuisés.',
+    recency: 'Actualité des données',
+    recencyText: {
+      one: 'Les données datant de plus de {n} an sont traitées comme une lacune de données plutôt que présentées comme actuelles.',
+      many: 'Les données datant de plus de {n} ans sont traitées comme une lacune de données plutôt que présentées comme actuelles.',
+      other:
+        'Les données datant de plus de {n} ans sont traitées comme une lacune de données plutôt que présentées comme actuelles.',
+    },
+    targets: 'Cibles et justifications',
+    target: 'cible {value}',
+    localTarget: 'Cible locale : {rationale}',
+    frameworkDefault: 'La cible par défaut du cadre était {target} : {rationale}',
+    lastRefreshed: 'Dernière mise à jour',
+    contentInEnglish: 'Les noms des indicateurs et les justifications sont publiés en anglais.',
+  },
+  outreach: {
+    title: 'Participer',
+    empty:
+      'Des organisations locales figureront ici à mesure que le portrait s’enrichira. En attendant, chaque page de dimension propose des actions concrètes.',
+  },
+  org: {
+    portraitCount: { one: '{n} portrait', many: '{n} portraits', other: '{n} portraits' },
+    portraits: 'Portraits',
+    nothingPublished: 'Rien n’a encore été publié',
+    outsideSafeSpace: {
+      one: '{n} dimension sur {total} hors de l’espace sûr',
+      many: '{n} dimensions sur {total} hors de l’espace sûr',
+      other: '{n} dimensions sur {total} hors de l’espace sûr',
+    },
+    dataGaps: { one: '{n} lacune de données', many: '{n} lacunes de données', other: '{n} lacunes de données' },
+  },
+  compare: {
+    metaTitle: 'Comparer · {org}',
+    titleJurisdiction: '{n} donuts, un territoire : {org}',
+    titleFamily: '{n} donuts, une famille : {org}',
+    introJurisdiction:
+      'Le même plancher social et le même plafond écologique, mesurés {n} fois — le territoire dans son ensemble et chaque {noun} — selon des seuils identiques fondés sur des objectifs locaux adoptés. Les segments orientés vers l’extérieur dépassent le plafond ; ceux orientés vers l’intérieur n’atteignent pas le plancher ; le gris signale une lacune de données reconnue.',
+    introFamily:
+      'Le même plancher social et le même plafond écologique, mesurés {n} fois selon des seuils identiques fondés sur des objectifs locaux adoptés. Les segments orientés vers l’extérieur dépassent le plafond ; ceux orientés vers l’intérieur n’atteignent pas le plancher ; le gris signale une lacune de données reconnue.',
+    wedgesOutside: '{n}/{total} segments hors de la zone sûre',
+    divergeTitle: 'Les plus grands écarts entre {nouns}',
+    divergeIntro:
+      'Indicateurs publiés comparés entre {nouns}, classés selon l’écart entre le meilleur et le moins bon {noun}.',
+    wholeColumn:
+      'La colonne du territoire dans son ensemble correspond à un chiffre publié à part entière, et non à une moyenne.',
+    indicator: 'Indicateur',
+    spread: 'Écart',
+    legend:
+      'Pour chaque ligne : rouge = {noun} le plus éloigné de la cible, vert = le plus proche. Les indicateurs établis pour l’ensemble du territoire (identiques pour tous les {nouns}) sont, par construction, exclus de ce tableau.',
+  },
+  insights: {
+    metaTitle: 'Analyses · {org}',
+    title: 'Analyses par {noun} · {org}',
+    intro:
+      'Chaque dimension, chaque {noun}, une seule matrice — mesurés selon les mêmes seuils, fondés sur des objectifs locaux adoptés. Sélectionnez une dimension pour afficher la comparaison détaillée et les recherches qui sous-tendent chaque chiffre.',
+    biggestDivides: 'Les plus grands écarts',
+    insideSafeZone: 'à l’intérieur de la zone sûre',
+    beyondBoundary: 'à {n} points au-delà de la limite',
+    divide: '{worst} se situe {worstState}, tandis que {best} se situe {bestState}.',
+    matrix: 'La matrice',
+    matrixIntro:
+      'Vert = à l’intérieur de la zone sûre, rouge = déficit ou dépassement (plus la couleur est foncée, plus l’écart est grand), gris = lacune de données reconnue. Sélectionnez une ligne pour la déplier.',
+    dimension: 'Dimension',
+    noData: 'aucune donnée',
+    unrolled: '{name} — vue détaillée',
+    dataGap: 'lacune de données',
+    barsExplainer:
+      'Les barres mesurent la distance par rapport à la limite (la ligne verticale) : à gauche et en vert, à l’intérieur de la zone sûre ; à droite et en rouge, déficit ou dépassement, sur l’échelle −100…150 du donut.',
+    researchBehind: 'Les recherches sous-jacentes',
+    fullDrilldown: 'analyse détaillée →',
+    yearNA: 'année non disponible',
+    tier: 'niveau {n}',
+    confidence: 'confiance : {value}',
+    confidenceLevels: { high: 'élevée', medium: 'moyenne', low: 'faible' },
+    evidence: 'preuves',
+    workedMath: 'détail du calcul',
+    gapLabel: '{indicator} : lacune de données',
+    fullSearchTrail: '(historique complet des recherches)',
+    selectPrompt:
+      'Sélectionnez une dimension ci-dessus pour afficher la comparaison entre {nouns} et examiner les sources, les preuves et la notation.',
+  },
+  familyProgress: {
+    metaTitle: 'Avancement · {org}',
+    title: 'Avancement : {org}',
+    introOne: 'Chaque objectif adopté pour le portrait, mesuré à partir d’une référence commune : {baseline}.',
+    introMany: 'Chaque objectif adopté pour chaque {noun}, mesuré à partir d’une référence commune : {baseline}.',
+    summaryByPortrait: 'Résumé par portrait',
+    onCourse: { one: '{n} en bonne voie', many: '{n} en bonne voie', other: '{n} en bonne voie' },
+    slipping: { one: '{n} en retard', many: '{n} en retard', other: '{n} en retard' },
+    baselineOnly: {
+      one: '{n} avec référence seule',
+      many: '{n} avec référence seule',
+      other: '{n} avec référence seule',
+    },
+    matrixTitle: 'Objectifs par {noun}',
+    goal: 'Objectif',
+    target: 'cible {value}',
+    targetBy: 'cible {value} d’ici {year}',
+    nothingPublished: 'Rien n’a encore été publié.',
+  },
+  notFound: {
+    title: 'Page introuvable',
+    body: 'Aucun portrait ni aucune page ne se trouve à cette adresse. La page a peut-être été déplacée, ou le portrait n’est pas encore publié.',
+    home: 'Retour à l’accueil',
+  },
+};

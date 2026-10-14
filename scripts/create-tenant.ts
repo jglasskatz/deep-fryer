@@ -7,13 +7,15 @@
  *   tsx scripts/create-tenant.ts --slug ithaca --name "Ithaca" \
  *     --owner clerk@cityofithaca.org [--org-name "City of Ithaca"] \
  *     [--region "NY, USA"] [--population 32000] [--description "..."] \
- *     [--plan trial|community|city|metro|enterprise] [--contract-end 2027-06-30]
+ *     [--plan trial|community|city|metro|enterprise] [--contract-end 2027-06-30] \
+ *     [--language-help "(607) 274-6570"]
  *
  * --plan trial starts a 30-day trial; any other plan records a staff
  * contract through --contract-end (default one year). Omit --plan to leave
  * the organization without a plan (it can buy one under Billing).
  */
-import { getDb, provisionOrganization, provisionTenant, subscriptions, tenantBySlug, users } from '@deep-fryer/db';
+import { eq } from 'drizzle-orm';
+import { getDb, organizations, provisionOrganization, provisionTenant, subscriptions, tenantBySlug, users } from '@deep-fryer/db';
 import { isPlanId } from '@deep-fryer/core';
 
 function parseArgs(argv: string[]) {
@@ -25,7 +27,7 @@ function parseArgs(argv: string[]) {
   const name = get('--name');
   const ownerEmail = get('--owner')?.toLowerCase();
   if (!slug || !name || !ownerEmail) {
-    console.error('Usage: create-tenant --slug <slug> --name <name> --owner <email> [--org-name] [--region] [--population] [--description] [--plan] [--contract-end]');
+    console.error('Usage: create-tenant --slug <slug> --name <name> --owner <email> [--org-name] [--region] [--population] [--description] [--plan] [--contract-end] [--language-help]');
     process.exit(1);
   }
   const plan = get('--plan');
@@ -41,6 +43,8 @@ function parseArgs(argv: string[]) {
     description: get('--description'),
     plan,
     contractEnd: get('--contract-end'),
+    /** Language access contact for translated pages, e.g. "311" or "(607) 274-6570". */
+    languageHelp: get('--language-help'),
   };
 }
 
@@ -63,6 +67,9 @@ async function main() {
       billingEmail: args.ownerEmail,
       startTrial: args.plan === 'trial',
     });
+    if (args.languageHelp) {
+      await tx.update(organizations).set({ languageHelp: args.languageHelp.trim() }).where(eq(organizations.id, org.id));
+    }
     if (args.plan && args.plan !== 'trial') {
       const end = args.contractEnd ? new Date(`${args.contractEnd}T23:59:59Z`) : new Date(Date.now() + 365 * 86_400_000);
       await tx.insert(subscriptions).values({

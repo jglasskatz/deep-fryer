@@ -19,8 +19,16 @@ export interface FamilyMember {
   short: string;
 }
 
+export interface FamilyOrganization {
+  id: string;
+  slug: string;
+  name: string;
+  /** Language access contact for translated pages (organizations.language_help). */
+  languageHelp: string | null;
+}
+
 export interface Family {
-  organization: { id: string; slug: string; name: string };
+  organization: FamilyOrganization;
   members: FamilyMember[];
   /**
    * The whole-jurisdiction portrait, if the family has one: by convention
@@ -59,7 +67,7 @@ export const familyByOrgSlug = cache(async (orgSlug: string): Promise<Family | n
   if (!found) return null;
   const { org, rows } = found;
   return {
-    organization: { id: org.id, slug: org.slug, name: org.name },
+    organization: { id: org.id, slug: org.slug, name: org.name, languageHelp: org.languageHelp },
     members: rows.map((t) => ({ slug: t.slug, name: t.name, short: t.shortName ?? initials(t.name) })),
     whole: rows.some((t) => t.slug === org.slug) ? org.slug : null,
     noun: org.memberNoun?.trim() || 'portrait',
@@ -83,11 +91,16 @@ export const familyForTenant = cache(async (tenantSlug: string): Promise<Family 
 
 /** The organization holding a portrait (for billing/admin links), or null. */
 export const organizationOfTenant = cache(
-  async (tenantSlug: string): Promise<{ id: string; slug: string; name: string } | null> => {
+  async (tenantSlug: string): Promise<FamilyOrganization | null> => {
     if (!hasDatabase()) return null;
     const [row] = await userDb((db) =>
       db
-        .select({ id: organizations.id, slug: organizations.slug, name: organizations.name })
+        .select({
+          id: organizations.id,
+          slug: organizations.slug,
+          name: organizations.name,
+          languageHelp: organizations.languageHelp,
+        })
         .from(tenants)
         .innerJoin(organizations, eq(organizations.id, tenants.organizationId))
         .where(eq(tenants.slug, tenantSlug)),

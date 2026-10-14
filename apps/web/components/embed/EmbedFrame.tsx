@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { PortraitDoughnut } from '@/components/doughnut/PortraitDoughnut';
+import type { DoughnutLabels } from '@/lib/i18n/doughnut';
 import type { PublishedDimension } from '@/lib/portrait';
 
 /**
@@ -13,13 +14,16 @@ export function EmbedFrame({
   tenantName,
   dimensions,
   parentOrigin,
-  hostBase,
+  portraitUrl,
+  labels,
 }: {
   tenantSlug: string;
   tenantName: string;
   dimensions: PublishedDimension[];
   parentOrigin: string | null;
-  hostBase: string;
+  /** Absolute URL of the hosted portrait in the embed's language. */
+  portraitUrl: string;
+  labels: DoughnutLabels;
 }) {
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -45,11 +49,12 @@ export function EmbedFrame({
         tenantName={tenantName}
         dimensions={dimensions}
         size={640}
-        linkBase={`${hostBase}/${tenantSlug}/dim`}
+        linkBase={`${portraitUrl}/dim`}
+        labels={labels}
       />
       <p className="mt-1 text-center text-[11px] text-black/50">
-        <a href={`${hostBase}/${tenantSlug}`} target="_blank" rel="noreferrer" className="underline">
-          Full portrait & discussion
+        <a href={portraitUrl} target="_blank" rel="noreferrer" className="underline">
+          {labels.fullPortrait}
         </a>
       </p>
     </div>

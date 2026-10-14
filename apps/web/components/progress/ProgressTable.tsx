@@ -2,6 +2,9 @@ import Link from 'next/link';
 import { formatIndicatorValue } from '@deep-fryer/core';
 import type { ProgressRow } from '@/lib/progress';
 import { safeHref } from '@/lib/safe-url';
+import { dimensionLabel, scaleLabel } from '@/lib/i18n/content';
+import { fmt } from '@/lib/i18n/format';
+import { getI18n } from '@/lib/i18n/server';
 import { Sparkline } from './Sparkline';
 import { StatusChip } from './StatusChip';
 
@@ -15,10 +18,12 @@ function signed(n: number, unit: string): string {
  * the pace still required. Grouped by ring then dimension, linking each
  * dimension to its public drilldown (evidence and discussion).
  */
-export function ProgressTable({ tenantSlug, rows }: { tenantSlug: string; rows: ProgressRow[] }) {
+export async function ProgressTable({ tenantSlug, rows }: { tenantSlug: string; rows: ProgressRow[] }) {
+  const { m, href } = await getI18n();
+  const c = m.progress.columns;
   const rings = [
-    ['social', 'Social foundation'],
-    ['ecological', 'Ecological ceiling'],
+    ['social', m.common.socialFoundation],
+    ['ecological', m.common.ecologicalCeiling],
   ] as const;
   return (
     <div className="space-y-10">
@@ -33,13 +38,13 @@ export function ProgressTable({ tenantSlug, rows }: { tenantSlug: string; rows: 
             <div className="mt-3 overflow-x-auto">
               <table className="w-full min-w-[760px] border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-black/15 text-left text-xs text-[color:var(--color-muted)]">
-                    <th className="py-2 pr-3 font-medium">Indicator</th>
-                    <th className="py-2 pr-3 font-medium">Baseline</th>
-                    <th className="py-2 pr-3 font-medium">Latest</th>
-                    <th className="py-2 pr-3 font-medium">Target</th>
-                    <th className="py-2 pr-3 font-medium">Status</th>
-                    <th className="py-2 pr-3 font-medium">Trend</th>
+                  <tr className="border-b border-black/15 text-start text-xs text-[color:var(--color-muted)]">
+                    <th className="py-2 pe-3 text-start font-medium">{c.indicator}</th>
+                    <th className="py-2 pe-3 text-start font-medium">{c.baseline}</th>
+                    <th className="py-2 pe-3 text-start font-medium">{c.latest}</th>
+                    <th className="py-2 pe-3 text-start font-medium">{c.target}</th>
+                    <th className="py-2 pe-3 text-start font-medium">{c.status}</th>
+                    <th className="py-2 pe-3 text-start font-medium">{c.trend}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -47,13 +52,13 @@ export function ProgressTable({ tenantSlug, rows }: { tenantSlug: string; rows: 
                     const firstOfDim = i === 0 || ringRows[i - 1]!.dimensionSlug !== r.dimensionSlug;
                     return (
                       <tr key={`${r.dimensionSlug}-${r.indicator}`} className="border-b border-black/5 align-top">
-                        <td className="py-2 pr-3">
+                        <td className="py-2 pe-3">
                           {firstOfDim ? (
                             <Link
-                              href={`/${tenantSlug}/dim/${r.dimensionSlug}`}
+                              href={href(`/${tenantSlug}/dim/${r.dimensionSlug}`)}
                               className="block text-xs font-semibold uppercase tracking-wide text-[color:var(--color-muted)] hover:underline"
                             >
-                              {r.dimensionName}
+                              {dimensionLabel(m, r.dimensionSlug, r.dimensionName)}
                             </Link>
                           ) : null}
                           <span className="font-medium">{r.indicator}</span>
@@ -67,25 +72,25 @@ export function ProgressTable({ tenantSlug, rows }: { tenantSlug: string; rows: 
                                 r.source
                               )}
                               {r.geographicScale && r.geographicScale !== 'city' && r.geographicScale !== 'county'
-                                ? ` · ${r.geographicScale} figure`
+                                ? ` · ${fmt(m.progress.scaleFigure, { scale: scaleLabel(m, r.geographicScale) })}`
                                 : ''}
                             </span>
                           ) : null}
                         </td>
-                        <td className="py-2 pr-3 tabular-nums">
+                        <td className="py-2 pe-3 tabular-nums">
                           {r.baseline ? (
                             <>
                               {formatIndicatorValue(r.baseline.value, r.unit)}
                               <span className="block text-xs text-[color:var(--color-muted)]">
                                 {r.baseline.year}
-                                {r.baselineIsFallback ? ' (earliest)' : ''}
+                                {r.baselineIsFallback ? ` ${m.progress.earliest}` : ''}
                               </span>
                             </>
                           ) : (
                             '—'
                           )}
                         </td>
-                        <td className="py-2 pr-3 tabular-nums">
+                        <td className="py-2 pe-3 tabular-nums">
                           {r.current && r.baseline && r.current.year !== r.baseline.year ? (
                             <>
                               {formatIndicatorValue(r.current.value, r.unit)}
@@ -94,35 +99,38 @@ export function ProgressTable({ tenantSlug, rows }: { tenantSlug: string; rows: 
                               </span>
                             </>
                           ) : (
-                            <span className="text-[color:var(--color-muted)]">{r.current ? 'same as baseline' : '—'}</span>
+                            <span className="text-[color:var(--color-muted)]">{r.current ? m.progress.sameAsBaseline : '—'}</span>
                           )}
                         </td>
-                        <td className="py-2 pr-3 tabular-nums">
+                        <td className="py-2 pe-3 tabular-nums">
                           {r.target !== null ? (
                             <>
                               {formatIndicatorValue(r.target, r.unit)}
                               {r.targetYear ? (
-                                <span className="block text-xs text-[color:var(--color-muted)]">by {r.targetYear}</span>
+                                <span className="block text-xs text-[color:var(--color-muted)]">
+                                  {fmt(m.progress.byYear, { year: r.targetYear })}
+                                </span>
                               ) : null}
                             </>
                           ) : (
                             '—'
                           )}
                         </td>
-                        <td className="py-2 pr-3">
+                        <td className="py-2 pe-3">
                           <StatusChip status={r.status} />
                           {r.requiredAnnualChange !== null && r.status !== 'met' ? (
                             <span className="mt-1 block text-xs text-[color:var(--color-muted)]">
-                              needs {signed(r.requiredAnnualChange, r.unit)} a year
+                              {fmt(m.progress.needsPerYear, { change: signed(r.requiredAnnualChange, r.unit) })}
                             </span>
                           ) : null}
                         </td>
-                        <td className="py-2 pr-3">
+                        <td className="py-2 pe-3">
                           <Sparkline
                             series={r.series}
                             target={r.target}
                             baselineYear={r.baseline?.year ?? null}
                             unit={r.unit}
+                            labels={{ trend: m.progress.trend, target: m.progress.trendTarget }}
                           />
                         </td>
                       </tr>

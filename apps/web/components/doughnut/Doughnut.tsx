@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Ring } from '@deep-fryer/core';
 import { DoughnutRenderer, type RendererHit } from './doughnut-renderer';
+import { fmt } from '@/lib/i18n/format';
+import type { DoughnutLabels } from '@/lib/i18n/doughnut';
 
 export interface DoughnutDimension {
   ring: Ring;
@@ -22,16 +24,19 @@ export interface DoughnutProps {
   onSelect?: (dim: DoughnutDimension | null) => void;
   /** Text alternative for the canvas (WCAG 1.1.1); the parent builds the summary. */
   ariaLabel?: string;
+  /** The reader's language (lib/i18n/doughnut.ts). */
+  labels: DoughnutLabels;
 }
 
-export function statusLabel(level: number | null): string {
-  if (level === null || Number.isNaN(level)) return 'Unknown';
-  if (level <= -100) return 'No problem';
-  if (level <= -50) return 'Under control';
-  if (level <= 0) return 'On track';
-  if (level <= 50) return 'Needs attention';
-  if (level <= 100) return 'Critical';
-  return 'Severe';
+/** The doughnut's own status words for a viz_level (-100…150 scale). */
+export function statusLabel(level: number | null, words: DoughnutLabels['level']): string {
+  if (level === null || Number.isNaN(level)) return words.unknown;
+  if (level <= -100) return words.noProblem;
+  if (level <= -50) return words.underControl;
+  if (level <= 0) return words.onTrack;
+  if (level <= 50) return words.needsAttention;
+  if (level <= 100) return words.critical;
+  return words.severe;
 }
 
 /**
@@ -39,7 +44,7 @@ export function statusLabel(level: number | null): string {
  * (the canonical visual, SPEC.md §4). Social dimensions draw on the inner
  * ring, ecological on the outer; viz_level uses the -100..150 scale.
  */
-export function Doughnut({ social, ecological, size = 640, onSelect, ariaLabel }: DoughnutProps) {
+export function Doughnut({ social, ecological, size = 640, onSelect, ariaLabel, labels }: DoughnutProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [tooltip, setTooltip] = useState<{
     dim: DoughnutDimension;
@@ -110,13 +115,14 @@ export function Doughnut({ social, ecological, size = 640, onSelect, ariaLabel }
       <canvas
         ref={canvasRef}
         role="img"
-        aria-label={ariaLabel ?? 'Doughnut chart of social foundation and ecological ceiling dimensions'}
+        aria-label={ariaLabel ?? labels.chartLabel}
         style={{ width: '100%', height: 'auto', display: 'block' }}
       />
       {tooltip ? (
         <div
           style={{
             position: 'absolute',
+            // Pointer coordinates are physical; the tooltip stays left-anchored in RTL too.
             left: tooltip.x,
             top: tooltip.y,
             pointerEvents: 'none',
@@ -139,24 +145,24 @@ export function Doughnut({ social, ecological, size = 640, onSelect, ariaLabel }
                 padding: '2px 6px',
                 borderRadius: 10,
                 fontSize: 11,
-                marginLeft: 4,
+                marginInlineStart: 4,
               }}
             >
-              {statusLabel(tooltip.dim.viz_level)}
+              {statusLabel(tooltip.dim.viz_level, labels.level)}
             </span>
           </div>
           {tooltip.dim.indicator ? (
             <div style={{ fontSize: 12, opacity: 0.9 }}>{tooltip.dim.indicator}</div>
           ) : null}
           <div style={{ fontSize: 14, fontWeight: 'bold', margin: '4px 0' }}>
-            {tooltip.dim.value ?? 'Data needed'}
+            {tooltip.dim.value ?? labels.dataNeeded}
           </div>
           {tooltip.dim.year ? (
-            <div style={{ fontSize: 11, opacity: 0.7 }}>Year: {tooltip.dim.year}</div>
+            <div style={{ fontSize: 11, opacity: 0.7 }}>{fmt(labels.year, { year: tooltip.dim.year })}</div>
           ) : null}
           {tooltip.dim.source ? (
-            <div style={{ fontSize: 11, opacity: 0.7, marginTop: 2 }}>
-              Source: {tooltip.dim.source}
+            <div lang="en" style={{ fontSize: 11, opacity: 0.7, marginTop: 2 }}>
+              {fmt(labels.source, { source: tooltip.dim.source })}
             </div>
           ) : null}
           <div style={{ fontSize: 10, opacity: 0.5, marginTop: 4 }}>Click for details</div>

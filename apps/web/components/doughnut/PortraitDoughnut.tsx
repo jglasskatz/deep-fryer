@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 import { Doughnut, statusLabel, type DoughnutDimension } from './Doughnut';
 import { formatIndicatorValue } from '@deep-fryer/core';
+import { fmt } from '@/lib/i18n/format';
+import type { DoughnutLabels } from '@/lib/i18n/doughnut';
 import type { PublishedDimension } from '@/lib/portrait';
 
 /**
@@ -22,14 +24,17 @@ export function PortraitDoughnut({
   dimensions,
   size = 720,
   linkBase,
+  labels,
 }: {
   tenantSlug: string;
   /** Used in the accessible summary ("Manhattan: 9 of 21 dimensions outside…"). */
   tenantName?: string;
   dimensions: PublishedDimension[];
   size?: number;
-  /** Defaults to /{tenant}/dim; embeds pass an absolute URL instead. */
+  /** Defaults to /{tenant}/dim; localized pages pass /{locale}/{tenant}/dim, embeds an absolute URL. */
   linkBase?: string;
+  /** Dimension names arrive already translated; these are the chart's own words. */
+  labels: DoughnutLabels;
 }) {
   const router = useRouter();
 
@@ -74,7 +79,12 @@ export function PortraitDoughnut({
   const all = [...social, ...ecological];
   const outside = all.filter((d) => d.viz_level !== null && d.viz_level > 0).length;
   const unknown = all.filter((d) => d.viz_level === null).length;
-  const summary = `${tenantName ? `${tenantName} doughnut portrait` : 'Doughnut portrait'}: ${outside} of ${all.length} dimensions outside the safe and just space${unknown ? `, ${unknown} without data` : ''}. A list of links to each dimension follows.`;
+  const summary = fmt(unknown ? labels.summaryWithGaps : labels.summary, {
+    name: tenantName ?? labels.portrait,
+    outside,
+    total: all.length,
+    gaps: unknown,
+  });
 
   return (
     <div className="w-full" style={{ maxWidth: size }}>
@@ -84,15 +94,16 @@ export function PortraitDoughnut({
         size={size}
         onSelect={handleSelect}
         ariaLabel={summary}
+        labels={labels}
       />
       <nav
-        aria-label={`${tenantName ?? 'Portrait'} dimensions`}
+        aria-label={fmt(labels.dimensionsOf, { name: tenantName ?? labels.portrait })}
         className="sr-only focus-within:not-sr-only focus-within:mt-3 focus-within:rounded focus-within:border focus-within:border-black/15 focus-within:p-3"
       >
         {(
           [
-            ['Social foundation', social],
-            ['Ecological ceiling', ecological],
+            [labels.social, social],
+            [labels.ecological, ecological],
           ] as const
         ).map(([label, dims]) => (
           <div key={label}>
@@ -108,7 +119,7 @@ export function PortraitDoughnut({
                   >
                     {d.name}
                   </a>
-                  {`: ${statusLabel(d.viz_level)}${d.value ? ` — ${d.value}` : ''}`}
+                  {`: ${statusLabel(d.viz_level, labels.level)}${d.value ? ` — ${d.value}` : ''}`}
                 </li>
               ))}
             </ul>

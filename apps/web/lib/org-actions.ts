@@ -8,6 +8,7 @@ import { effectiveLimits, slugError, standing } from '@deep-fryer/core';
 import {
   organizationBySlug,
   organizationMembers,
+  organizations,
   portraitCount,
   provisionOrganization,
   provisionTenant,
@@ -160,3 +161,22 @@ export const addPortrait = action(
     redirect(`/${p.slug}/admin?welcome=1`);
   },
 );
+
+/**
+ * The organization's language access contact (organizations.language_help),
+ * shown on every translated public page: "For free help in your language,
+ * contact: 311". Plain text, rendered as text — never a link — so it needs
+ * no URL sanitizing; owners only.
+ */
+export const updateLanguageHelp = action(async (input: { orgSlug: string; languageHelp: string }) => {
+  const db = systemDb();
+  const org = await organizationBySlug(db, input.orgSlug);
+  if (!org) throw new UserError('Unknown organization.');
+  await requireOrgRole(org.id, ['owner']);
+  const value = input.languageHelp.trim();
+  if (value.length > 120) {
+    throw new UserError('Keep it short: a phone number, email, or web address (at most 120 characters).');
+  }
+  await db.update(organizations).set({ languageHelp: value || null }).where(eq(organizations.id, org.id));
+  revalidatePath(`/o/${org.slug}`);
+});

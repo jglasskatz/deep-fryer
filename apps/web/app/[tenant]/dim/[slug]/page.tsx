@@ -7,6 +7,9 @@ import { dimensionForPublicSlug, dimensionThread } from '@/lib/discussion';
 import { getAuth, getRole, roleAtLeast } from '@/lib/auth';
 import { safeHref } from '@/lib/safe-url';
 import { formatIndicatorValue } from '@deep-fryer/core';
+import { dimensionLabel, scaleLabel } from '@/lib/i18n/content';
+import { fmt, rich } from '@/lib/i18n/format';
+import { getI18n } from '@/lib/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,10 +29,11 @@ export default async function DimensionDrilldownPage({
   const { sort: sortRaw } = await searchParams;
   const sort = sortRaw === 'new' ? 'new' : 'top';
 
-  const [portrait, resolved, auth] = await Promise.all([
+  const [portrait, resolved, auth, { m, href }] = await Promise.all([
     getPortrait(tenant),
     hasDatabase() ? dimensionForPublicSlug(tenant, slug) : Promise.resolve(null),
     getAuth(),
+    getI18n(),
   ]);
   if (!portrait) notFound();
   const dim = portrait.dimensions.find((d) => d.slug === slug);
@@ -58,44 +62,55 @@ export default async function DimensionDrilldownPage({
       />
       <main id="main" className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         <p className="text-sm">
-          <Link className="underline" href={`/${tenant}`}>
-            ← {portrait.tenant.name}
+          <Link className="underline" href={href(`/${tenant}`)}>
+            {fmt(m.common.back, { name: portrait.tenant.name })}
           </Link>
         </p>
-        <h1 className="mt-2 text-3xl font-bold">{data.name}</h1>
+        <h1 className="mt-2 text-3xl font-bold">{dimensionLabel(m, dim.slug, data.name)}</h1>
         <p className="mt-1 text-sm text-[color:var(--color-muted)]">
-          {dim.ring === 'social' ? 'Social foundation' : 'Ecological ceiling'}
-          {dim.published_at ? ` · updated ${dim.published_at.slice(0, 10)}` : ''}
+          {dim.ring === 'social' ? m.common.socialFoundation : m.common.ecologicalCeiling}
+          {dim.published_at ? ` · ${fmt(m.dimension.updated, { date: dim.published_at.slice(0, 10) })}` : ''}
         </p>
 
-        {data.context ? <p className="mt-5 max-w-prose">{data.context}</p> : null}
+        {data.context ? (
+          <p lang="en" className="mt-5 max-w-prose">
+            {data.context}
+          </p>
+        ) : null}
 
         <section className="mt-8 space-y-5">
           {data.indicators.map((ind, i) => (
             <div key={i} className="rounded-lg border border-black/15 p-4">
-              <h2 className="font-semibold">{ind.name}</h2>
+              <h2 lang="en" className="font-semibold">
+                {ind.name}
+              </h2>
               <p className="mt-2 text-2xl font-bold">
                 {ind.value === null || ind.value === '' ? (
-                  <span className="text-base font-normal">No data</span>
+                  <span className="text-base font-normal">{m.common.noData}</span>
                 ) : (
-                  formatIndicatorValue(ind.value, ind.unit)
+                  <bdi>{formatIndicatorValue(ind.value, ind.unit)}</bdi>
                 )}
               </p>
               <p className="mt-1 text-sm text-[color:var(--color-muted)]">
                 {ind.year ? `${ind.year} · ` : ''}
-                {ind.target !== null ? `target: ${formatIndicatorValue(ind.target, ind.unit)}` : 'no target set'}
-                {ind.geographic_scale ? ` · ${ind.geographic_scale} data` : ''}
+                {ind.target !== null
+                  ? fmt(m.dimension.target, { value: formatIndicatorValue(ind.target, ind.unit) })
+                  : m.dimension.noTarget}
+                {ind.geographic_scale
+                  ? ` · ${fmt(m.dimension.scaleData, { scale: scaleLabel(m, ind.geographic_scale) })}`
+                  : ''}
               </p>
               {ind.source ? (
                 <p className="mt-2 text-sm">
-                  Source:{' '}
-                  {safeHref(ind.source_url) ? (
-                    <a className="underline" href={safeHref(ind.source_url)} target="_blank" rel="noreferrer">
-                      {ind.source}
-                    </a>
-                  ) : (
-                    ind.source
-                  )}
+                  {rich(m.dimension.source, {
+                    source: safeHref(ind.source_url) ? (
+                      <a lang="en" className="underline" href={safeHref(ind.source_url)} target="_blank" rel="noreferrer">
+                        {ind.source}
+                      </a>
+                    ) : (
+                      <span lang="en">{ind.source}</span>
+                    ),
+                  })}
                 </p>
               ) : null}
               {ind.evidence ? (
@@ -108,12 +123,12 @@ export default async function DimensionDrilldownPage({
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={evidenceUrl(tenant, ind.evidence.snapshot_path)}
-                      alt={`Snapshot of the source for ${ind.name}, captured ${ind.evidence.captured_at.slice(0, 10)}`}
+                      alt={fmt(m.dimension.snapshotAlt, { name: ind.name, date: ind.evidence.captured_at.slice(0, 10) })}
                       className="max-h-56 rounded border border-black/15"
                     />
                   </a>
                   <figcaption className="mt-1 text-xs text-[color:var(--color-muted)]">
-                    Source snapshot captured {ind.evidence.captured_at.slice(0, 10)}
+                    {fmt(m.dimension.snapshotCaptured, { date: ind.evidence.captured_at.slice(0, 10) })}
                     {ind.evidence.pdf_path ? (
                       <>
                         {' · '}
@@ -123,7 +138,7 @@ export default async function DimensionDrilldownPage({
                           target="_blank"
                           rel="noreferrer"
                         >
-                          original document
+                          {m.dimension.originalDocument}
                         </a>
                       </>
                     ) : null}
@@ -138,11 +153,13 @@ export default async function DimensionDrilldownPage({
               key={`gap-${i}`}
               className="rounded-lg border border-dashed border-black/25 bg-black/[0.02] p-4"
             >
-              <h2 className="font-semibold">Data gap</h2>
-              <p className="mt-1 text-sm">{gap.reason}</p>
+              <h2 className="font-semibold">{m.dimension.dataGap}</h2>
+              <p lang="en" className="mt-1 text-sm">
+                {gap.reason}
+              </p>
               {gap.scales_tried.length ? (
                 <p className="mt-1 text-xs text-[color:var(--color-muted)]">
-                  Searched at: {gap.scales_tried.join(', ')} scale
+                  {fmt(m.dimension.searchedAt, { scales: gap.scales_tried.map((sc) => scaleLabel(m, sc)).join(', ') })}
                 </p>
               ) : null}
             </div>
@@ -151,8 +168,8 @@ export default async function DimensionDrilldownPage({
 
         {data.actions.length > 0 ? (
           <section className="mt-10">
-            <h2 className="text-lg font-semibold">What you can do</h2>
-            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm">
+            <h2 className="text-lg font-semibold">{m.dimension.whatYouCanDo}</h2>
+            <ul lang="en" className="mt-3 list-disc space-y-1 ps-5 text-sm">
               {data.actions.map((action, i) => (
                 <li key={i}>{action}</li>
               ))}
@@ -169,6 +186,8 @@ export default async function DimensionDrilldownPage({
             canPost={canPost}
             isModerator={isModerator}
             sort={sort}
+            labels={{ ...m.discussion, signIn: m.common.signIn }}
+            signInHref={`/login?next=${encodeURIComponent(href(`/${tenant}/dim/${slug}`))}`}
           />
         ) : null}
       </main>

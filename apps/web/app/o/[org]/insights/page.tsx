@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { formatIndicatorValue } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { RequestResearchForm } from '@/components/insights/RequestResearchForm';
-import { getPortrait, evidenceUrl, hasDatabase } from '@/lib/data';
+import { getPortrait, evidenceUrl } from '@/lib/data';
 import { tenantBySlug } from '@deep-fryer/db';
 import { userDb } from '@/lib/db';
 import { getAuth, getRole } from '@/lib/auth';
@@ -12,14 +12,17 @@ import { configValue } from '@/lib/admin-data';
 import { familyByOrgSlug, type FamilyMember } from '@/lib/family';
 import { safeHref } from '@/lib/safe-url';
 import type { PublishedPortrait, PublishedDimension } from '@/lib/portrait';
+import { dimensionLabel, nounForms } from '@/lib/i18n/content';
+import { fmt, rich } from '@/lib/i18n/format';
+import { getI18n } from '@/lib/i18n/server';
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ org: string }>;
 }): Promise<Metadata> {
-  const family = await familyByOrgSlug((await params).org);
-  return { title: family ? `Insights · ${family.organization.name}` : 'Insights' };
+  const [family, { m }] = await Promise.all([familyByOrgSlug((await params).org), getI18n()]);
+  return { title: family ? fmt(m.insights.metaTitle, { org: family.organization.name }) : m.nav.insights };
 }
 
 export const dynamic = 'force-dynamic';
@@ -60,12 +63,15 @@ export default async function InsightsPage({
 }) {
   const { org } = await params;
   const { dim: selectedSlug } = await searchParams;
-  const family = await familyByOrgSlug(org);
+  const [family, { m, href }] = await Promise.all([familyByOrgSlug(org), getI18n()]);
   if (!family || family.members.length < 2) notFound();
   const FAMILY = family.members;
   const whole = family.whole;
-  const noun = family.noun;
-  const base = `/o/${family.organization.slug}/insights`;
+  const { singular: noun, plural: nouns } = nounForms(m, family.noun);
+  const base = href(`/o/${family.organization.slug}/insights`);
+  const dimName = (d: PublishedDimension) => dimensionLabel(m, d.slug, d.data.name);
+  const state = (level: number) =>
+    level <= 0 ? m.insights.insideSafeZone : fmt(m.insights.beyondBoundary, { n: Math.round(level) });
 
   const entries = await Promise.all(
     FAMILY.map(async (m) => [m.slug, await getPortrait(m.slug)] as const),
@@ -118,29 +124,28 @@ export default async function InsightsPage({
       <SiteHeader variant="org" family={family} familyView="insights" org={family.organization} />
       <main id="main" className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <h1 className="text-3xl font-bold">
-          {noun.charAt(0).toUpperCase() + noun.slice(1)} insights · {family.organization.name}
+          {fmt(m.insights.title, { noun, org: family.organization.name })}
         </h1>
-        <p className="mt-2 max-w-3xl text-sm text-[color:var(--color-muted)]">
-          Every dimension, every {noun}, one matrix — measured against the same thresholds,
-          anchored in adopted local goals. Select a dimension for the unrolled comparison and the
-          research behind each number.
-        </p>
+        <p className="mt-2 max-w-3xl text-sm text-[color:var(--color-muted)]">{fmt(m.insights.intro, { noun })}</p>
 
         {spreads.length > 0 && (
           <section className="mt-6 rounded-lg border border-black/10 bg-black/[0.02] p-4">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--color-muted)]">
-              Biggest {noun} divides
+              {m.insights.biggestDivides}
             </h2>
             <ul className="mt-2 space-y-1 text-sm">
               {spreads.slice(0, 4).map(({ d, worst, best }) => (
                 <li key={d.slug}>
                   <Link href={`${base}?dim=${d.slug}#dimension`} className="font-medium underline">
-                    {d.data.name}
+                    {dimName(d)}
                   </Link>
                   {': '}
-                  {worst.m.name} sits {worst.level <= 0 ? 'inside the safe zone' : `${Math.round(worst.level)} beyond the boundary`}
-                  {' while '}
-                  {best.m.name} is {best.level <= 0 ? 'inside the safe zone' : `${Math.round(best.level)} beyond`}.
+                  {fmt(m.insights.divide, {
+                    worst: worst.m.name,
+                    worstState: state(worst.level),
+                    best: best.m.name,
+                    bestState: state(best.level),
+                  })}
                 </li>
               ))}
             </ul>
@@ -148,20 +153,17 @@ export default async function InsightsPage({
         )}
 
         <section className="mt-8">
-          <h2 className="text-xl font-semibold">The matrix</h2>
-          <p className="mt-1 text-sm text-[color:var(--color-muted)]">
-            Green = inside the safe zone, red = shortfall/overshoot (darker is further out),
-            gray = honest data gap. Click a row to unroll it.
-          </p>
+          <h2 className="text-xl font-semibold">{m.insights.matrix}</h2>
+          <p className="mt-1 text-sm text-[color:var(--color-muted)]">{m.insights.matrixIntro}</p>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[640px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-black/15 text-left">
-                  <th className="py-2 pr-3 font-medium">Dimension</th>
-                  {FAMILY.map((m) => (
-                    <th key={m.slug} className="px-1 py-2 text-center font-medium">
-                      <Link href={`/${m.slug}`} className="hover:underline">
-                        {m.short}
+                <tr className="border-b border-black/15">
+                  <th className="py-2 pe-3 text-start font-medium">{m.insights.dimension}</th>
+                  {FAMILY.map((member) => (
+                    <th key={member.slug} className="px-1 py-2 text-center font-medium">
+                      <Link href={href(`/${member.slug}`)} className="hover:underline">
+                        {member.short}
                       </Link>
                     </th>
                   ))}
@@ -175,21 +177,26 @@ export default async function InsightsPage({
                       selected?.slug === d.slug ? 'bg-black/[0.04]' : ''
                     }`}
                   >
-                    <td className="py-1.5 pr-3">
+                    <td className="py-1.5 pe-3">
                       <Link href={`${base}?dim=${d.slug}#dimension`} className="hover:underline">
-                        <span className="mr-1 text-xs text-[color:var(--color-muted)]">
+                        <span
+                          className="me-1 text-xs text-[color:var(--color-muted)]"
+                          title={d.ring === 'social' ? m.common.socialFoundation : m.common.ecologicalCeiling}
+                        >
                           {d.ring === 'social' ? '●' : '○'}
                         </span>
-                        {d.data.name}
+                        {dimName(d)}
                       </Link>
                     </td>
-                    {FAMILY.map((m) => {
-                      const level = dimFor(m.slug, d.slug)?.viz_level ?? null;
+                    {FAMILY.map((member) => {
+                      const level = dimFor(member.slug, d.slug)?.viz_level ?? null;
+                      const cellLabel = `${member.name}: ${level === null ? m.insights.noData : Math.round(level)}`;
                       return (
-                        <td key={m.slug} className="px-1 py-1.5">
+                        <td key={member.slug} className="px-1 py-1.5">
                           <Link
                             href={`${base}?dim=${d.slug}#dimension`}
-                            title={`${m.name}: ${level === null ? 'no data' : Math.round(level)}`}
+                            title={cellLabel}
+                            aria-label={`${dimName(d)} — ${cellLabel}`}
                             className="block h-6 rounded-sm"
                             style={{ backgroundColor: cellColor(level) }}
                           />
@@ -205,28 +212,26 @@ export default async function InsightsPage({
 
         {selected && (
           <section className="mt-12" id="dimension">
-            <h2 className="text-xl font-semibold">
-              {selected.data.name} — unrolled
-            </h2>
+            <h2 className="text-xl font-semibold">{fmt(m.insights.unrolled, { name: dimName(selected) })}</h2>
             {selected.data.description ? (
-              <p className="mt-1 max-w-3xl text-sm text-[color:var(--color-muted)]">
+              <p lang="en" className="mt-1 max-w-3xl text-sm text-[color:var(--color-muted)]">
                 {selected.data.description}
               </p>
             ) : null}
 
-            <div className="mt-4 space-y-2">
-              {FAMILY.map((m) => {
-                const d = dimFor(m.slug, selected.slug);
+            {/* A chart: its axis runs left to right in every language. */}
+            <div dir="ltr" className="mt-4 space-y-2">
+              {FAMILY.map((member) => {
+                const d = dimFor(member.slug, selected.slug);
                 const level = d?.viz_level ?? null;
                 const geom = level === null ? null : barGeometry(level);
                 return (
-                  <div key={m.slug} className="flex items-center gap-3 text-sm">
-                    <span className="w-28 shrink-0 text-right font-medium">{m.short}</span>
+                  <div key={member.slug} className="flex items-center gap-3 text-sm">
+                    <span className="w-28 shrink-0 text-right font-medium">{member.short}</span>
                     <div className="relative h-5 flex-1 rounded bg-black/[0.04]">
                       <div
                         className="absolute top-0 h-full w-px bg-black/40"
                         style={{ left: '40%' }}
-                        title="boundary"
                       />
                       {geom && (
                         <div
@@ -240,8 +245,11 @@ export default async function InsightsPage({
                         />
                       )}
                       {level === null && (
-                        <span className="absolute left-2 top-0 text-xs leading-5 text-[color:var(--color-muted)]">
-                          data gap
+                        <span
+                          dir="auto"
+                          className="absolute left-2 top-0 text-xs leading-5 text-[color:var(--color-muted)]"
+                        >
+                          {m.insights.dataGap}
                         </span>
                       )}
                     </div>
@@ -251,94 +259,103 @@ export default async function InsightsPage({
                   </div>
                 );
               })}
-              <p className="text-xs text-[color:var(--color-muted)]">
-                Bars measure distance from the boundary (the vertical line): left/green is inside
-                the safe zone, right/red is shortfall or overshoot, on the doughnut&apos;s
-                −100…150 scale.
-              </p>
             </div>
+            <p className="mt-2 text-xs text-[color:var(--color-muted)]">{m.insights.barsExplainer}</p>
 
-            <h3 className="mt-8 text-lg font-semibold">The research behind it</h3>
+            <h3 className="mt-8 text-lg font-semibold">{m.insights.researchBehind}</h3>
             <div className="mt-3 grid gap-4 md:grid-cols-2">
-              {FAMILY.map((m) => {
-                const d = dimFor(m.slug, selected.slug);
+              {FAMILY.map((member) => {
+                const d = dimFor(member.slug, selected.slug);
                 if (!d) return null;
                 return (
-                  <div key={m.slug} className="rounded-lg border border-black/10 p-4">
-                    <div className="flex items-baseline justify-between">
-                      <Link href={`/${m.slug}/dim/${d.slug}`} className="font-semibold hover:underline">
-                        {m.name}
+                  <div key={member.slug} className="rounded-lg border border-black/10 p-4">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <Link href={href(`/${member.slug}/dim/${d.slug}`)} className="font-semibold hover:underline">
+                        {member.name}
                       </Link>
-                      <span className="text-xs text-[color:var(--color-muted)]">
-                        full drilldown →
-                      </span>
+                      <Link
+                        href={href(`/${member.slug}/dim/${d.slug}`)}
+                        className="text-xs text-[color:var(--color-muted)] hover:underline"
+                      >
+                        {m.insights.fullDrilldown}
+                      </Link>
                     </div>
                     <ul className="mt-2 space-y-3 text-sm">
                       {d.data.indicators.map((ind) => (
                         <li key={ind.name}>
                           <div className="flex items-baseline justify-between gap-2">
-                            <span>{ind.name}</span>
+                            <span lang="en">{ind.name}</span>
                             <span className="whitespace-nowrap font-semibold tabular-nums">
-                              {formatIndicatorValue(ind.value, ind.unit)}{' '}
+                              <bdi>{formatIndicatorValue(ind.value, ind.unit)}</bdi>{' '}
                               <span className="font-normal text-[color:var(--color-muted)]">
-                                ({ind.year ?? 'year n/a'})
+                                ({ind.year ?? m.insights.yearNA})
                               </span>
                             </span>
                           </div>
                           <div className="mt-0.5 text-xs text-[color:var(--color-muted)]">
                             {safeHref(ind.source_url) ? (
-                              <a href={safeHref(ind.source_url)} className="underline" rel="noreferrer" target="_blank">
+                              <a lang="en" href={safeHref(ind.source_url)} className="underline" rel="noreferrer" target="_blank">
                                 {ind.source}
                               </a>
                             ) : (
-                              ind.source
+                              <span lang="en">{ind.source}</span>
                             )}
-                            {' · tier '}
-                            {ind.source_tier}
-                            {' · confidence '}
-                            {ind.confidence}
+                            {ind.source_tier !== undefined ? ` · ${fmt(m.insights.tier, { n: ind.source_tier })}` : ''}
+                            {ind.confidence
+                              ? ` · ${fmt(m.insights.confidence, { value: m.insights.confidenceLevels[ind.confidence] })}`
+                              : ''}
                             {ind.evidence?.snapshot_path ? (
                               <>
                                 {' · '}
                                 <a
                                   className="underline"
-                                  href={evidenceUrl(m.slug, ind.evidence.snapshot_path)}
+                                  href={evidenceUrl(member.slug, ind.evidence.snapshot_path)}
                                   target="_blank"
                                   rel="noreferrer"
                                 >
-                                  evidence
+                                  {m.insights.evidence}
                                 </a>
                               </>
                             ) : null}
                           </div>
                           {ind.scoring?.worked_math ? (
                             <details className="mt-0.5 text-xs text-[color:var(--color-muted)]">
-                              <summary className="cursor-pointer">worked math</summary>
-                              <code className="block whitespace-pre-wrap">{ind.scoring.worked_math}</code>
+                              <summary className="cursor-pointer">{m.insights.workedMath}</summary>
+                              <code dir="ltr" className="block whitespace-pre-wrap">
+                                {ind.scoring.worked_math}
+                              </code>
                             </details>
                           ) : null}
                         </li>
                       ))}
                       {(d.data.gaps ?? []).map((g) => (
                         <li key={g.indicator} className="text-[color:var(--color-muted)]">
-                          <span className="font-medium">{g.indicator}</span>: data gap
+                          {rich(m.insights.gapLabel, {
+                            indicator: (
+                              <span lang="en" className="font-medium">
+                                {g.indicator}
+                              </span>
+                            ),
+                          })}
                           {g.reason.length > 180 ? (
                             <details className="mt-0.5 text-xs">
                               <summary className="cursor-pointer">
-                                {g.reason.slice(0, 160)}… (full search trail)
+                                <span lang="en">{g.reason.slice(0, 160)}…</span> {m.insights.fullSearchTrail}
                               </summary>
-                              <span className="block whitespace-pre-wrap">{g.reason}</span>
+                              <span lang="en" className="block whitespace-pre-wrap">
+                                {g.reason}
+                              </span>
                             </details>
                           ) : (
-                            <span> — {g.reason}</span>
+                            <span lang="en"> — {g.reason}</span>
                           )}
                         </li>
                       ))}
                     </ul>
-                    {canRequest.get(m.slug) && (
+                    {canRequest.get(member.slug) && (
                       <RequestResearchForm
-                        tenantSlug={m.slug}
-                        tenantName={m.name}
+                        tenantSlug={member.slug}
+                        tenantName={member.name}
                         dimensionSlug={d.slug}
                       />
                     )}
@@ -350,10 +367,7 @@ export default async function InsightsPage({
         )}
 
         {!selected && (
-          <p className="mt-8 text-sm text-[color:var(--color-muted)]">
-            Select a dimension above to unroll the {noun} comparison and inspect sources,
-            evidence, and scoring — {hasDatabase() ? 'live from published research' : 'demo data'}.
-          </p>
+          <p className="mt-8 text-sm text-[color:var(--color-muted)]">{fmt(m.insights.selectPrompt, { nouns })}</p>
         )}
       </main>
     </>
