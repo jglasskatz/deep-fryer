@@ -129,6 +129,26 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
 
 export const PURCHASABLE_PLANS: PlanId[] = ['community', 'city', 'metro'];
 
+/**
+ * Stripe events the billing webhook consumes. Shared by the webhook route
+ * (which handles them) and scripts/stripe-setup.ts (which registers them).
+ */
+export const STRIPE_WEBHOOK_EVENTS = [
+  'checkout.session.completed',
+  'checkout.session.async_payment_succeeded',
+  'checkout.session.async_payment_failed',
+  'customer.subscription.created',
+  'customer.subscription.updated',
+  'customer.subscription.deleted',
+  'customer.subscription.paused',
+  'customer.subscription.resumed',
+  'customer.subscription.trial_will_end',
+  'invoice.paid',
+  'invoice.payment_failed',
+  'invoice.marked_uncollectible',
+  'invoice.finalized',
+] as const;
+
 export function isPlanId(value: string): value is PlanId {
   return Object.prototype.hasOwnProperty.call(PLANS, value);
 }

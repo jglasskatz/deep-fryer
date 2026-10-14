@@ -34,6 +34,9 @@ export const emailSignInEnabled = (): boolean => smtpConfigured() || !isProducti
 export const stripeConfigured = (): boolean =>
   Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET);
 
+/** Where customers reach a person (pricing, billing, error pages); optional. */
+export const supportEmail = (): string | null => process.env.SUPPORT_EMAIL?.trim() || null;
+
 /** Canonical public origin, no trailing slash ("https://app.deep-fryer.io"). */
 export function appUrl(): string {
   const raw = process.env.NEXT_PUBLIC_APP_URL || process.env.AUTH_URL || 'http://localhost:3000';

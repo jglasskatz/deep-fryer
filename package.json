@@ -16,7 +16,9 @@
     "import-santa-cruz": "tsx scripts/import-santa-cruz.ts",
     "research-verify": "tsx scripts/research-verify.ts",
     "test": "pnpm -r --if-present test",
-    "export:nyc": "tsx scripts/export-nyc.ts"
+    "export:nyc": "tsx scripts/export-nyc.ts",
+    "stripe:setup": "tsx scripts/stripe-setup.ts",
+    "provision:nyc": "tsx scripts/provision-nyc.ts"
   },
   "dependencies": {
     "@deep-fryer/contract": "workspace:*",
@@ -28,7 +30,8 @@
     "@keel_flow/pack-general-se": "^0.2.0",
     "@keel_flow/pack-research": "workspace:^",
     "@keel_flow/schema": "^0.2.0",
-    "drizzle-orm": "^0.36.4"
+    "drizzle-orm": "^0.36.4",
+    "stripe": "^23.0.0"
   },
   "devDependencies": {
     "@keel_flow/cli": "^0.2.0",
