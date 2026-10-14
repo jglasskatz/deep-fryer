@@ -76,7 +76,10 @@ MOIA's guidance). The workflow is built for that:
 ## Terms for the certified reviewer
 
 The drafts flag terms where no established translation was confirmed —
-start review here:
+start review here. The emergency view, theme menu, and update prompt
+(SPEC-v5) have their own worksheet, with the corrections a second review
+pass made and the choices left open per language:
+[translation-review-v5.md](translation-review-v5.md).
 
 - **Doughnut vocabulary** (all languages): *social foundation*, *ecological
   ceiling*, *safe and just space*, *shortfall*, *overshoot*, and some
