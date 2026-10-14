@@ -64,6 +64,9 @@ export function assertProductionEnv(): void {
   if (Boolean(process.env.STRIPE_SECRET_KEY) !== Boolean(process.env.STRIPE_WEBHOOK_SECRET)) {
     problems.push('set STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET together (or neither)');
   }
+  if (process.env.STRIPE_API_BASE) {
+    problems.push('STRIPE_API_BASE points Stripe calls at a test server (stripe-mock); unset it in production');
+  }
   if (problems.length) {
     throw new Error(`deep-fryer refuses to start:\n  - ${problems.join('\n  - ')}`);
   }

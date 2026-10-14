@@ -43,6 +43,13 @@ describe('stripe helpers (pure)', () => {
     expect(subscriptionIdOf(ev('customer.created', { id: 'cus_1' }))).toBeNull();
   });
 
+  it('clears a removed PO number on the customer instead of silently keeping it', async () => {
+    const { customerInvoiceSettings } = await import('./stripe');
+    expect(customerInvoiceSettings('PO-12345')).toEqual({ custom_fields: [{ name: 'PO Number', value: 'PO-12345' }] });
+    expect(customerInvoiceSettings(null)).toEqual({ custom_fields: '' });
+    expect(customerInvoiceSettings('X'.repeat(40)).custom_fields).toEqual([{ name: 'PO Number', value: 'X'.repeat(30) }]);
+  });
+
   it('maps prices to plans by lookup key, falling back to metadata', async () => {
     const { planOfStripeSubscription } = await import('./stripe');
     expect(planOfStripeSubscription(fakeSubscription({ lookupKey: 'deep_fryer_metro_annual' }))).toBe('metro');

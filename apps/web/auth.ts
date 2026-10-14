@@ -50,6 +50,21 @@ function config(): NextAuthConfig {
         issuer:
           process.env.AUTH_MICROSOFT_ENTRA_ID_ISSUER ??
           'https://login.microsoftonline.com/common/v2.0',
+        // Identity comes from the ID token alone. The stock provider also
+        // asks for Graph's User.Read and downloads the profile photo on every
+        // sign-in: a scope many municipal tenants block from user consent, a
+        // network call that fails sign-in when Graph is unreachable, and a
+        // staff photo we have no use for. Microsoft omits the email claim
+        // when the domain is unverified (removeUnverifiedEmailClaim, the
+        // default for app registrations since 2023), so `email` here is
+        // domain-verified or absent — never linked to an existing account.
+        authorization: { params: { scope: 'openid profile email' } },
+        profile: (profile) => ({
+          id: profile.sub,
+          name: profile.name ?? null,
+          email: typeof profile.email === 'string' ? profile.email.toLowerCase() : null,
+          image: null,
+        }),
       }),
     );
   }

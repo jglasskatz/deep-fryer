@@ -47,3 +47,18 @@ describe('isOrigin', () => {
     expect(originOf(undefined)).toBeNull();
   });
 });
+
+describe('buildCsp sign-in origins', () => {
+  it('lets sign-in redirect to the configured Entra issuer (e.g. GCC High), and only a real origin', () => {
+    const csp = buildCsp({
+      nonce: 'n',
+      dev: false,
+      frameAncestors: null,
+      signInOrigins: ['https://login.microsoftonline.us', 'https://x.example; script-src *', null],
+    });
+    const formAction = csp.split('; ').find((d) => d.startsWith('form-action'))!;
+    expect(formAction).toContain('https://login.microsoftonline.us');
+    expect(formAction).toContain('https://login.microsoftonline.com');
+    expect(formAction).not.toContain('script-src');
+  });
+});

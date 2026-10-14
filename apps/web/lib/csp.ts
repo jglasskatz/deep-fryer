@@ -16,6 +16,12 @@ export interface CspOptions {
   evidenceOrigin?: string | null;
   /** null = no framing; [] = same-origin only; list = those origins may frame. */
   frameAncestors: string[] | null;
+  /**
+   * Extra sign-in origins the browser is redirected to — the configured
+   * Entra issuer, e.g. https://login.microsoftonline.us for a city on
+   * Microsoft's US government cloud (GCC High).
+   */
+  signInOrigins?: (string | null)[];
 }
 
 /** Where sign-in and checkout forms post or redirect (form-action covers redirects in Chromium). */
@@ -53,7 +59,7 @@ export function buildCsp(opts: CspOptions): string {
     `frame-src 'none'`,
     `object-src 'none'`,
     `base-uri 'self'`,
-    `form-action 'self' ${FORM_TARGETS.join(' ')}`,
+    `form-action 'self' ${[...new Set([...FORM_TARGETS, ...(opts.signInOrigins ?? []).filter((o): o is string => Boolean(o && isOrigin(o)))])].join(' ')}`,
     `frame-ancestors ${ancestors}`,
   ];
   if (!opts.dev) directives.push('upgrade-insecure-requests');

@@ -21,7 +21,7 @@
  */
 import { readFileSync } from 'node:fs';
 import Stripe from 'stripe';
-import { PLANS, PURCHASABLE_PLANS, STRIPE_WEBHOOK_EVENTS, type BillingInterval } from '@deep-fryer/core';
+import { PLANS, PURCHASABLE_PLANS, STRIPE_WEBHOOK_EVENTS, stripeEndpoint, type BillingInterval } from '@deep-fryer/core';
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
@@ -36,7 +36,11 @@ interface PriceSheet {
 async function main() {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error('STRIPE_SECRET_KEY is required');
-  const stripe = new Stripe(key);
+  // STRIPE_API_BASE: stripe-mock in CI, which validates every call below
+  // against Stripe's API spec; refused with a live key.
+  const endpoint = stripeEndpoint(process.env.STRIPE_API_BASE, key);
+  if (endpoint) console.log(`Stripe API at ${endpoint.protocol}://${endpoint.host}:${endpoint.port} (test server)`);
+  const stripe = new Stripe(key, { ...endpoint });
   const sheetPath = arg('prices');
   if (!sheetPath) throw new Error('--prices <file> is required (see docs/billing/prices.example.json)');
   const sheet = JSON.parse(readFileSync(sheetPath, 'utf8')) as PriceSheet;
@@ -132,7 +136,11 @@ async function main() {
       console.log(`updated webhook ${existing.id} (signing secret unchanged)`);
     } else {
       const created = await stripe.webhookEndpoints.create({ url: webhookUrl, enabled_events: enabled });
-      console.log(`created webhook ${created.id}\nSTRIPE_WEBHOOK_SECRET=${created.secret}`);
+      console.log(
+        created.secret
+          ? `created webhook ${created.id}\nSTRIPE_WEBHOOK_SECRET=${created.secret}`
+          : `created webhook ${created.id}; reveal its signing secret in the Stripe Dashboard and set STRIPE_WEBHOOK_SECRET`,
+      );
     }
   }
 }

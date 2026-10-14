@@ -5,6 +5,7 @@ import {
   PLANS,
   isPlanId,
   planForLookupKey,
+  stripeEndpoint,
   type BillingInterval,
   type PlanId,
   type SubscriptionStatus,
@@ -34,9 +35,12 @@ export function stripe(): Stripe {
   if (!stripeConfigured()) {
     throw new UserError('Online billing is not enabled on this server — contact us to arrange a contract.');
   }
-  client ??= new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  const key = process.env.STRIPE_SECRET_KEY!;
+  client ??= new Stripe(key, {
     appInfo: { name: 'deep-fryer' },
     maxNetworkRetries: 2,
+    // stripe-mock in tests/CI only; production refuses STRIPE_API_BASE (env.ts).
+    ...stripeEndpoint(process.env.STRIPE_API_BASE, key),
   });
   return client;
 }
@@ -102,14 +106,24 @@ export function formatPrice(price: Stripe.Price): string {
  * key makes concurrent first purchases converge on one customer; the
  * conditional update keeps the first stored id.
  */
+/**
+ * The PO number printed on every invoice. Removing it must send '' — Stripe's
+ * "unset" — because the SDK drops an empty array from the request, which
+ * would leave the old PO printing on future invoices (found against
+ * stripe-mock).
+ */
+export function customerInvoiceSettings(
+  poNumber: string | null | undefined,
+): Stripe.CustomerUpdateParams.InvoiceSettings {
+  return { custom_fields: poNumber ? [{ name: 'PO Number', value: poNumber.slice(0, 30) }] : '' };
+}
+
 export async function ensureCustomer(
   org: Organization,
   details: { email: string | null; taxExempt?: boolean; poNumber?: string | null },
 ): Promise<string> {
   const s = stripe();
-  const invoiceSettings = {
-    custom_fields: details.poNumber ? [{ name: 'PO Number', value: details.poNumber.slice(0, 30) }] : [],
-  };
+  const invoiceSettings = customerInvoiceSettings(details.poNumber);
   const taxExempt = (details.taxExempt ?? org.taxExempt) ? 'exempt' : 'none';
   if (org.stripeCustomerId) {
     await s.customers.update(org.stripeCustomerId, {

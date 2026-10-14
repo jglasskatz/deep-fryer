@@ -37,7 +37,12 @@ OAuth redirect URIs to register:
 - Microsoft Entra ID: `https://<SITE_ADDRESS>/api/auth/callback/microsoft-entra-id`
   (set `AUTH_MICROSOFT_ENTRA_ID_ISSUER` to your directory's
   `https://login.microsoftonline.com/<tenant-id>/v2.0` to restrict sign-in to
-  your city's accounts)
+  your city's accounts; a tenant on Microsoft's US government cloud, GCC
+  High, uses `https://login.microsoftonline.us/<tenant-id>/v2.0` — the CSP
+  allows whatever origin the issuer names). deep-fryer requests only
+  `openid profile email`: no Microsoft Graph permission to consent to, no
+  profile photo fetched. Keep the app registration's default of omitting
+  unverified email claims.
 
 Optional: `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` (online billing),
 `SUPPORT_EMAIL`, `ANTHROPIC_API_KEY` (research worker).

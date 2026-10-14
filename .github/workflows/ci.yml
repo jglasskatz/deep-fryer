@@ -23,8 +23,14 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U postgres"
           --health-interval 5s --health-timeout 5s --health-retries 20
+      # Stripe's official mock: validates every billing request against
+      # Stripe's OpenAPI spec (apps/web/lib/stripe-mock.test.ts).
+      stripe-mock:
+        image: stripe/stripe-mock:v0.206.0
+        ports: ['12111:12111']
     env:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/deep_fryer_ci
+      STRIPE_MOCK_URL: http://localhost:12111
       NEXT_TELEMETRY_DISABLED: '1'
     steps:
       - uses: actions/checkout@v4
@@ -46,8 +52,15 @@ jobs:
         run: pnpm --filter @deep-fryer/db migrate
 
       - run: pnpm typecheck
-      # Unit tests plus Postgres integration tests (DATABASE_URL is set).
+      # Unit tests plus Postgres and stripe-mock integration tests.
       - run: pnpm test
+      - name: Stripe setup script against stripe-mock
+        env:
+          STRIPE_SECRET_KEY: sk_test_123
+          STRIPE_API_BASE: http://localhost:12111
+        run: |
+          node -e "const p=require('./docs/billing/prices.example.json');for(const k in p.prices)p.prices[k]=100;require('fs').writeFileSync('/tmp/prices.json',JSON.stringify(p))"
+          pnpm stripe:setup --prices /tmp/prices.json --portal --webhook-url https://ci.example.gov/api/billing/webhook
       - name: Build web (production)
         run: pnpm --filter @deep-fryer/web build
 
