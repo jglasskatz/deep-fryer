@@ -130,12 +130,12 @@ const data: ArchitectureMap = {
       id: "research-worker",
       label: "Research worker",
       layer: "research",
-      tech: "graphile-worker / Claude Agent SDK",
-      description: "Consumes the Postgres queue; runs region-context, dimension, and verifier sessions with per-plan tool allowlists",
-      keyFiles: ["apps/worker/src/tasks/research-apply.ts", "apps/worker/src/session.ts"],
-      keyFunctionality: ["plan execution", "session spawning", "transcripts", "token metering"],
-      fileCount: 6,
-      linesOfCode: "~600",
+      tech: "graphile-worker / Claude Agent SDK (Playwright base image)",
+      description: "Consumes the Postgres queue; runs region-context, dimension, and verifier sessions with per-plan tool allowlists. A run settles complete if any session succeeded, failed otherwise, then emails the portrait's owners, editors, and organization owners per its notification settings",
+      keyFiles: ["apps/worker/src/tasks/research-apply.ts", "apps/worker/src/tasks/run-status.ts", "apps/worker/src/session.ts", "apps/worker/src/notify.ts", "apps/worker/Dockerfile"],
+      keyFunctionality: ["plan execution", "session spawning", "transcripts", "token metering", "run settlement", "run-complete / failed / flagged emails"],
+      fileCount: 10,
+      linesOfCode: "~900",
       principles: {
         upholds: [
           { id: "single-synthesizer", reason: "Dimension sessions gather; only the review-approved version becomes the published conclusion" },
