@@ -13,12 +13,12 @@ export const metadata: Metadata = {
   description:
     'Sourced, reviewed Doughnut Economics portraits for municipalities: a public doughnut with evidence beside every number, progress against adopted goals, and a staff review queue.',
   applicationName: 'deep-fryer',
-  manifest: '/manifest.webmanifest',
   appleWebApp: { capable: true, title: 'deep-fryer', statusBarStyle: 'default' },
   formatDetection: { telephone: false },
   icons: {
     icon: [
       { url: '/icons/icon.svg', type: 'image/svg+xml' },
+      { url: '/icons/favicon-32.png', sizes: '32x32', type: 'image/png' },
       { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
     ],
     apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180' }],

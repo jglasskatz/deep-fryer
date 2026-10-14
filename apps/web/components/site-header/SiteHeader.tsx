@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { signOut } from '@/auth';
 import { FamilyNav } from './FamilyNav';
 import { InstallAppButton } from '@/components/pwa/InstallAppButton';
+import { SignOutButton } from '@/components/pwa/SignOutButton';
 import { getAuth } from '@/lib/auth';
 import { authConfigured, hasDatabase } from '@/lib/env';
 import { familyForTenant, organizationOfTenant, type Family } from '@/lib/family';
@@ -89,11 +90,10 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
               Account &amp; portraits
             </Link>
             <InstallAppButton className="block w-full rounded px-3 py-2 text-left hover:bg-black/5" />
-            <form action={doSignOut}>
-              <button className="block w-full rounded px-3 py-2 text-left hover:bg-black/5">
-                Sign out
-              </button>
-            </form>
+            <SignOutButton
+              action={doSignOut}
+              className="block w-full rounded px-3 py-2 text-left hover:bg-black/5"
+            />
           </div>
         </details>
       ) : (
