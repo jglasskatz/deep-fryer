@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { framework } from '@deep-fryer/contract';
+import type { Verdict } from './preflight.js';
 
 /**
  * Emergency view (SPEC-v5 §3): staff-curated hazards rated by likelihood and
@@ -62,6 +63,71 @@ export function riskBand(score: number): RiskBand {
   return 'low';
 }
 
+// ---- Shared field rules ---------------------------------------------------------
+//
+// Staff curate everything below through the admin page, and the NYC setup
+// script proposes the same records; both validate with these schemas so a
+// row the script writes is a row the admin form would have accepted.
+
+/**
+ * A link residents will follow from the public page: https only, no
+ * credentials, an actual URL (not "https://" alone). Mirrors the database
+ * CHECK (`url LIKE 'https://%'`) and goes further, because the CHECK cannot
+ * parse a URL.
+ */
+export function isHttpsUrl(raw: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    return false;
+  }
+  return url.protocol === 'https:' && !url.username && !url.password && url.hostname.includes('.');
+}
+
+export const httpsUrlSchema = z
+  .string()
+  .trim()
+  .max(2000)
+  .refine(isHttpsUrl, 'must be a full https:// link');
+
+/**
+ * Phone numbers are shown as tap-to-call links, so they must dial: digits
+ * plus the separators people write (spaces, dashes, dots, parentheses), a
+ * leading +, and * or # for short codes. Three digits minimum covers 911,
+ * 311, and 988.
+ */
+export const PHONE_RE = /^\+?[0-9().\-\s*#]{3,40}$/;
+export const phoneSchema = z
+  .string()
+  .trim()
+  .max(40)
+  .refine((p) => PHONE_RE.test(p) && (p.match(/\d/g)?.length ?? 0) >= 3, 'use a phone number such as 311 or (212) 639-9675');
+
+/** The tel: link for a validated phone number (separators dropped), or null if it cannot dial. */
+export function telHref(phone: string | null | undefined): string | null {
+  if (!phone) return null;
+  const dial = phone.trim().replace(/[^0-9+*#]/g, '');
+  return /\d{3}/.test(dial.replace(/[^0-9]/g, '')) ? `tel:${dial}` : null;
+}
+
+/**
+ * An IANA time zone the runtime knows ("America/New_York", "UTC"). The
+ * shape check refuses the offsets Intl also accepts ("+05:00"): a fixed
+ * offset is wrong half the year wherever daylight saving applies.
+ */
+export function isTimeZone(tz: string): boolean {
+  if (!/^[A-Za-z][A-Za-z0-9_+-]*(?:\/[A-Za-z0-9_+-]+){0,2}$/.test(tz)) return false;
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export const DEFAULT_EMERGENCY_TIME_ZONE = 'America/New_York';
+
 // ---- Configuration (tenant_config key "emergency", public) --------------------
 
 /** NWS UGC codes: county (NYC061) or forecast zone (NYZ072). */
@@ -69,17 +135,123 @@ export const UGC_RE = /^[A-Z]{2}[CZ]\d{3}$/;
 
 export const emergencyConfigSchema = z.object({
   nws_zones: z.array(z.string().regex(UGC_RE, 'use NWS UGC codes like NYC061 or NYZ072')).max(50).default([]),
-  alerts_signup_url: z
-    .string()
-    .url()
-    .refine((u) => u.startsWith('https://'), 'must be an https link')
-    .nullable()
-    .default(null),
+  alerts_signup_url: httpsUrlSchema.nullable().default(null),
   alerts_signup_label: z.string().trim().max(80).nullable().default(null),
-  emergency_phone: z.string().trim().max(40).nullable().default(null),
-  info_phone: z.string().trim().max(40).nullable().default(null),
+  emergency_phone: phoneSchema.nullable().default(null),
+  info_phone: phoneSchema.nullable().default(null),
+  /**
+   * The zone alert times are shown in. Alerts carry UTC offsets, but a
+   * resident reading "until 8:00 PM" needs the city's local clock, not the
+   * server's or the browser's (a library computer may be set to UTC).
+   * Stored canonical ("america/new_york" → "America/New_York").
+   */
+  time_zone: z
+    .string()
+    .trim()
+    .refine(isTimeZone, 'use an IANA time zone such as America/New_York')
+    .transform((tz) => new Intl.DateTimeFormat('en-US', { timeZone: tz }).resolvedOptions().timeZone)
+    .default(DEFAULT_EMERGENCY_TIME_ZONE),
 });
 export type EmergencyConfig = z.infer<typeof emergencyConfigSchema>;
+
+// ---- Curated records (hazards, plans, resources) ---------------------------------
+
+/** Hazard slugs appear in URLs (`?hazard=heat`) and in plan/resource links. */
+export const HAZARD_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+export const hazardSlugSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(60)
+  .regex(HAZARD_SLUG_RE, 'use lowercase letters, digits, and single dashes (e.g. extreme-heat)');
+
+const ratingSchema = z.number().int().min(1, 'ratings run from 1 to 5').max(5, 'ratings run from 1 to 5');
+const displayOrderSchema = z.number().int().min(0).max(10_000).default(0);
+const hazardSlugListSchema = z
+  .array(hazardSlugSchema)
+  .max(30)
+  .default([])
+  .transform((slugs) => [...new Set(slugs)]);
+
+/** A hazard as staff enter it (the `hazards` row without ids and timestamps). */
+export const hazardInputSchema = z.object({
+  slug: hazardSlugSchema,
+  name: z.string().trim().min(1, 'a name is required').max(120),
+  kind: z.enum(HAZARD_KINDS),
+  description: z.string().trim().max(2000).default(''),
+  likelihood: ratingSchema,
+  severity: ratingSchema,
+  dimensions: z
+    .array(hazardDimensionImpactSchema)
+    .max(21)
+    .default([])
+    .refine((d) => new Set(d.map((x) => x.dimension_slug)).size === d.length, 'each dimension once'),
+  /** NWS event names, matched case-insensitively against active alerts. */
+  nws_events: z
+    .array(z.string().trim().min(1).max(120))
+    .max(30)
+    .default([])
+    .transform((events) => [...new Map(events.map((e) => [e.toLowerCase(), e])).values()]),
+  display_order: displayOrderSchema,
+  published: z.boolean().default(false),
+});
+export type HazardInput = z.infer<typeof hazardInputSchema>;
+
+/**
+ * BCP 47 language tags, canonicalized ("ZH-hant" → "zh-Hant") so the public
+ * page can name each language in its own script. Intl.getCanonicalLocales
+ * throws on anything that is not a well-formed tag.
+ */
+export function canonicalLanguageTag(tag: string): string | null {
+  try {
+    return Intl.getCanonicalLocales(tag.trim())[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export const languageListSchema = z
+  .array(z.string())
+  .max(40)
+  .default([])
+  .transform((tags, ctx) => {
+    const out: string[] = [];
+    for (const tag of tags) {
+      const canonical = canonicalLanguageTag(tag);
+      if (!canonical) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `"${tag}" is not a language code (use BCP 47, e.g. es, zh-Hant)` });
+        return z.NEVER;
+      }
+      if (!out.includes(canonical)) out.push(canonical);
+    }
+    return out;
+  });
+
+export const emergencyPlanInputSchema = z.object({
+  title: z.string().trim().min(1, 'a title is required').max(200),
+  agency: z.string().trim().min(1, 'the adopting agency is required').max(200),
+  url: httpsUrlSchema,
+  adopted_year: z.number().int().min(1900).max(2100).nullable().default(null),
+  summary: z.string().trim().max(2000).default(''),
+  /** Languages the plan document itself is published in. */
+  languages: languageListSchema,
+  hazard_slugs: hazardSlugListSchema,
+  display_order: displayOrderSchema,
+  published: z.boolean().default(false),
+});
+export type EmergencyPlanInput = z.infer<typeof emergencyPlanInputSchema>;
+
+export const emergencyResourceInputSchema = z.object({
+  name: z.string().trim().min(1, 'a name is required').max(200),
+  kind: z.enum(RESOURCE_KINDS),
+  description: z.string().trim().max(2000).default(''),
+  phone: phoneSchema.nullable().default(null),
+  url: httpsUrlSchema.nullable().default(null),
+  hazard_slugs: hazardSlugListSchema,
+  display_order: displayOrderSchema,
+  published: z.boolean().default(false),
+});
+export type EmergencyResourceInput = z.infer<typeof emergencyResourceInputSchema>;
 
 // ---- NWS alerts ---------------------------------------------------------------
 
@@ -195,3 +367,51 @@ export function alertIsCurrent(alert: Pick<NormalizedAlert, 'expires' | 'ends'>,
 
 /** The feed is stale when the last successful sync is older than this. */
 export const ALERTS_STALE_AFTER_MS = 30 * 60_000;
+
+// ---- Talking to api.weather.gov --------------------------------------------------
+
+/**
+ * The User-Agent every NWS request carries. The API asks callers to
+ * identify their application with a way to reach them (a site or an email)
+ * so a misbehaving client is contacted instead of blocked; the worker, the
+ * preflight, and the setup script all send this one string.
+ *
+ * `contact` is SUPPORT_EMAIL, else the address inside EMAIL_FROM
+ * ("deep-fryer <no-reply@city.gov>" → no-reply@city.gov).
+ */
+export function nwsUserAgent(env: { APP_URL?: string; SUPPORT_EMAIL?: string; EMAIL_FROM?: string }): string {
+  const site = env.APP_URL?.trim().replace(/\/+$/, '') || null;
+  const fromAddress = /<([^>]+)>/.exec(env.EMAIL_FROM ?? '')?.[1] ?? env.EMAIL_FROM;
+  const email = env.SUPPORT_EMAIL?.trim() || fromAddress?.trim() || null;
+  const parts = [site, email ? `contact ${email}` : null].filter(Boolean);
+  return parts.length ? `deep-fryer/1.0 (${parts.join('; ')})` : 'deep-fryer/1.0';
+}
+
+/** Request headers for the alerts feed: identification plus the GeoJSON media type. */
+export function nwsRequestHeaders(env: { APP_URL?: string; SUPPORT_EMAIL?: string; EMAIL_FROM?: string }): Record<string, string> {
+  return { 'User-Agent': nwsUserAgent(env), Accept: 'application/geo+json' };
+}
+
+/**
+ * Whether a feed body is the alerts FeatureCollection at all. The worker
+ * must tell "no alerts right now" (an empty features list: clear the page)
+ * from "the feed answered something else" (an error page, a maintenance
+ * notice: keep what we have and report the failure).
+ */
+export function isAlertsFeed(body: unknown): body is { features: unknown[] } {
+  return typeof body === 'object' && body !== null && Array.isArray((body as { features?: unknown }).features);
+}
+
+/** Preflight verdict for one portrait's feed (scripts/preflight.ts). */
+export function nwsFeedVerdict(
+  zones: readonly string[],
+  status: number,
+  body: unknown,
+): Verdict {
+  const where = zones.join(',');
+  if (status !== 200) return { status: 'fail', detail: `api.weather.gov answered ${status} for ${where}` };
+  if (!isAlertsFeed(body)) return { status: 'fail', detail: `api.weather.gov answered without a features list for ${where}` };
+  const { alerts, rejected } = parseNwsAlerts(body);
+  const note = rejected ? `, ${rejected} unparseable` : '';
+  return { status: 'pass', detail: `${where}: ${alerts.length} active alert(s)${note}` };
+}

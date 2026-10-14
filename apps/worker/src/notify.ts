@@ -154,7 +154,8 @@ export async function runSummary(runId: string): Promise<RunSummary | null> {
 
 let transport: Transporter | null = null;
 
-async function send(to: string[], email: ComposedEmail): Promise<void> {
+/** The worker's one mail path (also used by tasks/policy-analyze.ts); logs instead of sending when SMTP is unset. */
+export async function send(to: string[], email: ComposedEmail): Promise<void> {
   if (!process.env.SMTP_URL || !process.env.EMAIL_FROM) {
     console.info(`[notify] SMTP not configured; would email ${to.join(', ')}: ${email.subject}`);
     return;
