@@ -1,4 +1,5 @@
 import { defaultPortraitConfig } from '@deep-fryer/contract';
+import { defaultProgressConfig } from './progress.js';
 import type {
   FeaturesConfig,
   NotificationConfig,
@@ -44,5 +45,6 @@ export function defaultTenantConfig(regionName: string, regionDefinition: string
     retention: defaultRetention,
     notifications: defaultNotifications,
     features: defaultFeatures,
+    progress: defaultProgressConfig,
   };
 }

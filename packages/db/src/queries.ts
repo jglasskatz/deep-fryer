@@ -1,14 +1,12 @@
 import { desc, eq, inArray, sql } from 'drizzle-orm';
-import type { getDb } from './client.js';
+import type { DbExecutor } from './client.js';
 import { dimensionVersions, type DimensionVersion, type NewDimensionVersion } from './schema.js';
-
-type Db = ReturnType<typeof getDb>;
 
 /**
  * The public read path (SPEC.md §11): published versions only, via the same
  * SQL function RLS-governed clients use.
  */
-export async function publishedDoughnut<T = unknown>(db: Db, slug: string): Promise<T | null> {
+export async function publishedDoughnut<T = unknown>(db: DbExecutor, slug: string): Promise<T | null> {
   const result = await db.execute<{ portrait: T | null }>(
     sql`SELECT published_doughnut(${slug}) AS portrait`,
   );
@@ -17,7 +15,7 @@ export async function publishedDoughnut<T = unknown>(db: Db, slug: string): Prom
 
 /** Newest version of one dimension, or null. */
 export async function latestVersion(
-  db: Db,
+  db: DbExecutor,
   dimensionId: string,
 ): Promise<DimensionVersion | null> {
   const [row] = await db
@@ -31,7 +29,7 @@ export async function latestVersion(
 
 /** Newest version per dimension in one DISTINCT ON query. */
 export async function latestVersionsByDimension(
-  db: Db,
+  db: DbExecutor,
   dimensionIds: string[],
 ): Promise<Map<string, DimensionVersion>> {
   if (dimensionIds.length === 0) return new Map();
@@ -43,19 +41,41 @@ export async function latestVersionsByDimension(
   return new Map(rows.map((v) => [v.dimensionId, v]));
 }
 
+const UNIQUE_VIOLATION = '23505';
+const MAX_APPEND_ATTEMPTS = 5;
+
+function isUniqueViolation(err: unknown): boolean {
+  return typeof err === 'object' && err !== null && (err as { code?: string }).code === UNIQUE_VIOLATION;
+}
+
 /**
- * Append the next immutable version (SPEC.md §7): the version-number
- * allocation lives here so every write path shares one mechanism.
+ * Append the next immutable version (SPEC.md §7). The number is allocated by
+ * the INSERT itself (max + 1 in a subselect), and a concurrent append that
+ * takes the same number trips the (dimension_id, version_num) unique
+ * constraint and retries — two reviewers approving at once both land, in
+ * some order, instead of one silently failing (SPEC-v3 §2.2 item 4). Each
+ * attempt runs in its own (sub)transaction so a retry works inside a caller's
+ * transaction too.
  */
 export async function appendDimensionVersion(
-  db: Db,
+  db: DbExecutor,
   values: Omit<NewDimensionVersion, 'versionNum'>,
 ): Promise<DimensionVersion> {
-  const previous = await latestVersion(db, values.dimensionId);
-  const [version] = await db
-    .insert(dimensionVersions)
-    .values({ ...values, versionNum: (previous?.versionNum ?? 0) + 1 })
-    .returning();
-  if (!version) throw new Error('dimension version insert returned no row');
-  return version;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await db.transaction(async (tx) => {
+        const [version] = await tx
+          .insert(dimensionVersions)
+          .values({
+            ...values,
+            versionNum: sql`(SELECT coalesce(max(${dimensionVersions.versionNum}), 0) + 1 FROM ${dimensionVersions} WHERE ${dimensionVersions.dimensionId} = ${values.dimensionId})`,
+          })
+          .returning();
+        if (!version) throw new Error('dimension version insert returned no row');
+        return version;
+      });
+    } catch (err) {
+      if (!isUniqueViolation(err) || attempt >= MAX_APPEND_ATTEMPTS) throw err;
+    }
+  }
 }

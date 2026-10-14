@@ -132,6 +132,7 @@ export const thresholdOverrideSchema = z.object({
   low: z.number().optional(),
   high: z.number().optional(),
   rationale: z.string().min(1),
+  target_year: z.number().int().min(1900).max(2200).optional(),
 });
 
 export const thresholdOverridesConfigSchema = z.record(thresholdOverrideSchema);
@@ -155,6 +156,11 @@ export const featuresConfigSchema = z.object({
   request_research: z.boolean(),
 });
 
+export const progressConfigSchema = z.object({
+  baseline_year: z.number().int().min(1900).max(2200).nullable(),
+  baseline_label: z.string().min(1).max(120),
+});
+
 /** Per-key validators for the tenant_config table — the settings write path. */
 export const tenantConfigSchemas = {
   region: regionConfigSchema,
@@ -166,4 +172,5 @@ export const tenantConfigSchemas = {
   retention: retentionConfigSchema,
   notifications: notificationConfigSchema,
   features: featuresConfigSchema,
+  progress: progressConfigSchema,
 } as const;

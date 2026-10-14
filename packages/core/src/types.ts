@@ -1,3 +1,4 @@
+import type { ProgressConfig } from './progress.js';
 import type {
   GeographicScale,
   MappingFunctionName,
@@ -121,6 +122,7 @@ export interface TenantConfigMap {
   retention: RetentionConfig;
   notifications: NotificationConfig;
   features: FeaturesConfig;
+  progress: ProgressConfig;
 }
 
 export type TenantConfigKey = keyof TenantConfigMap;

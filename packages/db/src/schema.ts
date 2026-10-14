@@ -13,7 +13,10 @@ import {
   unique,
   index,
   customType,
+  boolean,
+  check,
 } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { relations } from 'drizzle-orm';
 import type {
   DimensionData,
@@ -47,12 +50,127 @@ export const researchSessionKindEnum = pgEnum('research_session_kind', [
   'dimension',
 ]);
 export const moderationActionEnum = pgEnum('moderation_action', ['remove', 'restore', 'lock']);
+export const orgRoleEnum = pgEnum('org_role', ['owner', 'billing']);
+// Mirrors Stripe's subscription statuses so webhook sync is a straight copy;
+// manual contracts use the same vocabulary (SPEC-v4 §3).
+export const subscriptionStatusEnum = pgEnum('subscription_status', [
+  'trialing',
+  'active',
+  'past_due',
+  'canceled',
+  'unpaid',
+  'incomplete',
+  'incomplete_expired',
+  'paused',
+]);
+export const collectionMethodEnum = pgEnum('collection_method', ['card', 'invoice', 'contract']);
 
 const bytea = customType<{ data: Buffer; driverData: Buffer }>({
   dataType() {
     return 'bytea';
   },
 });
+
+// ---- Accounts (SPEC-v3 §2.1: Auth.js v5 on our own Postgres) ----
+// Column names follow the Auth.js Drizzle adapter contract; display_name and
+// is_staff are ours.
+
+export const users = pgTable('users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name'),
+  email: text('email').unique(),
+  emailVerified: timestamp('email_verified', { withTimezone: true, mode: 'date' }),
+  image: text('image'),
+  /** Public handle on discussion boards (SPEC §14 B: a display name suffices). */
+  displayName: text('display_name'),
+  /** Internal deep-fryer staff: may set contract plans and quotas. */
+  isStaff: boolean('is_staff').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const accounts = pgTable(
+  'accounts',
+  {
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    type: text('type').notNull(),
+    provider: text('provider').notNull(),
+    providerAccountId: text('provider_account_id').notNull(),
+    refresh_token: text('refresh_token'),
+    access_token: text('access_token'),
+    expires_at: integer('expires_at'),
+    token_type: text('token_type'),
+    scope: text('scope'),
+    id_token: text('id_token'),
+    session_state: text('session_state'),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.provider, t.providerAccountId] }),
+    userIdx: index('accounts_user_idx').on(t.userId),
+  }),
+);
+
+/** Database sessions: revocable server-side (remove a member → access ends now). */
+export const sessions = pgTable(
+  'sessions',
+  {
+    sessionToken: text('session_token').primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    expires: timestamp('expires', { withTimezone: true, mode: 'date' }).notNull(),
+  },
+  (t) => ({
+    userIdx: index('sessions_user_idx').on(t.userId),
+  }),
+);
+
+export const verificationTokens = pgTable(
+  'verification_tokens',
+  {
+    identifier: text('identifier').notNull(),
+    token: text('token').notNull(),
+    expires: timestamp('expires', { withTimezone: true, mode: 'date' }).notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.identifier, t.token] }),
+  }),
+);
+
+// ---- Organizations (SPEC-v4 §2): the billing account and the portrait family ----
+// One organization owns one or more tenants. NYC is one organization with six
+// portraits (the city + five boroughs); a small town is one with one.
+
+export const organizations = pgTable('organizations', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  slug: text('slug').notNull().unique(),
+  name: text('name').notNull(),
+  billingEmail: text('billing_email'),
+  /** Government buyers are usually tax-exempt; mirrored to the Stripe customer. */
+  taxExempt: boolean('tax_exempt').notNull().default(false),
+  stripeCustomerId: text('stripe_customer_id').unique(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  archivedAt: timestamp('archived_at', { withTimezone: true }),
+});
+
+export const organizationMembers = pgTable(
+  'organization_members',
+  {
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    role: orgRoleEnum('role').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.organizationId, t.userId] }),
+    userIdx: index('organization_members_user_idx').on(t.userId),
+  }),
+);
 
 export const tenants = pgTable('tenants', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -63,6 +181,13 @@ export const tenants = pgTable('tenants', {
   description: text('description'),
   branding: jsonb('branding').$type<TenantBranding>(),
   embedOrigins: text('embed_origins').array(),
+  organizationId: uuid('organization_id')
+    .notNull()
+    .references(() => organizations.id, { onDelete: 'restrict' }),
+  /** Position in the organization's family nav and compare views. */
+  familyOrder: integer('family_order').notNull().default(0),
+  /** Compact label for family matrices ("BX", "SI"). */
+  shortName: text('short_name'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   archivedAt: timestamp('archived_at', { withTimezone: true }),
 });
@@ -90,13 +215,16 @@ export const tenantMembers = pgTable(
     tenantId: uuid('tenant_id')
       .notNull()
       .references(() => tenants.id, { onDelete: 'cascade' }),
-    userId: uuid('user_id').notNull(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     role: roleEnum('role').notNull(),
     invitedAt: timestamp('invited_at', { withTimezone: true }).notNull().defaultNow(),
     joinedAt: timestamp('joined_at', { withTimezone: true }),
   },
   (t) => ({
     pk: primaryKey({ columns: [t.tenantId, t.userId] }),
+    userIdx: index('tenant_members_user_idx').on(t.userId),
   }),
 );
 
@@ -154,9 +282,13 @@ export const researchRuns = pgTable('research_runs', {
   configSnapshot: jsonb('config_snapshot').$type<PortraitConfig>().notNull(),
   requestedBy: uuid('requested_by'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  /** Set when the run is handed to the worker: the moment it counts against the plan. */
+  appliedAt: timestamp('applied_at', { withTimezone: true }),
   completedAt: timestamp('completed_at', { withTimezone: true }),
   tokenUsage: jsonb('token_usage').$type<RunTokenUsage>(),
-});
+}, (t) => ({
+  tenantAppliedIdx: index('research_runs_tenant_applied_idx').on(t.tenantId, t.appliedAt),
+}));
 
 export const researchSessions = pgTable(
   'research_sessions',
@@ -213,7 +345,9 @@ export const comments = pgTable(
       .notNull()
       .references(() => dimensions.id, { onDelete: 'cascade' }),
     parentId: uuid('parent_id'),
-    authorId: uuid('author_id').notNull(),
+    authorId: uuid('author_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     body: text('body').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     editedAt: timestamp('edited_at', { withTimezone: true }),
@@ -231,7 +365,9 @@ export const commentVotes = pgTable(
     commentId: uuid('comment_id')
       .notNull()
       .references(() => comments.id, { onDelete: 'cascade' }),
-    userId: uuid('user_id').notNull(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     vote: smallint('vote').notNull(),
   },
   (t) => ({
@@ -320,9 +456,101 @@ export const auditLog = pgTable('audit_log', {
   ts: timestamp('ts', { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ---- Invitations (SPEC-v4 §2) ----
+// Exactly one scope: a tenant role (owner/editor/viewer/moderator) or an
+// organization role (owner/billing). Bound to the invited email — accepting
+// requires a signed-in account with that verified address, so a forwarded
+// link is useless. Only the token's sha256 is stored.
+
+export const invitations = pgTable(
+  'invitations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }),
+    organizationId: uuid('organization_id').references(() => organizations.id, {
+      onDelete: 'cascade',
+    }),
+    email: text('email').notNull(),
+    role: text('role').notNull(),
+    tokenHash: text('token_hash').notNull().unique(),
+    invitedBy: uuid('invited_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+    acceptedBy: uuid('accepted_by').references(() => users.id, { onDelete: 'set null' }),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  },
+  (t) => ({
+    oneScope: check(
+      'invitations_one_scope',
+      sql`(${t.tenantId} IS NOT NULL AND ${t.organizationId} IS NULL AND ${t.role} IN ('owner','editor','viewer','moderator'))
+        OR (${t.organizationId} IS NOT NULL AND ${t.tenantId} IS NULL AND ${t.role} IN ('owner','billing'))`,
+    ),
+    emailIdx: index('invitations_email_idx').on(t.email),
+  }),
+);
+
+// ---- Billing (SPEC-v4 §3) ----
+// One subscription per organization. Our row is the entitlement source of
+// truth: Stripe webhooks sync card/invoice subscriptions into it, and manual
+// government contracts (collection 'contract') live here with no Stripe ids.
+
+export const subscriptions = pgTable('subscriptions', {
+  organizationId: uuid('organization_id')
+    .primaryKey()
+    .references(() => organizations.id, { onDelete: 'cascade' }),
+  plan: text('plan').notNull(),
+  status: subscriptionStatusEnum('status').notNull(),
+  collection: collectionMethodEnum('collection').notNull(),
+  stripeSubscriptionId: text('stripe_subscription_id').unique(),
+  stripePriceId: text('stripe_price_id'),
+  currentPeriodStart: timestamp('current_period_start', { withTimezone: true }).notNull(),
+  currentPeriodEnd: timestamp('current_period_end', { withTimezone: true }).notNull(),
+  trialEndsAt: timestamp('trial_ends_at', { withTimezone: true }),
+  cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),
+  poNumber: text('po_number'),
+  /** Contract terms set by staff; null means the plan's catalog limit. */
+  researchSessionsOverride: integer('research_sessions_override'),
+  portraitsOverride: integer('portraits_override'),
+  seatsOverride: integer('seats_override'),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Processed Stripe webhook events: the idempotency ledger (event id is the key). */
+export const billingEvents = pgTable('billing_events', {
+  id: text('id').primaryKey(),
+  type: text('type').notNull(),
+  organizationId: uuid('organization_id').references(() => organizations.id, {
+    onDelete: 'set null',
+  }),
+  receivedAt: timestamp('received_at', { withTimezone: true }).notNull().defaultNow(),
+  payload: jsonb('payload').notNull(),
+});
+
 // ---- Relations ----
 
-export const tenantsRelations = relations(tenants, ({ many }) => ({
+export const organizationsRelations = relations(organizations, ({ one, many }) => ({
+  tenants: many(tenants),
+  members: many(organizationMembers),
+  subscription: one(subscriptions, {
+    fields: [organizations.id],
+    references: [subscriptions.organizationId],
+  }),
+}));
+
+export const organizationMembersRelations = relations(organizationMembers, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [organizationMembers.organizationId],
+    references: [organizations.id],
+  }),
+  user: one(users, { fields: [organizationMembers.userId], references: [users.id] }),
+}));
+
+export const tenantsRelations = relations(tenants, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [tenants.organizationId],
+    references: [organizations.id],
+  }),
   members: many(tenantMembers),
   config: many(tenantConfig),
   dimensions: many(dimensions),
@@ -490,6 +718,14 @@ export const auditLogRelations = relations(auditLog, ({ one }) => ({
 
 // ---- Row types ----
 
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+export type Organization = typeof organizations.$inferSelect;
+export type NewOrganization = typeof organizations.$inferInsert;
+export type OrganizationMember = typeof organizationMembers.$inferSelect;
+export type Invitation = typeof invitations.$inferSelect;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type NewSubscription = typeof subscriptions.$inferInsert;
 export type Tenant = typeof tenants.$inferSelect;
 export type NewTenant = typeof tenants.$inferInsert;
 export type TenantConfigRow = typeof tenantConfig.$inferSelect;

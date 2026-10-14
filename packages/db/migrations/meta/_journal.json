@@ -15,6 +15,20 @@
       "when": 1785532789386,
       "tag": "0001_rls_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791951804760,
+      "tag": "0002_accounts_orgs_billing",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791951825630,
+      "tag": "0003_rls_accounts_billing",
+      "breakpoints": true
     }
   ]
 }
