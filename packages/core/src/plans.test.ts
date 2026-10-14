@@ -72,6 +72,13 @@ describe('standing', () => {
     });
   });
 
+  it('warns when a subscription is set to end at period close', () => {
+    expect(standing(sub({ cancelAtPeriodEnd: true }), now)).toMatchObject({
+      active: true,
+      warning: 'cancel_scheduled',
+    });
+  });
+
   it('pauses on unpaid and canceled', () => {
     expect(standing(sub({ status: 'unpaid' }), now).active).toBe(false);
     expect(standing(sub({ status: 'canceled' }), now).reason).toBe('canceled');

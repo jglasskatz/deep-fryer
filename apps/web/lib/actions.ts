@@ -20,7 +20,9 @@ import {
   getDb,
   latestVersion,
   tenantConfig,
+  tenants,
 } from '@deep-fryer/db';
+import { isOrigin } from './csp';
 import { getAuth, requireTenantRole } from './auth';
 import { audit } from './audit';
 import { configValue } from './admin-data';
@@ -174,4 +176,28 @@ export const updateConfig = action(async (input: {
 
   revalidatePath(`/${tenant.slug}/admin/settings`);
   revalidatePath(`/${tenant.slug}/methodology`);
+});
+
+/**
+ * The embed allowlist (SPEC.md §10): origins allowed to frame /embed/{tenant}.
+ * Enforced by the browser via CSP frame-ancestors (middleware.ts), so each
+ * entry must be a bare origin — scheme, host, optional port; https in
+ * production.
+ */
+export const updateEmbedOrigins = action(async (input: { tenantSlug: string; origins: string[] }) => {
+  const { tenant } = await requireTenantRole(input.tenantSlug, 'owner');
+  const cleaned = [...new Set(input.origins.map((o) => o.trim().replace(/\/+$/, '')).filter(Boolean))];
+  if (cleaned.length > 20) throw new UserError('At most 20 embedding sites.');
+  for (const origin of cleaned) {
+    if (!isOrigin(origin)) {
+      throw new UserError(`"${origin}" is not an origin — use the form https://www.example.gov`);
+    }
+    if (process.env.NODE_ENV === 'production' && !origin.startsWith('https://')) {
+      throw new UserError(`"${origin}" must use https.`);
+    }
+  }
+  const before = tenant.embedOrigins ?? [];
+  await getDb().update(tenants).set({ embedOrigins: cleaned }).where(eq(tenants.id, tenant.id));
+  await audit(tenant.id, 'tenant', tenant.id, 'embed_origins', before, cleaned);
+  revalidatePath(`/${tenant.slug}/admin/settings`);
 });

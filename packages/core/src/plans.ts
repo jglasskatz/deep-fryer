@@ -154,6 +154,8 @@ export interface SubscriptionSnapshot {
   currentPeriodStart: Date;
   currentPeriodEnd: Date;
   trialEndsAt: Date | null;
+  /** Stripe: the subscription ends at period close instead of renewing. */
+  cancelAtPeriodEnd?: boolean;
   researchSessionsOverride: number | null;
   portraitsOverride: number | null;
   seatsOverride: number | null;
@@ -236,7 +238,7 @@ export function standing(sub: SubscriptionSnapshot | null, now: Date = new Date(
       if (sub.collection === 'contract' && now >= sub.currentPeriodEnd) {
         return { active: false, warning: null, reason: 'period_ended' };
       }
-      return { active: true, warning: null, reason: 'ok' };
+      return { active: true, warning: sub.cancelAtPeriodEnd ? 'cancel_scheduled' : null, reason: 'ok' };
     }
   }
 }

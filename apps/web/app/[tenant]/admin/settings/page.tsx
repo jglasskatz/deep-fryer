@@ -3,6 +3,8 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { SettingsForms } from '@/components/admin/SettingsForms';
 import { tenantConfigMap } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
+import { EmbedSettings } from '@/components/admin/EmbedSettings';
+import { appUrl } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,6 +44,13 @@ export default async function SettingsPage({
             notifications={config.notifications ?? null}
             progress={config.progress ?? null}
             features={config.features ?? null}
+          />
+        </div>
+        <div className="mt-6">
+          <EmbedSettings
+            tenantSlug={ctx.tenant.slug}
+            origins={ctx.tenant.embedOrigins ?? []}
+            appUrl={appUrl()}
           />
         </div>
       </main>

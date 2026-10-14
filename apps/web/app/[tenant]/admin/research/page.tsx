@@ -3,6 +3,8 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { NewRunForm } from '@/components/admin/NewRunForm';
 import { tenantDimensions, tenantRuns } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
+import { billingSummary } from '@/lib/billing';
+import { UsageMeter } from '@/components/billing/UsageMeter';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,9 +15,10 @@ export default async function ResearchPage({
 }) {
   const { tenant } = await params;
   const ctx = await requireAdminPage(tenant, 'editor');
-  const [runs, dims] = await Promise.all([
+  const [runs, dims, billing] = await Promise.all([
     tenantRuns(ctx.tenant.id),
     tenantDimensions(ctx.tenant.id),
+    billingSummary(ctx.tenant.organizationId),
   ]);
 
   return (
@@ -28,6 +31,24 @@ export default async function ResearchPage({
           </Link>
         </p>
         <h1 className="mt-2 text-2xl font-bold">Research runs</h1>
+
+        <section className="mt-4 rounded border border-black/10 p-3" aria-label="Research allowance">
+          {billing.limits && !billing.blockedMessage ? (
+            <UsageMeter
+              label={`Research sessions this billing period (renews ${billing.subscription!.currentPeriodEnd.toISOString().slice(0, 10)})`}
+              used={billing.usage.researchSessions}
+              limit={billing.limits.researchSessions}
+            />
+          ) : (
+            <p role="alert" className="text-sm text-red-900">
+              {billing.blockedMessage}
+            </p>
+          )}
+          <p className="mt-1 text-xs text-[color:var(--color-muted)]">
+            Planning is free. Sessions count when a run is applied; failed sessions are not
+            counted. Shared across every portrait in the organization.
+          </p>
+        </section>
 
         <div className="mt-6">
           <NewRunForm

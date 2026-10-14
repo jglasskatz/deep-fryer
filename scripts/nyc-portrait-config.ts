@@ -28,6 +28,7 @@ export const thresholdOverrides = {
   'health.life-expectancy': {
     target: 83,
     function: 'higher_is_better',
+    target_year: 2030,
     rationale:
       'HealthyNYC adopted target: citywide life expectancy of at least 83.0 years by 2030, codified by Local Law 93 of 2024. Provisional 2024 already reads 83.2 citywide, so the live question is equity: borough portraits score the same 83.0 floor, making the ~6-year borough gap the wedge.',
   },
@@ -49,18 +50,21 @@ export const thresholdOverrides = {
   'education.class-size-compliance': {
     target: 100,
     function: 'higher_is_better',
+    target_year: 2030,
     rationale:
       'NYS class-size law (2022, as amended June 2026): 100% of NYC classes at or under caps (K-3: 20, 4-8: 23, HS: 25) by school year 2029-30 on a 70/80/90/100 ramp; 64.0% compliant per the Nov 2025 DOE report (~7% of classes exempted from the denominator).',
   },
   'chemical-pollution.landfill-reduction-vs-2005': {
     target: 90,
     function: 'higher_is_better',
+    target_year: 2030,
     rationale:
       'OneNYC 2015 "0x30": send zero waste to landfill by 2030, operationalized as a 90% reduction in landfill-bound tonnage vs 2005, codified by the Zero Waste Act (LL85/LL87 of 2023). Measured as % reduction achieved, from DSNY monthly tonnage (borough-native). Disclosed: this is landfill reduction, not the separately-codified 100% diversion goal for recyclables/organics, and DSNY data excludes commercial waste (~half the stream).',
   },
   'land-conversion.tree-canopy-pct': {
     target: 30,
     function: 'higher_is_better',
+    target_year: 2040,
     rationale:
       "Local Law 148 of 2023 and the resulting Urban Forest Plan (April 2026) adopt 30% tree-canopy cover by 2040 (23.4% citywide, 2021 LiDAR). Borough-comparable via TNC/UVM 'Growing Greener' community-district fact sheets.",
   },
@@ -68,12 +72,14 @@ export const thresholdOverrides = {
     target: 0,
     scale: 100,
     function: 'lower_is_better',
+    target_year: 2030,
     rationale:
       'Local Law 97 of 2019 sets binding emissions caps for buildings over 25k sq ft; the adopted end-state is zero covered buildings over their 2030 cap (57-63% currently over, per Sierra Club/Urban Green Council trackers). This is the enforcement wedge the administration directly controls.',
   },
   'climate-change.ghg-reduction-vs-2005': {
     target: 80,
     function: 'higher_is_better',
+    target_year: 2050,
     rationale:
       'Local Law 66 of 2014 legally mandates an 80% citywide GHG reduction vs 2005 by 2050 (40x30 interim, reaffirmed in LL97 §3 and PlaNYC 2023). Measured as % reduction achieved from the MOCEJ inventory — citywide only; borough portraits carry it at regional scale, explicitly labeled.',
   },
@@ -86,6 +92,7 @@ export const thresholdOverrides = {
   'land-conversion.park-access-share': {
     target: 85,
     function: 'higher_is_better',
+    target_year: 2030,
     rationale:
       "OneNYC 2050 adopted goal: 85% of New Yorkers within walking distance of a park by 2030 (NYC Parks Walk to a Park; 84.2% as of July 2025). One access definition used throughout — Parks' service-area method, disclosed on the methodology page.",
   },
@@ -115,7 +122,27 @@ export const thresholdOverrides = {
     rationale:
       'Heat-exacerbated deaths per year (DOHMH heat mortality report; ~489/yr 2014-2023 average, citywide). Zero heat deaths is the only defensible ceiling for a preventable-death hazard (HealthyNYC premature-mortality mandate, LL93 of 2024; June 2026 heat EO); scored as distance from zero relative to the ~500/yr current baseline, Vision-Zero style.',
   },
-} satisfies Record<string, { target: number; scale?: number; function: string; rationale: string }>;
+} satisfies Record<
+  string,
+  { target: number; scale?: number; function: string; rationale: string; target_year?: number }
+>;
+// target_year is set only where the adopting instrument names a due date
+// (HealthyNYC 2030, class-size SY 2029-30, Zero Waste 2030, LL148 2040,
+// LL97's 2030 caps, LL66 2050, Walk-to-a-Park 2030). Rate targets (Block by
+// Block's 20k/yr), open-ended aspirations (TCOL, universal broadband), and
+// Vision Zero (its 2024 date has passed with no replacement) carry none, so
+// progress reports improving/worsening for them rather than inventing a
+// glidepath.
+
+// ---------------------------------------------------------------------------
+// Progress baseline (SPEC-v4 §4; docs/nyc-impact-research.md §1 "baseline
+// everything to January 2026"): the latest data year available when the
+// administration took office. Movement is measured from there.
+// ---------------------------------------------------------------------------
+export const progress = {
+  baseline_year: 2025,
+  baseline_label: 'January 2026 baseline (latest data available at the start of the administration)',
+};
 
 // ---------------------------------------------------------------------------
 // Custom NYC indicators: attach the new threshold refs above to their
@@ -322,6 +349,7 @@ const BOROUGH_NOTE =
 
 function validate() {
   tenantConfigSchemas.threshold_overrides.parse(thresholdOverrides);
+  tenantConfigSchemas.progress.parse(progress);
   tenantConfigSchemas.source_priority.parse(sourcePriority);
   tenantConfigSchemas.recency.parse(recency);
   tenantConfigSchemas.scale_policy.parse(scalePolicy);
@@ -336,7 +364,8 @@ function printDiff() {
   for (const [ref, o] of Object.entries(thresholdOverrides)) {
     const base = defaults[ref];
     const from = base ? `default target ${base.target} (${base.function})` : 'NEW REF (no framework default)';
-    console.log(`  ${ref}\n    ${from}  ->  target ${o.target}${o.scale ? ` scale ${o.scale}` : ''} (${o.function})`);
+    const due = 'target_year' in o ? ` due ${o.target_year}` : '';
+    console.log(`  ${ref}\n    ${from}  ->  target ${o.target}${o.scale ? ` scale ${o.scale}` : ''} (${o.function})${due}`);
   }
   console.log('\n# Recency exceptions (default 5y):', JSON.stringify(recency.per_dimension));
   console.log('# Scale exceptions:', JSON.stringify(scalePolicy.per_dimension));
@@ -367,6 +396,7 @@ async function apply() {
       ['source_priority', sourcePriority],
       ['recency', recency],
       ['scale_policy', scalePolicy],
+      ['progress', progress],
       ['region', { name: region.name ?? t.name, definition: region.definition ?? '', context_notes: contextNotes }],
     ];
     for (const [key, value] of entries) {
