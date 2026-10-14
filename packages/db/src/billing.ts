@@ -1,8 +1,10 @@
-import { and, eq, gte, isNull, lt, sql } from 'drizzle-orm';
+import { and, eq, gte, isNull, lt, ne, sql } from 'drizzle-orm';
+import { POLICY_ANALYSIS_SESSIONS } from '@deep-fryer/core';
 import type { DbExecutor } from './client.js';
 import {
   organizationMembers,
   organizations,
+  policyAnalyses,
   researchRuns,
   subscriptions,
   tenantMembers,
@@ -75,7 +77,21 @@ export async function researchSessionsUsed(
         lt(researchRuns.appliedAt, until),
       ),
     );
-  return rows[0]?.used ?? 0;
+  // A policy analysis is one session (SPEC-v5 §2), counted from creation
+  // (when it is queued) unless it failed — the same rule as research.
+  const [analyses] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(policyAnalyses)
+    .innerJoin(tenants, eq(tenants.id, policyAnalyses.tenantId))
+    .where(
+      and(
+        eq(tenants.organizationId, organizationId),
+        ne(policyAnalyses.status, 'failed'),
+        gte(policyAnalyses.createdAt, since),
+        lt(policyAnalyses.createdAt, until),
+      ),
+    );
+  return (rows[0]?.used ?? 0) + (analyses?.n ?? 0) * POLICY_ANALYSIS_SESSIONS;
 }
 
 /** Active (non-archived) portraits an organization holds. */

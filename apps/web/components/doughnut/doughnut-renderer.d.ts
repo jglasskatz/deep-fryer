@@ -32,6 +32,11 @@ export class DoughnutRenderer {
     name: string,
     level: number | string,
     label?: string,
+    colour?: string,
+  ): void;
+  /** Apply many levels with one redraw (animation frames). */
+  setLevels(
+    entries: { type: 'inner' | 'outer'; name: string; level: number | string; label?: string; colour?: string | null }[],
   ): void;
   clearDoughnut(): void;
   isEmptyDoughnut(): boolean;

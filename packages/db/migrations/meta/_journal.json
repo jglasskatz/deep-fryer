@@ -57,6 +57,13 @@
       "when": 1791958863689,
       "tag": "0007_org_language_help",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791963402977,
+      "tag": "0008_policy_emergency",
+      "breakpoints": true
     }
   ]
 }

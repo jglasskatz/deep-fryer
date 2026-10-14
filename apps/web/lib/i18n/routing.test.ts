@@ -5,10 +5,10 @@ import { isLocalizablePath, localizeHref, splitLocale } from './routing';
 
 describe('i18n routing', () => {
   it('translates the public plane and nothing else', () => {
-    for (const p of ['/nyc', '/nyc/progress', '/nyc/methodology', '/nyc/outreach', '/nyc/dim/housing', '/o/nyc', '/o/nyc/compare', '/o/nyc/insights', '/o/nyc/progress', '/embed/nyc']) {
+    for (const p of ['/nyc', '/nyc/progress', '/nyc/methodology', '/nyc/outreach', '/nyc/emergency', '/nyc/dim/housing', '/o/nyc', '/o/nyc/compare', '/o/nyc/insights', '/o/nyc/progress', '/embed/nyc']) {
       expect(isLocalizablePath(p), p).toBe(true);
     }
-    for (const p of ['/', '/login', '/account', '/pricing', '/start', '/api/v1/portraits/nyc', '/nyc/admin', '/nyc/admin/review', '/o/nyc/billing', '/o', '/invite/abc', '/nyc/dim', '/nyc/dim/housing/x', '/es/nyc']) {
+    for (const p of ['/', '/login', '/account', '/pricing', '/start', '/api/v1/portraits/nyc', '/nyc/admin', '/nyc/admin/review', '/nyc/admin/policy', '/nyc/admin/emergency', '/o/nyc/billing', '/o', '/invite/abc', '/nyc/dim', '/nyc/dim/housing/x', '/es/nyc']) {
       expect(isLocalizablePath(p), p).toBe(false);
     }
   });

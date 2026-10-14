@@ -139,4 +139,44 @@ describe.skipIf(!hasDb)('row-level security under the app role', () => {
     await db.delete(m.users).where(eq(m.users.id, editor!.id));
     await db.delete(m.users).where(eq(m.users.id, resident!.id));
   });
+
+  it('keeps policy analyses staff-only and shows only published emergency content', async () => {
+    const m = await import('./index.js');
+    const { eq, sql } = await import('drizzle-orm');
+    const db = m.getDb();
+    const a = await m.provisionTenant(db, { slug: uniq(), name: 'City A' });
+    const b = await m.provisionTenant(db, { slug: uniq(), name: 'City B' });
+    const [editor] = await db.insert(m.users).values({ email: `${uniq()}@a.gov` }).returning();
+    await db.insert(m.tenantMembers).values({ tenantId: a.tenant.id, userId: editor!.id, role: 'editor' });
+    await db.insert(m.policyAnalyses).values({ tenantId: a.tenant.id, title: 'Rent relief', brief: 'b', transcript: Buffer.from('secret') });
+    await db.insert(m.hazards).values([
+      { tenantId: a.tenant.id, slug: 'heat', name: 'Extreme heat', kind: 'extreme_heat', likelihood: 5, severity: 4, published: true },
+      { tenantId: a.tenant.id, slug: 'quake', name: 'Earthquake', kind: 'earthquake', likelihood: 1, severity: 5 },
+    ]);
+    await db.insert(m.emergencyAlerts).values({
+      tenantId: a.tenant.id, source: 'nws', sourceId: uniq(), event: 'Heat Advisory', severity: 'Moderate', urgency: 'Expected',
+      certainty: 'Likely', description: 'd', areaDesc: 'Kings', senderName: 'NWS Upton NY', url: 'https://api.weather.gov/alerts/x', effective: new Date(),
+    });
+    const anon = <T>(fn: (tx: DbExecutor) => Promise<T>) => m.withAuthContext(db, null, fn);
+    const asEditor = <T>(fn: (tx: DbExecutor) => Promise<T>) => m.withAuthContext(db, editor!.id, fn);
+
+    // Analyses: never public; members read them but not the transcript; no app-role writes.
+    expect(await anon((tx) => tx.select({ id: m.policyAnalyses.id }).from(m.policyAnalyses).where(eq(m.policyAnalyses.tenantId, a.tenant.id)))).toHaveLength(0);
+    expect(await asEditor((tx) => tx.select({ id: m.policyAnalyses.id, title: m.policyAnalyses.title }).from(m.policyAnalyses).where(eq(m.policyAnalyses.tenantId, a.tenant.id)))).toHaveLength(1);
+    await expect(asEditor((tx) => tx.execute(sql`select transcript from policy_analyses`))).rejects.toThrow(/permission denied/);
+    await expect(asEditor((tx) => tx.insert(m.policyAnalyses).values({ tenantId: a.tenant.id, title: 'x', brief: 'y' }))).rejects.toThrow(/row-level security/);
+
+    // Hazards: the public sees published ones; the editor curates all of A's, none of B's.
+    expect((await anon((tx) => tx.select({ slug: m.hazards.slug }).from(m.hazards).where(eq(m.hazards.tenantId, a.tenant.id)))).map((h) => h.slug)).toEqual(['heat']);
+    expect(await asEditor((tx) => tx.select({ id: m.hazards.id }).from(m.hazards).where(eq(m.hazards.tenantId, a.tenant.id)))).toHaveLength(2);
+    await expect(asEditor((tx) => tx.insert(m.hazards).values({ tenantId: b.tenant.id, slug: 'x', name: 'x', kind: 'other', likelihood: 1, severity: 1 }))).rejects.toThrow(/row-level security/);
+    await expect(db.insert(m.hazards).values({ tenantId: a.tenant.id, slug: uniq(), name: 'bad', kind: 'other', likelihood: 6, severity: 1 })).rejects.toThrow(/hazards_likelihood_range/);
+
+    // Alerts are official public information; only the system writes them.
+    expect(await anon((tx) => tx.select({ id: m.emergencyAlerts.id }).from(m.emergencyAlerts).where(eq(m.emergencyAlerts.tenantId, a.tenant.id)))).toHaveLength(1);
+    await expect(asEditor((tx) => tx.insert(m.emergencyAlerts).values({
+      tenantId: a.tenant.id, source: 'nws', sourceId: uniq(), event: 'Fake', severity: 'Extreme', urgency: 'x', certainty: 'x',
+      description: 'd', areaDesc: 'a', senderName: 's', url: 'https://x', effective: new Date(),
+    }))).rejects.toThrow(/row-level security/);
+  });
 });

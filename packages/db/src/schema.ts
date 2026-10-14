@@ -20,6 +20,10 @@ import { sql } from 'drizzle-orm';
 import { relations } from 'drizzle-orm';
 import type {
   DimensionData,
+  DimensionProjection,
+  HazardDimensionImpact,
+  PolicyAnalysisOutput,
+  SessionTokenUsage,
   FindingPayload,
   FindingVerification,
   OutreachContactData,
@@ -539,6 +543,203 @@ export const billingEvents = pgTable('billing_events', {
 });
 
 // ---- Relations ----
+
+// ---- Policy analysis (SPEC-v5 §2) ----------------------------------------------
+
+export const policyAnalysisStatusEnum = pgEnum('policy_analysis_status', [
+  'queued',
+  'running',
+  'complete',
+  'failed',
+]);
+
+/**
+ * A policy brief and its AI-drafted projected impacts — staff plane only.
+ * Counts as one research session against the organization's plan while
+ * queued, running, or complete (failed analyses are not billed).
+ */
+export const policyAnalyses = pgTable(
+  'policy_analyses',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    brief: text('brief').notNull(),
+    sourceUrl: text('source_url'),
+    status: policyAnalysisStatusEnum('status').notNull().default('queued'),
+    /** Schema-validated model output (core policyAnalysisOutputSchema). */
+    result: jsonb('result').$type<PolicyAnalysisOutput>(),
+    /** Per-dimension projections re-scored with the published thresholds. */
+    projections: jsonb('projections').$type<DimensionProjection[]>(),
+    error: text('error'),
+    requestedBy: uuid('requested_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    startedAt: timestamp('started_at', { withTimezone: true }),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    tokenUsage: jsonb('token_usage').$type<SessionTokenUsage>(),
+    /** Gzipped session transcript; not readable by the app role (migration 0008). */
+    transcript: bytea('transcript'),
+  },
+  (t) => ({
+    tenantCreatedIdx: index('policy_analyses_tenant_created_idx').on(t.tenantId, t.createdAt),
+    briefLength: check('policy_analyses_brief_length', sql`char_length(${t.brief}) BETWEEN 1 AND 60000`),
+  }),
+);
+
+// ---- Emergency view (SPEC-v5 §3) --------------------------------------------------
+
+export const hazardKindEnum = pgEnum('hazard_kind', [
+  'coastal_storm',
+  'flooding',
+  'extreme_heat',
+  'winter_weather',
+  'high_winds',
+  'air_quality',
+  'drought',
+  'wildfire',
+  'earthquake',
+  'infectious_disease',
+  'infrastructure_failure',
+  'other',
+]);
+
+export const resourceKindEnum = pgEnum('emergency_resource_kind', [
+  'cooling_center',
+  'shelter',
+  'hotline',
+  'mutual_aid',
+  'food',
+  'medical',
+  'other',
+]);
+
+/** A threat to the jurisdiction, rated by staff; public once published. */
+export const hazards = pgTable(
+  'hazards',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    slug: text('slug').notNull(),
+    name: text('name').notNull(),
+    kind: hazardKindEnum('kind').notNull(),
+    description: text('description').notNull().default(''),
+    likelihood: smallint('likelihood').notNull(),
+    severity: smallint('severity').notNull(),
+    /** Doughnut dimensions this hazard threatens, with impact level. */
+    dimensions: jsonb('dimensions').$type<HazardDimensionImpact[]>().notNull().default([]),
+    /** NWS event names that mean this hazard is happening now ("Heat Advisory"). */
+    nwsEvents: text('nws_events').array().notNull().default(sql`'{}'::text[]`),
+    displayOrder: integer('display_order').notNull().default(0),
+    published: boolean('published').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    tenantSlug: unique('hazards_tenant_slug').on(t.tenantId, t.slug),
+    likelihoodRange: check('hazards_likelihood_range', sql`${t.likelihood} BETWEEN 1 AND 5`),
+    severityRange: check('hazards_severity_range', sql`${t.severity} BETWEEN 1 AND 5`),
+  }),
+);
+
+/** An adopted plan residents should know about (hazard mitigation, heat, coastal storm…). */
+export const emergencyPlans = pgTable(
+  'emergency_plans',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    agency: text('agency').notNull(),
+    url: text('url').notNull(),
+    adoptedYear: integer('adopted_year'),
+    summary: text('summary').notNull().default(''),
+    /** BCP 47 codes of the languages the plan itself is published in. */
+    languages: text('languages').array().notNull().default(sql`'{}'::text[]`),
+    hazardSlugs: text('hazard_slugs').array().notNull().default(sql`'{}'::text[]`),
+    displayOrder: integer('display_order').notNull().default(0),
+    published: boolean('published').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    httpsUrl: check('emergency_plans_https_url', sql`${t.url} LIKE 'https://%'`),
+  }),
+);
+
+/** Help during an emergency: cooling centers, shelters, hotlines, mutual aid. */
+export const emergencyResources = pgTable(
+  'emergency_resources',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    kind: resourceKindEnum('kind').notNull(),
+    description: text('description').notNull().default(''),
+    phone: text('phone'),
+    url: text('url'),
+    hazardSlugs: text('hazard_slugs').array().notNull().default(sql`'{}'::text[]`),
+    displayOrder: integer('display_order').notNull().default(0),
+    published: boolean('published').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    httpsUrl: check('emergency_resources_https_url', sql`${t.url} IS NULL OR ${t.url} LIKE 'https://%'`),
+  }),
+);
+
+/** Official alerts as issued (NWS CAP), refreshed by the worker's alerts_sync cron. */
+export const emergencyAlerts = pgTable(
+  'emergency_alerts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    source: text('source').notNull(),
+    sourceId: text('source_id').notNull(),
+    event: text('event').notNull(),
+    severity: text('severity').notNull(),
+    urgency: text('urgency').notNull(),
+    certainty: text('certainty').notNull(),
+    headline: text('headline'),
+    description: text('description').notNull(),
+    instruction: text('instruction'),
+    areaDesc: text('area_desc').notNull(),
+    senderName: text('sender_name').notNull(),
+    url: text('url').notNull(),
+    effective: timestamp('effective', { withTimezone: true }).notNull(),
+    expires: timestamp('expires', { withTimezone: true }),
+    ends: timestamp('ends', { withTimezone: true }),
+    fetchedAt: timestamp('fetched_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    sourceUnique: unique('emergency_alerts_source_unique').on(t.tenantId, t.source, t.sourceId),
+  }),
+);
+
+/** Per-portrait sync health, so the page can say when it last checked. */
+export const emergencyAlertSyncs = pgTable('emergency_alert_syncs', {
+  tenantId: uuid('tenant_id')
+    .primaryKey()
+    .references(() => tenants.id, { onDelete: 'cascade' }),
+  lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true }).notNull(),
+  lastSuccessAt: timestamp('last_success_at', { withTimezone: true }),
+  lastError: text('last_error'),
+});
+
+export type PolicyAnalysis = typeof policyAnalyses.$inferSelect;
+export type Hazard = typeof hazards.$inferSelect;
+export type EmergencyPlan = typeof emergencyPlans.$inferSelect;
+export type EmergencyResource = typeof emergencyResources.$inferSelect;
+export type EmergencyAlert = typeof emergencyAlerts.$inferSelect;
 
 export const organizationsRelations = relations(organizations, ({ one, many }) => ({
   tenants: many(tenants),

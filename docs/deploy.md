@@ -118,6 +118,30 @@ docker compose run --rm migrate node --import tsx ../../scripts/create-tenant.ts
 Make yourself staff (contract editing on billing pages):
 `docker compose exec db psql -U deep_fryer -c "update users set is_staff = true where email = 'you@…'"`.
 
+### Emergency view (SPEC-v5 §3)
+
+Per portrait, staff set the National Weather Service zones (UGC county or
+forecast-zone codes, e.g. `NYC061`), the official alert sign-up link, and
+the emergency / information phone numbers at `/{tenant}/admin/emergency`,
+then rate and publish hazards, plans, and help resources. The worker
+refreshes alerts every five minutes from `api.weather.gov` — allow that host
+in the worker's egress proxy, and set `SUPPORT_EMAIL` (or `EMAIL_FROM`): the
+NWS requires a contact in the User-Agent. The preflight checks the feed for
+every configured portrait. NYC:
+
+```bash
+docker compose run --rm migrate node --import tsx ../../scripts/nyc-emergency.ts           # review the proposal
+docker compose run --rm migrate node --import tsx ../../scripts/nyc-emergency.ts --apply   # writes hazards/plans unpublished
+```
+
+Hazard ratings in the proposal are proposals; staff review and publish
+them. Plan links that do not answer are refused at `--apply`.
+
+### Policy analysis (SPEC-v5 §2)
+
+Staff-only, at `/{tenant}/admin/policy`. Each analysis is one research
+session against the plan and needs the worker's `ANTHROPIC_API_KEY`.
+
 ## 5. Billing (optional)
 
 ```bash

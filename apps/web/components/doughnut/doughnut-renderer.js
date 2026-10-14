@@ -28,6 +28,8 @@ SOFTWARE.
 //   - constructor takes { canvas, onHover, onSelect } instead of DOM element
 //     ids; hover/select report through the callbacks
 //   - import() returns the error count instead of alert()
+//   - a level may carry a highlight colour (policy impacts, hazards), and
+//     setLevels() applies many levels with one redraw (animation frames)
 // Drawing math is unchanged.
 
 class _DoughnutDimensions {
@@ -38,12 +40,12 @@ class _DoughnutDimensions {
         //  {name: "", levels: [{value: N, label: ""}, ...]}
         this.dimensions = [];
     }
-    add(name, value, label) {
+    add(name, value, label, colour) {
         if(name) {
             let val = parseInt(value);
             if (val > this._normalDonutLevelRadius) { val = this.maxVal; }
             if (val < this._minDonutLevelRadius) { val = "NaN"; }
-            let level = { value: val, label: label };
+            let level = { value: val, label: label, colour: colour || null };
             let index = this.find(name);
             if (index >= 0) {
                 let found = false;
@@ -52,6 +54,7 @@ class _DoughnutDimensions {
                     if (lvl.label == label || (!lvl.label && !label)) {
                         // Update existing level
                         lvl.value = val;
+                        lvl.colour = colour || null;
                         found = true;
                     }
                 }
@@ -319,13 +322,22 @@ export class DoughnutRenderer {
         return hoverDimInfo;
     }
 
-    addDimension(type, name, level, label) {
+    addDimension(type, name, level, label, colour) {
         if (type == "outer") {
-            this._outerDims.add(name, level, label);
+            this._outerDims.add(name, level, label, colour);
         } else if (type == "inner") {
-            this._innerDims.add(name, level, label);
+            this._innerDims.add(name, level, label, colour);
         }
         this._selectedDimInfo = null;
+        this.update();
+    }
+
+    // Many levels, one redraw: [{ type, name, level, label?, colour? }].
+    setLevels(entries) {
+        for (const e of entries) {
+            const dims = e.type == "outer" ? this._outerDims : this._innerDims;
+            dims.add(e.name, e.level, e.label, e.colour);
+        }
         this.update();
     }
 
@@ -566,10 +578,11 @@ export class DoughnutRenderer {
                     let val = levels[lvl].value;
                     let outer = 0;
                     let inner = 0;
-                    let col = this._grd;
+                    const highlight = levels[lvl].colour;
+                    let col = highlight || this._grd;
                     if (this._isNotNumber(val)) {
                         val = this._normalDonutLevelRadius;
-                        col = "lightgray";
+                        col = highlight || "lightgray";
                     }
                     if (type == INNER) {
                         if (val < 0) {
@@ -579,7 +592,7 @@ export class DoughnutRenderer {
                             const bump = Math.min(Math.abs(val) * extScale * 0.25, ringW * 0.4);
                             outer = extMax;
                             inner = extMax - bump;
-                            col = this._donutFilling;
+                            col = highlight || this._donutFilling;
                         } else {
                             inner = extMin + ((this._normalDonutLevelRadius - val) * extScale);
                             outer = extMax;
@@ -592,7 +605,7 @@ export class DoughnutRenderer {
                             const bump = Math.min(Math.abs(val) * extScale * 0.25, ringW * 0.4);
                             inner = extMin;
                             outer = extMin + bump;
-                            col = this._donutFilling;
+                            col = highlight || this._donutFilling;
                         } else {
                             inner = extMin;
                             outer = extMin + (val * extScale);

@@ -17,7 +17,7 @@ import { DEFAULT_LOCALE, localeForPrefix, localeInfo, type Locale } from './loca
  * redirects to its unprefixed form.
  */
 
-const TENANT_VIEWS = new Set(['progress', 'methodology', 'outreach']);
+const TENANT_VIEWS = new Set(['progress', 'methodology', 'outreach', 'emergency']);
 const ORG_VIEWS = new Set(['compare', 'insights', 'progress']);
 
 export function isLocalizablePath(pathname: string): boolean {

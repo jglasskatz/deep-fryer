@@ -56,12 +56,15 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
     links.push({ href: href(`/${tenant.slug}/progress`), label: m.nav.progress });
     links.push({ href: href(`/${tenant.slug}/methodology`), label: m.nav.methodology });
     links.push({ href: href(`/${tenant.slug}/outreach`), label: m.nav.getInvolved });
+    links.push({ href: href(`/${tenant.slug}/emergency`), label: m.emergency.navLabel });
   }
   if (variant === 'admin' && tenant) {
     const a = `/${tenant.slug}/admin`;
     links.push({ href: a, label: 'Overview' });
     links.push({ href: `${a}/review`, label: 'Review' });
     links.push({ href: `${a}/research`, label: 'Research' });
+    links.push({ href: `${a}/policy`, label: 'Policy' });
+    links.push({ href: `${a}/emergency`, label: 'Emergency' });
     links.push({ href: `${a}/members`, label: 'Members' });
     links.push({ href: `${a}/settings`, label: 'Settings' });
     if (tenantOrg) links.push({ href: `/o/${tenantOrg.slug}/billing`, label: 'Billing' });
