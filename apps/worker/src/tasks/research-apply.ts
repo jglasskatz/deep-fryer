@@ -21,6 +21,7 @@ import {
 import { closeEvidenceBrowser } from '../evidence.js';
 import { extractJson, runSession, runSessionWithRetry } from '../session.js';
 import { tenantStorage } from '../storage.js';
+import { notifyRunFinished } from '../notify.js';
 
 /**
  * Apply (SPEC.md §8): phase-0 region-context session first, its brief
@@ -234,6 +235,8 @@ export const researchApply: Task = async (rawPayload, helpers) => {
   } finally {
     await closeEvidenceBrowser().catch(() => {});
   }
+  // Settled either way: tell the people who review it.
+  await notifyRunFinished(runId);
 };
 
 async function runVerifier(

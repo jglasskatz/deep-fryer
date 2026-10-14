@@ -138,5 +138,3 @@ still a column on `research_sessions` (item 3's table split).
 - **G.** Plan limits and prices (§3) — owner decision; prices are unset.
 - **H.** Whether residents may sign in with Microsoft (currently any
   provider is open to anyone; staff roles come only from invitations).
-- **I.** Run-complete / flagged-finding email notifications exist as config
-  but the worker does not send them yet.

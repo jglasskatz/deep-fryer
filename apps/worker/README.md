@@ -50,6 +50,7 @@ open-doughnut plugin.
 | `OPEN_DOUGHNUT_PLUGIN_DIR` | Plugin location (set by the image) |
 | `CHROMIUM_PATH` | Playwright browser binary |
 | `WORKER_CONCURRENCY` | Parallel sessions per instance (default 1) |
+| `APP_URL`, `SMTP_URL`, `EMAIL_FROM` | Run-complete / flagged-finding emails to portrait owners, editors, and organization owners (per each portrait's notification settings) |
 
 ## Local development
 

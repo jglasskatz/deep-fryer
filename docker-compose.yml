@@ -127,6 +127,10 @@ services:
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-5}
       WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-1}
       HTTPS_PROXY: ${WORKER_HTTPS_PROXY:-}
+      # Run-complete / flagged-finding emails link back to the review queue.
+      APP_URL: ${APP_URL:?set APP_URL}
+      SMTP_URL: ${SMTP_URL:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
 
   caddy:
     image: caddy:2.10
