@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { Confidence, DimensionData, GeographicScale, Indicator } from '@deep-fryer/core';
 import { saveDimensionEdit } from '@/lib/actions';
+import { unwrap } from '@/lib/action-result';
 import { useAction } from '@/lib/use-action';
 
 const CONFIDENCES: Confidence[] = ['high', 'medium', 'low'];
@@ -37,7 +38,7 @@ export function DimensionEditor({
 
   const save = () =>
     run(async () => {
-      await saveDimensionEdit({ tenantSlug, dimensionId, data, changeNote });
+      unwrap(await saveDimensionEdit({ tenantSlug, dimensionId, data, changeNote }));
       setChangeNote('');
     });
 

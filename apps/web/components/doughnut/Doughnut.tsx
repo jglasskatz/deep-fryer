@@ -20,9 +20,11 @@ export interface DoughnutProps {
   ecological: DoughnutDimension[];
   size?: number;
   onSelect?: (dim: DoughnutDimension | null) => void;
+  /** Text alternative for the canvas (WCAG 1.1.1); the parent builds the summary. */
+  ariaLabel?: string;
 }
 
-function statusLabel(level: number | null): string {
+export function statusLabel(level: number | null): string {
   if (level === null || Number.isNaN(level)) return 'Unknown';
   if (level <= -100) return 'No problem';
   if (level <= -50) return 'Under control';
@@ -37,7 +39,7 @@ function statusLabel(level: number | null): string {
  * (the canonical visual, SPEC.md §4). Social dimensions draw on the inner
  * ring, ecological on the outer; viz_level uses the -100..150 scale.
  */
-export function Doughnut({ social, ecological, size = 640, onSelect }: DoughnutProps) {
+export function Doughnut({ social, ecological, size = 640, onSelect, ariaLabel }: DoughnutProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [tooltip, setTooltip] = useState<{
     dim: DoughnutDimension;
@@ -105,7 +107,12 @@ export function Doughnut({ social, ecological, size = 640, onSelect }: DoughnutP
       style={{ position: 'relative', width: '100%', maxWidth: size }}
       onMouseLeave={() => setTooltip(null)}
     >
-      <canvas ref={canvasRef} style={{ width: '100%', height: 'auto', display: 'block' }} />
+      <canvas
+        ref={canvasRef}
+        role="img"
+        aria-label={ariaLabel ?? 'Doughnut chart of social foundation and ecological ceiling dimensions'}
+        style={{ width: '100%', height: 'auto', display: 'block' }}
+      />
       {tooltip ? (
         <div
           style={{

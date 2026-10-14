@@ -1,10 +1,21 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { formatIndicatorValue } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
-import { FamilyNav } from '@/components/site-header/FamilyNav';
 import { PortraitDoughnut } from '@/components/doughnut/PortraitDoughnut';
 import { getPortrait } from '@/lib/data';
-import { NYC_FAMILY } from '@/lib/nyc-family';
+import { familyByOrgSlug } from '@/lib/family';
 import type { PublishedPortrait } from '@/lib/portrait';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ org: string }>;
+}): Promise<Metadata> {
+  const family = await familyByOrgSlug((await params).org);
+  return { title: family ? `Compare · ${family.organization.name}` : 'Compare' };
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +30,10 @@ interface IndicatorRow {
   maxSlug: string;
 }
 
-function buildRows(portraits: Record<string, PublishedPortrait>): IndicatorRow[] {
+function buildRows(
+  portraits: Record<string, PublishedPortrait>,
+  whole: string | null,
+): IndicatorRow[] {
   const bySlugKey = new Map<string, IndicatorRow>();
   for (const [slug, portrait] of Object.entries(portraits)) {
     for (const d of portrait.dimensions) {
@@ -47,7 +61,7 @@ function buildRows(portraits: Record<string, PublishedPortrait>): IndicatorRow[]
 
   const rows: IndicatorRow[] = [];
   for (const row of bySlugKey.values()) {
-    const boroughEntries = Object.entries(row.values).filter(([s]) => s !== 'nyc');
+    const boroughEntries = Object.entries(row.values).filter(([s]) => s !== whole);
     if (boroughEntries.length < 3) continue; // needs a real borough contrast
     let min = boroughEntries[0]!;
     let max = boroughEntries[0]!;
@@ -68,32 +82,44 @@ function outsideSafeCount(p: PublishedPortrait): number {
   return p.dimensions.filter((d) => (d.viz_level ?? 0) > 0).length;
 }
 
-export default async function ComparePage() {
+/**
+ * Family compare (SPEC v3 W1; SPEC-v4 §2): every portrait an organization
+ * holds, side by side against identical thresholds, plus the indicators
+ * where its members diverge most. NYC's six-doughnut view is the first
+ * instance; any multi-portrait organization gets the same page.
+ */
+export default async function ComparePage({ params }: { params: Promise<{ org: string }> }) {
+  const { org } = await params;
+  const family = await familyByOrgSlug(org);
+  if (!family || family.members.length < 2) notFound();
+  const FAMILY = family.members;
+  const whole = family.whole;
+  const noun = family.noun;
+
   const entries = await Promise.all(
-    NYC_FAMILY.map(async (m) => [m.slug, await getPortrait(m.slug)] as const),
+    FAMILY.map(async (m) => [m.slug, await getPortrait(m.slug)] as const),
   );
   const portraits = Object.fromEntries(
     entries.filter(([, p]) => p !== null) as [string, PublishedPortrait][],
   );
-  const rows = buildRows(portraits);
-  const memberName = (slug: string) =>
-    NYC_FAMILY.find((m) => m.slug === slug)?.short ?? slug;
+  const rows = buildRows(portraits, whole);
 
   return (
     <>
-      <SiteHeader variant="landing" />
-      <FamilyNav />
-      <main className="mx-auto max-w-6xl px-6 py-10">
-        <h1 className="text-3xl font-bold">Six doughnuts, one city</h1>
+      <SiteHeader variant="org" family={family} familyView="compare" org={family.organization} />
+      <main id="main" className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <h1 className="text-3xl font-bold">
+          {FAMILY.length} doughnuts, one {whole ? 'jurisdiction' : 'family'}: {family.organization.name}
+        </h1>
         <p className="mt-2 max-w-3xl text-sm text-[color:var(--color-muted)]">
-          The same social foundation and ecological ceiling, measured six times: the whole city
-          and each borough against identical thresholds anchored in adopted NYC law. Wedges
-          pointing out overshoot the ceiling; wedges pointing in fall short of the foundation;
-          gray is an honest data gap.
+          The same social foundation and ecological ceiling, measured {FAMILY.length} times
+          {whole ? ` — the whole jurisdiction and each ${noun}` : ''} — against identical
+          thresholds anchored in adopted local goals. Wedges pointing out overshoot the ceiling;
+          wedges pointing in fall short of the foundation; gray is an honest data gap.
         </p>
 
-        <section className="mt-8 grid grid-cols-2 gap-6 md:grid-cols-3">
-          {NYC_FAMILY.map((m) => {
+        <section className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+          {FAMILY.map((m) => {
             const p = portraits[m.slug];
             if (!p) return null;
             return (
@@ -107,7 +133,12 @@ export default async function ComparePage() {
                   </span>
                 </div>
                 <div className="mt-2 flex justify-center">
-                  <PortraitDoughnut tenantSlug={m.slug} dimensions={p.dimensions} size={320} />
+                  <PortraitDoughnut
+                    tenantSlug={m.slug}
+                    tenantName={m.name}
+                    dimensions={p.dimensions}
+                    size={320}
+                  />
                 </div>
               </div>
             );
@@ -115,18 +146,18 @@ export default async function ComparePage() {
         </section>
 
         <section className="mt-12">
-          <h2 className="text-xl font-semibold">Where the boroughs diverge most</h2>
+          <h2 className="text-xl font-semibold">Where the {noun}s diverge most</h2>
           <p className="mt-1 text-sm text-[color:var(--color-muted)]">
-            Published indicators compared across boroughs, ranked by spread between the
-            best- and worst-placed borough. The city column is the whole-city figure, not an
-            average.
+            Published indicators compared across {noun}s, ranked by spread between the
+            best- and worst-placed {noun}.
+            {whole ? ' The whole-jurisdiction column is its own published figure, not an average.' : ''}
           </p>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-black/15 text-left">
                   <th className="py-2 pr-3 font-medium">Indicator</th>
-                  {NYC_FAMILY.map((m) => (
+                  {FAMILY.map((m) => (
                     <th key={m.slug} className="px-2 py-2 text-right font-medium">
                       {m.short}
                     </th>
@@ -143,7 +174,7 @@ export default async function ComparePage() {
                         {row.dimension} · {row.unit}
                       </div>
                     </td>
-                    {NYC_FAMILY.map((m) => {
+                    {FAMILY.map((m) => {
                       const v = row.values[m.slug];
                       const isMin = m.slug === row.minSlug;
                       const isMax = m.slug === row.maxSlug;
@@ -151,12 +182,18 @@ export default async function ComparePage() {
                         <td
                           key={m.slug}
                           className={`px-2 py-2 text-right tabular-nums ${
-                            m.slug === 'nyc' ? 'text-[color:var(--color-muted)]' : ''
+                            m.slug === whole ? 'text-[color:var(--color-muted)]' : ''
                           } ${isMax ? 'font-semibold text-red-700' : ''} ${
                             isMin ? 'font-semibold text-green-700' : ''
                           }`}
                         >
-                          {v === undefined ? '—' : Number.isInteger(v) ? v : v.toFixed(1)}
+                          {v === undefined ? (
+                            '—'
+                          ) : (
+                            <span title={formatIndicatorValue(v, row.unit)}>
+                              {Number.isInteger(v) ? v.toLocaleString('en-US') : v.toFixed(1)}
+                            </span>
+                          )}
                         </td>
                       );
                     })}
@@ -173,8 +210,9 @@ export default async function ComparePage() {
             </table>
           </div>
           <p className="mt-3 text-xs text-[color:var(--color-muted)]">
-            Red = borough furthest from the target, green = closest, for each row. Citywide-scale
-            indicators (identical across boroughs) drop out of this table by construction.
+            Red = the {noun} furthest from the target, green = closest, for each row.
+            Jurisdiction-wide indicators (identical across {noun}s) drop out of this table by
+            construction.
           </p>
         </section>
       </main>

@@ -18,8 +18,9 @@ import {
 } from '@deep-fryer/db';
 import { getAuth, requireTenantRole } from './auth';
 import { audit } from './audit';
-import { publishVersion } from './actions';
-import { planResearchAction } from './research-actions';
+import { publishVersionFor } from './publish';
+import { createPlannedRun } from './research';
+import { action, UserError } from './action-result';
 
 async function dimensionInTenantOrThrow(tenantId: string, dimensionId: string) {
   const db = getDb();
@@ -27,7 +28,7 @@ async function dimensionInTenantOrThrow(tenantId: string, dimensionId: string) {
     .select()
     .from(dimensions)
     .where(and(eq(dimensions.id, dimensionId), eq(dimensions.tenantId, tenantId)));
-  if (!dimension) throw new Error('unknown dimension');
+  if (!dimension) throw new UserError('Unknown dimension.');
   return dimension;
 }
 
@@ -38,12 +39,12 @@ async function dimensionInTenantOrThrow(tenantId: string, dimensionId: string) {
  * (default review policy gates everything on a human decision) — pass
  * `publish: true` for approve-and-publish in one step.
  */
-export async function approveFindings(input: {
+export const approveFindings = action(async (input: {
   tenantSlug: string;
   runId: string;
   dimensionId: string;
   publish?: boolean;
-}) {
+}) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
   const db = getDb();
   const dimension = await dimensionInTenantOrThrow(tenant.id, input.dimensionId);
@@ -55,7 +56,7 @@ export async function approveFindings(input: {
     .where(
       and(eq(researchSessions.runId, input.runId), eq(findings.dimensionId, input.dimensionId)),
     );
-  if (runFindings.length === 0) throw new Error('no findings for this dimension in this run');
+  if (runFindings.length === 0) throw new UserError('No findings for this dimension in this run.');
 
   const base = await latestVersion(db, dimension.id);
 
@@ -120,49 +121,58 @@ export async function approveFindings(input: {
   });
 
   if (input.publish) {
-    await publishVersion({ tenantSlug: input.tenantSlug, versionId: version.id });
+    await publishVersionFor(tenant, version.id);
   }
 
   revalidatePath(`/${input.tenantSlug}/admin/review`);
   revalidatePath(`/${input.tenantSlug}/admin`);
   return { versionId: version.id, versionNum: version.versionNum };
-}
+});
 
-/** Re-research (SPEC.md §8 Rerun): user-directed, reviewer notes injected verbatim. */
-export async function reResearchDimension(input: {
+/**
+ * Re-research (SPEC.md §8 Rerun): user-directed, reviewer notes injected
+ * verbatim. Plans only — the reviewer inspects the plan and applies it (the
+ * quota-checked step) from the run page.
+ */
+export const reResearchDimension = action(async (input: {
   tenantSlug: string;
   dimensionId: string;
   notes: string;
-}) {
-  const { runId } = await planResearchAction({
-    tenantSlug: input.tenantSlug,
-    dimensionIds: [input.dimensionId],
-    reviewerNotes: { [input.dimensionId]: input.notes },
+}) => {
+  const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+  const dimension = await dimensionInTenantOrThrow(tenant.id, input.dimensionId);
+  const auth = await getAuth();
+  const { run } = await createPlannedRun({
+    tenantId: tenant.id,
+    dimensionIds: [dimension.id],
+    reviewerNotes: { [dimension.id]: input.notes.trim().slice(0, 4000) },
+    requestedBy: auth.userId,
   });
-  return { runId };
-}
+  revalidatePath(`/${input.tenantSlug}/admin/research`);
+  return { runId: run.id };
+});
 
 /**
  * Flag gap (SPEC.md §9): publish an honest data-gap wedge — gray, not
  * hidden. Values are cleared, the gap is recorded with the reviewer's
  * reason, and the wedge renders as unknown.
  */
-export async function flagGap(input: {
+export const flagGap = action(async (input: {
   tenantSlug: string;
   dimensionId: string;
   indicator: string;
   reason: string;
-}) {
+}) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
   const db = getDb();
 
   const reason = input.reason.trim();
-  if (!reason) throw new Error('a reason is required to flag a data gap');
+  if (!reason) throw new UserError('A reason is required to flag a data gap.');
 
   const dimension = await dimensionInTenantOrThrow(tenant.id, input.dimensionId);
 
   const base = await latestVersion(db, dimension.id);
-  if (!base) throw new Error('dimension has no versions');
+  if (!base) throw new UserError('This dimension has no versions yet.');
 
   const data: DimensionData = {
     ...base.data,
@@ -199,7 +209,7 @@ export async function flagGap(input: {
     reason,
   });
 
-  await publishVersion({ tenantSlug: input.tenantSlug, versionId: version.id });
+  await publishVersionFor(tenant, version.id);
   revalidatePath(`/${input.tenantSlug}/admin/review`);
   return { versionId: version.id };
-}
+});

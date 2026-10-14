@@ -1,3 +1,5 @@
+import 'server-only';
+import { createHmac } from 'node:crypto';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import {
   comments,
@@ -6,13 +8,22 @@ import {
   getDb,
   moderationActions,
   tenantBySlug,
+  users,
   type Comment,
 } from '@deep-fryer/db';
 
+/**
+ * What the browser sees of a comment. The author's account id never leaves
+ * the server (SPEC-v3 §2.3): the client gets a display name — or, for
+ * accounts without one, a per-tenant pseudonym derived by HMAC so the same
+ * resident is recognizable within one portrait's discussion but cannot be
+ * correlated across portraits or mapped back to an account id.
+ */
 export interface CommentView {
   id: string;
   parentId: string | null;
-  authorId: string;
+  author: string;
+  mine: boolean;
   body: string;
   createdAt: Date;
   editedAt: Date | null;
@@ -24,6 +35,12 @@ export interface CommentView {
 }
 
 export type CommentSort = 'top' | 'new';
+
+export function pseudonym(tenantId: string, authorId: string): string {
+  const secret = process.env.AUTH_SECRET ?? 'deep-fryer-dev';
+  const digest = createHmac('sha256', secret).update(`${tenantId}:${authorId}`).digest('hex');
+  return `resident-${digest.slice(0, 6)}`;
+}
 
 export async function dimensionForPublicSlug(tenantSlug: string, dimSlug: string) {
   const db = getDb();
@@ -57,7 +74,8 @@ export async function dimensionThread(
   if (rows.length === 0) return [];
 
   const ids = rows.map((c) => c.id);
-  const [votes, myVotes, modActions] = await Promise.all([
+  const authorIds = [...new Set(rows.map((c) => c.authorId))];
+  const [votes, myVotes, modActions, authors] = await Promise.all([
     db
       .select({
         commentId: commentVotes.commentId,
@@ -81,7 +99,12 @@ export async function dimensionThread(
       .from(moderationActions)
       .where(inArray(moderationActions.commentId, ids))
       .orderBy(desc(moderationActions.ts)),
+    db
+      .select({ id: users.id, displayName: users.displayName })
+      .from(users)
+      .where(inArray(users.id, authorIds)),
   ]);
+  const nameById = new Map(authors.map((a) => [a.id, a.displayName?.trim() || null]));
   const scoreById = new Map(votes.map((v) => [v.commentId, v.score]));
   const myVoteById = new Map(myVotes.map((v) => [v.commentId, v.vote]));
   const lockedById = new Map<string, boolean>();
@@ -94,7 +117,8 @@ export async function dimensionThread(
   const toView = (c: Comment): CommentView => ({
     id: c.id,
     parentId: c.parentId,
-    authorId: c.authorId,
+    author: nameById.get(c.authorId) ?? pseudonym(tenantId, c.authorId),
+    mine: viewerId !== null && c.authorId === viewerId,
     body: c.removedAt ? '' : c.body,
     createdAt: c.createdAt,
     editedAt: c.editedAt,

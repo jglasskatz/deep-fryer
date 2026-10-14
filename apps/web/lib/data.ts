@@ -1,5 +1,5 @@
 import { eq, inArray } from 'drizzle-orm';
-import { tenantBucketName, type OutreachContactData } from '@deep-fryer/core';
+import { evidencePublicBase, type OutreachContactData } from '@deep-fryer/core';
 import {
   getDb,
   outreachContacts,
@@ -9,10 +9,9 @@ import {
 } from '@deep-fryer/db';
 import type { PublishedPortrait } from './portrait';
 import { mockPortrait } from './mock-data';
+import { hasDatabase } from './env';
 
-export function hasDatabase(): boolean {
-  return Boolean(process.env.DATABASE_URL);
-}
+export { hasDatabase };
 
 /**
  * The public read path. Goes through the published_doughnut(slug) SQL
@@ -27,16 +26,12 @@ export async function getPortrait(slug: string): Promise<PublishedPortrait | nul
 }
 
 /**
- * Public base URL for a tenant's evidence storage (SPEC.md §4: one bucket
- * per tenant). This is the single home of the URL scheme; local dev serves
- * from public/.
+ * Public base URL for a tenant's evidence (SPEC-v3 §2.1). The URL scheme is
+ * shared with the worker that writes the objects (core's
+ * evidencePublicBase); local dev serves from public/.
  */
 export function evidenceBase(tenantSlug: string): string {
-  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (base) {
-    return `${base}/storage/v1/object/public/${tenantBucketName(tenantSlug)}`;
-  }
-  return `/evidence/${tenantSlug}`;
+  return evidencePublicBase(tenantSlug, process.env.S3_PUBLIC_URL);
 }
 
 export function evidenceUrl(tenantSlug: string, storagePath: string): string {

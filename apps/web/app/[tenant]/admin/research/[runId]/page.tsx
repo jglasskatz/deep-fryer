@@ -4,6 +4,7 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { dimensionSlugMap, runWithSessions } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
 import { applyResearchAction } from '@/lib/research-actions';
+import { ActionButton } from '@/components/admin/ActionButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +31,7 @@ export default async function RunDetailPage({
   return (
     <>
       <SiteHeader variant="admin" tenant={{ slug: ctx.tenant.slug, name: ctx.tenant.name }} />
-      <main className="mx-auto max-w-5xl px-6 py-10">
+      <main id="main" className="mx-auto max-w-5xl px-6 py-10">
         <p className="text-sm">
           <Link className="underline" href={`/${tenant}/admin/research`}>
             ← Research runs
@@ -44,16 +45,13 @@ export default async function RunDetailPage({
             </span>
           </h1>
           {run.status === 'planned' ? (
-            <form
-              action={async () => {
-                'use server';
-                await applyResearchAction({ tenantSlug: tenant, runId });
-              }}
+            <ActionButton
+              action={applyResearchAction.bind(null, { tenantSlug: tenant, runId })}
+              className="rounded bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+              pendingLabel="Starting…"
             >
-              <button className="rounded bg-black px-4 py-2 text-sm font-medium text-white">
-                Apply — start {run.plan.sessions.length} sessions
-              </button>
-            </form>
+              Apply — start {run.plan.sessions.length} sessions
+            </ActionButton>
           ) : run.status === 'complete' ? (
             <Link
               className="rounded bg-black px-4 py-2 text-sm font-medium text-white"

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { planResearchAction } from '@/lib/research-actions';
 import { useAction } from '@/lib/use-action';
+import { unwrap } from '@/lib/action-result';
 
 export interface RunnableDimension {
   id: string;
@@ -33,10 +34,12 @@ export function NewRunForm({
 
   const plan = () =>
     run(async () => {
-      const { runId } = await planResearchAction({
-        tenantSlug,
-        dimensionIds: [...selected],
-      });
+      const { runId } = unwrap(
+        await planResearchAction({
+          tenantSlug,
+          dimensionIds: [...selected],
+        }),
+      );
       router.push(`/${tenantSlug}/admin/research/${runId}`);
     });
 

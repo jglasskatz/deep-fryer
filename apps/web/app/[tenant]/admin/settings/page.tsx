@@ -18,7 +18,7 @@ export default async function SettingsPage({
   return (
     <>
       <SiteHeader variant="admin" tenant={{ slug: ctx.tenant.slug, name: ctx.tenant.name }} />
-      <main className="mx-auto max-w-3xl px-6 py-10">
+      <main id="main" className="mx-auto max-w-3xl px-6 py-10">
         <p className="text-sm">
           <Link className="underline" href={`/${tenant}/admin`}>
             ← Admin
@@ -40,6 +40,8 @@ export default async function SettingsPage({
             reviewPolicy={config.review_policy ?? null}
             retention={config.retention ?? null}
             notifications={config.notifications ?? null}
+            progress={config.progress ?? null}
+            features={config.features ?? null}
           />
         </div>
       </main>

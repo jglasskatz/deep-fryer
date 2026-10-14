@@ -5,6 +5,7 @@ import { DimensionEditor } from '@/components/admin/DimensionEditor';
 import { dimensionById, versionTimeline } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
 import { publishVersion } from '@/lib/actions';
+import { ActionButton } from '@/components/admin/ActionButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +26,7 @@ export default async function DimensionAdminPage({
   return (
     <>
       <SiteHeader variant="admin" tenant={{ slug: ctx.tenant.slug, name: ctx.tenant.name }} />
-      <main className="mx-auto max-w-6xl px-6 py-10">
+      <main id="main" className="mx-auto max-w-6xl px-6 py-10">
         <p className="text-sm">
           <Link className="underline" href={`/${tenant}/admin`}>
             ← Admin
@@ -77,20 +78,18 @@ export default async function DimensionAdminPage({
                     </p>
                     {v.changeNote ? <p className="mt-1 text-xs italic">“{v.changeNote}”</p> : null}
                     {!isPublished ? (
-                      <form
-                        action={async () => {
-                          'use server';
-                          await publishVersion({
+                      <div className="mt-2">
+                        <ActionButton
+                          action={publishVersion.bind(null, {
                             tenantSlug: tenant,
                             versionId: v.id,
                             revert: v.status === 'archived',
-                          });
-                        }}
-                      >
-                        <button className="mt-2 rounded border px-2 py-1 text-xs hover:bg-black/5">
+                          })}
+                          pendingLabel="Publishing…"
+                        >
                           {v.status === 'archived' ? 'Revert to this version' : 'Publish'}
-                        </button>
-                      </form>
+                        </ActionButton>
+                      </div>
                     ) : null}
                   </li>
                 );

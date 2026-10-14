@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { isFlagged, type FindingPayload, type FindingVerification } from '@deep-fryer/core';
 import { approveFindings, flagGap, reResearchDimension } from '@/lib/review-actions';
 import { useAction } from '@/lib/use-action';
+import { unwrap } from '@/lib/action-result';
+import { safeHref } from '@/lib/safe-url';
 
 export interface ReviewFinding {
   id: string;
@@ -135,11 +137,13 @@ export function ReviewCard({
               disabled={pending || !notes.trim()}
               onClick={() =>
                 act(async () => {
-                  const { runId: newRun } = await reResearchDimension({
-                    tenantSlug,
-                    dimensionId,
-                    notes,
-                  });
+                  const { runId: newRun } = unwrap(
+                    await reResearchDimension({
+                      tenantSlug,
+                      dimensionId,
+                      notes,
+                    }),
+                  );
                   router.push(`/${tenantSlug}/admin/research/${newRun}`);
                 })
               }
@@ -243,9 +247,15 @@ function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; evidenc
         {payload.scoring.worked_math}
       </p>
       <p className="mt-1 text-xs">
-        <a className="underline" href={payload.source_url} target="_blank" rel="noreferrer">
-          {payload.source}
-        </a>
+        {safeHref(payload.source_url) ? (
+          <a className="underline" href={safeHref(payload.source_url)} target="_blank" rel="noreferrer">
+            {payload.source}
+          </a>
+        ) : (
+          <span title="Source URL is not http(s) and is not linked">
+            {payload.source} <span className="text-red-700">(unlinkable URL)</span>
+          </span>
+        )}
       </p>
       {v?.verifier_note && v.content_supported !== 'pass' ? (
         <p className="mt-2 rounded bg-red-50 p-2 text-xs text-red-900">

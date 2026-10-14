@@ -16,7 +16,6 @@
     "@deep-fryer/core": "workspace:*",
     "@deep-fryer/db": "workspace:*",
     "@deep-fryer/research": "workspace:*",
-    "@supabase/supabase-js": "^2.46.1",
     "drizzle-orm": "^0.36.4",
     "graphile-worker": "^0.16.6",
     "playwright-core": "^1.49.0",

@@ -10,11 +10,13 @@ import type { PublishedDimension } from '@/lib/portrait';
  */
 export function EmbedFrame({
   tenantSlug,
+  tenantName,
   dimensions,
   parentOrigin,
   hostBase,
 }: {
   tenantSlug: string;
+  tenantName: string;
   dimensions: PublishedDimension[];
   parentOrigin: string | null;
   hostBase: string;
@@ -40,6 +42,7 @@ export function EmbedFrame({
     <div ref={ref} className="p-2">
       <PortraitDoughnut
         tenantSlug={tenantSlug}
+        tenantName={tenantName}
         dimensions={dimensions}
         size={640}
         linkBase={`${hostBase}/${tenantSlug}/dim`}

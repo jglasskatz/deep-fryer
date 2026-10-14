@@ -32,3 +32,15 @@ export function isFlagged(v: FindingVerification): boolean {
 export function tenantBucketName(tenantSlug: string): string {
   return `tenant-${tenantSlug}`;
 }
+
+/**
+ * Public URL prefix for a tenant's evidence objects — shared by the worker
+ * (which writes `evidence/<key>` under the tenant prefix) and the web app
+ * (which renders them), so the two can never disagree on the layout.
+ * With an S3-compatible store the tenant prefix sits under the public bucket
+ * URL; locally the web app serves files from public/evidence/<tenant>/.
+ */
+export function evidencePublicBase(tenantSlug: string, s3PublicUrl?: string | null): string {
+  if (s3PublicUrl) return `${s3PublicUrl.replace(/\/+$/, '')}/${tenantBucketName(tenantSlug)}`;
+  return `/evidence/${tenantSlug}`;
+}

@@ -34,7 +34,7 @@ export default async function TenantAdminPage({
   return (
     <>
       <SiteHeader variant="admin" tenant={{ slug: ctx.tenant.slug, name: ctx.tenant.name }} />
-      <main className="mx-auto max-w-6xl px-6 py-10">
+      <main id="main" className="mx-auto max-w-6xl px-6 py-10">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Admin</h1>
           <nav className="flex gap-3 text-sm">
@@ -52,7 +52,7 @@ export default async function TenantAdminPage({
 
         {ctx.devMode ? (
           <p className="mt-4 rounded border border-amber-400 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            Dev mode: Supabase auth is not configured — acting as owner.
+            Dev mode: AUTH_SECRET is not set — every request acts as owner. Never deploy this way (production refuses to start).
           </p>
         ) : null}
 

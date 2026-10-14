@@ -24,6 +24,8 @@ import {
 import { getAuth, requireTenantRole } from './auth';
 import { audit } from './audit';
 import { configValue } from './admin-data';
+import { action, UserError } from './action-result';
+import { publishVersionFor } from './publish';
 
 /**
  * Re-run the thresholds engine over numeric indicators (SPEC.md §8 Scoring):
@@ -72,12 +74,12 @@ export interface SaveDimensionEditInput {
  * supporting_source_url — human edits meet the same provenance bar as
  * research.
  */
-export async function saveDimensionEdit(input: SaveDimensionEditInput) {
+export const saveDimensionEdit = action(async (input: SaveDimensionEditInput) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
   const db = getDb();
 
   const changeNote = input.changeNote.trim();
-  if (!changeNote) throw new Error('a change note is required for human edits');
+  if (!changeNote) throw new UserError('A change note is required for human edits.');
 
   const parsed = dimensionDataSchema.parse(input.data) as DimensionData;
 
@@ -85,7 +87,7 @@ export async function saveDimensionEdit(input: SaveDimensionEditInput) {
     .select()
     .from(dimensions)
     .where(and(eq(dimensions.id, input.dimensionId), eq(dimensions.tenantId, tenant.id)));
-  if (!dimension) throw new Error('unknown dimension');
+  if (!dimension) throw new UserError('Unknown dimension.');
 
   const previous = await latestVersion(db, dimension.id);
 
@@ -96,8 +98,8 @@ export async function saveDimensionEdit(input: SaveDimensionEditInput) {
       const prev = prevByName.get(ind.name);
       const valueChanged = !prev || String(prev.value ?? '') !== String(ind.value ?? '');
       if (valueChanged && ind.value !== null && !ind.supporting_source_url?.trim()) {
-        throw new Error(
-          `indicator '${ind.name}': value changes require a supporting source URL`,
+        throw new UserError(
+          `Indicator '${ind.name}': value changes require a supporting source URL.`,
         );
       }
     }
@@ -126,76 +128,26 @@ export async function saveDimensionEdit(input: SaveDimensionEditInput) {
 
   revalidatePath(`/${tenant.slug}/admin`);
   return { versionId: version.id, versionNum: version.versionNum };
-}
+});
 
-/**
- * Publish (or revert to) a version: repoint published_version_id, archive the
- * previously published one. Versions are immutable; publishing only moves
- * status and the pointer.
- */
-export async function publishVersion(input: {
-  tenantSlug: string;
-  versionId: string;
-  revert?: boolean;
-}) {
-  const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
-  const db = getDb();
-
-  const [version] = await db
-    .select()
-    .from(dimensionVersions)
-    .where(eq(dimensionVersions.id, input.versionId));
-  if (!version) throw new Error('unknown version');
-
-  const [dimension] = await db
-    .select()
-    .from(dimensions)
-    .where(and(eq(dimensions.id, version.dimensionId), eq(dimensions.tenantId, tenant.id)));
-  if (!dimension) throw new Error('version does not belong to this tenant');
-
-  const previousPublishedId = dimension.publishedVersionId;
-
-  await db
-    .update(dimensionVersions)
-    .set({ status: 'published', publishedAt: version.publishedAt ?? new Date() })
-    .where(eq(dimensionVersions.id, version.id));
-
-  if (previousPublishedId && previousPublishedId !== version.id) {
-    await db
-      .update(dimensionVersions)
-      .set({ status: 'archived' })
-      .where(eq(dimensionVersions.id, previousPublishedId));
-  }
-
-  await db
-    .update(dimensions)
-    .set({ publishedVersionId: version.id })
-    .where(eq(dimensions.id, dimension.id));
-
-  await audit(
-    tenant.id,
-    'dimension',
-    dimension.id,
-    input.revert ? 'revert' : 'publish',
-    { published_version_id: previousPublishedId },
-    { published_version_id: version.id, version_num: version.versionNum },
-  );
-
-  revalidatePath(`/${tenant.slug}`);
-  revalidatePath(`/${tenant.slug}/admin`);
-}
+export const publishVersion = action(
+  async (input: { tenantSlug: string; versionId: string; revert?: boolean }) => {
+    const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+    await publishVersionFor(tenant, input.versionId, input.revert);
+  },
+);
 
 /** Validated write to a §6 config key; every change is audited. */
-export async function updateConfig(input: {
+export const updateConfig = action(async (input: {
   tenantSlug: string;
   key: TenantConfigKey;
   value: unknown;
-}) {
+}) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'owner');
   const db = getDb();
 
   const schema = tenantConfigSchemas[input.key];
-  if (!schema) throw new Error(`unknown config key '${input.key}'`);
+  if (!schema) throw new UserError(`Unknown config key '${input.key}'.`);
   const value = schema.parse(input.value);
 
   const [existing] = await db
@@ -222,4 +174,4 @@ export async function updateConfig(input: {
 
   revalidatePath(`/${tenant.slug}/admin/settings`);
   revalidatePath(`/${tenant.slug}/methodology`);
-}
+});

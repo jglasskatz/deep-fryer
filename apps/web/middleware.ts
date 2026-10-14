@@ -1,38 +1,57 @@
-import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { buildCsp, originOf } from '@/lib/csp';
+import { embedOriginsFor } from '@/lib/embed-policy';
 
-/** Standard Supabase session refresh; a no-op when Supabase env is unset. */
+/**
+ * Security headers for every page (SPEC-v3 §2.3): a per-request nonce CSP,
+ * framing denied except on /embed/{tenant} (whose frame-ancestors come from
+ * the tenant's embed_origins), and the standard hardening headers.
+ *
+ * Runs on the Node.js runtime (stable in Next 15.5) so the embed allowlist
+ * can be read from Postgres directly.
+ */
 export async function middleware(request: NextRequest) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) return NextResponse.next();
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+  const dev = process.env.NODE_ENV !== 'production';
+  const path = request.nextUrl.pathname;
 
-  // Anonymous traffic (most public/embed requests) has no session to refresh
-  // — skip the Supabase round trip entirely.
-  const hasAuthCookie = request.cookies.getAll().some((c) => c.name.startsWith('sb-'));
-  if (!hasAuthCookie) return NextResponse.next();
+  let frameAncestors: string[] | null = null;
+  const embed = /^\/embed\/([^/]+)\/?$/.exec(path);
+  if (embed?.[1]) {
+    frameAncestors = await embedOriginsFor(decodeURIComponent(embed[1]));
+  }
 
-  let response = NextResponse.next({ request });
-  const supabase = createServerClient(url, anonKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        for (const { name, value } of cookiesToSet) {
-          request.cookies.set(name, value);
-        }
-        response = NextResponse.next({ request });
-        for (const { name, value, options } of cookiesToSet) {
-          response.cookies.set(name, value, options);
-        }
-      },
-    },
+  const csp = buildCsp({
+    nonce,
+    dev,
+    evidenceOrigin: originOf(process.env.S3_PUBLIC_URL),
+    frameAncestors,
   });
-  await supabase.auth.getUser();
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-nonce', nonce);
+  requestHeaders.set('content-security-policy', csp);
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set('content-security-policy', csp);
+  response.headers.set('x-content-type-options', 'nosniff');
+  response.headers.set('referrer-policy', 'strict-origin-when-cross-origin');
+  response.headers.set(
+    'permissions-policy',
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+  );
+  if (frameAncestors === null) response.headers.set('x-frame-options', 'DENY');
+  if (!dev) {
+    response.headers.set('strict-transport-security', 'max-age=63072000; includeSubDomains');
+  }
   return response;
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|embed.js|evidence/).*)'],
+  runtime: 'nodejs',
+  matcher: [
+    // Pages and route handlers; static assets, the service worker, and
+    // public files carry their own headers (next.config.ts).
+    '/((?!_next/static|_next/image|favicon.ico|icons/|evidence/|embed.js|sw.js|manifest.webmanifest|robots.txt).*)',
+  ],
 };

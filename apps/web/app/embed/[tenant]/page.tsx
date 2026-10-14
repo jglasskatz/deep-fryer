@@ -1,13 +1,17 @@
 import { notFound } from 'next/navigation';
 import { EmbedFrame } from '@/components/embed/EmbedFrame';
-import { getPortrait, tenantEmbedOrigins } from '@/lib/data';
+import { getPortrait } from '@/lib/data';
+import { embedOriginsFor } from '@/lib/embed-policy';
+import { appUrl } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * Embed view (SPEC.md §10): iframe target for the loader script. The parent
- * origin (passed by the loader) is checked against the tenant's
- * embed_origins allowlist; disallowed origins get a notice, not the data.
+ * Embed view (SPEC.md §10): iframe target for the loader script. Who may
+ * frame it is enforced by the browser through the CSP frame-ancestors the
+ * middleware derives from the tenant's embed_origins — not by anything this
+ * page can be told. The loader's `?origin=` is used only to address resize
+ * messages, and only when it is on the allowlist.
  */
 export default async function EmbedPage({
   params,
@@ -21,33 +25,20 @@ export default async function EmbedPage({
 
   const [portrait, allowedOrigins] = await Promise.all([
     getPortrait(tenant),
-    tenantEmbedOrigins(tenant),
+    embedOriginsFor(tenant),
   ]);
   if (!portrait) notFound();
 
-  const parentOrigin = origin ?? null;
-  const originAllowed =
-    !parentOrigin ||
-    allowedOrigins.length === 0 ||
-    allowedOrigins.includes(parentOrigin);
-
-  if (!originAllowed) {
-    return (
-      <main className="p-6 text-center text-sm text-black/60">
-        This site is not authorized to embed the {portrait.tenant.name} portrait.
-      </main>
-    );
-  }
-
-  const hostBase = process.env.NEXT_PUBLIC_APP_URL ?? '';
+  const parentOrigin = origin && allowedOrigins.includes(origin) ? origin : null;
 
   return (
-    <main>
+    <main id="main">
       <EmbedFrame
         tenantSlug={tenant}
+        tenantName={portrait.tenant.name}
         dimensions={portrait.dimensions}
         parentOrigin={parentOrigin}
-        hostBase={hostBase}
+        hostBase={appUrl()}
       />
     </main>
   );

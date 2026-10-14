@@ -2,10 +2,14 @@
 
 import { useState, useTransition } from 'react';
 import {
+  defaultFeatures,
+  defaultProgressConfig,
   defaultNotifications,
   defaultRetention,
   defaultReviewPolicy,
+  type FeaturesConfig,
   type NotificationConfig,
+  type ProgressConfig,
   type PortraitConfig,
   type RetentionConfig,
   type ReviewPolicyConfig,
@@ -47,20 +51,33 @@ function SaveButton({ pending }: { pending: boolean }) {
   );
 }
 
+/**
+ * One save path for every section, with pending tracked per config key so
+ * saving one form never disables (or mislabels) the others.
+ */
 function useSave(tenantSlug: string) {
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
+  const [pendingKeys, setPendingKeys] = useState<Set<string>>(new Set());
   const [status, setStatus] = useState<Record<string, string>>({});
   const save = (key: TenantConfigKey, value: unknown) => {
+    setPendingKeys((p) => new Set(p).add(key));
     startTransition(async () => {
       try {
-        await updateConfig({ tenantSlug, key, value });
-        setStatus((s) => ({ ...s, [key]: 'Saved.' }));
+        const result = await updateConfig({ tenantSlug, key, value });
+        setStatus((s) => ({ ...s, [key]: result.ok ? 'Saved.' : result.error }));
       } catch (e) {
         setStatus((s) => ({ ...s, [key]: e instanceof Error ? e.message : String(e) }));
+      } finally {
+        setPendingKeys((p) => {
+          const next = new Set(p);
+          next.delete(key);
+          return next;
+        });
       }
     });
   };
-  return { pending, status, save };
+  const isPending = (key: TenantConfigKey) => pendingKeys.has(key);
+  return { isPending, status, save };
 }
 
 function JsonEditor({
@@ -120,6 +137,8 @@ export function SettingsForms({
   reviewPolicy,
   retention,
   notifications,
+  progress,
+  features,
 }: {
   tenantSlug: string;
   region: PortraitConfig['region'] | null;
@@ -130,8 +149,10 @@ export function SettingsForms({
   reviewPolicy: ReviewPolicyConfig | null;
   retention: RetentionConfig | null;
   notifications: NotificationConfig | null;
+  progress: ProgressConfig | null;
+  features: FeaturesConfig | null;
 }) {
-  const { pending, status, save } = useSave(tenantSlug);
+  const { isPending, status, save } = useSave(tenantSlug);
 
   const [regionState, setRegionState] = useState(
     region ?? { name: '', definition: '', context_notes: '' },
@@ -142,6 +163,8 @@ export function SettingsForms({
     retention?.transcript_days ?? defaultRetention.transcript_days,
   );
   const [notif, setNotif] = useState<NotificationConfig>(notifications ?? defaultNotifications);
+  const [prog, setProg] = useState<ProgressConfig>(progress ?? defaultProgressConfig);
+  const [feat, setFeat] = useState<FeaturesConfig>(features ?? defaultFeatures);
 
   return (
     <div className="space-y-6">
@@ -184,7 +207,7 @@ export function SettingsForms({
             />
           </label>
           {status.region ? <p className="text-xs">{status.region}</p> : null}
-          <SaveButton pending={pending} />
+          <SaveButton pending={isPending('region')} />
         </form>
       </Section>
 
@@ -212,7 +235,7 @@ export function SettingsForms({
             />
           </label>
           {status.recency ? <p className="mt-1 text-xs">{status.recency}</p> : null}
-          <SaveButton pending={pending} />
+          <SaveButton pending={isPending('recency')} />
         </form>
       </Section>
 
@@ -253,7 +276,7 @@ export function SettingsForms({
             First discussion post from a new account requires approval
           </label>
           {status.review_policy ? <p className="text-xs">{status.review_policy}</p> : null}
-          <SaveButton pending={pending} />
+          <SaveButton pending={isPending('review_policy')} />
         </form>
       </Section>
 
@@ -278,7 +301,7 @@ export function SettingsForms({
             />
           </label>
           {status.retention ? <p className="mt-1 text-xs">{status.retention}</p> : null}
-          <SaveButton pending={pending} />
+          <SaveButton pending={isPending('retention')} />
         </form>
       </Section>
 
@@ -307,7 +330,75 @@ export function SettingsForms({
             Email when the verifier flags a finding
           </label>
           {status.notifications ? <p className="text-xs">{status.notifications}</p> : null}
-          <SaveButton pending={pending} />
+          <SaveButton pending={isPending('notifications')} />
+        </form>
+      </Section>
+
+      <Section
+        title="Progress tracking"
+        description="The baseline every indicator's movement is measured from, shown on the public progress page. Targets with a due year (threshold overrides → target_year) get an on-track/off-track glidepath from this baseline."
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            save('progress', prog);
+          }}
+          className="space-y-2"
+        >
+          <label className="block text-sm">
+            <span className="font-medium">Baseline data year</span>
+            <input
+              className={field}
+              type="number"
+              min={1900}
+              max={2200}
+              placeholder="Earliest published measurement"
+              value={prog.baseline_year ?? ''}
+              onChange={(e) =>
+                setProg({
+                  ...prog,
+                  baseline_year: e.target.value === '' ? null : Number(e.target.value),
+                })
+              }
+            />
+            <span className="mt-1 block text-xs text-[color:var(--color-muted)]">
+              The latest data year that counts as the starting point — e.g. 2025 for conditions
+              inherited in January 2026. Leave empty to use each indicator&apos;s first
+              published value.
+            </span>
+          </label>
+          <label className="block text-sm">
+            <span className="font-medium">Baseline label (public)</span>
+            <input
+              className={field}
+              value={prog.baseline_label}
+              maxLength={120}
+              onChange={(e) => setProg({ ...prog, baseline_label: e.target.value })}
+            />
+          </label>
+          {status.progress ? <p className="text-xs">{status.progress}</p> : null}
+          <SaveButton pending={isPending('progress')} />
+        </form>
+      </Section>
+
+      <Section title="Features" description="Optional surfaces for this portrait.">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            save('features', feat);
+          }}
+          className="space-y-2 text-sm"
+        >
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={feat.request_research}
+              onChange={(e) => setFeat({ ...feat, request_research: e.target.checked })}
+            />
+            Editors may request additional research from the family insights page
+          </label>
+          {status.features ? <p className="text-xs">{status.features}</p> : null}
+          <SaveButton pending={isPending('features')} />
         </form>
       </Section>
 
@@ -317,7 +408,7 @@ export function SettingsForms({
         configKey="source_priority"
         initial={sourcePriority}
         onSave={save}
-        pending={pending}
+        pending={isPending('source_priority')}
         status={status.source_priority}
       />
 
@@ -327,17 +418,17 @@ export function SettingsForms({
         configKey="scale_policy"
         initial={scalePolicy}
         onSave={save}
-        pending={pending}
+        pending={isPending('scale_policy')}
         status={status.scale_policy}
       />
 
       <JsonEditor
         label="Threshold overrides"
-        description="threshold_ref → { target, rationale }. A rationale is required and is rendered verbatim on the public methodology page."
+        description="threshold_ref → { target, rationale, target_year? }. A rationale is required and is rendered verbatim on the public methodology page; target_year (when the goal is due) drives the progress glidepath."
         configKey="threshold_overrides"
         initial={thresholdOverrides}
         onSave={save}
-        pending={pending}
+        pending={isPending('threshold_overrides')}
         status={status.threshold_overrides}
       />
     </div>

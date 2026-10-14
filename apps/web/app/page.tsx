@@ -5,7 +5,7 @@ export default function HomePage() {
   return (
     <>
       <SiteHeader variant="landing" />
-      <main className="mx-auto max-w-2xl px-6 py-24">
+      <main id="main" className="mx-auto max-w-2xl px-6 py-24">
         <h1 className="text-4xl font-bold tracking-tight">deep-fryer</h1>
         <p className="mt-4 text-lg text-[color:var(--color-muted)]">
           A multi-tenant SaaS for hosting Doughnut Economics portraits for

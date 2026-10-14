@@ -147,6 +147,11 @@ export const organizations = pgTable('organizations', {
   slug: text('slug').notNull().unique(),
   name: text('name').notNull(),
   billingEmail: text('billing_email'),
+  /**
+   * What the organization's portraits are called in family views
+   * ("borough" for NYC, "district", "ward"…); null reads as "portrait".
+   */
+  memberNoun: text('member_noun'),
   /** Government buyers are usually tax-exempt; mirrored to the Stripe customer. */
   taxExempt: boolean('tax_exempt').notNull().default(false),
   stripeCustomerId: text('stripe_customer_id').unique(),

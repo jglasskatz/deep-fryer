@@ -5,6 +5,8 @@ import { Thread } from '@/components/discussion/Thread';
 import { evidenceUrl, getPortrait, hasDatabase } from '@/lib/data';
 import { dimensionForPublicSlug, dimensionThread } from '@/lib/discussion';
 import { getAuth, getRole, roleAtLeast } from '@/lib/auth';
+import { safeHref } from '@/lib/safe-url';
+import { formatIndicatorValue } from '@deep-fryer/core';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,7 +56,7 @@ export default async function DimensionDrilldownPage({
         variant="tenant"
         tenant={{ slug: portrait.tenant.slug, name: portrait.tenant.name }}
       />
-      <main className="mx-auto max-w-3xl px-6 py-10">
+      <main id="main" className="mx-auto max-w-3xl px-6 py-10">
         <p className="text-sm">
           <Link className="underline" href={`/${tenant}`}>
             ← {portrait.tenant.name}
@@ -73,21 +75,22 @@ export default async function DimensionDrilldownPage({
             <div key={i} className="rounded-lg border border-black/15 p-4">
               <h2 className="font-semibold">{ind.name}</h2>
               <p className="mt-2 text-2xl font-bold">
-                {ind.value ?? <span className="text-base font-normal">No data</span>}
-                {ind.value !== null && ind.unit ? (
-                  <span className="ml-1 text-sm font-normal">{ind.unit}</span>
-                ) : null}
+                {ind.value === null || ind.value === '' ? (
+                  <span className="text-base font-normal">No data</span>
+                ) : (
+                  formatIndicatorValue(ind.value, ind.unit)
+                )}
               </p>
               <p className="mt-1 text-sm text-[color:var(--color-muted)]">
                 {ind.year ? `${ind.year} · ` : ''}
-                {ind.target !== null ? `target: ${ind.target}` : 'no target set'}
+                {ind.target !== null ? `target: ${formatIndicatorValue(ind.target, ind.unit)}` : 'no target set'}
                 {ind.geographic_scale ? ` · ${ind.geographic_scale} data` : ''}
               </p>
               {ind.source ? (
                 <p className="mt-2 text-sm">
                   Source:{' '}
-                  {ind.source_url ? (
-                    <a className="underline" href={ind.source_url} target="_blank" rel="noreferrer">
+                  {safeHref(ind.source_url) ? (
+                    <a className="underline" href={safeHref(ind.source_url)} target="_blank" rel="noreferrer">
                       {ind.source}
                     </a>
                   ) : (

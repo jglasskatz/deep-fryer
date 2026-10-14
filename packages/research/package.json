@@ -15,9 +15,9 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1151.0",
     "@deep-fryer/contract": "workspace:*",
     "@deep-fryer/core": "workspace:*",
-    "@supabase/supabase-js": "^2.46.1",
     "graphile-worker": "^0.16.6",
     "zod": "^3.23.8"
   },

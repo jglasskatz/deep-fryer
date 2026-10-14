@@ -21,7 +21,7 @@ export default async function ResearchPage({
   return (
     <>
       <SiteHeader variant="admin" tenant={{ slug: ctx.tenant.slug, name: ctx.tenant.name }} />
-      <main className="mx-auto max-w-5xl px-6 py-10">
+      <main id="main" className="mx-auto max-w-5xl px-6 py-10">
         <p className="text-sm">
           <Link className="underline" href={`/${tenant}/admin`}>
             ← Admin

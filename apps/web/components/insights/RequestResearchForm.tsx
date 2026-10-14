@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useAction } from '@/lib/use-action';
 import { requestResearch } from '@/lib/insight-actions';
+import { unwrap } from '@/lib/action-result';
 
 /**
  * Editor affordance on the insights page (gated by the tenant's
@@ -44,7 +45,7 @@ export function RequestResearchForm({
         <button
           onClick={() =>
             run(async () => {
-              const res = await requestResearch({ tenantSlug, dimensionSlug, note });
+              const res = unwrap(await requestResearch({ tenantSlug, dimensionSlug, note }));
               setRequested(res.runId);
             })
           }

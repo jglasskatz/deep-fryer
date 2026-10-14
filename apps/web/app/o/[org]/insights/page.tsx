@@ -1,13 +1,25 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { formatIndicatorValue } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
-import { FamilyNav } from '@/components/site-header/FamilyNav';
 import { RequestResearchForm } from '@/components/insights/RequestResearchForm';
 import { getPortrait, evidenceUrl, hasDatabase } from '@/lib/data';
 import { getDb, tenantBySlug } from '@deep-fryer/db';
 import { getAuth, getRole } from '@/lib/auth';
 import { configValue } from '@/lib/admin-data';
-import { NYC_FAMILY } from '@/lib/nyc-family';
+import { familyByOrgSlug, type FamilyMember } from '@/lib/family';
+import { safeHref } from '@/lib/safe-url';
 import type { PublishedPortrait, PublishedDimension } from '@/lib/portrait';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ org: string }>;
+}): Promise<Metadata> {
+  const family = await familyByOrgSlug((await params).org);
+  return { title: family ? `Insights · ${family.organization.name}` : 'Insights' };
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -32,22 +44,37 @@ function barGeometry(level: number) {
   return { zeroX, left: Math.min(zeroX, x), width: Math.abs(x - zeroX) };
 }
 
+/**
+ * Family insights (SPEC-v4 §2): every dimension × every portrait in one
+ * matrix, an unrolled comparison per dimension, and the research behind each
+ * number. Editors with the request_research feature can ask for more
+ * research right here (quota-gated like every run).
+ */
 export default async function InsightsPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ org: string }>;
   searchParams: Promise<{ dim?: string }>;
 }) {
+  const { org } = await params;
   const { dim: selectedSlug } = await searchParams;
+  const family = await familyByOrgSlug(org);
+  if (!family || family.members.length < 2) notFound();
+  const FAMILY = family.members;
+  const whole = family.whole;
+  const noun = family.noun;
+  const base = `/o/${family.organization.slug}/insights`;
 
   const entries = await Promise.all(
-    NYC_FAMILY.map(async (m) => [m.slug, await getPortrait(m.slug)] as const),
+    FAMILY.map(async (m) => [m.slug, await getPortrait(m.slug)] as const),
   );
   const portraits = new Map(
     entries.filter(([, p]) => p !== null) as [string, PublishedPortrait][],
   );
 
   // Dimension list in display order from the citywide portrait.
-  const cityDims = portraits.get('nyc')?.dimensions ?? [];
+  const cityDims = portraits.get(whole ?? FAMILY[0]!.slug)?.dimensions ?? [];
   const dimList = [...cityDims].sort((a, b) => a.display_order - b.display_order);
   const selected = selectedSlug
     ? dimList.find((d) => d.slug === selectedSlug)
@@ -56,12 +83,12 @@ export default async function InsightsPage({
   const dimFor = (slug: string, dimSlug: string): PublishedDimension | undefined =>
     portraits.get(slug)?.dimensions.find((d) => d.slug === dimSlug);
 
-  // Callouts: rank dimensions by borough spread of viz_level.
+  // Callouts: rank dimensions by member spread of viz_level.
   const spreads = dimList
     .map((d) => {
-      const levels = NYC_FAMILY.filter((m) => m.slug !== 'nyc')
+      const levels = FAMILY.filter((m) => m.slug !== whole)
         .map((m) => ({ m, level: dimFor(m.slug, d.slug)?.viz_level ?? null }))
-        .filter((x): x is { m: (typeof NYC_FAMILY)[number]; level: number } => x.level !== null);
+        .filter((x): x is { m: FamilyMember; level: number } => x.level !== null);
       if (levels.length < 3) return null;
       const worst = levels.reduce((a, b) => (b.level > a.level ? b : a));
       const best = levels.reduce((a, b) => (b.level < a.level ? b : a));
@@ -74,7 +101,7 @@ export default async function InsightsPage({
   const auth = await getAuth();
   const canRequest = new Map<string, boolean>();
   if (auth.devMode || auth.userId) {
-    for (const m of NYC_FAMILY) {
+    for (const m of FAMILY) {
       const tenant = await tenantBySlug(getDb(), m.slug);
       if (!tenant) continue;
       const tenantId = tenant.id;
@@ -87,25 +114,26 @@ export default async function InsightsPage({
 
   return (
     <>
-      <SiteHeader variant="landing" />
-      <FamilyNav />
-      <main className="mx-auto max-w-6xl px-6 py-10">
-        <h1 className="text-3xl font-bold">Borough insights</h1>
+      <SiteHeader variant="org" family={family} familyView="insights" org={family.organization} />
+      <main id="main" className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <h1 className="text-3xl font-bold">
+          {noun.charAt(0).toUpperCase() + noun.slice(1)} insights · {family.organization.name}
+        </h1>
         <p className="mt-2 max-w-3xl text-sm text-[color:var(--color-muted)]">
-          Every dimension, every borough, one matrix — measured against the same thresholds,
-          anchored in adopted NYC law. Select a dimension for the unrolled comparison and the
+          Every dimension, every {noun}, one matrix — measured against the same thresholds,
+          anchored in adopted local goals. Select a dimension for the unrolled comparison and the
           research behind each number.
         </p>
 
         {spreads.length > 0 && (
           <section className="mt-6 rounded-lg border border-black/10 bg-black/[0.02] p-4">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--color-muted)]">
-              Biggest borough divides
+              Biggest {noun} divides
             </h2>
             <ul className="mt-2 space-y-1 text-sm">
               {spreads.slice(0, 4).map(({ d, worst, best }) => (
                 <li key={d.slug}>
-                  <Link href={`/insights?dim=${d.slug}`} className="font-medium underline">
+                  <Link href={`${base}?dim=${d.slug}#dimension`} className="font-medium underline">
                     {d.data.name}
                   </Link>
                   {': '}
@@ -129,7 +157,7 @@ export default async function InsightsPage({
               <thead>
                 <tr className="border-b border-black/15 text-left">
                   <th className="py-2 pr-3 font-medium">Dimension</th>
-                  {NYC_FAMILY.map((m) => (
+                  {FAMILY.map((m) => (
                     <th key={m.slug} className="px-1 py-2 text-center font-medium">
                       <Link href={`/${m.slug}`} className="hover:underline">
                         {m.short}
@@ -147,19 +175,19 @@ export default async function InsightsPage({
                     }`}
                   >
                     <td className="py-1.5 pr-3">
-                      <Link href={`/insights?dim=${d.slug}`} className="hover:underline">
+                      <Link href={`${base}?dim=${d.slug}#dimension`} className="hover:underline">
                         <span className="mr-1 text-xs text-[color:var(--color-muted)]">
                           {d.ring === 'social' ? '●' : '○'}
                         </span>
                         {d.data.name}
                       </Link>
                     </td>
-                    {NYC_FAMILY.map((m) => {
+                    {FAMILY.map((m) => {
                       const level = dimFor(m.slug, d.slug)?.viz_level ?? null;
                       return (
                         <td key={m.slug} className="px-1 py-1.5">
                           <Link
-                            href={`/insights?dim=${d.slug}`}
+                            href={`${base}?dim=${d.slug}#dimension`}
                             title={`${m.name}: ${level === null ? 'no data' : Math.round(level)}`}
                             className="block h-6 rounded-sm"
                             style={{ backgroundColor: cellColor(level) }}
@@ -186,7 +214,7 @@ export default async function InsightsPage({
             ) : null}
 
             <div className="mt-4 space-y-2">
-              {NYC_FAMILY.map((m) => {
+              {FAMILY.map((m) => {
                 const d = dimFor(m.slug, selected.slug);
                 const level = d?.viz_level ?? null;
                 const geom = level === null ? null : barGeometry(level);
@@ -231,7 +259,7 @@ export default async function InsightsPage({
 
             <h3 className="mt-8 text-lg font-semibold">The research behind it</h3>
             <div className="mt-3 grid gap-4 md:grid-cols-2">
-              {NYC_FAMILY.map((m) => {
+              {FAMILY.map((m) => {
                 const d = dimFor(m.slug, selected.slug);
                 if (!d) return null;
                 return (
@@ -250,16 +278,20 @@ export default async function InsightsPage({
                           <div className="flex items-baseline justify-between gap-2">
                             <span>{ind.name}</span>
                             <span className="whitespace-nowrap font-semibold tabular-nums">
-                              {typeof ind.value === 'number' ? ind.value.toLocaleString() : ind.value}{' '}
+                              {formatIndicatorValue(ind.value, ind.unit)}{' '}
                               <span className="font-normal text-[color:var(--color-muted)]">
-                                {ind.unit} ({ind.year})
+                                ({ind.year ?? 'year n/a'})
                               </span>
                             </span>
                           </div>
                           <div className="mt-0.5 text-xs text-[color:var(--color-muted)]">
-                            <a href={ind.source_url} className="underline" rel="noreferrer" target="_blank">
-                              {ind.source}
-                            </a>
+                            {safeHref(ind.source_url) ? (
+                              <a href={safeHref(ind.source_url)} className="underline" rel="noreferrer" target="_blank">
+                                {ind.source}
+                              </a>
+                            ) : (
+                              ind.source
+                            )}
                             {' · tier '}
                             {ind.source_tier}
                             {' · confidence '}
@@ -318,7 +350,7 @@ export default async function InsightsPage({
 
         {!selected && (
           <p className="mt-8 text-sm text-[color:var(--color-muted)]">
-            Select a dimension above to unroll the borough comparison and inspect sources,
+            Select a dimension above to unroll the {noun} comparison and inspect sources,
             evidence, and scoring — {hasDatabase() ? 'live from published research' : 'demo data'}.
           </p>
         )}

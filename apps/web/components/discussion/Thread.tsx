@@ -5,11 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import type { CommentView } from '@/lib/discussion';
 import { moderateComment, postComment, voteComment } from '@/lib/discussion-actions';
 import { useAction } from '@/lib/use-action';
-
-function handle(authorId: string, viewerId: string | null): string {
-  if (viewerId && authorId === viewerId) return 'you';
-  return `resident-${authorId.slice(0, 6)}`;
-}
+import { unwrap } from '@/lib/action-result';
 
 export function Thread({
   tenantSlug,
@@ -71,7 +67,7 @@ export function Thread({
             disabled={pending || !body.trim()}
             onClick={() =>
               act(async () => {
-                const res = await postComment({ tenantSlug, dimensionId, body });
+                const res = unwrap(await postComment({ tenantSlug, dimensionId, body }));
                 setBody('');
                 setNotice(
                   res.pendingApproval
@@ -135,7 +131,7 @@ function CommentItem({
   viewerId: string | null;
   canPost: boolean;
   isModerator: boolean;
-  act: (fn: () => Promise<unknown>) => void;
+  act: (fn: () => Promise<unknown>, opts?: { refresh?: boolean }) => void;
   pending: boolean;
   isReply?: boolean;
 }) {
@@ -152,7 +148,7 @@ function CommentItem({
       <div className="rounded border border-black/10 p-3">
         <div className="flex items-center gap-3 text-xs text-[color:var(--color-muted)]">
           <span className="font-medium text-[color:var(--color-fg,black)]">
-            {handle(c.authorId, viewerId)}
+            {c.mine ? 'you' : c.author}
           </span>
           <span>{c.createdAt.toISOString().slice(0, 10)}</span>
           {c.locked ? <span className="rounded bg-black/10 px-1.5 py-0.5">locked</span> : null}
@@ -242,12 +238,14 @@ function CommentItem({
               disabled={pending || !replyBody.trim()}
               onClick={() =>
                 act(async () => {
-                  await postComment({
-                    tenantSlug,
-                    dimensionId,
-                    parentId: c.id,
-                    body: replyBody,
-                  });
+                  unwrap(
+                    await postComment({
+                      tenantSlug,
+                      dimensionId,
+                      parentId: c.id,
+                      body: replyBody,
+                    }),
+                  );
                   setReplyBody('');
                   setReplyOpen(false);
                 })
