@@ -8,3 +8,5 @@ export * from './plans.js';
 export * from './progress.js';
 export * from './slugs.js';
 export * from './stripe-endpoint.js';
+export * from './preflight.js';
+export * from './deploy-env.js';

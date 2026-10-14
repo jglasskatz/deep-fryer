@@ -64,6 +64,44 @@ anonymous callers can fetch objects but not list them
 the `S3_*` entries of `x-app-env` in `docker-compose.yml` at them and drop the
 `storage` services.
 
+### Verify against the live services
+
+```bash
+docker compose run --rm migrate node --import tsx ../../scripts/preflight.ts
+```
+
+Talks to every real dependency and prints PASS / WARN / FAIL with the fix:
+the production environment rules (the same ones the web app enforces at
+boot), migrations applied, the row-level-security role, the storage bucket
+and its public `/files/` route (objects yes, listings no), the SMTP relay's
+login, Google and Microsoft Entra discovery **and the client id/secret**
+(proved without a user: Google rejects an invalid code only after
+authenticating the client; Entra is probed with a permissionless app-only
+token from your tenant, so pin the issuer), Stripe (live vs test key, every
+catalog price active and non-zero, the webhook registered for this
+`APP_URL` with every synced event, the customer portal), and `APP_URL`
+health and security headers through Caddy. Exit 1 on any failure — do not
+onboard a city until it passes.
+
+## Go-live checklist
+
+Things only the operator can supply; the preflight confirms each one.
+
+1. **DNS and host** — `SITE_ADDRESS` resolves to the droplet; ports 80/443 open.
+2. **Sign-in** — register the OAuth apps (§2): Microsoft Entra in the city's
+   own tenant (pinned issuer; GCC High uses `login.microsoftonline.us`),
+   and/or Google. An SMTP relay for email links and notifications.
+3. **Billing** — write the real price sheet (`docs/billing/prices.json`,
+   §5), run `pnpm stripe:setup` with the live key, set
+   `STRIPE_WEBHOOK_SECRET`; enable ACH/check for invoices in the Dashboard.
+   Contract-only deployments (NYC's Metro contract) can leave Stripe unset.
+4. **Preflight** passes with no FAIL.
+5. **Organization** — `provision-nyc.ts` (or `create-tenant.ts`) with the
+   owner's email; for NYC set the contract end and PO.
+6. **Language access** — certified review of the translation catalogs before
+   an agency relies on them under Local Law 30 (docs/language-access.md).
+7. **Backups** — nightly `pg_dump` plus the `storage` volume (§6).
+
 ## 4. First organization
 
 Self-serve: sign in and use **/start** (30-day trial).

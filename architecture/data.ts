@@ -42,9 +42,9 @@ const data: ArchitectureMap = {
       label: "Accounts",
       layer: "frontend",
       tech: "Auth.js v5 / Drizzle adapter",
-      description: "Sign-in (Google, Microsoft Entra ID, email magic link) with revocable database sessions; tenant and organization roles; email-bound invitations; dev mode refused in production",
-      keyFiles: ["apps/web/auth.ts", "apps/web/lib/auth.ts", "apps/web/lib/invitations.ts", "apps/web/lib/member-actions.ts", "apps/web/lib/env.ts"],
-      keyFunctionality: ["database sessions", "org owners own every portrait", "hash-only invitation tokens", "last-owner guard", "boot-time env assertion"],
+      description: "Sign-in (Google, Microsoft Entra ID from the ID token alone, email magic link) with revocable database sessions; tenant and organization roles; email-bound invitations; dev mode refused in production. The production environment rules live in core (deploy-env) and are shared by the boot-time assertion and the operator preflight, which also verifies OAuth client credentials against the live providers",
+      keyFiles: ["apps/web/auth.ts", "apps/web/lib/auth.ts", "apps/web/lib/invitations.ts", "apps/web/lib/member-actions.ts", "apps/web/lib/env.ts", "packages/core/src/deploy-env.ts", "packages/core/src/preflight.ts", "scripts/preflight.ts"],
+      keyFunctionality: ["database sessions", "org owners own every portrait", "hash-only invitation tokens", "last-owner guard", "boot-time env assertion", "live-provider preflight"],
       fileCount: 8,
       linesOfCode: "~900",
       principles: {

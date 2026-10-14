@@ -10,6 +10,8 @@
  * anonymous owner access or drops sign-in emails.
  */
 
+import { productionEnvProblems } from '@deep-fryer/core';
+
 export const isProduction = (): boolean => process.env.NODE_ENV === 'production';
 
 export const hasDatabase = (): boolean => Boolean(process.env.DATABASE_URL);
@@ -47,26 +49,10 @@ export function appUrl(): string {
   return raw.replace(/\/+$/, '');
 }
 
-/** Called once at server start; throws with every problem listed. */
+/** Called once at server start; throws with every problem listed (rules: @deep-fryer/core deploy-env). */
 export function assertProductionEnv(): void {
   if (!isProduction()) return;
-  const problems: string[] = [];
-  if (!hasDatabase()) problems.push('DATABASE_URL is required');
-  if (!authConfigured()) {
-    problems.push('AUTH_SECRET is required (refusing to start in anonymous-owner dev mode)');
-  }
-  if (!googleConfigured() && !microsoftConfigured() && !smtpConfigured()) {
-    problems.push(
-      'configure at least one sign-in method: AUTH_GOOGLE_ID/SECRET, AUTH_MICROSOFT_ENTRA_ID_ID/SECRET, or SMTP_URL + EMAIL_FROM',
-    );
-  }
-  if (!process.env.APP_URL) problems.push('APP_URL is required (the public https origin)');
-  if (Boolean(process.env.STRIPE_SECRET_KEY) !== Boolean(process.env.STRIPE_WEBHOOK_SECRET)) {
-    problems.push('set STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET together (or neither)');
-  }
-  if (process.env.STRIPE_API_BASE) {
-    problems.push('STRIPE_API_BASE points Stripe calls at a test server (stripe-mock); unset it in production');
-  }
+  const problems = productionEnvProblems(process.env);
   if (problems.length) {
     throw new Error(`deep-fryer refuses to start:\n  - ${problems.join('\n  - ')}`);
   }

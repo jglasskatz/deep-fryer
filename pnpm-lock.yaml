@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@aws-sdk/client-s3':
+        specifier: ^3.1151.0
+        version: 3.1151.0
       '@deep-fryer/contract':
         specifier: workspace:*
         version: link:packages/contract
@@ -38,6 +41,9 @@ importers:
       drizzle-orm:
         specifier: ^0.36.4
         version: 0.36.4(@types/pg@8.20.1)(@types/react@19.2.15)(pg@8.22.0)(postgres@3.4.9)(react@19.2.6)
+      nodemailer:
+        specifier: ^7.0.13
+        version: 7.0.13
       stripe:
         specifier: ^23.0.0
         version: 23.0.0(@types/node@22.19.19)
@@ -45,6 +51,9 @@ importers:
       '@keel_flow/cli':
         specifier: ^0.2.0
         version: 0.2.0(@types/node@22.19.19)
+      '@types/nodemailer':
+        specifier: ^8.0.2
+        version: 8.0.2
       tsx:
         specifier: ^4.19.2
         version: 4.22.3

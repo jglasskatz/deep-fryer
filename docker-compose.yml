@@ -17,6 +17,23 @@ x-app-env: &app-env
   S3_FORCE_PATH_STYLE: 'true'
   S3_PUBLIC_URL: ${APP_URL:?set APP_URL}/files
 
+# Sign-in, mail, and billing: the web app's integrations, also given to the
+# ops shell (migrate) so scripts/preflight.ts can verify them live.
+x-integrations-env: &integrations-env
+  APP_URL: ${APP_URL:?set APP_URL}
+  AUTH_URL: ${APP_URL:?set APP_URL}
+  AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET}
+  AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID:-}
+  AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET:-}
+  AUTH_MICROSOFT_ENTRA_ID_ID: ${AUTH_MICROSOFT_ENTRA_ID_ID:-}
+  AUTH_MICROSOFT_ENTRA_ID_SECRET: ${AUTH_MICROSOFT_ENTRA_ID_SECRET:-}
+  AUTH_MICROSOFT_ENTRA_ID_ISSUER: ${AUTH_MICROSOFT_ENTRA_ID_ISSUER:-}
+  SMTP_URL: ${SMTP_URL:-}
+  EMAIL_FROM: ${EMAIL_FROM:-}
+  SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
+  STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+  STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+
 services:
   db:
     image: postgres:16
@@ -92,7 +109,7 @@ services:
     working_dir: /app/packages/db
     command: ['node', '--import', 'tsx', 'src/migrate.ts']
     environment:
-      <<: *app-env
+      <<: [*app-env, *integrations-env]
       MIGRATION_DATABASE_URL: postgres://${POSTGRES_USER:-deep_fryer}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-deep_fryer}
 
   web:
@@ -106,20 +123,7 @@ services:
       storage-init:
         condition: service_completed_successfully
     environment:
-      <<: *app-env
-      APP_URL: ${APP_URL:?set APP_URL}
-      AUTH_URL: ${APP_URL:?set APP_URL}
-      AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET}
-      AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID:-}
-      AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET:-}
-      AUTH_MICROSOFT_ENTRA_ID_ID: ${AUTH_MICROSOFT_ENTRA_ID_ID:-}
-      AUTH_MICROSOFT_ENTRA_ID_SECRET: ${AUTH_MICROSOFT_ENTRA_ID_SECRET:-}
-      AUTH_MICROSOFT_ENTRA_ID_ISSUER: ${AUTH_MICROSOFT_ENTRA_ID_ISSUER:-}
-      SMTP_URL: ${SMTP_URL:-}
-      EMAIL_FROM: ${EMAIL_FROM:-}
-      SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      <<: [*app-env, *integrations-env]
     expose:
       - '3000'
 

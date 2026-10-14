@@ -21,6 +21,7 @@
     "provision:nyc": "tsx scripts/provision-nyc.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1151.0",
     "@deep-fryer/contract": "workspace:*",
     "@deep-fryer/core": "workspace:*",
     "@deep-fryer/db": "workspace:*",
@@ -31,10 +32,12 @@
     "@keel_flow/pack-research": "workspace:^",
     "@keel_flow/schema": "^0.2.0",
     "drizzle-orm": "^0.36.4",
+    "nodemailer": "^7.0.13",
     "stripe": "^23.0.0"
   },
   "devDependencies": {
     "@keel_flow/cli": "^0.2.0",
+    "@types/nodemailer": "^8.0.2",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3"
   }
