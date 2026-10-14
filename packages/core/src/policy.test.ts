@@ -7,6 +7,7 @@ import {
   policyAnalysisOutputSchema,
   policyAnalysisPrompt,
   projectDimensions,
+  unmovedWedgeReason,
   type PublishedDimensionInput,
 } from './policy.js';
 import type { Indicator } from './types.js';
@@ -54,6 +55,45 @@ describe('policy analysis', () => {
     expect(p!.current_viz).toBeCloseTo(123.3, 1);
     expect(p!.projected_viz).toBeCloseTo(103.3, 1);
     expect(p!.indicator_changes).toEqual([{ indicator: 'Rent-burdened renter households', unit: '%', current_value: 52, projected_value: 46, projected_year: 2030 }]);
+  });
+
+  it('records why a quantified change leaves the wedge where it was', () => {
+    const impact = (name: string, projected_value: number) => ({
+      dimension_slug: 'housing' as const, direction: 'improves' as const, magnitude: 'small' as const, confidence: 'low' as const,
+      rationale: 'r', indicator: name, projected_value, sources: [],
+    });
+    const dim = (...inds: Indicator[]): PublishedDimensionInput => {
+      const data = { ...housing.data, indicators: inds };
+      return { slug: 'housing', viz_level: deriveVizLevel(data), data };
+    };
+    // A wedge that moves still records its basis.
+    const [moved] = projectDimensions([housing], [impact('Rent-burdened renter households', 46)]);
+    expect(moved!.level_basis).toEqual({ others_worst: null, moved_before: 73.3, moved_after: 53.3 });
+
+    // Another indicator is worse, before and after: drawn at it.
+    const worse = dim(indicator('Rent', 32, 30, 'lower_is_better', 30), indicator('Homelessness', 45, 30, 'lower_is_better', 30));
+    const [w] = projectDimensions([worse], [impact('Rent', 31)]);
+    expect(w!.projected_viz).toBe(w!.current_viz);
+    expect(unmovedWedgeReason(w!)).toBe('worse_indicator');
+
+    // A single overshot indicator pinned at the chart's edge: not "another indicator".
+    const overshot = dim(indicator('GHG per capita', 6, 2.5, 'lower_is_better', 2.5));
+    const [o] = projectDimensions([overshot], [impact('GHG per capita', 5)]);
+    expect([o!.current_viz, o!.projected_viz]).toEqual([150, 150]);
+    expect(unmovedWedgeReason(o!)).toBe('display_range');
+
+    // Deep inside the safe zone: pinned at the floor.
+    const safe = dim(indicator('Uninsured', 5, 30, 'lower_is_better', 30));
+    const [f] = projectDimensions([safe], [impact('Uninsured', 4)]);
+    expect([f!.current_viz, f!.projected_viz]).toEqual([-100, -100]);
+    expect(unmovedWedgeReason(f!)).toBe('display_range');
+
+    // The projected value is the current one.
+    const [t] = projectDimensions([housing], [impact('Rent-burdened renter households', 52)]);
+    expect(unmovedWedgeReason(t!)).toBe('too_small');
+
+    // Projections stored before the basis was recorded give no reason.
+    expect(unmovedWedgeReason({ ...t!, level_basis: undefined })).toBeNull();
   });
 
   it('keeps direction-only impacts and explains unmatched indicators', () => {

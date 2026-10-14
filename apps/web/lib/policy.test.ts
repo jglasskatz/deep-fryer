@@ -78,22 +78,48 @@ describe('impactDoughnut', () => {
     expect(impactsChartLabel('Manhattan')).toBe("Manhattan's doughnut, today and with this policy");
     expect(impactsChartLabel('Manhattan')).not.toMatch(/alternat/);
 
-    const summary = impactsSummary(dimensions);
+    const projections = [
+      projection({ dimension_slug: 'housing', current_viz: 123.3, projected_viz: 103.3 }),
+      projection({ dimension_slug: 'energy', direction: 'worsens', current_viz: 80 }),
+      projection({ dimension_slug: 'air-pollution', direction: 'improves', current_viz: 40 }),
+    ];
+    const summary = impactsSummary(dimensions, projections);
     expect(summary).toContain('Improves: Housing and Air Pollution.');
     expect(summary).toContain('Worsens: Energy.');
     expect(summary).toContain('Wedge size changes for Housing. Other impacts are direction only.');
-    // A quantified dimension whose wedge keeps its size is not called resized.
-    const unmoved = impactsSummary(
-      impactDoughnut(portrait, [
-        projection({ dimension_slug: 'housing', current_viz: 123.3, projected_viz: 123.3 }),
-        projection({ dimension_slug: 'energy', current_viz: 80, projected_viz: 60 }),
-      ]).dimensions,
-    );
-    expect(unmoved).toContain('Wedge size changes for Energy. Housing was quantified but keeps the same size');
-    expect(unmoved).not.toContain('direction only');
-    expect(impactsSummary(impactDoughnut(portrait, []).dimensions)).toContain(
+    expect(impactsSummary(impactDoughnut(portrait, []).dimensions, [])).toContain(
       'No published dimension is projected to change.',
     );
+  });
+
+  it('says why a quantified wedge keeps its size, and judges size against the analysis’s own baseline', () => {
+    const basis = (others_worst: number | null, moved_before: number, moved_after: number) => ({ others_worst, moved_before, moved_after });
+    const projections = [
+      // Held by another, worse indicator.
+      projection({ dimension_slug: 'housing', current_viz: 123.3, projected_viz: 123.3, level_basis: basis(61.7, 20, 10) }),
+      // Overshot beyond the chart's range before and after.
+      projection({ dimension_slug: 'air-pollution', direction: 'improves', current_viz: 150, projected_viz: 150, level_basis: basis(null, 200, 150) }),
+      // Stored before reasons were recorded.
+      projection({ dimension_slug: 'energy', direction: 'worsens', current_viz: 80, projected_viz: 80.4 }),
+    ];
+    const { dimensions } = impactDoughnut(
+      [published('housing', 'social', 123.3, 7), published('energy', 'social', 80, 5), published('air-pollution', 'ecological', 150, 19)],
+      projections,
+    );
+    const summary = impactsSummary(dimensions, projections);
+    expect(summary).toContain('Housing keeps the same size: a dimension is drawn at its worst indicator');
+    expect(summary).toContain('Air Pollution stays at the edge of the chart');
+    expect(summary).toContain('Energy keeps the same size.');
+    expect(summary).not.toMatch(/Wedge size changes|direction only/);
+
+    // Republished since: the analysis moved Housing 80 → 60; it is published at 60 today. Not "unmoved".
+    const moved = [projection({ dimension_slug: 'housing', current_viz: 80, projected_viz: 60, level_basis: basis(null, 40, 30) })];
+    const today = impactDoughnut([published('housing', 'social', 60, 7)], moved);
+    expect(today.republished).toEqual(['Housing']);
+    const caption = impactsSummary(today.dimensions, moved, today.republished);
+    expect(caption).toContain('Housing was republished since');
+    expect(caption).not.toMatch(/keeps the same size|Wedge size changes/);
+    expect(impactGroups({ summary: 's', assumptions: [], risks: [], impacts: [impact({ dimension_slug: 'housing' })] }, moved)[0]!.wedge).toBe('resized');
   });
 });
 
@@ -123,19 +149,21 @@ describe('impactGroups', () => {
     projection({ dimension_slug: 'energy', current_viz: 80 }),
   ];
 
-  it('flags a quantified change that leaves the wedge at its worst indicator', () => {
+  it('classifies what a quantified change does to the wedge', () => {
     const groups = impactGroups(result, [
       ...projections.filter((p) => p.dimension_slug !== 'housing'),
       projection({
         dimension_slug: 'housing',
         current_viz: 74,
-        projected_viz: 74.01,
+        projected_viz: 74.6,
         indicator_changes: [{ indicator: RENT, unit: '%', current_value: 52, projected_value: 46, projected_year: 2030 }],
+        level_basis: { others_worst: 37, moved_before: 20, moved_after: 15 },
       }),
     ]);
-    expect(groups.find((g) => g.slug === 'housing')!.wedgeUnchanged).toBe(true);
-    // Moved wedges, and dimensions with nothing re-scored, are not flagged.
-    expect(impactGroups(result, projections).map((g) => g.wedgeUnchanged)).toEqual([false, false, false, false]);
+    // Within one drawn level, held by a worse indicator.
+    expect(groups.find((g) => g.slug === 'housing')!.wedge).toBe('worse_indicator');
+    // A moved wedge is resized; dimensions with nothing re-scored have no outcome.
+    expect(impactGroups(result, projections).map((g) => g.wedge)).toEqual([null, null, 'resized', null]);
   });
 
   it('groups impacts by dimension in framework order, keeping "no effect" impacts', () => {

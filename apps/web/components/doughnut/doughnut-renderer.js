@@ -525,6 +525,21 @@ export class DoughnutRenderer {
         }
     }
 
+    // A rounded-rectangle path from arcTo, which every canvas supports;
+    // ctx.roundRect is missing on Safari before 16 and Firefox before 112,
+    // where calling it would throw and take the page down with it.
+    _roundedRect(x, y, w, h, r) {
+        r = Math.min(r, w / 2, h / 2);
+        const c = this._ctx;
+        c.beginPath();
+        c.moveTo(x + r, y);
+        c.arcTo(x + w, y, x + w, y + h, r);
+        c.arcTo(x + w, y + h, x, y + h, r);
+        c.arcTo(x, y + h, x, y, r);
+        c.arcTo(x, y, x + w, y, r);
+        c.closePath();
+    }
+
     // A highlighted dimension's label: the text on a rounded pill of the
     // highlight colour, in whichever of black/white reads better on it.
     _writeMarkedDim(text, radius, angle, fill) {
@@ -536,8 +551,7 @@ export class DoughnutRenderer {
         const top = y - this._textSize * 0.85 - pad;
         const height = parts.length * this._textSize + pad * 2;
         this._ctx.fillStyle = fill;
-        this._ctx.beginPath();
-        this._ctx.roundRect(x - width / 2 - pad, top, width + pad * 2, height, pad + 2);
+        this._roundedRect(x - width / 2 - pad, top, width + pad * 2, height, pad + 2);
         this._ctx.fill();
         this._ctx.fillStyle = _readableOn(fill);
         for (const part of parts) {

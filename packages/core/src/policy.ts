@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { framework, type Threshold } from '@deep-fryer/contract';
-import { computeScoring, deriveVizLevel } from './scoring.js';
+import { computeScoring, deriveVizLevel, pctToVizLevel } from './scoring.js';
 import type { DimensionData, Indicator } from './types.js';
 
 /**
@@ -106,6 +106,59 @@ export interface DimensionProjection {
   }[];
   /** Impacts whose indicator could not be matched or re-scored, kept as direction-only. */
   unquantified_reasons: string[];
+  /**
+   * The levels behind projected_viz, so a reader can be told truthfully why a
+   * quantified change leaves the wedge where it was (unmovedWedgeReason).
+   * Present when projected_viz is; absent on analyses projected before it
+   * was recorded.
+   */
+  level_basis?: LevelBasis;
+}
+
+/** level_pct values (scoring.ts) behind a projected dimension level. */
+export interface LevelBasis {
+  /** Worst level_pct among the indicators the analysis did not re-score; null when there are none. */
+  others_worst: number | null;
+  /** Worst level_pct among the re-scored indicators, as published; null when none had one. */
+  moved_before: number | null;
+  /** Worst level_pct among the re-scored indicators, with the policy. */
+  moved_after: number;
+}
+
+/**
+ * Why a quantified change leaves a dimension's wedge the size it was:
+ *
+ * - `display_range` — the dimension is beyond the chart's range (pctToVizLevel
+ *   pins it at the outer edge or the floor) both now and with the policy;
+ * - `worse_indicator` — a dimension is drawn at its worst indicator
+ *   (deriveVizLevel, worst_of), and one the policy does not change stays at
+ *   least as far out as the changed ones, before and after;
+ * - `too_small` — the change is smaller than one drawn step.
+ *
+ * Only meaningful once the caller has found the drawn level unchanged; null
+ * when the projection predates level_basis, so the caller says nothing about
+ * the cause rather than guess.
+ */
+export type UnmovedWedgeReason = 'display_range' | 'worse_indicator' | 'too_small';
+
+export function unmovedWedgeReason(projection: DimensionProjection): UnmovedWedgeReason | null {
+  const basis = projection.level_basis;
+  if (!basis) return null;
+  const others = basis.others_worst ?? -Infinity;
+  const before = Math.max(basis.moved_before ?? -Infinity, others);
+  const after = Math.max(basis.moved_after, others);
+  // The chart's outer edge and floor, as pctToVizLevel pins them.
+  const edge = (pct: number) => {
+    if (!Number.isFinite(pct)) return null;
+    const viz = pctToVizLevel(pct);
+    return viz >= pctToVizLevel(Infinity) ? 'top' : viz <= pctToVizLevel(-Infinity) ? 'bottom' : null;
+  };
+  const beforeEdge = edge(before);
+  if (beforeEdge !== null && beforeEdge === edge(after)) return 'display_range';
+  if (basis.others_worst !== null && others >= basis.moved_after && others >= (basis.moved_before ?? -Infinity)) {
+    return 'worse_indicator';
+  }
+  return 'too_small';
 }
 
 export interface PublishedDimensionInput {
@@ -184,6 +237,8 @@ export function projectDimensions(
 
     const indicators = dim.data.indicators.map((i) => ({ ...i }));
     let changed = false;
+    // Published level_pct of each indicator re-scored below, by name.
+    const movedBefore = new Map<string, number | undefined>();
     for (const impact of list) {
       if (impact.indicator === undefined || impact.projected_value === undefined) continue;
       const target = indicators.find((i) => i.name === impact.indicator);
@@ -207,10 +262,21 @@ export function projectDimensions(
         projected_value: impact.projected_value,
         projected_year: impact.projected_year ?? null,
       });
+      if (!movedBefore.has(target.name)) movedBefore.set(target.name, target.level_pct);
       target.level_pct = rescored.level_pct;
       changed = true;
     }
-    if (changed) projection.projected_viz = deriveVizLevel({ ...dim.data, indicators });
+    if (changed) {
+      projection.projected_viz = deriveVizLevel({ ...dim.data, indicators });
+      const pcts = (list: (number | undefined)[]) =>
+        list.filter((v): v is number => typeof v === 'number' && !Number.isNaN(v));
+      const worst = (list: number[]) => (list.length ? Math.max(...list) : null);
+      projection.level_basis = {
+        others_worst: worst(pcts(indicators.filter((i) => !movedBefore.has(i.name)).map((i) => i.level_pct))),
+        moved_before: worst(pcts([...movedBefore.values()])),
+        moved_after: worst(pcts(indicators.filter((i) => movedBefore.has(i.name)).map((i) => i.level_pct)))!,
+      };
+    }
     out.push(projection);
   }
   return out.sort((a, b) => a.dimension_slug.localeCompare(b.dimension_slug));

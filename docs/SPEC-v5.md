@@ -102,9 +102,13 @@ direction's colour — green for improves, red for worsens, amber for mixed —
 and its wedge, where it has one, takes the same colour; so direction-only
 impacts flash too, a dimension with no shortfall or overshoot (no wedge) is
 still marked, and a highlight is never mistaken for the red of an ordinary
-wedge. Quantified impacts also change size — unless another indicator is
-the dimension's worst (a dimension is drawn at its worst indicator), which
-the caption and the impacts table say in words. Controls: pause/play, and a static
+wedge. Quantified impacts also change size — unless the change cannot show,
+which the caption and the impacts table say in words with the actual cause:
+another indicator is the dimension's worst (a dimension is drawn at its
+worst indicator), the dimension is beyond the chart's range before and
+after, or the change is smaller than one drawn step. Sizes are judged
+against the levels published when the analysis ran; a dimension
+republished since is named as such. Controls: pause/play, and a static
 choice of *now* / *with policy*. Reduced-motion readers get the static
 *with policy* view. The impacts table is the accessible equivalent of the
 chart and lists every impact with its rationale, confidence, and sources.
@@ -175,9 +179,11 @@ staff decision, and it refuses to write any plan link that does not answer.
 
 **The preflight (SPEC-v4) gains checks** that `api.weather.gov` answers for
 the configured zones, that both county and forecast zones are listed, and
-that every zone exists (its `/zones/county|forecast/{id}` record answers) —
-the alerts endpoint accepts any well-formed code, so a mistyped zone would
-otherwise read "no alerts" forever.
+that every zone exists (its county, forecast, or fire-weather zone record
+answers; an unknown zone fails naming the portraits that list it, a lookup
+that gets no answer only warns) — the alerts endpoint accepts any
+well-formed code, so a mistyped zone would otherwise read "no alerts"
+forever.
 
 ## 4. Theme and the fryer
 

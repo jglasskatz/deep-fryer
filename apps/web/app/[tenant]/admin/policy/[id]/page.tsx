@@ -16,6 +16,7 @@ import {
   policyDoughnut,
   type ImpactGroup,
   type ImpactRow,
+  type WedgeOutcome,
 } from '@/lib/policy';
 import { safeHref } from '@/lib/safe-url';
 
@@ -203,7 +204,7 @@ export default async function PolicyAnalysisPage({
                   <PolicyDoughnut
                     dimensions={doughnut.dimensions}
                     ariaLabel={impactsChartLabel(ctx.tenant.name)}
-                    summary={impactsSummary(doughnut.dimensions)}
+                    summary={impactsSummary(doughnut.dimensions, projections, doughnut.republished)}
                   />
                 ) : (
                   <p className="text-sm text-[color:var(--color-muted)]">
@@ -282,6 +283,14 @@ export default async function PolicyAnalysisPage({
   );
 }
 
+/** Why a quantified wedge keeps its size, in the table (lib/policy.ts wedgeOutcome). */
+const UNMOVED_NOTE: Record<Exclude<WedgeOutcome, 'resized'>, string> = {
+  worse_indicator: 'Wedge unchanged: a dimension is drawn at its worst indicator, and another indicator stays further out.',
+  display_range: 'Wedge unchanged: the dimension is beyond the chart’s range now and with this policy, so it stays at the edge.',
+  too_small: 'Wedge unchanged: the change is smaller than one step on the chart.',
+  unmoved: 'Wedge unchanged by the projected change.',
+};
+
 function listNames(names: string[]): string {
   if (names.length <= 1) return names.join('');
   return `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
@@ -313,10 +322,9 @@ function ImpactRowGroup({ group, onDoughnut }: { group: ImpactGroup; onDoughnut:
                   Not published on this portrait
                 </span>
               ) : null}
-              {group.wedgeUnchanged ? (
+              {onDoughnut && group.wedge && group.wedge !== 'resized' ? (
                 <span className="mt-1 block text-xs font-normal text-[color:var(--color-muted)]">
-                  Wedge unchanged: a dimension is drawn at its worst indicator, and another indicator stays further
-                  out.
+                  {UNMOVED_NOTE[group.wedge]}
                 </span>
               ) : null}
             </th>

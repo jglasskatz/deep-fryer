@@ -2,12 +2,14 @@ import 'server-only';
 import { cache } from 'react';
 import { and, desc, eq } from 'drizzle-orm';
 import { framework, frameworkDimension } from '@deep-fryer/contract';
-import type {
-  DimensionProjection,
-  ImpactDirection,
-  PolicyAnalysisOutput,
-  PolicyImpact,
-  SessionTokenUsage,
+import {
+  unmovedWedgeReason,
+  type DimensionProjection,
+  type ImpactDirection,
+  type PolicyAnalysisOutput,
+  type PolicyImpact,
+  type SessionTokenUsage,
+  type UnmovedWedgeReason,
 } from '@deep-fryer/core';
 import { policyAnalyses } from '@deep-fryer/db';
 import type { ImpactDimension } from '@/components/doughnut/ImpactDoughnut';
@@ -204,6 +206,23 @@ function sameLevel(a: number | null, b: number | null): boolean {
   return Math.abs(a - b) < 0.05;
 }
 
+/**
+ * What a quantified projection does to its wedge as drawn: `resized`, or the
+ * reason it stays put (core unmovedWedgeReason), or `unmoved` for analyses
+ * stored before the reason could be computed. Null when nothing was
+ * quantified. Both sides are the analysis's own — the level published when
+ * it ran and the projected one — so a republish since cannot turn a moved
+ * wedge into an unmoved one or the reverse. The renderer draws whole levels
+ * (it parses them with parseInt), so a change inside one level is unmoved.
+ */
+export type WedgeOutcome = 'resized' | UnmovedWedgeReason | 'unmoved';
+
+export function wedgeOutcome(p: DimensionProjection | undefined): WedgeOutcome | null {
+  if (!p || p.projected_viz === null) return null;
+  if (p.current_viz === null || Math.trunc(p.current_viz) !== Math.trunc(p.projected_viz)) return 'resized';
+  return unmovedWedgeReason(p) ?? 'unmoved';
+}
+
 /** Loads the published portrait and builds the analysis doughnut from it. */
 export async function policyDoughnut(
   tenantSlug: string,
@@ -230,12 +249,19 @@ export function impactsChartLabel(tenantName: string): string {
 
 /**
  * The chart's caption, visible next to it: which wedges improve, worsen, or
- * are mixed, and which change size. On the canvas direction is colour —
- * green and red that many colour-blind readers cannot tell apart — so the
- * same information is given here in words for everyone, sighted or not.
- * The impacts table below carries the detail.
+ * are mixed, which change size, and why a quantified one does not. On the
+ * canvas direction is colour — green and red that many colour-blind readers
+ * cannot tell apart — so the same information is given here in words for
+ * everyone, sighted or not. Sizes are judged per wedgeOutcome, the same rule
+ * as the impacts table; dimensions republished since the analysis ran are
+ * named instead, as today's size and the projection then are not one
+ * comparison. The impacts table below carries the detail.
  */
-export function impactsSummary(dims: ImpactDimension[]): string {
+export function impactsSummary(
+  dims: ImpactDimension[],
+  projections: DimensionProjection[],
+  republished: string[] = [],
+): string {
   const named = (h: ImpactDimension['highlight']) => dims.filter((d) => d.highlight === h).map((d) => d.name);
   const improves = named('improves');
   const worsens = named('worsens');
@@ -247,19 +273,26 @@ export function impactsSummary(dims: ImpactDimension[]): string {
   if (improves.length) parts.push(`Improves: ${list(improves)}.`);
   if (worsens.length) parts.push(`Worsens: ${list(worsens)}.`);
   if (mixed.length) parts.push(`Mixed: ${list(mixed)}.`);
+
+  const bySlug = new Map(projections.map((p) => [p.dimension_slug, p]));
   const quantified = dims.filter((d) => d.alternate !== null);
-  const resized = quantified.filter((d) => !sameLevel(d.alternate, d.current)).map((d) => d.name);
-  // Quantified, yet drawn at the same size: the dimension's worst indicator
-  // is another one (deriveVizLevel, worst_of). Saying "changes size" here
-  // would describe a change the reader cannot see.
-  const unmoved = quantified.filter((d) => sameLevel(d.alternate, d.current)).map((d) => d.name);
-  if (resized.length) parts.push(`Wedge size changes for ${list(resized)}.`);
-  if (unmoved.length) {
-    parts.push(
-      `${list(unmoved)} ${unmoved.length === 1 ? 'was' : 'were'} quantified but keep${unmoved.length === 1 ? 's' : ''} ` +
-        'the same size, because a dimension is drawn at its worst indicator.',
-    );
+  const byOutcome = new Map<WedgeOutcome | 'republished', string[]>();
+  for (const d of quantified) {
+    const key = republished.includes(d.name) ? 'republished' : (wedgeOutcome(bySlug.get(d.slug)) ?? 'unmoved');
+    byOutcome.set(key, [...(byOutcome.get(key) ?? []), d.name]);
   }
+  const say = (key: WedgeOutcome | 'republished', one: string, many: string, rest: string) => {
+    const names = byOutcome.get(key);
+    if (names?.length) parts.push(`${list(names)} ${names.length === 1 ? one : many}${rest}`);
+  };
+  const resized = byOutcome.get('resized');
+  if (resized?.length) parts.push(`Wedge size changes for ${list(resized)}.`);
+  say('worse_indicator', 'keeps', 'keep', ' the same size: a dimension is drawn at its worst indicator, which this policy does not change.');
+  say('display_range', 'stays', 'stay', ' at the edge of the chart: beyond its range now and with this policy.');
+  say('too_small', 'changes', 'change', ' by less than one step on the chart.');
+  say('unmoved', 'keeps', 'keep', ' the same size.');
+  say('republished', 'was', 'were', ' republished since: today’s size and the projected one come from different data.');
+
   const directionOnly = improves.length + worsens.length + mixed.length - quantified.length;
   if (!quantified.length) parts.push('No impact was quantified, so wedges change colour but not size.');
   else if (directionOnly > 0) parts.push('Other impacts are direction only.');
@@ -291,12 +324,11 @@ export interface ImpactGroup {
   currentViz: number | null;
   projectedViz: number | null;
   /**
-   * An indicator was re-scored but the wedge keeps its size. A dimension is
-   * drawn at its worst indicator (deriveVizLevel, worst_of), so a projected
-   * change to any other indicator cannot move it; the page says so rather
-   * than leave a quantified impact looking like it did nothing.
+   * What the quantified impacts do to the wedge (wedgeOutcome): the page
+   * explains an unmoved wedge rather than leave a quantified impact looking
+   * like it did nothing. Null when nothing was quantified.
    */
-  wedgeUnchanged: boolean;
+  wedge: WedgeOutcome | null;
   rows: ImpactRow[];
 }
 
@@ -320,15 +352,13 @@ export function impactGroups(
     .sort(([a], [b]) => frameworkOrder(a) - frameworkOrder(b))
     .map(([slug, impacts]) => {
       const p = bySlug.get(slug);
-      const projectedViz = p?.projected_viz ?? null;
       return {
         slug,
         name: dimensionName(slug),
         direction: p?.direction ?? 'none',
         currentViz: p?.current_viz ?? null,
-        projectedViz,
-        wedgeUnchanged:
-          projectedViz !== null && (p?.indicator_changes.length ?? 0) > 0 && sameLevel(p!.current_viz, projectedViz),
+        projectedViz: p?.projected_viz ?? null,
+        wedge: wedgeOutcome(p),
         rows: impacts.map((impact) => impactRow(impact, p)),
       };
     });

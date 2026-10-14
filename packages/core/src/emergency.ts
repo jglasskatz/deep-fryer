@@ -566,29 +566,42 @@ export function nwsZoneCoverageVerdict(zones: readonly string[]): Verdict {
 }
 
 /**
- * The NWS record for one zone: county codes (NYC061) live under
- * /zones/county, public forecast zones (NYZ072) under /zones/forecast. The
- * alerts endpoint accepts any well-formed code, so only this lookup tells a
- * real zone from a mistyped or retired one.
+ * Where the NWS keeps one zone's record, in the order to try: county codes
+ * (NYC061) under /zones/county; Z codes under /zones/forecast, then
+ * /zones/fire — the alerts feed accepts fire-weather zones too, and a fire
+ * zone need not share its number with a public forecast zone. The alerts
+ * endpoint accepts any well-formed code, so only these lookups tell a real
+ * zone from a mistyped or retired one.
  */
-export function nwsZoneUrl(zone: string): string {
+export function nwsZoneUrls(zone: string): string[] {
   if (!UGC_RE.test(zone)) throw new Error(`not an NWS UGC code: ${zone}`);
-  return `https://api.weather.gov/zones/${COUNTY_ZONE_RE.test(zone) ? 'county' : 'forecast'}/${zone}`;
+  const base = 'https://api.weather.gov/zones';
+  return COUNTY_ZONE_RE.test(zone) ? [`${base}/county/${zone}`] : [`${base}/forecast/${zone}`, `${base}/fire/${zone}`];
+}
+
+/** One zone's lookup: the HTTP status of its record (0 when no answer came), and the portraits that list it. */
+export interface NwsZoneLookup {
+  zone: string;
+  status: number;
+  portraits: string[];
 }
 
 /**
  * Preflight verdict for the zone lookups: a zone the NWS does not know (404)
- * would silently never receive an alert, so it fails; any other non-200 is
- * a warning (the service may be degraded, not the configuration wrong).
+ * would silently never receive an alert, so it fails, naming the portraits
+ * to fix; any other non-200 — including no answer at all — is a warning
+ * (the service may be degraded, not the configuration wrong).
  */
-export function nwsZonesVerdict(lookups: readonly { zone: string; status: number }[]): Verdict {
-  const unknown = lookups.filter((l) => l.status === 404).map((l) => l.zone);
+export function nwsZonesVerdict(lookups: readonly NwsZoneLookup[]): Verdict {
+  const unknown = lookups.filter((l) => l.status === 404);
   if (unknown.length) {
-    return { status: 'fail', detail: `unknown to the NWS: ${unknown.join(', ')} — fix them at /{portrait}/admin/emergency` };
+    const where = unknown.map((l) => `${l.zone} (${l.portraits.join(', ')})`).join(', ');
+    return { status: 'fail', detail: `unknown to the NWS: ${where} — fix at /{portrait}/admin/emergency` };
   }
   const other = lookups.filter((l) => l.status !== 200);
   if (other.length) {
-    return { status: 'warn', detail: `could not confirm ${other.map((l) => `${l.zone} (${l.status})`).join(', ')}` };
+    const what = other.map((l) => `${l.zone} (${l.status === 0 ? 'no answer' : l.status})`).join(', ');
+    return { status: 'warn', detail: `could not confirm ${what}` };
   }
   return { status: 'pass', detail: `${lookups.length} zone(s) known to the NWS` };
 }

@@ -23,7 +23,7 @@ import {
   nwsAlertsUrl,
   nwsFeedVerdict,
   nwsZonesVerdict,
-  nwsZoneUrl,
+  nwsZoneUrls,
   nwsZoneCoverageVerdict,
   nwsRequestHeaders,
   STRIPE_WEBHOOK_EVENTS,
@@ -264,13 +264,27 @@ async function alertsChecks() {
   }
   // The feed accepts any well-formed code, so a mistyped or retired zone
   // answers "no alerts" forever; each zone's own record proves it exists.
+  // Lookups settle independently: one that times out is reported by name as
+  // unconfirmed rather than failing the whole check.
   await guarded('alerts', 'NWS zones exist', async () => {
-    const zones = [...new Set(portraits.flatMap((p) => p.zones))];
+    const portraitsOf = new Map<string, string[]>();
+    for (const p of portraits) {
+      for (const z of new Set(p.zones)) portraitsOf.set(z, [...(portraitsOf.get(z) ?? []), p.slug]);
+    }
     const lookups = await Promise.all(
-      zones.map(async (zone) => {
-        const res = await fetch(nwsZoneUrl(zone), { headers, signal: AbortSignal.timeout(15_000) });
-        await res.body?.cancel();
-        return { zone, status: res.status };
+      [...portraitsOf].map(async ([zone, slugs]) => {
+        let status = 0;
+        for (const url of nwsZoneUrls(zone)) {
+          try {
+            const res = await fetch(url, { headers, signal: AbortSignal.timeout(15_000) });
+            await res.body?.cancel();
+            status = res.status;
+          } catch {
+            status = 0;
+          }
+          if (status !== 404) break; // found, or not answering: only a 404 tries the next record
+        }
+        return { zone, status, portraits: slugs };
       }),
     );
     return nwsZonesVerdict(lookups);
