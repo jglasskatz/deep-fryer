@@ -10,7 +10,6 @@ import {
   type SubscriptionStatus,
 } from '@deep-fryer/core';
 import {
-  getDb,
   organizationByStripeCustomer,
   organizations,
   subscriptions,
@@ -19,6 +18,7 @@ import {
 } from '@deep-fryer/db';
 import { UserError } from './action-result';
 import { stripeConfigured } from './env';
+import { systemDb } from './db';
 
 /**
  * Stripe integration (SPEC-v4 §3). Stripe is the system of record for
@@ -129,7 +129,7 @@ export async function ensureCustomer(
     },
     { idempotencyKey: `org-customer-${org.id}` },
   );
-  const db = getDb();
+  const db = systemDb();
   await db
     .update(organizations)
     .set({ stripeCustomerId: customer.id })

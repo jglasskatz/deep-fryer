@@ -1,12 +1,12 @@
 import 'server-only';
 import { and, asc, desc, eq, gt, isNull } from 'drizzle-orm';
 import {
-  getDb,
   invitations,
   organizationMembers,
   tenantMembers,
   users,
 } from '@deep-fryer/db';
+import { userDb } from './db';
 
 export interface MemberRow {
   userId: string;
@@ -24,7 +24,8 @@ export interface PendingInvitation {
 }
 
 export async function tenantMembersList(tenantId: string): Promise<MemberRow[]> {
-  const rows = await getDb()
+  const rows = await userDb((db) =>
+    db
     .select({
       userId: users.id,
       name: users.name,
@@ -36,12 +37,14 @@ export async function tenantMembersList(tenantId: string): Promise<MemberRow[]> 
     .from(tenantMembers)
     .innerJoin(users, eq(users.id, tenantMembers.userId))
     .where(eq(tenantMembers.tenantId, tenantId))
-    .orderBy(asc(tenantMembers.role), asc(users.email));
+    .orderBy(asc(tenantMembers.role), asc(users.email)),
+  );
   return rows.map((r) => ({ ...r, name: r.name ?? r.displayName }));
 }
 
 export async function organizationMembersList(organizationId: string): Promise<MemberRow[]> {
-  const rows = await getDb()
+  const rows = await userDb((db) =>
+    db
     .select({
       userId: users.id,
       name: users.name,
@@ -53,7 +56,8 @@ export async function organizationMembersList(organizationId: string): Promise<M
     .from(organizationMembers)
     .innerJoin(users, eq(users.id, organizationMembers.userId))
     .where(eq(organizationMembers.organizationId, organizationId))
-    .orderBy(asc(organizationMembers.role), asc(users.email));
+    .orderBy(asc(organizationMembers.role), asc(users.email)),
+  );
   return rows.map((r) => ({ ...r, name: r.name ?? r.displayName }));
 }
 
@@ -64,7 +68,8 @@ export async function pendingInvitations(
     'tenantId' in scope
       ? eq(invitations.tenantId, scope.tenantId)
       : eq(invitations.organizationId, scope.organizationId);
-  return getDb()
+  return userDb((db) =>
+    db
     .select({
       id: invitations.id,
       email: invitations.email,
@@ -80,5 +85,6 @@ export async function pendingInvitations(
         gt(invitations.expiresAt, new Date()),
       ),
     )
-    .orderBy(desc(invitations.createdAt));
+    .orderBy(desc(invitations.createdAt)),
+  );
 }

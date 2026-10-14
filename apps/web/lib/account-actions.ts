@@ -6,7 +6,6 @@ import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import {
   accounts,
-  getDb,
   organizationMembers,
   sessions,
   tenantMembers,
@@ -15,6 +14,7 @@ import {
 import { signOut } from '@/auth';
 import { getAuth, requireUserId } from './auth';
 import { action, UserError } from './action-result';
+import { systemDb, userDb } from './db';
 
 const profileSchema = z.object({
   displayName: z
@@ -30,17 +30,20 @@ const profileSchema = z.object({
 export const updateProfile = action(async (input: { displayName: string; name?: string }) => {
   const userId = await requireUserId();
   const parsed = profileSchema.parse(input);
-  await getDb()
-    .update(users)
-    .set({ displayName: parsed.displayName, name: parsed.name || null })
-    .where(eq(users.id, userId));
+  // Row-level security: the users_self policy is what lets this row change.
+  await userDb((db) =>
+    db
+      .update(users)
+      .set({ displayName: parsed.displayName, name: parsed.name || null })
+      .where(eq(users.id, userId)),
+  );
   revalidatePath('/account');
 });
 
 /** Revoke every database session for this user — lost laptop, shared kiosk. */
 export const signOutEverywhere = action(async () => {
   const userId = await requireUserId();
-  await getDb().delete(sessions).where(eq(sessions.userId, userId));
+  await systemDb().delete(sessions).where(eq(sessions.userId, userId));
   await signOut({ redirectTo: '/login' });
 });
 
@@ -59,7 +62,8 @@ export const deleteAccount = action(async (input: { confirm: string }) => {
   if (input.confirm.trim().toLowerCase() !== (ctx.email ?? '').toLowerCase()) {
     throw new UserError('Type your email address exactly to confirm.');
   }
-  const db = getDb();
+  // System context: login accounts and sessions are not reachable by the user role.
+  const db = systemDb();
 
   const soleOwnerships = await db.execute<{ name: string }>(sql`
     SELECT o.name FROM organization_members om

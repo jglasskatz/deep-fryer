@@ -5,7 +5,8 @@ import { formatIndicatorValue } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { RequestResearchForm } from '@/components/insights/RequestResearchForm';
 import { getPortrait, evidenceUrl, hasDatabase } from '@/lib/data';
-import { getDb, tenantBySlug } from '@deep-fryer/db';
+import { tenantBySlug } from '@deep-fryer/db';
+import { userDb } from '@/lib/db';
 import { getAuth, getRole } from '@/lib/auth';
 import { configValue } from '@/lib/admin-data';
 import { familyByOrgSlug, type FamilyMember } from '@/lib/family';
@@ -102,7 +103,7 @@ export default async function InsightsPage({
   const canRequest = new Map<string, boolean>();
   if (auth.devMode || auth.userId) {
     for (const m of FAMILY) {
-      const tenant = await tenantBySlug(getDb(), m.slug);
+      const tenant = await userDb((db) => tenantBySlug(db, m.slug));
       if (!tenant) continue;
       const tenantId = tenant.id;
       const role = await getRole(tenantId);

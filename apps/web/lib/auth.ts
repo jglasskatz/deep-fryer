@@ -15,6 +15,9 @@ import { auth } from '@/auth';
 import { authConfigured, hasDatabase, isProduction } from './env';
 import { UserError } from './action-result';
 
+// Auth plumbing reads memberships in the system context (getDb): deciding
+// who someone is cannot depend on the policies that decision feeds.
+
 export type OrgRole = 'owner' | 'billing';
 
 export interface AuthContext {

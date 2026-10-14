@@ -11,13 +11,13 @@ import {
   type Standing,
 } from '@deep-fryer/core';
 import {
-  getDb,
   portraitCount,
   researchSessionsUsed,
   seatCount,
   subscriptionFor,
   type Subscription,
 } from '@deep-fryer/db';
+import { systemDb } from './db';
 
 /**
  * Billing reads for pages (SPEC-v4 §3). One summary shape, so the org hub,
@@ -35,7 +35,7 @@ export interface BillingSummary {
 }
 
 export const billingSummary = cache(async (organizationId: string): Promise<BillingSummary> => {
-  const db = getDb();
+  const db = systemDb();
   const sub = await subscriptionFor(db, organizationId);
   const [researchSessions, portraits, seats] = await Promise.all([
     sub ? researchSessionsUsed(db, organizationId, sub.currentPeriodStart, sub.currentPeriodEnd) : 0,

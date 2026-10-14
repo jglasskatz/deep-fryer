@@ -2,7 +2,6 @@ import 'server-only';
 import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 import {
   accounts,
-  getDb,
   organizationMembers,
   organizations,
   subscriptions,
@@ -10,6 +9,7 @@ import {
   tenants,
   users,
 } from '@deep-fryer/db';
+import { systemDb } from './db';
 
 export interface AccountOverview {
   user: { id: string; email: string | null; name: string | null; displayName: string | null };
@@ -28,7 +28,7 @@ export interface AccountOverview {
 
 /** Everything /account shows, in a handful of queries. */
 export async function accountOverview(userId: string): Promise<AccountOverview | null> {
-  const db = getDb();
+  const db = systemDb();
   const [user] = await db.select().from(users).where(eq(users.id, userId));
   if (!user) return null;
 

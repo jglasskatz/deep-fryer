@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getDb, tenantBySlug } from '@deep-fryer/db';
+import { tenantBySlug } from '@deep-fryer/db';
+import { userDb } from '@/lib/db';
 import { getAuth, getRole, roleAtLeast } from '@/lib/auth';
 import { createPlannedRun } from '@/lib/research';
 
@@ -14,7 +15,7 @@ const bodySchema = z.object({
 export async function POST(request: Request) {
   try {
     const body = bodySchema.parse(await request.json());
-    const tenant = await tenantBySlug(getDb(), body.tenant);
+    const tenant = await userDb((db) => tenantBySlug(db, body.tenant));
     if (!tenant) return NextResponse.json({ error: 'unknown tenant' }, { status: 404 });
 
     const role = await getRole(tenant.id);

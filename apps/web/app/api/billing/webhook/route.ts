@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import type Stripe from 'stripe';
 import { eq } from 'drizzle-orm';
-import { billingEvents, getDb } from '@deep-fryer/db';
+import { billingEvents } from '@deep-fryer/db';
 import { stripeConfigured } from '@/lib/env';
 import { stripe, subscriptionIdOf, syncSubscription } from '@/lib/stripe';
+import { systemDb } from '@/lib/db';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const outcome = await getDb().transaction(async (tx) => {
+    const outcome = await systemDb().transaction(async (tx) => {
       const recorded = await tx
         .insert(billingEvents)
         .values({ id: event.id, type: event.type, payload: event as unknown as Record<string, unknown> })

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import type Stripe from 'stripe';
 import { PLANS, PURCHASABLE_PLANS } from '@deep-fryer/core';
-import { getDb, organizationBySlug } from '@deep-fryer/db';
+import { organizationBySlug } from '@deep-fryer/db';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { UsageMeter } from '@/components/billing/UsageMeter';
 import { PlanPicker, type PickerPlan } from '@/components/billing/PlanPicker';
@@ -13,6 +13,7 @@ import { getAuth, getOrgRole } from '@/lib/auth';
 import { billingSummary, WARNING_COPY } from '@/lib/billing';
 import { hasDatabase, stripeConfigured, supportEmail } from '@/lib/env';
 import { catalogPrices, formatPrice, stripe } from '@/lib/stripe';
+import { systemDb } from '@/lib/db';
 
 export const metadata: Metadata = { title: 'Billing', robots: { index: false } };
 
@@ -38,7 +39,7 @@ export default async function BillingPage({
   if (!hasDatabase()) redirect('/');
   const { org: orgSlug } = await params;
   const { checkout } = await searchParams;
-  const org = await organizationBySlug(getDb(), orgSlug);
+  const org = await organizationBySlug(systemDb(), orgSlug);
   if (!org) notFound();
   const auth = await getAuth();
   if (!auth.userId) redirect(`/login?next=${encodeURIComponent(`/o/${orgSlug}/billing`)}`);

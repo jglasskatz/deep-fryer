@@ -6,7 +6,6 @@ import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { effectiveLimits, slugError, standing } from '@deep-fryer/core';
 import {
-  getDb,
   organizationBySlug,
   organizationMembers,
   portraitCount,
@@ -20,6 +19,7 @@ import {
 } from '@deep-fryer/db';
 import { getAuth, requireOrgRole } from './auth';
 import { action, UserError } from './action-result';
+import { systemDb } from './db';
 
 const portraitSchema = z.object({
   name: z.string().trim().min(2, 'Name the jurisdiction.').max(120),
@@ -80,7 +80,7 @@ export const startTrial = action(
       .optional()
       .or(z.literal(''))
       .parse(input.billingEmail);
-    const db = getDb();
+    const db = systemDb();
 
     if (!ctx.devMode) {
       const [trials] = await db
@@ -126,7 +126,7 @@ export const startTrial = action(
 /** Org owners add another portrait (a borough, a district) within the plan's limit. */
 export const addPortrait = action(
   async (input: z.input<typeof portraitSchema> & { orgSlug: string }) => {
-    const db = getDb();
+    const db = systemDb();
     const org = await organizationBySlug(db, input.orgSlug);
     if (!org) throw new UserError('Unknown organization.');
     await requireOrgRole(org.id, ['owner']);

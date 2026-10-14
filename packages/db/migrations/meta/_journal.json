@@ -36,6 +36,20 @@
       "when": 1791952803499,
       "tag": "0004_org_member_noun",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791956493178,
+      "tag": "0005_enforce_rls_app_role",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791956594403,
+      "tag": "0006_comment_update_guard",
+      "breakpoints": true
     }
   ]
 }

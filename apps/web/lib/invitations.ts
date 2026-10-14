@@ -3,7 +3,6 @@ import { createHash, randomBytes } from 'node:crypto';
 import { and, eq, gt, isNull, sql } from 'drizzle-orm';
 import { effectiveLimits, standing, type Role } from '@deep-fryer/core';
 import {
-  getDb,
   invitations,
   organizationMembers,
   organizations,
@@ -18,6 +17,7 @@ import { UserError } from './action-result';
 import { emailDeliverable, sendEmail, simpleHtml } from './email';
 import { appUrl } from './env';
 import type { OrgRole } from './auth';
+import { systemDb } from './db';
 
 /**
  * Invitations (SPEC-v4 §2). A token is shown once (in the email or the
@@ -62,7 +62,7 @@ async function pendingSeatReservations(db: DbExecutor, organizationId: string): 
 
 async function organizationIdFor(scope: InvitationScope): Promise<string> {
   if (scope.kind === 'organization') return scope.organizationId;
-  const [t] = await getDb()
+  const [t] = await systemDb()
     .select({ organizationId: tenants.organizationId })
     .from(tenants)
     .where(eq(tenants.id, scope.tenantId));
@@ -83,7 +83,7 @@ export async function createInvitation(input: {
   inviterName: string | null;
   targetName: string;
 }): Promise<CreatedInvitation> {
-  const db = getDb();
+  const db = systemDb();
   const email = normalizeEmail(input.email);
   const organizationId = await organizationIdFor(input.scope);
 
@@ -168,7 +168,7 @@ export interface InvitationView {
 
 /** Resolve a raw token to a live invitation, or null (unknown, used, revoked, or expired). */
 export async function liveInvitation(token: string): Promise<InvitationView | null> {
-  const db = getDb();
+  const db = systemDb();
   const [invitation] = await db
     .select()
     .from(invitations)
@@ -207,7 +207,7 @@ export async function acceptInvitation(
       `This invitation is for ${invitation.email}. Sign in with that address to accept it.`,
     );
   }
-  await getDb().transaction(async (tx) => {
+  await systemDb().transaction(async (tx) => {
     const [claimed] = await tx
       .update(invitations)
       .set({ acceptedAt: new Date(), acceptedBy: user.id })

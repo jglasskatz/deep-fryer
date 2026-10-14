@@ -10,6 +10,8 @@ import { hasDatabase } from './env';
  * framing only — the hosted site may still preview its own embed).
  */
 const TTL_MS = 60_000;
+// System context (getDb): runs in middleware for anonymous framing checks of
+// public data, before any user context exists.
 const cache = new Map<string, { origins: string[]; at: number }>();
 
 export async function embedOriginsFor(slug: string): Promise<string[]> {

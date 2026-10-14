@@ -12,7 +12,7 @@ import {
   appendDimensionVersion,
   dimensions,
   findings,
-  getDb,
+  type DbExecutor,
   latestVersion,
   researchSessions,
 } from '@deep-fryer/db';
@@ -21,9 +21,9 @@ import { audit } from './audit';
 import { publishVersionFor } from './publish';
 import { createPlannedRun } from './research';
 import { action, UserError } from './action-result';
+import { userDb } from './db';
 
-async function dimensionInTenantOrThrow(tenantId: string, dimensionId: string) {
-  const db = getDb();
+async function dimensionInTenantOrThrow(db: DbExecutor, tenantId: string, dimensionId: string) {
   const [dimension] = await db
     .select()
     .from(dimensions)
@@ -46,87 +46,91 @@ export const approveFindings = action(async (input: {
   publish?: boolean;
 }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
-  const db = getDb();
-  const dimension = await dimensionInTenantOrThrow(tenant.id, input.dimensionId);
+  return userDb(async (db) => {
+    const dimension = await dimensionInTenantOrThrow(db, tenant.id, input.dimensionId);
 
-  const runFindings = await db
-    .select({ finding: findings })
-    .from(findings)
-    .innerJoin(researchSessions, eq(findings.sessionId, researchSessions.id))
-    .where(
-      and(eq(researchSessions.runId, input.runId), eq(findings.dimensionId, input.dimensionId)),
-    );
-  if (runFindings.length === 0) throw new UserError('No findings for this dimension in this run.');
+    const runFindings = await db
+      .select({ finding: findings })
+      .from(findings)
+      .innerJoin(researchSessions, eq(findings.sessionId, researchSessions.id))
+      .where(
+        and(eq(researchSessions.runId, input.runId), eq(findings.dimensionId, input.dimensionId)),
+      );
+    if (runFindings.length === 0) throw new UserError('No findings for this dimension in this run.');
 
-  const base = await latestVersion(db, dimension.id);
+    const base = await latestVersion(db, dimension.id);
 
-  const indicators: Indicator[] = [];
-  const gaps: DimensionGap[] = [];
-  for (const { finding } of runFindings) {
-    const p = finding.payload;
-    if (p.kind === 'indicator') {
-      indicators.push({
-        name: p.name,
-        value: p.value,
-        unit: p.unit,
-        year: p.year,
-        target: p.target,
-        level_pct: p.level_pct,
-        scoring: p.scoring,
-        source: p.source,
-        source_url: p.source_url,
-        source_tier: p.source_tier,
-        evidence: p.evidence,
-        confidence: p.confidence,
-        geographic_scale: p.geographic_scale,
-      });
-    } else if (p.kind === 'gap') {
-      gaps.push({
-        indicator: p.indicator_slug,
-        reason: p.reason,
-        scales_tried: p.scales_tried,
-        searched_at: p.searched_at,
-      });
+    const indicators: Indicator[] = [];
+    const gaps: DimensionGap[] = [];
+    for (const { finding } of runFindings) {
+      const p = finding.payload;
+      if (p.kind === 'indicator') {
+        indicators.push({
+          name: p.name,
+          value: p.value,
+          unit: p.unit,
+          year: p.year,
+          target: p.target,
+          level_pct: p.level_pct,
+          scoring: p.scoring,
+          source: p.source,
+          source_url: p.source_url,
+          source_tier: p.source_tier,
+          evidence: p.evidence,
+          confidence: p.confidence,
+          geographic_scale: p.geographic_scale,
+        });
+      } else if (p.kind === 'gap') {
+        gaps.push({
+          indicator: p.indicator_slug,
+          reason: p.reason,
+          scales_tried: p.scales_tried,
+          searched_at: p.searched_at,
+        });
+      }
     }
-  }
 
-  const data: DimensionData = {
-    name: base?.data.name ?? dimension.slug,
-    icon: base?.data.icon ?? '',
-    description: base?.data.description ?? '',
-    context: base?.data.context ?? '',
-    indicators,
-    gaps: gaps.length ? gaps : undefined,
-    actions: base?.data.actions ?? [],
-    policy_spotlight: base?.data.policy_spotlight,
-    justice_spotlight: base?.data.justice_spotlight,
-  };
+    const data: DimensionData = {
+      name: base?.data.name ?? dimension.slug,
+      icon: base?.data.icon ?? '',
+      description: base?.data.description ?? '',
+      context: base?.data.context ?? '',
+      indicators,
+      gaps: gaps.length ? gaps : undefined,
+      actions: base?.data.actions ?? [],
+      policy_spotlight: base?.data.policy_spotlight,
+      justice_spotlight: base?.data.justice_spotlight,
+    };
 
-  const auth = await getAuth();
-  const version = await appendDimensionVersion(db, {
-    dimensionId: dimension.id,
-    status: 'draft',
-    data,
-    vizLevel: deriveVizLevel(data),
-    origin: 'research',
-    researchRunId: input.runId,
-    createdBy: auth.userId,
+    const auth = await getAuth();
+    const version = await appendDimensionVersion(db, {
+      dimensionId: dimension.id,
+      status: 'draft',
+      data,
+      vizLevel: deriveVizLevel(data),
+      origin: 'research',
+      researchRunId: input.runId,
+      createdBy: auth.userId,
+    });
+
+    await audit(
+      tenant.id,
+      'dimension_version',
+      version.id,
+      'approve_findings',
+      null,
+      { dimension: dimension.slug, run_id: input.runId, indicators: indicators.length, gaps: gaps.length },
+      db,
+    );
+
+    if (input.publish) {
+      await publishVersionFor(db, tenant, version.id);
+    }
+
+    revalidatePath(`/${input.tenantSlug}/admin/review`);
+    revalidatePath(`/${input.tenantSlug}/admin`);
+    return { versionId: version.id, versionNum: version.versionNum };
   });
-
-  await audit(tenant.id, 'dimension_version', version.id, 'approve_findings', null, {
-    dimension: dimension.slug,
-    run_id: input.runId,
-    indicators: indicators.length,
-    gaps: gaps.length,
-  });
-
-  if (input.publish) {
-    await publishVersionFor(tenant, version.id);
-  }
-
-  revalidatePath(`/${input.tenantSlug}/admin/review`);
-  revalidatePath(`/${input.tenantSlug}/admin`);
-  return { versionId: version.id, versionNum: version.versionNum };
 });
 
 /**
@@ -140,7 +144,7 @@ export const reResearchDimension = action(async (input: {
   notes: string;
 }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
-  const dimension = await dimensionInTenantOrThrow(tenant.id, input.dimensionId);
+  const dimension = await userDb((db) => dimensionInTenantOrThrow(db, tenant.id, input.dimensionId));
   const auth = await getAuth();
   const { run } = await createPlannedRun({
     tenantId: tenant.id,
@@ -164,52 +168,57 @@ export const flagGap = action(async (input: {
   reason: string;
 }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
-  const db = getDb();
+  return userDb(async (db) => {
+    const reason = input.reason.trim();
+    if (!reason) throw new UserError('A reason is required to flag a data gap.');
 
-  const reason = input.reason.trim();
-  if (!reason) throw new UserError('A reason is required to flag a data gap.');
+    const dimension = await dimensionInTenantOrThrow(db, tenant.id, input.dimensionId);
 
-  const dimension = await dimensionInTenantOrThrow(tenant.id, input.dimensionId);
+    const base = await latestVersion(db, dimension.id);
+    if (!base) throw new UserError('This dimension has no versions yet.');
 
-  const base = await latestVersion(db, dimension.id);
-  if (!base) throw new UserError('This dimension has no versions yet.');
+    const data: DimensionData = {
+      ...base.data,
+      indicators: base.data.indicators.map((ind) => ({
+        ...ind,
+        value: null,
+        level_pct: undefined,
+        scoring: undefined,
+      })),
+      gaps: [
+        ...(base.data.gaps ?? []),
+        {
+          indicator: input.indicator,
+          reason,
+          scales_tried: [],
+          searched_at: new Date().toISOString(),
+        },
+      ],
+    };
 
-  const data: DimensionData = {
-    ...base.data,
-    indicators: base.data.indicators.map((ind) => ({
-      ...ind,
-      value: null,
-      level_pct: undefined,
-      scoring: undefined,
-    })),
-    gaps: [
-      ...(base.data.gaps ?? []),
-      {
-        indicator: input.indicator,
-        reason,
-        scales_tried: [],
-        searched_at: new Date().toISOString(),
-      },
-    ],
-  };
+    const auth = await getAuth();
+    const version = await appendDimensionVersion(db, {
+      dimensionId: dimension.id,
+      status: 'draft',
+      data,
+      vizLevel: null,
+      origin: 'human',
+      changeNote: `Flagged as data gap: ${reason}`,
+      createdBy: auth.userId,
+    });
 
-  const auth = await getAuth();
-  const version = await appendDimensionVersion(db, {
-    dimensionId: dimension.id,
-    status: 'draft',
-    data,
-    vizLevel: null,
-    origin: 'human',
-    changeNote: `Flagged as data gap: ${reason}`,
-    createdBy: auth.userId,
+    await audit(
+      tenant.id,
+      'dimension_version',
+      version.id,
+      'flag_gap',
+      null,
+      { dimension: dimension.slug, reason },
+      db,
+    );
+
+    await publishVersionFor(db, tenant, version.id);
+    revalidatePath(`/${input.tenantSlug}/admin/review`);
+    return { versionId: version.id };
   });
-
-  await audit(tenant.id, 'dimension_version', version.id, 'flag_gap', null, {
-    dimension: dimension.slug,
-    reason,
-  });
-
-  await publishVersionFor(tenant, version.id);
-  revalidatePath(`/${input.tenantSlug}/admin/review`);
-  return { versionId: version.id };
 });

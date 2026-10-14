@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { sql } from 'drizzle-orm';
-import { getDb } from '@deep-fryer/db';
 import { hasDatabase } from '@/lib/env';
+import { systemDb } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +14,7 @@ export async function GET() {
   if (!hasDatabase()) return NextResponse.json({ ok: true, database: 'not configured' });
   try {
     await Promise.race([
-      getDb().execute(sql`select 1`),
+      systemDb().execute(sql`select 1`),
       new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000)),
     ]);
     return NextResponse.json({ ok: true }, { headers: { 'cache-control': 'no-store' } });

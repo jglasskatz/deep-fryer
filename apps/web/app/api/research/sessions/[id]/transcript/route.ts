@@ -1,8 +1,9 @@
 import { gunzipSync } from 'node:zlib';
 import { NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
-import { getDb, researchRuns, researchSessions } from '@deep-fryer/db';
+import { researchRuns, researchSessions } from '@deep-fryer/db';
 import { getRole, roleAtLeast } from '@/lib/auth';
+import { systemDb } from '@/lib/db';
 
 /**
  * Session transcript (SPEC.md §8, §11): owner/audit access only. The default
@@ -13,7 +14,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const db = getDb();
+  const db = systemDb();
 
   const [session] = await db.select().from(researchSessions).where(eq(researchSessions.id, id));
   if (!session) return NextResponse.json({ error: 'unknown session' }, { status: 404 });

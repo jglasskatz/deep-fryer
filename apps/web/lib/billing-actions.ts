@@ -5,7 +5,6 @@ import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { PLANS, PURCHASABLE_PLANS, isPlanId, type BillingInterval, type PlanId } from '@deep-fryer/core';
 import {
-  getDb,
   organizationBySlug,
   organizations,
   subscriptionFor,
@@ -16,9 +15,10 @@ import { getAuth, requireOrgRole } from './auth';
 import { action, UserError } from './action-result';
 import { appUrl } from './env';
 import { ensureCustomer, priceFor, stripe, syncSubscription } from './stripe';
+import { systemDb } from './db';
 
 async function orgForBilling(orgSlug: string): Promise<Organization> {
-  const org = await organizationBySlug(getDb(), orgSlug);
+  const org = await organizationBySlug(systemDb(), orgSlug);
   if (!org) throw new UserError('Unknown organization.');
   await requireOrgRole(org.id, ['owner', 'billing']);
   return org;
@@ -31,7 +31,7 @@ function purchasable(plan: string): PlanId {
 
 /** One live Stripe subscription per organization; changes go through the portal. */
 async function refuseIfStripeManaged(orgId: string) {
-  const sub = await subscriptionFor(getDb(), orgId);
+  const sub = await subscriptionFor(systemDb(), orgId);
   if (
     sub?.stripeSubscriptionId &&
     !['canceled', 'incomplete_expired'].includes(sub.status)
@@ -99,7 +99,7 @@ export const requestInvoiceBilling = action(
     await refuseIfStripeManaged(org.id);
     const price = await priceFor(plan, 'year');
 
-    const db = getDb();
+    const db = systemDb();
     await db
       .update(organizations)
       .set({ billingEmail: details.billingEmail, taxExempt: details.taxExempt })
@@ -155,10 +155,10 @@ export const setContract = action(
   async (input: z.input<typeof contractSchema> & { orgSlug: string }) => {
     const ctx = await getAuth();
     if (!ctx.isStaff) throw new UserError('Only deep-fryer staff can set contract terms.');
-    const org = await organizationBySlug(getDb(), input.orgSlug);
+    const org = await organizationBySlug(systemDb(), input.orgSlug);
     if (!org) throw new UserError('Unknown organization.');
     const c = contractSchema.parse(input);
-    const db = getDb();
+    const db = systemDb();
     const existing = await subscriptionFor(db, org.id);
     if (existing?.stripeSubscriptionId && !['canceled', 'incomplete_expired'].includes(existing.status)) {
       throw new UserError('This organization pays through Stripe; change its plan there.');

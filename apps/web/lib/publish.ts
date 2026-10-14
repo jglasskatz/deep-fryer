@@ -1,7 +1,7 @@
 import 'server-only';
 import { revalidatePath } from 'next/cache';
 import { and, eq } from 'drizzle-orm';
-import { dimensions, dimensionVersions, getDb, type Tenant } from '@deep-fryer/db';
+import { dimensions, dimensionVersions, type DbExecutor, type Tenant } from '@deep-fryer/db';
 import { audit } from './audit';
 import { UserError } from './action-result';
 
@@ -11,12 +11,17 @@ import { UserError } from './action-result';
  * status and the pointer. The three writes are one transaction so the public
  * plane never observes a dimension with no published version mid-swap.
  *
- * Callers have already authorized the tenant (editor+); this is the shared
- * implementation behind the publish action, approve-and-publish, and flag-gap.
+ * Callers have already authorized the tenant (editor+) and pass their userDb
+ * transaction, so row-level security re-checks the editor role and the audit
+ * entry commits with the change. Shared by the publish action,
+ * approve-and-publish, and flag-gap.
  */
-export async function publishVersionFor(tenant: Tenant, versionId: string, revert = false) {
-  const db = getDb();
-
+export async function publishVersionFor(
+  db: DbExecutor,
+  tenant: Tenant,
+  versionId: string,
+  revert = false,
+) {
   const [version] = await db
     .select()
     .from(dimensionVersions)
@@ -57,6 +62,7 @@ export async function publishVersionFor(tenant: Tenant, versionId: string, rever
     revert ? 'revert' : 'publish',
     { published_version_id: previousPublishedId },
     { published_version_id: version.id, version_num: version.versionNum },
+    db,
   );
 
   revalidatePath(`/${tenant.slug}`);

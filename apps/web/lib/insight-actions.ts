@@ -2,12 +2,13 @@
 
 import { revalidatePath } from 'next/cache';
 import { and, eq } from 'drizzle-orm';
-import { dimensions, getDb } from '@deep-fryer/db';
+import { dimensions } from '@deep-fryer/db';
 import { getAuth, requireTenantRole } from './auth';
 import { audit } from './audit';
 import { configValue } from './admin-data';
 import { createPlannedRun, applyRun } from './research';
 import { action, UserError } from './action-result';
+import { userDb } from './db';
 
 /**
  * Request additional research for one dimension from the insights surface.
@@ -28,11 +29,12 @@ export const requestResearch = action(async (input: {
     throw new UserError('Additional-research requests are not enabled for this portrait.');
   }
 
-  const db = getDb();
-  const [dimension] = await db
-    .select()
-    .from(dimensions)
-    .where(and(eq(dimensions.tenantId, tenant.id), eq(dimensions.slug, input.dimensionSlug)));
+  const [dimension] = await userDb((db) =>
+    db
+      .select()
+      .from(dimensions)
+      .where(and(eq(dimensions.tenantId, tenant.id), eq(dimensions.slug, input.dimensionSlug))),
+  );
   if (!dimension) throw new UserError('Unknown dimension.');
 
   const note = input.note.trim().slice(0, 2000);

@@ -17,7 +17,6 @@ import {
   appendDimensionVersion,
   dimensions,
   dimensionVersions,
-  getDb,
   latestVersion,
   tenantConfig,
   tenants,
@@ -28,6 +27,7 @@ import { audit } from './audit';
 import { configValue } from './admin-data';
 import { action, UserError } from './action-result';
 import { publishVersionFor } from './publish';
+import { userDb } from './db';
 
 /**
  * Re-run the thresholds engine over numeric indicators (SPEC.md §8 Scoring):
@@ -78,64 +78,68 @@ export interface SaveDimensionEditInput {
  */
 export const saveDimensionEdit = action(async (input: SaveDimensionEditInput) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
-  const db = getDb();
+  return userDb(async (db) => {
+    const changeNote = input.changeNote.trim();
+    if (!changeNote) throw new UserError('A change note is required for human edits.');
 
-  const changeNote = input.changeNote.trim();
-  if (!changeNote) throw new UserError('A change note is required for human edits.');
+    const parsed = dimensionDataSchema.parse(input.data) as DimensionData;
 
-  const parsed = dimensionDataSchema.parse(input.data) as DimensionData;
+    const [dimension] = await db
+      .select()
+      .from(dimensions)
+      .where(and(eq(dimensions.id, input.dimensionId), eq(dimensions.tenantId, tenant.id)));
+    if (!dimension) throw new UserError('Unknown dimension.');
 
-  const [dimension] = await db
-    .select()
-    .from(dimensions)
-    .where(and(eq(dimensions.id, input.dimensionId), eq(dimensions.tenantId, tenant.id)));
-  if (!dimension) throw new UserError('Unknown dimension.');
+    const previous = await latestVersion(db, dimension.id);
 
-  const previous = await latestVersion(db, dimension.id);
-
-  // Value changes need supporting sources (SPEC.md §7 immutability contract).
-  if (previous) {
-    const prevByName = new Map(previous.data.indicators.map((i) => [i.name, i]));
-    for (const ind of parsed.indicators) {
-      const prev = prevByName.get(ind.name);
-      const valueChanged = !prev || String(prev.value ?? '') !== String(ind.value ?? '');
-      if (valueChanged && ind.value !== null && !ind.supporting_source_url?.trim()) {
-        throw new UserError(
-          `Indicator '${ind.name}': value changes require a supporting source URL.`,
-        );
+    // Value changes need supporting sources (SPEC.md §7 immutability contract).
+    if (previous) {
+      const prevByName = new Map(previous.data.indicators.map((i) => [i.name, i]));
+      for (const ind of parsed.indicators) {
+        const prev = prevByName.get(ind.name);
+        const valueChanged = !prev || String(prev.value ?? '') !== String(ind.value ?? '');
+        if (valueChanged && ind.value !== null && !ind.supporting_source_url?.trim()) {
+          throw new UserError(
+            `Indicator '${ind.name}': value changes require a supporting source URL.`,
+          );
+        }
       }
     }
-  }
 
-  const overrides = await configValue(tenant.id, 'threshold_overrides');
-  const rescored = rescore(parsed, dimension.slug, dimension.canonicalSlug, overrides);
-  const vizLevel = deriveVizLevel(rescored) ?? previous?.vizLevel ?? null;
+    const overrides = await configValue(tenant.id, 'threshold_overrides');
+    const rescored = rescore(parsed, dimension.slug, dimension.canonicalSlug, overrides);
+    const vizLevel = deriveVizLevel(rescored) ?? previous?.vizLevel ?? null;
 
-  const auth = await getAuth();
-  const version = await appendDimensionVersion(db, {
-    dimensionId: dimension.id,
-    status: 'draft',
-    data: rescored,
-    vizLevel,
-    origin: 'human',
-    changeNote,
-    createdBy: auth.userId,
+    const auth = await getAuth();
+    const version = await appendDimensionVersion(db, {
+      dimensionId: dimension.id,
+      status: 'draft',
+      data: rescored,
+      vizLevel,
+      origin: 'human',
+      changeNote,
+      createdBy: auth.userId,
+    });
+
+    await audit(
+      tenant.id,
+      'dimension_version',
+      version.id,
+      'create_human_version',
+      null,
+      { dimension: dimension.slug, version_num: version.versionNum, change_note: changeNote },
+      db,
+    );
+
+    revalidatePath(`/${tenant.slug}/admin`);
+    return { versionId: version.id, versionNum: version.versionNum };
   });
-
-  await audit(tenant.id, 'dimension_version', version.id, 'create_human_version', null, {
-    dimension: dimension.slug,
-    version_num: version.versionNum,
-    change_note: changeNote,
-  });
-
-  revalidatePath(`/${tenant.slug}/admin`);
-  return { versionId: version.id, versionNum: version.versionNum };
 });
 
 export const publishVersion = action(
   async (input: { tenantSlug: string; versionId: string; revert?: boolean }) => {
     const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
-    await publishVersionFor(tenant, input.versionId, input.revert);
+    await userDb((db) => publishVersionFor(db, tenant, input.versionId, input.revert));
   },
 );
 
@@ -146,36 +150,36 @@ export const updateConfig = action(async (input: {
   value: unknown;
 }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'owner');
-  const db = getDb();
+  return userDb(async (db) => {
+    const schema = tenantConfigSchemas[input.key];
+    if (!schema) throw new UserError(`Unknown config key '${input.key}'.`);
+    const value = schema.parse(input.value);
 
-  const schema = tenantConfigSchemas[input.key];
-  if (!schema) throw new UserError(`Unknown config key '${input.key}'.`);
-  const value = schema.parse(input.value);
+    const [existing] = await db
+      .select()
+      .from(tenantConfig)
+      .where(and(eq(tenantConfig.tenantId, tenant.id), eq(tenantConfig.key, input.key)));
 
-  const [existing] = await db
-    .select()
-    .from(tenantConfig)
-    .where(and(eq(tenantConfig.tenantId, tenant.id), eq(tenantConfig.key, input.key)));
+    const auth = await getAuth();
+    await db
+      .insert(tenantConfig)
+      .values({
+        tenantId: tenant.id,
+        key: input.key,
+        value,
+        updatedBy: auth.userId,
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: [tenantConfig.tenantId, tenantConfig.key],
+        set: { value, updatedBy: auth.userId, updatedAt: new Date() },
+      });
 
-  const auth = await getAuth();
-  await db
-    .insert(tenantConfig)
-    .values({
-      tenantId: tenant.id,
-      key: input.key,
-      value,
-      updatedBy: auth.userId,
-      updatedAt: new Date(),
-    })
-    .onConflictDoUpdate({
-      target: [tenantConfig.tenantId, tenantConfig.key],
-      set: { value, updatedBy: auth.userId, updatedAt: new Date() },
-    });
+    await audit(tenant.id, 'tenant_config', tenant.id, `config:${input.key}`, existing?.value, value, db);
 
-  await audit(tenant.id, 'tenant_config', tenant.id, `config:${input.key}`, existing?.value, value);
-
-  revalidatePath(`/${tenant.slug}/admin/settings`);
-  revalidatePath(`/${tenant.slug}/methodology`);
+    revalidatePath(`/${tenant.slug}/admin/settings`);
+    revalidatePath(`/${tenant.slug}/methodology`);
+  });
 });
 
 /**
@@ -197,7 +201,9 @@ export const updateEmbedOrigins = action(async (input: { tenantSlug: string; ori
     }
   }
   const before = tenant.embedOrigins ?? [];
-  await getDb().update(tenants).set({ embedOrigins: cleaned }).where(eq(tenants.id, tenant.id));
-  await audit(tenant.id, 'tenant', tenant.id, 'embed_origins', before, cleaned);
+  await userDb(async (db) => {
+    await db.update(tenants).set({ embedOrigins: cleaned }).where(eq(tenants.id, tenant.id));
+    await audit(tenant.id, 'tenant', tenant.id, 'embed_origins', before, cleaned, db);
+  });
   revalidatePath(`/${tenant.slug}/admin/settings`);
 });

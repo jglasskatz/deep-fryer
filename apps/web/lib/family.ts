@@ -1,7 +1,8 @@
 import 'server-only';
 import { cache } from 'react';
 import { and, asc, eq, isNull } from 'drizzle-orm';
-import { getDb, organizations, tenants } from '@deep-fryer/db';
+import { organizations, tenants } from '@deep-fryer/db';
+import { userDb } from './db';
 import { hasDatabase } from './env';
 
 /**
@@ -42,17 +43,21 @@ function initials(name: string): string {
 
 export const familyByOrgSlug = cache(async (orgSlug: string): Promise<Family | null> => {
   if (!hasDatabase()) return null;
-  const db = getDb();
-  const [org] = await db
-    .select()
-    .from(organizations)
-    .where(and(eq(organizations.slug, orgSlug), isNull(organizations.archivedAt)));
-  if (!org) return null;
-  const rows = await db
-    .select()
-    .from(tenants)
-    .where(and(eq(tenants.organizationId, org.id), isNull(tenants.archivedAt)))
-    .orderBy(asc(tenants.familyOrder), asc(tenants.name));
+  const found = await userDb(async (db) => {
+    const [org] = await db
+      .select()
+      .from(organizations)
+      .where(and(eq(organizations.slug, orgSlug), isNull(organizations.archivedAt)));
+    if (!org) return null;
+    const rows = await db
+      .select()
+      .from(tenants)
+      .where(and(eq(tenants.organizationId, org.id), isNull(tenants.archivedAt)))
+      .orderBy(asc(tenants.familyOrder), asc(tenants.name));
+    return { org, rows };
+  });
+  if (!found) return null;
+  const { org, rows } = found;
   return {
     organization: { id: org.id, slug: org.slug, name: org.name },
     members: rows.map((t) => ({ slug: t.slug, name: t.name, short: t.shortName ?? initials(t.name) })),
@@ -64,11 +69,13 @@ export const familyByOrgSlug = cache(async (orgSlug: string): Promise<Family | n
 /** The family a portrait belongs to, or null when it stands alone. */
 export const familyForTenant = cache(async (tenantSlug: string): Promise<Family | null> => {
   if (!hasDatabase()) return null;
-  const [row] = await getDb()
-    .select({ orgSlug: organizations.slug })
-    .from(tenants)
-    .innerJoin(organizations, eq(organizations.id, tenants.organizationId))
-    .where(eq(tenants.slug, tenantSlug));
+  const [row] = await userDb((db) =>
+    db
+      .select({ orgSlug: organizations.slug })
+      .from(tenants)
+      .innerJoin(organizations, eq(organizations.id, tenants.organizationId))
+      .where(eq(tenants.slug, tenantSlug)),
+  );
   if (!row) return null;
   const family = await familyByOrgSlug(row.orgSlug);
   return family && family.members.length > 1 ? family : null;
@@ -78,11 +85,13 @@ export const familyForTenant = cache(async (tenantSlug: string): Promise<Family 
 export const organizationOfTenant = cache(
   async (tenantSlug: string): Promise<{ id: string; slug: string; name: string } | null> => {
     if (!hasDatabase()) return null;
-    const [row] = await getDb()
-      .select({ id: organizations.id, slug: organizations.slug, name: organizations.name })
-      .from(tenants)
-      .innerJoin(organizations, eq(organizations.id, tenants.organizationId))
-      .where(eq(tenants.slug, tenantSlug));
+    const [row] = await userDb((db) =>
+      db
+        .select({ id: organizations.id, slug: organizations.slug, name: organizations.name })
+        .from(tenants)
+        .innerJoin(organizations, eq(organizations.id, tenants.organizationId))
+        .where(eq(tenants.slug, tenantSlug)),
+    );
     return row ?? null;
   },
 );
