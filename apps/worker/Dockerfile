@@ -1,14 +1,15 @@
 # Research-plane worker (SPEC.md §4), also used as the one-shot migration
 # job (it carries the full workspace source and tsx). Decoupled from the web
 # app by the Postgres-backed queue.
-ARG NODE_IMAGE=node:22-slim
-FROM ${NODE_IMAGE} AS base
-
-# Chromium for Playwright evidence capture (decision D).
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    chromium fonts-liberation ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-ENV CHROMIUM_PATH=/usr/bin/chromium
+#
+# Based on Playwright's own image: it carries Node, the Chromium build that
+# playwright-core drives, and that build's system libraries, all pinned
+# together. The tag must equal the playwright-core version in
+# apps/worker/package.json (exact pin) — src/image.test.ts fails CI when the
+# two drift, because a mismatched browser fails evidence capture at runtime,
+# not at build time.
+ARG PLAYWRIGHT_IMAGE=mcr.microsoft.com/playwright:v1.62.1-noble
+FROM ${PLAYWRIGHT_IMAGE}
 
 RUN corepack enable
 WORKDIR /app
@@ -29,8 +30,8 @@ RUN pnpm install --frozen-lockfile --filter @deep-fryer/worker... --filter "deep
 
 # Never run research sessions (or the browser that renders untrusted pages)
 # as root (SPEC-v3 §2.3). Source stays root-owned and read-only to `node`.
-USER node
-ENV NODE_ENV=production HOME=/home/node
+USER pwuser
+ENV NODE_ENV=production HOME=/home/pwuser
 WORKDIR /app/apps/worker
 
 # Required at runtime: DATABASE_URL, ANTHROPIC_API_KEY, S3_* (evidence).

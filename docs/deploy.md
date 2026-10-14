@@ -1,7 +1,7 @@
 # Deploying deep-fryer
 
 Fully self-hosted (SPEC-v3 §2.4, SPEC-v4): one droplet (or any Docker host)
-running `docker compose` — Postgres 16, MinIO for evidence, a one-shot
+running `docker compose` — Postgres 16, SeaweedFS (S3-compatible) for evidence, a one-shot
 migration job, the web app, the research worker, and Caddy for TLS. No
 managed services are required; Stripe and an SMTP relay are optional
 integrations.
@@ -26,7 +26,7 @@ Required:
 | `SITE_ADDRESS` | the DNS name (Caddy gets the certificate) |
 | `APP_URL` | `https://<SITE_ADDRESS>` |
 | `AUTH_SECRET` | `openssl rand -base64 32` |
-| `POSTGRES_PASSWORD`, `MINIO_ROOT_PASSWORD` | long random strings |
+| `POSTGRES_PASSWORD`, `STORAGE_SECRET_KEY` | `openssl rand -hex 32` (the storage key may contain only letters, digits, `.`, `_`, `-`) |
 | a sign-in method | `AUTH_MICROSOFT_ENTRA_ID_*` (Microsoft 365 cities), `AUTH_GOOGLE_*`, and/or `SMTP_URL` + `EMAIL_FROM` |
 
 The web app **refuses to start** in production if any required value is
@@ -50,10 +50,14 @@ docker compose logs -f migrate web     # migrations apply, then web starts
 curl https://<SITE_ADDRESS>/api/health # {"ok":true}
 ```
 
-Evidence snapshots live in MinIO and are served read-only at
-`https://<SITE_ADDRESS>/files/…` (same origin, so the CSP and the offline
-cache treat them as first-party). To use DigitalOcean Spaces or S3 instead,
-set the `S3_*` variables (see `.env.example`) and drop the `minio` services.
+Evidence snapshots live in the `storage` service (SeaweedFS) and are served
+read-only at `https://<SITE_ADDRESS>/files/…` (same origin, so the CSP and the
+offline cache treat them as first-party). The app's storage identity can read
+and write objects in the evidence bucket but cannot create or delete buckets;
+anonymous callers can fetch objects but not list them
+(`deploy/storage/start.sh`). To use DigitalOcean Spaces or S3 instead, point
+the `S3_*` entries of `x-app-env` in `docker-compose.yml` at them and drop the
+`storage` services.
 
 ## 4. First organization
 
@@ -86,17 +90,20 @@ In the Stripe Dashboard, enable the invoice payment methods governments use
 ## 6. Operations
 
 - **Backups:** `docker compose exec db pg_dump -U deep_fryer -Fc deep_fryer > backup.dump`
-  nightly, plus the `minio` volume (evidence is the audit record — back it up
-  with the same retention as the database).
+  nightly, plus the `storage` volume (evidence is the audit record — back it
+  up with the same retention as the database).
 - **Upgrades:** `git pull && docker compose up -d --build` — the migrate job
   runs first and the app waits for it.
 - **Scaling research:** `docker compose up -d --scale worker=3`; sessions are
   independent and the queue is in Postgres.
 - **Legacy Supabase data:** memberships from the Supabase era point at user
   ids with no login; re-invite those people from each portrait's Members page.
-
-## Known gaps (see docs/SPEC-v4.md §6)
-
-The app connects as the database owner, so row-level security is defined but
-not yet enforced at the database layer (app-layer checks are the enforcing
-layer today).
+- **Database roles:** migrations create `deep_fryer_app` (no login, no
+  `BYPASSRLS`) and grant it to the connecting user. Every user-driven query
+  runs inside a transaction that switches to that role and sets the caller's
+  id, so row-level security is enforced by Postgres (SPEC-v4 §6). Only
+  identity resolution, billing, invitations, webhooks, and the worker use the
+  owner connection.
+- **Mail:** with `SMTP_URL` set, the worker emails each portrait's owners,
+  editors, and organization owners when a research run finishes, fails, or
+  flags findings (per the portrait's notification settings).

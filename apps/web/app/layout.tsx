@@ -1,11 +1,15 @@
 import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
-import { Inter } from 'next/font/google';
 import { ServiceWorkerRegistrar } from '@/components/pwa/ServiceWorkerRegistrar';
 import { appUrl } from '@/lib/env';
+// Inter ships with the app (all Latin, Cyrillic, Greek and Vietnamese
+// subsets, each loaded only when a page uses it) rather than through
+// next/font/google: builds need no network access to Google, and the
+// Russian / Polish / French language pages render in the same face. Scripts
+// Inter lacks (Chinese, Korean, Bengali, Arabic, Urdu) fall back to the
+// system fonts in --font-sans.
+import '@fontsource-variable/inter';
 import './globals.css';
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl()),
@@ -39,7 +43,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // CSP nonce requires (middleware.ts); Next stamps the nonce on its scripts.
   await headers();
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en">
       <body className="min-h-screen antialiased">
         {children}
         <ServiceWorkerRegistrar />

@@ -46,7 +46,7 @@ open-doughnut plugin.
 | `DATABASE_URL` | Postgres (queue + rows) |
 | `ANTHROPIC_API_KEY` | Inference (our key — metered per tenant) |
 | `ANTHROPIC_MODEL` | Session model (default `claude-sonnet-5`) |
-| `S3_BUCKET`, `S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_FORCE_PATH_STYLE` | Evidence storage (MinIO / Spaces / S3) |
+| `S3_BUCKET`, `S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_FORCE_PATH_STYLE` | Evidence storage (SeaweedFS in compose / Spaces / S3) |
 | `OPEN_DOUGHNUT_PLUGIN_DIR` | Plugin location (set by the image) |
 | `CHROMIUM_PATH` | Playwright browser binary |
 | `WORKER_CONCURRENCY` | Parallel sessions per instance (default 1) |

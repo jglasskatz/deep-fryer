@@ -18,8 +18,10 @@ are the first things to review.
 | Billing | Non-goal | Plans with hard quotas; Stripe card checkout, annual invoice + PO, staff contracts |
 | Monitoring | Snapshot only | Progress from published history against adopted targets and their due years |
 | Delivery | Website | Installable PWA with offline public portraits |
-| Storage | Supabase Storage | S3-compatible (MinIO / Spaces / S3), served same-origin |
-| Deploy | Supabase + containers | Droplet + compose: Postgres, MinIO, migrate job, web, worker, Caddy |
+| Storage | Supabase Storage | S3-compatible (SeaweedFS in compose / Spaces / S3), served same-origin |
+| Deploy | Supabase + containers | Droplet + compose: Postgres, SeaweedFS, migrate job, web, worker, Caddy |
+| Access control | RLS defined, app connects as owner | RLS **enforced**: user-driven queries run as `deep_fryer_app` with the caller's id |
+| Notifications | Config only | Worker emails run-complete, failed-run, and flagged-finding notices |
 
 ## 2. Organizations, roles, onboarding
 
@@ -115,12 +117,38 @@ CHECK; published-version FK + guard trigger; audit insert policy;
 transactional provisioning; atomic version numbering; worker egress guard;
 non-overwriting evidence keys; non-root worker and web images.
 
-**Not yet done — next hardening step:** the app still connects as the
-database owner, so RLS is defined and kept consistent but not *enforced*
-(SPEC-v3 §2.2 items 1–2: non-owner `deep_fryer_app` role, `FORCE ROW LEVEL
-SECURITY`, `withAuthContext`). `auth.uid()` already reads `app.user_id`, so
-that change is mechanical but touches every query path. Transcripts are
-still a column on `research_sessions` (item 3's table split).
+**Row-level security is enforced** (SPEC-v3 §2.2 items 1–3). Migration 0005
+creates `deep_fryer_app` (NOLOGIN, NOBYPASSRLS) and grants it to the
+connecting user. `withAuthContext` (packages/db) opens a transaction, sets
+`app.user_id` (what `auth.uid()` reads) with `set_config(…, true)`, and
+`SET LOCAL ROLE deep_fryer_app`, so both expire with the transaction and a
+pooled connection never carries one request's identity into the next. The
+web app's `userDb()` wraps every read and write a person drives — public
+pages, admin, review, discussion, progress — and `systemDb()` (the owner
+connection) is reserved for identity resolution, billing and the Stripe
+webhook, invitation acceptance, middleware framing checks, and the worker.
+Policies grant anonymous reads only of published material (non-archived
+tenants, public config keys, published dimension versions and outreach,
+lock/restore moderation). Transcripts stay a column, but the app role has no
+column grant on it: only the review UI's transcript route (owner/editor,
+system context) can read it. Display names cross the boundary through
+`public_display_names()` (security definer, names only). A trigger
+(migration 0006) keeps comment placement and authorship immutable for the
+app role and separates author edits from moderator removals.
+`packages/db/src/rls.test.ts` proves isolation as the app role.
+
+**Notifications.** After every run settles the worker emails the portrait's
+owners and editors plus the organization's owners — one message per
+recipient — honoring the portrait's notification settings: a run summary
+with the human-gate reminder and review-queue link, a flags-only notice when
+run mail is off, and a failure notice. Mail failure never fails the run.
+
+**Images.** The worker image is Playwright's own (`mcr.microsoft.com/playwright`),
+pinned to the exact `playwright-core` version — a test fails CI if they
+drift. Inter is bundled with the web app, so image builds need no access to
+Google Fonts. The compose object store is SeaweedFS with two identities
+generated at boot: the app (read/write/list on the evidence bucket only, no
+bucket administration) and anonymous (object reads only, no listing).
 
 ## 7. Accessibility and NYC requirements
 

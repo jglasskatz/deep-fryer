@@ -5,17 +5,30 @@
 	encode zstd gzip
 
 	# Evidence snapshots: public, read-only, same-origin (so the CSP and the
-	# offline cache treat them like the app's own images). Served from the
-	# MinIO bucket; writes are impossible through this path.
-	handle_path /files/* {
+	# offline cache treat them like the app's own images), served from the
+	# storage bucket. Only GET/HEAD of a concrete object reach the store: the
+	# query string is dropped (no ?acl, ?tagging, ?list-type) and the bucket
+	# root is never proxied. The store itself also grants anonymous callers
+	# object reads only (deploy/storage/start.sh). Objects carry their own
+	# immutable Cache-Control from upload, so error responses stay uncached.
+	# One rewrite (Caddy orders `rewrite` before `uri`, so the prefix strip
+	# and the bucket prefix cannot be separate directives): /files/<key> →
+	# /<bucket>/<key>, with the trailing `?` discarding the query string.
+	@evidence path_regexp evidence ^/files/([^/]+/.+)$
+	handle @evidence {
 		@write not method GET HEAD
 		respond @write 405
-		rewrite * /{$S3_BUCKET}{uri}
-		reverse_proxy minio:9000 {
-			header_up Host minio:9000
+		rewrite * /{$S3_BUCKET}/{re.evidence.1}?
+		reverse_proxy storage:8333 {
+			# Store internals (owner identity, request ids) stay internal.
+			header_down -Server
+			header_down -X-Amz-*
+			header_down -Seaweed-*
 		}
-		header Cache-Control "public, max-age=31536000, immutable"
 		header X-Content-Type-Options nosniff
+	}
+	handle /files/* {
+		respond 404
 	}
 
 	reverse_proxy web:3000

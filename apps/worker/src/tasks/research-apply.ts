@@ -22,6 +22,7 @@ import { closeEvidenceBrowser } from '../evidence.js';
 import { extractJson, runSession, runSessionWithRetry } from '../session.js';
 import { tenantStorage } from '../storage.js';
 import { notifyRunFinished } from '../notify.js';
+import { settledRunStatus } from './run-status.js';
 
 /**
  * Apply (SPEC.md §8): phase-0 region-context session first, its brief
@@ -218,8 +219,17 @@ export const researchApply: Task = async (rawPayload, helpers) => {
       }),
     );
 
-    await finish('complete');
-    helpers.logger.info(`run ${runId} complete`);
+    const settled = settledRunStatus(
+      (
+        await db
+          .select({ status: researchSessions.status })
+          .from(researchSessions)
+          .where(eq(researchSessions.runId, runId))
+      ).map((r) => r.status),
+    );
+    await finish(settled);
+    if (settled === 'complete') helpers.logger.info(`run ${runId} complete`);
+    else helpers.logger.error(`run ${runId} failed: no session succeeded`);
   } catch (err) {
     helpers.logger.error(`run ${runId} failed: ${err instanceof Error ? err.message : err}`);
     await db

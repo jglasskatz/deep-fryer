@@ -33,7 +33,15 @@ describe('composeRunEmail', () => {
   it('reports failures without blaming the customer', () => {
     const e = composeRunEmail({ ...base, status: 'failed', failedSessions: 5 }, all, 'https://x')!;
     expect(e.subject).toBe('Research run failed — The Bronx');
-    expect(e.text).toContain('failed sessions are not counted against your plan');
+    expect(e.text).toContain('Failed sessions are not counted against your plan');
+    expect(e.text).toContain('Findings recorded before the failure');
+  });
+
+  it('points at configuration when a failed run recorded nothing', () => {
+    const e = composeRunEmail({ ...base, status: 'failed', findings: 0, failedSessions: 7, sessions: 7 }, all, 'https://x')!;
+    expect(e.text).toContain('7 of 7 sessions did not complete');
+    expect(e.text).toContain('No findings were recorded');
+    expect(e.text).not.toContain('Findings recorded before the failure');
   });
 });
 

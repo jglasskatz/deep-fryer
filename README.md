@@ -29,7 +29,7 @@ The "doughnut" between them is the safe and just space for humanity. Cities use 
 - `packages/research` — plan rendering from plugin templates + portrait config, deterministic verification, queue
 - `vendor/open-doughnut` — the vendored Claude Code plugin (agents, skills, commands): the identical artifact the OSS community runs
 - `scripts/` — `create-tenant`, `provision-nyc`, `stripe-setup`, `import-santa-cruz` (migrates the SC portrait with its evidence), research gates and exports
-- `deploy/`, `docker-compose.yml` — the self-hosted stack (Postgres, MinIO, migrate, web, worker, Caddy)
+- `deploy/`, `docker-compose.yml` — the self-hosted stack (Postgres, SeaweedFS object storage, migrate, web, worker, Caddy)
 
 ## Getting started
 

@@ -13,7 +13,7 @@ export interface TenantStorage {
 }
 
 /**
- * S3-compatible object storage settings (SPEC-v3 §2.1: MinIO on the
+ * S3-compatible object storage settings (SPEC-v3 §2.1: SeaweedFS on the
  * droplet, DigitalOcean Spaces, or AWS S3). One bucket, one prefix per
  * tenant (`tenant-<slug>/`) — the S3 form of v2's bucket-per-tenant.
  */
@@ -23,7 +23,7 @@ export interface S3Settings {
   endpoint?: string;
   accessKeyId: string;
   secretAccessKey: string;
-  /** MinIO needs path-style addressing; Spaces and AWS use virtual hosts. */
+  /** Self-hosted stores need path-style addressing; Spaces and AWS use virtual hosts. */
   forcePathStyle: boolean;
 }
 

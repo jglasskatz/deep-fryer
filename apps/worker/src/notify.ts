@@ -60,8 +60,10 @@ export function composeRunEmail(
     return {
       subject: `Research run failed — ${s.tenantName}`,
       text: [
-        `A research run for ${s.tenantName} stopped before finishing (${s.failedSessions} of ${s.sessions} sessions failed).`,
-        `Findings recorded before the failure (${s.findings}) are in the review queue; failed sessions are not counted against your plan.`,
+        `A research run for ${s.tenantName} failed: ${s.failedSessions} of ${s.sessions} sessions did not complete.`,
+        s.findings > 0
+          ? `Findings recorded before the failure (${s.findings}) are in the review queue. Failed sessions are not counted against your plan.`
+          : 'No findings were recorded. Failed sessions are not counted against your plan; if every session failed the same way, ask your administrator to check the research service configuration.',
         `Re-plan the affected dimensions from the review queue: ${link}`,
       ].join('\n\n'),
     };

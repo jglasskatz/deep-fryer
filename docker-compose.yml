@@ -1,19 +1,19 @@
-# deep-fryer self-hosted stack (SPEC-v3 §2.4): Postgres, MinIO, a one-shot
-# migration job, web, worker, and Caddy for TLS — one droplet, no managed
-# dependencies. Configure with a .env file next to this one (see
-# .env.example), then:
+# deep-fryer self-hosted stack (SPEC-v3 §2.4): Postgres, an S3-compatible
+# object store (SeaweedFS), a one-shot migration job, web, worker, and Caddy
+# for TLS — one droplet, no managed dependencies. Configure with a .env file
+# next to this one (see .env.example), then:
 #
 #   docker compose up -d --build
 #
-# Local development without containers for the app: `docker compose up -d db
-# minio minio-init` and run web/worker with pnpm.
+# Local development without containers for the app: `docker compose up -d db`
+# and run web/worker with pnpm (evidence then lands on local disk).
 x-app-env: &app-env
   DATABASE_URL: postgres://${POSTGRES_USER:-deep_fryer}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-deep_fryer}
-  S3_ENDPOINT: http://minio:9000
+  S3_ENDPOINT: http://storage:8333
   S3_REGION: us-east-1
   S3_BUCKET: ${S3_BUCKET:-deep-fryer-evidence}
-  S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-deepfryer}
-  S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
+  S3_ACCESS_KEY_ID: ${STORAGE_ACCESS_KEY:-deepfryer}
+  S3_SECRET_ACCESS_KEY: ${STORAGE_SECRET_KEY:?set STORAGE_SECRET_KEY}
   S3_FORCE_PATH_STYLE: 'true'
   S3_PUBLIC_URL: ${APP_URL:?set APP_URL}/files
 
@@ -35,42 +35,53 @@ services:
       timeout: 5s
       retries: 20
 
-  minio:
-    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+  # Evidence snapshots (the audit record behind every published claim).
+  # Credentials and the anonymous-read policy are generated at boot by
+  # deploy/storage/start.sh; the S3 port is reachable only on the compose
+  # network and from the host's loopback.
+  storage:
+    image: chrislusf/seaweedfs:4.48
     restart: unless-stopped
-    command: server /data --console-address :9001
+    entrypoint: ['/bin/sh', '/deploy/start.sh']
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-deepfryer}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
+      S3_BUCKET: ${S3_BUCKET:-deep-fryer-evidence}
+      STORAGE_ACCESS_KEY: ${STORAGE_ACCESS_KEY:-deepfryer}
+      STORAGE_SECRET_KEY: ${STORAGE_SECRET_KEY:?set STORAGE_SECRET_KEY}
     volumes:
-      - minio:/data
+      - ./deploy/storage/start.sh:/deploy/start.sh:ro
+      - storage:/data
     ports:
-      - '127.0.0.1:9000:9000'
-      - '127.0.0.1:9001:9001'
+      - '127.0.0.1:8333:8333'
     healthcheck:
-      test: ['CMD', 'mc', 'ready', 'local']
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1:8333/healthz']
       interval: 5s
       timeout: 5s
-      retries: 20
+      retries: 30
 
-  # Creates the evidence bucket with anonymous *read* (snapshots are public
-  # records displayed beside each published claim).
-  minio-init:
-    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
+  # Creates the evidence bucket once (idempotent). Runs inside the storage
+  # network with the cluster shell, so the app identity never needs the
+  # bucket-admin rights that could also delete it.
+  storage-init:
+    image: chrislusf/seaweedfs:4.48
     depends_on:
-      minio:
+      storage:
         condition: service_healthy
-    entrypoint: >
-      /bin/sh -c "
-      mc alias set local http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD} &&
-      mc mb --ignore-existing local/$${S3_BUCKET} &&
-      mc anonymous set download local/$${S3_BUCKET}"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        set -u
+        # weed shell exits 1 for "already exists" — that is success here
+        # (every `docker compose up` after the first), so judge the output.
+        out=$$(echo "s3.bucket.create -name $${S3_BUCKET}" | weed shell -master=storage:9333 2>&1)
+        echo "$$out"
+        echo "$$out" | grep -qE "created bucket|already exists"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-deepfryer}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
       S3_BUCKET: ${S3_BUCKET:-deep-fryer-evidence}
 
-  # Applies SQL migrations, then exits; web and worker wait for it.
+  # Applies SQL migrations, then exits; web and worker wait for it. Also the
+  # ops shell (docs/deploy.md §4): `docker compose run --rm migrate node
+  # --import tsx ../../scripts/<script>.ts`, so it carries the app's env.
   migrate:
     build:
       context: .
@@ -81,6 +92,7 @@ services:
     working_dir: /app/packages/db
     command: ['node', '--import', 'tsx', 'src/migrate.ts']
     environment:
+      <<: *app-env
       MIGRATION_DATABASE_URL: postgres://${POSTGRES_USER:-deep_fryer}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-deep_fryer}
 
   web:
@@ -91,7 +103,7 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-      minio-init:
+      storage-init:
         condition: service_completed_successfully
     environment:
       <<: *app-env
@@ -119,7 +131,7 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-      minio-init:
+      storage-init:
         condition: service_completed_successfully
     environment:
       <<: *app-env
@@ -137,6 +149,7 @@ services:
     restart: unless-stopped
     depends_on:
       - web
+      - storage
     ports:
       - '80:80'
       - '443:443'
@@ -150,6 +163,6 @@ services:
 
 volumes:
   pgdata:
-  minio:
+  storage:
   caddy_data:
   caddy_config:

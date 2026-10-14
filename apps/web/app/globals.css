@@ -5,7 +5,7 @@
   --color-fg: #1a1a1a;
   --color-accent: #2f7d32;
   --color-muted: #6b7280;
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {

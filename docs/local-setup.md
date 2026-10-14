@@ -4,8 +4,8 @@
 
 - Node.js 20+ (see `.nvmrc`) and pnpm 9 (`corepack enable`).
 - Postgres 15+ for anything beyond the bundled demo portrait — a local
-  install, or `docker compose up -d db minio minio-init` for Postgres plus
-  S3-compatible evidence storage.
+  install, or `docker compose up -d db` (add `storage storage-init` for
+  S3-compatible evidence storage on 127.0.0.1:8333).
 
 ## Install and configure
 
