@@ -20,7 +20,7 @@ export default async function TenantPage({
         variant="tenant"
         tenant={{ slug: portrait.tenant.slug, name: portrait.tenant.name }}
       />
-      <main id="main" className="mx-auto max-w-5xl px-6 py-12">
+      <main id="main" className="mx-auto max-w-5xl px-4 sm:px-6 py-12">
         <header>
           <h1 className="text-3xl font-bold">{portrait.tenant.name}</h1>
           <p className="mt-1 text-sm text-[color:var(--color-muted)]">

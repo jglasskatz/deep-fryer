@@ -36,7 +36,7 @@ export default async function LoginPage({
     return (
       <>
         <SiteHeader variant="landing" />
-        <main id="main" className="mx-auto max-w-md px-6 py-20 text-center">
+        <main id="main" className="mx-auto max-w-md px-4 sm:px-6 py-20 text-center">
           <h1 className="text-2xl font-bold">Sign in</h1>
           <p className="mt-6 text-sm text-[color:var(--color-muted)]">
             Authentication is not configured (no <code>AUTH_SECRET</code>). Local development runs
@@ -80,7 +80,7 @@ export default async function LoginPage({
   return (
     <>
       <SiteHeader variant="landing" />
-      <main id="main" className="mx-auto max-w-md px-6 py-16">
+      <main id="main" className="mx-auto max-w-md px-4 sm:px-6 py-16">
         <h1 className="text-2xl font-bold">Sign in</h1>
         <p className="mt-2 text-sm text-[color:var(--color-muted)]">
           City staff use their work account. Residents can sign in to join a portrait&apos;s

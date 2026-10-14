@@ -74,10 +74,10 @@ export default async function TenantAdminPage({
   return (
     <>
       <SiteHeader variant="admin" tenant={{ slug: ctx.tenant.slug, name: ctx.tenant.name }} />
-      <main id="main" className="mx-auto max-w-6xl px-6 py-10">
-        <div className="flex items-center justify-between">
+      <main id="main" className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-3xl font-bold">Admin</h1>
-          <nav className="flex gap-3 text-sm">
+          <nav aria-label="Admin sections" className="flex flex-wrap gap-2 text-sm">
             <Link className="rounded border px-3 py-1.5 hover:bg-black/5" href={`/${tenant}/admin/review`}>
               Review queue{activeRuns.length ? ` (${activeRuns.length} active)` : ''}
             </Link>
@@ -129,7 +129,8 @@ export default async function TenantAdminPage({
 
         <section className="mt-8">
           <h2 className="text-lg font-semibold">Dimensions</h2>
-          <table className="mt-3 w-full border-collapse text-sm">
+          <div className="mt-3 overflow-x-auto">
+<table className="w-full min-w-[720px] border-collapse text-sm">
             <thead>
               <tr className="border-b text-left text-[color:var(--color-muted)]">
                 <th className="py-2 pr-4">Dimension</th>
@@ -179,7 +180,7 @@ export default async function TenantAdminPage({
                         </span>
                       ) : null}
                     </td>
-                    <td className="py-2 pr-4">{count > 0 ? `${count} comments` : '—'}</td>
+                    <td className="py-2 pr-4">{count > 0 ? `${count} comment${count === 1 ? '' : 's'}` : '—'}</td>
                     <td className="py-2 pr-4">
                       <Link className="underline" href={`/${tenant}/admin/dim/${dimension.id}`}>
                         Edit
@@ -190,6 +191,7 @@ export default async function TenantAdminPage({
               })}
             </tbody>
           </table>
+</div>
         </section>
 
         <section className="mt-10">

@@ -130,7 +130,8 @@ export function MembersPanel({
                 <>Invitation emailed to {sent.email}.</>
               ) : (
                 <>
-                  Email is not configured on this server — send {sent.email} this link yourself:
+                  The invitation email could not be sent from this server — send {sent.email} this
+                  link yourself:
                   <input
                     readOnly
                     className="mt-2 w-full rounded border border-black/15 bg-white px-2 py-1 font-mono text-xs"

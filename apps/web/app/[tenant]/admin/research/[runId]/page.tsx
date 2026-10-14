@@ -31,7 +31,7 @@ export default async function RunDetailPage({
   return (
     <>
       <SiteHeader variant="admin" tenant={{ slug: ctx.tenant.slug, name: ctx.tenant.name }} />
-      <main id="main" className="mx-auto max-w-5xl px-6 py-10">
+      <main id="main" className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
         <p className="text-sm">
           <Link className="underline" href={`/${tenant}/admin/research`}>
             ← Research runs
@@ -97,7 +97,8 @@ export default async function RunDetailPage({
         {run.tokenUsage ? (
           <section className="mt-8">
             <h2 className="text-lg font-semibold">Metering</h2>
-            <table className="mt-3 w-full border-collapse text-sm">
+            <div className="mt-3 overflow-x-auto">
+<table className="w-full min-w-[560px] border-collapse text-sm">
               <thead>
                 <tr className="border-b text-left text-[color:var(--color-muted)]">
                   <th className="py-1 pr-4">Session</th>
@@ -115,6 +116,7 @@ export default async function RunDetailPage({
                 ))}
               </tbody>
             </table>
+</div>
           </section>
         ) : null}
       </main>

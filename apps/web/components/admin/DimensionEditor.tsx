@@ -44,7 +44,7 @@ export function DimensionEditor({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="font-medium">Name</span>
           <input
@@ -92,7 +92,7 @@ export function DimensionEditor({
         <div className="mt-3 space-y-4">
           {data.indicators.map((ind, i) => (
             <div key={i} className="rounded border border-black/15 p-3">
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <label className="col-span-2 block text-xs">
                   <span className="font-medium">Indicator</span>
                   <input
@@ -153,7 +153,7 @@ export function DimensionEditor({
                   {ind.scoring.worked_math}
                 </p>
               ) : null}
-              <div className="mt-2 grid grid-cols-2 gap-3">
+              <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <label className="block text-xs">
                   <span className="font-medium">Source</span>
                   <input
@@ -171,7 +171,7 @@ export function DimensionEditor({
                   />
                 </label>
               </div>
-              <div className="mt-2 grid grid-cols-3 gap-3">
+              <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <label className="block text-xs">
                   <span className="font-medium">Supporting source (for this edit)</span>
                   <input

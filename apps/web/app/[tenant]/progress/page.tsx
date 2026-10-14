@@ -15,7 +15,7 @@ export async function generateMetadata({
   const p = await tenantProgress((await params).tenant);
   return {
     title: p ? `Progress · ${p.tenant.name}` : 'Progress',
-    description: p ? `How ${p.tenant.name} is moving against its adopted goals since ${p.config.baseline_label}.` : undefined,
+    description: p ? `How ${p.tenant.name} is moving against its adopted goals. Baseline: ${p.config.baseline_label}.` : undefined,
   };
 }
 
@@ -47,8 +47,8 @@ export default async function ProgressPage({ params }: { params: Promise<{ tenan
         </p>
         <h1 className="mt-2 text-3xl font-bold">Progress: {p.tenant.name}</h1>
         <p className="mt-2 max-w-3xl text-sm text-[color:var(--color-muted)]">
-          Measured from the {p.config.baseline_label.charAt(0).toLowerCase() + p.config.baseline_label.slice(1)}.
-          Targets are the portrait&apos;s published thresholds — adopted local goals where they exist —
+          <strong className="font-medium text-[color:var(--color-fg)]">Baseline:</strong>{' '}
+          {p.config.baseline_label}. Targets are the portrait&apos;s published thresholds — adopted local goals where they exist —
           and where a goal has a due date, progress is judged against a straight path from the
           baseline to that date.
         </p>

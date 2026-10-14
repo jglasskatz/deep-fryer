@@ -24,7 +24,7 @@ export default async function ResearchPage({
   return (
     <>
       <SiteHeader variant="admin" tenant={{ slug: ctx.tenant.slug, name: ctx.tenant.name }} />
-      <main id="main" className="mx-auto max-w-5xl px-6 py-10">
+      <main id="main" className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
         <p className="text-sm">
           <Link className="underline" href={`/${tenant}/admin`}>
             ← Admin
@@ -63,7 +63,8 @@ export default async function ResearchPage({
 
         <section className="mt-8">
           <h2 className="text-lg font-semibold">History</h2>
-          <table className="mt-3 w-full border-collapse text-sm">
+          <div className="mt-3 overflow-x-auto">
+<table className="w-full min-w-[560px] border-collapse text-sm">
             <thead>
               <tr className="border-b text-left text-[color:var(--color-muted)]">
                 <th className="py-2 pr-4">Run</th>
@@ -109,6 +110,7 @@ export default async function ResearchPage({
               )}
             </tbody>
           </table>
+</div>
         </section>
       </main>
     </>

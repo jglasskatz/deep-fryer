@@ -51,7 +51,7 @@ export function NewRunForm({
         before applying. Session count: {selected.size + 1} (region context + {selected.size}{' '}
         dimensions).
       </p>
-      <div className="mt-3 grid grid-cols-3 gap-1 text-sm">
+      <div className="mt-3 grid grid-cols-1 gap-1 text-sm sm:grid-cols-2 md:grid-cols-3">
         {dimensions.map((d) => (
           <label key={d.id} className="flex items-center gap-2">
             <input type="checkbox" checked={selected.has(d.id)} onChange={() => toggle(d.id)} />

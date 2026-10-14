@@ -55,7 +55,7 @@ export default async function FamilyProgressPage({ params }: { params: Promise<{
       return r && r.status !== 'no_target';
     }),
   );
-  const baselineLabel = progress.find((p) => p)?.config.baseline_label ?? 'the baseline';
+  const baselineLabel = progress.find((p) => p)?.config.baseline_label ?? 'first published measurement';
 
   return (
     <>
@@ -64,7 +64,7 @@ export default async function FamilyProgressPage({ params }: { params: Promise<{
         <h1 className="text-3xl font-bold">Progress across {family.organization.name}</h1>
         <p className="mt-2 max-w-3xl text-sm text-[color:var(--color-muted)]">
           Each adopted goal, for {family.members.length === 1 ? 'the portrait' : `every ${family.noun}`},
-          measured from the {baselineLabel.charAt(0).toLowerCase() + baselineLabel.slice(1)}.
+          measured from a common baseline: {baselineLabel}.
         </p>
 
         <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-label="Summary by portrait">

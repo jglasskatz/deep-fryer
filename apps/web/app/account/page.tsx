@@ -111,7 +111,8 @@ export default async function AccountPage() {
             <h2 id="portraits" className="text-lg font-semibold">
               Portraits you work on
             </h2>
-            <table className="mt-3 w-full text-sm">
+            <div className="mt-3 overflow-x-auto">
+<table className="w-full min-w-[480px] border-collapse text-sm">
               <thead>
                 <tr className="border-b text-left text-[color:var(--color-muted)]">
                   <th className="py-2 pr-4 font-medium">Portrait</th>
@@ -133,6 +134,7 @@ export default async function AccountPage() {
                 ))}
               </tbody>
             </table>
+</div>
           </section>
         ) : null}
 

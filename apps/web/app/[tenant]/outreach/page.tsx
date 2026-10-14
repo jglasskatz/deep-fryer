@@ -23,7 +23,7 @@ export default async function OutreachPage({
         variant="tenant"
         tenant={{ slug: portrait.tenant.slug, name: portrait.tenant.name }}
       />
-      <main id="main" className="mx-auto max-w-3xl px-6 py-10">
+      <main id="main" className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         <p className="text-sm">
           <Link className="underline" href={`/${tenant}`}>
             ← {portrait.tenant.name}

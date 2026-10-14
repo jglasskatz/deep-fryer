@@ -38,7 +38,7 @@ export default async function MethodologyPage({
         variant="tenant"
         tenant={{ slug: portrait.tenant.slug, name: portrait.tenant.name }}
       />
-      <main id="main" className="mx-auto max-w-3xl px-6 py-10">
+      <main id="main" className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         <p className="text-sm">
           <Link className="underline" href={`/${tenant}`}>
             ← {portrait.tenant.name}
@@ -125,7 +125,7 @@ export default async function MethodologyPage({
         {refreshed.length > 0 ? (
           <section className="mt-8">
             <h2 className="text-lg font-semibold">Last refreshed</h2>
-            <ul className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+            <ul className="mt-2 grid grid-cols-1 gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
               {refreshed.map((r) => (
                 <li key={r.name} className="flex justify-between">
                   <span>{r.name}</span>
