@@ -2,85 +2,82 @@
 
 ## Prerequisites
 
-- Node.js 20+ (see `.nvmrc`). With `nvm`: `nvm use`.
-- pnpm 9+. Install with `corepack enable && corepack prepare pnpm@9 --activate`, or `npm i -g pnpm`.
-- Postgres 15+ for anything beyond the demo portrait (a plain local Postgres works; Supabase is only needed for real auth/storage).
+- Node.js 20+ (see `.nvmrc`) and pnpm 9 (`corepack enable`).
+- Postgres 15+ for anything beyond the bundled demo portrait — a local
+  install, or `docker compose up -d db minio minio-init` for Postgres plus
+  S3-compatible evidence storage.
 
-## Install
+## Install and configure
 
 ```bash
 pnpm install
-```
-
-## Environment
-
-```bash
 cp .env.example .env.local
 ```
 
-Everything degrades gracefully:
+Everything degrades gracefully in development:
 
-- **No env at all** — the web app boots and serves the bundled demo portrait at `/santacruz`. Admin routes redirect (they need a database).
-- **`DATABASE_URL` only** — full local product: provisioning, imports, admin, review queue, discussion. Auth runs in labeled **dev mode** (every request acts as owner) because Supabase isn't configured; evidence files land in `apps/web/public/evidence/<tenant>/`.
-- **+ Supabase env** — real Google OAuth, RLS-governed access, storage buckets.
-- **+ `ANTHROPIC_API_KEY`** — the research worker can actually run sessions.
+- **No env** — the web app serves the bundled demo portrait at `/santacruz`.
+- **`DATABASE_URL` only** — the full product in **dev mode**: every request
+  acts as owner (and as staff), evidence lands in `apps/web/public/evidence/`,
+  billing shows contract-only.
+- **+ `AUTH_SECRET`** — real accounts. With no SMTP configured, email sign-in
+  links print to the server log, so you can sign in as any address locally.
+  Add Google / Microsoft credentials to test OAuth.
+- **+ `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET`** (test mode) — online
+  billing; forward webhooks with `stripe listen --forward-to localhost:3000/api/billing/webhook`.
+- **+ `ANTHROPIC_API_KEY`** — the research worker can run sessions.
+
+Production refuses to start without auth (see `apps/web/lib/env.ts`).
 
 ## Database
 
 ```bash
 createdb deep_fryer_dev
-DATABASE_URL=postgres://localhost/deep_fryer_dev pnpm --filter @deep-fryer/db db:migrate
+DATABASE_URL=postgres://localhost/deep_fryer_dev pnpm --filter @deep-fryer/db migrate
 ```
 
-The migrations include the RLS policies and immutability triggers (SPEC §7/§11); they apply cleanly to plain Postgres (an `auth.uid()` shim is created only when Supabase's isn't present).
+`migrate` uses drizzle-orm's runtime migrator (the same journal as
+`drizzle-kit migrate`). Migrations include RLS policies, immutability
+triggers, and the billing/accounts schema.
 
-## Seed a tenant
+## Seed
 
 ```bash
-# Framework-provisioned empty tenant (21 dimensions, config defaults, draft versions):
-DATABASE_URL=... pnpm create-tenant --slug demo --name "Demo City" --owner you@example.com
+# A trial organization + portrait owned by you (sign in with that email):
+pnpm create-tenant --slug demo --name "Demo City" --owner you@example.org --plan trial
 
-# Or the real Santa Cruz portrait with its evidence, from a doughnut-santa-cruz clone:
-DATABASE_URL=... pnpm import-santa-cruz --from /path/to/doughnut-santa-cruz
+# The NYC family: organization `nyc`, six portraits, Metro contract:
+pnpm provision:nyc --owner you@example.org --plan metro
+tsx scripts/nyc-portrait-config.ts --apply
+
+# Synthetic history for exercising progress/compare views (local DBs only,
+# every value labeled SYNTHETIC):
+tsx scripts/seed-demo-data.ts --org nyc
+
+# The real Santa Cruz portrait with evidence, from a doughnut-santa-cruz clone:
+pnpm import-santa-cruz --from /path/to/doughnut-santa-cruz
 ```
 
 ## Run
 
 ```bash
-DATABASE_URL=... pnpm dev                                # web app on :3000
-DATABASE_URL=... pnpm --filter @deep-fryer/worker dev    # research worker (optional)
+pnpm dev                                   # web on :3000
+pnpm --filter @deep-fryer/worker dev       # research worker (optional)
 ```
 
-Then open:
+Useful pages: `/nyc` (portrait), `/nyc/progress`, `/o/nyc` (organization),
+`/o/nyc/compare`, `/o/nyc/insights`, `/o/nyc/progress`, `/o/nyc/billing`,
+`/nyc/admin` (overview + getting-started checklist), `/nyc/admin/members`,
+`/start`, `/pricing`, `/account`, `/api/v1/portraits/nyc/progress.csv`.
 
-- http://localhost:3000/santacruz — the public doughnut (canvas renderer)
-- http://localhost:3000/santacruz/dim/climate-change — drilldown: evidence, actions, discussion
-- http://localhost:3000/santacruz/methodology — auto-generated from config
-- http://localhost:3000/santacruz/admin — overview, staleness, audit
-- http://localhost:3000/santacruz/admin/research — plan/apply research runs
-- http://localhost:3000/santacruz/admin/review — the review queue
-- http://localhost:3000/santacruz/admin/settings — §6 config forms
-- http://localhost:3000/embed/santacruz — the embed view (`public/embed.js` is the loader)
+The service worker registers only in production builds (`pnpm --filter
+@deep-fryer/web build && pnpm --filter @deep-fryer/web start`).
 
-## Workspace layout
-
-- `apps/web` — Next.js 15 app (`@deep-fryer/web`)
-- `apps/worker` — research worker (`@deep-fryer/worker`)
-- `packages/contract` — framework + thresholds + JSON Schemas (`@deep-fryer/contract`)
-- `packages/core` — domain types, validators, thresholds engine (`@deep-fryer/core`)
-- `packages/db` — Drizzle schema, migrations, provisioning (`@deep-fryer/db`)
-- `packages/research` — plan rendering + verification + queue (`@deep-fryer/research`)
-- `vendor/open-doughnut` — the vendored research plugin
-- `scripts/` — provisioning / import CLIs
-
-## Common commands
+## Checks
 
 ```bash
-pnpm dev                  # next dev for apps/web
-pnpm build                # build everything
-pnpm typecheck            # tsc --noEmit across packages
-pnpm test                 # vitest suites (core scoring engine, research plan/verify)
-pnpm lint                 # lint across packages
-pnpm --filter @deep-fryer/db db:generate   # drizzle-kit generate
-pnpm --filter @deep-fryer/db db:studio     # drizzle studio
+pnpm typecheck
+DATABASE_URL=… pnpm test     # unit tests + Postgres integration tests
+pnpm --filter @deep-fryer/web build
+npx keel verify --diff origin/main..HEAD
 ```

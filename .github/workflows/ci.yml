@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: deep_fryer_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/deep_fryer_ci
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Migrations must apply cleanly to an empty database every time.
+      - name: Migrate (fresh database)
+        run: pnpm --filter @deep-fryer/db migrate
+      - name: Migrate again (idempotent)
+        run: pnpm --filter @deep-fryer/db migrate
+
+      - run: pnpm typecheck
+      # Unit tests plus Postgres integration tests (DATABASE_URL is set).
+      - run: pnpm test
+      - name: Build web (production)
+        run: pnpm --filter @deep-fryer/web build
+
+      # Exit 2 (critical) blocks; exit 1 (warnings) is surfaced for review.
+      - name: keel verify (architecture + principles)
+        if: github.event_name == 'pull_request'
+        run: |
+          set +e
+          npx keel verify --diff origin/${{ github.base_ref }}...HEAD
+          code=$?
+          if [ "$code" -eq 2 ]; then exit 2; fi
+          exit 0

@@ -18,7 +18,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "test": "vitest run"
+    "test": "vitest run",
+    "migrate": "tsx src/migrate.ts"
   },
   "dependencies": {
     "@deep-fryer/contract": "workspace:*",
@@ -30,6 +31,7 @@
     "@types/node": "^22.9.0",
     "drizzle-kit": "^0.28.1",
     "typescript": "^5.6.3",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "tsx": "^4.19.2"
   }
 }

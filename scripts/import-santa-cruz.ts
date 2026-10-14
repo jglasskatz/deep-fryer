@@ -3,7 +3,7 @@
  * Migrate the Santa Cruz portrait out of the doughnut-santa-cruz repo —
  * with its evidence (SPEC.md §12 M1): parses docs/data.js, creates/updates
  * the tenant, publishes one imported version per dimension, and migrates the
- * referenced screenshots into tenant storage (Supabase when configured,
+ * referenced screenshots into tenant storage (S3-compatible storage when configured,
  * apps/web/public/evidence/<slug>/ for local dev).
  *
  * Usage:

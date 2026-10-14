@@ -37,9 +37,13 @@ export const stripeConfigured = (): boolean =>
 /** Where customers reach a person (pricing, billing, error pages); optional. */
 export const supportEmail = (): string | null => process.env.SUPPORT_EMAIL?.trim() || null;
 
-/** Canonical public origin, no trailing slash ("https://app.deep-fryer.io"). */
+/**
+ * Canonical public origin, no trailing slash ("https://app.deep-fryer.io").
+ * Deliberately not NEXT_PUBLIC_*: those are inlined at build time even in
+ * server code, and one image must serve any deployment.
+ */
 export function appUrl(): string {
-  const raw = process.env.NEXT_PUBLIC_APP_URL || process.env.AUTH_URL || 'http://localhost:3000';
+  const raw = process.env.APP_URL || process.env.AUTH_URL || 'http://localhost:3000';
   return raw.replace(/\/+$/, '');
 }
 
@@ -56,7 +60,7 @@ export function assertProductionEnv(): void {
       'configure at least one sign-in method: AUTH_GOOGLE_ID/SECRET, AUTH_MICROSOFT_ENTRA_ID_ID/SECRET, or SMTP_URL + EMAIL_FROM',
     );
   }
-  if (!process.env.NEXT_PUBLIC_APP_URL) problems.push('NEXT_PUBLIC_APP_URL is required');
+  if (!process.env.APP_URL) problems.push('APP_URL is required (the public https origin)');
   if (Boolean(process.env.STRIPE_SECRET_KEY) !== Boolean(process.env.STRIPE_WEBHOOK_SECRET)) {
     problems.push('set STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET together (or neither)');
   }

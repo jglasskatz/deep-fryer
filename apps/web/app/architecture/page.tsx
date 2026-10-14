@@ -1,3 +1,5 @@
+import { notFound } from 'next/navigation';
+import { getAuth } from '@/lib/auth';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import {
   ARCHITECTURE_NODES,
@@ -10,7 +12,8 @@ import {
 } from './architecture-data';
 
 export const metadata = {
-  title: 'Architecture · deep-fryer',
+  title: 'Architecture (internal)',
+  robots: { index: false },
 };
 
 function hexToRgba(hex: string, alpha: number) {
@@ -141,7 +144,12 @@ function ConnectionRow({
   );
 }
 
-export default function ArchitecturePage() {
+export default async function ArchitecturePage() {
+  // Internal M0-era diagram; staff only. The canonical, verified map is
+  // architecture/data.ts at the repo root (keel verify).
+  const auth = await getAuth();
+  if (!auth.isStaff) notFound();
+
   const nodesById = Object.fromEntries(ARCHITECTURE_NODES.map((n) => [n.id, n]));
   const totalNodes = ARCHITECTURE_NODES.length;
   const totalConns = CONNECTIONS.length;

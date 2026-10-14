@@ -28,8 +28,16 @@ open-doughnut plugin.
   paywall circumvention, and every fetched URL is logged at the
   infrastructure level — provenance is enforced below the model.
 - The container filesystem is scratch-only; each session gets a temp
-  workspace that is deleted afterward. No cross-tenant access: the worker
-  only receives storage credentials for the run's tenant bucket.
+  workspace that is deleted afterward. Evidence goes to one S3-compatible
+  bucket under a per-tenant prefix (`tenant-<slug>/`); the prefix is chosen
+  by the worker from the run's tenant, never by the agent, and objects are
+  never overwritten. (The bucket credentials themselves are bucket-wide — use
+  a dedicated bucket and key for deep-fryer.)
+- Egress guard (`packages/research/src/egress.ts`): every URL the worker
+  fetches — source checks, page captures and all their subrequests and
+  redirect hops, PDF downloads — must be https and resolve only to public
+  addresses. The allowlist proxy remains the layer that pins connections.
+- The image runs as the unprivileged `node` user.
 
 ## Environment
 
@@ -38,7 +46,7 @@ open-doughnut plugin.
 | `DATABASE_URL` | Postgres (queue + rows) |
 | `ANTHROPIC_API_KEY` | Inference (our key — metered per tenant) |
 | `ANTHROPIC_MODEL` | Session model (default `claude-sonnet-5`) |
-| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Evidence storage buckets |
+| `S3_BUCKET`, `S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_FORCE_PATH_STYLE` | Evidence storage (MinIO / Spaces / S3) |
 | `OPEN_DOUGHNUT_PLUGIN_DIR` | Plugin location (set by the image) |
 | `CHROMIUM_PATH` | Playwright browser binary |
 | `WORKER_CONCURRENCY` | Parallel sessions per instance (default 1) |
@@ -49,6 +57,6 @@ open-doughnut plugin.
 pnpm --filter @deep-fryer/worker dev
 ```
 
-Without Supabase env, evidence lands in `apps/web/public/evidence/<tenant>/`
+Without `S3_*` env, evidence lands in `apps/web/public/evidence/<tenant>/`
 so the drilldown renders it. Without `ANTHROPIC_API_KEY`, sessions fail at
 spawn and the run is marked failed — plan/enqueue still works end to end.

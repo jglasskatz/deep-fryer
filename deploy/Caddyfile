@@ -1,0 +1,27 @@
+# TLS termination and routing for the self-hosted stack (SPEC-v3 §2.4).
+# SITE_ADDRESS is the public hostname (app.example.gov); Caddy obtains and
+# renews its certificate automatically.
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	# Evidence snapshots: public, read-only, same-origin (so the CSP and the
+	# offline cache treat them like the app's own images). Served from the
+	# MinIO bucket; writes are impossible through this path.
+	handle_path /files/* {
+		@write not method GET HEAD
+		respond @write 405
+		rewrite * /{$S3_BUCKET}{uri}
+		reverse_proxy minio:9000 {
+			header_up Host minio:9000
+		}
+		header Cache-Control "public, max-age=31536000, immutable"
+		header X-Content-Type-Options nosniff
+	}
+
+	reverse_proxy web:3000
+
+	log {
+		output stdout
+		format json
+	}
+}
