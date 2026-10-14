@@ -21,7 +21,12 @@ import {
  * - an install offer: the browser's beforeinstallprompt is stashed for
  *   InstallAppButton.
  */
-export function ServiceWorkerRegistrar() {
+export function ServiceWorkerRegistrar({
+  labels = { updateAvailable: 'A new version is available.', reload: 'Reload' },
+}: {
+  /** In the reader's language (the root layout passes the catalog's words). */
+  labels?: { updateAvailable: string; reload: string };
+}) {
   const { waitingWorker } = useSyncExternalStore(subscribePwa, getPwaState, getServerPwaState);
 
   useEffect(() => {
@@ -85,13 +90,13 @@ export function ServiceWorkerRegistrar() {
       role="status"
       className="fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-md items-center justify-between gap-3 rounded-lg bg-black px-4 py-3 text-sm text-white shadow-lg print:hidden"
     >
-      <span>A new version is available.</span>
+      <span>{labels.updateAvailable}</span>
       <button
         type="button"
         className="rounded bg-white px-3 py-1 font-medium text-black"
         onClick={() => waitingWorker.postMessage({ type: 'SKIP_WAITING' })}
       >
-        Reload
+        {labels.reload}
       </button>
     </div>
   );

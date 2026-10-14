@@ -4,6 +4,7 @@ import { FamilyNav } from './FamilyNav';
 import { LanguageNotice, LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { InstallAppButton } from '@/components/pwa/InstallAppButton';
 import { SignOutButton } from '@/components/pwa/SignOutButton';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { getAuth } from '@/lib/auth';
 import { authConfigured, hasDatabase } from '@/lib/env';
 import { familyForTenant, organizationOfTenant, type Family } from '@/lib/family';
@@ -84,7 +85,7 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
   const accountControl =
     auth && !auth.devMode && hasDatabase() ? (
       auth.userId ? (
-        <details className="relative">
+        <details name="df-header-menu" className="relative">
           <summary
             className="flex cursor-pointer list-none items-center gap-2 rounded px-2 py-1.5 hover:bg-black/5"
             aria-label={m.common.accountMenu}
@@ -115,7 +116,7 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
       ) : (
         <Link
           href={`/login${tenant ? `?next=${encodeURIComponent(href(`/${tenant.slug}`))}` : ''}`}
-          className="rounded border border-black/15 px-3 py-1.5 hover:bg-black/5"
+          className="whitespace-nowrap rounded border border-black/15 px-3 py-1.5 hover:bg-black/5"
         >
           {m.common.signIn}
         </Link>
@@ -135,7 +136,11 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
           <span aria-hidden className="text-lg">
             🍩
           </span>
-          <span>deep-fryer</span>
+          {/* On phones a page with a breadcrumb keeps the doughnut and gives
+              the wordmark's width to the place name (the header row also
+              carries language, theme, account and menu controls). sr-only,
+              not hidden, so the link keeps its accessible name. */}
+          <span className={tenant || org ? 'sr-only sm:not-sr-only' : undefined}>deep-fryer</span>
         </Link>
 
         {tenant ? (
@@ -179,11 +184,25 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
             </Link>
           ))}
         </nav>
-        <div className="ms-auto flex items-center gap-1 text-sm md:ms-1">
+        {/* The controls' dropdowns (language, theme, account, menu) are each
+            `absolute end-0` under their own trigger. On phones that runs a
+            224–240 px menu off the start edge when its trigger sits mid-row
+            (measured: the language menu 35–118 px off at 320–390 px behind a
+            translated "Sign in"), and overflow on the start side cannot be
+            scrolled to, in LTR or RTL. So below `sm` the triggers' wrappers
+            drop their positioning (`static`; the `:is()` outranks their own
+            `relative`) and every menu anchors to this group's end edge,
+            which is the row's content edge. The details menus keep their
+            static top (just under their summary); the theme menu's
+            `top-full` is the group's height, which equals the toggle's.
+            From `sm` up each menu sits under its own trigger again. */}
+        <div className="relative ms-auto flex items-center gap-1 text-sm md:ms-1 max-sm:[&>:is(details,div)]:static">
           {publicPlane ? <LanguageSwitcher /> : null}
+          {/* Every variant: light/dark, and press-and-hold for the fryer (SPEC-v5 §4). */}
+          <ThemeToggle labels={m.theme} />
           {accountControl}
           {links.length > 0 ? (
-            <details className="relative md:hidden">
+            <details name="df-header-menu" className="relative md:hidden">
               <summary
                 className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded hover:bg-black/5"
                 aria-label={m.common.menu}

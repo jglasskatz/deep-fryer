@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DimensionProjection, PolicyAnalysisOutput, PolicyImpact } from '@deep-fryer/core';
-import { impactDoughnut, impactGroups, impactsAriaLabel } from './policy';
+import { impactDoughnut, impactGroups, impactsChartLabel, impactsSummary } from './policy';
 import type { PublishedDimension } from './portrait';
 
 function published(slug: string, ring: 'social' | 'ecological', viz: number | null, order: number): PublishedDimension {
@@ -68,17 +68,21 @@ describe('impactDoughnut', () => {
     expect(republished).toEqual(['Housing']);
   });
 
-  it('summarizes the chart for screen readers', () => {
+  it('names the chart without claiming it is moving, and captions every direction in words', () => {
     const { dimensions } = impactDoughnut(portrait, [
       projection({ dimension_slug: 'housing', current_viz: 123.3, projected_viz: 103.3 }),
       projection({ dimension_slug: 'energy', direction: 'worsens', current_viz: 80 }),
       projection({ dimension_slug: 'air-pollution', direction: 'improves', current_viz: 40 }),
     ]);
-    const label = impactsAriaLabel('Manhattan', dimensions);
-    expect(label).toContain('Improves: Housing and Air Pollution.');
-    expect(label).toContain('Worsens: Energy.');
-    expect(label).toContain('Wedge size changes for Housing; other impacts are direction only.');
-    expect(impactsAriaLabel('Manhattan', impactDoughnut(portrait, []).dimensions)).toContain(
+    // True when paused or static for reduced motion, not only while flashing.
+    expect(impactsChartLabel('Manhattan')).toBe("Manhattan's doughnut, today and with this policy");
+    expect(impactsChartLabel('Manhattan')).not.toMatch(/alternat/);
+
+    const summary = impactsSummary(dimensions);
+    expect(summary).toContain('Improves: Housing and Air Pollution.');
+    expect(summary).toContain('Worsens: Energy.');
+    expect(summary).toContain('Wedge size changes for Housing; other impacts are direction only.');
+    expect(impactsSummary(impactDoughnut(portrait, []).dimensions)).toContain(
       'No published dimension is projected to change.',
     );
   });

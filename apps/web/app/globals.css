@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* Dark mode: the `dark` variant, the mirrored palette, old-engine remaps. */
+@import "./theme-dark.css";
 
 @theme {
   --color-bg: #fafaf7;
@@ -13,6 +15,33 @@
   --doughnut-ecological: #4a8f3a;
   --doughnut-shortfall: #c44a3a;
   --doughnut-overshoot: #8a3a4a;
+  /* Native controls (selects, date pickers, scrollbars) follow the theme. */
+  color-scheme: light;
+}
+
+/*
+ * Dark tokens (SPEC-v5 §4; the `dark` variant is defined in theme-dark.css).
+ * Contrast on the dark background, checked by lib/theme-dark.test.ts:
+ * fg 15.9:1, muted 7.9:1, accent 8.9:1, and each at least 7:1 on the raised
+ * surface (--color-white) as well.
+ *
+ * --color-white and --color-black swap roles rather than literally
+ * inverting: `bg-white` (cards, menus) becomes the raised dark surface, and
+ * `bg-black` (primary buttons, the update toast) becomes light with
+ * `text-white` reading as dark ink on it. The accent turns light green for
+ * the same reason: it is a link colour on the page and the fill of buttons
+ * whose `text-white` is now dark.
+ */
+:root {
+  @variant dark {
+    color-scheme: dark;
+    --color-bg: #121411;
+    --color-fg: #efeee9;
+    --color-muted: #a8aba3;
+    --color-accent: #7cc47f;
+    --color-white: #1c1f1b;
+    --color-black: #efeee9;
+  }
 }
 
 html,
@@ -30,4 +59,113 @@ body {
 [dir='rtl'] [lang='en'] {
   direction: ltr;
   unicode-bidi: isolate;
+}
+
+/*
+ * Deep fry (SPEC-v5 §4): the owner's "hold down dark mode … deep fry the
+ * page". components/theme/ThemeToggle.tsx sets <html data-fried> for this
+ * visit only; components/theme/DeepFryLayer.tsx draws the grain and the
+ * stickers and announces the change.
+ *
+ * The filter goes on <html> because the root element is the one place a
+ * filter does not become the containing block for position: fixed
+ * descendants (Filter Effects §5) — the sticky header, the update toast and
+ * the fry layer itself stay pinned to the viewport. saturate + contrast give
+ * the blown-out, over-sharpened look; sepia then a slight negative hue turn
+ * is the orange fryer-oil cast. A convolution "sharpen" (filter: url(#…))
+ * is deliberately not used: SVG reference filters on HTML are software-
+ * rendered in Chromium (scrolling the whole page through one stutters), and
+ * a missing reference can hide the element entirely in some engines. The
+ * orange text halo stands in for sharpening's edge ringing.
+ *
+ * Screen only: a fried page prints normally.
+ */
+@media screen {
+  html[data-fried] {
+    filter: saturate(3) contrast(1.6) brightness(1.06) sepia(0.25) hue-rotate(-12deg);
+  }
+
+  html[data-fried] body {
+    text-shadow: 0.5px 0.5px 0 rgb(255 120 0 / 0.55);
+  }
+}
+
+/* Fixed, click-through, above everything (the header is z-40, menus z-50). */
+.df-fry-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  overflow: hidden;
+  /*
+   * Grain strength per theme, read by ::before below. Set here because a
+   * variant cannot follow a pseudo-element (`::before:where(…)` is invalid
+   * and compiles to a selector that matches nothing); ::before inherits
+   * custom properties from the layer. Light is high because the page's own
+   * contrast(1.6) lifts faint speckles back to white.
+   */
+  --df-grain-opacity: 0.6;
+  --df-grain-blend: multiply;
+  @variant dark {
+    --df-grain-opacity: 0.28;
+    --df-grain-blend: overlay;
+  }
+}
+
+/*
+ * Grain: fractal noise from an SVG feTurbulence, as a data: image (the CSP
+ * allows data: images; nothing executes). Blending crunches the page's own
+ * colours instead of greying them: multiply speckles a light page (overlay
+ * would leave white untouched), overlay crunches a dark one (multiply would
+ * vanish into it).
+ */
+.df-fry-layer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: var(--df-grain-opacity);
+  mix-blend-mode: var(--df-grain-blend);
+  background-size: 180px 180px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+.df-fry-sticker {
+  position: absolute;
+  line-height: 1;
+  font-size: clamp(2.25rem, 7vw, 4.5rem);
+  rotate: var(--df-tilt, 0deg);
+  filter: drop-shadow(2px 3px 0 rgb(0 0 0 / 0.35));
+  user-select: none;
+}
+
+/*
+ * The only motion: the treatment fades in once and the stickers drop on
+ * once. Both are single, monotonic transitions — nothing loops or flashes —
+ * and readers who prefer reduced motion get none of it (SPEC-v5 §1).
+ */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    transition: filter 0.4s ease-out;
+  }
+
+  .df-fry-sticker {
+    animation: df-sticker-drop 0.35s ease-out both;
+  }
+}
+
+@keyframes df-sticker-drop {
+  from {
+    opacity: 0;
+    scale: 1.6;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@media print {
+  .df-fry-layer {
+    display: none;
+  }
 }

@@ -1,19 +1,34 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 /**
- * createPolicyAnalysis — the research quota gate applied to policy analyses.
- * Runs as the dev-mode identity (no AUTH_SECRET: the local developer is
- * owner everywhere), against real Postgres; only the job queue (graphile-
- * worker's) and Next's cache revalidation are stubbed.
+ * createPolicyAnalysis and cancelPolicyAnalysis — the research quota gate
+ * applied to policy analyses. Runs as the dev-mode identity (no AUTH_SECRET:
+ * the local developer is owner everywhere), against real Postgres, including
+ * graphile-worker's real queue tables: the job is added in the same
+ * transaction as the analysis, and these tests read it back. Only Next's
+ * cache revalidation is stubbed, and the queue helpers are wrapped so a test
+ * can make the queue fail.
  */
 const hasDb = Boolean(process.env.DATABASE_URL);
 const uniq = () => `t-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
-const enqueue = vi.hoisted(() => vi.fn(async (_id: string) => {}));
-vi.mock('@deep-fryer/research', async (orig) => ({
-  ...(await orig<typeof import('@deep-fryer/research')>()),
-  enqueuePolicyAnalysis: enqueue,
-}));
+const queue = vi.hoisted(() => ({ schemaDown: false, addFails: false }));
+vi.mock('@deep-fryer/research', async (orig) => {
+  const real = await orig<typeof import('@deep-fryer/research')>();
+  return {
+    ...real,
+    ensureJobQueueSchema: async () => {
+      if (queue.schemaDown) throw new Error('connection refused');
+      return real.ensureJobQueueSchema();
+    },
+    // Evaluated inside the transaction while the add_job statement is built,
+    // so throwing here fails the enqueue after the row and audit are written.
+    policyJobKey: (id: string) => {
+      if (queue.addFails) throw new Error('add_job failed');
+      return real.policyJobKey(id);
+    },
+  };
+});
 // Server actions revalidate pages; there is no Next request here.
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }));
 
@@ -61,11 +76,33 @@ describe.skipIf(!hasDb)('createPolicyAnalysis', () => {
       .where(eq(m.policyAnalyses.tenantId, tenantId));
   }
 
-  it('queues an analysis within the allowance, then refuses what would exceed it', async () => {
-    const { createPolicyAnalysis } = await import('./policy-actions');
-    const { DEV_USER_ID } = await import('./auth');
+  /** The queued graphile-worker job for an analysis, if any; removed again at cleanup. */
+  async function jobFor(analysisId: string) {
+    const m = await import('@deep-fryer/db');
+    const { sql } = await import('drizzle-orm');
+    const key = `policy:${analysisId}`;
+    cleanup.push(() => m.getDb().execute(sql`select graphile_worker.remove_job(${key})`));
+    const rows = await m.getDb().execute<{ task_identifier: string; payload: { analysisId: string } }>(
+      sql`select t.identifier as task_identifier, j.payload
+            from graphile_worker._private_jobs j join graphile_worker._private_tasks t on t.id = j.task_id
+           where j.key = ${key}`,
+    );
+    return rows[0] ?? null;
+  }
+
+  async function auditOf(tenantId: string) {
     const m = await import('@deep-fryer/db');
     const { and, eq } = await import('drizzle-orm');
+    return m
+      .getDb()
+      .select()
+      .from(m.auditLog)
+      .where(and(eq(m.auditLog.tenantId, tenantId), eq(m.auditLog.entity, 'policy_analysis')));
+  }
+
+  it('queues an analysis and its job together within the allowance, then refuses what would exceed it', async () => {
+    const { createPolicyAnalysis } = await import('./policy-actions');
+    const { DEV_USER_ID } = await import('./auth');
     const { tenant } = await portrait(1);
 
     const res = await createPolicyAnalysis({
@@ -76,7 +113,7 @@ describe.skipIf(!hasDb)('createPolicyAnalysis', () => {
     });
     expect(res.ok).toBe(true);
     const { id } = (res as { ok: true; data: { id: string } }).data;
-    expect(enqueue).toHaveBeenLastCalledWith(id);
+    expect(await jobFor(id)).toEqual({ task_identifier: 'policy_analyze', payload: { analysisId: id } });
 
     const [row] = await analysesOf(tenant.id);
     expect(row).toMatchObject({
@@ -87,11 +124,7 @@ describe.skipIf(!hasDb)('createPolicyAnalysis', () => {
       sourceUrl: 'https://example.gov/cooling.pdf',
       requestedBy: DEV_USER_ID,
     });
-    const audit = await m
-      .getDb()
-      .select()
-      .from(m.auditLog)
-      .where(and(eq(m.auditLog.tenantId, tenant.id), eq(m.auditLog.entity, 'policy_analysis')));
+    const audit = await auditOf(tenant.id);
     expect(audit).toHaveLength(1);
     expect(audit[0]).toMatchObject({ entityId: id, action: 'create' });
 
@@ -104,23 +137,69 @@ describe.skipIf(!hasDb)('createPolicyAnalysis', () => {
     expect(await analysesOf(tenant.id)).toHaveLength(1);
   });
 
-  it('releases the session when the job cannot be queued', async () => {
+  it('saves nothing and reserves nothing when the job cannot be added', async () => {
     const { createPolicyAnalysis } = await import('./policy-actions');
     const { tenant } = await portrait(1);
-    enqueue.mockRejectedValueOnce(new Error('connection refused'));
     const errorLog = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const attempt = (title: string) => createPolicyAnalysis({ tenantSlug: tenant.slug, title, brief: BRIEF });
+    const queueDown = /could not be started — the job queue did not answer\. Nothing was saved or counted against your plan/;
 
-    const failed = await createPolicyAnalysis({ tenantSlug: tenant.slug, title: 'Queue down', brief: BRIEF });
-    errorLog.mockRestore();
-    expect(failed).toMatchObject({ ok: false });
-    expect((failed as { ok: false; error: string }).error).toMatch(/could not be started.*not counted against your plan/);
-    const [row] = await analysesOf(tenant.id);
-    expect(row).toMatchObject({ status: 'failed' });
-    expect(row!.error).toMatch(/could not be queued/);
+    try {
+      // The queue cannot be reached at all: refused before the transaction.
+      queue.schemaDown = true;
+      expect((await attempt('Queue unreachable')) as { error: string }).toMatchObject({ ok: false, error: expect.stringMatching(queueDown) });
+      queue.schemaDown = false;
 
-    // Failed analyses are not billed, so the allowance of one still fits another.
-    const retry = await createPolicyAnalysis({ tenantSlug: tenant.slug, title: 'Queue back', brief: BRIEF });
+      // The job insert fails mid-transaction: the analysis row and its audit
+      // entry, already written, roll back with it.
+      queue.addFails = true;
+      expect((await attempt('Queue refuses')) as { error: string }).toMatchObject({ ok: false, error: expect.stringMatching(queueDown) });
+    } finally {
+      queue.schemaDown = false;
+      queue.addFails = false;
+      errorLog.mockRestore();
+    }
+    expect(await analysesOf(tenant.id)).toHaveLength(0);
+    expect(await auditOf(tenant.id)).toHaveLength(0);
+
+    // Nothing was reserved, so the allowance of one still fits an analysis.
+    const retry = await attempt('Queue back');
     expect(retry.ok).toBe(true);
+    expect(await jobFor((retry as { ok: true; data: { id: string } }).data.id)).not.toBeNull();
+  });
+
+  it('cancels a queued analysis, releasing its session, but never one that has started', async () => {
+    const { createPolicyAnalysis, cancelPolicyAnalysis } = await import('./policy-actions');
+    const m = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const { tenant } = await portrait(1);
+
+    const created = await createPolicyAnalysis({ tenantSlug: tenant.slug, title: 'Stuck in the queue', brief: BRIEF });
+    const { id } = (created as { ok: true; data: { id: string } }).data;
+    await jobFor(id);
+    expect(await cancelPolicyAnalysis({ tenantSlug: tenant.slug, id })).toEqual({ ok: true, data: { id } });
+    const [row] = await analysesOf(tenant.id);
+    expect(row).toMatchObject({ status: 'failed', error: expect.stringMatching(/^Cancelled before it started/) });
+    expect((await auditOf(tenant.id)).map((a) => a.action).sort()).toEqual(['cancel', 'create']);
+
+    // Cancelled analyses are not billed: the allowance of one fits another…
+    const next = await createPolicyAnalysis({ tenantSlug: tenant.slug, title: 'Second try', brief: BRIEF });
+    expect(next.ok).toBe(true);
+    const nextId = (next as { ok: true; data: { id: string } }).data.id;
+    await jobFor(nextId);
+
+    // …which the worker claims; a running analysis cannot be cancelled.
+    await m.getDb().update(m.policyAnalyses).set({ status: 'running' }).where(eq(m.policyAnalyses.id, nextId));
+    expect(await cancelPolicyAnalysis({ tenantSlug: tenant.slug, id: nextId })).toMatchObject({
+      ok: false,
+      error: expect.stringMatching(/already started or finished/),
+    });
+    // Twice is the same as once; another portrait's or a malformed id changes nothing.
+    expect(await cancelPolicyAnalysis({ tenantSlug: tenant.slug, id })).toMatchObject({ ok: false });
+    const { tenant: other } = await portrait(1);
+    expect(await cancelPolicyAnalysis({ tenantSlug: other.slug, id: nextId })).toMatchObject({ ok: false });
+    expect(await cancelPolicyAnalysis({ tenantSlug: tenant.slug, id: 'not-a-uuid' })).toMatchObject({ ok: false });
+    expect((await analysesOf(tenant.id)).find((r) => r.id === nextId)!.status).toBe('running');
   });
 
   it('refuses an organization without a plan with the billing message', async () => {
@@ -152,6 +231,7 @@ describe.skipIf(!hasDb)('createPolicyAnalysis', () => {
     expect(ok.ok).toBe(true);
     const [row] = await analysesOf(tenant.id);
     expect(row!.sourceUrl).toBeNull();
+    expect(await jobFor(row!.id)).not.toBeNull();
   });
 
   it('refuses an unknown portrait', async () => {

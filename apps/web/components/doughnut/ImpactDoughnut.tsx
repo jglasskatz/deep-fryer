@@ -47,10 +47,25 @@ export interface ImpactDoughnutLabels {
   now: string;
   /** Name of the alternate state ("With this policy", "Threatened by heat"). */
   alternate: string;
+  /**
+   * The motion button's text while stopped and while moving ("Play
+   * animation" / "Pause animation"). The button reports its state by this
+   * text alone — it is not a toggle with aria-pressed, because a toggle
+   * whose label also changes reads as "Pause, pressed" while it is playing.
+   */
   play: string;
   pause: string;
   /** Group label for the controls ("Doughnut view"). */
   controls: string;
+  /**
+   * Optional visible caption naming the state on screen, with `{state}`
+   * replaced by `now` or `alternate` ("Showing: {state}"). Without it,
+   * which frame is showing while the chart flashes is told only by the
+   * colours. It is not a live region: while playing it changes every
+   * 1.2 s, and the controls' own live region already announces the state
+   * a reader chooses.
+   */
+  showing?: string;
 }
 
 const CYCLE_MS = 1200;
@@ -159,12 +174,7 @@ export function ImpactDoughnut({
         style={{ width: '100%', height: 'auto', display: 'block' }}
       />
       <div role="group" aria-label={labels.controls} className="mt-3 flex flex-wrap items-center justify-center gap-2">
-        <button
-          type="button"
-          className={button(false)}
-          onClick={() => setPlaying(!isPlaying)}
-          aria-pressed={isPlaying}
-        >
+        <button type="button" className={button(false)} onClick={() => setPlaying(!isPlaying)}>
           {isPlaying ? labels.pause : labels.play}
         </button>
         <span aria-hidden className="mx-1 text-black/20">
@@ -185,6 +195,11 @@ export function ImpactDoughnut({
           </button>
         ))}
       </div>
+      {labels.showing ? (
+        <p className="mt-2 text-center text-xs text-[color:var(--color-muted)]">
+          {labels.showing.replace('{state}', state === 'now' ? labels.now : labels.alternate)}
+        </p>
+      ) : null}
       <p aria-live="polite" className="sr-only">
         {isPlaying ? '' : state === 'now' ? labels.now : labels.alternate}
       </p>

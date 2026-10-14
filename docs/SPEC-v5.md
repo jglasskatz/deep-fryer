@@ -43,14 +43,22 @@ which this spec lays the data model and names the open question (§5).
 
 **Input:** a policy brief — title plus pasted text (up to 60,000
 characters), optional source URL. Briefs are untrusted text: the model
-prompt fences them, the result is schema-validated, and nothing is published
-from it.
+prompt fences them between tags with a random per-run boundary (so a brief
+cannot close its own fence), the result is schema-validated, and nothing is
+published from it. Analyses are readable by editors and owners only, at the
+database as well as on the page (a brief can be unreleased policy text).
 
 **Run:** creating an analysis is a research spend — one research session,
 checked against the organization's plan under the same subscription lock as
-research apply (SPEC-v4 §3) and counted in usage. A graphile-worker job
-`policy_analyze` runs one Claude Agent SDK session with read-only web tools
-(`WebSearch`, `WebFetch`) so quantitative estimates can cite sources.
+research apply (SPEC-v4 §3) and counted in usage. The analysis and its
+graphile-worker job `policy_analyze` are created in one transaction, so a
+reserved session always has a job to run it. The job runs one Claude Agent
+SDK session whose only tools are read-only web tools (`WebSearch`,
+`WebFetch`) so quantitative estimates can cite sources; the session has no
+shell or file access and never sees the worker's credentials. A queued
+analysis can be cancelled by staff, and a `policy_sweep` cron settles any
+analysis queued for 30 minutes whose job can no longer run; both settle it
+failed, which releases the session (failed analyses are not counted).
 
 **Output contract** (`packages/core/src/policy.ts`, zod-validated):
 
@@ -67,9 +75,17 @@ impacts: [{
   projected_year?: number             — when
   sources: [{ title, url }]           — https only
 }]
-assumptions: string[]
-risks: string[]                       — unintended effects and implementation risks
+assumptions: string[]                 — ≤ 20, each ≤ 600 chars
+risks: string[]                       — unintended effects and implementation risks; ≤ 20, each ≤ 600 chars
 ```
+
+The prompt states every limit (a little under each ceiling) and asks for
+plain English whatever the brief's language. Before validation the worker
+fixes slips it can fix without inventing anything — drops non-https or
+surplus sources (≤ 12 per impact), sets aside impacts on a dimension that is
+not one of the 21, shortens over-long text at a word — and lists each change
+with the result as an adjustment for staff; anything else invalid fails the
+analysis.
 
 **Projection math [P]:** for each impact with an `indicator` and
 `projected_value`, the indicator's published scoring (threshold reference,
@@ -100,9 +116,11 @@ staff curation at `/{tenant}/admin/emergency`.
 **What residents see, in order:**
 
 1. **Active alerts** for the portrait's area from the National Weather
-   Service (`api.weather.gov`, CAP alerts by county/zone UGC code), each with
+   Service (`api.weather.gov`, CAP alerts by county and forecast-zone UGC
+   code — both, since long-fuse alerts are issued by zone), each with
    event, severity, headline, areas, effective/expires, the official
-   instructions, and a link to the NWS alert. Alerts are fetched by the
+   instructions, and a link to the NWS alert (the readable NWS page for its
+   area, not the API record). Alerts are fetched by the
    worker every five minutes (`alerts_sync` cron); the page states when it
    last checked and says so plainly if the feed is stale. Alert text is shown
    as issued (English).
@@ -126,7 +144,12 @@ staff curation at `/{tenant}/admin/emergency`.
 The page is a public page, so the service worker keeps it for offline use
 once opened; it also offers a "save for offline" action that stores the
 emergency page and the portrait's front page — useful when the network goes
-down in a storm.
+down in a storm. Saved copies survive app updates and ordinary browsing. A
+copy read later (saved, or served by the worker when the network fails or
+is slow) re-checks itself on the device: once its alerts are older than the
+stale threshold it says it is a saved copy and when alerts were last
+checked, it never says "no alerts" without that time, and an alert whose
+end time has passed is marked ended.
 
 **Data (migration 0008):** `hazards`, `emergency_plans`,
 `emergency_resources`, `emergency_alerts`; tenant config key `emergency`
@@ -134,9 +157,10 @@ down in a storm.
 emergency_phone, info_phone }`, public). Hazards, plans, and resources have
 `published`; only published rows are public (RLS). Editors curate.
 
-**NYC [P]:** `scripts/nyc-emergency.ts` proposes the NWS county zones
-(NYC005 Bronx, NYC047 Kings, NYC061 New York, NYC081 Queens, NYC085
-Richmond — whole city: all five), Notify NYC, and hazards from the NYC
+**NYC [P]:** `scripts/nyc-emergency.ts` proposes the NWS county and
+forecast zones (NYC061/NYZ072 Manhattan, NYC005/NYZ073 Bronx,
+NYC085/NYZ074 Staten Island, NYC047/NYZ075 Brooklyn, NYC081/NYZ176/NYZ178
+Queens — whole city: all of them), Notify NYC, and hazards from the NYC
 Hazard Mitigation Plan's hazard list. Like the NYC portrait config, it is a
 dry run until `--apply`; it writes hazards **unpublished** so ratings are a
 staff decision, and it refuses to write any plan link that does not answer.
@@ -148,16 +172,24 @@ the configured zones.
 
 - **Dark mode:** light / dark / follow-system, chosen from a toggle in the
   header, remembered per device (localStorage, set before first paint so
-  there is no flash). Implemented with theme tokens; the fixed-opacity
+  there is no flash; the browser's address/title bar colour follows an
+  explicit choice too). Implemented with theme tokens; the fixed-opacity
   black/white utilities get a dark remap, and a test fails if a component
-  uses one the remap does not cover.
-- **Deep fry the page:** press and hold the theme toggle (about 0.6 s), or
-  right-click it, or press Shift+F10 / the Menu key while it has focus — a
-  small menu offers **Deep fry this page**. Frying applies the meme
-  treatment (saturation, contrast, sharpening, an orange cast, grain, a few
-  stickers) to the whole page; the same menu (or Escape) un-fries it. It is
-  per-visit, not remembered, never animates for reduced-motion readers, and
-  is announced to screen readers. It's the product's name, after all.
+  uses one the remap does not cover — or writes a black/white colour
+  (inline or arbitrary-value) where the remap cannot reach it.
+- **The toggle never flashes the page:** a short press flips light/dark
+  once and announces the new theme; held keys and repeated clicks (a screen
+  reader repeating its activate command) still flip it at most once per
+  burst (WCAG 2.3.1). Its description names the routes to the menu.
+- **Deep fry the page:** press and hold the theme toggle (about 0.6 s, with
+  a pointer or with Enter/Space), or right-click it, or press Shift+F10 /
+  the Menu key while it has focus — a small menu offers **Match device**
+  and **Deep fry this page**. Frying applies the meme treatment
+  (saturation, contrast, sharpening, an orange cast, grain, a few stickers)
+  to the whole page; the same menu (or Escape, unless a text field, dialog
+  or IME composition is using it) un-fries it. It is per-visit, not
+  remembered, never animates for reduced-motion readers, and is announced
+  to screen readers. It's the product's name, after all.
 
 ## 5. Foundations and open questions
 

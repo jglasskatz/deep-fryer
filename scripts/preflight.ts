@@ -6,8 +6,9 @@
  *   docker compose run --rm migrate node --import tsx ../../scripts/preflight.ts
  *
  * Each check talks to the real thing — Postgres, the object store, the SMTP
- * relay, Google / Microsoft Entra, Stripe, and the public URL through Caddy
- * — and prints PASS / WARN / FAIL with what to fix. Exit 1 if anything
+ * relay, Google / Microsoft Entra, Stripe, the National Weather Service
+ * alerts feed, and the public URL through Caddy — and prints PASS / WARN /
+ * FAIL with what to fix. Exit 1 if anything
  * fails. Nothing is written except one throwaway SMTP verification (no
  * message is sent); OAuth credentials are proven by redeeming a deliberately
  * invalid code (see oauthCredentialVerdict); Stripe is read-only.
@@ -15,9 +16,14 @@
 import nodemailer from 'nodemailer';
 import { HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
 import Stripe from 'stripe';
-import { sql } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 import {
   PLANS,
+  emergencyConfigSchema,
+  nwsAlertsUrl,
+  nwsFeedVerdict,
+  nwsZoneCoverageVerdict,
+  nwsRequestHeaders,
   STRIPE_WEBHOOK_EVENTS,
   oauthCredentialVerdict,
   productionEnvProblems,
@@ -27,7 +33,7 @@ import {
   stripeWebhookVerdict,
   type Verdict,
 } from '@deep-fryer/core';
-import { getDb } from '@deep-fryer/db';
+import { getDb, tenantConfig, tenants } from '@deep-fryer/db';
 import { s3SettingsFromEnv } from '@deep-fryer/research';
 import journal from '../packages/db/migrations/meta/_journal.json' with { type: 'json' };
 
@@ -209,6 +215,53 @@ async function stripeChecks() {
   });
 }
 
+/**
+ * Official alerts (SPEC-v5 §3): for every portrait with NWS zones, the feed
+ * the worker polls must answer with the alerts FeatureCollection — with the
+ * same contact User-Agent the worker sends, since api.weather.gov may refuse
+ * unidentified clients. Run from the worker's network when its egress goes
+ * through an allowlist proxy, so the check sees what the worker sees.
+ */
+async function alertsChecks() {
+  const portraits: { slug: string; zones: string[] }[] = [];
+  await guarded('alerts', 'emergency configs readable', async () => {
+    const rows = await getDb()
+      .select({ slug: tenants.slug, value: tenantConfig.value })
+      .from(tenantConfig)
+      .innerJoin(tenants, eq(tenants.id, tenantConfig.tenantId))
+      .where(and(eq(tenantConfig.key, 'emergency'), isNull(tenants.archivedAt)));
+    const invalid: string[] = [];
+    for (const r of rows) {
+      const parsed = emergencyConfigSchema.safeParse(r.value);
+      if (!parsed.success) invalid.push(r.slug);
+      else if (parsed.data.nws_zones.length) portraits.push({ slug: r.slug, zones: parsed.data.nws_zones });
+    }
+    return invalid.length
+      ? { status: 'fail', detail: `invalid emergency config for ${invalid.join(', ')} — re-save it at /{portrait}/admin/emergency` }
+      : { status: 'pass', detail: `${portraits.length} portrait(s) with NWS zones` };
+  });
+  if (portraits.length === 0) return skip('alerts', 'NWS alerts feed', 'no portrait has NWS zones configured');
+  if (!env.SUPPORT_EMAIL && !env.EMAIL_FROM) {
+    record('alerts', 'NWS contact in User-Agent', { status: 'warn', detail: 'set SUPPORT_EMAIL (or EMAIL_FROM) so the NWS can reach you' });
+  }
+  const headers = nwsRequestHeaders(env);
+  // Portraits sharing a zone set (rare) are checked once.
+  const seen = new Map<string, string[]>();
+  for (const p of portraits) {
+    const key = p.zones.join(',');
+    seen.set(key, [...(seen.get(key) ?? []), p.slug]);
+  }
+  for (const [key, slugs] of seen) {
+    const zones = key.split(',');
+    await guarded('alerts', `NWS feed: ${slugs.join(', ')}`.slice(0, 46), async () => {
+      const res = await fetch(nwsAlertsUrl(zones), { headers, signal: AbortSignal.timeout(15_000) });
+      return nwsFeedVerdict(zones, res.status, await res.json().catch(() => null));
+    });
+    // A feed that answers can still miss most alerts if only one kind of zone is listed.
+    record('alerts', `NWS zone kinds: ${slugs.join(', ')}`.slice(0, 46), nwsZoneCoverageVerdict(zones));
+  }
+}
+
 async function webChecks() {
   if (!appUrl) return;
   await guarded('web', 'public health check through the proxy', async () => {
@@ -235,6 +288,7 @@ async function main() {
   await mailChecks();
   await signInChecks();
   await stripeChecks();
+  await alertsChecks();
   await webChecks();
 
   const mark = { pass: 'PASS', warn: 'WARN', fail: 'FAIL' } as const;

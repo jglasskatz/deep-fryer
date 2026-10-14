@@ -147,7 +147,11 @@ describe.skipIf(!hasDb)('row-level security under the app role', () => {
     const a = await m.provisionTenant(db, { slug: uniq(), name: 'City A' });
     const b = await m.provisionTenant(db, { slug: uniq(), name: 'City B' });
     const [editor] = await db.insert(m.users).values({ email: `${uniq()}@a.gov` }).returning();
-    await db.insert(m.tenantMembers).values({ tenantId: a.tenant.id, userId: editor!.id, role: 'editor' });
+    const [viewer] = await db.insert(m.users).values({ email: `${uniq()}@a.gov` }).returning();
+    await db.insert(m.tenantMembers).values([
+      { tenantId: a.tenant.id, userId: editor!.id, role: 'editor' },
+      { tenantId: a.tenant.id, userId: viewer!.id, role: 'viewer' },
+    ]);
     await db.insert(m.policyAnalyses).values({ tenantId: a.tenant.id, title: 'Rent relief', brief: 'b', transcript: Buffer.from('secret') });
     await db.insert(m.hazards).values([
       { tenantId: a.tenant.id, slug: 'heat', name: 'Extreme heat', kind: 'extreme_heat', likelihood: 5, severity: 4, published: true },
@@ -159,10 +163,14 @@ describe.skipIf(!hasDb)('row-level security under the app role', () => {
     });
     const anon = <T>(fn: (tx: DbExecutor) => Promise<T>) => m.withAuthContext(db, null, fn);
     const asEditor = <T>(fn: (tx: DbExecutor) => Promise<T>) => m.withAuthContext(db, editor!.id, fn);
+    const asViewer = <T>(fn: (tx: DbExecutor) => Promise<T>) => m.withAuthContext(db, viewer!.id, fn);
 
-    // Analyses: never public; members read them but not the transcript; no app-role writes.
+    // Analyses: never public; editors read them (SPEC-v5 §2: editors and
+    // owners, migration 0009) but not the transcript; viewers of the same
+    // portrait see none — a brief can be unreleased policy text; no app-role writes.
     expect(await anon((tx) => tx.select({ id: m.policyAnalyses.id }).from(m.policyAnalyses).where(eq(m.policyAnalyses.tenantId, a.tenant.id)))).toHaveLength(0);
-    expect(await asEditor((tx) => tx.select({ id: m.policyAnalyses.id, title: m.policyAnalyses.title }).from(m.policyAnalyses).where(eq(m.policyAnalyses.tenantId, a.tenant.id)))).toHaveLength(1);
+    expect(await asEditor((tx) => tx.select({ id: m.policyAnalyses.id, title: m.policyAnalyses.title, adjustments: m.policyAnalyses.adjustments }).from(m.policyAnalyses).where(eq(m.policyAnalyses.tenantId, a.tenant.id)))).toHaveLength(1);
+    expect(await asViewer((tx) => tx.select({ id: m.policyAnalyses.id }).from(m.policyAnalyses).where(eq(m.policyAnalyses.tenantId, a.tenant.id)))).toHaveLength(0);
     await expect(asEditor((tx) => tx.execute(sql`select transcript from policy_analyses`))).rejects.toThrow(/permission denied/);
     await expect(asEditor((tx) => tx.insert(m.policyAnalyses).values({ tenantId: a.tenant.id, title: 'x', brief: 'y' }))).rejects.toThrow(/row-level security/);
 

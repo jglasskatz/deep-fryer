@@ -29,7 +29,7 @@ export async function LanguageSwitcher() {
   };
 
   return (
-    <details className="relative">
+    <details name="df-header-menu" className="relative">
       <summary
         className="flex cursor-pointer list-none items-center gap-1.5 rounded px-2 py-1.5 hover:bg-black/5"
         aria-label={`${m.language.choose} (${info.name})`}

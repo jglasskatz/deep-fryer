@@ -37,6 +37,14 @@ open-doughnut plugin.
   fetches — source checks, page captures and all their subrequests and
   redirect hops, PDF downloads — must be https and resolve only to public
   addresses. The allowlist proxy remains the layer that pins connections.
+- Session containment (`src/session.ts`): a session's tool allowlist is its
+  entire tool surface — only the listed built-in tools exist (`tools`), they
+  are pre-approved, and anything else is denied (`permissionMode: 'dontAsk'`),
+  so no session has a shell or file access. The session's CLI subprocess gets
+  a minimal environment (Anthropic/Claude Code settings, proxy and CA bundle,
+  PATH/HOME/locale) — never `DATABASE_URL`, `S3_*`, `SMTP_URL`, or any other
+  worker secret — because session input (fetched pages, pasted policy briefs)
+  is untrusted text.
 - The image runs as the unprivileged `node` user.
 
 ## Environment

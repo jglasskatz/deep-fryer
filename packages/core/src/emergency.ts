@@ -104,11 +104,16 @@ export const phoneSchema = z
   .max(40)
   .refine((p) => PHONE_RE.test(p) && (p.match(/\d/g)?.length ?? 0) >= 3, 'use a phone number such as 311 or (212) 639-9675');
 
-/** The tel: link for a validated phone number (separators dropped), or null if it cannot dial. */
+/**
+ * The tel: link for a validated phone number (separators dropped), or null
+ * if it cannot dial. `#` is percent-encoded: in a URL it starts the
+ * fragment, so `tel:#311` would dial nothing and `tel:*55#` would lose its
+ * last key (RFC 3966 requires the escape).
+ */
 export function telHref(phone: string | null | undefined): string | null {
   if (!phone) return null;
   const dial = phone.trim().replace(/[^0-9+*#]/g, '');
-  return /\d{3}/.test(dial.replace(/[^0-9]/g, '')) ? `tel:${dial}` : null;
+  return /\d{3}/.test(dial.replace(/[^0-9]/g, '')) ? `tel:${dial.replace(/#/g, '%23')}` : null;
 }
 
 /**
@@ -130,8 +135,17 @@ export const DEFAULT_EMERGENCY_TIME_ZONE = 'America/New_York';
 
 // ---- Configuration (tenant_config key "emergency", public) --------------------
 
-/** NWS UGC codes: county (NYC061) or forecast zone (NYZ072). */
+/**
+ * NWS UGC codes: county (NYC061) or forecast zone (NYZ072). A portrait
+ * should list both kinds for its area: the alerts feed matches on the codes
+ * an alert was issued for, and the NWS issues most long-fuse products
+ * (heat, winter storms, coastal flooding, wind, air quality) by forecast
+ * zone and short-fuse warnings (tornado, severe thunderstorm, flash flood)
+ * by county. Counties alone miss a citywide Heat Advisory.
+ */
 export const UGC_RE = /^[A-Z]{2}[CZ]\d{3}$/;
+const FORECAST_ZONE_RE = /^[A-Z]{2}Z\d{3}$/;
+const COUNTY_ZONE_RE = /^[A-Z]{2}C\d{3}$/;
 
 export const emergencyConfigSchema = z.object({
   nws_zones: z.array(z.string().regex(UGC_RE, 'use NWS UGC codes like NYC061 or NYZ072')).max(50).default([]),
@@ -191,11 +205,14 @@ export const hazardInputSchema = z.object({
     .array(z.string().trim().min(1).max(120))
     .max(30)
     .default([])
-    .transform((events) => [...new Map(events.map((e) => [e.toLowerCase(), e])).values()]),
+    // Case-insensitive duplicates collapse to the first spelling given.
+    .transform((events) => events.filter((e, i) => events.findIndex((x) => x.toLowerCase() === e.toLowerCase()) === i)),
   display_order: displayOrderSchema,
   published: z.boolean().default(false),
 });
 export type HazardInput = z.infer<typeof hazardInputSchema>;
+/** What a form or script submits (defaults not yet applied). */
+export type HazardInputDraft = z.input<typeof hazardInputSchema>;
 
 /**
  * BCP 47 language tags, canonicalized ("ZH-hant" → "zh-Hant") so the public
@@ -240,6 +257,7 @@ export const emergencyPlanInputSchema = z.object({
   published: z.boolean().default(false),
 });
 export type EmergencyPlanInput = z.infer<typeof emergencyPlanInputSchema>;
+export type EmergencyPlanInputDraft = z.input<typeof emergencyPlanInputSchema>;
 
 export const emergencyResourceInputSchema = z.object({
   name: z.string().trim().min(1, 'a name is required').max(200),
@@ -252,6 +270,7 @@ export const emergencyResourceInputSchema = z.object({
   published: z.boolean().default(false),
 });
 export type EmergencyResourceInput = z.infer<typeof emergencyResourceInputSchema>;
+export type EmergencyResourceInputDraft = z.input<typeof emergencyResourceInputSchema>;
 
 // ---- NWS alerts ---------------------------------------------------------------
 
@@ -274,50 +293,125 @@ export interface NormalizedAlert {
   effective: string;
   expires: string | null;
   ends: string | null;
+  /** The machine record on api.weather.gov (GeoJSON); for staff, not residents (see nwsAlertPageUrl). */
   url: string;
+  /** UGC codes the alert was issued for (counties and forecast zones). */
+  zones: string[];
+  /** The issuing NWS office ("okx"), from the product's AWIPS identifier, when present. */
+  office: string | null;
 }
 
+// Every text field the app does not need to identify an alert is nullish:
+// the feed is untrusted and its shapes drift (a null where a string used to
+// be). Rejecting a whole feature over a missing headline would make its
+// stored copy look cancelled (see parseNwsAlerts).
 const nwsFeatureSchema = z.object({
   id: z.string().url(),
   properties: z.object({
-    id: z.string(),
-    event: z.string(),
-    severity: z.string().optional(),
-    urgency: z.string().optional(),
-    certainty: z.string().optional(),
-    headline: z.string().nullable().optional(),
-    description: z.string().nullable().optional(),
-    instruction: z.string().nullable().optional(),
-    areaDesc: z.string().optional(),
-    senderName: z.string().optional(),
-    effective: z.string().optional(),
-    onset: z.string().nullable().optional(),
-    expires: z.string().nullable().optional(),
-    ends: z.string().nullable().optional(),
-    status: z.string().optional(),
-    messageType: z.string().optional(),
+    id: z.string().min(1),
+    event: z.string().min(1),
+    severity: z.string().nullish(),
+    urgency: z.string().nullish(),
+    certainty: z.string().nullish(),
+    headline: z.string().nullish(),
+    description: z.string().nullish(),
+    instruction: z.string().nullish(),
+    areaDesc: z.string().nullish(),
+    senderName: z.string().nullish(),
+    sent: z.string().nullish(),
+    effective: z.string().nullish(),
+    onset: z.string().nullish(),
+    expires: z.string().nullish(),
+    ends: z.string().nullish(),
+    status: z.string().nullish(),
+    messageType: z.string().nullish(),
+    // Read leniently below: a malformed geocode or parameters block costs the
+    // alert its precise link, never the alert itself.
+    geocode: z.unknown().optional(),
+    parameters: z.unknown().optional(),
   }),
 });
 
+const NWS_ALERT_ID_PREFIX = 'https://api.weather.gov/alerts/';
+
+/**
+ * The id a feature would be stored under (`properties.id`, else the tail of
+ * the feature's API URL), read without trusting the feature's shape: used
+ * for features that failed validation, so the worker can keep their last
+ * stored copy instead of treating them as gone.
+ */
+function rawAlertId(raw: unknown): string | null {
+  const feature = raw as { id?: unknown; properties?: { id?: unknown } } | null;
+  const fromProps = feature?.properties?.id;
+  if (typeof fromProps === 'string' && fromProps.trim()) return fromProps.slice(0, 300);
+  const url = feature?.id;
+  if (typeof url === 'string' && url.startsWith(NWS_ALERT_ID_PREFIX) && url.length > NWS_ALERT_ID_PREFIX.length) {
+    return url.slice(NWS_ALERT_ID_PREFIX.length).slice(0, 300);
+  }
+  return null;
+}
+
+/** `geocode.UGC`, keeping only well-formed codes. */
+function alertZones(geocode: unknown): string[] {
+  const ugc = (geocode as { UGC?: unknown } | null | undefined)?.UGC;
+  if (!Array.isArray(ugc)) return [];
+  return [...new Set(ugc.filter((z): z is string => typeof z === 'string' && UGC_RE.test(z)))].slice(0, 100);
+}
+
+/** The office from `parameters.AWIPSidentifier` ("NPWOKX" → "okx": product, then office). */
+function alertOffice(parameters: unknown): string | null {
+  const awips = (parameters as { AWIPSidentifier?: unknown } | null | undefined)?.AWIPSidentifier;
+  const id = Array.isArray(awips) ? awips[0] : awips;
+  if (typeof id !== 'string' || !/^[A-Z0-9]{3}[A-Z]{3}$/.test(id)) return null;
+  return id.slice(3).toLowerCase();
+}
+
+export interface ParsedNwsFeed {
+  alerts: NormalizedAlert[];
+  /** Features that did not parse (malformed, or without any usable time). */
+  rejected: number;
+  /**
+   * The ids of rejected features, where a feature still names one. A
+   * rejected feature is not evidence that its alert ended: the worker keeps
+   * the stored copy of each of these. Shorter than `rejected` when some
+   * rejected feature names no id at all.
+   */
+  rejectedIds: string[];
+}
+
 /**
  * Normalize an `api.weather.gov/alerts/active` GeoJSON response. Untrusted
- * input: features that do not parse are dropped and counted; only actual
- * ("status": "Actual") alerts are kept — never tests, exercises, or drafts.
- * Text fields are clipped so a malformed feed cannot bloat the database.
+ * input: features that do not parse are dropped and reported (count and,
+ * where possible, id); only actual ("status": "Actual") alerts are kept —
+ * never tests, exercises, or drafts. Text fields are clipped so a malformed
+ * feed cannot bloat the database.
  */
-export function parseNwsAlerts(body: unknown): { alerts: NormalizedAlert[]; rejected: number } {
+export function parseNwsAlerts(body: unknown): ParsedNwsFeed {
   const features = (body as { features?: unknown })?.features;
-  if (!Array.isArray(features)) return { alerts: [], rejected: 0 };
+  if (!Array.isArray(features)) return { alerts: [], rejected: 0, rejectedIds: [] };
   const alerts: NormalizedAlert[] = [];
+  const rejectedIds: string[] = [];
   let rejected = 0;
+  const reject = (raw: unknown) => {
+    rejected++;
+    const id = rawAlertId(raw);
+    if (id) rejectedIds.push(id);
+  };
   for (const raw of features) {
     const parsed = nwsFeatureSchema.safeParse(raw);
     if (!parsed.success) {
-      rejected++;
+      reject(raw);
       continue;
     }
     const p = parsed.data.properties;
     if ((p.status ?? 'Actual') !== 'Actual' || p.messageType === 'Cancel') continue;
+    // When the alert takes effect; an alert with no time at all cannot be
+    // placed on the page honestly, so it is treated like a malformed one.
+    const effective = p.effective ?? p.onset ?? p.sent;
+    if (!effective) {
+      reject(raw);
+      continue;
+    }
     const clip = (s: string | null | undefined, n: number) => (s ? s.slice(0, n) : null);
     alerts.push({
       source: 'nws',
@@ -331,14 +425,69 @@ export function parseNwsAlerts(body: unknown): { alerts: NormalizedAlert[]; reje
       instruction: clip(p.instruction, 4000),
       area_desc: (p.areaDesc ?? '').slice(0, 1000),
       sender_name: (p.senderName ?? 'National Weather Service').slice(0, 200),
-      effective: p.effective ?? p.onset ?? new Date(0).toISOString(),
+      effective,
       expires: p.expires ?? null,
       ends: p.ends ?? null,
-      url: parsed.data.id.startsWith('https://api.weather.gov/') ? parsed.data.id : 'https://www.weather.gov/',
+      url: parsed.data.id.startsWith(NWS_ALERT_ID_PREFIX) ? parsed.data.id : 'https://www.weather.gov/',
+      zones: alertZones(p.geocode),
+      office: alertOffice(p.parameters),
     });
   }
   alerts.sort((a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity));
-  return { alerts, rejected };
+  return { alerts, rejected, rejectedIds };
+}
+
+/**
+ * The page a resident follows for an alert ("Official alert"): a readable
+ * NWS page, not the API record (which is GeoJSON). In order of preference:
+ *
+ * 1. the NWS "hazardous weather conditions" page for the area, which shows
+ *    the full text of every alert in force there — a forecast zone (and a
+ *    county, when there is one) from the alert's own codes, preferring the
+ *    ones the portrait configured, then the portrait's own;
+ * 2. the issuing office's page (weather.gov/okx), which maps its alerts;
+ * 3. weather.gov itself.
+ */
+export function nwsAlertPageUrl(alert: Pick<NormalizedAlert, 'zones' | 'office'>, configZones: readonly string[]): string {
+  const pick = (re: RegExp) =>
+    alert.zones.find((z) => re.test(z) && configZones.includes(z)) ??
+    alert.zones.find((z) => re.test(z)) ??
+    configZones.find((z) => re.test(z));
+  const zone = pick(FORECAST_ZONE_RE);
+  if (zone) {
+    const county = pick(COUNTY_ZONE_RE);
+    const query = new URLSearchParams({ warnzone: zone, ...(county ? { warncounty: county } : {}) });
+    return `https://forecast.weather.gov/showsigwx.php?${query}`;
+  }
+  if (alert.office && /^[a-z]{3}$/.test(alert.office)) return `https://www.weather.gov/${alert.office}`;
+  return 'https://www.weather.gov/';
+}
+
+/** The alert's machine record on api.weather.gov (staff view), or null for an id that is not one. */
+export function nwsAlertRecordUrl(sourceId: string): string | null {
+  return /^[A-Za-z0-9.:_-]{1,300}$/.test(sourceId) ? `${NWS_ALERT_ID_PREFIX}${sourceId}` : null;
+}
+
+/**
+ * NWS text arrives hard-wrapped at about 69 characters, mid-sentence. Shown
+ * as is, every line breaks again on a phone, leaving fragments. Unwrap:
+ * blank lines stay paragraph breaks, a line that starts a bullet ("* WHAT…",
+ * "- …") starts a new line, and every other line break becomes a space.
+ * Only whitespace changes; the words stay exactly as issued.
+ */
+export function unwrapAlertText(text: string): string {
+  return text
+    .replace(/\r\n?/g, '\n')
+    .split(/\n[ \t]*\n+/)
+    .map((paragraph) =>
+      paragraph
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .reduce((out, line) => (out === '' ? line : /^[*-]\s/.test(line) ? `${out}\n${line}` : `${out} ${line}`), ''),
+    )
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 /** The NWS request for a portrait's zones (one request, comma-separated). */
@@ -400,6 +549,20 @@ export function nwsRequestHeaders(env: { APP_URL?: string; SUPPORT_EMAIL?: strin
  */
 export function isAlertsFeed(body: unknown): body is { features: unknown[] } {
   return typeof body === 'object' && body !== null && Array.isArray((body as { features?: unknown }).features);
+}
+
+/**
+ * Preflight verdict on which kinds of zones a portrait lists: counties alone
+ * (or forecast zones alone) answer, but silently miss the alerts the NWS
+ * issues by the other kind (see UGC_RE).
+ */
+export function nwsZoneCoverageVerdict(zones: readonly string[]): Verdict {
+  const forecast = zones.some((z) => FORECAST_ZONE_RE.test(z));
+  const county = zones.some((z) => COUNTY_ZONE_RE.test(z));
+  if (forecast && county) return { status: 'pass', detail: 'county and forecast zones' };
+  return forecast
+    ? { status: 'warn', detail: 'forecast zones only — add the county codes (e.g. NYC061) for tornado, severe thunderstorm, and flash flood warnings' }
+    : { status: 'warn', detail: 'county codes only — add the forecast zones (e.g. NYZ072) for heat, winter, coastal flood, wind, and air quality alerts' };
 }
 
 /** Preflight verdict for one portrait's feed (scripts/preflight.ts). */

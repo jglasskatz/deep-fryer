@@ -1,0 +1,367 @@
+/*
+ * Dark mode (SPEC-v5 §4) — everything that differs from the light theme.
+ *
+ * How the page goes dark
+ * ----------------------
+ * 1. The `dark` variant below matches two situations: the reader chose dark
+ *    (`<html data-theme="dark">`, set before first paint by the init script
+ *    in app/layout.tsx), or the reader follows the device
+ *    (`data-theme` unset — "Match device") and the device prefers dark.
+ *    An explicit `data-theme="light"` opts out of the media query. Both
+ *    branches are screen-only, so printing from dark mode prints the light
+ *    page (dark ink on white paper).
+ *    The variant is also available to components as `dark:` utilities, for
+ *    the rare non-colour case (`dark:hidden`, `dark:shadow-none`). Not for
+ *    colours: inside dark mode the palette below is already mirrored and
+ *    black/white are swapped, so `dark:bg-red-950` would paint the light
+ *    tint. Write the light-theme colour once; the test rejects `dark:` on
+ *    colour utilities.
+ *
+ * 2. Tokens (app/globals.css): --color-bg/fg/muted/accent get dark values,
+ *    and --color-white / --color-black swap roles — `bg-white` cards become
+ *    the dark raised surface, `bg-black text-white` buttons become light
+ *    buttons with dark text. That swap is why every coloured fill that
+ *    carries `text-white` must itself turn light in dark mode (point 3).
+ *
+ * 3. The palette (below): Tailwind compiles `bg-red-100` to
+ *    `var(--color-red-100)`, so redefining the variable remaps the utility
+ *    and every variant of it (hover:, md:, …) with Tailwind's own cascade
+ *    order intact. The scale is mirrored: light tints (50/100/200) become
+ *    dark tints of the same hue, and dark text shades (700–950) become light
+ *    ones, so a status chip `bg-amber-100 text-amber-900` stays a chip with
+ *    AA contrast. 50/100/200 are the 950/900/800 shades laid over
+ *    --color-bg at 55/75/85 %; 300–950 are the opposite Tailwind shade.
+ *
+ * 4. Opacity modifiers (`border-black/10`, `bg-amber-50/70`): Tailwind 4.3
+ *    emits these twice — a static colour (`#0000001a`) for engines without
+ *    color-mix(), then, inside @supports (color: color-mix(in lab, red,
+ *    red)), `color-mix(in oklab, var(--color-black) 10%, transparent)`.
+ *    Modern engines therefore follow the swapped / remapped variables from
+ *    points 2 and 3 with no extra CSS. Older engines (iOS 15 iPads are still
+ *    common at community-board meetings) keep the static light-theme colour:
+ *    black text on a dark page. The block at the end of this file remaps
+ *    every such class for exactly those engines, to the same colour the
+ *    variables produce, so old and new engines agree.
+ *
+ *    Why only there: a remap rule written after Tailwind's utilities wins
+ *    against every same-specificity utility on the element, not just its own
+ *    light rule. Unconditionally, `.border-black/10`'s dark `border-color`
+ *    would repaint the coloured `border-s-red-800` severity edge it is paired
+ *    with on alerts. In old engines that trade-off remains (the edge turns
+ *    neutral; severity is also stated in text).
+ *
+ * lib/theme-dark.test.ts scans every source Tailwind compiles (all of
+ * apps/web but dependencies, build output and tests) and fails when a
+ * palette colour lacks a dark value here, when an opacity class lacks its
+ * old-engine remap (or the remap disagrees with the variables), when a
+ * colour is written where none of this can reach it (an arbitrary value
+ * such as `bg-[#000]`, or an inline black/white literal not listed as
+ * deliberately fixed), or when a text/fill pairing in use falls below WCAG
+ * AA (4.5:1) in dark mode.
+ *
+ * Nothing in this file may apply outside the `dark` variant: the light
+ * theme must render exactly as it did before dark mode existed (also
+ * enforced by the test).
+ */
+
+@custom-variant dark {
+  @media screen {
+    &:where([data-theme='dark'], [data-theme='dark'] *) {
+      @slot;
+    }
+  }
+  @media screen and (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme='light']), :root:not([data-theme='light']) *) {
+      @slot;
+    }
+  }
+}
+
+/* The mirrored palette (point 3). Every hue the app uses, all eleven shades. */
+:root {
+  @variant dark {
+    /* red */
+    --color-red-50: #2f0d0c;
+    --color-red-100: #661718;
+    --color-red-200: #8a0911;
+    --color-red-300: #c10007;
+    --color-red-400: #e7000b;
+    --color-red-500: #fb2c36;
+    --color-red-600: #ff6467;
+    --color-red-700: #ffa2a2;
+    --color-red-800: #ffc9c9;
+    --color-red-900: #ffe2e2;
+    --color-red-950: #fef2f2;
+    /* orange */
+    --color-orange-50: #2d130b;
+    --color-orange-100: #63250d;
+    --color-orange-200: #8a2903;
+    --color-orange-300: #ca3500;
+    --color-orange-400: #f54900;
+    --color-orange-500: #ff6900;
+    --color-orange-600: #ff8904;
+    --color-orange-700: #ffb86a;
+    --color-orange-800: #ffd6a7;
+    --color-orange-900: #ffedd4;
+    --color-orange-950: #fff7ed;
+    /* amber */
+    --color-amber-50: #2f1708;
+    --color-amber-100: #602b09;
+    --color-amber-200: #833603;
+    --color-amber-300: #bb4d00;
+    --color-amber-400: #e17100;
+    --color-amber-500: #fe9a00;
+    --color-amber-600: #ffb900;
+    --color-amber-700: #ffd230;
+    --color-amber-800: #fee685;
+    --color-amber-900: #fef3c6;
+    --color-amber-950: #fffbeb;
+    /* yellow */
+    --color-yellow-50: #2d1a0a;
+    --color-yellow-100: #5b330c;
+    --color-yellow-200: #774203;
+    --color-yellow-300: #a65f00;
+    --color-yellow-400: #d08700;
+    --color-yellow-500: #f0b100;
+    --color-yellow-600: #fdc700;
+    --color-yellow-700: #ffdf20;
+    --color-yellow-800: #fff085;
+    --color-yellow-900: #fef9c2;
+    --color-yellow-950: #fefce8;
+    /* green */
+    --color-green-50: #0a2213;
+    --color-green-100: #0e4425;
+    --color-green-200: #045a2b;
+    --color-green-300: #008236;
+    --color-green-400: #00a63e;
+    --color-green-500: #00c950;
+    --color-green-600: #05df72;
+    --color-green-700: #7bf1a8;
+    --color-green-800: #b9f8cf;
+    --color-green-900: #dcfce7;
+    --color-green-950: #f0fdf4;
+    /* teal */
+    --color-teal-50: #092321;
+    --color-teal-100: #0d403c;
+    --color-teal-200: #03544f;
+    --color-teal-300: #00786f;
+    --color-teal-400: #009689;
+    --color-teal-500: #00bba7;
+    --color-teal-600: #00d5be;
+    --color-teal-700: #46ecd5;
+    --color-teal-800: #96f7e4;
+    --color-teal-900: #cbfbf1;
+    --color-teal-950: #f0fdfa;
+    /* sky */
+    --color-sky-50: #0b2330;
+    --color-sky-100: #063d59;
+    --color-sky-200: #034f78;
+    --color-sky-300: #0069a8;
+    --color-sky-400: #0084d1;
+    --color-sky-500: #00a6f4;
+    --color-sky-600: #00bcff;
+    --color-sky-700: #74d4ff;
+    --color-sky-800: #b8e6fe;
+    --color-sky-900: #dff2fe;
+    --color-sky-950: #f0f9ff;
+    /* blue */
+    --color-blue-50: #141d37;
+    --color-blue-100: #192f6f;
+    --color-blue-200: #18369f;
+    --color-blue-300: #1447e6;
+    --color-blue-400: #155dfc;
+    --color-blue-500: #2b7fff;
+    --color-blue-600: #51a2ff;
+    --color-blue-700: #8ec5ff;
+    --color-blue-800: #bedbff;
+    --color-blue-900: #dbeafe;
+    --color-blue-950: #eff6ff;
+    /* gray */
+    --color-gray-50: #0a0d12;
+    --color-gray-100: #111722;
+    --color-gray-200: #1c2633;
+    --color-gray-300: #364153;
+    --color-gray-400: #4a5565;
+    --color-gray-500: #6a7282;
+    --color-gray-600: #99a1af;
+    --color-gray-700: #d1d5dc;
+    --color-gray-800: #e5e7eb;
+    --color-gray-900: #f3f4f6;
+    --color-gray-950: #f9fafb;
+  }
+}
+
+/*
+ * The doughnut canvas paints its own white background and colours (the
+ * canonical Santa Cruz visual, SPEC.md §4), which are not themed. On a dark
+ * page it reads as a figure on a card rather than a hole in the page.
+ */
+@layer base {
+  canvas {
+    @variant dark {
+      border-radius: 0.75rem;
+    }
+  }
+}
+
+/*
+ * Old-engine remaps (point 4). Each value is the colour modern engines
+ * compute from the dark variables: black/N is --color-black (#efeee9) at N %,
+ * white/N is --color-white (#1c1f1b) at N %, a palette colour/N is its dark
+ * value above at N %. Variants repeat Tailwind's own selector and wrappers
+ * (hover: is gated on (hover: hover) as Tailwind does) so precedence matches.
+ */
+@layer utilities {
+  @supports not (color: color-mix(in lab, red, red)) {
+    .border-black\/5 {
+      @variant dark {
+        border-color: rgb(239 238 233 / 0.05);
+      }
+    }
+    .border-black\/10 {
+      @variant dark {
+        border-color: rgb(239 238 233 / 0.1);
+      }
+    }
+    .border-black\/15 {
+      @variant dark {
+        border-color: rgb(239 238 233 / 0.15);
+      }
+    }
+    .border-black\/20 {
+      @variant dark {
+        border-color: rgb(239 238 233 / 0.2);
+      }
+    }
+    .border-black\/25 {
+      @variant dark {
+        border-color: rgb(239 238 233 / 0.25);
+      }
+    }
+    .border-black\/30 {
+      @variant dark {
+        border-color: rgb(239 238 233 / 0.3);
+      }
+    }
+    .border-green-700\/30 {
+      @variant dark {
+        border-color: rgb(123 241 168 / 0.3);
+      }
+    }
+    .border-red-700\/30 {
+      @variant dark {
+        border-color: rgb(255 162 162 / 0.3);
+      }
+    }
+
+    .bg-black\/\[0\.02\] {
+      @variant dark {
+        background-color: rgb(239 238 233 / 0.02);
+      }
+    }
+    .bg-black\/\[0\.03\] {
+      @variant dark {
+        background-color: rgb(239 238 233 / 0.03);
+      }
+    }
+    .bg-black\/\[0\.04\] {
+      @variant dark {
+        background-color: rgb(239 238 233 / 0.04);
+      }
+    }
+    .bg-black\/\[0\.06\] {
+      @variant dark {
+        background-color: rgb(239 238 233 / 0.06);
+      }
+    }
+    .bg-black\/5 {
+      @variant dark {
+        background-color: rgb(239 238 233 / 0.05);
+      }
+    }
+    .bg-black\/10 {
+      @variant dark {
+        background-color: rgb(239 238 233 / 0.1);
+      }
+    }
+    .bg-black\/40 {
+      @variant dark {
+        background-color: rgb(239 238 233 / 0.4);
+      }
+    }
+    .bg-white\/50 {
+      @variant dark {
+        background-color: rgb(28 31 27 / 0.5);
+      }
+    }
+    .bg-white\/60 {
+      @variant dark {
+        background-color: rgb(28 31 27 / 0.6);
+      }
+    }
+    .bg-amber-50\/70 {
+      @variant dark {
+        background-color: rgb(47 23 8 / 0.7);
+      }
+    }
+
+    .text-black\/15 {
+      @variant dark {
+        color: rgb(239 238 233 / 0.15);
+      }
+    }
+    .text-black\/20 {
+      @variant dark {
+        color: rgb(239 238 233 / 0.2);
+      }
+    }
+    .text-black\/50 {
+      @variant dark {
+        color: rgb(239 238 233 / 0.5);
+      }
+    }
+    .text-black\/60 {
+      @variant dark {
+        color: rgb(239 238 233 / 0.6);
+      }
+    }
+    .text-black\/70 {
+      @variant dark {
+        color: rgb(239 238 233 / 0.7);
+      }
+    }
+    .text-black\/80 {
+      @variant dark {
+        color: rgb(239 238 233 / 0.8);
+      }
+    }
+
+    .focus-within\:border-black\/15:focus-within {
+      @variant dark {
+        border-color: rgb(239 238 233 / 0.15);
+      }
+    }
+    .focus\:bg-black\/5:focus {
+      @variant dark {
+        background-color: rgb(239 238 233 / 0.05);
+      }
+    }
+    .target\:bg-black\/5:target {
+      @variant dark {
+        background-color: rgb(239 238 233 / 0.05);
+      }
+    }
+    @media (hover: hover) {
+      .hover\:bg-black\/\[0\.02\]:hover {
+        @variant dark {
+          background-color: rgb(239 238 233 / 0.02);
+        }
+      }
+      .hover\:bg-black\/5:hover {
+        @variant dark {
+          background-color: rgb(239 238 233 / 0.05);
+        }
+      }
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { JobHelpers } from 'graphile-worker';
-import { composePolicyEmail, type PolicyNotice } from './policy-analyze.js';
+import { POLICY_OUTPUT_LIMITS } from '@deep-fryer/core';
+import { composePolicyEmail, fitToContract, type PolicyNotice } from './policy-analyze.js';
 import { startSmtpSink } from '../test/smtp-sink.js';
 
 /**
@@ -11,11 +12,17 @@ import { startSmtpSink } from '../test/smtp-sink.js';
  * published thresholds, settling the row, emailing the requester — is the
  * production code path.
  */
-const session = vi.hoisted(() => ({ resultText: '', succeeded: true, calls: 0 }));
+const session = vi.hoisted(() => ({
+  resultText: '',
+  succeeded: true,
+  calls: 0,
+  lastInput: null as null | { prompt: string; allowedTools: string[]; orchestrate?: boolean },
+}));
 vi.mock('../session.js', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../session.js')>()),
-  runSessionWithRetry: vi.fn(async () => {
+  runSessionWithRetry: vi.fn(async (input: { prompt: string; allowedTools: string[]; orchestrate?: boolean }) => {
     session.calls += 1;
+    session.lastInput = input;
     return {
       resultText: session.resultText,
       succeeded: session.succeeded,
@@ -51,6 +58,87 @@ describe('composePolicyEmail', () => {
     expect(e.subject).toBe('Policy analysis failed — Congestion pricing');
     expect(e.text).toContain('What happened: The session did not complete.');
     expect(e.text).toContain('not counted against your plan');
+  });
+});
+
+const L = POLICY_OUTPUT_LIMITS;
+const validImpact = {
+  dimension_slug: 'housing',
+  direction: 'improves',
+  magnitude: 'moderate',
+  confidence: 'medium',
+  rationale: 'Because.',
+  sources: [],
+};
+
+describe('fitToContract', () => {
+  it('leaves an answer that already fits untouched, with nothing to report', () => {
+    const answer = { summary: 's', impacts: [validImpact], assumptions: ['a'], risks: ['r'] };
+    expect(fitToContract(answer)).toEqual({ value: answer, adjustments: [] });
+    expect(fitToContract('not an object')).toEqual({ value: 'not an object', adjustments: [] });
+  });
+
+  it('shortens over-long text at a word, inside the ceiling, and says so', () => {
+    const long = 'The policy caps annual rent increases for covered units. '.repeat(40);
+    const { value, adjustments } = fitToContract({
+      summary: long,
+      impacts: [{ ...validImpact, rationale: long }],
+      assumptions: [long],
+      risks: Array.from({ length: L.listItems + 3 }, (_, i) => `Risk ${i + 1}.`),
+    }) as { value: { summary: string; impacts: { rationale: string }[]; assumptions: string[]; risks: string[] }; adjustments: string[] };
+    expect(value.summary.length).toBeLessThanOrEqual(L.summaryChars);
+    expect(value.summary.endsWith('…')).toBe(true);
+    expect(value.summary).not.toMatch(/\s…$/);
+    expect(value.impacts[0]!.rationale.length).toBeLessThanOrEqual(L.rationaleChars);
+    expect(value.assumptions[0]!.length).toBeLessThanOrEqual(L.listItemChars);
+    expect(value.risks).toHaveLength(L.listItems);
+    expect(adjustments).toEqual([
+      'The summary was shortened to 1,200 characters.',
+      '1 rationale was shortened to 1,200 characters.',
+      '1 assumption was shortened to 600 characters.',
+      '3 risks beyond the 20 allowed were left out.',
+    ]);
+  });
+
+  it('drops non-https and surplus sources, and sets aside impacts on unknown dimensions', () => {
+    const sources = [
+      { title: 'Insecure', url: 'http://example.gov/report' },
+      { title: 'Not a link', url: 'see the appendix' },
+      ...Array.from({ length: 13 }, (_, i) => ({ title: `Source ${i + 1}`, url: `https://example.gov/${i + 1}` })),
+      { title: '', url: 'https://data.example.gov/x' },
+    ];
+    const { value, adjustments } = fitToContract({
+      summary: 's',
+      impacts: [
+        { ...validImpact, sources },
+        { ...validImpact, dimension_slug: 'Income & Work' },
+        { ...validImpact, dimension_slug: 'nightlife' },
+      ],
+    }) as { value: { impacts: { dimension_slug: string; sources: { title: string; url: string }[] }[] }; adjustments: string[] };
+    expect(value.impacts.map((i) => i.dimension_slug)).toEqual(['housing', 'income-work']);
+    expect(value.impacts[0]!.sources).toHaveLength(L.sourcesPerImpact);
+    expect(value.impacts[0]!.sources.every((x) => x.url.startsWith('https://'))).toBe(true);
+    expect(adjustments).toEqual([
+      'An impact on “nightlife”, which is not one of the doughnut\'s 21 dimensions, was set aside.',
+      '2 cited sources were left out because they were not https links.',
+      '2 sources beyond the 12 allowed per impact were left out.',
+    ]);
+  });
+
+  it('keeps an impact whose projection is unusable, as direction only', () => {
+    const { value, adjustments } = fitToContract({
+      summary: 's',
+      impacts: [
+        { ...validImpact, indicator: 'Rent burden', projected_value: 'about half', projected_year: 2030 },
+        { ...validImpact, indicator: 'Rent burden', projected_value: '46', projected_year: 1999 },
+      ],
+    }) as { value: { impacts: Record<string, unknown>[] }; adjustments: string[] };
+    expect(value.impacts[0]).not.toHaveProperty('indicator');
+    expect(value.impacts[0]).not.toHaveProperty('projected_value');
+    // A numeric string is a number; a year outside the contract is dropped alone.
+    expect(value.impacts[1]).toMatchObject({ indicator: 'Rent burden', projected_value: 46 });
+    expect(value.impacts[1]).not.toHaveProperty('projected_year');
+    expect(adjustments).toEqual(['2 projections with an unusable indicator name, value, or year were kept as direction only (or without a year).']);
   });
 });
 
@@ -196,8 +284,11 @@ describe.skipIf(!hasDb)('policyAnalyze (Postgres, mocked session)', () => {
     ].join('\n');
 
     const row = await run(analysis.id);
+    // One web-research session, never orchestrated (no delegation note after the contract).
+    expect(session.lastInput).toMatchObject({ allowedTools: ['WebSearch', 'WebFetch'], orchestrate: false });
     expect(row.status).toBe('complete');
     expect(row.error).toBeNull();
+    expect(row.adjustments).toBeNull();
     expect(row.startedAt).toBeInstanceOf(Date);
     expect(row.completedAt).toBeInstanceOf(Date);
     expect(row.tokenUsage).toEqual({ input_tokens: 1200, output_tokens: 340 });
@@ -223,6 +314,85 @@ describe.skipIf(!hasDb)('policyAnalyze (Postgres, mocked session)', () => {
     expect(mail).toContain(`https://app.example.gov/${tenant.slug}/admin/policy/${analysis.id}`);
   });
 
+  it('completes a slightly-off answer, fixing what it can and noting it for staff', async () => {
+    const { analysis } = await seed();
+    session.succeeded = true;
+    // Unfenced JSON followed by prose, a summary over the ceiling, an http
+    // source, and an impact on a dimension that does not exist.
+    session.resultText =
+      JSON.stringify({
+        summary: 'Stabilization slows rent growth for covered units. '.repeat(30),
+        impacts: [
+          {
+            dimension_slug: 'housing',
+            direction: 'improves',
+            magnitude: 'moderate',
+            confidence: 'medium',
+            rationale: 'Capped increases reduce cost burden.',
+            sources: [
+              { title: 'Furman Center', url: 'https://furmancenter.org/research' },
+              { title: 'Old report', url: 'http://example.gov/old' },
+            ],
+          },
+          { dimension_slug: 'nightlife', direction: 'worsens', magnitude: 'small', confidence: 'low', rationale: 'r', sources: [] },
+        ],
+        assumptions: [],
+        risks: [],
+      }) + '\n\nNote: these are estimates {not measurements}.';
+
+    const row = await run(analysis.id);
+    expect(row.status).toBe('complete');
+    expect(row.result!.summary.length).toBeLessThanOrEqual(POLICY_OUTPUT_LIMITS.summaryChars);
+    expect(row.result!.impacts.map((i) => i.dimension_slug)).toEqual(['housing']);
+    expect(row.result!.impacts[0]!.sources).toEqual([{ title: 'Furman Center', url: 'https://furmancenter.org/research' }]);
+    expect(row.adjustments).toEqual([
+      'The summary was shortened to 1,200 characters.',
+      'An impact on “nightlife”, which is not one of the doughnut\'s 21 dimensions, was set aside.',
+      '1 cited source was left out because it was not an https link.',
+    ]);
+  });
+
+  it('settles stale queued analyses whose job cannot run, and leaves waiting ones alone', async () => {
+    const m = await import('@deep-fryer/db');
+    const { ensureJobQueueSchema, policyJobKey } = await import('@deep-fryer/research');
+    const { eq, sql } = await import('drizzle-orm');
+    const { policySweep } = await import('./policy-analyze.js');
+    await ensureJobQueueSchema();
+    const db = m.getDb();
+    const hourAgo = new Date(Date.now() - 60 * 60_000);
+
+    // Orphaned: queued an hour ago, its job gone.
+    const { requester, analysis: orphan } = await seed();
+    // Dead: its job failed for good (attempts exhausted).
+    const { analysis: dead } = await seed();
+    // Waiting: its job is still in the queue (the worker is down).
+    const { analysis: waiting } = await seed();
+    // Recent: queued a minute ago, no job yet to judge by.
+    const { analysis: recent } = await seed();
+    for (const a of [orphan, dead, waiting]) {
+      await db.update(m.policyAnalyses).set({ createdAt: hourAgo }).where(eq(m.policyAnalyses.id, a.id));
+    }
+    for (const a of [dead, waiting]) {
+      const key = policyJobKey(a.id);
+      await db.execute(sql`select graphile_worker.add_job('policy_analyze', json_build_object('analysisId', ${a.id}::text), job_key := ${key}, max_attempts := 1)`);
+      cleanup.push(() => db.execute(sql`select graphile_worker.remove_job(${key})`));
+    }
+    await db.execute(sql`update graphile_worker._private_jobs set attempts = max_attempts, last_error = 'boom' where key = ${policyJobKey(dead.id)}`);
+
+    await policySweep({}, helpers);
+
+    const status = async (id: string) =>
+      (await db.select().from(m.policyAnalyses).where(eq(m.policyAnalyses.id, id)))[0]!;
+    for (const a of [orphan, dead]) {
+      const row = await status(a.id);
+      expect(row.status).toBe('failed');
+      expect(row.error).toMatch(/never started.*not counted against your plan/);
+    }
+    expect((await status(waiting.id)).status).toBe('queued');
+    expect((await status(recent.id)).status).toBe('queued');
+    expect(mailTo(requester.email!)).toMatch(/Subject: =\?UTF-8\?Q\?Policy_analysis_failed/);
+  });
+
   it('fails an answer with no JSON in it, keeping what the session cost', async () => {
     const { requester, analysis } = await seed();
     session.succeeded = true;
@@ -239,14 +409,16 @@ describe.skipIf(!hasDb)('policyAnalyze (Postgres, mocked session)', () => {
   it('fails a schema-invalid result and names the problem without a stack trace', async () => {
     const { analysis } = await seed();
     session.succeeded = true;
+    // An unknown direction cannot be fixed without guessing what was meant
+    // (unlike an unknown dimension, which is set aside), so it fails.
     session.resultText = JSON.stringify({
       summary: 's',
-      impacts: [{ dimension_slug: 'mars', direction: 'improves', magnitude: 'small', confidence: 'low', rationale: 'r' }],
+      impacts: [{ dimension_slug: 'housing', direction: 'better', magnitude: 'small', confidence: 'low', rationale: 'r' }],
     });
     const row = await run(analysis.id);
     expect(row.status).toBe('failed');
     expect(row.error).toContain('failed validation');
-    expect(row.error).toContain('impacts › #1 › dimension_slug: unexpected value “mars”');
+    expect(row.error).toContain('impacts › #1 › direction: unexpected value “better”');
     expect(row.error).not.toMatch(/\bat\s+\S+\s+\(/);
     expect(row.projections).toBeNull();
   });

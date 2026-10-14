@@ -85,18 +85,113 @@ const DELEGATION_NOTE = `
 A 'source-scout' subagent is available via the Task tool. Dispatch scouts for breadth work — tier sweeps, portal checks, page skims — and reserve your own turns for judgment: source evaluation, tier decisions, value extraction from evidence you capture yourself, scoring math, and composing findings. Every scout dispatch must state: objective, expected report format, and boundaries (per the delegation contract). You remain the single synthesizer; scout reports are raw material, not conclusions. Capture evidence yourself for every accepted source.`;
 
 /**
+ * What orchestrated mode adds: the subagent dispatch tool, and TaskOutput,
+ * which collects the report of a scout dispatched in the background. The
+ * dispatch tool is `Agent` in current Claude Code; older releases (and
+ * permission rules written for them) call it `Task`. Both names are listed
+ * so orchestrated mode keeps its scouts whichever the bundled CLI
+ * recognizes — an unknown name in the tool set matches nothing.
+ */
+const DISPATCH_TOOLS = ['Agent', 'Task', 'TaskOutput'];
+
+/**
+ * Built-in tools that reach the worker's own machine: the shell, the
+ * filesystem, notebooks, background processes. No session ever needs them —
+ * every session's work is web research plus our in-process MCP tools — and
+ * each one would let text the model read (a fetched page, a pasted policy
+ * brief) steer it into the worker's environment. The `tools` option below
+ * already leaves them out; listing them as disallowed as well means a
+ * future change to the base tool set cannot quietly bring one back.
+ */
+const LOCAL_MACHINE_TOOLS = [
+  'Bash',
+  'BashOutput',
+  'KillShell',
+  'Read',
+  'Write',
+  'Edit',
+  'MultiEdit',
+  'NotebookEdit',
+  'Glob',
+  'Grep',
+  'LS',
+  'REPL',
+  'Monitor',
+];
+
+/**
+ * The environment a session's CLI subprocess runs with. The SDK otherwise
+ * hands the subprocess the worker's entire process.env — the owner-role
+ * DATABASE_URL (which bypasses row-level security), the S3 keys, SMTP
+ * credentials — and a session's input is untrusted text by design. So the
+ * subprocess gets only what it needs to reach the model through the egress
+ * proxy: the Anthropic/Claude Code configuration, the proxy and CA-bundle
+ * settings, and the basics a process needs to start (PATH, HOME, temp dir,
+ * locale). Anything not listed here is withheld.
+ */
+const SESSION_ENV_KEYS = [
+  'PATH',
+  'HOME',
+  'TMPDIR',
+  'TMP',
+  'TEMP',
+  'LANG',
+  'LC_ALL',
+  'TZ',
+  'HTTPS_PROXY',
+  'https_proxy',
+  'HTTP_PROXY',
+  'http_proxy',
+  'NO_PROXY',
+  'no_proxy',
+  'NODE_EXTRA_CA_CERTS',
+  'SSL_CERT_FILE',
+  'SSL_CERT_DIR',
+  'CLAUDE_CONFIG_DIR',
+];
+/** The model client's own configuration namespaces (API key, base URL, CLI knobs). */
+const SESSION_ENV_PREFIXES = ['ANTHROPIC_', 'CLAUDE_CODE_', 'CLAUDE_AGENT_SDK_'];
+
+/** Pure: the subset of `source` a session subprocess may see (see SESSION_ENV_KEYS). */
+export function sessionEnv(source: NodeJS.ProcessEnv = process.env): Record<string, string> {
+  const env: Record<string, string> = {};
+  for (const [key, value] of Object.entries(source)) {
+    if (value === undefined) continue;
+    if (SESSION_ENV_KEYS.includes(key) || SESSION_ENV_PREFIXES.some((p) => key.startsWith(p))) {
+      env[key] = value;
+    }
+  }
+  return env;
+}
+
+/**
  * One research session = one Agent SDK session in a scratch workspace
  * (SPEC.md §8 Apply). The full message stream is retained as the audit
  * transcript (gzipped JSONL). In production each session additionally runs
  * inside an ephemeral container behind the egress allowlist proxy — that
- * isolation lives in the deploy layer (see apps/worker/README.md), not here.
+ * isolation lives in the deploy layer (see apps/worker/README.md); the tool
+ * surface and the subprocess environment are restricted here, so a session
+ * is contained even where that deploy layer is missing.
  */
 export async function runSession(input: {
   prompt: string;
+  /**
+   * The session's entire tool surface: built-in tools by name (WebSearch,
+   * WebFetch) plus our MCP tools (mcp__evidence__…). Nothing outside it
+   * exists in the session, and nothing outside it may run.
+   */
   allowedTools: string[];
   storage?: TenantStorage;
   maxTurns?: number;
   model?: string;
+  /**
+   * Orchestrated mode (scouts via the dispatch tool, see SCOUT_MODEL). When
+   * omitted it follows the research rule: on whenever RESEARCH_SUBAGENT_MODEL
+   * is set and the session may search the web. Sessions that are not
+   * research — a policy analysis, whose prompt ends with its own output
+   * contract — pass false so no delegation note is appended after it.
+   */
+  orchestrate?: boolean;
 }): Promise<SessionResult> {
   const workspace = await mkdtemp(path.join(tmpdir(), 'df-session-'));
   const transcriptLines: string[] = [];
@@ -141,7 +236,22 @@ export async function runSession(input: {
   }
 
   const scoutModel = SCOUT_MODEL();
-  const orchestrated = Boolean(scoutModel) && input.allowedTools.includes('WebSearch');
+  const orchestrated =
+    input.orchestrate !== false && Boolean(scoutModel) && input.allowedTools.includes('WebSearch');
+
+  // The explicit allowlist from the rendered plan is the entire tool surface
+  // (SPEC §8). The SDK enforces that with three separate options, and all
+  // three are needed:
+  // - `tools` is the set of built-in tools that EXIST in the session. Without
+  //   it the session gets every Claude Code tool (shell, file reads…), and
+  //   `allowedTools` alone only decides which of those run unprompted.
+  // - `allowedTools` pre-approves the allowlist, MCP tools included (MCP
+  //   tools come from `mcpServers`, so they are not in `tools`).
+  // - `permissionMode: 'dontAsk'` denies anything not pre-approved instead of
+  //   falling back to default-mode rules (which auto-approve file reads).
+  // Orchestrated mode adds only DISPATCH_TOOLS + the scout definition.
+  const allowed = orchestrated ? [...input.allowedTools, ...DISPATCH_TOOLS] : input.allowedTools;
+  const builtIn = allowed.filter((t) => !t.startsWith('mcp__'));
 
   try {
     const q = query({
@@ -149,10 +259,11 @@ export async function runSession(input: {
       options: {
         model: input.model ?? MODEL(),
         cwd: workspace,
-        // No permission bypass: the explicit allowlist from the rendered plan
-        // is the entire tool surface (SPEC §8); everything else is denied.
-        // Orchestrated mode adds only Task + the scout definition.
-        allowedTools: orchestrated ? [...input.allowedTools, 'Task'] : input.allowedTools,
+        tools: builtIn,
+        allowedTools: allowed,
+        disallowedTools: LOCAL_MACHINE_TOOLS.filter((t) => !allowed.includes(t)),
+        permissionMode: 'dontAsk',
+        env: sessionEnv(),
         maxTurns: input.maxTurns ?? DEFAULT_SESSION_MAX_TURNS,
         ...(orchestrated && scoutModel ? { agents: SCOUT_AGENT(scoutModel) } : {}),
         ...(Object.keys(mcpServers).length ? { mcpServers } : {}),
@@ -194,11 +305,58 @@ export async function runSession(input: {
   };
 }
 
-/** Extract the first JSON value from a session's result text (fences tolerated). */
-export function extractJson(text: string): unknown {
-  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  const candidate = fenced?.[1] ?? text;
-  const start = candidate.search(/[[{]/);
-  if (start < 0) throw new Error('no JSON found in session output');
-  return JSON.parse(candidate.slice(start));
+/**
+ * Extract the first JSON value from a session's result text.
+ *
+ * Models wrap their answer in prose as often as not: a sentence before it,
+ * a ```json fence around it, a "Note: …" after it. So this looks inside
+ * fenced blocks first, then in the whole text, and at each `{` or `[` it
+ * reads one balanced JSON value (respecting strings and escapes) and parses
+ * just that — trailing text is ignored rather than failing the parse.
+ *
+ * `kind` narrows what counts: a caller whose contract is an object passes
+ * 'object', so a bracketed aside in the prose ("the [3] largest effects")
+ * is skipped instead of being returned as the answer.
+ */
+export function extractJson(text: string, opts: { kind?: 'object' | 'array' | 'any' } = {}): unknown {
+  const kind = opts.kind ?? 'any';
+  const openers = kind === 'object' ? '{' : kind === 'array' ? '[' : '{[';
+  const fenced = [...text.matchAll(/```(?:json)?\s*([\s\S]*?)```/g)].map((m) => m[1] ?? '');
+  for (const candidate of [...fenced, text]) {
+    for (let i = 0; i < candidate.length; i++) {
+      if (!openers.includes(candidate[i]!)) continue;
+      const end = balancedEnd(candidate, i);
+      if (end < 0) continue;
+      try {
+        return JSON.parse(candidate.slice(i, end + 1));
+      } catch {
+        // Balanced but not JSON (prose in braces); try the next opener.
+      }
+    }
+  }
+  throw new Error('no JSON found in session output');
+}
+
+/**
+ * Index of the bracket that closes the value opened at `start`, or -1 when
+ * the text ends first. Brackets inside JSON strings do not count.
+ */
+function balancedEnd(text: string, start: number): number {
+  let depth = 0;
+  let inString = false;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i];
+    if (inString) {
+      if (c === '\\') i++;
+      else if (c === '"') inString = false;
+      continue;
+    }
+    if (c === '"') inString = true;
+    else if (c === '{' || c === '[') depth++;
+    else if (c === '}' || c === ']') {
+      depth--;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
 }

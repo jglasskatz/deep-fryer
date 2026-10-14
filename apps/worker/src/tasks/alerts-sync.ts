@@ -1,9 +1,10 @@
-import type { Task } from 'graphile-worker';
+import type { RunnerOptions, Task } from 'graphile-worker';
 import { and, eq, isNull, notInArray, sql } from 'drizzle-orm';
 import {
   alertIsCurrent,
   emergencyConfigSchema,
   isAlertsFeed,
+  nwsAlertPageUrl,
   nwsAlertsUrl,
   nwsRequestHeaders,
   parseNwsAlerts,
@@ -18,7 +19,7 @@ import {
   tenants,
   type DbExecutor,
 } from '@deep-fryer/db';
-import { guardedFetch } from '@deep-fryer/research';
+import { ALERTS_CRONTAB, ALERTS_TASK, guardedFetch } from '@deep-fryer/research';
 
 /**
  * Official alerts (SPEC-v5 §3): every five minutes (ALERTS_CRONTAB) the
@@ -34,8 +35,15 @@ import { guardedFetch } from '@deep-fryer/research';
  *   ALERTS_STALE_AFTER_MS, while still filtering out alerts that expired;
  * - a response that is not the alerts FeatureCollection counts as an error,
  *   not as "no alerts", for the same reason;
+ * - a feature that does not parse is not evidence that its alert ended: its
+ *   stored copy is kept (by id; when a broken feature names no id, nothing
+ *   is removed that run), and a feed in which nothing parses is a failure;
  * - one portrait failing never stops the others, and the task itself never
  *   throws for a feed problem (graphile-worker would retry the whole batch).
+ *
+ * Scheduling: the task runs in its own graphile-worker runner
+ * (alertsRunnerOptions) so a long research or policy job can never hold the
+ * only slot while the five-minute refresh waits and the page goes stale.
  */
 
 /** Fetch and parse JSON. Injected so tests run without network access. */
@@ -64,6 +72,9 @@ export type SyncOutcome =
   | { tenantId: string; ok: true; stored: number; removed: number; rejected: number }
   | { tenantId: string; ok: false; error: string };
 
+/** What one attempt leaves in `emergency_alert_syncs` (staff read `last_error` in admin). */
+type Attempt = { ok: true; note: string | null } | { ok: false; error: string };
+
 /** Short, single-line failure text for `last_error` (staff see it in admin). */
 function shortError(err: unknown): string {
   const text = err instanceof Error ? err.message : String(err);
@@ -76,8 +87,12 @@ function toDate(value: string | null): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-/** Alert → row; null when the feed's effective time is not a date (dropped, counted as rejected). */
-function alertRow(tenantId: string, a: NormalizedAlert, now: Date) {
+/**
+ * Alert → row; null when the feed's effective time is not a date (dropped,
+ * counted as rejected, its stored copy kept). `url` is the readable NWS page
+ * residents follow; staff reach the API record through the source id.
+ */
+function alertRow(tenantId: string, a: NormalizedAlert, config: EmergencyConfig, now: Date) {
   const effective = toDate(a.effective);
   if (!effective) return null;
   return {
@@ -93,7 +108,7 @@ function alertRow(tenantId: string, a: NormalizedAlert, now: Date) {
     instruction: a.instruction,
     areaDesc: a.area_desc,
     senderName: a.sender_name,
-    url: a.url,
+    url: nwsAlertPageUrl(a, config.nws_zones),
     effective,
     expires: toDate(a.expires),
     ends: toDate(a.ends),
@@ -125,11 +140,19 @@ export async function syncTenantAlerts({
     if (!isAlertsFeed(body)) throw new Error('api.weather.gov answered without a features list');
   } catch (err) {
     const error = shortError(err);
-    await recordAttempt(db, tenantId, now, error);
+    await recordAttempt(db, tenantId, now, { ok: false, error });
     return { tenantId, ok: false, error };
   }
 
   const parsed = parseNwsAlerts(body);
+  // Alerts were listed but none could be read: the feed's format changed
+  // under us. That is a failure, not "all clear" — keep what is stored and
+  // let the page go stale rather than claim there are no alerts.
+  if (parsed.rejected > 0 && parsed.alerts.length === 0) {
+    const error = `api.weather.gov listed ${parsed.rejected} alert(s) this app could not read`;
+    await recordAttempt(db, tenantId, now, { ok: false, error });
+    return { tenantId, ok: false, error };
+  }
   // Expired alerts can linger in the "active" feed for a few minutes after
   // they end; never store what the page would hide anyway.
   const current = parsed.alerts.filter((a) => alertIsCurrent(a, now));
@@ -137,12 +160,24 @@ export async function syncTenantAlerts({
   // row twice (a Postgres error), so keep the first of each id.
   const byId = new Map<string, NonNullable<ReturnType<typeof alertRow>>>();
   let rejected = parsed.rejected;
+  // Alerts still in the feed that could not be read this time: their last
+  // stored copy stays (a partial format change must not silently delete a
+  // real warning).
+  const keep = new Set(parsed.rejectedIds);
+  // A broken feature that names no id could be any stored alert, so that
+  // run removes nothing.
+  const canRemove = parsed.rejectedIds.length === parsed.rejected;
   for (const a of current) {
-    const row = alertRow(tenantId, a, now);
-    if (!row) rejected++;
-    else if (!byId.has(row.sourceId)) byId.set(row.sourceId, row);
+    const row = alertRow(tenantId, a, config, now);
+    if (!row) {
+      rejected++;
+      keep.add(a.source_id);
+    } else if (!byId.has(row.sourceId)) byId.set(row.sourceId, row);
   }
   const rows = [...byId.values()];
+  const note = rejected
+    ? `${rejected} alert(s) in the feed could not be read; ${canRemove ? 'their last stored copies were kept' : 'no stored alert was removed'}`
+    : null;
 
   try {
     const removed = await db.transaction(async (tx) => {
@@ -172,41 +207,46 @@ export async function syncTenantAlerts({
       }
       // Anything of ours no longer in the active feed was cancelled, expired,
       // or superseded: the page shows only what the NWS shows now.
-      const gone = await tx
-        .delete(emergencyAlerts)
-        .where(
-          and(
-            eq(emergencyAlerts.tenantId, tenantId),
-            eq(emergencyAlerts.source, 'nws'),
-            rows.length ? notInArray(emergencyAlerts.sourceId, rows.map((r) => r.sourceId)) : undefined,
-          ),
-        )
-        .returning({ id: emergencyAlerts.id });
-      await recordAttempt(tx, tenantId, now, null);
-      return gone.length;
+      let removed = 0;
+      if (canRemove) {
+        const listed = [...rows.map((r) => r.sourceId), ...keep];
+        const gone = await tx
+          .delete(emergencyAlerts)
+          .where(
+            and(
+              eq(emergencyAlerts.tenantId, tenantId),
+              eq(emergencyAlerts.source, 'nws'),
+              listed.length ? notInArray(emergencyAlerts.sourceId, listed) : undefined,
+            ),
+          )
+          .returning({ id: emergencyAlerts.id });
+        removed = gone.length;
+      }
+      await recordAttempt(tx, tenantId, now, { ok: true, note });
+      return removed;
     });
     return { tenantId, ok: true, stored: rows.length, removed, rejected };
   } catch (err) {
     const error = shortError(err);
-    await recordAttempt(db, tenantId, now, error).catch(() => undefined);
+    await recordAttempt(db, tenantId, now, { ok: false, error }).catch(() => undefined);
     return { tenantId, ok: false, error };
   }
 }
 
 /**
  * Upsert the per-portrait sync state: the attempt time always; on success
- * (error null) also the success time, clearing the last error; on failure
- * only the error, so `last_success_at` keeps telling the page how old its
- * data is.
+ * also the success time, with `last_error` set to the run's note (alerts it
+ * could not read) or cleared; on failure only the error, so
+ * `last_success_at` keeps telling the page how old its data is.
  */
-async function recordAttempt(db: DbExecutor, tenantId: string, now: Date, error: string | null) {
-  const success = error === null;
+async function recordAttempt(db: DbExecutor, tenantId: string, now: Date, attempt: Attempt) {
+  const lastError = attempt.ok ? attempt.note : attempt.error;
   await db
     .insert(emergencyAlertSyncs)
-    .values({ tenantId, lastAttemptAt: now, lastSuccessAt: success ? now : null, lastError: error })
+    .values({ tenantId, lastAttemptAt: now, lastSuccessAt: attempt.ok ? now : null, lastError })
     .onConflictDoUpdate({
       target: emergencyAlertSyncs.tenantId,
-      set: success ? { lastAttemptAt: now, lastSuccessAt: now, lastError: null } : { lastAttemptAt: now, lastError: error },
+      set: attempt.ok ? { lastAttemptAt: now, lastSuccessAt: now, lastError } : { lastAttemptAt: now, lastError },
     });
 }
 
@@ -277,3 +317,23 @@ export const alertsSync: Task = async (_payload, helpers) => {
     }
   }
 };
+
+/**
+ * The alerts runner's graphile-worker options. The worker process starts
+ * this runner beside the research one (`run(alertsRunnerOptions(url))`):
+ *
+ * - its own task list and its own slot (concurrency 1), so research and
+ *   policy jobs, which run for minutes, can never starve the refresh — the
+ *   runners share the queue but each only takes the tasks it knows;
+ * - the five-minute schedule (ALERTS_CRONTAB), whose options make a failed
+ *   tick final (the next tick is the retry) and collapse ticks waiting
+ *   behind a busy runner into one.
+ */
+export function alertsRunnerOptions(connectionString: string): RunnerOptions {
+  return {
+    connectionString,
+    concurrency: 1,
+    taskList: { [ALERTS_TASK]: alertsSync },
+    crontab: ALERTS_CRONTAB,
+  };
+}

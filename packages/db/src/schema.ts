@@ -573,6 +573,14 @@ export const policyAnalyses = pgTable(
     result: jsonb('result').$type<PolicyAnalysisOutput>(),
     /** Per-dimension projections re-scored with the published thresholds. */
     projections: jsonb('projections').$type<DimensionProjection[]>(),
+    /**
+     * What the worker changed to fit the model's answer to the output
+     * contract before validating it (a non-https source dropped, an impact
+     * on an unknown dimension set aside, an over-long summary shortened),
+     * one plain sentence each, shown to staff with the result. Null or empty
+     * when the answer fit as given. (Migration 0009.)
+     */
+    adjustments: jsonb('adjustments').$type<string[]>(),
     error: text('error'),
     requestedBy: uuid('requested_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

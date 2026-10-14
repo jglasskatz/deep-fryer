@@ -16,16 +16,30 @@
  *   admin, account, billing,
  *   auth, API, RSC payloads    network only — never cached
  *
+ * Pages can also ask for copies ahead of need: the emergency page's "save
+ * for offline" posts { type: 'CACHE_URLS', urls } (SPEC-v5 §3), and this
+ * worker fetches each same-origin page and stores it under exactly the same
+ * rule as a visit — only a response marked `x-df-cache: public`. Those
+ * copies go in their own cache, SAVED, which is not versioned (an app
+ * update keeps it) and not trimmed by ordinary browsing (it has its own
+ * small cap); a visit to a saved page while online refreshes its copy. The
+ * page first sends { type: 'PING' } to tell a worker that knows CACHE_URLS
+ * from an older one that would never answer.
+ *
  * Bump VERSION whenever this file's behavior changes; the page shows an
  * "update available" prompt and activation waits for the user.
  */
-const VERSION = 'v3';
+const VERSION = 'v4';
 const STATIC = `df-static-${VERSION}`;
 const PAGES = `df-pages-${VERSION}`;
 const IMAGES = `df-images-${VERSION}`;
-const KEEP = new Set([STATIC, PAGES, IMAGES]);
+/** Pages a reader saved on purpose: unversioned, so updates keep them. */
+const SAVED = 'df-saved';
+const KEEP = new Set([STATIC, PAGES, IMAGES, SAVED]);
 const PRECACHE = ['/icons/icon-192.png', '/icons/icon.svg', '/manifest.webmanifest'];
 const MAX_PAGES = 60;
+/** Room for a few portraits' emergency and front pages, in a language or two. */
+const MAX_SAVED = 24;
 const MAX_IMAGES = 250;
 const NETWORK_TIMEOUT_MS = 6000;
 
@@ -65,8 +79,73 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
   // Sent on sign-out, belt and braces: signed-in pages are never cached anyway.
-  if (event.data?.type === 'CLEAR_PAGES') event.waitUntil(caches.delete(PAGES));
+  if (event.data?.type === 'CLEAR_PAGES') event.waitUntil(Promise.all([caches.delete(PAGES), caches.delete(SAVED)]));
+  // "Save for offline" checks it is talking to a worker that can save.
+  if (event.data?.type === 'PING') event.ports?.[0]?.postMessage({ type: 'PONG', version: VERSION });
+  // "Save for offline": reply over the MessageChannel port the page sent.
+  if (event.data?.type === 'CACHE_URLS') event.waitUntil(cacheUrls(event.data.urls, event.ports?.[0]));
 });
+
+const MAX_SAVE_URLS = 10;
+const SAVE_TIMEOUT_MS = 15000;
+
+/** Whether a response may be stored on the device (the x-df-cache contract with middleware.ts). */
+function storable(response) {
+  return (
+    response.ok &&
+    response.type === 'basic' &&
+    // A redirected response cannot answer a later navigation (browsers
+    // reject it), and the URL it was asked for is not the page it holds.
+    !response.redirected &&
+    response.headers.get('x-df-cache') === 'public'
+  );
+}
+
+/**
+ * Fetch and store the pages a client asked for. Only same-origin page URLs
+ * outside NEVER_CACHE are considered, and each response must pass the same
+ * test as networkFirstPage: a signed-in person's pages (x-df-cache: private)
+ * are refused, never stored. Each URL gets its own result, so the page can
+ * tell "saved" from "signed in" from "offline".
+ */
+async function cacheUrls(urls, port) {
+  const list = Array.isArray(urls) ? urls.slice(0, MAX_SAVE_URLS) : [];
+  const cache = await caches.open(SAVED);
+  const results = await Promise.all(
+    list.map(async (raw) => {
+      let url;
+      try {
+        url = new URL(String(raw), self.location.origin);
+      } catch {
+        return { url: String(raw), ok: false, reason: 'invalid' };
+      }
+      const path = url.pathname + url.search;
+      if (url.origin !== self.location.origin || NEVER_CACHE.some((re) => re.test(url.pathname))) {
+        return { url: path, ok: false, reason: 'refused' };
+      }
+      try {
+        const response = await Promise.race([fetch(url.href, { credentials: 'same-origin' }), timeout(SAVE_TIMEOUT_MS)]);
+        if (!storable(response)) {
+          const reason =
+            response.headers.get('x-df-cache') === 'private'
+              ? 'private'
+              : response.redirected
+                ? 'redirected'
+                : `status ${response.status}`;
+          return { url: path, ok: false, reason };
+        }
+        // Re-saving moves the page to the newest end, so trim drops the oldest saves first.
+        await cache.delete(url.href);
+        await cache.put(url.href, response);
+        return { url: path, ok: true };
+      } catch {
+        return { url: path, ok: false, reason: 'network' };
+      }
+    }),
+  );
+  await trim(SAVED, MAX_SAVED);
+  if (port) port.postMessage({ type: 'CACHE_URLS_RESULT', results });
+}
 
 async function trim(cacheName, max) {
   const cache = await caches.open(cacheName);
@@ -80,17 +159,30 @@ function timeout(ms) {
 
 async function networkFirstPage(request) {
   const cache = await caches.open(PAGES);
+  const saved = await caches.open(SAVED);
   try {
     const response = await Promise.race([fetch(request), timeout(NETWORK_TIMEOUT_MS)]);
-    if (response.ok && response.type === 'basic' && response.headers.get('x-df-cache') === 'public') {
-      await cache.put(request, response.clone());
+    if (storable(response)) {
+      // A page the reader saved stays as fresh as their last visit to it.
+      // (Both copies are cloned before either is read.)
+      const refreshSaved = Boolean(await saved.match(request));
+      const visit = response.clone();
+      const keep = refreshSaved ? response.clone() : null;
+      await cache.put(request, visit);
       trim(PAGES, MAX_PAGES);
+      if (keep) await saved.put(request, keep);
     }
     return response;
   } catch {
-    const cached = await cache.match(request, { ignoreSearch: false });
+    const cached = (await cache.match(request)) ?? (await saved.match(request));
     if (cached) return cached;
-    return offlinePage(cache, request);
+    // The emergency page's ?hazard=… only picks which threat the doughnut
+    // shows: offline, any stored copy of the page beats the offline notice.
+    if (/\/emergency\/?$/.test(new URL(request.url).pathname)) {
+      const anyHazard = (await saved.match(request, { ignoreSearch: true })) ?? (await cache.match(request, { ignoreSearch: true }));
+      if (anyHazard) return anyHazard;
+    }
+    return offlinePage([cache, saved], request);
   }
 }
 
@@ -122,15 +214,19 @@ const escapeHtml = (s) =>
  * an app page needs its JavaScript chunks to hydrate, and a page that was
  * never opened has none cached. Plain HTML cannot fail that way.
  */
-async function offlinePage(pageCache, request) {
+async function offlinePage(pageCaches, request) {
   // The language of the page that could not load (/es/nyc → Spanish).
   const prefix = (new URL(request.url).pathname.split('/')[1] || '').toLowerCase();
   const t = OFFLINE[prefix] || OFFLINE.en;
-  const saved = (await pageCache.keys())
-    .map((r) => new URL(r.url))
-    .filter((u) => u.origin === self.location.origin)
-    .map((u) => u.pathname + u.search)
-    .sort();
+  const keys = (await Promise.all(pageCaches.map((c) => c.keys()))).flat();
+  const saved = [
+    ...new Set(
+      keys
+        .map((r) => new URL(r.url))
+        .filter((u) => u.origin === self.location.origin)
+        .map((u) => u.pathname + u.search),
+    ),
+  ].sort();
   const items = saved.length
     ? `<ul dir="ltr">${saved.map((p) => `<li><a href="${escapeHtml(p)}">${escapeHtml(p === '/' ? t.home : p)}</a></li>`).join('')}</ul>`
     : `<p class="muted">${t.none}</p>`;

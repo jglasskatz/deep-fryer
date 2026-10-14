@@ -20,8 +20,19 @@ function leaves(a: unknown, b: unknown, path: string[] = []): Leaf[] {
   );
 }
 
+const PLURAL_CATEGORIES = new Set(['zero', 'one', 'two', 'few', 'many', 'other']);
+
+/**
+ * A plural message (only CLDR category keys, `other` among them) or a noun
+ * pair. A section that merely has an `other` key among others — the
+ * emergency view's hazard and resource kinds include "other" — is a group
+ * of separate messages, not a plural.
+ */
 function isForms(v: unknown): v is Record<string, string> {
-  return typeof v === 'object' && v !== null && ('other' in v || 'singular' in v);
+  if (typeof v !== 'object' || v === null) return false;
+  if ('singular' in v) return true;
+  const keys = Object.keys(v);
+  return keys.includes('other') && keys.every((k) => PLURAL_CATEGORIES.has(k));
 }
 
 const placeholders = (s: string) => new Set([...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]!));

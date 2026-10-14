@@ -8,6 +8,12 @@ import {
   emergencyPlanInputSchema,
   emergencyResourceInputSchema,
   hazardInputSchema,
+  type EmergencyPlanInput,
+  type EmergencyPlanInputDraft,
+  type EmergencyResourceInput,
+  type EmergencyResourceInputDraft,
+  type HazardInput,
+  type HazardInputDraft,
 } from '@deep-fryer/core';
 import {
   emergencyPlans,
@@ -36,9 +42,19 @@ import { userDb } from './db';
  * Inputs are validated by the shared core schemas (the NYC setup script
  * uses the same ones), every change is audited in the same transaction, and
  * both the public page and the admin page are revalidated.
+ *
+ * Visibility has one writer per record: a record may be published when it
+ * is created, and afterwards only setEmergencyPublished changes it. The
+ * update actions ignore `published`, so an edit form opened before someone
+ * pressed Publish or Unpublish cannot silently undo that decision.
  */
 
 const idSchema = z.string().uuid('unknown record');
+
+// Edits never carry visibility (see above); zod drops the key if sent.
+const hazardUpdateSchema = hazardInputSchema.omit({ published: true });
+const planUpdateSchema = emergencyPlanInputSchema.omit({ published: true });
+const resourceUpdateSchema = emergencyResourceInputSchema.omit({ published: true });
 
 function revalidate(tenant: Tenant) {
   revalidatePath(`/${tenant.slug}/emergency`);
@@ -104,7 +120,7 @@ export const saveEmergencyConfig = action(async (input: { tenantSlug: string; co
 
 // ---- Hazards (editors) ---------------------------------------------------------------
 
-function hazardValues(data: z.infer<typeof hazardInputSchema>) {
+function hazardValues(data: Omit<HazardInput, 'published'>) {
   return {
     slug: data.slug,
     name: data.name,
@@ -115,13 +131,12 @@ function hazardValues(data: z.infer<typeof hazardInputSchema>) {
     dimensions: data.dimensions,
     nwsEvents: data.nws_events,
     displayOrder: data.display_order,
-    published: data.published,
   };
 }
 
 const duplicateSlug = (slug: string) => new UserError(`A hazard with the slug "${slug}" already exists on this portrait.`);
 
-export const createHazard = action(async (input: { tenantSlug: string; hazard: z.input<typeof hazardInputSchema> }) => {
+export const createHazard = action(async (input: { tenantSlug: string; hazard: HazardInputDraft }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
   const data = hazardInputSchema.parse(input.hazard);
   const id = await userDb(async (db) => {
@@ -132,7 +147,7 @@ export const createHazard = action(async (input: { tenantSlug: string; hazard: z
     if (clash) throw duplicateSlug(data.slug);
     const [row] = await db
       .insert(hazards)
-      .values({ tenantId: tenant.id, ...hazardValues(data) })
+      .values({ tenantId: tenant.id, ...hazardValues(data), published: data.published })
       .returning()
       .catch((err) => {
         throw isUniqueViolation(err) ? duplicateSlug(data.slug) : err;
@@ -145,10 +160,10 @@ export const createHazard = action(async (input: { tenantSlug: string; hazard: z
 });
 
 export const updateHazard = action(
-  async (input: { tenantSlug: string; id: string; hazard: z.input<typeof hazardInputSchema> }) => {
+  async (input: { tenantSlug: string; id: string; hazard: Omit<HazardInputDraft, 'published'> }) => {
     const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
     const id = idSchema.parse(input.id);
-    const data = hazardInputSchema.parse(input.hazard);
+    const data = hazardUpdateSchema.parse(input.hazard);
     await userDb(async (db) => {
       const [before] = await db.select().from(hazards).where(and(eq(hazards.id, id), eq(hazards.tenantId, tenant.id)));
       if (!before) throw new UserError('Unknown hazard.');
@@ -191,7 +206,7 @@ export const deleteHazard = action(async (input: { tenantSlug: string; id: strin
 
 // ---- Plans (editors) ---------------------------------------------------------------------
 
-function planValues(data: z.infer<typeof emergencyPlanInputSchema>) {
+function planValues(data: Omit<EmergencyPlanInput, 'published'>) {
   return {
     title: data.title,
     agency: data.agency,
@@ -201,19 +216,18 @@ function planValues(data: z.infer<typeof emergencyPlanInputSchema>) {
     languages: data.languages,
     hazardSlugs: data.hazard_slugs,
     displayOrder: data.display_order,
-    published: data.published,
   };
 }
 
 export const createPlan = action(
-  async (input: { tenantSlug: string; plan: z.input<typeof emergencyPlanInputSchema> }) => {
+  async (input: { tenantSlug: string; plan: EmergencyPlanInputDraft }) => {
     const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
     const data = emergencyPlanInputSchema.parse(input.plan);
     const id = await userDb(async (db) => {
       await assertHazardSlugs(db, tenant.id, data.hazard_slugs);
       const [row] = await db
         .insert(emergencyPlans)
-        .values({ tenantId: tenant.id, ...planValues(data) })
+        .values({ tenantId: tenant.id, ...planValues(data), published: data.published })
         .returning();
       await audit(tenant.id, 'emergency_plan', row!.id, 'create', null, row, db);
       return row!.id;
@@ -224,10 +238,10 @@ export const createPlan = action(
 );
 
 export const updatePlan = action(
-  async (input: { tenantSlug: string; id: string; plan: z.input<typeof emergencyPlanInputSchema> }) => {
+  async (input: { tenantSlug: string; id: string; plan: Omit<EmergencyPlanInputDraft, 'published'> }) => {
     const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
     const id = idSchema.parse(input.id);
-    const data = emergencyPlanInputSchema.parse(input.plan);
+    const data = planUpdateSchema.parse(input.plan);
     await userDb(async (db) => {
       const [before] = await db
         .select()
@@ -262,7 +276,7 @@ export const deletePlan = action(async (input: { tenantSlug: string; id: string 
 
 // ---- Help and mutual-aid resources (editors) ------------------------------------------------
 
-function resourceValues(data: z.infer<typeof emergencyResourceInputSchema>) {
+function resourceValues(data: Omit<EmergencyResourceInput, 'published'>) {
   return {
     name: data.name,
     kind: data.kind,
@@ -271,19 +285,18 @@ function resourceValues(data: z.infer<typeof emergencyResourceInputSchema>) {
     url: data.url,
     hazardSlugs: data.hazard_slugs,
     displayOrder: data.display_order,
-    published: data.published,
   };
 }
 
 export const createResource = action(
-  async (input: { tenantSlug: string; resource: z.input<typeof emergencyResourceInputSchema> }) => {
+  async (input: { tenantSlug: string; resource: EmergencyResourceInputDraft }) => {
     const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
     const data = emergencyResourceInputSchema.parse(input.resource);
     const id = await userDb(async (db) => {
       await assertHazardSlugs(db, tenant.id, data.hazard_slugs);
       const [row] = await db
         .insert(emergencyResources)
-        .values({ tenantId: tenant.id, ...resourceValues(data) })
+        .values({ tenantId: tenant.id, ...resourceValues(data), published: data.published })
         .returning();
       await audit(tenant.id, 'emergency_resource', row!.id, 'create', null, row, db);
       return row!.id;
@@ -294,10 +307,10 @@ export const createResource = action(
 );
 
 export const updateResource = action(
-  async (input: { tenantSlug: string; id: string; resource: z.input<typeof emergencyResourceInputSchema> }) => {
+  async (input: { tenantSlug: string; id: string; resource: Omit<EmergencyResourceInputDraft, 'published'> }) => {
     const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
     const id = idSchema.parse(input.id);
-    const data = emergencyResourceInputSchema.parse(input.resource);
+    const data = resourceUpdateSchema.parse(input.resource);
     await userDb(async (db) => {
       const [before] = await db
         .select()
@@ -347,8 +360,9 @@ export const setEmergencyPublished = action(
   async (input: { tenantSlug: string; entity: EmergencyEntity; id: string; published: boolean }) => {
     const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
     const id = idSchema.parse(input.id);
+    // Own keys only: the entity name arrives from the client.
+    if (!Object.hasOwn(ENTITIES, input.entity)) throw new UserError('Unknown record type.');
     const table = ENTITIES[input.entity];
-    if (!table) throw new UserError('Unknown record type.');
     const published = z.boolean().parse(input.published);
     await userDb(async (db) => {
       const [row] = await db

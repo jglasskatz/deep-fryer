@@ -10,8 +10,11 @@ import {
   isAlertsFeed,
   isHttpsUrl,
   isTimeZone,
+  nwsAlertPageUrl,
+  nwsAlertRecordUrl,
   nwsAlertsUrl,
   nwsFeedVerdict,
+  nwsZoneCoverageVerdict,
   nwsRequestHeaders,
   nwsUserAgent,
   parseNwsAlerts,
@@ -19,6 +22,7 @@ import {
   riskBand,
   riskScore,
   telHref,
+  unwrapAlertText,
 } from './emergency.js';
 
 const feature = (props: Record<string, unknown>, id = 'https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.abc') => ({
@@ -69,9 +73,84 @@ describe('NWS alerts', () => {
     expect(alerts[1]!.url).toMatch(/^https:\/\/api\.weather\.gov\//);
   });
 
+  it('reports the ids of features it could not read, so their stored copies are kept', () => {
+    const parsed = parseNwsAlerts({
+      features: [
+        feature({}),
+        // The event went missing: unreadable, but it still names its alert.
+        feature({ id: 'urn:broken', event: null }),
+        // No properties.id, but the feature URL carries it.
+        { id: 'https://api.weather.gov/alerts/urn:from-url', properties: { event: 42 } },
+        // No time at all: cannot be placed on the page.
+        feature({ id: 'urn:timeless', effective: null, onset: null, sent: null }),
+        // Nothing identifies this one.
+        { properties: { event: 'no id' } },
+      ],
+    });
+    expect(parsed.alerts.map((a) => a.source_id)).toEqual(['urn:oid:2.49.0.1.840.0.abc']);
+    expect(parsed.rejected).toBe(4);
+    expect(parsed.rejectedIds).toEqual(['urn:broken', 'urn:from-url', 'urn:timeless']);
+  });
+
+  it('accepts nulls in fields it can do without, and falls back to the sent time', () => {
+    const { alerts, rejected } = parseNwsAlerts({
+      features: [
+        feature({ headline: null, areaDesc: null, senderName: null, severity: null, urgency: null, effective: null, onset: null, sent: '2026-07-14T03:00:00-04:00' }),
+      ],
+    });
+    expect(rejected).toBe(0);
+    expect(alerts[0]).toMatchObject({
+      headline: null,
+      area_desc: '',
+      sender_name: 'National Weather Service',
+      severity: 'Unknown',
+      urgency: 'Unknown',
+      effective: '2026-07-14T03:00:00-04:00',
+    });
+  });
+
+  it('reads the zones and issuing office leniently', () => {
+    const { alerts } = parseNwsAlerts({
+      features: [
+        feature({ geocode: { UGC: ['NYZ072', 'NYC061', 'junk', 7] }, parameters: { AWIPSidentifier: ['NPWOKX'] } }),
+        feature({ id: 'x2', geocode: 'not an object', parameters: { AWIPSidentifier: 'bad id!' } }),
+      ],
+    });
+    expect(alerts.map((a) => [a.zones, a.office])).toEqual([
+      [['NYZ072', 'NYC061'], 'okx'],
+      [[], null],
+    ]);
+  });
+
   it('never trusts a link outside api.weather.gov', () => {
     const { alerts } = parseNwsAlerts({ features: [feature({}, 'https://evil.example/alert')] });
     expect(alerts[0]!.url).toBe('https://www.weather.gov/');
+  });
+
+  it('links residents to a readable NWS page for the alert’s area, never the JSON record', () => {
+    const nyc = ['NYC005', 'NYC061', 'NYZ072', 'NYZ073'];
+    // A heat advisory issued by forecast zone: the zone the portrait watches.
+    expect(nwsAlertPageUrl({ zones: ['NYZ071', 'NYZ073'], office: 'okx' }, nyc)).toBe(
+      'https://forecast.weather.gov/showsigwx.php?warnzone=NYZ073&warncounty=NYC005',
+    );
+    // A tornado warning issued by county: its county, with the portrait's zone.
+    expect(nwsAlertPageUrl({ zones: ['NYC061'], office: 'okx' }, nyc)).toBe(
+      'https://forecast.weather.gov/showsigwx.php?warnzone=NYZ072&warncounty=NYC061',
+    );
+    // County-only configuration and alert: the issuing office, else weather.gov.
+    expect(nwsAlertPageUrl({ zones: ['NYC061'], office: 'okx' }, ['NYC061'])).toBe('https://www.weather.gov/okx');
+    expect(nwsAlertPageUrl({ zones: [], office: null }, ['NYC061'])).toBe('https://www.weather.gov/');
+    expect(nwsAlertRecordUrl('urn:oid:2.49.0.1.840.0.abc')).toBe('https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.abc');
+    expect(nwsAlertRecordUrl('../../evil')).toBeNull();
+  });
+
+  it('unwraps the NWS hard line breaks but keeps paragraphs and bullets', () => {
+    const issued = '* WHAT...Heat index values up to 105. Hot temperatures and\nhigh humidity may cause heat\nillnesses.\n\n* WHERE...New York (Manhattan).\r\n\r\nPRECAUTIONARY/PREPAREDNESS ACTIONS...\n\nDrink plenty of fluids,\nstay in an air-conditioned room.\n- Check on relatives.\n';
+    expect(unwrapAlertText(issued)).toBe(
+      '* WHAT...Heat index values up to 105. Hot temperatures and high humidity may cause heat illnesses.\n\n' +
+        '* WHERE...New York (Manhattan).\n\nPRECAUTIONARY/PREPAREDNESS ACTIONS...\n\n' +
+        'Drink plenty of fluids, stay in an air-conditioned room.\n- Check on relatives.',
+    );
   });
 
   it('builds one request for the configured UGC zones and refuses junk', () => {
@@ -129,6 +208,10 @@ describe('phones and links', () => {
     expect(telHref('(212) 639-9675')).toBe('tel:2126399675');
     expect(telHref('+1 212 639 9675')).toBe('tel:+12126399675');
     expect(telHref('call us')).toBeNull();
+    // '#' would start a URL fragment: escaped, so short codes dial whole.
+    expect(telHref('#311')).toBe('tel:%23311');
+    expect(telHref('*55# ext')).toBeNull();
+    expect(telHref('*555#')).toBe('tel:*555%23');
     expect(phoneSchema.safeParse('call 311').success).toBe(false);
     expect(phoneSchema.safeParse('12').success).toBe(false);
   });
@@ -155,7 +238,7 @@ describe('curated records', () => {
 
   it('validates hazards and dedupes NWS event names case-insensitively', () => {
     const parsed = hazardInputSchema.parse(hazard);
-    expect(parsed.nws_events).toEqual(['heat advisory', 'Excessive Heat Warning']);
+    expect(parsed.nws_events).toEqual(['Heat Advisory', 'Excessive Heat Warning']);
     expect(parsed).toMatchObject({ description: '', display_order: 0, published: false });
     expect(hazardInputSchema.safeParse({ ...hazard, slug: 'Extreme Heat' }).success).toBe(false);
     expect(hazardInputSchema.safeParse({ ...hazard, slug: 'heat--wave' }).success).toBe(false);
@@ -200,6 +283,10 @@ describe('NWS requests', () => {
     expect(isAlertsFeed({ title: 'Service unavailable' })).toBe(false);
     expect(nwsFeedVerdict(['NYC061'], 200, { features: [feature({})] })).toEqual({ status: 'pass', detail: 'NYC061: 1 active alert(s)' });
     expect(nwsFeedVerdict(['NYC061'], 503, {}).status).toBe('fail');
+    // Counties alone answer, but miss the alerts issued by forecast zone.
+    expect(nwsZoneCoverageVerdict(['NYC061']).status).toBe('warn');
+    expect(nwsZoneCoverageVerdict(['NYZ072']).status).toBe('warn');
+    expect(nwsZoneCoverageVerdict(['NYC061', 'NYZ072'])).toEqual({ status: 'pass', detail: 'county and forecast zones' });
     expect(nwsFeedVerdict(['NYC061'], 200, '<html>').status).toBe('fail');
   });
 });

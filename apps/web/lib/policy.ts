@@ -1,5 +1,6 @@
 import 'server-only';
-import { desc, and, eq } from 'drizzle-orm';
+import { cache } from 'react';
+import { and, desc, eq } from 'drizzle-orm';
 import { framework, frameworkDimension } from '@deep-fryer/contract';
 import type {
   DimensionProjection,
@@ -16,10 +17,12 @@ import type { PublishedDimension } from './portrait';
 
 /*
  * Policy analysis reads (SPEC-v5 §2) — staff plane only. Every query runs in
- * userDb(), so row-level security limits rows to members of the portrait
- * (policy_analyses_member_read). Columns are always listed explicitly: the
- * app role has no SELECT on `transcript` (migration 0008), so a `select *`
- * would be refused by Postgres, and the list never needs the brief body.
+ * userDb(), so row-level security limits rows to the portrait's editors and
+ * owners, and organization owners (policy_analyses_editor_read, migration
+ * 0009) — the same people the pages admit. Columns are always listed
+ * explicitly: the app role has no SELECT on `transcript` (migration 0008),
+ * so a `select *` would be refused by Postgres, and the list never needs the
+ * brief body.
  *
  * The rest of this module turns a stored analysis into what the result page
  * draws — the flashing doughnut's dimensions and the impacts table — as pure
@@ -42,6 +45,8 @@ export interface PolicyAnalysisDetail extends PolicyAnalysisListItem {
   brief: string;
   result: PolicyAnalysisOutput | null;
   projections: DimensionProjection[] | null;
+  /** What the worker changed to fit the answer to the output contract, one sentence each. */
+  adjustments: string[] | null;
   error: string | null;
   startedAt: Date | null;
   tokenUsage: SessionTokenUsage | null;
@@ -71,8 +76,10 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  * One analysis of this portrait, or null. A malformed id is "not found"
  * rather than a Postgres uuid syntax error (a 500); scoping by tenant keeps
  * an id from another portrait the same member can see off this page.
+ * Memoized per request: the result page and its generateMetadata (the
+ * analysis title is the page title) share one query.
  */
-export async function getPolicyAnalysis(
+export const getPolicyAnalysis = cache(async function getPolicyAnalysis(
   tenantId: string,
   id: string,
 ): Promise<PolicyAnalysisDetail | null> {
@@ -88,12 +95,33 @@ export async function getPolicyAnalysis(
         status: policyAnalyses.status,
         result: policyAnalyses.result,
         projections: policyAnalyses.projections,
+        adjustments: policyAnalyses.adjustments,
         error: policyAnalyses.error,
         createdAt: policyAnalyses.createdAt,
         startedAt: policyAnalyses.startedAt,
         completedAt: policyAnalyses.completedAt,
         tokenUsage: policyAnalyses.tokenUsage,
       })
+      .from(policyAnalyses)
+      .where(and(eq(policyAnalyses.id, id), eq(policyAnalyses.tenantId, tenantId)));
+    return row ?? null;
+  });
+});
+
+/**
+ * Just the status of one analysis, for the result page's live poll
+ * (app/[tenant]/admin/policy/[id]/status/route.ts): a few bytes every few
+ * seconds instead of re-rendering the whole page, brief and all, and the
+ * page re-renders only when this changes.
+ */
+export async function getPolicyAnalysisStatus(
+  tenantId: string,
+  id: string,
+): Promise<{ status: PolicyAnalysisStatus } | null> {
+  if (!UUID.test(id)) return null;
+  return userDb(async (db) => {
+    const [row] = await db
+      .select({ status: policyAnalyses.status })
       .from(policyAnalyses)
       .where(and(eq(policyAnalyses.id, id), eq(policyAnalyses.tenantId, tenantId)));
     return row ?? null;
@@ -191,31 +219,40 @@ function list(names: string[]): string {
 }
 
 /**
- * The canvas's text alternative: which wedges improve, worsen, or are mixed,
- * and which change size. The impacts table below the chart carries the
- * detail; this is the summary a screen reader hears on the chart itself.
+ * The canvas's accessible name: what the chart is, true whether it is
+ * flashing, paused on one state, or static for a reader who prefers reduced
+ * motion. What changes is described by impactsSummary, shown as the chart's
+ * visible caption.
  */
-export function impactsAriaLabel(tenantName: string, dims: ImpactDimension[]): string {
+export function impactsChartLabel(tenantName: string): string {
+  return `${tenantName}'s doughnut, today and with this policy`;
+}
+
+/**
+ * The chart's caption, visible next to it: which wedges improve, worsen, or
+ * are mixed, and which change size. On the canvas direction is colour —
+ * green and red that many colour-blind readers cannot tell apart — so the
+ * same information is given here in words for everyone, sighted or not.
+ * The impacts table below carries the detail.
+ */
+export function impactsSummary(dims: ImpactDimension[]): string {
   const named = (h: ImpactDimension['highlight']) => dims.filter((d) => d.highlight === h).map((d) => d.name);
   const improves = named('improves');
   const worsens = named('worsens');
   const mixed = named('mixed');
-  const parts = [
-    `Projected policy impacts on ${tenantName}'s doughnut, alternating between today and with this policy.`,
-  ];
   if (improves.length + worsens.length + mixed.length === 0) {
-    parts.push('No published dimension is projected to change.');
-  } else {
-    if (improves.length) parts.push(`Improves: ${list(improves)}.`);
-    if (worsens.length) parts.push(`Worsens: ${list(worsens)}.`);
-    if (mixed.length) parts.push(`Mixed: ${list(mixed)}.`);
-    const resized = dims.filter((d) => d.alternate !== null).map((d) => d.name);
-    parts.push(
-      resized.length
-        ? `Wedge size changes for ${list(resized)}; other impacts are direction only.`
-        : 'No impact was quantified, so wedges change colour but not size.',
-    );
+    return 'No published dimension is projected to change. The impacts table lists every impact.';
   }
+  const parts: string[] = [];
+  if (improves.length) parts.push(`Improves: ${list(improves)}.`);
+  if (worsens.length) parts.push(`Worsens: ${list(worsens)}.`);
+  if (mixed.length) parts.push(`Mixed: ${list(mixed)}.`);
+  const resized = dims.filter((d) => d.alternate !== null).map((d) => d.name);
+  parts.push(
+    resized.length
+      ? `Wedge size changes for ${list(resized)}; other impacts are direction only.`
+      : 'No impact was quantified, so wedges change colour but not size.',
+  );
   parts.push('The impacts table lists every impact.');
   return parts.join(' ');
 }

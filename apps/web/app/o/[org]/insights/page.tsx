@@ -30,9 +30,15 @@ export const dynamic = 'force-dynamic';
 const VIZ_MIN = -100;
 const VIZ_MAX = 150;
 
-/** viz_level (-100 safe … 0 boundary … 150 far outside) → cell color. */
-function cellColor(level: number | null): string {
-  if (level === null) return 'rgba(0,0,0,0.06)';
+/**
+ * viz_level (-100 safe … 0 boundary … 150 far outside) → cell color: a green
+ * or red whose strength is the distance from the boundary, which reads on
+ * both themes' backgrounds. A cell with no data is not coloured here but
+ * given NO_DATA_CELL, a neutral class that dark mode remaps (an inline black
+ * tint would vanish into the dark page).
+ */
+const NO_DATA_CELL = 'bg-black/[0.06]';
+function cellColor(level: number): string {
   if (level <= 0) {
     const t = Math.min(1, -level / 100);
     return `rgba(46,125,50,${0.15 + 0.5 * t})`;
@@ -197,8 +203,8 @@ export default async function InsightsPage({
                             href={`${base}?dim=${d.slug}#dimension`}
                             title={cellLabel}
                             aria-label={`${dimName(d)} — ${cellLabel}`}
-                            className="block h-6 rounded-sm"
-                            style={{ backgroundColor: cellColor(level) }}
+                            className={`block h-6 rounded-sm ${level === null ? NO_DATA_CELL : ''}`}
+                            style={level === null ? undefined : { backgroundColor: cellColor(level) }}
                           />
                         </td>
                       );

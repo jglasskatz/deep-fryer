@@ -1,11 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import {
   POLICY_ANALYSIS_SESSIONS,
-  POLICY_BRIEF_MAX_CHARS,
   checkResearchQuota,
   standing,
   type ResearchQuotaCheck,
@@ -17,24 +16,30 @@ import {
   researchSessionsUsed,
   type Subscription,
 } from '@deep-fryer/db';
-import { enqueuePolicyAnalysis } from '@deep-fryer/research';
+import { POLICY_TASK, ensureJobQueueSchema, policyJobKey } from '@deep-fryer/research';
 import { action, UserError } from './action-result';
 import { audit } from './audit';
 import { getAuth, requireTenantRole } from './auth';
 import { systemDb } from './db';
+import { POLICY_LIMITS } from './policy-limits';
 
 /**
  * Policy analysis writes (SPEC-v5 §2). Starting an analysis is a research
  * spend — one session against the organization's plan — so it follows the
  * research apply gate (lib/research.ts applyRun): quota check and insert in
- * one system transaction under the subscription lock, the queue insert after
- * commit, and a failed enqueue settles the row as failed so the reserved
- * session is released (researchSessionsUsed skips failed analyses).
+ * one system transaction under the subscription lock.
+ *
+ * Unlike a research run, the job is added in that same transaction, with
+ * graphile-worker's SQL add_job on the transaction's own connection. The
+ * row (which reserves the session from the moment it exists) and the job
+ * that will run it commit together or not at all: there is no window in
+ * which a crash, a deploy, or a queue outage leaves a billed analysis that
+ * no worker will ever pick up. What the transaction cannot cover — a job
+ * that is later removed or fails for good — the worker's policy_sweep task
+ * settles (apps/worker/src/tasks/policy-analyze.ts).
  */
 
-const BRIEF_MIN_CHARS = 50;
-const TITLE_MIN_CHARS = 3;
-const TITLE_MAX_CHARS = 200;
+const L = POLICY_LIMITS;
 
 /** Empty optional fields arrive as '' from forms; they mean "not given". */
 const blankToUndefined = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? undefined : v);
@@ -43,24 +48,24 @@ const inputSchema = z.object({
   title: z
     .string()
     .trim()
-    .min(TITLE_MIN_CHARS, `Give the analysis a title of at least ${TITLE_MIN_CHARS} characters.`)
-    .max(TITLE_MAX_CHARS, `Keep the title to ${TITLE_MAX_CHARS} characters or fewer.`)
+    .min(L.titleMin, `Give the analysis a title of at least ${L.titleMin} characters.`)
+    .max(L.titleMax, `Keep the title to ${L.titleMax} characters or fewer.`)
     // One line: the title is a heading, an email subject, and a prompt attribute.
     .transform((s) => s.replace(/\s+/g, ' ')),
   brief: z
     .string()
     .trim()
-    .min(BRIEF_MIN_CHARS, `Paste the policy brief — at least ${BRIEF_MIN_CHARS} characters, so there is something to analyze.`)
+    .min(L.briefMin, `Paste the policy brief — at least ${L.briefMin} characters, so there is something to analyze.`)
     .max(
-      POLICY_BRIEF_MAX_CHARS,
-      `The brief is over the ${POLICY_BRIEF_MAX_CHARS.toLocaleString('en-US')}-character limit. Paste the policy's summary and operative sections.`,
+      L.briefMax,
+      `The brief is over the ${L.briefMax.toLocaleString('en-US')}-character limit. Paste the policy's summary and operative sections.`,
     ),
   sourceUrl: z.preprocess(
     blankToUndefined,
     z
       .string()
       .trim()
-      .max(2000, 'The source link is too long.')
+      .max(L.sourceUrlMax, 'The source link is too long.')
       .url('The source must be a full link, starting with https://.')
       // https only (the model may fetch it; the page links it): the same rule
       // the analysis schema applies to the sources it cites.
@@ -92,14 +97,29 @@ function quotaMessage(sub: Subscription | null, check: ResearchQuotaCheck): stri
   return `A policy analysis uses ${n} research session${n === 1 ? '' : 's'}; ${check.remaining} of ${check.limit} remain this billing period. Wait for the period to renew on ${sub.currentPeriodEnd.toISOString().slice(0, 10)}, or upgrade the plan.`;
 }
 
-const NOT_QUEUED =
-  'The analysis could not be queued for the worker, so it never ran. It was not counted against your plan.';
+const QUEUE_DOWN =
+  'The analysis could not be started — the job queue did not answer. Nothing was saved or counted against your plan; try again in a moment.';
+
+/** Stored on a cancelled analysis and shown on its page. */
+const CANCELLED = 'Cancelled before it started. It was not counted against your plan.';
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const createPolicyAnalysis = action(
   async (input: { tenantSlug: string; title: string; brief: string; sourceUrl?: string }) => {
     const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
     const fields = parseInput(input);
     const auth = await getAuth();
+
+    // The transaction below enqueues in SQL, which needs graphile-worker's
+    // schema (normally installed by the worker at start-up). Checked first so
+    // a queue that cannot be reached refuses before anything is reserved.
+    try {
+      await ensureJobQueueSchema();
+    } catch (err) {
+      console.error('[policy] job queue unavailable:', err);
+      throw new UserError(QUEUE_DOWN);
+    }
 
     // System context: the quota is organization-wide (analyses and runs on
     // portraits this person cannot see still count), the subscription row is
@@ -140,25 +160,66 @@ export const createPolicyAnalysis = action(
         { title: fields.title, source_url: fields.sourceUrl ?? null, brief_chars: fields.brief.length },
         tx,
       );
+
+      // The job, in the same transaction (see the module comment). If it
+      // cannot be added, the error rolls back the insert and the audit row,
+      // so nothing is reserved. graphile-worker notifies waiting workers on
+      // commit.
+      try {
+        await tx.execute(
+          sql`select graphile_worker.add_job(${POLICY_TASK}, json_build_object('analysisId', ${row.id}::text), job_key := ${policyJobKey(row.id)})`,
+        );
+      } catch (err) {
+        console.error(`[policy] could not enqueue analysis ${row.id}:`, err);
+        throw new UserError(QUEUE_DOWN);
+      }
       return row;
     });
 
-    const listPath = `/${input.tenantSlug}/admin/policy`;
-    try {
-      await enqueuePolicyAnalysis(analysis.id);
-    } catch (err) {
-      console.error(`[policy] enqueue failed for analysis ${analysis.id}:`, err);
-      await db
-        .update(policyAnalyses)
-        .set({ status: 'failed', error: NOT_QUEUED, completedAt: new Date() })
-        .where(and(eq(policyAnalyses.id, analysis.id), eq(policyAnalyses.status, 'queued')));
-      revalidatePath(listPath);
-      throw new UserError(
-        'The analysis could not be started — the job queue did not answer. It was not counted against your plan; try again in a moment.',
-      );
-    }
-
-    revalidatePath(listPath);
+    revalidatePath(`/${input.tenantSlug}/admin/policy`);
     return { id: analysis.id };
   },
 );
+
+/**
+ * Cancel an analysis that has not started (SPEC-v5 §2). The way out when
+ * the worker is down and an analysis sits queued, holding a research
+ * session: settling it failed releases the session at once.
+ *
+ * Only `queued` → `failed`, in one conditional update. The worker claims an
+ * analysis with the mirror-image update (`queued` → `running`), so exactly
+ * one of the two wins; the loser changes nothing. A running session cannot
+ * be stopped from here, and its job, if it still exists, finds the row
+ * settled and skips it — so the job itself is left alone.
+ */
+export const cancelPolicyAnalysis = action(async (input: { tenantSlug: string; id: string }) => {
+  const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+  if (!UUID.test(input.id)) throw new UserError('That analysis does not exist.');
+
+  // System context: the app role has no update policy on policy_analyses
+  // (migration 0008); the editor check above is the authorization, and the
+  // tenant condition keeps it to this portrait.
+  const cancelled = await systemDb().transaction(async (tx) => {
+    const [row] = await tx
+      .update(policyAnalyses)
+      .set({ status: 'failed', error: CANCELLED, completedAt: new Date() })
+      .where(
+        and(
+          eq(policyAnalyses.id, input.id),
+          eq(policyAnalyses.tenantId, tenant.id),
+          eq(policyAnalyses.status, 'queued'),
+        ),
+      )
+      .returning({ id: policyAnalyses.id });
+    if (!row) return null;
+    await audit(tenant.id, 'policy_analysis', row.id, 'cancel', { status: 'queued' }, { status: 'failed' }, tx);
+    return row;
+  });
+  if (!cancelled) {
+    throw new UserError('This analysis has already started or finished, so it can no longer be cancelled.');
+  }
+
+  revalidatePath(`/${input.tenantSlug}/admin/policy`);
+  revalidatePath(`/${input.tenantSlug}/admin/policy/${input.id}`);
+  return { id: cancelled.id };
+});

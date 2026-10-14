@@ -3,6 +3,8 @@ import type { Messages } from './en';
 /** Russian (ru) — draft for certified review (docs/language-access.md). */
 export const ru: Messages = {
   common: {
+    updateAvailable: 'A new version is available.',
+    reload: 'Reload',
     skipToContent: 'Перейти к содержанию',
     breadcrumb: 'Навигационная цепочка',
     mainNav: 'Основная навигация',
@@ -344,10 +346,12 @@ export const ru: Messages = {
       'Official alerts, the threats this area faces, the plans already in place, and where to get help.',
     empty: 'This portrait has not published emergency information yet.',
     alertsTitle: 'Active alerts',
-    alertsNone: 'No active weather alerts for this area.',
+    alertsNone: 'No active weather alerts for this area as of {time}.',
     alertsChecked: 'Last checked {time}.',
     alertsStale:
       'We could not reach the official alert feed recently. Check the National Weather Service directly.',
+    alertsSavedCopy:
+      'This is a saved copy of the page. Alerts were last checked {time} and may have changed since. Check the National Weather Service directly.',
     alertsNotConfigured: 'Official alerts are not set up for this portrait yet.',
     alertsOriginal: 'Alerts are shown exactly as issued, in English.',
     alertSource: 'Issued by {source}',
@@ -356,6 +360,7 @@ export const ru: Messages = {
     alertInstructions: 'What to do',
     alertDetails: 'Full alert text',
     alertLink: 'Official alert',
+    alertEnded: 'Ended',
     severity: {
       Extreme: 'Extreme',
       Severe: 'Severe',
@@ -379,6 +384,7 @@ export const ru: Messages = {
     },
     activeNow: 'Alert active now',
     threatens: 'Puts at risk:',
+    dimensionImpact: '{dimension} ({impact})',
     impactLevel: {
       low: 'low impact',
       moderate: 'moderate impact',
@@ -429,13 +435,31 @@ export const ru: Messages = {
     offlineBody:
       'Save this page so it opens even without a connection, in case the network goes down.',
     offlineSave: 'Save for offline',
-    offlineSaved: 'Saved. This page will open without a connection.',
+    offlineSaved:
+      'Saved. This page will open without a connection. A saved copy does not update itself: its alerts are as of the last time you opened it online.',
     offlineUnavailable: 'This browser cannot save pages for offline use.',
+    offlineSaving: 'Saving…',
+    offlineFailed: 'This page could not be saved. Try again while you have a connection.',
+    offlineUpdate: 'This app has an update waiting and cannot save pages until it is applied. Reload the page, then try again.',
+    offlineSignedIn:
+      'Pages are saved on this device only when you are signed out, so your account stays private on shared computers.',
+    metaDescription: 'Official alerts, threats, plans, and help for {name}.',
+    contentInEnglish:
+      'Threats, plans, and help listings are written by staff and published in English. Alerts are shown as the National Weather Service issued them.',
+    alertArea: 'Areas: {areas}',
+    alertRelated: 'Related threat: {hazard}',
+    signupLink: 'Sign up for official alerts',
+    signupNamed: 'Sign up for {name}',
+    resourceHazards: 'Helps with:',
+    doughnutLegend: 'Colors on the doughnut:',
   },
   /** Theme toggle and the fryer (SPEC-v5 §4). */
   theme: {
     label: 'Theme',
-    toggle: 'Theme: {mode}. Press and hold for more.',
+    /** The toggle's accessible name, and the status message after a flip. */
+    toggle: 'Theme: {mode}',
+    /** The toggle's description and hover title. {system} is the "Match device" item's label. */
+    hint: 'Switches between light and dark. For {system} and more, press and hold, right-click, or press Shift+F10.',
     light: 'Light',
     dark: 'Dark',
     system: 'Match device',

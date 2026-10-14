@@ -64,6 +64,13 @@
       "when": 1791963402977,
       "tag": "0008_policy_emergency",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791967285991,
+      "tag": "0009_policy_adjustments_editor_read",
+      "breakpoints": true
     }
   ]
 }

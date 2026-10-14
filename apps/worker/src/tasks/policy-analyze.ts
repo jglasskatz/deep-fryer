@@ -1,8 +1,10 @@
 import type { Task } from 'graphile-worker';
 import type { ZodError } from 'zod';
-import { and, eq } from 'drizzle-orm';
-import { frameworkDimension } from '@deep-fryer/contract';
+import { and, eq, inArray, lt, sql } from 'drizzle-orm';
+import { framework, frameworkDimension } from '@deep-fryer/contract';
 import {
+  POLICY_DIMENSION_SLUGS,
+  POLICY_OUTPUT_LIMITS,
   policyAnalysisOutputSchema,
   policyAnalysisPrompt,
   projectDimensions,
@@ -18,7 +20,7 @@ import {
   tenants,
   users,
 } from '@deep-fryer/db';
-import type { PolicyJobPayload } from '@deep-fryer/research';
+import { policyJobKey, type PolicyJobPayload } from '@deep-fryer/research';
 import { extractJson, runSessionWithRetry } from '../session.js';
 import { send, type ComposedEmail } from '../notify.js';
 
@@ -35,10 +37,22 @@ import { send, type ComposedEmail } from '../notify.js';
  * queued (apps/web/lib/policy-actions.ts, under the subscription lock).
  * Settling it as failed releases that session, because
  * researchSessionsUsed() skips failed analyses — so every failure path below
- * must end in status 'failed', never leave the row queued or running.
+ * must end in status 'failed', never leave the row queued or running. The
+ * one path this task cannot see — a job that never runs at all — is the
+ * policy_sweep task's (policySweep, below).
+ *
+ * Exports for the worker's task list (apps/worker/src/index.ts):
+ * policyAnalyze as POLICY_TASK, and policySweep as POLICY_SWEEP_TASK on the
+ * POLICY_SWEEP_CRONTAB schedule (both names from @deep-fryer/research).
  */
 
-/** Read-only web tools, so quantified estimates can cite sources; nothing else. */
+/**
+ * The session's whole tool surface: read-only web tools, so quantified
+ * estimates can cite sources. runSession makes this list the set of tools
+ * that exist in the session (no shell, no file access) and withholds the
+ * worker's secrets from the session's environment — the brief is untrusted
+ * text an editor pasted, often from a third-party document.
+ */
 export const POLICY_SESSION_TOOLS = ['WebSearch', 'WebFetch'];
 
 /** Stored on the row and shown to staff verbatim, so it is short and plain. */
@@ -124,13 +138,14 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
     const regionName = (regionRow?.value as { name?: string } | undefined)?.name?.trim() || tenant.name;
 
     // The public read path: exactly the dimensions and indicators residents
-    // see, so a projection names an indicator someone can look up.
+    // see, so a projection names an indicator someone can look up. A custom
+    // dimension with no framework mapping has no valid dimension_slug, so it
+    // is neither offered to the model nor projected.
     const portrait = await publishedDoughnut<PublishedPortraitDimensions>(db, tenant.slug);
-    const published: PublishedDimensionInput[] = (portrait?.dimensions ?? []).map((d) => ({
-      slug: frameworkSlug(d.slug, d.canonical_slug),
-      viz_level: d.viz_level,
-      data: d.data,
-    }));
+    const published: PublishedDimensionInput[] = (portrait?.dimensions ?? []).flatMap((d) => {
+      const fw = frameworkDimension(d.slug, d.canonical_slug);
+      return fw ? [{ slug: fw.slug, viz_level: d.viz_level, data: d.data }] : [];
+    });
 
     const prompt = policyAnalysisPrompt({
       regionName,
@@ -139,18 +154,28 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
       sourceUrl: analysis.sourceUrl,
       dimensions: published,
     });
-    const session = await runSessionWithRetry({ prompt, allowedTools: POLICY_SESSION_TOOLS });
+    // Not orchestrated: a policy prompt ends with its own output contract,
+    // and research's delegation note must not follow it.
+    const session = await runSessionWithRetry({
+      prompt,
+      allowedTools: POLICY_SESSION_TOOLS,
+      orchestrate: false,
+    });
     usage = session.usage;
     transcript = session.transcript;
     if (!session.succeeded) throw new AnalysisFailure(SESSION_FAILED);
 
     let raw: unknown;
     try {
-      raw = extractJson(session.resultText);
+      raw = extractJson(session.resultText, { kind: 'object' });
     } catch {
       throw new AnalysisFailure(NO_JSON);
     }
-    const parsed = policyAnalysisOutputSchema.safeParse(raw);
+    // Recoverable slips (a cited http:// page, a summary a little over the
+    // limit) are fixed and noted for staff rather than failing an analysis
+    // that already spent minutes of web research; what remains invalid fails.
+    const fitted = fitToContract(raw);
+    const parsed = policyAnalysisOutputSchema.safeParse(fitted.value);
     if (!parsed.success) {
       throw new AnalysisFailure(
         `The analysis returned a result that failed validation, so nothing from it was saved (${describeIssue(parsed.error)}). Try running it again.`,
@@ -164,6 +189,7 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
         status: 'complete',
         result: parsed.data,
         projections,
+        adjustments: fitted.adjustments.length ? fitted.adjustments : null,
         error: null,
         tokenUsage: usage,
         transcript,
@@ -171,7 +197,7 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
       })
       .where(and(eq(policyAnalyses.id, analysisId), eq(policyAnalyses.status, 'running')));
     helpers.logger.info(
-      `policy analysis ${analysisId} complete: ${parsed.data.impacts.length} impacts, ${projections.length} dimensions`,
+      `policy analysis ${analysisId} complete: ${parsed.data.impacts.length} impacts, ${projections.length} dimensions, ${fitted.adjustments.length} adjustments`,
     );
   } catch (err) {
     const message = err instanceof AnalysisFailure ? err.message : UNEXPECTED;
@@ -206,16 +232,6 @@ async function settleFailed(
     .where(and(eq(policyAnalyses.id, analysisId), eq(policyAnalyses.status, 'running')));
 }
 
-/**
- * Impacts name framework dimensions (the schema's 21 slugs). A tenant's
- * custom dimension maps back through canonical_slug, the same resolver
- * planning and rescoring use, so its indicators are offered under the
- * framework slug the model must answer with.
- */
-function frameworkSlug(slug: string, canonicalSlug: string | null): string {
-  return frameworkDimension(slug, canonicalSlug)?.slug ?? slug;
-}
-
 /** First schema problem, phrased for staff ("impacts › #1 › dimension_slug: …"). */
 function describeIssue(error: ZodError): string {
   const issue = error.issues[0];
@@ -231,6 +247,246 @@ function describeIssue(error: ZodError): string {
       : issue.message;
   return `${where}: ${what}`.slice(0, 200);
 }
+
+// ---- Fitting the answer to the contract --------------------------------------
+
+const L = POLICY_OUTPUT_LIMITS;
+const SLUGS = new Set<string>(POLICY_DIMENSION_SLUGS);
+const count = (k: number, one: string, many = `${one}s`) => `${k} ${k === 1 ? one : many}`;
+const chars = (k: number) => `${k.toLocaleString('en-US')} characters`;
+
+type Json = Record<string, unknown>;
+const isObject = (v: unknown): v is Json => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/**
+ * Shorten text to at most `max` characters (after trimming, as the schema
+ * measures), ending on a whole word with an ellipsis so the cut is visible.
+ */
+function shorten(text: string, max: number): string {
+  const t = text.trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max - 1);
+  const space = cut.lastIndexOf(' ');
+  return `${(space > max * 0.6 ? cut.slice(0, space) : cut).trimEnd()}…`;
+}
+
+/**
+ * A dimension as the model named it, as one of the 21 framework slugs: the
+ * slug itself, or the same slug or name written loosely ("income_work",
+ * "Income & Work"). Null when it is no framework dimension at all.
+ */
+function resolveSlug(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  if (SLUGS.has(value)) return value;
+  const loose = (s: string) => s.toLowerCase().replace(/&/g, ' ').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const wanted = loose(value);
+  const hit = framework.dimensions.find((d) => loose(d.slug) === wanted || loose(d.name) === wanted);
+  return hit?.slug ?? null;
+}
+
+function isHttpsUrl(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  try {
+    return new URL(value.trim()).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Bring a model answer inside the output contract where that can be done
+ * without inventing anything, before policyAnalysisOutputSchema checks it
+ * (SPEC-v5 §2: the result is schema-validated). The schema is all-or-nothing,
+ * and a whole analysis — minutes of web research, sometimes two sessions —
+ * should not fail because one cited page was http:// or the summary ran a
+ * sentence long. Every change is recorded as one plain sentence for staff
+ * (stored as the analysis's `adjustments`, shown with the result):
+ *
+ * - sources that are not https links are left out; past the 12th, dropped;
+ *   an over-long title is shortened, a missing one becomes the link's host;
+ * - an impact on something that is not one of the 21 dimensions is set
+ *   aside (a loosely written slug or name is matched first);
+ * - an indicator name too long to be a published one, or a projected
+ *   value/year that is not a usable number, is dropped — the impact stays,
+ *   direction only;
+ * - over-long summary, rationale, and list items are shortened at a word;
+ *   impacts and list items past the limit are dropped.
+ *
+ * Anything else (a missing summary, an unknown direction) is left for the
+ * schema to reject: guessing those would put words in the analysis.
+ */
+export function fitToContract(raw: unknown): { value: unknown; adjustments: string[] } {
+  if (!isObject(raw)) return { value: raw, adjustments: [] };
+  const notes: string[] = [];
+  const out: Json = { ...raw };
+
+  if (typeof out.summary === 'string' && out.summary.trim().length > L.summaryChars) {
+    out.summary = shorten(out.summary, L.summaryChars);
+    notes.push(`The summary was shortened to ${chars(L.summaryChars)}.`);
+  }
+
+  if (Array.isArray(out.impacts)) {
+    const setAside: string[] = [];
+    let insecure = 0;
+    let extraSources = 0;
+    let titles = 0;
+    let rationales = 0;
+    let unusable = 0;
+    const impacts: unknown[] = [];
+    for (const item of out.impacts) {
+      if (!isObject(item)) {
+        impacts.push(item);
+        continue;
+      }
+      const impact: Json = { ...item };
+      const slug = resolveSlug(impact.dimension_slug);
+      if (!slug) {
+        setAside.push(String(impact.dimension_slug ?? 'no dimension'));
+        continue;
+      }
+      impact.dimension_slug = slug;
+
+      if (typeof impact.rationale === 'string' && impact.rationale.trim().length > L.rationaleChars) {
+        impact.rationale = shorten(impact.rationale, L.rationaleChars);
+        rationales++;
+      }
+
+      if (Array.isArray(impact.sources)) {
+        const kept: Json[] = [];
+        for (const s of impact.sources) {
+          if (!isObject(s) || !isHttpsUrl(s.url)) {
+            insecure++;
+            continue;
+          }
+          const url = s.url.trim();
+          let title = typeof s.title === 'string' ? s.title.trim() : '';
+          if (!title) title = new URL(url).hostname;
+          if (title.length > L.sourceTitleChars) {
+            title = shorten(title, L.sourceTitleChars);
+            titles++;
+          }
+          kept.push({ title, url });
+        }
+        extraSources += Math.max(0, kept.length - L.sourcesPerImpact);
+        impact.sources = kept.slice(0, L.sourcesPerImpact);
+      }
+
+      // A projection the schema could not accept is dropped as a whole, so
+      // the impact stays and reads as direction only.
+      if (typeof impact.projected_value === 'string' && impact.projected_value.trim() !== '') {
+        const value = Number(impact.projected_value);
+        if (Number.isFinite(value)) impact.projected_value = value;
+      }
+      const badIndicator =
+        impact.indicator !== undefined &&
+        (typeof impact.indicator !== 'string' || !impact.indicator.trim() || impact.indicator.trim().length > L.indicatorChars);
+      const badValue =
+        impact.projected_value !== undefined &&
+        (typeof impact.projected_value !== 'number' || !Number.isFinite(impact.projected_value));
+      if (badIndicator || badValue) {
+        delete impact.indicator;
+        delete impact.projected_value;
+        delete impact.projected_year;
+        unusable++;
+      } else if (impact.projected_year !== undefined) {
+        const year = Number(impact.projected_year);
+        if (Number.isInteger(year) && year >= L.minYear && year <= L.maxYear) impact.projected_year = year;
+        else {
+          delete impact.projected_year;
+          unusable++;
+        }
+      }
+      impacts.push(impact);
+    }
+
+    for (const slug of setAside) {
+      notes.push(`An impact on “${slug.slice(0, 80)}”, which is not one of the doughnut's 21 dimensions, was set aside.`);
+    }
+    if (impacts.length > L.impacts) {
+      notes.push(`${count(impacts.length - L.impacts, 'impact')} beyond the ${L.impacts} allowed ${impacts.length - L.impacts === 1 ? 'was' : 'were'} left out.`);
+    }
+    out.impacts = impacts.slice(0, L.impacts);
+    if (rationales) notes.push(`${count(rationales, 'rationale')} ${rationales === 1 ? 'was' : 'were'} shortened to ${chars(L.rationaleChars)}.`);
+    if (insecure) notes.push(`${count(insecure, 'cited source')} ${insecure === 1 ? 'was' : 'were'} left out because ${insecure === 1 ? 'it was not an https link' : 'they were not https links'}.`);
+    if (extraSources) notes.push(`${count(extraSources, 'source')} beyond the ${L.sourcesPerImpact} allowed per impact ${extraSources === 1 ? 'was' : 'were'} left out.`);
+    if (titles) notes.push(`${count(titles, 'source title')} ${titles === 1 ? 'was' : 'were'} shortened to ${chars(L.sourceTitleChars)}.`);
+    if (unusable) notes.push(`${count(unusable, 'projection')} with an unusable indicator name, value, or year ${unusable === 1 ? 'was' : 'were'} kept as direction only (or without a year).`);
+  }
+
+  for (const key of ['assumptions', 'risks'] as const) {
+    const list = out[key];
+    if (!Array.isArray(list)) continue;
+    let shortened = 0;
+    const items = list.map((item) => {
+      if (typeof item !== 'string' || item.trim().length <= L.listItemChars) return item;
+      shortened++;
+      return shorten(item, L.listItemChars);
+    });
+    if (shortened) notes.push(`${count(shortened, key.slice(0, -1))} ${shortened === 1 ? 'was' : 'were'} shortened to ${chars(L.listItemChars)}.`);
+    if (items.length > L.listItems) {
+      const extra = items.length - L.listItems;
+      notes.push(`${count(extra, key.slice(0, -1))} beyond the ${L.listItems} allowed ${extra === 1 ? 'was' : 'were'} left out.`);
+    }
+    out[key] = items.slice(0, L.listItems);
+  }
+
+  return { value: out, adjustments: notes };
+}
+
+// ---- The safety net ------------------------------------------------------------
+
+/** A queued analysis this old with no runnable job is settled by the sweep. */
+export const POLICY_SWEEP_AFTER_MS = 30 * 60_000;
+
+const ORPHANED =
+  'The analysis never started: its job left the queue without running. It was not counted against your plan; start it again.';
+
+/**
+ * policy_sweep (crontab POLICY_SWEEP_CRONTAB): settle analyses stuck in
+ * `queued` that no job can run any more. An analysis and its job are created
+ * in one transaction (apps/web/lib/policy-actions.ts), so a queued analysis
+ * without a job means the job was removed afterwards (an operator cleared
+ * the queue) or failed for good (graphile-worker keeps such a job with
+ * attempts = max_attempts and stops retrying it). Either way the analysis
+ * would hold a research session forever; settling it failed releases the
+ * session, and the requester is told.
+ *
+ * A job that is merely waiting — the worker is stopped, busy, or does not
+ * register this task yet — still counts as runnable, so its analysis is left
+ * alone: the result page says it is taking longer than usual, and staff can
+ * cancel it there.
+ */
+export const policySweep: Task = async (_payload, helpers) => {
+  const db = getDb();
+  const cutoff = new Date(Date.now() - POLICY_SWEEP_AFTER_MS);
+  const stale = await db
+    .select({ id: policyAnalyses.id })
+    .from(policyAnalyses)
+    .where(and(eq(policyAnalyses.status, 'queued'), lt(policyAnalyses.createdAt, cutoff)));
+  if (!stale.length) return;
+
+  // Runnable: waiting for its next attempt, or locked by a worker right now.
+  const keys = stale.map((a) => policyJobKey(a.id));
+  const live = await db.execute<{ key: string }>(
+    sql`select key from graphile_worker.jobs
+         where key in (${sql.join(keys.map((k) => sql`${k}`), sql`, `)})
+           and (locked_at is not null or attempts < max_attempts)`,
+  );
+  const liveKeys = new Set(live.map((j) => j.key));
+  const orphaned = stale.filter((a) => !liveKeys.has(policyJobKey(a.id))).map((a) => a.id);
+  if (!orphaned.length) return;
+
+  // Still conditional on `queued`: a worker that claims one meanwhile wins.
+  const settled = await db
+    .update(policyAnalyses)
+    .set({ status: 'failed', error: ORPHANED, completedAt: new Date() })
+    .where(and(inArray(policyAnalyses.id, orphaned), eq(policyAnalyses.status, 'queued')))
+    .returning({ id: policyAnalyses.id });
+  for (const { id } of settled) {
+    helpers.logger.warn(`policy analysis ${id} had no runnable job; settled as failed`);
+    await notifyPolicyRequester(id);
+  }
+};
 
 // ---- Requester notice ------------------------------------------------------
 

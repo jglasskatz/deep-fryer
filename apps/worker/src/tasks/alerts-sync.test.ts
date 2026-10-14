@@ -1,5 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
+import { parseCrontab } from 'graphile-worker';
 import { emergencyConfigSchema } from '@deep-fryer/core';
+import { ALERTS_TASK } from '@deep-fryer/research';
 
 /**
  * alerts_sync against Postgres with the NWS feed injected (no network here,
@@ -40,12 +42,37 @@ function feature(id: string, props: Record<string, unknown> = {}) {
       description: '* WHAT...Heat index values up to 100 expected.',
       instruction: 'Drink plenty of fluids, stay in an air-conditioned room, stay out of the sun.',
       response: 'Execute',
+      geocode: { SAME: ['036061', '036047'], UGC: ['NYZ072', 'NYZ075'] },
+      parameters: { AWIPSidentifier: ['NPWOKX'] },
       ...props,
     },
   };
 }
 
 const feed = (...features: unknown[]) => ({ type: 'FeatureCollection', title: 'Current watches, warnings, and advisories', features });
+
+describe('alerts_sync scheduling', () => {
+  it('runs in its own runner, every five minutes, without retrying old ticks', async () => {
+    const { alertsRunnerOptions, alertsSync } = await import('./alerts-sync.js');
+    const options = alertsRunnerOptions('postgres://example/db');
+    // Only this task: research and policy jobs run in the other runner, so
+    // they can never hold this one's slot.
+    expect(Object.keys(options.taskList ?? {})).toEqual([ALERTS_TASK]);
+    expect(options.taskList?.[ALERTS_TASK]).toBe(alertsSync);
+    expect(options.concurrency).toBe(1);
+    const [item, ...rest] = parseCrontab(options.crontab ?? '');
+    expect(rest).toEqual([]);
+    expect(item).toMatchObject({
+      task: ALERTS_TASK,
+      match: expect.any(Function),
+      options: { maxAttempts: 1, jobKey: ALERTS_TASK, jobKeyMode: 'replace', backfillPeriod: 0 },
+    });
+    // Every fifth minute, and only then.
+    const at = (min: number) => ({ min, hour: 3, date: 14, month: 7, dow: 2 });
+    expect([0, 5, 55].every((mm) => item!.match(at(mm)))).toBe(true);
+    expect([1, 4, 59].some((mm) => item!.match(at(mm)))).toBe(false);
+  });
+});
 
 describe.skipIf(!hasDb)('alerts_sync (Postgres, injected NWS feed)', () => {
   // Throwaway portraits are removed afterwards: left behind with real NYC
@@ -113,6 +140,8 @@ describe.skipIf(!hasDb)('alerts_sync (Postgres, injected NWS feed)', () => {
       ['urn:b', 'Coastal Flood Warning', 'Severe'],
     ]);
     expect(s.alerts[0]!.expires!.toISOString()).toBe('2026-07-16T00:00:00.000Z');
+    // Residents get the readable NWS page for the alert's area, not the API's GeoJSON.
+    expect(s.alerts[0]!.url).toBe('https://forecast.weather.gov/showsigwx.php?warnzone=NYZ072&warncounty=NYC061');
     expect(s.sync).toMatchObject({ lastError: null });
     expect(s.sync!.lastSuccessAt!.getTime()).toBe(NOW.getTime());
 
@@ -201,5 +230,75 @@ describe.skipIf(!hasDb)('alerts_sync (Postgres, injected NWS feed)', () => {
     const w = await stored(working.tenant.id);
     expect(w.alerts.map((a) => a.areaDesc)).toEqual(['Richmond (Staten Island)']);
     expect(w.sync).toMatchObject({ lastError: null });
+  });
+
+  it('keeps the stored copy of an alert the feed lists but this app cannot read', async () => {
+    const { syncTenantAlerts } = await import('./alerts-sync.js');
+    const { db, tenant, config } = await setup(['NYC061', 'NYZ072']);
+    await syncTenantAlerts({
+      db,
+      tenantId: tenant.id,
+      config,
+      fetchJson: async () => feed(feature('urn:heat'), feature('urn:surge', { event: 'Coastal Flood Warning', severity: 'Severe' })),
+      now: NOW,
+    });
+
+    // The NWS changes a field's shape: the warning is still there, unreadable.
+    const later = new Date(NOW.getTime() + 5 * 60_000);
+    const partial = await syncTenantAlerts({
+      db,
+      tenantId: tenant.id,
+      config,
+      fetchJson: async () => feed(feature('urn:heat'), feature('urn:surge', { event: null })),
+      now: later,
+    });
+    expect(partial).toMatchObject({ ok: true, stored: 1, removed: 0, rejected: 1 });
+    let s = await stored(tenant.id);
+    expect(s.alerts.map((a) => [a.sourceId, a.event])).toEqual([
+      ['urn:heat', 'Heat Advisory'],
+      ['urn:surge', 'Coastal Flood Warning'],
+    ]);
+    // Fresh (the rest of the feed was read), but staff are told.
+    expect(s.sync!.lastSuccessAt!.getTime()).toBe(later.getTime());
+    expect(s.sync!.lastError).toBe('1 alert(s) in the feed could not be read; their last stored copies were kept');
+
+    // A broken feature that names no alert could be any of them: nothing is removed.
+    const anonymous = await syncTenantAlerts({
+      db,
+      tenantId: tenant.id,
+      config,
+      fetchJson: async () => feed(feature('urn:heat'), { type: 'Feature', properties: { event: 'Coastal Flood Warning' } }),
+      now: later,
+    });
+    expect(anonymous).toMatchObject({ ok: true, removed: 0, rejected: 1 });
+    expect((await stored(tenant.id)).alerts.map((a) => a.sourceId)).toEqual(['urn:heat', 'urn:surge']);
+
+    // Nothing readable at all is a failed run: everything stays, and the
+    // last success stops advancing, so the page goes stale instead of
+    // claiming there are no alerts.
+    const muchLater = new Date(NOW.getTime() + 15 * 60_000);
+    const unreadable = await syncTenantAlerts({
+      db,
+      tenantId: tenant.id,
+      config,
+      fetchJson: async () => feed(feature('urn:heat', { event: null }), feature('urn:surge', { event: null })),
+      now: muchLater,
+    });
+    expect(unreadable).toEqual({
+      tenantId: tenant.id,
+      ok: false,
+      error: 'api.weather.gov listed 2 alert(s) this app could not read',
+    });
+    s = await stored(tenant.id);
+    expect(s.alerts.map((a) => a.sourceId)).toEqual(['urn:heat', 'urn:surge']);
+    expect(s.sync!.lastSuccessAt!.getTime()).toBe(later.getTime());
+    expect(s.sync!.lastAttemptAt.getTime()).toBe(muchLater.getTime());
+
+    // Once the feed reads cleanly again, the ended warning goes and the note clears.
+    const clean = await syncTenantAlerts({ db, tenantId: tenant.id, config, fetchJson: async () => feed(feature('urn:heat')), now: muchLater });
+    expect(clean).toMatchObject({ ok: true, stored: 1, removed: 1, rejected: 0 });
+    s = await stored(tenant.id);
+    expect(s.alerts.map((a) => a.sourceId)).toEqual(['urn:heat']);
+    expect(s.sync).toMatchObject({ lastError: null });
   });
 });

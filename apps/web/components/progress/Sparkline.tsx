@@ -55,7 +55,10 @@ export function Sparkline({
           cx={x(p.year)}
           cy={y(p.value)}
           r={p.year === baselineYear ? 3.5 : 2.5}
-          fill={p.year === baselineYear ? 'white' : 'var(--color-accent)'}
+          // The baseline is a ring: filled with the page colour so it reads
+          // hollow in both themes (a literal white would be a bright disc on
+          // the dark page).
+          fill={p.year === baselineYear ? 'var(--color-bg)' : 'var(--color-accent)'}
           stroke="var(--color-accent)"
           strokeWidth={1.5}
         />

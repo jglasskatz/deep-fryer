@@ -120,8 +120,11 @@ Make yourself staff (contract editing on billing pages):
 
 ### Emergency view (SPEC-v5 §3)
 
-Per portrait, staff set the National Weather Service zones (UGC county or
-forecast-zone codes, e.g. `NYC061`), the official alert sign-up link, and
+Per portrait, staff set the National Weather Service zones — both the UGC
+county and the forecast-zone codes for the area (e.g. `NYC061` and
+`NYZ072`): the NWS issues heat, winter storm, coastal flood, wind, and air
+quality alerts by forecast zone, and counties alone miss them — the
+official alert sign-up link, and
 the emergency / information phone numbers at `/{tenant}/admin/emergency`,
 then rate and publish hazards, plans, and help resources. The worker
 refreshes alerts every five minutes from `api.weather.gov` — allow that host

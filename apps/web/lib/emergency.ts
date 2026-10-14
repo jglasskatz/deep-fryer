@@ -51,6 +51,8 @@ const SEVERITY_ORDER: AlertSeverity[] = ['Extreme', 'Severe', 'Moderate', 'Minor
 
 export interface AlertView {
   id: string;
+  /** The NWS id; staff reach the machine record through it (nwsAlertRecordUrl). */
+  sourceId: string;
   event: string;
   severity: AlertSeverity;
   urgency: string;
@@ -60,6 +62,7 @@ export interface AlertView {
   instruction: string | null;
   areaDesc: string;
   senderName: string;
+  /** The readable NWS page for the alert's area (see nwsAlertPageUrl). */
   url: string;
   effective: Date;
   /** When the hazard ends if the NWS said so, else when the message expires. */
@@ -92,6 +95,14 @@ export interface HazardView {
   published: boolean;
   /** An official alert matching one of this hazard's NWS events is current. */
   activeNow: boolean;
+  /**
+   * When the last of those alerts ends; null when one of them has no end
+   * (or none is current). A saved copy of the page hides the "active now"
+   * badge on its own once this passes (AlertsLive).
+   */
+  activeUntil: Date | null;
+  /** Changes on every write, publish toggle included: the admin forms remount on it. */
+  updatedAt: Date;
 }
 
 export interface PlanView {
@@ -105,6 +116,8 @@ export interface PlanView {
   hazardSlugs: string[];
   displayOrder: number;
   published: boolean;
+  /** Also bumped when a hazard it links to is renamed or deleted. */
+  updatedAt: Date;
 }
 
 export interface ResourceView {
@@ -117,6 +130,8 @@ export interface ResourceView {
   hazardSlugs: string[];
   displayOrder: number;
   published: boolean;
+  /** Also bumped when a hazard it links to is renamed or deleted. */
+  updatedAt: Date;
 }
 
 export interface EmergencyView {
@@ -132,6 +147,12 @@ export interface EmergencyView {
   resources: ResourceView[];
   /** The published portrait's dimensions (current wedge sizes for the doughnut). */
   dimensions: PublishedDimension[];
+  /**
+   * When this view was read. A copy of the page served later (saved for
+   * offline, or the service worker's fallback on a slow network) compares
+   * it with the device clock to tell residents its alerts are old.
+   */
+  renderedAt: Date;
 }
 
 /** The stored config, or the defaults when there is none or it no longer validates. */
@@ -156,7 +177,23 @@ export function syncState(row: { lastAttemptAt: Date; lastSuccessAt: Date | null
   };
 }
 
-function hazardView(h: Hazard, activeSlugs: Set<string>): HazardView {
+/**
+ * When each hazard's matching alerts end: the latest `until` among them, or
+ * null when any of them has no end (it stays active until the feed drops it).
+ */
+function activeUntilBySlug(alerts: AlertView[]): Map<string, Date | null> {
+  const out = new Map<string, Date | null>();
+  for (const a of alerts) {
+    for (const slug of a.hazardSlugs) {
+      const prev = out.get(slug);
+      if (prev === null) continue;
+      out.set(slug, a.until === null ? null : prev && prev > a.until ? prev : a.until);
+    }
+  }
+  return out;
+}
+
+function hazardView(h: Hazard, active: Map<string, Date | null>): HazardView {
   const risk = riskScore(h.likelihood, h.severity);
   return {
     id: h.id,
@@ -172,7 +209,9 @@ function hazardView(h: Hazard, activeSlugs: Set<string>): HazardView {
     nwsEvents: h.nwsEvents,
     displayOrder: h.displayOrder,
     published: h.published,
-    activeNow: activeSlugs.has(h.slug),
+    activeNow: active.has(h.slug),
+    activeUntil: active.get(h.slug) ?? null,
+    updatedAt: h.updatedAt,
   };
 }
 
@@ -187,6 +226,7 @@ const planView = (p: EmergencyPlan): PlanView => ({
   hazardSlugs: p.hazardSlugs,
   displayOrder: p.displayOrder,
   published: p.published,
+  updatedAt: p.updatedAt,
 });
 
 const resourceView = (r: EmergencyResource): ResourceView => ({
@@ -199,6 +239,7 @@ const resourceView = (r: EmergencyResource): ResourceView => ({
   hazardSlugs: r.hazardSlugs,
   displayOrder: r.displayOrder,
   published: r.published,
+  updatedAt: r.updatedAt,
 });
 
 /** Highest risk first; staff order breaks ties, then the name. */
@@ -215,6 +256,7 @@ function alertViews(rows: EmergencyAlert[], hazardRows: { slug: string; nwsEvent
       const severity = (SEVERITY_ORDER as string[]).includes(a.severity) ? (a.severity as AlertSeverity) : 'Unknown';
       return {
         id: a.id,
+        sourceId: a.sourceId,
         event: a.event,
         severity,
         urgency: a.urgency,
@@ -270,14 +312,15 @@ async function loadEmergency(db: DbExecutor, tenant: Tenant, publishedOnly: bool
   // Alerts only mean something for a portrait that asked for them: zones
   // removed since the last sync leave rows the page must not show.
   const alerts = alertsConfigured ? alertViews(alertRows, hazardRows, now) : [];
-  const activeSlugs = new Set(alerts.flatMap((a) => a.hazardSlugs));
+  const active = activeUntilBySlug(alerts);
   return {
     config,
     configInvalid: invalid,
+    configSaved: Boolean(configRow),
     alertsConfigured,
     alerts,
     sync: syncState(syncRow, now),
-    hazards: hazardRows.map((h) => hazardView(h, activeSlugs)).sort(byRisk),
+    hazards: hazardRows.map((h) => hazardView(h, active)).sort(byRisk),
     plans: planRows.map(planView),
     resources: resourceRows.map(resourceView),
   };
@@ -292,7 +335,8 @@ export const emergencyView = cache(async (tenantSlug: string): Promise<Emergency
   return userDb(async (db) => {
     const tenant = await tenantBySlug(db, tenantSlug);
     if (!tenant || tenant.archivedAt) return null;
-    const view = await loadEmergency(db, tenant, true, new Date());
+    const renderedAt = new Date();
+    const view = await loadEmergency(db, tenant, true, renderedAt);
     const portrait = await publishedDoughnut<PublishedPortrait>(db, tenant.slug);
     return {
       tenant: { id: tenant.id, slug: tenant.slug, name: tenant.name },
@@ -304,6 +348,7 @@ export const emergencyView = cache(async (tenantSlug: string): Promise<Emergency
       plans: view.plans,
       resources: view.resources,
       dimensions: [...(portrait?.dimensions ?? [])].sort((a, b) => a.display_order - b.display_order),
+      renderedAt,
     };
   });
 });
@@ -329,12 +374,5 @@ export interface EmergencyAdminView {
  * before that matters.
  */
 export async function emergencyAdminView(tenant: Tenant): Promise<EmergencyAdminView> {
-  return userDb(async (db) => {
-    const view = await loadEmergency(db, tenant, false, new Date());
-    const [row] = await db
-      .select({ key: tenantConfig.key })
-      .from(tenantConfig)
-      .where(and(eq(tenantConfig.tenantId, tenant.id), eq(tenantConfig.key, 'emergency')));
-    return { ...view, configSaved: Boolean(row) };
-  });
+  return userDb((db) => loadEmergency(db, tenant, false, new Date()));
 }
