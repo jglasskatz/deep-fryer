@@ -98,6 +98,7 @@ function panel(
 ): PortraitPanelConfig {
   const views = portraitPanelViews(DIMENSIONS, {
     m: en,
+    locale: 'en',
     evidenceUrl: (path) => `/evidence/santacruz/${path}`,
     listings: over.involvement ? LISTINGS : null,
   });

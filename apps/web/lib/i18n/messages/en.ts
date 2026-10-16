@@ -159,6 +159,11 @@ export const en = {
     panelSelected: 'Showing {name}',
     openFull: 'Open the full page',
     openFullDiscussion: 'Open the full page and discussion',
+    /** Under the panel's first few listings; the rest are on the full page ({n} is at least 1). */
+    moreListings: plural({
+      one: 'One more way to get involved on the full page',
+      other: '{n} more ways to get involved on the full page',
+    }),
     legendTitle: 'How to read the doughnut',
     legendSafe: 'Green ring: the safe and just space',
     legendShortfall: 'Red toward the centre: a shortfall below the social foundation',

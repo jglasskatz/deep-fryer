@@ -3,6 +3,7 @@ import type { DimensionData, Indicator, InvolvementListingView } from '@deep-fry
 import { en } from './i18n/messages/en';
 import { es } from './i18n/messages/es';
 import {
+  PANEL_LISTING_LIMIT,
   panelLabels,
   portraitPanelView,
   portraitPanelViews,
@@ -64,6 +65,7 @@ const listing = (over: Partial<InvolvementListingView>): InvolvementListingView 
 
 const options = (over: Partial<PanelOptions> = {}): PanelOptions => ({
   m: en,
+  locale: 'en',
   evidenceUrl: (path) => `/evidence/santacruz/${path}`,
   listings: null,
   ...over,
@@ -131,6 +133,7 @@ describe('portraitPanelView', () => {
       gaps: [{ reason: 'No survey measures isolation at city scale.', scales: ['city', 'county'] }],
       actions: [],
       listings: null,
+      moreListings: null,
     });
   });
 
@@ -208,6 +211,21 @@ describe('portraitPanelView', () => {
     ]);
     // On, with nothing published: an empty list, not null.
     expect(portraitPanelView(dimension('housing'), options({ listings: [] })).listings).toEqual([]);
+  });
+
+  it('shows the first few listings and says how many more the full page has', () => {
+    const many = Array.from({ length: PANEL_LISTING_LIMIT + 4 }, (_, i) => listing({ id: `l${i}`, name: `Group ${i}` }));
+    const view = portraitPanelView(dimension('housing'), options({ listings: many }));
+    expect(view.listings!.map((l) => l.id)).toEqual(['l0', 'l1', 'l2']);
+    expect(view.moreListings).toEqual({ count: 4, label: '4 more ways to get involved on the full page' });
+
+    const one = portraitPanelView(dimension('housing'), options({ listings: many.slice(0, PANEL_LISTING_LIMIT + 1) }));
+    expect(one.moreListings).toEqual({ count: 1, label: 'One more way to get involved on the full page' });
+    const exactly = portraitPanelView(dimension('housing'), options({ listings: many.slice(0, PANEL_LISTING_LIMIT) }));
+    expect(exactly.listings).toHaveLength(PANEL_LISTING_LIMIT);
+    expect(exactly.moreListings).toBeNull();
+    // Off: no listings and nothing to say about more.
+    expect(portraitPanelView(dimension('housing'), options()).moreListings).toBeNull();
   });
 
   it('keys listings by framework slug, so a renamed portrait dimension finds its framework listings', () => {

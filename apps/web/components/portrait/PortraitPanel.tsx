@@ -264,6 +264,14 @@ export function PortraitPanel({
                       </li>
                     ))}
                   </ul>
+                  {view.moreListings ? (
+                    <p className="mt-1 text-sm">
+                      {/* The rest are on the full page's "How to get involved" section. */}
+                      <Link href={`${fullHref(view.slug)}#get-involved`} prefetch={false} className="inline-flex min-h-11 items-center underline">
+                        {view.moreListings.label}
+                      </Link>
+                    </p>
+                  ) : null}
                 </>
               )}
             </div>

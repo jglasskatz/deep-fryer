@@ -10,6 +10,7 @@ import {
 } from '@deep-fryer/core';
 import { selectedSlugFrom } from '@/components/portrait/selection';
 import { dimensionLabel, scaleLabel } from './i18n/content';
+import { fmtPlural } from './i18n/format';
 import type { Messages } from './i18n/messages/en';
 import { frameworkSlugOf } from './policy';
 import type { PublishedDimension } from './portrait';
@@ -104,15 +105,32 @@ export interface PortraitPanelView {
   /** The dimension's curated short actions ("What you can do", research text). Core: always present. */
   actions: string[];
   /**
-   * Published involvement listings for this dimension (its own, then those
-   * for every dimension), or null when the `involvement` feature is off.
+   * The first PANEL_LISTING_LIMIT published involvement listings for this
+   * dimension (its own, then those for every dimension), or null when the
+   * `involvement` feature is off.
    */
   listings: PanelListing[] | null;
+  /**
+   * The listings the panel leaves to the full dimension page, with the line
+   * that links there in the reader's language ("12 more ways to get involved
+   * on the full page"); null when the panel shows them all.
+   */
+  moreListings: { count: number; label: string } | null;
 }
+
+/**
+ * How many listings the panel shows. The panel is a summary beside the
+ * doughnut (on a phone, between it and the dimension list): a dozen listings
+ * would push the list off the screen, and the full page has every one, with
+ * its checked date. Like the Santa Cruz panel's short "ways to get involved".
+ */
+export const PANEL_LISTING_LIMIT = 3;
 
 export interface PanelOptions {
   /** The reader's catalog: framework dimension names and geographic scales. */
   m: Messages;
+  /** The reader's locale, for plural forms (the "more listings" line). */
+  locale: string;
   /** Public URL of an evidence object (lib/data.ts evidenceUrl, bound to the portrait). */
   evidenceUrl: (storagePath: string) => string;
   /**
@@ -170,9 +188,13 @@ function panelListing(l: InvolvementListingView): PanelListing {
 /** The panel's view of one published dimension. */
 export function portraitPanelView(
   dim: PublishedDimension,
-  { m, evidenceUrl, listings }: PanelOptions,
+  { m, locale, evidenceUrl, listings }: PanelOptions,
 ): PortraitPanelView {
   const data = dim.data;
+  // Listings and submissions are keyed by framework slug; a renamed or
+  // custom dimension maps onto one the same way the dimension page does.
+  const all = listings === null ? null : listingsForDimension(listings, frameworkSlugOf(dim)).map(panelListing);
+  const more = all ? all.length - PANEL_LISTING_LIMIT : 0;
   return {
     slug: dim.slug,
     name: dimensionLabel(m, dim.slug, data.name),
@@ -182,9 +204,8 @@ export function portraitPanelView(
     indicators: data.indicators.map((ind) => panelIndicator(ind, m, evidenceUrl)),
     gaps: (data.gaps ?? []).map((g) => ({ reason: g.reason, scales: g.scales_tried.map((s) => scaleLabel(m, s)) })),
     actions: data.actions.filter(hasText),
-    // Listings and submissions are keyed by framework slug; a renamed or
-    // custom dimension maps onto one the same way the dimension page does.
-    listings: listings === null ? null : listingsForDimension(listings, frameworkSlugOf(dim)).map(panelListing),
+    listings: all && all.slice(0, PANEL_LISTING_LIMIT),
+    moreListings: more > 0 ? { count: more, label: fmtPlural(locale, m.portrait.moreListings, more) } : null,
   };
 }
 

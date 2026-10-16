@@ -48,6 +48,7 @@ export default async function TenantPage({
   const slug = portrait.tenant.slug;
   const views = portraitPanelViews(portrait.dimensions, {
     m,
+    locale,
     evidenceUrl: (path) => evidenceUrl(slug, path),
     // On: the published listings (none without a database, e.g. the demo).
     // Off: null, so no view carries any.
