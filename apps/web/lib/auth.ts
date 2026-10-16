@@ -1,4 +1,5 @@
 import 'server-only';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { cache } from 'react';
 import { and, eq } from 'drizzle-orm';
 import type { Role } from '@deep-fryer/core';
@@ -52,12 +53,47 @@ function ensureDevUser(): Promise<void> {
 }
 
 /**
- * The request's identity, memoized per request. Dev mode exists only outside
- * production: a production process without AUTH_SECRET throws here (and
- * already failed at boot via instrumentation.ts) instead of granting
- * anonymous owner access (SPEC-v3 §2.3).
+ * The identity a transaction was opened with, for code running inside it.
+ *
+ * Outside dev mode, reading the identity is a query: auth() reads the
+ * database session through Auth.js's Drizzle adapter, on the pooled client.
+ * Inside a transaction that read would wait for a second pooled connection
+ * while the transaction holds the first, and as many such requests at once
+ * as the pool has connections would each hold one and wait for another, for
+ * good (packages/db auth-context.ts). getAuth's cache() does not prevent it:
+ * React memoizes only while it renders a page, and server actions and route
+ * handlers run outside that render, so there every getAuth() reads the
+ * session again — including the one audit() makes for its actor.
+ *
+ * So the web app's transactions (lib/db.ts userDb and systemTransaction)
+ * resolve the identity before they open and hold it here for their
+ * callback: getAuth() inside — directly, or through audit() or
+ * requireUserId() — answers with it and makes no query. It is the identity
+ * the transaction itself runs as (userDb's app.user_id), the same request's
+ * session read a moment earlier.
+ */
+const transactionAuth = new AsyncLocalStorage<AuthContext>();
+
+/**
+ * Run `fn` with getAuth() answering `ctx` for everything `fn` does (see
+ * transactionAuth). Only for opening a transaction as `ctx`'s request.
+ */
+export function runWithAuth<T>(ctx: AuthContext, fn: () => Promise<T>): Promise<T> {
+  return transactionAuth.run(ctx, fn);
+}
+
+/**
+ * The request's identity. Memoized per request while a page renders (React
+ * cache()); in a server action or route handler each call reads it afresh,
+ * except inside a transaction, which answers with the identity it was opened
+ * with (transactionAuth). Dev mode exists only outside production: a
+ * production process without AUTH_SECRET throws here (and already failed at
+ * boot via instrumentation.ts) instead of granting anonymous owner access
+ * (SPEC-v3 §2.3).
  */
 export const getAuth = cache(async (): Promise<AuthContext> => {
+  const held = transactionAuth.getStore();
+  if (held) return held;
   if (!authConfigured()) {
     if (isProduction()) {
       throw new Error('AUTH_SECRET is not set: refusing anonymous dev mode in production');
@@ -84,7 +120,11 @@ export const getAuth = cache(async (): Promise<AuthContext> => {
   };
 });
 
-const ROLE_RANK: Record<Role, number> = { viewer: 0, moderator: 1, editor: 2, owner: 3 };
+/** Portrait roles from least to most authority (roleAtLeast, invitations). */
+export const ROLE_RANK: Record<Role, number> = { viewer: 0, moderator: 1, editor: 2, owner: 3 };
+
+/** Organization roles likewise: billing manages the plan, owner everything. */
+export const ORG_ROLE_RANK: Record<OrgRole, number> = { billing: 0, owner: 1 };
 
 /**
  * The caller's role on a portrait. An organization owner is owner of every

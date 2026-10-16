@@ -327,7 +327,7 @@ export const pl: Messages = {
     invalid: 'Prosimy sprawdzić pola zaznaczone poniżej.',
     websiteInvalid: 'Prosimy wpisać pełny adres strony, zaczynający się od https:// — na przykład https://example.org.',
     phoneInvalid:
-      'Prosimy użyć tylko cyfr i zwykłych separatorów, np. (212) 555-0100, bez numeru wewnętrznego i innych słów.',
+      'Prosimy wpisać tylko cyfry i zwykłe znaki rozdzielające, na przykład (212) 555-0100, bez numeru wewnętrznego i innych słów.',
     tooFast: 'Formularz został wysłany bardzo szybko. Prosimy chwilę odczekać i wysłać go ponownie.',
     rateLimited: 'Wysłano stąd dzisiaj zbyt wiele zgłoszeń. Prosimy spróbować ponownie później.',
     expired: 'Ten formularz wygasł. Prosimy odświeżyć stronę i spróbować ponownie.',

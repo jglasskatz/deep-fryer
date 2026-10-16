@@ -13,7 +13,7 @@ import {
   renderPlan,
   type PlanDimensionSpec,
 } from '@deep-fryer/research';
-import { portraitConfigFromMap, tenantConfigMap } from './admin-data';
+import { portraitConfigFromMap, tenantConfigMapIn } from './admin-data';
 import { UserError } from './action-result';
 import { assertFundingUsable } from './billing';
 import { systemDb, userDb } from './db';
@@ -30,7 +30,9 @@ export async function createPlannedRun(input: {
   requestedBy?: string | null;
 }) {
   return userDb(async (db) => {
-    const configMap = await tenantConfigMap(input.tenantId);
+    // On this transaction, not through tenantConfigMap's own: that would wait
+    // for a second pooled connection while this one is held (lib/admin-data.ts).
+    const configMap = await tenantConfigMapIn(db, input.tenantId);
     const config = portraitConfigFromMap(configMap);
     if (!config) {
       throw new UserError(

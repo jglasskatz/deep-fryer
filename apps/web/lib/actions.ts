@@ -24,7 +24,7 @@ import {
 import { isOrigin } from './csp';
 import { getAuth, requireTenantRole } from './auth';
 import { audit } from './audit';
-import { configValue } from './admin-data';
+import { configValueIn } from './admin-data';
 import { action, UserError } from './action-result';
 import { publishVersionFor } from './publish';
 import { userDb } from './db';
@@ -106,7 +106,9 @@ export const saveDimensionEdit = action(async (input: SaveDimensionEditInput) =>
       }
     }
 
-    const overrides = await configValue(tenant.id, 'threshold_overrides');
+    // On this transaction: configValue would open a second one, waiting for
+    // another pooled connection while this one is held (lib/admin-data.ts).
+    const overrides = await configValueIn(db, tenant.id, 'threshold_overrides');
     const rescored = rescore(parsed, dimension.slug, dimension.canonicalSlug, overrides);
     const vizLevel = deriveVizLevel(rescored) ?? previous?.vizLevel ?? null;
 

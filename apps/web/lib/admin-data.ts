@@ -18,6 +18,7 @@ import {
   researchSessions,
   tenantBySlug,
   tenantConfig,
+  type DbExecutor,
   type Dimension,
   type DimensionVersion,
   type Tenant,
@@ -103,13 +104,28 @@ export async function versionTimeline(dimensionId: string): Promise<DimensionVer
   });
 }
 
+/**
+ * Every config key the reader may see for a portrait, in its own userDb
+ * transaction — for pages. Inside a transaction use tenantConfigMapIn.
+ */
 export async function tenantConfigMap(tenantId: string): Promise<Partial<TenantConfigMap>> {
-  return userDb(async (db) => {
-    const rows = await db.select().from(tenantConfig).where(eq(tenantConfig.tenantId, tenantId));
-    const map: Record<string, unknown> = {};
-    for (const row of rows) map[row.key] = row.value;
-    return map as Partial<TenantConfigMap>;
-  });
+  return userDb((db) => tenantConfigMapIn(db, tenantId));
+}
+
+/**
+ * The same, read on a transaction the caller already holds (research.ts
+ * createPlannedRun). Calling tenantConfigMap there would open a second
+ * transaction on another pooled connection while the caller's is held, and
+ * as many such requests at once as the pool has connections would wait on
+ * each other for good (lib/features.ts portraitFeaturesIn). The caller's
+ * transaction runs as the same person, so row-level security returns the
+ * same rows.
+ */
+export async function tenantConfigMapIn(db: DbExecutor, tenantId: string): Promise<Partial<TenantConfigMap>> {
+  const rows = await db.select().from(tenantConfig).where(eq(tenantConfig.tenantId, tenantId));
+  const map: Record<string, unknown> = {};
+  for (const row of rows) map[row.key] = row.value;
+  return map as Partial<TenantConfigMap>;
 }
 
 export function portraitConfigFromMap(map: Partial<TenantConfigMap>): PortraitConfig | null {
@@ -123,17 +139,30 @@ export function portraitConfigFromMap(map: Partial<TenantConfigMap>): PortraitCo
   };
 }
 
+/** One config key, in its own userDb transaction. Inside a transaction use configValueIn. */
 export async function configValue<K extends TenantConfigKey>(
   tenantId: string,
   key: K,
 ): Promise<TenantConfigMap[K] | null> {
-  return userDb(async (db) => {
-    const [row] = await db
-      .select()
-      .from(tenantConfig)
-      .where(and(eq(tenantConfig.tenantId, tenantId), eq(tenantConfig.key, key)));
-    return (row?.value as TenantConfigMap[K]) ?? null;
-  });
+  return userDb((db) => configValueIn(db, tenantId, key));
+}
+
+/**
+ * One config key, read on a transaction the caller already holds (actions.ts
+ * saveDimensionEdit) — not through configValue, whose own transaction would
+ * wait for a second pooled connection while the caller's holds the first
+ * (see tenantConfigMapIn).
+ */
+export async function configValueIn<K extends TenantConfigKey>(
+  db: DbExecutor,
+  tenantId: string,
+  key: K,
+): Promise<TenantConfigMap[K] | null> {
+  const [row] = await db
+    .select()
+    .from(tenantConfig)
+    .where(and(eq(tenantConfig.tenantId, tenantId), eq(tenantConfig.key, key)));
+  return (row?.value as TenantConfigMap[K]) ?? null;
 }
 
 /** Staleness overview (SPEC.md §8 rerun loop): newest data year per dimension vs recency policy. */

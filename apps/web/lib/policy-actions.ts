@@ -19,7 +19,7 @@ import { action, UserError } from './action-result';
 import { audit } from './audit';
 import { getAuth } from './auth';
 import { assertFundingUsable } from './billing';
-import { systemDb } from './db';
+import { systemTransaction } from './db';
 import { requireTenantRoleWithFeature } from './features';
 import { POLICY_LIMITS } from './policy-limits';
 
@@ -137,8 +137,10 @@ export const createPolicyAnalysis = action(
     // is fixed from the moment the analysis exists: only plan-funded analyses
     // count against the allowance, and the worker runs the session on the key
     // `funding` names, not on whatever key is on file when the job runs.
-    const db = systemDb();
-    const analysis = await db.transaction(async (tx) => {
+    // systemTransaction, not systemDb().transaction: the audit entry below
+    // reads its actor inside the transaction, which must not cost a session
+    // read on a second pooled connection (lib/db.ts).
+    const analysis = await systemTransaction(async (tx) => {
       const org = await organizationForTenant(tx, tenant.id);
       if (!org) throw new Error(`tenant ${tenant.id} has no organization`);
       const gate = await gateResearchSpend(tx, org.id, POLICY_ANALYSIS_SESSIONS);
@@ -214,8 +216,9 @@ export const cancelPolicyAnalysis = action(async (input: { tenantSlug: string; i
 
   // System context: the app role has no update policy on policy_analyses
   // (migration 0008); the editor check above is the authorization, and the
-  // tenant condition keeps it to this portrait.
-  const cancelled = await systemDb().transaction(async (tx) => {
+  // tenant condition keeps it to this portrait. A systemTransaction, so the
+  // audit entry's actor is read without a second pooled connection.
+  const cancelled = await systemTransaction(async (tx) => {
     const [row] = await tx
       .update(policyAnalyses)
       .set({ status: 'failed', error: CANCELLED, completedAt: new Date() })

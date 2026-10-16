@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { onOneConnection } from '../test/one-connection';
 import { setPortraitFeatures } from './test-features';
 
 /**
@@ -23,12 +24,11 @@ import { setPortraitFeatures } from './test-features';
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }));
 
-// Whoever `signedIn` names is the request's user.
+// Whoever `signedIn` names is the request's user. The session is read
+// through the pooled client, as in production (test/database-session.ts).
 let signedIn: string | null = null;
 vi.mock('@/auth', () => ({
-  auth: vi.fn(async () =>
-    signedIn ? { user: { id: signedIn, email: `${signedIn}@example.gov`, displayName: null, isStaff: false } } : null,
-  ),
+  auth: vi.fn(async () => (await import('../test/database-session')).databaseSession(signedIn)),
 }));
 
 const hasDb = Boolean(process.env.DATABASE_URL);
@@ -363,5 +363,61 @@ describe.skipIf(!hasDb)('involvement admin actions under row-level security', ()
 
     expect(await submissionRow(submissionId)).toMatchObject({ status: 'new', reviewedBy: null, listingId: null });
     expect(await listingsNamed(name)).toHaveLength(0);
+  });
+
+  it('runs every write on its own transaction, audit entries included', async () => {
+    // Each action audits inside its userDb transaction, and audit() reads its
+    // actor with getAuth(). In a server action that was a fresh session read
+    // on the pooled client (React's cache() does not memoize there), waiting
+    // for a second connection while the transaction held the first — and,
+    // for the submission actions, while it held the submission's row lock.
+    // On a one-connection pool, one request waited forever
+    // (test/one-connection.ts).
+    type Actions = typeof import('./involvement-admin-actions');
+    const run = <T>(fn: (a: Actions) => Promise<T>) =>
+      onOneConnection(async () => fn(await import('./involvement-admin-actions')));
+    const ok = { ok: true, data: undefined };
+    signedIn = people.editor;
+
+    const name = `Community Garden ${uniq()}`;
+    const created = await run((a) => a.saveListing({ tenantSlug, listing: { ...listing(name), kind: 'volunteer' } }));
+    expect(created).toMatchObject({ ok: true });
+    const id = (created as { ok: true; data: { id: string } }).data.id;
+    expect(await run((a) => a.saveListing({ tenantSlug, id, listing: { ...listing(name), kind: 'volunteer', description: 'Grow food together.' } }))).toEqual({
+      ok: true,
+      data: { id },
+    });
+    expect(await run((a) => a.setListingPublished({ tenantSlug, id, published: true }))).toEqual(ok);
+    expect(await run((a) => a.markLinkChecked({ tenantSlug, id }))).toEqual(ok);
+    expect(await run((a) => a.deleteListing({ tenantSlug, id }))).toEqual(ok);
+
+    const declined = await submitAnonymously();
+    expect(await run((a) => a.reviewSubmission({ tenantSlug, submissionId: declined, status: 'declined' }))).toEqual(ok);
+    expect(await run((a) => a.reopenSubmission({ tenantSlug, submissionId: declined }))).toEqual(ok);
+    const approved = await submitAnonymously();
+    const res = await run((a) => a.approveSubmission({ tenantSlug, submissionId: approved, listing: listing(`Tenants ${uniq()}`) }));
+    expect(res).toMatchObject({ ok: true });
+    const listingId = (res as { ok: true; data: { listingId: string } }).data.listingId;
+
+    const m = await import('@deep-fryer/db');
+    const { inArray } = await import('drizzle-orm');
+    const log = await m
+      .getDb()
+      .select()
+      .from(m.auditLog)
+      .where(inArray(m.auditLog.entityId, [id, declined, approved, listingId]))
+      .orderBy(m.auditLog.id);
+    expect(log.map((l) => [l.entity, l.action, l.userId])).toEqual([
+      ['involvement_listing', 'create', people.editor],
+      ['involvement_listing', 'update', people.editor],
+      ['involvement_listing', 'publish', people.editor],
+      ['involvement_listing', 'link_checked', people.editor],
+      ['involvement_listing', 'delete', people.editor],
+      ['involvement_submission', 'decline', people.editor],
+      ['involvement_submission', 'reopen', people.editor],
+      ['involvement_listing', 'create', people.editor],
+      ['involvement_submission', 'approve', people.editor],
+    ]);
+    signedIn = null;
   });
 });

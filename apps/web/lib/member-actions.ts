@@ -9,6 +9,7 @@ import {
   organizationBySlug,
   organizationMembers,
   tenantMembers,
+  type DbExecutor,
 } from '@deep-fryer/db';
 import { getAuth, requireOrgRole, requireTenantRole, requireUserId, type OrgRole } from './auth';
 import { action, UserError } from './action-result';
@@ -23,17 +24,27 @@ const orgRole = z.enum(['owner', 'billing']);
  * People with owner authority over a portrait: its tenant-level owners plus
  * the owners of the organization holding it. Removing or demoting the last
  * of them would leave the portrait unadministrable, so it is refused.
+ *
+ * Counted on the action's own transaction, with every counted owner row
+ * locked until it ends (migration 0014 lock_tenant_owners). On the
+ * transaction, because a systemDb() count here would wait for a second
+ * pooled connection while the transaction holds the first, and as many
+ * concurrent requests as the pool has connections would wait on each other
+ * for good. Locked, because two owners demoting each other at the same
+ * moment would otherwise each still count the other and leave no owner: now
+ * the second waits for the first to commit, then counts without the owner
+ * it demoted. A definer function, because organization owners may be
+ * invisible to a tenant owner's own role.
+ *
+ * Callers lock before they read the member they act on, not only when that
+ * member turns out to be an owner: a member read first could be promoted to
+ * owner by a request committing in between, and the action would then
+ * demote or remove an owner without counting. Taken first, the lock makes
+ * every role change on the portrait (which all take it) wait its turn, so
+ * the member read afterwards is current.
  */
-async function ownerCount(tenantId: string): Promise<number> {
-  // System context: org owners may be invisible to a tenant owner's role.
-  const rows = await systemDb().execute<{ n: number }>(sql`
-    SELECT count(DISTINCT user_id)::int AS n FROM (
-      SELECT user_id FROM tenant_members WHERE tenant_id = ${tenantId} AND role = 'owner'
-      UNION
-      SELECT om.user_id FROM organization_members om
-        JOIN tenants t ON t.organization_id = om.organization_id
-       WHERE t.id = ${tenantId} AND om.role = 'owner'
-    ) owners`);
+async function lockedOwnerCount(db: DbExecutor, tenantId: string): Promise<number> {
+  const rows = await db.execute<{ n: number }>(sql`SELECT public.lock_tenant_owners(${tenantId}::uuid) AS n`);
   return Number(rows[0]?.n ?? 0);
 }
 
@@ -79,12 +90,13 @@ export const changeTenantMemberRole = action(
     const { tenant } = await requireTenantRole(input.tenantSlug, 'owner');
     const role = tenantRole.parse(input.role);
     return userDb(async (db) => {
+      const owners = await lockedOwnerCount(db, tenant.id);
       const [current] = await db
         .select()
         .from(tenantMembers)
         .where(and(eq(tenantMembers.tenantId, tenant.id), eq(tenantMembers.userId, input.userId)));
       if (!current) throw new UserError('Unknown member.');
-      if (current.role === 'owner' && role !== 'owner' && (await ownerCount(tenant.id)) <= 1) {
+      if (current.role === 'owner' && role !== 'owner' && owners <= 1) {
         throw new UserError('This is the last owner. Make someone else an owner first.');
       }
       await db
@@ -101,12 +113,13 @@ export const removeTenantMember = action(
   async (input: { tenantSlug: string; userId: string }) => {
     const { tenant } = await requireTenantRole(input.tenantSlug, 'owner');
     return userDb(async (db) => {
+      const owners = await lockedOwnerCount(db, tenant.id);
       const [current] = await db
         .select()
         .from(tenantMembers)
         .where(and(eq(tenantMembers.tenantId, tenant.id), eq(tenantMembers.userId, input.userId)));
       if (!current) throw new UserError('Unknown member.');
-      if (current.role === 'owner' && (await ownerCount(tenant.id)) <= 1) {
+      if (current.role === 'owner' && owners <= 1) {
         throw new UserError('This is the last owner. Make someone else an owner first.');
       }
       // Database sessions mean the removal takes effect on their next request.
@@ -119,18 +132,22 @@ export const removeTenantMember = action(
   },
 );
 
-/** Leaving a portrait yourself (any role) — same last-owner rule. */
+/**
+ * Leaving a portrait yourself (any role) — same last-owner rule, counted in
+ * the same transaction as the removal, so leaving cannot race an owner
+ * demoting you (see lockedOwnerCount).
+ */
 export const leaveTenant = action(async (input: { tenantSlug: string }) => {
   const { tenant, role } = await requireTenantRole(input.tenantSlug, 'viewer');
   const userId = await requireUserId();
-  if (role === 'owner' && (await ownerCount(tenant.id)) <= 1) {
-    throw new UserError('You are the last owner. Make someone else an owner first.');
-  }
-  await userDb((db) =>
-    db
+  await userDb(async (db) => {
+    if (role === 'owner' && (await lockedOwnerCount(db, tenant.id)) <= 1) {
+      throw new UserError('You are the last owner. Make someone else an owner first.');
+    }
+    await db
       .delete(tenantMembers)
-      .where(and(eq(tenantMembers.tenantId, tenant.id), eq(tenantMembers.userId, userId))),
-  );
+      .where(and(eq(tenantMembers.tenantId, tenant.id), eq(tenantMembers.userId, userId)));
+  });
   revalidatePath('/account');
 });
 
@@ -142,17 +159,32 @@ async function orgFromSlug(slug: string) {
   return org;
 }
 
-async function orgOwnerCount(organizationId: string): Promise<number> {
-  const [row] = await systemDb()
-    .select({ n: sql<number>`count(*)::int` })
+/**
+ * An organization's owners, counted on the action's own transaction with
+ * their rows locked until it ends — the organization-level twin of
+ * lockedOwnerCount, for the same two reasons: no second pooled connection
+ * while the transaction holds one, and two owners removing each other at
+ * once are serialized instead of both going ahead. No definer function is
+ * needed: the caller is an organization owner, whose own role reads and
+ * locks every membership row of the organization
+ * (organization_members_member_read and _owner_write, migration 0003).
+ * Locked in user_id order, as lock_tenant_owners locks them, so the two never
+ * take overlapping rows in opposite orders. Taken before the member is read,
+ * for the reason lockedOwnerCount gives.
+ */
+async function lockedOrgOwnerCount(db: DbExecutor, organizationId: string): Promise<number> {
+  const owners = await db
+    .select({ userId: organizationMembers.userId })
     .from(organizationMembers)
     .where(
       and(
         eq(organizationMembers.organizationId, organizationId),
         eq(organizationMembers.role, 'owner'),
       ),
-    );
-  return row?.n ?? 0;
+    )
+    .orderBy(organizationMembers.userId)
+    .for('update');
+  return owners.length;
 }
 
 export const inviteOrgMember = action(
@@ -193,6 +225,7 @@ export const removeOrgMember = action(async (input: { orgSlug: string; userId: s
   const org = await orgFromSlug(input.orgSlug);
   await requireOrgRole(org.id, ['owner']);
   return userDb(async (db) => {
+    const owners = await lockedOrgOwnerCount(db, org.id);
     const [current] = await db
       .select()
       .from(organizationMembers)
@@ -203,7 +236,7 @@ export const removeOrgMember = action(async (input: { orgSlug: string; userId: s
         ),
       );
     if (!current) throw new UserError('Unknown member.');
-    if (current.role === 'owner' && (await orgOwnerCount(org.id)) <= 1) {
+    if (current.role === 'owner' && owners <= 1) {
       throw new UserError('This is the last organization owner. Invite another owner first.');
     }
     await db

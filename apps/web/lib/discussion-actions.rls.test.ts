@@ -18,12 +18,11 @@ import { onOneConnection } from '../test/one-connection';
 // Server actions revalidate pages; there is no Next request here.
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }));
 
-// Whoever `signedIn` names is the request's user.
+// Whoever `signedIn` names is the request's user. The session is read
+// through the pooled client, as in production (test/database-session.ts).
 let signedIn: string | null = null;
 vi.mock('@/auth', () => ({
-  auth: vi.fn(async () =>
-    signedIn ? { user: { id: signedIn, email: `${signedIn}@example.org`, displayName: null, isStaff: false } } : null,
-  ),
+  auth: vi.fn(async () => (await import('../test/database-session')).databaseSession(signedIn)),
 }));
 
 const hasDb = Boolean(process.env.DATABASE_URL);
@@ -346,5 +345,44 @@ describe.skipIf(!hasDb)('comment moderation under row-level security', () => {
       (await import('./discussion-actions')).moderateComment({ tenantSlug, commentId: declinedId, action: 'approve' }),
     );
     expect(moderated).toEqual({ ok: false, error: 'This needs the moderator role on this portrait.' });
+  });
+
+  it('votes and moderates on their own transactions, reading the actor there without a second connection', async () => {
+    // Both read the signed-in person inside their transaction (requireUserId,
+    // and getAuth for dev mode). In a server action that was a fresh session
+    // read on the pooled client every time, waiting for a second connection
+    // while the transaction held the first; now the transaction answers with
+    // the identity it was opened as (lib/auth.ts transactionAuth).
+    const m = await import('@deep-fryer/db');
+    const { and, eq } = await import('drizzle-orm');
+    signedIn = people.moderator;
+    const posted = await (await import('./discussion-actions')).postComment({ tenantSlug, dimensionId, body: 'Meeting notes are posted.' });
+    const id = (posted as { ok: true; data: { commentId: string } }).data.commentId;
+
+    signedIn = people.neighbor;
+    const voted = await onOneConnection(async () =>
+      (await import('./discussion-actions')).voteComment({ tenantSlug, commentId: id, vote: 1 }),
+    );
+    expect(voted).toEqual({ ok: true, data: undefined });
+    const votes = await m
+      .getDb()
+      .select({ vote: m.commentVotes.vote })
+      .from(m.commentVotes)
+      .where(and(eq(m.commentVotes.commentId, id), eq(m.commentVotes.userId, people.neighbor)));
+    expect(votes).toEqual([{ vote: 1 }]);
+
+    // The moderator restores the resident's comment (removed above), then removes it again.
+    signedIn = people.moderator;
+    const moderate = (action: 'remove' | 'restore') =>
+      onOneConnection(async () =>
+        (await import('./discussion-actions')).moderateComment({ tenantSlug, commentId: heldId, action, reason: 'one connection' }),
+      );
+    expect(await moderate('restore')).toEqual({ ok: true, data: { state: 'visible' } });
+    expect(await moderate('remove')).toEqual({ ok: true, data: { state: 'removed' } });
+    expect((await actionLog(heldId)).slice(-2)).toEqual([
+      ['restore', people.moderator, 'one connection'],
+      ['remove', people.moderator, 'one connection'],
+    ]);
+    signedIn = null;
   });
 });

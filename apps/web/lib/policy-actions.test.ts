@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { onOneConnection } from '../test/one-connection';
 
 /**
  * createPolicyAnalysis and cancelPolicyAnalysis — the research quota gate
@@ -31,6 +32,13 @@ vi.mock('@deep-fryer/research', async (orig) => {
 });
 // Server actions revalidate pages; there is no Next request here.
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }));
+// For the one signed-in test: whoever `signedIn` names is the request's
+// user, the session read through the pooled client as in production
+// (test/database-session.ts). Dev mode never calls auth().
+let signedIn: string | null = null;
+vi.mock('@/auth', () => ({
+  auth: vi.fn(async () => (await import('../test/database-session')).databaseSession(signedIn)),
+}));
 
 const BRIEF =
   'Expand the city’s cooling-center network to every community district, open from June through September, with extended hours during heat advisories.';
@@ -237,6 +245,47 @@ describe.skipIf(!hasDb)('createPolicyAnalysis', () => {
     const [row] = await analysesOf(tenant.id);
     expect(row!.sourceUrl).toBeNull();
     expect(await jobFor(row!.id)).not.toBeNull();
+  });
+
+  it('starts and cancels an analysis for a signed-in editor, each in one transaction on one connection', async () => {
+    // Both audit inside a system-context transaction, and audit() reads its
+    // actor with getAuth(): in a server action that was a session read on
+    // the pooled client, waiting for a second connection while the
+    // transaction held the first — and the subscription row lock, holding up
+    // every other research spend of the organization. Such a transaction has
+    // no idle timeout, so nothing ever ended the wait.
+    const m = await import('@deep-fryer/db');
+    const { tenant } = await portrait(2);
+    const [editor] = await m.getDb().insert(m.users).values({ email: `${uniq()}@editor.example.gov` }).returning();
+    await m.getDb().insert(m.tenantMembers).values({ tenantId: tenant.id, userId: editor!.id, role: 'editor' });
+    cleanup.push(async () => {
+      const { eq } = await import('drizzle-orm');
+      await m.getDb().delete(m.users).where(eq(m.users.id, editor!.id));
+    });
+    process.env.AUTH_SECRET = 'test-secret';
+    signedIn = editor!.id;
+    try {
+      const created = await onOneConnection(async () =>
+        (await import('./policy-actions')).createPolicyAnalysis({ tenantSlug: tenant.slug, title: 'Signed in', brief: BRIEF }),
+      );
+      expect(created).toMatchObject({ ok: true });
+      const { id } = (created as { ok: true; data: { id: string } }).data;
+      await jobFor(id);
+      const cancelled = await onOneConnection(async () =>
+        (await import('./policy-actions')).cancelPolicyAnalysis({ tenantSlug: tenant.slug, id }),
+      );
+      expect(cancelled).toEqual({ ok: true, data: { id } });
+    } finally {
+      delete process.env.AUTH_SECRET;
+      signedIn = null;
+    }
+    expect((await analysesOf(tenant.id))[0]).toMatchObject({ status: 'failed', requestedBy: editor!.id });
+    expect((await auditOf(tenant.id)).map((a) => [a.action, a.userId]).sort()).toEqual(
+      [
+        ['cancel', editor!.id],
+        ['create', editor!.id],
+      ].sort(),
+    );
   });
 
   it('refuses an unknown portrait', async () => {

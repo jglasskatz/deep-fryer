@@ -16,7 +16,7 @@ import {
 import { UserError } from './action-result';
 import { emailDeliverable, sendEmail, simpleHtml } from './email';
 import { appUrl } from './env';
-import type { OrgRole } from './auth';
+import { ORG_ROLE_RANK, ROLE_RANK, type OrgRole } from './auth';
 import { systemDb } from './db';
 
 /**
@@ -194,7 +194,14 @@ export async function liveInvitation(token: string): Promise<InvitationView | nu
   return { invitation, targetName: o.name, targetHref: `/o/${o.slug}` };
 }
 
-/** Accept: email must match; membership upserted and the invitation consumed atomically. */
+/**
+ * Accept: email must match; membership upserted and the invitation consumed
+ * atomically. Accepting only ever adds authority: someone who already holds
+ * the invited role or a higher one keeps theirs. Otherwise an owner who
+ * accepted, say, an editor invitation sent before they were promoted would
+ * be demoted by it — past the last-owner rule, which only guards the member
+ * actions (lib/member-actions.ts).
+ */
 export async function acceptInvitation(
   token: string,
   user: { id: string; email: string | null },
@@ -215,6 +222,12 @@ export async function acceptInvitation(
       .returning();
     if (!claimed) throw new UserError('This invitation was already used.');
     if (invitation.tenantId) {
+      const [held] = await tx
+        .select({ role: tenantMembers.role })
+        .from(tenantMembers)
+        .where(and(eq(tenantMembers.tenantId, invitation.tenantId), eq(tenantMembers.userId, user.id)))
+        .for('update');
+      if (held && ROLE_RANK[held.role] >= ROLE_RANK[invitation.role as Role]) return;
       await tx
         .insert(tenantMembers)
         .values({
@@ -228,6 +241,17 @@ export async function acceptInvitation(
           set: { role: invitation.role as Role, joinedAt: new Date() },
         });
     } else {
+      const [held] = await tx
+        .select({ role: organizationMembers.role })
+        .from(organizationMembers)
+        .where(
+          and(
+            eq(organizationMembers.organizationId, invitation.organizationId!),
+            eq(organizationMembers.userId, user.id),
+          ),
+        )
+        .for('update');
+      if (held && ORG_ROLE_RANK[held.role] >= ORG_ROLE_RANK[invitation.role as OrgRole]) return;
       await tx
         .insert(organizationMembers)
         .values({

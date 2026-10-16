@@ -1,5 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import Anthropic from '@anthropic-ai/sdk';
+import { onOneConnection } from '../test/one-connection';
 
 /**
  * saveApiKey / removeApiKey (SPEC-v7 §4) against real Postgres, as the
@@ -18,6 +19,14 @@ const OTHER_KEY = `sk-ant-api03-${'Bn2wQ'.repeat(18)}-Zz9P`;
 
 // Server actions revalidate pages; there is no Next request here.
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }));
+
+// For the signed-in block at the end: whoever `signedIn` names is the
+// request's user, the session read through the pooled client as in
+// production (test/database-session.ts). Dev mode never calls auth().
+let signedIn: string | null = null;
+vi.mock('@/auth', () => ({
+  auth: vi.fn(async () => (await import('../test/database-session')).databaseSession(signedIn)),
+}));
 
 describe.skipIf(!hasDb)('saveApiKey and removeApiKey', () => {
   const saved = { AUTH_SECRET: process.env.AUTH_SECRET, DF_SECRETS_KEY: process.env.DF_SECRETS_KEY };
@@ -201,5 +210,68 @@ describe.skipIf(!hasDb)('organization_api_keys under row-level security', () => 
 
     expect(await as(outsider!.id, (tx) => m.deleteOrganizationApiKey(tx, org.id))).toBeNull();
     expect(await as(owner!.id, (tx) => m.deleteOrganizationApiKey(tx, org.id))).toBe('Cd34');
+  });
+});
+
+/**
+ * The same actions for a signed-in organization owner (not dev mode), each on
+ * a one-connection pool (test/one-connection.ts). A key change is audited on
+ * every portrait of the organization inside the action's userDb transaction,
+ * and audit() reads its actor with getAuth(): in a server action that was a
+ * session read on the pooled client per portrait, each waiting for a second
+ * connection while the transaction held the first.
+ */
+describe.skipIf(!hasDb)('saveApiKey and removeApiKey as a signed-in owner', () => {
+  const saved = { AUTH_SECRET: process.env.AUTH_SECRET, DF_SECRETS_KEY: process.env.DF_SECRETS_KEY };
+  const cleanup: (() => Promise<unknown>)[] = [];
+  beforeAll(() => {
+    process.env.AUTH_SECRET = 'test-secret';
+    process.env.DF_SECRETS_KEY = randomSecretsKey();
+  });
+  afterEach(() => vi.restoreAllMocks());
+  afterAll(async () => {
+    signedIn = null;
+    for (const fn of cleanup.reverse()) await fn();
+    for (const [k, v] of Object.entries(saved)) {
+      if (v === undefined) delete process.env[k];
+      else process.env[k] = v;
+    }
+  });
+
+  it('saves and removes the key on their own transactions, auditing each portrait as the owner', async () => {
+    const m = await import('@deep-fryer/db');
+    const { eq, inArray } = await import('drizzle-orm');
+    const db = m.getDb();
+    const [owner] = await db.insert(m.users).values({ email: `${uniq()}@owner.example.gov` }).returning();
+    const org = await m.provisionOrganization(db, { slug: uniq(), name: 'Signed-in City', startTrial: true, ownerUserId: owner!.id });
+    const { tenant: a } = await m.provisionTenant(db, { slug: uniq(), name: 'Signed-in City', organizationId: org.id });
+    const { tenant: b } = await m.provisionTenant(db, { slug: uniq(), name: 'Signed-in North', organizationId: org.id });
+    cleanup.push(async () => {
+      await db.delete(m.tenants).where(eq(m.tenants.organizationId, org.id));
+      await db.delete(m.organizations).where(eq(m.organizations.id, org.id));
+      await db.delete(m.users).where(eq(m.users.id, owner!.id));
+    });
+    vi.spyOn(Anthropic.Models.prototype, 'list').mockImplementation(() => Promise.resolve({ data: [] }) as never);
+
+    signedIn = owner!.id;
+    const saveRes = await onOneConnection(async () => (await import('./api-key-actions')).saveApiKey(org.slug, API_KEY));
+    expect(saveRes).toMatchObject({ ok: true, data: { keyHint: 'Jk8M' } });
+    const removeRes = await onOneConnection(async () => (await import('./api-key-actions')).removeApiKey(org.slug));
+    expect(removeRes).toEqual({ ok: true, data: { removed: true } });
+
+    const log = await db
+      .select()
+      .from(m.auditLog)
+      .where(inArray(m.auditLog.tenantId, [a.id, b.id]))
+      .then((rows) => rows.filter((r) => r.entity === 'organization_api_key'));
+    expect(log.map((l) => [l.tenantId, l.action, l.userId]).sort()).toEqual(
+      [
+        [a.id, 'save', owner!.id],
+        [b.id, 'save', owner!.id],
+        [a.id, 'remove', owner!.id],
+        [b.id, 'remove', owner!.id],
+      ].sort(),
+    );
+    signedIn = null;
   });
 });

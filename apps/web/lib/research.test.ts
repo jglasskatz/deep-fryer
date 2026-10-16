@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { onOneConnection } from '../test/one-connection';
 
 const hasDb = Boolean(process.env.DATABASE_URL);
 const uniq = () => `t-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
@@ -51,5 +52,27 @@ describe.skipIf(!hasDb)('applyRun — the research quota gate', () => {
     await db.delete(researchRuns).where(eq(researchRuns.tenantId, tenant.id));
     await db.delete(tenants).where(eq(tenants.id, tenant.id));
     await db.delete(organizations).where(eq(organizations.id, org.id));
+  });
+});
+
+describe.skipIf(!hasDb)('createPlannedRun', () => {
+  it('plans a run on its own transaction, reading the portrait config there too', async () => {
+    // Planning used to read the config through tenantConfigMap — a second
+    // userDb transaction on another pooled connection, while its own held
+    // one: on a one-connection pool a single request waited forever
+    // (test/one-connection.ts).
+    const { getDb, provisionTenant, organizations, tenants, researchRuns } = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const db = getDb();
+    const { tenant } = await provisionTenant(db, { slug: uniq(), name: 'One Connection' });
+    try {
+      const planned = await onOneConnection(async () => (await import('./research')).createPlannedRun({ tenantId: tenant.id }));
+      expect(planned.sessionCount).toBe(22);
+      expect(planned.run.configSnapshot).toMatchObject({ region: expect.anything(), threshold_overrides: {} });
+    } finally {
+      await db.delete(researchRuns).where(eq(researchRuns.tenantId, tenant.id));
+      await db.delete(tenants).where(eq(tenants.id, tenant.id));
+      await db.delete(organizations).where(eq(organizations.id, tenant.organizationId));
+    }
   });
 });

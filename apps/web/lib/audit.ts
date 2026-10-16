@@ -9,6 +9,11 @@ import { systemDb } from './db';
  * commit or roll back together; under the user role the audit_log insert
  * policy additionally requires the actor to be a member of the tenant.
  * Without `db` the entry is written in the system context.
+ *
+ * The transaction must be one userDb or systemTransaction opened (lib/db.ts):
+ * they hold the request's identity, so getAuth() below answers without a
+ * query. Inside a bare systemDb().transaction it would read the session on a
+ * second pooled connection while the transaction holds the first.
  */
 export async function audit(
   tenantId: string,

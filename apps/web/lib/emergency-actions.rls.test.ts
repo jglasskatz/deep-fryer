@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { onOneConnection } from '../test/one-connection';
 import { setPortraitFeatures } from './test-features';
 
 /**
@@ -11,12 +12,11 @@ import { setPortraitFeatures } from './test-features';
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }));
 
-// Whoever `signedIn` names is the request's user.
+// Whoever `signedIn` names is the request's user. The session is read
+// through the pooled client, as in production (test/database-session.ts).
 let signedIn: string | null = null;
 vi.mock('@/auth', () => ({
-  auth: vi.fn(async () =>
-    signedIn ? { user: { id: signedIn, email: `${signedIn}@example.gov`, displayName: null, isStaff: false } } : null,
-  ),
+  auth: vi.fn(async () => (await import('../test/database-session')).databaseSession(signedIn)),
 }));
 
 const hasDb = Boolean(process.env.DATABASE_URL);
@@ -140,5 +140,66 @@ describe.skipIf(!hasDb)('emergency actions under row-level security', () => {
     // Published by the editor above; the draft stays staff-only.
     expect(view!.hazards.map((h) => h.slug)).toEqual(['coastal-storm']);
     expect(view!.sync.stale).toBe(true);
+  });
+
+  it('runs every write on its own transaction, audit entries included', async () => {
+    // Each action audits inside its userDb transaction, and audit() reads its
+    // actor with getAuth(). In a server action that was a fresh session read
+    // on the pooled client (React's cache() does not memoize there), waiting
+    // for a second connection while the transaction held the first; on a
+    // one-connection pool, one request waited forever (test/one-connection.ts).
+    // saveEmergencyConfig also read the author with getAuth() itself.
+    type Actions = typeof import('./emergency-actions');
+    const run = <T>(fn: (a: Actions) => Promise<T>) => onOneConnection(async () => fn(await import('./emergency-actions')));
+    const idOf = (res: unknown) => {
+      expect(res).toMatchObject({ ok: true });
+      return (res as { ok: true; data: { id: string } }).data.id;
+    };
+    const ok = { ok: true, data: undefined };
+
+    signedIn = people.owner;
+    expect(await run((a) => a.saveEmergencyConfig({ tenantSlug, config: { nws_zones: ['NYC061'], info_phone: '311' } }))).toMatchObject({
+      ok: true,
+    });
+
+    signedIn = people.editor;
+    const flood = { slug: 'one-connection-flood', name: 'Flooding', kind: 'flooding' as const, likelihood: 4, severity: 4 };
+    const hazardId = idOf(await run((a) => a.createHazard({ tenantSlug, hazard: flood })));
+    expect(await run((a) => a.updateHazard({ tenantSlug, id: hazardId, hazard: { ...flood, slug: 'one-connection-floods' } }))).toEqual(ok);
+    expect(await run((a) => a.setEmergencyPublished({ tenantSlug, entity: 'hazard', id: hazardId, published: true }))).toEqual(ok);
+
+    const plan = { title: 'Flood plan', agency: 'Emergency Management', url: 'https://example.gov/flood', hazard_slugs: ['one-connection-floods'] };
+    const planId = idOf(await run((a) => a.createPlan({ tenantSlug, plan })));
+    expect(await run((a) => a.updatePlan({ tenantSlug, id: planId, plan: { ...plan, title: 'Flood mitigation plan' } }))).toEqual(ok);
+
+    const resource = { name: 'Flood hotline', kind: 'hotline' as const, phone: '311', hazard_slugs: ['one-connection-floods'] };
+    const resourceId = idOf(await run((a) => a.createResource({ tenantSlug, resource })));
+    expect(await run((a) => a.updateResource({ tenantSlug, id: resourceId, resource: { ...resource, name: 'Flood help line' } }))).toEqual(ok);
+
+    expect(await run((a) => a.deleteResource({ tenantSlug, id: resourceId }))).toEqual(ok);
+    expect(await run((a) => a.deletePlan({ tenantSlug, id: planId }))).toEqual(ok);
+    expect(await run((a) => a.deleteHazard({ tenantSlug, id: hazardId }))).toEqual(ok);
+
+    const m = await import('@deep-fryer/db');
+    const { inArray } = await import('drizzle-orm');
+    const log = await m
+      .getDb()
+      .select()
+      .from(m.auditLog)
+      .where(inArray(m.auditLog.entityId, [hazardId, planId, resourceId]))
+      .orderBy(m.auditLog.id);
+    expect(log.map((l) => [l.entity, l.action, l.userId])).toEqual([
+      ['hazard', 'create', people.editor],
+      ['hazard', 'update', people.editor],
+      ['hazard', 'publish', people.editor],
+      ['emergency_plan', 'create', people.editor],
+      ['emergency_plan', 'update', people.editor],
+      ['emergency_resource', 'create', people.editor],
+      ['emergency_resource', 'update', people.editor],
+      ['emergency_resource', 'delete', people.editor],
+      ['emergency_plan', 'delete', people.editor],
+      ['hazard', 'delete', people.editor],
+    ]);
+    signedIn = null;
   });
 });

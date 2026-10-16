@@ -340,8 +340,15 @@ export const ar: Messages = {
     sendAnother: 'إرسال المزيد',
     /** Above the form when fields need fixing; each field also shows its own message. */
     invalid: 'يُرجى مراجعة الحقول المشار إليها أدناه.',
-    websiteInvalid: 'أدخلوا عنوان الموقع كاملًا، بدءًا بـ https://، مثل https://example.org.',
-    phoneInvalid: 'استخدموا الأرقام والفواصل المعتادة فقط، مثل (212) 555-0100، من دون رقم داخلي أو أي كلمات أخرى.',
+    /**
+     * The bare "https://" here and the phone example below sit inside a
+     * left-to-right isolate (\u2066 … \u2069): on this right-to-left page the
+     * browser otherwise shows them as "//:https" and "0100-555 (212)", the
+     * wrong way round for someone copying the format.
+     */
+    websiteInvalid: 'أدخلوا عنوان الموقع الإلكتروني كاملًا، على أن يبدأ بـ \u2066https://\u2069، مثل https://example.org.',
+    phoneInvalid:
+      'استخدموا الأرقام والفواصل المعتادة فقط، مثل \u2066(212) 555-0100\u2069، من دون رقم داخلي أو أي كلمات أخرى.',
     tooFast: 'كان ذلك سريعًا جدًا. يُرجى الانتظار قليلًا، ثم الإرسال مرة أخرى.',
     rateLimited: 'وصلتنا اليوم طلبات كثيرة جدًا من هنا. يُرجى المحاولة مرة أخرى لاحقًا.',
     expired: 'انتهت صلاحية هذا النموذج. أعيدوا تحميل الصفحة وحاولوا مرة أخرى.',

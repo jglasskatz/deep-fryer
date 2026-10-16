@@ -352,7 +352,7 @@ export const fr: Messages = {
     sending: 'Envoi en cours…',
     sent: 'Merci. Le personnel verra qu’une personne a demandé cette langue : {language}.',
     limited:
-      'Trop de demandes sont venues de ce réseau au cours de la dernière heure : celle-ci n’a donc pas été enregistrée. Veuillez réessayer plus tard.',
+      'Trop de demandes ont été envoyées depuis ce réseau au cours de la dernière heure ; la vôtre n’a donc pas été enregistrée. Veuillez réessayer plus tard.',
     notNeeded: 'Ce portrait vient d’être traduit. Rechargez la page pour choisir votre langue.',
     failed: 'Nous n’avons pas pu envoyer la demande. Veuillez réessayer.',
   },

@@ -328,8 +328,17 @@ export const ur: Messages = {
     sendAnother: 'ایک اور بھیجیں',
     /** Above the form when fields need fixing; each field also shows its own message. */
     invalid: 'براہ کرم نیچے نشان زدہ خانے دیکھیں۔',
-    websiteInvalid: 'پورا ویب ایڈریس لکھیں جو https:// سے شروع ہو — مثلاً https://example.org۔',
-    phoneInvalid: 'صرف ہندسے اور عام علامات استعمال کریں، جیسے (212) 555-0100 — ایکسٹینشن یا کوئی اور لفظ نہ لکھیں۔',
+    /**
+     * The bare "https://" here and the phone example below sit inside a
+     * left-to-right isolate (\u2066 … \u2069), as in the Arabic catalog: on
+     * this right-to-left page the browser otherwise shows them as "//:https"
+     * and "0100-555 (212)", the wrong way round for someone copying the format.
+     * The controls are escapes rather than literal characters so they stay
+     * visible in editors and diffs.
+     */
+    websiteInvalid: 'پورا ویب ایڈریس لکھیں جو \u2066https://\u2069 سے شروع ہو — مثلاً https://example.org۔',
+    phoneInvalid:
+      'صرف ہندسے اور عام علامات استعمال کریں، جیسے \u2066(212) 555-0100\u2069 — ایکسٹینشن یا کوئی اور لفظ نہ لکھیں۔',
     tooFast: 'آپ نے بہت جلدی بھیج دیا۔ براہ کرم تھوڑا انتظار کریں، پھر دوبارہ بھیجیں۔',
     rateLimited: 'آج یہاں سے بہت زیادہ بار بھیجا جا چکا ہے۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
     expired: 'اس فارم کی میعاد ختم ہو گئی ہے۔ صفحہ دوبارہ لوڈ کریں اور پھر سے کوشش کریں۔',
