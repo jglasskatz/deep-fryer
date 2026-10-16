@@ -48,7 +48,8 @@ export const pl: Messages = {
     year: 'Rok: {year}',
     source: 'Źródło: {source}',
     fullPortrait: 'Pełny portret i dyskusja',
-    clickForDetails: 'Click for details', // INTERIM ENGLISH (SPEC-v7) — to be translated
+    /** The hint under the doughnut's hover tooltip. */
+    clickForDetails: 'Szczegóły po kliknięciu',
     level: {
       unknown: 'Stan nieznany',
       noProblem: 'Brak problemów',
@@ -122,23 +123,23 @@ export const pl: Messages = {
     population: 'ludność: {n}',
     clickHint: 'Po wybraniu segmentu wyświetlą się wskaźniki, dowody, działania i dyskusja.',
     demoHint: 'Dane demonstracyjne — aby wyświetlić rzeczywiste treści, należy ustawić DATABASE_URL i opublikować wersje.',
-    // INTERIM ENGLISH (SPEC-v6) — to be translated
     /** The visible list of dimensions under the doughnut (SPEC-v6 §2.1). */
-    exploreTitle: 'Explore the dimensions',
-    exploreIntro: 'Each dimension has its data, sources, ways to get involved, and a discussion.',
-    exploreIntroCore: 'Each dimension has its data, its sources, and what you can do.',
-    // INTERIM ENGLISH (SPEC-v7) — to be translated
+    exploreTitle: 'Przegląd wymiarów',
+    exploreIntro: 'Każdy wymiar ma swoje dane, źródła, sposoby zaangażowania się i dyskusję.',
+    /** The list's intro when the portrait has no discussion (SPEC-v7 §3). */
+    exploreIntroCore: 'Każdy wymiar ma swoje dane, źródła i informacje o tym, co można zrobić.',
     /** The detail panel beside the doughnut (SPEC-v7 §2) — the Santa Cruz core view. */
-    panelEmpty: 'Select a dimension on the doughnut or in the list to see its data, its sources, and what you can do.',
-    panelClose: 'Close',
-    panelSelected: 'Showing {name}',
-    openFull: 'Open the full page',
-    openFullDiscussion: 'Open the full page and discussion',
-    legendTitle: 'How to read the doughnut',
-    legendSafe: 'Green ring: the safe and just space',
-    legendShortfall: 'Red toward the centre: a shortfall below the social foundation',
-    legendOvershoot: 'Red outside the ring: an overshoot of the ecological ceiling',
-    legendNoData: 'Grey: no data yet',
+    panelEmpty:
+      'Po wybraniu wymiaru na obwarzanku lub na liście wyświetlą się jego dane, źródła i informacje o tym, co można zrobić.',
+    panelClose: 'Zamknij',
+    panelSelected: 'Wyświetlany wymiar: {name}',
+    openFull: 'Otwórz pełną stronę',
+    openFullDiscussion: 'Otwórz pełną stronę i dyskusję',
+    legendTitle: 'Jak czytać obwarzanek',
+    legendSafe: 'Zielony pierścień — bezpieczna i sprawiedliwa przestrzeń',
+    legendShortfall: 'Kolor czerwony w stronę środka — niedobór, czyli poziom poniżej fundamentu społecznego',
+    legendOvershoot: 'Kolor czerwony poza pierścieniem — przekroczenie pułapu ekologicznego',
+    legendNoData: 'Kolor szary — na razie brak danych',
   },
   dimension: {
     updated: 'zaktualizowano: {date}',
@@ -152,9 +153,8 @@ export const pl: Messages = {
     dataGap: 'Luka w danych',
     searchedAt: 'Gdzie szukano: {scales}',
     whatYouCanDo: 'Co można zrobić',
-    // INTERIM ENGLISH (SPEC-v6) — to be translated
     /** Short actions listed after the dimension's involvement listings. */
-    moreYouCanDo: 'More things you can do',
+    moreYouCanDo: 'Co jeszcze można zrobić',
   },
   discussion: {
     title: 'Dyskusja',
@@ -181,18 +181,17 @@ export const pl: Messages = {
     lock: 'zablokuj',
     removeReason: 'Powód usunięcia (zostanie zapisany w dzienniku widocznym dla personelu):',
     lockReason: 'Powód zablokowania tego wątku:',
-    // INTERIM ENGLISH (SPEC-v6) — to be translated
     /** A first comment held for a moderator (SPEC-v6 §3.1). Shown to its author and to moderators only. */
-    awaitingApproval: 'Awaiting approval',
-    awaitingNote: 'Only you and the moderators can see this until it is approved.',
-    approve: 'approve',
-    decline: 'decline',
-    /** A held comment moderators did not approve; only its author sees it. */
-    declined: 'Not approved',
-    declinedNote: 'The moderators did not approve this comment. Only you and the moderators can see it.',
+    awaitingApproval: 'Czeka na zatwierdzenie',
+    awaitingNote: 'Do czasu zatwierdzenia ten komentarz widzą tylko Państwo i moderatorzy.',
+    approve: 'zatwierdź',
+    decline: 'odrzuć',
+    /** A held comment moderators did not approve; only its author and the moderators see it. */
+    declined: 'Niezatwierdzony',
+    declinedNote: 'Moderatorzy nie zatwierdzili tego komentarza. Widzą go tylko Państwo i moderatorzy.',
     /** Label beside a comment written by the portrait's team (SPEC-v6 §3.3). */
-    staff: 'Staff',
-    staffTitle: 'Member of this portrait’s team',
+    staff: 'Zespół',
+    staffTitle: 'Osoba z zespołu, który prowadzi ten portret',
   },
   progress: {
     metaTitle: 'Postępy · {name}',
@@ -261,112 +260,116 @@ export const pl: Messages = {
     title: 'Jak się zaangażować',
     empty:
       'W miarę rozwoju portretu pojawi się tu lista lokalnych organizacji. Tymczasem na stronie każdego wymiaru znajdują się konkretne działania.',
-    // INTERIM ENGLISH (SPEC-v6) — to be translated
-    intro: 'Programs, organizations, and public bodies where you can take part, by dimension. Staff check each listing before it appears here.',
+    intro:
+      'Programy, organizacje i instytucje publiczne, w których działaniach można wziąć udział — według wymiarów. Pracownicy sprawdzają każdy wpis, zanim pojawi się on tutaj.',
     /** Organizations working on the portrait's data (research contacts), when any are published. */
-    partnersTitle: 'Organizations working on this data',
+    partnersTitle: 'Organizacje, które pracują z tymi danymi',
   },
-  // INTERIM ENGLISH (SPEC-v6) — to be translated
   /** Ways to get involved and the organization form (SPEC-v6 §4). */
   involvement: {
-    title: 'How to get involved',
+    title: 'Jak się zaangażować',
     kind: {
-      volunteer: 'Volunteer',
-      services: 'Get help or enroll',
-      civic: 'Have your say',
-      organize: 'Join a group',
-      other: 'Get involved',
+      volunteer: 'Wolontariat',
+      services: 'Pomoc i zapisy',
+      civic: 'Wyrażanie opinii',
+      organize: 'Działanie w grupie',
+      other: 'Inne formy zaangażowania',
     },
-    website: 'Website',
-    call: 'Call {phone}',
+    website: 'Strona internetowa',
+    call: 'Zadzwoń: {phone}',
     /** {date} is a formatted date. */
-    checked: 'Link checked {date}',
-    forEveryDimension: 'For every dimension',
-    filterLabel: 'Dimension',
-    filterAll: 'All dimensions',
-    none: 'No listings for this dimension yet.',
-    noneAtAll: 'No listings yet.',
-    contentInEnglish: 'Listings are written by staff and published in English.',
-    formTitle: 'Know a way to get involved?',
+    checked: 'Link sprawdzony: {date}',
+    forEveryDimension: 'Dla wszystkich wymiarów',
+    filterLabel: 'Wymiar',
+    filterAll: 'Wszystkie wymiary',
+    none: 'Dla tego wymiaru nie ma jeszcze wpisów.',
+    noneAtAll: 'Nie ma jeszcze wpisów.',
+    contentInEnglish: 'Wpisy są przygotowywane przez pracowników i publikowane w języku angielskim.',
+    formTitle: 'Znają Państwo inny sposób na zaangażowanie?',
     /** On a dimension page; {dimension} is the dimension's name. */
     formIntro:
-      'Is your organization a good way for people to get involved with {dimension}? Or do you have a suggestion? Tell staff — they review every submission before anything is published.',
+      'Czy Państwa organizacja daje ludziom dobrą możliwość zaangażowania się w sprawy związane z wymiarem „{dimension}”? A może mają Państwo sugestię? Prosimy napisać do pracowników — sprawdzają oni każde zgłoszenie, zanim cokolwiek zostanie opublikowane.',
     formIntroGeneral:
-      'Is your organization a good way for people to get involved? Or do you have a suggestion? Tell staff — they review every submission before anything is published.',
-    open: 'Suggest a way to get involved',
-    kindLegend: 'What are you sharing?',
-    kindListing: 'My organization is a way to get involved',
-    kindSuggestion: 'A suggestion for how people can get involved',
-    dimensionLabel: 'Dimension',
-    dimensionAny: 'Several, or not sure',
-    orgName: 'Organization or group name',
-    about: 'Who you are',
-    aboutHint: 'What your organization does, and who it serves.',
-    pitchListing: 'Why is it a good way for people to get involved?',
-    pitchListingHint: 'What can people do with you — volunteer, join, attend, get help?',
-    pitchSuggestion: 'Your suggestion',
-    pitchSuggestionHint: 'How could people get involved with this?',
-    websiteLabel: 'Website',
-    contactLegend: 'How staff can reach you',
-    contactName: 'Your name',
-    email: 'Email',
-    phone: 'Phone',
-    optional: '(optional)',
-    privacy: 'Your contact details go only to staff and are never published.',
-    send: 'Send to staff',
-    sending: 'Sending…',
+      'Czy Państwa organizacja daje ludziom dobrą możliwość zaangażowania się? A może mają Państwo sugestię? Prosimy napisać do pracowników — sprawdzają oni każde zgłoszenie, zanim cokolwiek zostanie opublikowane.',
+    open: 'Zaproponuj sposób zaangażowania',
+    kindLegend: 'Czym chcą się Państwo podzielić?',
+    kindListing: 'Moja organizacja daje możliwość zaangażowania się',
+    kindSuggestion: 'Sugestia, jak ludzie mogą się zaangażować',
+    dimensionLabel: 'Wymiar',
+    dimensionAny: 'Kilka wymiarów lub nie wiem',
+    orgName: 'Nazwa organizacji lub grupy',
+    about: 'O Państwa organizacji',
+    aboutHint: 'Czym zajmuje się Państwa organizacja i komu pomaga.',
+    pitchListing: 'Dlaczego Państwa organizacja to dobry sposób na zaangażowanie się?',
+    pitchListingHint:
+      'Co ludzie mogą robić z Państwa organizacją — działać jako wolontariusze, dołączyć, przyjść na spotkanie, uzyskać pomoc?',
+    pitchSuggestion: 'Państwa sugestia',
+    pitchSuggestionHint: 'Jak ludzie mogliby się w to zaangażować?',
+    websiteLabel: 'Strona internetowa',
+    contactLegend: 'Jak pracownicy mogą się z Państwem skontaktować',
+    contactName: 'Imię',
+    email: 'Adres e-mail',
+    phone: 'Telefon',
+    optional: '(opcjonalnie)',
+    privacy: 'Państwa dane kontaktowe trafiają tylko do pracowników i nigdy nie są publikowane.',
+    send: 'Wyślij do pracowników',
+    sending: 'Wysyłanie…',
     thanks:
-      'Thank you. Staff review every submission. If it is a good fit it will appear on this page, and they may contact you first.',
-    sendAnother: 'Send another',
+      'Dziękujemy. Pracownicy sprawdzają każde zgłoszenie. Jeśli będzie odpowiednie, pojawi się na tej stronie. Wcześniej pracownicy mogą się z Państwem skontaktować.',
+    sendAnother: 'Wyślij kolejne zgłoszenie',
     /** Above the form when fields need fixing; each field also shows its own message. */
-    invalid: 'Please check the fields marked below.',
-    tooFast: 'That was very quick. Please wait a moment, then send again.',
-    rateLimited: 'Too many submissions from here today. Please try again later.',
-    expired: 'This form has expired. Reload the page and try again.',
-    failed: 'We could not send that. Please try again.',
+    invalid: 'Prosimy sprawdzić pola zaznaczone poniżej.',
+    tooFast: 'Formularz został wysłany bardzo szybko. Prosimy chwilę odczekać i wysłać go ponownie.',
+    rateLimited: 'Wysłano stąd dzisiaj zbyt wiele zgłoszeń. Prosimy spróbować ponownie później.',
+    expired: 'Ten formularz wygasł. Prosimy odświeżyć stronę i spróbować ponownie.',
+    failed: 'Nie udało się tego wysłać. Prosimy spróbować ponownie.',
   },
-  // INTERIM ENGLISH (SPEC-v7) — to be translated
   /**
    * Asking for a portrait in another language while its translation is off
    * (SPEC-v7 §3.5). Shown in the reader's preferred language even though the
    * page itself is English. {language} is a language's own name (Español).
    */
   translationRequest: {
-    button: 'Request a translation',
-    intro: 'This portrait is published in English. Tell the staff which language you need — they see how many readers ask for each one.',
-    language: 'Language',
-    send: 'Send request',
-    sending: 'Sending…',
-    sent: 'Thank you. Staff will see that a reader asked for {language}.',
-    limited: 'Thank you — your requests are recorded. Please try again later.',
-    failed: 'We could not send that. Please try again.',
+    button: 'Poproś o tłumaczenie',
+    intro:
+      'Ten portret jest opublikowany w języku angielskim. Prosimy przekazać pracownikom, jakiego języka Państwo potrzebują — widzą oni, ilu czytelników prosi o każdy język.',
+    language: 'Język',
+    send: 'Wyślij prośbę',
+    sending: 'Wysyłanie…',
+    sent: 'Dziękujemy. Pracownicy zobaczą, że czytelnik poprosił o tłumaczenie na język: {language}.',
+    limited: 'Dziękujemy — Państwa prośby zostały zapisane. Prosimy spróbować ponownie później.',
+    failed: 'Nie udało się tego wysłać. Prosimy spróbować ponownie.',
   },
   /** The sign-in page (SPEC-v6 §2.2). */
   login: {
-    title: 'Sign in',
-    intro: 'Residents sign in to join a portrait’s discussion. City staff use their work account.',
-    microsoft: 'Continue with Microsoft (work account)',
-    google: 'Continue with Google',
-    emailLabel: 'Email me a sign-in link',
+    title: 'Logowanie',
+    intro:
+      'Mieszkańcy logują się, aby wziąć udział w dyskusji o portrecie. Pracownicy miasta logują się przez konto służbowe.',
+    microsoft: 'Zaloguj się przez Microsoft (konto służbowe)',
+    google: 'Zaloguj się przez Google',
+    emailLabel: 'Logowanie przez link wysłany e-mailem',
     emailPlaceholder: 'you@example.org',
-    send: 'Send link',
-    sending: 'Sending…',
-    noMethods: 'No sign-in method is configured on this server.',
+    send: 'Wyślij link',
+    sending: 'Wysyłanie…',
+    noMethods: 'Na tym serwerze nie skonfigurowano żadnej metody logowania.',
     /** {link} is the "start a portrait" link. */
-    newHere: 'Are you city staff? After signing in you can {link}.',
-    startLink: 'start a portrait for your jurisdiction',
-    checkTitle: 'Check your email',
-    checkBody: 'We sent a sign-in link to the address you entered. It works once and expires in 15 minutes.',
-    checkHelp: 'Not there after a few minutes? Check your spam folder, or send another link.',
-    sendAnother: 'Send another link',
+    newHere: 'Dla pracowników miasta: po zalogowaniu można {link}.',
+    startLink: 'utworzyć portret dla swojej jurysdykcji',
+    checkTitle: 'Prosimy sprawdzić pocztę e-mail',
+    checkBody:
+      'Wysłaliśmy link do logowania na podany adres. Link działa tylko raz i wygasa po 15 minutach.',
+    checkHelp: 'Wiadomość nie dotarła po kilku minutach? Prosimy sprawdzić folder ze spamem lub wysłać kolejny link.',
+    sendAnother: 'Wyślij kolejny link',
     errors: {
       OAuthAccountNotLinked:
-        'That email already signed in another way. Use the method you used before (or an email link), then link this provider from your account page.',
-      Verification: 'That sign-in link has expired or was already used. Request a new one.',
-      AccessDenied: 'Sign-in was declined.',
-      Configuration: 'Sign-in is misconfigured on this server. Contact the site administrator.',
-      EmailSignin: 'We could not send the sign-in email. Check the address and try again in a few minutes.',
-      default: 'Sign-in failed. Try again.',
+        'Ten adres e-mail był już używany do logowania w inny sposób. Prosimy zalogować się tak jak poprzednio (lub przez link wysłany e-mailem), a następnie połączyć tę metodę logowania na stronie swojego konta.',
+      Verification: 'Ten link do logowania wygasł lub został już użyty. Należy poprosić o nowy link.',
+      AccessDenied: 'Logowanie zostało odrzucone.',
+      Configuration:
+        'Logowanie na tym serwerze jest nieprawidłowo skonfigurowane. Prosimy skontaktować się z administratorem strony.',
+      EmailSignin:
+        'Nie udało się wysłać wiadomości z linkiem do logowania. Prosimy sprawdzić adres i spróbować ponownie za kilka minut.',
+      default: 'Logowanie nie powiodło się. Prosimy spróbować ponownie.',
     },
   },
   org: {

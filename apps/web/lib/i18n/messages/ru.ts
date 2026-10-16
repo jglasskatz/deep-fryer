@@ -48,7 +48,8 @@ export const ru: Messages = {
     year: 'Год: {year}',
     source: 'Источник: {source}',
     fullPortrait: 'Полный портрет и обсуждение',
-    clickForDetails: 'Click for details', // INTERIM ENGLISH (SPEC-v7) — to be translated
+    /** The hint under the doughnut's hover tooltip. */
+    clickForDetails: 'Нажмите, чтобы узнать подробнее',
     level: {
       unknown: 'Неизвестно',
       noProblem: 'Проблем нет',
@@ -123,23 +124,23 @@ export const ru: Messages = {
     population: 'население: {n}',
     clickHint: 'Выберите сегмент, чтобы увидеть показатели, подтверждающие материалы, возможные действия и обсуждение.',
     demoHint: 'Демонстрационные данные — задайте DATABASE_URL и опубликуйте версии, чтобы увидеть реальное содержание.',
-    // INTERIM ENGLISH (SPEC-v6) — to be translated
     /** The visible list of dimensions under the doughnut (SPEC-v6 §2.1). */
-    exploreTitle: 'Explore the dimensions',
-    exploreIntro: 'Each dimension has its data, sources, ways to get involved, and a discussion.',
-    exploreIntroCore: 'Each dimension has its data, its sources, and what you can do.',
-    // INTERIM ENGLISH (SPEC-v7) — to be translated
+    exploreTitle: 'Изучите измерения',
+    exploreIntro: 'Для каждого измерения есть данные, источники, способы принять участие и обсуждение.',
+    /** The list's intro when the portrait has no discussion (SPEC-v7 §3). */
+    exploreIntroCore: 'Для каждого измерения есть данные, источники и сведения о том, что вы можете сделать.',
     /** The detail panel beside the doughnut (SPEC-v7 §2) — the Santa Cruz core view. */
-    panelEmpty: 'Select a dimension on the doughnut or in the list to see its data, its sources, and what you can do.',
-    panelClose: 'Close',
-    panelSelected: 'Showing {name}',
-    openFull: 'Open the full page',
-    openFullDiscussion: 'Open the full page and discussion',
-    legendTitle: 'How to read the doughnut',
-    legendSafe: 'Green ring: the safe and just space',
-    legendShortfall: 'Red toward the centre: a shortfall below the social foundation',
-    legendOvershoot: 'Red outside the ring: an overshoot of the ecological ceiling',
-    legendNoData: 'Grey: no data yet',
+    panelEmpty:
+      'Выберите измерение на «бублике» или в списке, чтобы увидеть его данные, источники и то, что вы можете сделать.',
+    panelClose: 'Закрыть',
+    panelSelected: 'Показано измерение: {name}',
+    openFull: 'Открыть полную страницу',
+    openFullDiscussion: 'Открыть полную страницу и обсуждение',
+    legendTitle: 'Как читать «бублик»',
+    legendSafe: 'Зелёное кольцо — безопасное и справедливое пространство',
+    legendShortfall: 'Красный цвет ближе к центру — дефицит: социальный фундамент не достигнут',
+    legendOvershoot: 'Красный цвет снаружи кольца — превышение экологического потолка',
+    legendNoData: 'Серый цвет — данных пока нет',
   },
   dimension: {
     updated: 'обновлено: {date}',
@@ -153,9 +154,8 @@ export const ru: Messages = {
     dataGap: 'Пробел в данных',
     searchedAt: 'Где искали: {scales}',
     whatYouCanDo: 'Что вы можете сделать',
-    // INTERIM ENGLISH (SPEC-v6) — to be translated
     /** Short actions listed after the dimension's involvement listings. */
-    moreYouCanDo: 'More things you can do',
+    moreYouCanDo: 'Что ещё вы можете сделать',
   },
   discussion: {
     title: 'Обсуждение',
@@ -182,18 +182,17 @@ export const ru: Messages = {
     lock: 'закрыть',
     removeReason: 'Причина удаления (будет записана в журнал, доступный сотрудникам):',
     lockReason: 'Причина закрытия этой ветки обсуждения:',
-    // INTERIM ENGLISH (SPEC-v6) — to be translated
     /** A first comment held for a moderator (SPEC-v6 §3.1). Shown to its author and to moderators only. */
-    awaitingApproval: 'Awaiting approval',
-    awaitingNote: 'Only you and the moderators can see this until it is approved.',
-    approve: 'approve',
-    decline: 'decline',
-    /** A held comment moderators did not approve; only its author sees it. */
-    declined: 'Not approved',
-    declinedNote: 'The moderators did not approve this comment. Only you and the moderators can see it.',
+    awaitingApproval: 'Ожидает одобрения',
+    awaitingNote: 'Пока комментарий не одобрен, его видите только вы и модераторы.',
+    approve: 'одобрить',
+    decline: 'отклонить',
+    /** A held comment moderators did not approve; only its author and the moderators see it. */
+    declined: 'Не одобрено',
+    declinedNote: 'Модераторы не одобрили этот комментарий. Его видите только вы и модераторы.',
     /** Label beside a comment written by the portrait's team (SPEC-v6 §3.3). */
-    staff: 'Staff',
-    staffTitle: 'Member of this portrait’s team',
+    staff: 'Сотрудник',
+    staffTitle: 'Член команды, которая ведёт этот портрет',
   },
   progress: {
     metaTitle: 'Прогресс · {name}',
@@ -262,112 +261,115 @@ export const ru: Messages = {
     title: 'Как принять участие',
     empty:
       'По мере развития портрета здесь появится список местных организаций. А пока на странице каждого измерения перечислены конкретные действия.',
-    // INTERIM ENGLISH (SPEC-v6) — to be translated
-    intro: 'Programs, organizations, and public bodies where you can take part, by dimension. Staff check each listing before it appears here.',
+    intro:
+      'Программы, организации и государственные учреждения, где можно принять участие, — по измерениям. Сотрудники проверяют каждую запись, прежде чем она появится здесь.',
     /** Organizations working on the portrait's data (research contacts), when any are published. */
-    partnersTitle: 'Organizations working on this data',
+    partnersTitle: 'Организации, которые работают с этими данными',
   },
-  // INTERIM ENGLISH (SPEC-v6) — to be translated
   /** Ways to get involved and the organization form (SPEC-v6 §4). */
   involvement: {
-    title: 'How to get involved',
+    title: 'Как принять участие',
     kind: {
-      volunteer: 'Volunteer',
-      services: 'Get help or enroll',
-      civic: 'Have your say',
-      organize: 'Join a group',
-      other: 'Get involved',
+      volunteer: 'Стать волонтёром',
+      services: 'Получить помощь или записаться',
+      civic: 'Высказать своё мнение',
+      organize: 'Вступить в группу',
+      other: 'Другие способы участия',
     },
-    website: 'Website',
-    call: 'Call {phone}',
+    website: 'Сайт',
+    call: 'Позвонить: {phone}',
     /** {date} is a formatted date. */
-    checked: 'Link checked {date}',
-    forEveryDimension: 'For every dimension',
-    filterLabel: 'Dimension',
-    filterAll: 'All dimensions',
-    none: 'No listings for this dimension yet.',
-    noneAtAll: 'No listings yet.',
-    contentInEnglish: 'Listings are written by staff and published in English.',
-    formTitle: 'Know a way to get involved?',
+    checked: 'Ссылка проверена: {date}',
+    forEveryDimension: 'Для всех измерений',
+    filterLabel: 'Измерение',
+    filterAll: 'Все измерения',
+    none: 'Для этого измерения пока нет записей.',
+    noneAtAll: 'Записей пока нет.',
+    contentInEnglish: 'Записи составляются сотрудниками и публикуются на английском языке.',
+    formTitle: 'Знаете, как ещё можно принять участие?',
     /** On a dimension page; {dimension} is the dimension's name. */
     formIntro:
-      'Is your organization a good way for people to get involved with {dimension}? Or do you have a suggestion? Tell staff — they review every submission before anything is published.',
+      'Ваша организация даёт людям возможность принять участие в делах, связанных с измерением «{dimension}»? Или у вас есть предложение? Напишите сотрудникам — они проверяют каждую заявку, прежде чем что-либо публиковать.',
     formIntroGeneral:
-      'Is your organization a good way for people to get involved? Or do you have a suggestion? Tell staff — they review every submission before anything is published.',
-    open: 'Suggest a way to get involved',
-    kindLegend: 'What are you sharing?',
-    kindListing: 'My organization is a way to get involved',
-    kindSuggestion: 'A suggestion for how people can get involved',
-    dimensionLabel: 'Dimension',
-    dimensionAny: 'Several, or not sure',
-    orgName: 'Organization or group name',
-    about: 'Who you are',
-    aboutHint: 'What your organization does, and who it serves.',
-    pitchListing: 'Why is it a good way for people to get involved?',
-    pitchListingHint: 'What can people do with you — volunteer, join, attend, get help?',
-    pitchSuggestion: 'Your suggestion',
-    pitchSuggestionHint: 'How could people get involved with this?',
-    websiteLabel: 'Website',
-    contactLegend: 'How staff can reach you',
-    contactName: 'Your name',
-    email: 'Email',
-    phone: 'Phone',
-    optional: '(optional)',
-    privacy: 'Your contact details go only to staff and are never published.',
-    send: 'Send to staff',
-    sending: 'Sending…',
+      'Ваша организация даёт людям возможность принять участие? Или у вас есть предложение? Напишите сотрудникам — они проверяют каждую заявку, прежде чем что-либо публиковать.',
+    open: 'Предложить способ участия',
+    kindLegend: 'Что вы хотите сообщить?',
+    kindListing: 'Моя организация даёт возможность принять участие',
+    kindSuggestion: 'Предложение о том, как люди могут принять участие',
+    dimensionLabel: 'Измерение',
+    dimensionAny: 'Несколько измерений или не знаю',
+    orgName: 'Название организации или группы',
+    about: 'О вашей организации',
+    aboutHint: 'Чем занимается ваша организация и кому она помогает.',
+    pitchListing: 'Чем ваша организация хороша для тех, кто хочет принять участие?',
+    pitchListingHint:
+      'Что люди могут делать вместе с вами: стать волонтёром, вступить в организацию, прийти на мероприятие, получить помощь?',
+    pitchSuggestion: 'Ваше предложение',
+    pitchSuggestionHint: 'Как люди могли бы в этом участвовать?',
+    websiteLabel: 'Сайт',
+    contactLegend: 'Как сотрудники могут с вами связаться',
+    contactName: 'Ваше имя',
+    email: 'Электронная почта',
+    phone: 'Телефон',
+    optional: '(необязательно)',
+    privacy: 'Ваши контактные данные получат только сотрудники. Эти данные никогда не публикуются.',
+    send: 'Отправить сотрудникам',
+    sending: 'Отправка…',
     thanks:
-      'Thank you. Staff review every submission. If it is a good fit it will appear on this page, and they may contact you first.',
-    sendAnother: 'Send another',
+      'Спасибо. Сотрудники проверяют каждую заявку. Если она подойдёт, информация появится на этой странице. Возможно, перед этим сотрудники свяжутся с вами.',
+    sendAnother: 'Отправить ещё одну заявку',
     /** Above the form when fields need fixing; each field also shows its own message. */
-    invalid: 'Please check the fields marked below.',
-    tooFast: 'That was very quick. Please wait a moment, then send again.',
-    rateLimited: 'Too many submissions from here today. Please try again later.',
-    expired: 'This form has expired. Reload the page and try again.',
-    failed: 'We could not send that. Please try again.',
+    invalid: 'Пожалуйста, проверьте поля, отмеченные ниже.',
+    tooFast: 'Форма отправлена слишком быстро. Подождите немного и отправьте её ещё раз.',
+    rateLimited: 'Сегодня отсюда отправлено слишком много заявок. Пожалуйста, попробуйте позже.',
+    expired: 'Срок действия формы истёк. Перезагрузите страницу и попробуйте ещё раз.',
+    failed: 'Не удалось отправить. Пожалуйста, попробуйте ещё раз.',
   },
-  // INTERIM ENGLISH (SPEC-v7) — to be translated
   /**
    * Asking for a portrait in another language while its translation is off
    * (SPEC-v7 §3.5). Shown in the reader's preferred language even though the
    * page itself is English. {language} is a language's own name (Español).
    */
   translationRequest: {
-    button: 'Request a translation',
-    intro: 'This portrait is published in English. Tell the staff which language you need — they see how many readers ask for each one.',
-    language: 'Language',
-    send: 'Send request',
-    sending: 'Sending…',
-    sent: 'Thank you. Staff will see that a reader asked for {language}.',
-    limited: 'Thank you — your requests are recorded. Please try again later.',
-    failed: 'We could not send that. Please try again.',
+    button: 'Запросить перевод',
+    intro:
+      'Этот портрет опубликован на английском языке. Сообщите сотрудникам, какой язык вам нужен: они видят, сколько читателей просят перевод на каждый язык.',
+    language: 'Язык',
+    send: 'Отправить запрос',
+    sending: 'Отправка…',
+    sent: 'Спасибо. Сотрудники увидят, что читатель запросил перевод на язык: {language}.',
+    limited: 'Спасибо, ваши запросы уже учтены. Пожалуйста, попробуйте позже.',
+    failed: 'Не удалось отправить. Пожалуйста, попробуйте ещё раз.',
   },
   /** The sign-in page (SPEC-v6 §2.2). */
   login: {
-    title: 'Sign in',
-    intro: 'Residents sign in to join a portrait’s discussion. City staff use their work account.',
-    microsoft: 'Continue with Microsoft (work account)',
-    google: 'Continue with Google',
-    emailLabel: 'Email me a sign-in link',
+    title: 'Вход',
+    intro:
+      'Жители входят на сайт, чтобы участвовать в обсуждении портрета. Сотрудники городских служб входят через рабочую учётную запись.',
+    microsoft: 'Войти через Microsoft (рабочая учётная запись)',
+    google: 'Войти через Google',
+    emailLabel: 'Получить ссылку для входа на электронную почту',
     emailPlaceholder: 'you@example.org',
-    send: 'Send link',
-    sending: 'Sending…',
-    noMethods: 'No sign-in method is configured on this server.',
+    send: 'Отправить ссылку',
+    sending: 'Отправка…',
+    noMethods: 'На этом сервере не настроен ни один способ входа.',
     /** {link} is the "start a portrait" link. */
-    newHere: 'Are you city staff? After signing in you can {link}.',
-    startLink: 'start a portrait for your jurisdiction',
-    checkTitle: 'Check your email',
-    checkBody: 'We sent a sign-in link to the address you entered. It works once and expires in 15 minutes.',
-    checkHelp: 'Not there after a few minutes? Check your spam folder, or send another link.',
-    sendAnother: 'Send another link',
+    newHere: 'Вы сотрудник городских служб? После входа вы сможете {link}.',
+    startLink: 'создать портрет для своей юрисдикции',
+    checkTitle: 'Проверьте электронную почту',
+    checkBody:
+      'Мы отправили ссылку для входа на указанный вами адрес. Ссылкой можно воспользоваться только один раз, и она действует 15 минут.',
+    checkHelp: 'Письмо не пришло за несколько минут? Проверьте папку «Спам» или отправьте ещё одну ссылку.',
+    sendAnother: 'Отправить ещё одну ссылку',
     errors: {
       OAuthAccountNotLinked:
-        'That email already signed in another way. Use the method you used before (or an email link), then link this provider from your account page.',
-      Verification: 'That sign-in link has expired or was already used. Request a new one.',
-      AccessDenied: 'Sign-in was declined.',
-      Configuration: 'Sign-in is misconfigured on this server. Contact the site administrator.',
-      EmailSignin: 'We could not send the sign-in email. Check the address and try again in a few minutes.',
-      default: 'Sign-in failed. Try again.',
+        'С этим адресом электронной почты уже входили другим способом. Войдите так же, как раньше (или по ссылке из письма), а затем подключите этот способ входа на странице своей учётной записи.',
+      Verification: 'Срок действия этой ссылки для входа истёк, или ею уже воспользовались. Запросите новую ссылку.',
+      AccessDenied: 'Во входе отказано.',
+      Configuration: 'Вход на этом сервере настроен неправильно. Обратитесь к администратору сайта.',
+      EmailSignin:
+        'Не удалось отправить письмо со ссылкой для входа. Проверьте адрес и попробуйте ещё раз через несколько минут.',
+      default: 'Не удалось войти. Попробуйте ещё раз.',
     },
   },
   org: {
