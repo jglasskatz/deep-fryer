@@ -12,7 +12,7 @@ import { ContractForm } from '@/components/billing/ContractForm';
 import { ApiKeyForm } from '@/components/billing/ApiKeyForm';
 import { ResearchCostEstimate } from '@/components/billing/ResearchCostEstimate';
 import { getAuth, getOrgRole } from '@/lib/auth';
-import { billingSummary, WARNING_COPY } from '@/lib/billing';
+import { billingSummary, keyFundedSessionsNote, WARNING_COPY } from '@/lib/billing';
 import { bringYourOwnKeyAvailable, hasDatabase, stripeConfigured, supportEmail } from '@/lib/env';
 import { catalogPrices, formatPrice, stripe } from '@/lib/stripe';
 import { systemDb } from '@/lib/db';
@@ -88,6 +88,10 @@ export default async function BillingPage({
     sub?.stripeSubscriptionId && !['canceled', 'incomplete_expired'].includes(sub.status),
   );
   const contact = supportEmail();
+  // The meter counts plan-funded sessions only; sessions the research gate put
+  // on the organization's own key this period are named beside it, worded as on
+  // the org hub and the research and policy pages (lib/billing.ts).
+  const keyNote = keyFundedSessionsNote(summary);
 
   return (
     <>
@@ -161,13 +165,7 @@ export default async function BillingPage({
           <p className="mt-3 text-xs text-[color:var(--color-muted)]">
             Allowances are hard caps — there is never an overage charge. Published portraits stay
             online whatever the billing status.
-            {/* The meter counts plan-funded sessions only; sessions the research gate put on the
-                organization's own key are listed here instead, whether or not the key is still on file. */}
-            {summary.usage.researchSessionsOnKey > 0
-              ? ` Research sessions on your own API key are not counted above (${summary.usage.researchSessionsOnKey} this period).`
-              : summary.apiKey
-                ? ' Research sessions on your own API key are not counted above.'
-                : ''}
+            {keyNote ? ` ${keyNote}` : ''}
           </p>
           {stripeConfigured() && org.stripeCustomerId ? (
             <div className="mt-4">

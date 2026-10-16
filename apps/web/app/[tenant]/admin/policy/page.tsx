@@ -6,7 +6,7 @@ import { UsageMeter } from '@/components/billing/UsageMeter';
 import { NewPolicyForm } from '@/components/policy/NewPolicyForm';
 import { PolicyStatusBadge } from '@/components/policy/PolicyStatusBadge';
 import { requireAdminPage } from '@/lib/admin-guard';
-import { billingSummary, previewResearchSpend, type BillingSummary } from '@/lib/billing';
+import { billingSummary, keyFundedSessionsNote, previewResearchSpend, type BillingSummary } from '@/lib/billing';
 import { getPolicyAnalysis, listPolicyAnalyses } from '@/lib/policy';
 import { requireFeature } from '@/lib/features';
 import { safeHref } from '@/lib/safe-url';
@@ -69,6 +69,9 @@ export default async function PolicyPage({
     billingSummary(ctx.tenant.organizationId),
     typeof from === 'string' ? getPolicyAnalysis(ctx.tenant.id, from) : null,
   ]);
+  // The meter is the plan's allowance (plan-funded sessions only); what ran on the organization's own key is named
+  // under it, in the same words as on the billing page and the org hub (lib/billing.ts keyFundedSessionsNote).
+  const keyNote = keyFundedSessionsNote(billing);
 
   return (
     <>
@@ -103,9 +106,8 @@ export default async function PolicyPage({
             Each analysis uses {sessions} from the same allowance
             as research runs, shared across every portrait in the organization. Failed analyses are
             not counted.
-            {billing.apiKey
-              ? ' While the organization’s own API key is on file, analyses run on that key and are not counted.'
-              : ''}
+            {billing.apiKey ? ' While the organization’s own API key is on file, analyses run on that key.' : ''}
+            {keyNote ? ` ${keyNote}` : ''}
           </p>
         </section>
 

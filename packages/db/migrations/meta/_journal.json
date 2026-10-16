@@ -92,6 +92,13 @@
       "when": 1792135013658,
       "tag": "0012_research_funding",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792136728364,
+      "tag": "0013_research_runs_app_insert_only",
+      "breakpoints": true
     }
   ]
 }

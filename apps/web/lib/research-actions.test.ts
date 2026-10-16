@@ -111,7 +111,7 @@ describe.skipIf(!hasDb)('buildDoughnut and the organization-key gate', () => {
     await setPortraitFeatures(tenant.id, { request_research: true });
 
     // One dimension: the region context plus its own session, past a spent allowance on the key.
-    const res = await requestResearch({ tenantSlug: tenant.slug, dimensionSlug: 'housing', note: 'Use the 2025 survey.' });
+    const res = await requestResearch({ tenantSlug: tenant.slug, dimensionSlug: 'housing', note: 'Use the 2025 data.' });
     expect(res).toMatchObject({ ok: true, data: { sessionCount: 2 } });
     const [run] = await runs();
     expect(run!.funding).toBe('organization_key');

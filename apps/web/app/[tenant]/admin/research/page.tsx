@@ -3,7 +3,7 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { NewRunForm } from '@/components/admin/NewRunForm';
 import { tenantDimensions, tenantRuns } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
-import { billingSummary } from '@/lib/billing';
+import { billingSummary, keyFundedSessionsNote } from '@/lib/billing';
 import { UsageMeter } from '@/components/billing/UsageMeter';
 
 export const dynamic = 'force-dynamic';
@@ -20,6 +20,9 @@ export default async function ResearchPage({
     tenantDimensions(ctx.tenant.id),
     billingSummary(ctx.tenant.organizationId),
   ]);
+  // The meter is the plan's allowance (plan-funded sessions only); what ran on the organization's own key is named
+  // under it, in the same words as on the billing page and the org hub (lib/billing.ts keyFundedSessionsNote).
+  const keyNote = keyFundedSessionsNote(billing);
 
   return (
     <>
@@ -47,9 +50,8 @@ export default async function ResearchPage({
           <p className="mt-1 text-xs text-[color:var(--color-muted)]">
             Planning is free. Sessions count when a run is applied; failed sessions are not
             counted. Shared across every portrait in the organization.
-            {billing.apiKey
-              ? ' While the organization’s own API key is on file, runs use that key and are not counted.'
-              : ''}
+            {billing.apiKey ? ' While the organization’s own API key is on file, runs use that key.' : ''}
+            {keyNote ? ` ${keyNote}` : ''}
           </p>
         </section>
 

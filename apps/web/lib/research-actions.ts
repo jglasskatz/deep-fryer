@@ -82,7 +82,8 @@ export const buildDoughnut = action(async (input: { tenantSlug: string }) => {
     applied = await applyRun(tenant.id, run.id);
   } catch (err) {
     // Only the run this click planned, and only while it was never applied.
-    // System context: the app role has no delete policy on research runs.
+    // System context, like applyRun: the app role cannot delete research runs at all (migration 0013 leaves it
+    // SELECT and INSERT of planned runs only), so the cleanup runs as the table owner.
     await systemDb()
       .delete(researchRuns)
       .where(

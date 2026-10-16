@@ -41,7 +41,8 @@ export interface BillingSummary {
    * sessions only (packages/db researchSessionsUsed), the number the research
    * gate checks. `researchSessionsOnKey` counts, by the same rules, sessions
    * that ran or are reserved to run on the organization's own API key: no
-   * allowance applies to them, so pages list them apart from the meter.
+   * allowance applies to them, so pages name them apart from the meter
+   * (keyFundedSessionsNote).
    */
   usage: { researchSessions: number; researchSessionsOnKey: number; portraits: number; seats: number };
   /**
@@ -98,6 +99,23 @@ export function previewResearchSpend(summary: BillingSummary, sessions: number):
     sessions,
   );
   return { funding, allowed: check.allowed, message: check.message, remaining: check.remaining };
+}
+
+/**
+ * The sentence that goes with every research-session meter (the org hub, the billing page, the research and policy
+ * pages). The meter is the plan's allowance — plan-funded sessions only (`usage.researchSessions`) — so its label
+ * alone no longer says what an organization researching on its own API key has run. This names the sessions the
+ * research gate put on that key, with their count when there were any this period whether or not the key is still on
+ * file (a key removed mid-period does not hand its sessions to the plan), and is empty when there is nothing to
+ * qualify: no key on file and nothing run on one. It speaks of the allowance rather than of "the meter above" because
+ * the research and policy pages show their standing message in the meter's place when research is blocked. One
+ * function, so the pages cannot word it differently.
+ */
+export function keyFundedSessionsNote(summary: BillingSummary): string {
+  const onKey = summary.usage.researchSessionsOnKey;
+  if (onKey === 0 && !summary.apiKey) return '';
+  const note = 'Research sessions on the organization’s own API key do not count against the plan’s allowance';
+  return onKey > 0 ? `${note} (${onKey.toLocaleString('en-US')} this period).` : `${note}.`;
 }
 
 export const WARNING_COPY: Record<NonNullable<Standing['warning']>, string> = {

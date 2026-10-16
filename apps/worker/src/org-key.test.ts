@@ -83,4 +83,23 @@ describe.skipIf(!hasDb)('orgApiKeyForTenant (Postgres)', () => {
     await store(secretsKey, '00000000-0000-4000-8000-000000000000');
     await expect(orgApiKeyForTenant(db, tenant.id, secretsKey)).rejects.toThrow(OrgKeyUnavailableError);
   });
+  it('picks the key from the funding stored on the work, not from what is on file now', async () => {
+    const { ORG_KEY_REMOVED, OrgKeyUnavailableError, sessionApiKey } = await import('./org-key.js');
+    const { db, tenant, store } = await portrait();
+    const secretsKey = randomSecretsKey();
+
+    // Key-funded work with no key on file (removed after it was queued) fails;
+    // it never comes back as null, which would mean "use the deployment's key".
+    const removed = await sessionApiKey(db, tenant.id, 'organization_key', secretsKey).catch((e: unknown) => e);
+    expect(removed).toBeInstanceOf(OrgKeyUnavailableError);
+    expect((removed as Error).message).toBe(ORG_KEY_REMOVED);
+    expect(ORG_KEY_REMOVED.length).toBeLessThanOrEqual(400);
+
+    await store(secretsKey);
+    expect(await sessionApiKey(db, tenant.id, 'organization_key', secretsKey)).toBe(API_KEY);
+    // Plan-funded work stays on the deployment's key with a key on file — the
+    // key is not even read, so no DF_SECRETS_KEY is needed for it.
+    expect(await sessionApiKey(db, tenant.id, 'plan', secretsKey)).toBeNull();
+    expect(await sessionApiKey(db, tenant.id, 'plan', undefined)).toBeNull();
+  });
 });

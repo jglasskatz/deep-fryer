@@ -7,7 +7,7 @@ import { PortraitForm } from '@/components/onboarding/PortraitForm';
 import { UsageMeter } from '@/components/billing/UsageMeter';
 import { LanguageHelpForm } from '@/components/admin/LanguageHelpForm';
 import { getAuth, getOrgRole } from '@/lib/auth';
-import { billingSummary, WARNING_COPY } from '@/lib/billing';
+import { billingSummary, keyFundedSessionsNote, WARNING_COPY } from '@/lib/billing';
 import { getPortrait } from '@/lib/data';
 import { familyByOrgSlug } from '@/lib/family';
 import { organizationFeatures } from '@/lib/features';
@@ -50,6 +50,9 @@ export default async function OrgPage({ params }: { params: Promise<{ org: strin
         orgRole === 'owner' ? pendingInvitations({ organizationId: orgId }) : Promise.resolve([]),
       ])
     : [null, [], []];
+  // The research meter is the plan's allowance (plan-funded sessions only); what ran on the organization's own key is
+  // named under it, in the same words as on the billing page (lib/billing.ts keyFundedSessionsNote).
+  const keyNote = summary?.limits ? keyFundedSessionsNote(summary) : '';
 
   return (
     <>
@@ -116,6 +119,7 @@ export default async function OrgPage({ params }: { params: Promise<{ org: strin
                 <UsageMeter label="Seats" used={summary.usage.seats} limit={summary.limits.seats} />
               </div>
             ) : null}
+            {keyNote ? <p className="mt-2 text-xs text-[color:var(--color-muted)]">{keyNote}</p> : null}
           </section>
         ) : null}
 

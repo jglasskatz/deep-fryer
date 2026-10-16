@@ -110,7 +110,7 @@ describe.skipIf(!hasDb)('policyAnalyze with an organization key (Postgres, mocke
     // Shown verbatim on the analysis page and in the requester's email.
     expect(row.error).toBe(ORG_KEY_UNREADABLE);
   });
-  it('fails a key-funded analysis whose key was removed after it was queued, never using the deployment key', async () => {
+  it('fails a key-funded analysis whose key was removed after it was queued, never on the deployment key', async () => {
     process.env.DF_SECRETS_KEY = randomSecretsKey();
     const { analysisId, settled } = await seed(randomSecretsKey(), 'organization_key', { withKey: false });
     const { policyAnalyze } = await import('./policy-analyze.js');

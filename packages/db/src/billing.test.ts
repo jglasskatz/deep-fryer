@@ -103,7 +103,8 @@ describe.skipIf(!hasDb)('research funding as stored on runs and analyses (Postgr
         validatedAt: new Date(),
       });
       const now = new Date();
-      const run = async (status: 'planned' | 'running' | 'complete', sessions: number, funding: 'plan' | 'organization_key') => {
+      type Funding = 'plan' | 'organization_key';
+      const run = async (status: 'planned' | 'running' | 'complete', sessions: number, funding: Funding) => {
         const [row] = await db.insert(m.researchRuns).values({
           tenantId: tenant.id, status, plan: plan(sessions), configSnapshot: {} as never, appliedAt: now, funding,
         }).returning();
@@ -126,8 +127,9 @@ describe.skipIf(!hasDb)('research funding as stored on runs and analyses (Postgr
         Array.from({ length: 4 }, () => ({ runId: doneOnKey.id, kind: 'dimension' as const, status: 'complete' as const })),
       );
       // Analyses: one session each unless failed.
-      const analysis = (status: 'queued' | 'complete' | 'failed', funding: 'plan' | 'organization_key') => ({
-        tenantId: tenant.id, title: 'Cooling centers', brief: 'Open a cooling center in every district.', status, funding,
+      const analysis = (status: 'queued' | 'complete' | 'failed', funding: Funding) => ({
+        tenantId: tenant.id, title: 'Cooling centers', brief: 'Open a cooling center in every district.', status,
+        funding,
       });
       await db.insert(m.policyAnalyses).values([
         analysis('queued', 'plan'),
@@ -150,7 +152,7 @@ describe.skipIf(!hasDb)('research funding as stored on runs and analyses (Postgr
     }
   });
 
-  it('keeps funding out of the app role\'s reach on runs, and lets editors read it on analyses', async () => {
+  it('keeps funding, and applied runs, out of the app role\'s reach, and lets editors read funding on analyses', async () => {
     const { m, db, eq, tenant, cleanup } = await portrait();
     const [editor] = await db.insert(m.users).values({ email: `${uniq()}@example.gov`, displayName: 'ed' }).returning();
     try {
@@ -166,26 +168,44 @@ describe.skipIf(!hasDb)('research funding as stored on runs and analyses (Postgr
       await expect(
         asEditor((tx) => tx.insert(m.researchRuns).values({ ...values, funding: 'organization_key' })),
       ).rejects.toThrow(/decided by the research gate/);
-      await db.update(m.researchRuns).set({ funding: 'organization_key', appliedAt: new Date() }).where(eq(m.researchRuns.id, planned!.id));
-      await expect(
-        asEditor((tx) => tx.update(m.researchRuns).set({ funding: 'plan' }).where(eq(m.researchRuns.id, planned!.id))),
-      ).rejects.toThrow(/cannot be changed/);
-      // Writing the same value is not a change (and other columns stay writable as before).
-      await asEditor((tx) =>
-        tx.update(m.researchRuns).set({ funding: 'organization_key', requestedBy: editor!.id }).where(eq(m.researchRuns.id, planned!.id)),
-      );
+      // The system context (the gate, in applyRun) records the decision…
+      const thisRun = eq(m.researchRuns.id, planned!.id);
+      await db.update(m.researchRuns).set({ funding: 'organization_key', appliedAt: new Date() }).where(thisRun);
+      // …and a request in a person's context cannot touch an applied run at all (migration 0013): not its
+      // funding, not its applied_at (which places it in a billing period), not its plan (the sessions the gate
+      // counted), and it cannot delete it or give it another id or portrait to plan a run in its place.
+      const denied = /permission denied for table research_runs/;
+      for (const set of [{ funding: 'plan' as const }, { appliedAt: new Date(0) }, { plan: plan(9) }, { id: crypto.randomUUID() }]) {
+        await expect(asEditor((tx) => tx.update(m.researchRuns).set(set).where(thisRun))).rejects.toThrow(denied);
+      }
+      await expect(asEditor((tx) => tx.delete(m.researchRuns).where(thisRun))).rejects.toThrow(denied);
+      // The app only ever inserts a planned run, and that is all it may insert: not one already applied,
+      // running, or completed (which would count, or look finished, without passing the gate).
+      for (const extra of [
+        { appliedAt: new Date() },
+        { status: 'running' as const },
+        { status: 'complete' as const, completedAt: new Date() },
+      ]) {
+        await expect(asEditor((tx) => tx.insert(m.researchRuns).values({ ...values, ...extra }))).rejects.toThrow(
+          /row-level security/,
+        );
+      }
       const [after] = await db.select().from(m.researchRuns).where(eq(m.researchRuns.id, planned!.id));
-      expect(after!.funding).toBe('organization_key');
+      expect(after).toMatchObject({ funding: 'organization_key', tenantId: tenant.id });
+      expect(after!.plan.sessions).toHaveLength(1);
 
       // Analyses are written in the system context only; editors read who paid.
       await db.insert(m.policyAnalyses).values({
-        tenantId: tenant.id, title: 'Cooling centers', brief: 'Open a cooling center in every district.', funding: 'organization_key',
+        tenantId: tenant.id, title: 'Cooling centers', brief: 'Open a cooling center in every district.',
+        funding: 'organization_key',
       });
-      expect(
-        await asEditor((tx) =>
-          tx.select({ funding: m.policyAnalyses.funding }).from(m.policyAnalyses).where(eq(m.policyAnalyses.tenantId, tenant.id)),
-        ),
-      ).toEqual([{ funding: 'organization_key' }]);
+      const readByEditor = await asEditor((tx) =>
+        tx
+          .select({ funding: m.policyAnalyses.funding })
+          .from(m.policyAnalyses)
+          .where(eq(m.policyAnalyses.tenantId, tenant.id)),
+      );
+      expect(readByEditor).toEqual([{ funding: 'organization_key' }]);
     } finally {
       await cleanup();
       await db.delete(m.users).where(eq(m.users.id, editor!.id));
