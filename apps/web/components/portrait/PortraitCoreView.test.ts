@@ -94,13 +94,13 @@ const LISTINGS: InvolvementListingView[] = [
 
 function panel(
   dimParam: string | null,
-  over: { involvement?: boolean; discussion?: boolean } = {},
+  over: { involvement?: boolean; discussion?: boolean; listings?: InvolvementListingView[] } = {},
 ): PortraitPanelConfig {
   const views = portraitPanelViews(DIMENSIONS, {
     m: en,
     locale: 'en',
     evidenceUrl: (path) => `/evidence/santacruz/${path}`,
-    listings: over.involvement ? LISTINGS : null,
+    listings: over.involvement ? (over.listings ?? LISTINGS) : null,
   });
   return {
     views,
@@ -230,6 +230,12 @@ describe('the portrait core view, server-rendered', () => {
     expect(on).toContain(en.involvement.title);
     expect(on).toContain('href="https://tenants.example.org"');
     expect(on).toContain(en.involvement.kind.organize);
+  });
+
+  it('makes a listing’s tap-to-call link a 44 px target, like every other control in the panel', () => {
+    const listings = [{ ...LISTINGS[0]!, phone: '(831) 555-0100' }];
+    const html = section(render(portrait({ panel: panel('housing', { involvement: true, listings }) }), 'dim=housing'), 'panel');
+    expect(html).toMatch(/<a class="inline-flex min-h-11 items-center font-medium underline" href="tel:[^"]+">/);
   });
 
   it('names the discussion in the full page link only when the feature is on', () => {

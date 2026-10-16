@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, it } from 'vitest';
+import { onOneConnection } from '../test/one-connection';
 
 /**
  * "Request a translation" (SPEC-v7 §3.5) against the dev database: only for
@@ -86,6 +87,20 @@ describe.skipIf(!hasDb)('translation requests', () => {
       { language: 'Spanish', count: 2 },
       { language: 'Bengali', count: 1 },
     ]);
+  });
+
+  it('reads the portrait’s features on its own transaction, never waiting for a second connection', async () => {
+    // It used to open a second transaction for the features while its own
+    // held a connection, so a burst of anonymous requests as large as the
+    // pool left every connection waiting on another, for good.
+    const off = await portrait(false);
+    const on = await portrait(true);
+    const results = await onOneConnection(async () => {
+      const { recordTranslationRequest } = await import('./translation-requests');
+      const send = (slug: string) => recordTranslationRequest({ tenantSlug: slug, locale: 'es', path: `/${slug}`, address: '203.0.113.20' });
+      return [await send(off.slug), await send(on.slug)];
+    });
+    expect(results).toEqual([{ status: 'sent' }, { status: 'not_needed' }]);
   });
 
   it('limits one address to ten requests an hour per portrait', async () => {

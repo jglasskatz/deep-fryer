@@ -72,11 +72,31 @@ export const portraitFeatures = cache(async (tenantSlug: string): Promise<Record
   return resolvePortraitFeatures(stored, deploymentDisabled());
 });
 
-/** The same, by tenant id (server actions, which resolve the tenant first). */
+/**
+ * The same, by tenant id (server actions, which resolve the tenant first).
+ * It opens its own userDb transaction, so it is only for callers that do not
+ * already hold one; inside userDb use portraitFeaturesIn.
+ */
 export async function portraitFeaturesById(tenantId: string): Promise<Record<PortraitFeature, boolean>> {
   if (!hasDatabase()) return demoFeatures();
-  const stored = await userDb((db) => storedFeatures(db, tenantId));
-  return resolvePortraitFeatures(stored, deploymentDisabled());
+  return userDb((db) => portraitFeaturesIn(db, tenantId));
+}
+
+/**
+ * A portrait's features, read on a transaction the caller already holds.
+ *
+ * An action inside userDb must read its flags here (or through
+ * assertFeatureForTenant with its executor), never through
+ * portraitFeaturesById: that would open a second transaction on another
+ * pooled connection while this one is still held. The pool is bounded
+ * (DATABASE_POOL_MAX), so as many concurrent requests as it has connections
+ * would each hold one and wait for another that never frees, and every
+ * request in the process would hang with them. The `features` key is
+ * publicly readable (migration 0011), so any role's transaction can read it.
+ */
+export async function portraitFeaturesIn(db: DbExecutor, tenantId: string): Promise<Record<PortraitFeature, boolean>> {
+  if (!hasDatabase()) return demoFeatures();
+  return resolvePortraitFeatures(await storedFeatures(db, tenantId), deploymentDisabled());
 }
 
 /**
@@ -127,11 +147,7 @@ export async function assertFeatureForTenant(
   feature: PortraitFeature,
   db?: DbExecutor,
 ): Promise<void> {
-  const features = !hasDatabase()
-    ? demoFeatures()
-    : db
-      ? resolvePortraitFeatures(await storedFeatures(db, tenantId), deploymentDisabled())
-      : await portraitFeaturesById(tenantId);
+  const features = db ? await portraitFeaturesIn(db, tenantId) : await portraitFeaturesById(tenantId);
   if (!features[feature]) {
     throw new UserError('This feature is turned off for this portrait. An owner can turn it on in Settings.');
   }

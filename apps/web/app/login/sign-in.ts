@@ -1,4 +1,5 @@
 import type { Messages } from '@/lib/i18n/messages/en';
+import { sameSitePath } from '@/lib/safe-url';
 
 /**
  * Where the sign-in links point and where sign-in sends people back to
@@ -16,9 +17,14 @@ export const LOGIN_PATH = '/login';
 /** Auth.js's verify-request page (auth.ts pages.verifyRequest). */
 export const CHECK_EMAIL_PATH = '/login/check-email';
 
-/** A path on this site: absolute, and not protocol-relative (`//host`) or `/\host`, which browsers treat as `//host`. Mirrors safeNextPath. */
+/**
+ * A path on this site, by the same rule as safeNextPath (lib/safe-url.ts
+ * sameSitePath): it must resolve, as a browser resolves it, to this site —
+ * so not `//host`, `/\host`, or `/<tab>/host`, which browsers all read as
+ * `//host`.
+ */
 function isSameSitePath(path: string | null | undefined): path is string {
-  return typeof path === 'string' && path.startsWith('/') && !path.startsWith('//') && !path.startsWith('/\\');
+  return sameSitePath(path) !== null;
 }
 
 function pathnameOf(path: string): string {
@@ -31,13 +37,25 @@ function isSignInPage(pathname: string): boolean {
 }
 
 /**
+ * Whether a request path (with or without its query) is one of the sign-in
+ * pages, which speak the reader's remembered language (./i18n.ts) although
+ * their URL has no language prefix — the root layout and the site header ask.
+ */
+export function isSignInPath(requestPath: string): boolean {
+  return isSignInPage(pathnameOf(requestPath));
+}
+
+/**
  * The `next` worth carrying, or null: same-site and not a sign-in page. Used
  * on the way in (the header link) and on the way between the sign-in pages
  * (an error, the check-email page, "send another link").
  */
 export function returnPath(next: string | null | undefined): string | null {
-  if (!isSameSitePath(next) || isSignInPage(pathnameOf(next))) return null;
-  return next;
+  // The parsed form, so the sign-in page check sees what a browser would
+  // (`/login` followed by a tab is /login) and nothing ambiguous is carried on.
+  const path = sameSitePath(next);
+  if (path === null || isSignInPage(pathnameOf(path))) return null;
+  return path;
 }
 
 function withNext(base: string, next: string | null | undefined, extra?: Record<string, string>): string {

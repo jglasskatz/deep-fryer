@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { onOneConnection } from '../test/one-connection';
 
 /**
  * Comment moderation end to end (SPEC-v6 §3.1–3.3) for signed-in people, not
@@ -307,5 +308,43 @@ describe.skipIf(!hasDb)('comment moderation under row-level security', () => {
       [heldId, 'removed', 'personal attack'],
       [id, 'declined', 'declined first post: duplicate'],
     ]);
+  });
+
+  it('reads system-context state outside its transactions, so none waits for a second connection', async () => {
+    // Each of these used to read in the system context from inside its
+    // userDb transaction — moderation history for the thread and for a
+    // reply's parent, memberships for the moderator check — waiting for a
+    // second pooled connection while holding the first. As many requests at
+    // once as the pool has connections then waited on each other for good;
+    // on a one-connection pool, one request is enough (test/one-connection.ts).
+    const m = await import('@deep-fryer/db');
+    const a = await import('./discussion-actions');
+    const [newcomer] = await m.getDb().insert(m.users).values({ email: `${uniq()}@newcomer.example.org` }).returning();
+    cleanup.userIds.push(newcomer!.id);
+    signedIn = newcomer!.id;
+    const posted = await a.postComment({ tenantSlug, dimensionId, body: 'Cheap sneakers at my shop.' });
+    const declinedId = (posted as { ok: true; data: { commentId: string } }).data.commentId;
+    signedIn = people.moderator;
+    expect(await a.moderateComment({ tenantSlug, commentId: declinedId, action: 'decline', reason: 'spam' })).toMatchObject({ ok: true });
+
+    // The public thread, whose removed and declined comments need their history.
+    signedIn = null;
+    const thread = await onOneConnection(async () => (await import('./discussion')).dimensionThread(tenantId, dimensionId, null, 'new'));
+    expect(thread.find((c) => c.id === heldId)).toMatchObject({ state: 'removed', body: null });
+    expect(thread.some((c) => c.id === declinedId)).toBe(false);
+
+    // A reply to the declined comment, whose state needs its history.
+    signedIn = people.resident;
+    const reply = await onOneConnection(async () =>
+      (await import('./discussion-actions')).postComment({ tenantSlug, dimensionId, parentId: declinedId, body: 'Where?' }),
+    );
+    expect(reply).toEqual({ ok: false, error: 'You can reply once this comment is approved.' });
+
+    // Moderating while signed out: refused after the membership check.
+    signedIn = null;
+    const moderated = await onOneConnection(async () =>
+      (await import('./discussion-actions')).moderateComment({ tenantSlug, commentId: declinedId, action: 'approve' }),
+    );
+    expect(moderated).toEqual({ ok: false, error: 'This needs the moderator role on this portrait.' });
   });
 });

@@ -192,7 +192,10 @@ export default async function DimensionDrilldownPage({
 
         {features.involvement ? (
           <section className="mt-10" aria-labelledby="get-involved">
-            <h2 id="get-involved" className="text-lg font-semibold">
+            {/* The portrait panel links here ("N more ways to get involved"); the
+                scroll margin keeps the heading clear of the sticky header, as
+                the panel's own anchor does (components/portrait/PortraitPanel). */}
+            <h2 id="get-involved" className="scroll-mt-48 text-lg font-semibold sm:scroll-mt-36">
               {m.involvement.title}
             </h2>
             {listings.length > 0 ? <InvolvementLanguageNote m={m} locale={locale} /> : null}

@@ -13,7 +13,14 @@ export default defineConfig({
     extensionAlias: { '.js': ['.ts', '.tsx', '.js'] },
   } as never,
   test: {
-    include: ['lib/**/*.test.ts', 'app/**/*.test.ts', 'components/**/*.test.ts', 'middleware.test.ts', 'middleware.*.test.ts'],
+    include: [
+      'lib/**/*.test.ts',
+      'app/**/*.test.ts',
+      'components/**/*.test.ts',
+      'middleware.test.ts',
+      'middleware.*.test.ts',
+      'instrumentation.test.ts',
+    ],
     environment: 'node',
     // DB-backed tests share one database; run files serially.
     fileParallelism: false,

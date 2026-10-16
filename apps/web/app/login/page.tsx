@@ -60,7 +60,7 @@ export default async function LoginPage({
   if (!authConfigured()) {
     return (
       <>
-        <SiteHeader variant="landing" />
+        <SiteHeader variant="sign-in" />
         <main id="main" lang={info.code} dir={info.dir} className="mx-auto max-w-md px-4 sm:px-6 py-20 text-center">
           <h1 className="text-2xl font-bold">{t.title}</h1>
           {/* Operator-facing: English on every page (see the component comment). */}
@@ -110,7 +110,7 @@ export default async function LoginPage({
 
   return (
     <>
-      <SiteHeader variant="landing" />
+      <SiteHeader variant="sign-in" />
       <main id="main" lang={info.code} dir={info.dir} className="mx-auto max-w-md px-4 sm:px-6 py-16">
         <h1 className="text-2xl font-bold">{t.title}</h1>
         <p className="mt-2 text-sm text-[color:var(--color-muted)]">{t.intro}</p>

@@ -73,6 +73,16 @@ describe('returnPath', () => {
       expect(returnPath(bad)).toBeNull();
     }
   });
+
+  it('rejects paths a browser would read as another site, or as a sign-in page', () => {
+    // `?next=/%09/evil.example` and its kin, decoded: browsers drop the tab
+    // or newline and read `\` as `/`, so each is //evil.example.
+    for (const bad of ['/\t/evil.example', '/\n/evil.example', '/\r/evil.example', '/\t\\evil.example', '/login\t', '/log\nin/check-email']) {
+      expect(returnPath(bad), JSON.stringify(bad)).toBeNull();
+    }
+    expect(loginHref('/\t/evil.example')).toBe('/login');
+    expect(signInHref('/login?next=%2F%09%2Fevil.example')).toBe('/login');
+  });
 });
 
 describe('sign-in page links', () => {

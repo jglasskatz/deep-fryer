@@ -22,7 +22,9 @@ import {
   type ResearchFunding,
   type Subscription,
 } from '@deep-fryer/db';
+import { UserError } from './action-result';
 import { systemDb } from './db';
+import { bringYourOwnKeyAvailable } from './env';
 
 /**
  * Billing reads for pages (SPEC-v4 §3). One summary shape, so the org hub,
@@ -85,19 +87,70 @@ export interface ResearchSpendPreview {
 }
 
 /**
+ * Why research is refused when the gate puts it on the organization's own key
+ * but this server cannot read stored keys: DF_SECRETS_KEY is unset (lost in a
+ * restore, or removed by an operator who stopped offering the option). The
+ * worker would only fail every session (apps/worker org-key.ts
+ * ORG_KEY_NO_SECRETS_KEY), and work put on the key never moves to the
+ * deployment's key — it was not checked against the plan's allowance — so
+ * nothing is started. Either way out works: the operator sets the secret, or
+ * an owner removes the key (removal needs no secret), which puts research
+ * back on the plan.
+ */
+export const ORG_KEY_UNREADABLE =
+  'Research would run on this organization’s own Anthropic API key, but this server cannot read stored keys: the operator has not set DF_SECRETS_KEY. Ask the operator to set it, or have an organization owner remove the key under Billing to run research on the plan instead.';
+
+/**
+ * Refuse, before anything is recorded, research the gate put on the
+ * organization's key while this server cannot read it (ORG_KEY_UNREADABLE).
+ * Called inside the gate's transaction (lib/research.ts applyRun,
+ * lib/policy-actions.ts), so a refusal rolls back the whole spend.
+ */
+export function assertFundingUsable(funding: ResearchFunding, keysReadable: boolean = bringYourOwnKeyAvailable()): void {
+  if (funding === 'organization_key' && !keysReadable) throw new UserError(ORG_KEY_UNREADABLE);
+}
+
+/**
+ * What the billing page says about organizations' own keys on a server that
+ * cannot read stored keys (DF_SECRETS_KEY unset), or null when it can. With no
+ * key on file research simply runs on the plan; with one on file it does not —
+ * the gate puts research on the key and assertFundingUsable refuses it — so
+ * the page must not say "runs on your plan" then, and says how to get going.
+ */
+export function apiKeyUnavailableNotice(
+  keyOnFile: boolean,
+  keysReadable: boolean = bringYourOwnKeyAvailable(),
+): string | null {
+  if (keysReadable) return null;
+  return keyOnFile
+    ? 'The key on file cannot be used on this server: the operator has not set DF_SECRETS_KEY, which keys are encrypted with. Until it is set, research and policy analyses are refused rather than run on your plan; an owner can remove the key to run them on your plan instead.'
+    : 'Using your own key is not available on this server: the operator has not set DF_SECRETS_KEY, which keys are encrypted with. Research runs on your plan.';
+}
+
+/**
  * What applying `sessions` research sessions would do right now — who would
  * pay and whether the gate would let it through — for pages that explain a
  * button before it is clicked ("Build my doughnut" on /start). The same
  * decision function as the gate itself (packages/db decideResearchSpend),
- * fed from the summary; the gate re-decides under the lock at click time.
+ * fed from the summary, and the same refusal of a key this server cannot
+ * read (assertFundingUsable); the gate re-decides under the lock at click
+ * time.
  */
-export function previewResearchSpend(summary: BillingSummary, sessions: number): ResearchSpendPreview {
+export function previewResearchSpend(
+  summary: BillingSummary,
+  sessions: number,
+  keysReadable: boolean = bringYourOwnKeyAvailable(),
+): ResearchSpendPreview {
   const { funding, check } = decideResearchSpend(
     summary.subscription,
     summary.usage.researchSessions,
     summary.apiKey !== null,
     sessions,
   );
+  // A standing refusal reads the same whoever pays, so it keeps its own words.
+  if (check.allowed && funding === 'organization_key' && !keysReadable) {
+    return { funding, allowed: false, message: ORG_KEY_UNREADABLE, remaining: check.remaining };
+  }
   return { funding, allowed: check.allowed, message: check.message, remaining: check.remaining };
 }
 

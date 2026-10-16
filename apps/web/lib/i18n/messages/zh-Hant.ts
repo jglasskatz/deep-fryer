@@ -303,6 +303,8 @@ export const zhHant: Messages = {
     sendAnother: '再提交一份',
     /** Above the form when fields need fixing; each field also shows its own message. */
     invalid: '請檢查下方標示的欄位。',
+    websiteInvalid: '請輸入以 https:// 開頭的完整網址，例如 https://example.org。',
+    phoneInvalid: '請只使用數字和常用分隔符號，例如 (212) 555-0100，不要加分機號碼或其他文字。',
     tooFast: '提交得太快了。請稍等片刻，然後再提交。',
     rateLimited: '今天從這裡提交的次數太多。請稍後再試。',
     expired: '此表格已過期。請重新載入頁面，然後再試一次。',
@@ -320,7 +322,8 @@ export const zhHant: Messages = {
     send: '提交申請',
     sending: '正在提交…',
     sent: '謝謝。工作人員會看到有讀者申請{language}版本。',
-    limited: '謝謝，您的申請已記錄。請稍後再試。',
+    limited: '過去一小時內來自此網路的申請過多，因此本次申請未被記錄。請稍後再試。',
+    notNeeded: '本畫像剛剛完成翻譯。請重新載入頁面以選擇您的語言。',
     failed: '無法提交。請再試一次。',
   },
   /** The sign-in page (SPEC-v6 §2.2). */

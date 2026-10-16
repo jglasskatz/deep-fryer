@@ -6,6 +6,7 @@ import { LanguageNotice, LanguageSwitcher } from '@/components/i18n/LanguageSwit
 import { InstallAppButton } from '@/components/pwa/InstallAppButton';
 import { SignOutButton } from '@/components/pwa/SignOutButton';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { loginI18n } from '@/app/login/i18n';
 import { signInHref } from '@/app/login/sign-in';
 import { adminTenant } from '@/lib/admin-data';
 import { getAuth } from '@/lib/auth';
@@ -16,7 +17,7 @@ import { familyForTenant, organizationOfTenant, type Family } from '@/lib/family
 import { countNewSubmissions } from '@/lib/involvement-admin';
 import { getI18n, getRequestPath } from '@/lib/i18n/server';
 
-type Variant = 'landing' | 'tenant' | 'admin' | 'architecture' | 'org' | 'account';
+type Variant = 'landing' | 'sign-in' | 'tenant' | 'admin' | 'architecture' | 'org' | 'account';
 
 interface SiteHeaderProps {
   variant: Variant;
@@ -72,10 +73,20 @@ function currentAdminHref(links: NavLink[], requestPath: string): string | undef
  * Public-plane labels come from the request's language catalog; staff and
  * product labels (admin, landing) are English because those pages only
  * exist in English (lib/i18n/routing.ts).
+ *
+ * The sign-in pages ('sign-in') are the exception to both: they have one
+ * unprefixed URL yet speak the reader's remembered language
+ * (app/login/i18n.ts), so the header takes its labels — skip link, sign-in,
+ * theme menu — from there, and it carries no product links, whose pages
+ * (pricing, starting a portrait) exist only in English; the sign-in page
+ * itself offers staff the way to start a portrait, in the reader's words.
  */
 export async function SiteHeader({ variant, tenant, family, familyView, org }: SiteHeaderProps) {
   const auth = hasDatabase() || !authConfigured() ? await getAuth() : null;
-  const [{ m, href }, requestPath] = await Promise.all([getI18n(), getRequestPath()]);
+  const [{ m, href }, requestPath] = await Promise.all([
+    variant === 'sign-in' ? loginI18n() : getI18n(),
+    getRequestPath(),
+  ]);
   const tenantFamily = tenant && !family ? await familyForTenant(tenant.slug) : null;
   const shownFamily = family ?? tenantFamily;
   const tenantOrg = tenant ? await organizationOfTenant(tenant.slug) : null;

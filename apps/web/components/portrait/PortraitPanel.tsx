@@ -255,7 +255,8 @@ export function PortraitPanel({
                         </p>
                         {l.tel && l.phone ? (
                           <p className="mt-1 text-sm">
-                            <a className="font-medium underline" href={l.tel}>
+                            {/* A control on its own line, not a link in a sentence: 44 px tall. */}
+                            <a className="inline-flex min-h-11 items-center font-medium underline" href={l.tel}>
                               {/* Digits laid out left-to-right in every language. */}
                               {rich(t.call, { phone: <span dir="ltr">{l.phone}</span> })}
                             </a>

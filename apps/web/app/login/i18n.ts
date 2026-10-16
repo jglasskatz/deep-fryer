@@ -21,8 +21,10 @@ const LANG_COOKIE = 'df_lang';
  * (getI18n() would always answer `en` here). Residents reach it from
  * translated pages, though, and NYC Local Law 30 covers them, so these
  * pages speak the language the reader last chose, from the cookie
- * middleware keeps. The root layout still stamps <html lang="en">; the
- * pages put this locale's lang/dir on their <main>.
+ * middleware keeps — all of them: the root layout stamps this locale on
+ * <html> (so the localized <title> is read in its own language), the site
+ * header's sign-in variant takes its labels from here, and the pages put
+ * the same lang/dir on their <main>.
  */
 export const loginI18n = cache(async (): Promise<I18n> => {
   const locale = asLocale((await cookies()).get(LANG_COOKIE)?.value);

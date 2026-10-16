@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { keyFundedSessionsNote, type BillingSummary } from './billing';
+import {
+  apiKeyUnavailableNotice,
+  assertFundingUsable,
+  keyFundedSessionsNote,
+  ORG_KEY_UNREADABLE,
+  type BillingSummary,
+} from './billing';
 
 /**
  * The sentence under every research-session meter (org hub, billing page, research and policy pages). The meter is
@@ -35,5 +41,23 @@ describe('keyFundedSessionsNote', () => {
 
   it('is empty when the meter is the whole story: no key on file and nothing run on one', () => {
     expect(keyFundedSessionsNote(summary(0, false))).toBe('');
+  });
+});
+
+describe('a key this server cannot read (DF_SECRETS_KEY unset)', () => {
+  it('refuses research the gate put on the organization’s key, and only that', () => {
+    expect(() => assertFundingUsable('organization_key', false)).toThrow(ORG_KEY_UNREADABLE);
+    expect(() => assertFundingUsable('organization_key', true)).not.toThrow();
+    expect(() => assertFundingUsable('plan', false)).not.toThrow();
+  });
+
+  it('tells the billing page not to promise the plan while a key is on file', () => {
+    expect(apiKeyUnavailableNotice(true, true)).toBeNull();
+    expect(apiKeyUnavailableNotice(false, true)).toBeNull();
+    expect(apiKeyUnavailableNotice(false, false)).toMatch(/not available on this server.*Research runs on your plan\.$/);
+    const onFile = apiKeyUnavailableNotice(true, false)!;
+    expect(onFile).toMatch(/refused rather than run on your plan/);
+    expect(onFile).toMatch(/remove the key/);
+    expect(onFile).not.toMatch(/Research runs on your plan/);
   });
 });

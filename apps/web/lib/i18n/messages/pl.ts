@@ -325,6 +325,9 @@ export const pl: Messages = {
     sendAnother: 'Wyślij kolejne zgłoszenie',
     /** Above the form when fields need fixing; each field also shows its own message. */
     invalid: 'Prosimy sprawdzić pola zaznaczone poniżej.',
+    websiteInvalid: 'Prosimy wpisać pełny adres strony, zaczynający się od https:// — na przykład https://example.org.',
+    phoneInvalid:
+      'Prosimy użyć tylko cyfr i zwykłych separatorów, np. (212) 555-0100, bez numeru wewnętrznego i innych słów.',
     tooFast: 'Formularz został wysłany bardzo szybko. Prosimy chwilę odczekać i wysłać go ponownie.',
     rateLimited: 'Wysłano stąd dzisiaj zbyt wiele zgłoszeń. Prosimy spróbować ponownie później.',
     expired: 'Ten formularz wygasł. Prosimy odświeżyć stronę i spróbować ponownie.',
@@ -343,7 +346,9 @@ export const pl: Messages = {
     send: 'Wyślij prośbę',
     sending: 'Wysyłanie…',
     sent: 'Dziękujemy. Pracownicy zobaczą, że czytelnik poprosił o tłumaczenie na język: {language}.',
-    limited: 'Dziękujemy — Państwa prośby zostały zapisane. Prosimy spróbować ponownie później.',
+    limited:
+      'W ciągu ostatniej godziny z tej sieci wysłano zbyt wiele próśb, więc ta prośba nie została zapisana. Prosimy spróbować ponownie później.',
+    notNeeded: 'Ten portret został właśnie przetłumaczony. Prosimy odświeżyć stronę, aby wybrać swój język.',
     failed: 'Nie udało się tego wysłać. Prosimy spróbować ponownie.',
   },
   /** The sign-in page (SPEC-v6 §2.2). */

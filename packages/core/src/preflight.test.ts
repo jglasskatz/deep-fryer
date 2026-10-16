@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { oauthCredentialVerdict, stripeCatalogVerdict, stripeWebhookVerdict } from './preflight.js';
+import { parseDisabledFeatures } from './features.js';
+import {
+  alertCheckTargets,
+  disabledFeaturesVerdict,
+  oauthCredentialVerdict,
+  storedApiKeysVerdict,
+  stripeCatalogVerdict,
+  stripeWebhookVerdict,
+} from './preflight.js';
 
 describe('preflight verdicts', () => {
   it('reads Google client validity from its answer to a bad code', () => {
@@ -37,5 +45,43 @@ describe('preflight verdicts', () => {
     expect(stripeWebhookVerdict(url, ['invoice.paid', 'invoice.payment_failed'], [{ url, status: 'enabled', enabled_events: ['invoice.paid'] }]).detail).toContain('invoice.payment_failed');
     expect(stripeWebhookVerdict(url, ['invoice.paid'], [{ url, status: 'disabled', enabled_events: ['*'] }]).status).toBe('fail');
     expect(stripeWebhookVerdict(url, ['invoice.paid'], [{ url, status: 'enabled', enabled_events: ['*'] }]).status).toBe('pass');
+  });
+
+  it('warns about kill-switch names that switch nothing off, and lists what is off', () => {
+    const typo = disabledFeaturesVerdict('emergencies,policy_analysis');
+    expect(typo.status).toBe('warn');
+    expect(typo.detail).toContain('"emergencies"');
+    expect(typo.detail).toContain('emergency');
+    expect(disabledFeaturesVerdict('policy_analysis, deep_fry')).toEqual({
+      status: 'pass',
+      detail: 'off for the whole deployment: policy_analysis, deep_fry',
+    });
+    expect(disabledFeaturesVerdict(undefined)).toEqual({ status: 'pass', detail: 'no feature is off for the whole deployment' });
+  });
+
+  it('checks alerts only for portraits whose emergency view is on, as the worker polls them', () => {
+    const zones = { nws_zones: ['NYC061', 'NYZ072'] };
+    const rows = [
+      { slug: 'on', emergency: zones, features: { emergency: true } },
+      { slug: 'off', emergency: zones, features: { emergency: false } },
+      { slug: 'unset', emergency: zones, features: null },
+      { slug: 'broken-off', emergency: { nws_zones: 'NYC061' }, features: {} },
+      { slug: 'broken-on', emergency: { nws_zones: 'NYC061' }, features: { emergency: true } },
+      { slug: 'no-zones', emergency: { nws_zones: [] }, features: { emergency: true } },
+    ];
+    expect(alertCheckTargets(rows, new Set())).toEqual({
+      portraits: [{ slug: 'on', zones: ['NYC061', 'NYZ072'] }],
+      invalid: ['broken-on'],
+    });
+    // Switched off for the whole deployment: nothing is polled, so nothing is checked.
+    expect(alertCheckTargets(rows, parseDisabledFeatures('emergency').disabled)).toEqual({ portraits: [], invalid: [] });
+  });
+
+  it('warns when organizations have keys on file that this deployment cannot read', () => {
+    expect(storedApiKeysVerdict(0, false).status).toBe('pass');
+    expect(storedApiKeysVerdict(2, true).status).toBe('pass');
+    const lost = storedApiKeysVerdict(2, false);
+    expect(lost.status).toBe('warn');
+    expect(lost.detail).toMatch(/2 organization\(s\).*DF_SECRETS_KEY is not set/);
   });
 });

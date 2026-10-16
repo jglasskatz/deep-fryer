@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
+import { loginI18n } from '@/app/login/i18n';
+import { isSignInPath } from '@/app/login/sign-in';
 import { ServiceWorkerRegistrar } from '@/components/pwa/ServiceWorkerRegistrar';
 import { DeepFryLayer } from '@/components/theme/DeepFryLayer';
 import { deploymentFeatureOn } from '@/lib/features';
@@ -8,6 +10,7 @@ import { LOCALES } from '@/lib/i18n/locales';
 import { isLocalizablePath, localizeHref } from '@/lib/i18n/routing';
 import { getI18n, getRequestPath } from '@/lib/i18n/server';
 import { THEME_CHROME_COLORS, THEME_INIT_SCRIPT } from '@/lib/theme';
+import { translationOnFor } from '@/lib/translation-policy';
 // Inter ships with the app (all Latin, Cyrillic, Greek and Vietnamese
 // subsets, each loaded only when a page uses it) rather than through
 // next/font/google: builds need no network access to Google, and the
@@ -39,10 +42,19 @@ const baseMetadata: Metadata = {
  * Pages that exist in every language list their translations (hreflang), so
  * search engines send a Spanish speaker to /es/… and the English page stays
  * the default. Pages may override title/description; alternates stay.
+ *
+ * A portrait with translation off has English pages only (SPEC-v7 §3.5):
+ * middleware redirects its /es/… URLs back to English, so listing them would
+ * advertise eleven translations that do not exist. Those pages name only
+ * their English URL. translationOnFor is the rule middleware routed this
+ * request by; its answer is cached for a minute per portrait, and the
+ * header's language switcher asks the same question, so this adds at most
+ * one small query a minute.
  */
 export async function generateMetadata(): Promise<Metadata> {
   const path = (await getRequestPath()).split('?')[0]!;
   if (!isLocalizablePath(path)) return baseMetadata;
+  if (!(await translationOnFor(path))) return { ...baseMetadata, alternates: { canonical: path } };
   const languages: Record<string, string> = { 'x-default': path };
   for (const l of LOCALES) languages[l.code] = localizeHref(l.code, path);
   const { locale } = await getI18n();
@@ -70,12 +82,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // CSP nonce requires (middleware.ts); Next stamps the nonce on its scripts,
   // and the theme script below carries it explicitly.
   const nonce = (await headers()).get('x-nonce') ?? undefined;
-  const { info, m } = await getI18n();
+  const requestPath = await getRequestPath();
+  // The sign-in pages have no language prefix but speak the reader's
+  // remembered language (app/login/i18n.ts): <html lang> follows, so their
+  // localized title and header are not read out with English rules.
+  const { info, m } = isSignInPath(requestPath) ? await loginI18n() : await getI18n();
   // Embeds render inside a city's own page, whose theme this frame cannot
   // see; they stay light rather than turning dark inside a light host page
   // on a reader's dark device. [P] A host opt-in (data-theme on the loader)
   // would be the way to offer dark embeds.
-  const embed = (await getRequestPath()).startsWith('/embed/');
+  const embed = requestPath.startsWith('/embed/');
   return (
     // suppressHydrationWarning: the theme script sets data-theme on <html>
     // before React hydrates (one level deep — children are still checked).

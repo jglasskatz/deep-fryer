@@ -52,7 +52,12 @@ export const RESERVED_SLUGS = new Set([
   'zh-hant',
 ]);
 
-const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,46}[a-z0-9])?$/;
+/**
+ * The shape every portrait and organization slug has (slugError enforces it
+ * at creation). Exported so request handling can turn away a path segment
+ * that cannot be a slug before spending a lookup — or a cache entry — on it.
+ */
+export const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,46}[a-z0-9])?$/;
 
 /** Returns an error message, or null when the slug is usable. */
 export function slugError(slug: string): string | null {

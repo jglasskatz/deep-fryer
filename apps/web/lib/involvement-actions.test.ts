@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { onOneConnection } from '../test/one-connection';
 import { setPortraitFeatures } from './test-features';
 import { issueFormToken } from './form-token';
 import type { InvolvementField, SubmitInvolvementInput } from './involvement-actions';
@@ -184,6 +185,16 @@ describe('submitInvolvement', () => {
       from('198.51.100.26');
       expect(await submit(as(tenant.slug))).toEqual({ status: 'failed' });
       expect(await stored(tenant.id)).toHaveLength(0);
+    });
+
+    it('checks the feature on its own transaction, never waiting for a second connection', async () => {
+      // It used to open a second transaction for the feature while its own
+      // held a connection: replaying one form token as many times at once as
+      // the pool has connections left every connection waiting on another.
+      const tenant = await portrait();
+      from('198.51.100.27');
+      expect(await onOneConnection(() => submit(as(tenant.slug)))).toEqual({ status: 'thanks' });
+      expect(await stored(tenant.id)).toHaveLength(1);
     });
 
     it('limits submissions per address per hour, per portrait', async () => {

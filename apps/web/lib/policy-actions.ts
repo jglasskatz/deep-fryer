@@ -18,6 +18,7 @@ import { POLICY_TASK, ensureJobQueueSchema, policyJobKey } from '@deep-fryer/res
 import { action, UserError } from './action-result';
 import { audit } from './audit';
 import { getAuth } from './auth';
+import { assertFundingUsable } from './billing';
 import { systemDb } from './db';
 import { requireTenantRoleWithFeature } from './features';
 import { POLICY_LIMITS } from './policy-limits';
@@ -142,6 +143,8 @@ export const createPolicyAnalysis = action(
       if (!org) throw new Error(`tenant ${tenant.id} has no organization`);
       const gate = await gateResearchSpend(tx, org.id, POLICY_ANALYSIS_SESSIONS);
       if (!gate.check.allowed) throw new UserError(quotaMessage(gate.subscription, gate.check));
+      // On a key this server cannot read, the session would fail in the worker: refuse now, saving nothing.
+      assertFundingUsable(gate.funding);
 
       const [row] = await tx
         .insert(policyAnalyses)

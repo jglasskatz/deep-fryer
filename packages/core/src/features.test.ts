@@ -7,6 +7,7 @@ import {
   deploymentFeatureEnabled,
   parseDisabledFeatures,
   resolvePortraitFeatures,
+  unknownDisabledFeaturesMessage,
 } from './features.js';
 import { defaultFeatures } from './config-defaults.js';
 import { featuresConfigSchema } from './validators.js';
@@ -48,5 +49,16 @@ describe('feature flags', () => {
     expect(featuresConfigSchema.safeParse({ ...ALL_PORTRAIT_FEATURES_ON }).success).toBe(true);
     expect(featuresConfigSchema.safeParse({ emergency: 'on' }).success).toBe(false);
     expect(featuresConfigSchema.safeParse({ nonsense: true }).success).toBe(false);
+  });
+
+  it('says which kill-switch names switch nothing off, naming the real ones', () => {
+    // Plurals and hyphens are the likely slips: deploy.md names the features in prose.
+    const message = unknownDisabledFeaturesMessage('emergencies, policy-analysis,deep_fry');
+    expect(message).toContain('"emergencies", "policy-analysis" are not feature names and switch nothing off');
+    for (const f of [...PORTRAIT_FEATURES, ...DEPLOYMENT_FEATURES]) expect(message).toContain(f);
+    expect(unknownDisabledFeaturesMessage('emergancy')).toContain('"emergancy" is not a feature name and switches nothing off');
+    for (const fine of ['', undefined, null, 'emergency, POLICY_ANALYSIS deep_fry']) {
+      expect(unknownDisabledFeaturesMessage(fine)).toBeNull();
+    }
   });
 });

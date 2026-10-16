@@ -303,6 +303,8 @@ export const zhHans: Messages = {
     sendAnother: '再提交一份',
     /** Above the form when fields need fixing; each field also shows its own message. */
     invalid: '请检查下方标出的填写项。',
+    websiteInvalid: '请输入以 https:// 开头的完整网址，例如 https://example.org。',
+    phoneInvalid: '请只使用数字和常用分隔符，例如 (212) 555-0100，不要加分机号或其他文字。',
     tooFast: '提交得太快了。请稍等片刻，然后再提交。',
     rateLimited: '今天从这里提交的次数太多。请稍后再试。',
     expired: '此表格已过期。请重新加载页面，然后重试。',
@@ -320,7 +322,8 @@ export const zhHans: Messages = {
     send: '提交申请',
     sending: '正在提交…',
     sent: '谢谢。工作人员会看到有读者申请{language}版本。',
-    limited: '谢谢，您的申请已记录。请稍后再试。',
+    limited: '过去一小时内来自此网络的申请过多，因此本次申请未被记录。请稍后再试。',
+    notNeeded: '本画像刚刚完成翻译。请重新加载页面以选择您的语言。',
     failed: '无法提交。请重试。',
   },
   /** The sign-in page (SPEC-v6 §2.2). */

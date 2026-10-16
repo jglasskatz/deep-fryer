@@ -98,6 +98,15 @@ export const httpsUrlSchema = z
  * 311, and 988.
  */
 export const PHONE_RE = /^\+?[0-9().\-\s*#]{3,40}$/;
+/**
+ * PHONE_RE as an HTML `pattern` attribute, so a form's phone field is
+ * checked by the browser — in the reader's language — before it is sent.
+ * Browsers anchor a pattern themselves and compile it with the `v` flag,
+ * whose character classes need ( ) . - escaped. Leading spaces are allowed
+ * because the server trims before it tests. The server still decides (the
+ * three-digit minimum is its alone); emergency.test.ts checks the two agree.
+ */
+export const PHONE_INPUT_PATTERN = '\\s*\\+?[0-9\\(\\)\\.\\-\\s*#]{3,40}';
 export const phoneSchema = z
   .string()
   .trim()

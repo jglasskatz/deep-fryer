@@ -328,6 +328,9 @@ export const es: Messages = {
     sendAnother: 'Enviar otra propuesta',
     /** Above the form when fields need fixing; each field also shows its own message. */
     invalid: 'Revise los campos marcados más abajo.',
+    websiteInvalid: 'Escriba la dirección web completa, que empiece por https://; por ejemplo, https://example.org.',
+    phoneInvalid:
+      'Use solo números y los separadores habituales, como en (212) 555-0100, sin extensión ni otras palabras.',
     tooFast: 'Eso fue muy rápido. Espere un momento y vuelva a enviarlo.',
     rateLimited: 'Hoy se enviaron demasiadas propuestas desde aquí. Vuelva a intentarlo más tarde.',
     expired: 'Este formulario venció. Recargue la página e inténtelo de nuevo.',
@@ -345,7 +348,9 @@ export const es: Messages = {
     send: 'Enviar solicitud',
     sending: 'Enviando…',
     sent: 'Gracias. El personal verá que una persona pidió este idioma: {language}.',
-    limited: 'Gracias. Sus solicitudes ya quedaron registradas. Vuelva a intentarlo más tarde.',
+    limited:
+      'Llegaron demasiadas solicitudes desde esta red en la última hora, así que esta no quedó registrada. Vuelva a intentarlo más tarde.',
+    notNeeded: 'Este retrato se acaba de traducir. Recargue la página para elegir su idioma.',
     failed: 'No pudimos enviar la solicitud. Vuelva a intentarlo.',
   },
   /** The sign-in page (SPEC-v6 §2.2). */

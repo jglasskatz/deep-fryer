@@ -34,7 +34,7 @@ export default async function CheckEmailPage({
 
   return (
     <>
-      <SiteHeader variant="landing" />
+      <SiteHeader variant="sign-in" />
       <main id="main" lang={info.code} dir={info.dir} className="mx-auto max-w-md px-4 sm:px-6 py-16">
         <div className="rounded-lg border border-green-700/30 bg-green-50 p-6">
           <svg

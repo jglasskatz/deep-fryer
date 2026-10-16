@@ -308,6 +308,8 @@ export const ko: Messages = {
     sendAnother: '하나 더 보내기',
     /** Above the form when fields need fixing; each field also shows its own message. */
     invalid: '아래에 표시된 항목을 확인해 주십시오.',
+    websiteInvalid: 'https://로 시작하는 전체 웹 주소를 입력해 주십시오(예: https://example.org).',
+    phoneInvalid: '숫자와 일반적인 구분 기호만 사용해 주십시오(예: (212) 555-0100). 내선 번호나 다른 글자는 넣지 마십시오.',
     tooFast: '너무 빨리 제출되었습니다. 잠시 기다린 후 다시 보내 주십시오.',
     rateLimited: '오늘 이곳에서 제출된 횟수가 너무 많습니다. 나중에 다시 시도해 주십시오.',
     expired: '이 양식의 유효 시간이 지났습니다. 페이지를 새로고침한 후 다시 시도해 주십시오.',
@@ -326,7 +328,8 @@ export const ko: Messages = {
     send: '요청 보내기',
     sending: '보내는 중…',
     sent: '감사합니다. 한 독자가 {language} 번역을 요청했다는 내용이 직원에게 전달됩니다.',
-    limited: '감사합니다. 요청이 기록되었습니다. 나중에 다시 시도해 주십시오.',
+    limited: '지난 한 시간 동안 이 네트워크에서 요청이 너무 많이 들어와 이번 요청은 기록되지 않았습니다. 나중에 다시 시도해 주십시오.',
+    notNeeded: '이 프로필이 방금 번역되었습니다. 페이지를 새로고침한 후 언어를 선택해 주십시오.',
     failed: '보내지 못했습니다. 다시 시도해 주십시오.',
   },
   /** The sign-in page (SPEC-v6 §2.2). */

@@ -1,7 +1,8 @@
-import { and, eq, inArray } from 'drizzle-orm';
-import { RESERVED_SLUGS, parseDisabledFeatures, resolvePortraitFeatures } from '@deep-fryer/core';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { RESERVED_SLUGS, SLUG_RE, parseDisabledFeatures, resolvePortraitFeatures } from '@deep-fryer/core';
 import { getDb, organizations, tenantConfig, tenants } from '@deep-fryer/db';
 import { hasDatabase } from './env';
+import { TtlCache } from './ttl-cache';
 
 /**
  * Whether a page may be shown in a language other than English (SPEC-v7
@@ -13,14 +14,23 @@ import { hasDatabase } from './env';
  * - A portrait's pages (/{portrait}/…, /embed/{portrait}) follow the
  *   portrait's `translation` feature.
  * - An organization's pages (/o/{org}/…) are translated when any of its
- *   portraits is.
+ *   live portraits is — archived ones do not count, the same rule as
+ *   lib/features.ts organizationFeatures, so an organization's pages and its
+ *   live portraits agree.
  * - Everything else (landing, pricing, sign-in) is not a portrait's page and
  *   stays multilingual.
  * - Without a database (the demo build) every feature is on, translation
  *   included (lib/features.ts).
  */
 const TTL_MS = 60_000;
-const cache = new Map<string, { on: boolean; at: number }>();
+/**
+ * The key comes from the request path, which anyone can choose, so the cache
+ * is bounded (lib/ttl-cache.ts) and only well-formed slugs reach it at all. A
+ * deployment has far fewer portraits and organizations than this, so the
+ * bound only ever bites on made-up paths.
+ */
+const MAX_ENTRIES = 1_000;
+const cache = new TtlCache<boolean>(TTL_MS, MAX_ENTRIES);
 
 /** Which portrait or organization a path belongs to, if any. */
 export function translationScope(path: string): { kind: 'tenant' | 'org'; slug: string } | null {
@@ -34,15 +44,23 @@ export function translationScope(path: string): { kind: 'tenant' | 'org'; slug: 
 
 async function lookup(kind: 'tenant' | 'org', slug: string): Promise<boolean> {
   const db = getDb();
+  // Live portraits only: an archived portrait's pages are not public (its row
+  // is hidden from readers, migration 0005), and it must not keep its
+  // organization's pages translated after the live portraits turned it off.
   const ids =
     kind === 'tenant'
-      ? (await db.select({ id: tenants.id }).from(tenants).where(eq(tenants.slug, slug))).map((r) => r.id)
+      ? (
+          await db
+            .select({ id: tenants.id })
+            .from(tenants)
+            .where(and(eq(tenants.slug, slug), isNull(tenants.archivedAt)))
+        ).map((r) => r.id)
       : (
           await db
             .select({ id: tenants.id })
             .from(tenants)
             .innerJoin(organizations, eq(organizations.id, tenants.organizationId))
-            .where(eq(organizations.slug, slug))
+            .where(and(eq(organizations.slug, slug), isNull(tenants.archivedAt)))
         ).map((r) => r.id);
   // An unknown portrait is a 404 page in English anyway; nothing to translate.
   if (ids.length === 0) return false;
@@ -59,12 +77,20 @@ export async function translationOnFor(path: string): Promise<boolean> {
   const scope = translationScope(path);
   if (!scope) return true;
   if (!hasDatabase()) return !parseDisabledFeatures(process.env.DF_DISABLED_FEATURES).disabled.has('translation');
+  // No portrait or organization has a slug of another shape (slugError), so
+  // the page is a 404 in English: answered without a query or a cache entry.
+  if (!SLUG_RE.test(scope.slug)) return false;
   const key = `${scope.kind}:${scope.slug}`;
   const hit = cache.get(key);
-  if (hit && Date.now() - hit.at < TTL_MS) return hit.on;
+  if (hit !== undefined) return hit;
   const on = await lookup(scope.kind, scope.slug);
-  cache.set(key, { on, at: Date.now() });
+  cache.set(key, on);
   return on;
+}
+
+/** For tests: how many answers are cached. */
+export function translationPolicyCacheSize(): number {
+  return cache.size;
 }
 
 /** For tests: forget cached answers. */

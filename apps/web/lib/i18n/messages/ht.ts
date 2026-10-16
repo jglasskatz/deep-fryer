@@ -323,6 +323,8 @@ export const ht: Messages = {
     sendAnother: 'Voye yon lòt',
     /** Above the form when fields need fixing; each field also shows its own message. */
     invalid: 'Tanpri tcheke kote ki make anba a.',
+    websiteInvalid: 'Ekri tout adrès sit entènèt la, ki kòmanse ak https:// — pa egzanp https://example.org.',
+    phoneInvalid: 'Sèvi sèlman ak chif ak separatè abityèl yo, tankou (212) 555-0100, san ekstansyon ni lòt mo.',
     tooFast: 'Sa te twò vit. Tanpri tann yon ti moman, epi voye l ankò.',
     rateLimited: 'Twòp fòmilè soti isit la jodi a. Tanpri eseye ankò pita.',
     expired: 'Fòmilè sa a ekspire. Rechaje paj la, epi eseye ankò.',
@@ -340,7 +342,9 @@ export const ht: Messages = {
     send: 'Voye demann nan',
     sending: 'N ap voye…',
     sent: 'Mèsi. Anplwaye yo ap wè yon moun te mande lang sa a: {language}.',
-    limited: 'Mèsi — nou anrejistre demann ou yo. Tanpri eseye ankò pita.',
+    limited:
+      'Twòp demann soti nan rezo sa a nan dènye èdtan an, kidonk nou pa t anrejistre demann sa a. Tanpri eseye ankò pita.',
+    notNeeded: 'Pòtre sa a fèk tradui. Rechaje paj la pou w chwazi lang ou.',
     failed: 'Nou pa t ka voye demann nan. Tanpri eseye ankò.',
   },
   /** The sign-in page (SPEC-v6 §2.2). */

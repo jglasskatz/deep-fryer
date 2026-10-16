@@ -337,8 +337,16 @@ export const en = {
     thanks:
       'Thank you. Staff review every submission. If it is a good fit it will appear on this page, and they may contact you first.',
     sendAnother: 'Send another',
-    /** Above the form when fields need fixing; each field also shows its own message. */
+    /**
+     * Above the form when the server flagged fields; it links to each. The
+     * website and phone fields, whose rules only the server fully checks, also
+     * say under the field what to change (websiteInvalid, phoneInvalid).
+     */
     invalid: 'Please check the fields marked below.',
+    /** Under the website field when the server refused it (the browser accepts https://myorg, ftp://…). */
+    websiteInvalid: 'Enter the full web address, starting with https:// — for example https://example.org.',
+    /** Under the phone field when the server refused it (letters, an extension, too few digits). */
+    phoneInvalid: 'Use only digits and the usual separators, such as (212) 555-0100, with no extension or other words.',
     tooFast: 'That was very quick. Please wait a moment, then send again.',
     rateLimited: 'Too many submissions from here today. Please try again later.',
     expired: 'This form has expired. Reload the page and try again.',
@@ -356,7 +364,11 @@ export const en = {
     send: 'Send request',
     sending: 'Sending…',
     sent: 'Thank you. Staff will see that a reader asked for {language}.',
-    limited: 'Thank you — your requests are recorded. Please try again later.',
+    /** Nothing was recorded: this network has sent its hourly share (shared Wi-Fi counts as one). */
+    limited:
+      'Too many requests have come from this network in the last hour, so this one was not recorded. Please try again later.',
+    /** Nothing was recorded: the portrait was translated after this page loaded. */
+    notNeeded: 'This portrait has just been translated. Reload the page to choose your language.',
     failed: 'We could not send that. Please try again.',
   },
   /** The sign-in page (SPEC-v6 §2.2). */

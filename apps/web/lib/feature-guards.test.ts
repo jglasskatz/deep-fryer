@@ -57,7 +57,7 @@ function guardPattern(feature: PortraitFeature, organization = false): RegExp {
           `requireFeature\\([^)]*${f}\\)`,
           `requireTenantRoleWithFeature\\([^)]*${f}\\)`,
           `assertFeatureForTenant\\([^)]*${f}`,
-          `portraitFeatures(ById)?\\([^)]*\\)\\)\\.${feature}\\b`,
+          `portraitFeatures(ById|In)?\\([^)]*\\)\\)\\.${feature}\\b`,
           `features\\.${feature}\\b`,
         ].join('|'),
       );

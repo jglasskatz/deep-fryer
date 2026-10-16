@@ -5,8 +5,9 @@ import {
   slugError,
   type DimensionData,
   type PlanId,
+  type PortraitFeature,
 } from '@deep-fryer/core';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import type { DbExecutor } from './client.js';
 import {
   auditLog,
@@ -208,6 +209,44 @@ export async function provisionTenant(db: DbExecutor, args: ProvisionTenantArgs)
       dimensions: insertedDims.map((d) => ({ dimensionId: d.id, slug: d.slug })),
     };
   });
+}
+
+/**
+ * Turn portrait features on in a tenant's stored `features` (SPEC-v7 §3),
+ * for provisioning scripts that set up a portrait a law or a contract says
+ * must have them — NYC's translation, under Local Law 30.
+ *
+ * A new portrait starts with every feature off (core defaultFeatures), and
+ * migration 0011's backfill only reached portraits that existed when it ran,
+ * so on a fresh deployment nothing else turns these on. `overrideStored`
+ * says whose choice wins:
+ *
+ * - true, for a portrait this run has just provisioned: its row says `false`
+ *   for everything only because provisionTenant wrote the defaults, so these
+ *   features become true whatever it says;
+ * - false, for a portrait that already existed: only features its row does
+ *   not mention are turned on, so an owner who switched one off in Settings
+ *   keeps it off.
+ *
+ * Other features are left as they are either way.
+ */
+export async function enableTenantFeatures(
+  db: DbExecutor,
+  tenantId: string,
+  features: readonly PortraitFeature[],
+  { overrideStored }: { overrideStored: boolean },
+): Promise<void> {
+  if (features.length === 0) return;
+  const on = Object.fromEntries(features.map((f) => [f, true]));
+  // jsonb `a || b` keeps b's value for a key both have: the patch last when
+  // it must win, the stored row last when its explicit choices must.
+  const merged = overrideStored
+    ? sql`${tenantConfig.value} || excluded.value`
+    : sql`excluded.value || ${tenantConfig.value}`;
+  await db
+    .insert(tenantConfig)
+    .values({ tenantId, key: 'features', value: on })
+    .onConflictDoUpdate({ target: [tenantConfig.tenantId, tenantConfig.key], set: { value: merged, updatedAt: new Date() } });
 }
 
 export async function tenantBySlug(db: DbExecutor, slug: string) {

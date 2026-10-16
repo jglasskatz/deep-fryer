@@ -16,10 +16,11 @@
 import nodemailer from 'nodemailer';
 import { HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
 import Stripe from 'stripe';
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import {
   PLANS,
-  emergencyConfigSchema,
+  alertCheckTargets,
+  disabledFeaturesVerdict,
   nwsAlertsUrl,
   nwsFeedVerdict,
   nwsZonesVerdict,
@@ -28,8 +29,10 @@ import {
   nwsRequestHeaders,
   STRIPE_WEBHOOK_EVENTS,
   oauthCredentialVerdict,
+  parseDisabledFeatures,
   productionEnvProblems,
   type CredentialProbe,
+  storedApiKeysVerdict,
   stripeCatalogVerdict,
   stripeEndpoint,
   stripeWebhookVerdict,
@@ -70,6 +73,8 @@ async function configChecks() {
       ? { status: 'pass', detail: appUrl }
       : { status: 'fail', detail: `APP_URL must be the public https origin (got "${appUrl}")` },
   );
+  // A misspelt name switches nothing off and would otherwise go unnoticed.
+  await guarded('config', 'DF_DISABLED_FEATURES', async () => disabledFeaturesVerdict(env.DF_DISABLED_FEATURES));
 }
 
 async function databaseChecks() {
@@ -92,6 +97,11 @@ async function databaseChecks() {
     if (r.bypass) return { status: 'fail', detail: 'deep_fryer_app has BYPASSRLS — policies would not apply' };
     if (!r.member) return { status: 'fail', detail: 'the connecting user cannot SET ROLE deep_fryer_app' };
     return { status: 'pass', detail: 'deep_fryer_app exists, NOBYPASSRLS, assumable' };
+  });
+  // Blank counts as unset, as in the web app (compose passes `${DF_SECRETS_KEY:-}`).
+  await guarded('database', 'organization API keys readable', async () => {
+    const [r] = await db.execute<{ n: number }>(sql`select count(*)::int as n from organization_api_keys`);
+    return storedApiKeysVerdict(Number(r?.n ?? 0), Boolean(env.DF_SECRETS_KEY?.trim()));
   });
 }
 
@@ -218,31 +228,44 @@ async function stripeChecks() {
 }
 
 /**
- * Official alerts (SPEC-v5 §3): for every portrait with NWS zones, the feed
- * the worker polls must answer with the alerts FeatureCollection — with the
- * same contact User-Agent the worker sends, since api.weather.gov may refuse
- * unidentified clients. Run from the worker's network when its egress goes
- * through an allowlist proxy, so the check sees what the worker sees.
+ * Official alerts (SPEC-v5 §3): for every portrait with NWS zones whose
+ * emergency view is on — the ones the worker polls (alertCheckTargets) — the
+ * feed must answer with the alerts FeatureCollection, with the same contact
+ * User-Agent the worker sends, since api.weather.gov may refuse unidentified
+ * clients. Run from the worker's network when its egress goes through an
+ * allowlist proxy, so the check sees what the worker sees.
  */
 async function alertsChecks() {
   const portraits: { slug: string; zones: string[] }[] = [];
   await guarded('alerts', 'emergency configs readable', async () => {
-    const rows = await getDb()
-      .select({ slug: tenants.slug, value: tenantConfig.value })
+    const db = getDb();
+    const rows = await db
+      .select({ id: tenants.id, slug: tenants.slug, value: tenantConfig.value })
       .from(tenantConfig)
       .innerJoin(tenants, eq(tenants.id, tenantConfig.tenantId))
       .where(and(eq(tenantConfig.key, 'emergency'), isNull(tenants.archivedAt)));
-    const invalid: string[] = [];
-    for (const r of rows) {
-      const parsed = emergencyConfigSchema.safeParse(r.value);
-      if (!parsed.success) invalid.push(r.slug);
-      else if (parsed.data.nws_zones.length) portraits.push({ slug: r.slug, zones: parsed.data.nws_zones });
-    }
-    return invalid.length
-      ? { status: 'fail', detail: `invalid emergency config for ${invalid.join(', ')} — re-save it at /{portrait}/admin/emergency` }
-      : { status: 'pass', detail: `${portraits.length} portrait(s) with NWS zones` };
+    const features = rows.length
+      ? await db
+          .select({ tenantId: tenantConfig.tenantId, value: tenantConfig.value })
+          .from(tenantConfig)
+          .where(and(eq(tenantConfig.key, 'features'), inArray(tenantConfig.tenantId, rows.map((r) => r.id))))
+      : [];
+    const featuresOf = new Map(features.map((f) => [f.tenantId, f.value]));
+    const targets = alertCheckTargets(
+      rows.map((r) => ({ slug: r.slug, emergency: r.value, features: featuresOf.get(r.id) ?? null })),
+      parseDisabledFeatures(env.DF_DISABLED_FEATURES).disabled,
+    );
+    portraits.push(...targets.portraits);
+    return targets.invalid.length
+      ? {
+          status: 'fail',
+          detail: `invalid emergency config for ${targets.invalid.join(', ')} — re-save it at /{portrait}/admin/emergency`,
+        }
+      : { status: 'pass', detail: `${portraits.length} portrait(s) with the emergency view on and NWS zones` };
   });
-  if (portraits.length === 0) return skip('alerts', 'NWS alerts feed', 'no portrait has NWS zones configured');
+  if (portraits.length === 0) {
+    return skip('alerts', 'NWS alerts feed', 'no portrait with the emergency view on has NWS zones configured');
+  }
   if (!env.SUPPORT_EMAIL && !env.EMAIL_FROM) {
     record('alerts', 'NWS contact in User-Agent', { status: 'warn', detail: 'set SUPPORT_EMAIL (or EMAIL_FROM) so the NWS can reach you' });
   }

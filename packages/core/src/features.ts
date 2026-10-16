@@ -88,13 +88,17 @@ export const ALL_PORTRAIT_FEATURES_ON: Record<PortraitFeature, boolean> = Object
 /** A portrait's stored settings: any subset of the portrait features. */
 export type PortraitFeatureSettings = Partial<Record<PortraitFeature, boolean>>;
 
-const KNOWN = new Set<string>([...PORTRAIT_FEATURES, ...DEPLOYMENT_FEATURES]);
+/** Every name DF_DISABLED_FEATURES accepts, in registry order (for messages that list them). */
+export const FEATURE_NAMES: readonly Feature[] = [...PORTRAIT_FEATURES, ...DEPLOYMENT_FEATURES];
+
+const KNOWN = new Set<string>(FEATURE_NAMES);
 
 /**
  * The deployment's kill switch (`DF_DISABLED_FEATURES=emergency,policy_analysis`):
  * a comma- or space-separated list, case-insensitive. Unknown names are
  * ignored rather than fatal — an operator's typo must not take the site down —
- * and reported so the preflight can warn about them.
+ * and reported (unknownDisabledFeaturesMessage): the preflight warns, and the
+ * web app and the worker log it when they start.
  */
 export function parseDisabledFeatures(raw: string | undefined | null): {
   disabled: ReadonlySet<Feature>;
@@ -109,6 +113,21 @@ export function parseDisabledFeatures(raw: string | undefined | null): {
     else unknown.push(name);
   }
   return { disabled, unknown };
+}
+
+/**
+ * What to tell an operator about names in DF_DISABLED_FEATURES that switch
+ * nothing off, or null when there are none. A misspelt name
+ * (`emergencies`, `policy-analysis`) is otherwise silent: the feature it
+ * meant stays on while everything looks fine, so the message names every
+ * valid key.
+ */
+export function unknownDisabledFeaturesMessage(raw: string | undefined | null): string | null {
+  const { unknown } = parseDisabledFeatures(raw);
+  if (unknown.length === 0) return null;
+  const names = unknown.map((n) => `"${n}"`).join(', ');
+  const verb = unknown.length === 1 ? 'is not a feature name and switches' : 'are not feature names and switch';
+  return `DF_DISABLED_FEATURES: ${names} ${verb} nothing off. The names are: ${FEATURE_NAMES.join(', ')}.`;
 }
 
 /**

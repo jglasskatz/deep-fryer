@@ -289,6 +289,11 @@ function needsHistory(row: Pick<Comment, 'removedAt' | 'removedBy'>): boolean {
  * reason reaches a non-member. This is the same kind of read postComment
  * makes of the review policy, and the history is read only for comments a
  * person removed.
+ *
+ * A systemDb() read is made outside the caller's userDb transaction, never
+ * inside it: inside, it would wait for a second pooled connection while the
+ * transaction holds the first, and enough concurrent requests doing that
+ * leave every connection waiting on another (see dimensionThread).
  */
 export async function loadCommentStates(
   db: DbExecutor,
@@ -480,17 +485,17 @@ export async function dimensionThread(
   /** Moderators see held, declined, and removed comments' text (SPEC-v6 §3.1). */
   options: { isModerator?: boolean } = {},
 ): Promise<CommentView[]> {
-  return userDb(async (db) => {
+  const loaded = await userDb(async (db) => {
     const rows = await db
       .select()
       .from(comments)
       .where(and(eq(comments.tenantId, tenantId), eq(comments.dimensionId, dimensionId)))
       .orderBy(desc(comments.createdAt));
-    if (rows.length === 0) return [];
+    if (rows.length === 0) return null;
 
     const ids = rows.map((c) => c.id);
     const authorIds = [...new Set(rows.map((c) => c.authorId))];
-    const [votes, myVotes, lockActions, authors, states] = await Promise.all([
+    const [votes, myVotes, lockActions, authors] = await Promise.all([
       db
         .select({
           commentId: commentVotes.commentId,
@@ -517,28 +522,38 @@ export async function dimensionThread(
         .where(inArray(moderationActions.commentId, ids))
         .orderBy(desc(moderationActions.ts)),
       authorFacts(db, tenantId, authorIds),
-      loadCommentStates(systemDb(), rows),
     ]);
-    const locked = new Map<string, boolean>();
-    for (const action of lockActions) {
-      if (locked.has(action.commentId)) continue;
-      if (action.action === 'lock') locked.set(action.commentId, true);
-      if (action.action === 'restore') locked.set(action.commentId, false);
-    }
+    return { rows, votes, myVotes, lockActions, authors };
+  });
+  if (!loaded) return [];
 
-    return assembleThread({
-      tenantId,
-      rows,
-      states,
-      viewerId,
-      isModerator: options.isModerator ?? false,
-      names: authors.names,
-      staffIds: authors.staffIds,
-      scores: new Map(votes.map((v) => [v.commentId, v.score])),
-      myVotes: new Map(myVotes.map((v) => [v.commentId, v.vote])),
-      locked,
-      sort,
-    });
+  // The states read moderation history in the system context (see
+  // loadCommentStates), and only once the transaction above has ended, never
+  // inside it: a systemDb query there would wait for a second pooled
+  // connection while the transaction holds the first, so as many concurrent
+  // readers as the pool has connections would all wait forever, and every
+  // request in the process with them.
+  const { rows, votes, myVotes, lockActions, authors } = loaded;
+  const states = await loadCommentStates(systemDb(), rows);
+  const locked = new Map<string, boolean>();
+  for (const action of lockActions) {
+    if (locked.has(action.commentId)) continue;
+    if (action.action === 'lock') locked.set(action.commentId, true);
+    if (action.action === 'restore') locked.set(action.commentId, false);
+  }
+
+  return assembleThread({
+    tenantId,
+    rows,
+    states,
+    viewerId,
+    isModerator: options.isModerator ?? false,
+    names: authors.names,
+    staffIds: authors.staffIds,
+    scores: new Map(votes.map((v) => [v.commentId, v.score])),
+    myVotes: new Map(myVotes.map((v) => [v.commentId, v.vote])),
+    locked,
+    sort,
   });
 }
 

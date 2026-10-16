@@ -1,5 +1,10 @@
 import { afterAll, describe, expect, it } from 'vitest';
-import { clearTranslationPolicyCache, translationOnFor, translationScope } from './translation-policy';
+import {
+  clearTranslationPolicyCache,
+  translationOnFor,
+  translationPolicyCacheSize,
+  translationScope,
+} from './translation-policy';
 
 describe('translation scope', () => {
   it('maps a path to the portrait or organization it belongs to', () => {
@@ -22,14 +27,14 @@ describe.skipIf(!hasDb)('translation policy (Postgres)', () => {
     for (const fn of cleanup.reverse()) await fn();
   });
 
-  async function portrait(translation: boolean | null) {
+  async function portrait(translation: boolean | null, organizationId?: string) {
     const m = await import('@deep-fryer/db');
     const { and, eq } = await import('drizzle-orm');
     const db = m.getDb();
-    const { tenant } = await m.provisionTenant(db, { slug: uniq(), name: 'Language City' });
+    const { tenant } = await m.provisionTenant(db, { slug: uniq(), name: 'Language City', organizationId });
     cleanup.push(async () => {
       await db.delete(m.tenants).where(eq(m.tenants.id, tenant.id));
-      await db.delete(m.organizations).where(eq(m.organizations.id, tenant.organizationId));
+      if (!organizationId) await db.delete(m.organizations).where(eq(m.organizations.id, tenant.organizationId));
     });
     if (translation !== null) {
       await db
@@ -50,4 +55,33 @@ describe.skipIf(!hasDb)('translation policy (Postgres)', () => {
     expect(await translationOnFor(`/${uniq()}`)).toBe(false);
     expect(await translationOnFor('/pricing')).toBe(true);
   });
+
+  it('translates an organization’s pages only for its live portraits, as organizationFeatures decides', async () => {
+    // An archived portrait kept from before translation was a feature (on)
+    // must not keep the organization's pages translated once every live
+    // portrait has it off.
+    clearTranslationPolicyCache();
+    const m = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const old = await portrait(true);
+    await portrait(false, old.organizationId);
+    await m.getDb().update(m.tenants).set({ archivedAt: new Date() }).where(eq(m.tenants.id, old.id));
+    const [org] = await m.getDb().select().from(m.organizations).where(eq(m.organizations.id, old.organizationId));
+    expect(await translationOnFor(`/o/${org!.slug}/progress`)).toBe(false);
+    expect(await translationOnFor(`/${old.slug}`)).toBe(false);
+  });
+
+  it('keeps its cache bounded, and never spends a lookup or an entry on a segment that is not a slug', async () => {
+    // Anyone can put anything in the path: before, each new one stayed cached
+    // for the life of the process, so a loop of random paths grew the heap
+    // until the process was killed.
+    clearTranslationPolicyCache();
+    for (const junk of [`/${'x'.repeat(8_000)}`, '/Not_A_Slug', '/o/-bad-', `/embed/${'é'.repeat(10)}`, '/%20']) {
+      expect(await translationOnFor(junk)).toBe(false);
+    }
+    expect(translationPolicyCacheSize()).toBe(0);
+    // Well-formed but unknown slugs are looked up once each and cached, up to the cap.
+    for (let i = 0; i < 1_050; i++) await translationOnFor(`/made-up-${i}`);
+    expect(translationPolicyCacheSize()).toBeLessThanOrEqual(1_000);
+  }, 60_000);
 });

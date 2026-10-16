@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
@@ -12,7 +13,7 @@ import { ContractForm } from '@/components/billing/ContractForm';
 import { ApiKeyForm } from '@/components/billing/ApiKeyForm';
 import { ResearchCostEstimate } from '@/components/billing/ResearchCostEstimate';
 import { getAuth, getOrgRole } from '@/lib/auth';
-import { billingSummary, keyFundedSessionsNote, WARNING_COPY } from '@/lib/billing';
+import { apiKeyUnavailableNotice, billingSummary, keyFundedSessionsNote, WARNING_COPY } from '@/lib/billing';
 import { bringYourOwnKeyAvailable, hasDatabase, stripeConfigured, supportEmail } from '@/lib/env';
 import { catalogPrices, formatPrice, stripe } from '@/lib/stripe';
 import { systemDb } from '@/lib/db';
@@ -53,6 +54,8 @@ export default async function BillingPage({
 
   const [summary, prices] = await Promise.all([billingSummary(org.id), catalogPrices()]);
   const sub = summary.subscription;
+  // Set when this server cannot read stored keys (DF_SECRETS_KEY unset); its words depend on whether one is on file.
+  const keyNotice = apiKeyUnavailableNotice(summary.apiKey !== null);
 
   let invoices: Stripe.Invoice[] = [];
   if (stripeConfigured() && org.stripeCustomerId) {
@@ -179,7 +182,7 @@ export default async function BillingPage({
             Your Anthropic API key
           </h2>
           <p className="mt-1 text-sm">
-            {summary.apiKey
+            {summary.apiKey && !keyNotice
               ? 'Research and policy sessions for this organization run on your key and are not counted against your plan.'
               : 'With your own Anthropic API key on file, research and policy sessions for this organization run on your key and are not counted against your plan.'}{' '}
             A plan is still needed for hosting, review, and publishing.
@@ -188,31 +191,35 @@ export default async function BillingPage({
             <ResearchCostEstimate onKey showSingleSession />
           </div>
           <div className="mt-4">
+            {keyNotice ? (
+              // For everyone who sees the section: with a key on file, research is refused until this is resolved.
+              <p className="mb-3 rounded bg-black/5 p-2 text-sm">
+                {keyNotice.split('DF_SECRETS_KEY').map((part, i) => (
+                  <Fragment key={i}>
+                    {i > 0 ? <code>DF_SECRETS_KEY</code> : null}
+                    {part}
+                  </Fragment>
+                ))}
+              </p>
+            ) : null}
             {role === 'owner' ? (
-              <>
-                {!bringYourOwnKeyAvailable() ? (
-                  <p className="mb-3 rounded bg-black/5 p-2 text-sm">
-                    Using your own key is not available on this server: the operator has not set{' '}
-                    <code>DF_SECRETS_KEY</code>, which keys are encrypted with. Research runs on your plan.
-                  </p>
-                ) : null}
-                <ApiKeyForm
-                  orgSlug={org.slug}
-                  canSave={bringYourOwnKeyAvailable()}
-                  onFile={
-                    summary.apiKey
-                      ? {
-                          keyHint: summary.apiKey.keyHint,
-                          createdAt: summary.apiKey.createdAt.toISOString(),
-                          validatedAt: summary.apiKey.validatedAt?.toISOString() ?? null,
-                        }
-                      : null
-                  }
-                />
-              </>
+              <ApiKeyForm
+                orgSlug={org.slug}
+                canSave={bringYourOwnKeyAvailable()}
+                onFile={
+                  summary.apiKey
+                    ? {
+                        keyHint: summary.apiKey.keyHint,
+                        createdAt: summary.apiKey.createdAt.toISOString(),
+                        validatedAt: summary.apiKey.validatedAt?.toISOString() ?? null,
+                      }
+                    : null
+                }
+              />
             ) : summary.apiKey ? (
               <p className="text-sm">
-                Research runs on the organization&apos;s own key (<span className="font-mono">sk-ant-…{summary.apiKey.keyHint}</span>
+                {keyNotice ? 'The organization’s own key is on file' : 'Research runs on the organization’s own key'} (
+                <span className="font-mono">sk-ant-…{summary.apiKey.keyHint}</span>
                 , added {summary.apiKey.createdAt.toISOString().slice(0, 10)}). Only an organization owner can replace or
                 remove it.
               </p>

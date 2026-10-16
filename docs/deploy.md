@@ -98,7 +98,12 @@ Things only the operator can supply; the preflight confirms each one.
    Contract-only deployments (NYC's Metro contract) can leave Stripe unset.
 4. **Preflight** passes with no FAIL.
 5. **Organization** — `provision-nyc.ts` (or `create-tenant.ts`) with the
-   owner's email; for NYC set the contract end and PO.
+   owner's email; for NYC set the contract end and PO. `provision-nyc.ts`
+   turns translation on for all six NYC portraits (Local Law 30); every other
+   feature starts off, so turn on what the city will use — emergencies, Get
+   involved, compare and insights — under **Settings → Features** before
+   running `nyc-emergency.ts` and `nyc-involvement.ts`, whose data is hidden
+   while its feature is off.
 6. **Language access** — certified review of the translation catalogs before
    an agency relies on them under Local Law 30 (docs/language-access.md).
 7. **Backups** — nightly `pg_dump` plus the `storage` volume (§6).
@@ -128,7 +133,9 @@ turns on under **Settings → Features**: emergencies, policy analysis, the
 curated Get involved listings and organization form, discussion,
 translation, family compare and insights, and research requests. A new
 portrait starts with all of them off; portraits that existed before
-migration 0011 kept everything they showed (all on).
+migration 0011 kept everything they showed (all on). The NYC portraits are
+the exception: `provision-nyc.ts` keeps translation on for them, as Local
+Law 30 requires (an owner's explicit choice in Settings is kept on re-runs).
 
 Off means gone: the feature's pages are a 404, its links leave the header
 and the admin and family navigation, its server actions refuse, and the
@@ -137,8 +144,14 @@ portrait is English only and readers get a "Request a translation" button
 instead; the requests are counted for owners in Settings.
 
 To switch a feature off for the whole deployment, whatever the portraits
-say, list it in `DF_DISABLED_FEATURES` (comma-separated; `deep_fry` turns
-off the theme menu's deep fry) and restart web and worker.
+say, list it in `DF_DISABLED_FEATURES`, comma-separated, by these exact
+names: `emergency`, `policy_analysis`, `involvement`, `discussion`,
+`translation`, `family_compare`, `request_research`, and `deep_fry` (the
+theme menu's deep fry). Then run `docker compose up -d web worker`: a plain
+`docker compose restart` keeps the environment the containers were created
+with and does not re-read `.env`. A name that is not on the list switches
+nothing off; the preflight warns about it, and web and worker log it when
+they start.
 
 ### Emergency view (SPEC-v5 §3)
 
@@ -247,9 +260,14 @@ it never runs on the deployment's key instead.
 To offer this, set `DF_SECRETS_KEY` (`openssl rand -base64 32`) in `.env` —
 compose passes it to web and worker, which must share it — and
 `docker compose up -d web worker`. Without it the billing page says the
-option is unavailable and research runs on `ANTHROPIC_API_KEY`. With it set,
-the web app refuses to start unless it decodes to exactly 32 bytes. Keep it
-with your other secrets and back it up: if it is changed or lost, stored keys
+option is unavailable and research runs on `ANTHROPIC_API_KEY` — except for
+an organization that already has a key on file (a database restored without
+the secret, or the secret removed later): its research and policy analyses
+are refused, never moved onto `ANTHROPIC_API_KEY`, until the secret is set
+again or an owner removes the key under Billing (removing needs no secret);
+the preflight warns when keys are on file and the secret is not set. With it
+set, the web app refuses to start unless it decodes to exactly 32 bytes. Keep
+it with your other secrets and back it up: if it is changed, stored keys
 cannot be decrypted — the worker then fails those organizations' research
 with a message asking an owner to enter the key again, and never falls back
 to the deployment's key.

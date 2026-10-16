@@ -15,6 +15,7 @@ import {
 } from '@deep-fryer/research';
 import { portraitConfigFromMap, tenantConfigMap } from './admin-data';
 import { UserError } from './action-result';
+import { assertFundingUsable } from './billing';
 import { systemDb, userDb } from './db';
 
 /**
@@ -137,6 +138,8 @@ export async function applyRun(tenantId: string, runId: string) {
     if (!org) throw new Error(`tenant ${tenantId} has no organization`);
     const gate = await gateResearchSpend(tx, org.id, row.plan.sessions.length);
     if (!gate.check.allowed) throw new UserError(gate.check.message ?? 'Research is not available on this plan.');
+    // On a key this server cannot read, every session would fail in the worker: refuse now, applying nothing.
+    assertFundingUsable(gate.funding);
 
     const [applied] = await tx
       .update(researchRuns)

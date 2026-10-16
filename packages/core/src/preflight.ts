@@ -4,7 +4,66 @@
  * here, separate from the network calls, so each verdict is unit-tested.
  */
 
+import { emergencyConfigSchema } from './emergency.js';
+import { parseDisabledFeatures, resolvePortraitFeatures, unknownDisabledFeaturesMessage, type Feature } from './features.js';
+
 export type Verdict = { status: 'pass' | 'fail' | 'warn'; detail: string };
+
+/**
+ * The deployment's kill switch (DF_DISABLED_FEATURES): a name it does not know
+ * switches nothing off, so it is a warning that names the valid keys; the
+ * rest is reported so the operator sees what is off.
+ */
+export function disabledFeaturesVerdict(raw: string | undefined | null): Verdict {
+  const unknown = unknownDisabledFeaturesMessage(raw);
+  if (unknown) return { status: 'warn', detail: unknown };
+  const { disabled } = parseDisabledFeatures(raw);
+  return {
+    status: 'pass',
+    detail: disabled.size ? `off for the whole deployment: ${[...disabled].join(', ')}` : 'no feature is off for the whole deployment',
+  };
+}
+
+/**
+ * Organizations' own Anthropic API keys (SPEC-v7 §4) are stored encrypted
+ * under DF_SECRETS_KEY. With keys on file and the secret unset — lost in a
+ * restore, or removed — those organizations' research is refused (the web
+ * app's gate) and nothing falls back to the deployment's key, so the operator
+ * hears it here rather than from the organizations.
+ */
+export function storedApiKeysVerdict(keysOnFile: number, secretsKeySet: boolean): Verdict {
+  if (keysOnFile === 0) return { status: 'pass', detail: 'no organization has its own API key on file' };
+  const orgs = `${keysOnFile} organization(s) have their own Anthropic API key on file`;
+  return secretsKeySet
+    ? { status: 'pass', detail: `${orgs}; DF_SECRETS_KEY is set` }
+    : {
+        status: 'warn',
+        detail: `${orgs} but DF_SECRETS_KEY is not set: their research is refused until it is set again (or they remove the key)`,
+      };
+}
+
+/**
+ * Which portraits' NWS alerts the preflight checks: those the worker polls —
+ * the emergency view on (the portrait's setting, under the deployment's kill
+ * switch, resolved as the worker resolves it) and zones configured. A portrait
+ * with the view off is left out entirely: the worker never fetches its alerts,
+ * and its emergency settings page is a 404, so neither a failing feed nor an
+ * invalid config there is anything to fix before onboarding.
+ */
+export function alertCheckTargets(
+  rows: readonly { slug: string; emergency: unknown; features: unknown }[],
+  disabled: ReadonlySet<Feature>,
+): { portraits: { slug: string; zones: string[] }[]; invalid: string[] } {
+  const portraits: { slug: string; zones: string[] }[] = [];
+  const invalid: string[] = [];
+  for (const r of rows) {
+    if (!resolvePortraitFeatures(r.features as Record<string, unknown> | null, disabled).emergency) continue;
+    const parsed = emergencyConfigSchema.safeParse(r.emergency);
+    if (!parsed.success) invalid.push(r.slug);
+    else if (parsed.data.nws_zones.length) portraits.push({ slug: r.slug, zones: parsed.data.nws_zones });
+  }
+  return { portraits, invalid };
+}
 
 /**
  * OAuth client credentials, checked without a user. Two probes, because

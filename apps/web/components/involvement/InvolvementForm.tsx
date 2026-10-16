@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState, useTransition, type FormEvent } from 'react';
-import { INVOLVEMENT_LIMITS, type InvolvementSubmissionKind } from '@deep-fryer/core';
+import { INVOLVEMENT_LIMITS, PHONE_INPUT_PATTERN, type InvolvementSubmissionKind } from '@deep-fryer/core';
 import type { Messages } from '@/lib/i18n/messages/en';
 import {
   submitInvolvement,
@@ -22,10 +22,15 @@ import {
  * - The browser checks what it can first (required, type=email/url,
  *   maxLength from INVOLVEMENT_LIMITS, the same ceilings the database
  *   enforces), so most mistakes are caught with the browser's own message
- *   in the reader's language before anything is sent. What only the server
- *   can judge comes back as a list of fields: they are marked aria-invalid
- *   and named in an error summary at the top of the form, which takes focus
- *   (the GOV.UK pattern) so screen-reader and keyboard users land on it.
+ *   in the reader's language before anything is sent; the phone field
+ *   carries core's PHONE_INPUT_PATTERN for the same reason. What only the
+ *   server can judge comes back as a list of fields: they are marked
+ *   aria-invalid and named in an error summary at the top of the form, which
+ *   takes focus (the GOV.UK pattern) so screen-reader and keyboard users land
+ *   on it. The website and phone fields, whose rules the browser cannot
+ *   fully check (a type=url field takes https://myorg; three digits are the
+ *   server's rule), also say under the field what to change, linked through
+ *   aria-describedby so it is read with the field (WCAG 3.3.1, 3.3.3).
  * - Organization name and "who you are" are asked only for an
  *   organization; a suggestion needs neither (hidden fields are not sent).
  * - The honeypot is a field people never see (visually hidden, aria-hidden,
@@ -239,12 +244,24 @@ export function InvolvementForm({
       ? { tooFast: t.tooFast, rateLimited: t.rateLimited, expired: t.expired, failed: t.failed }[failure.status]
       : null;
   const invalidInOrder = FIELD_ORDER.filter((f) => invalid.has(f));
+  /** What to change, for the fields whose rules only the server fully checks. */
+  const fieldError: Partial<Record<InvolvementField, string>> = { website: t.websiteInvalid, phone: t.phoneInvalid };
+  const errorId = (name: InvolvementField) => fid(`${name}-error`);
+  const showsError = (name: InvolvementField) => invalid.has(name) && fieldError[name] !== undefined;
   const aria = (name: InvolvementField, describedBy?: string) => ({
     id: fid(name),
     name,
     'aria-invalid': invalid.has(name) || undefined,
-    'aria-describedby': describedBy,
+    // The error first, so it is what a screen reader says right after the label.
+    'aria-describedby': [showsError(name) ? errorId(name) : null, describedBy].filter(Boolean).join(' ') || undefined,
   });
+  /** Under a flagged field: what to change. */
+  const errorFor = (name: InvolvementField) =>
+    showsError(name) ? (
+      <span id={errorId(name)} className="mt-1 block text-sm text-red-700">
+        {fieldError[name]}
+      </span>
+    ) : null;
 
   return (
     <form
@@ -400,6 +417,7 @@ export function InvolvementForm({
           dir="ltr"
           className={input}
         />
+        {errorFor('website')}
       </div>
 
       <fieldset className="space-y-4 rounded border border-black/15 p-4">
@@ -444,10 +462,15 @@ export function InvolvementForm({
             type="tel"
             // core's phoneSchema ceiling (the form limits table has no phone entry).
             maxLength={40}
+            // type=tel checks nothing; the pattern lets the browser refuse
+            // letters and extensions first, showing `title` with its message.
+            pattern={PHONE_INPUT_PATTERN}
+            title={t.phoneInvalid}
             autoComplete="tel"
             dir="ltr"
             className={input}
           />
+          {errorFor('phone')}
         </div>
       </fieldset>
 

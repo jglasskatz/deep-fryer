@@ -20,6 +20,8 @@ import {
   nwsRequestHeaders,
   nwsUserAgent,
   parseNwsAlerts,
+  PHONE_INPUT_PATTERN,
+  PHONE_RE,
   phoneSchema,
   riskBand,
   riskScore,
@@ -216,6 +218,23 @@ describe('phones and links', () => {
     expect(telHref('*555#')).toBe('tel:*555%23');
     expect(phoneSchema.safeParse('call 311').success).toBe(false);
     expect(phoneSchema.safeParse('12').success).toBe(false);
+  });
+
+  it('gives forms a phone pattern that accepts and refuses what the server does', () => {
+    // As browsers compile a pattern attribute: anchored, with the `v` flag
+    // (and `u` in older browsers). An invalid pattern is silently ignored by
+    // the browser, so compiling it here is part of the check.
+    for (const flags of ['v', 'u']) {
+      const browser = new RegExp(`^(?:${PHONE_INPUT_PATTERN})$`, flags);
+      for (const p of ['911', '311', '(212) 639-9675', '+1 212.639.9675', '*311', '#311', ' (718) 555-0100']) {
+        expect(browser.test(p), `${flags} ${p}`).toBe(true);
+        expect(PHONE_RE.test(p.trim()), p).toBe(true);
+      }
+      for (const p of ['(212) 555-0100 ext. 4', '+1 212 555 0100 x12', 'call me', '212/555/0100', '1'.repeat(41)]) {
+        expect(browser.test(p), `${flags} ${p}`).toBe(false);
+        expect(PHONE_RE.test(p.trim()), p).toBe(false);
+      }
+    }
   });
 
   it('allows only full https links', () => {

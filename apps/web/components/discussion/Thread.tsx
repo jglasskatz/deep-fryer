@@ -154,6 +154,13 @@ function Chip({ children, title, tone = 'neutral' }: { children: React.ReactNode
 }
 
 /**
+ * A moderation button. Staff moderate from phones too, so each is a 44 px
+ * target with room between them (the group's gap): a thumb meant for
+ * "approve" must not land on "decline".
+ */
+const MODERATE_BUTTON = 'inline-flex min-h-11 items-center underline';
+
+/**
  * One comment and its replies. What the viewer is shown was decided on the
  * server (lib/discussion.ts commentDisclosure): a held or declined comment
  * only reaches its author and moderators, and `body` is null exactly when
@@ -278,25 +285,25 @@ function CommentItem({
             </button>
           ) : null}
           {isModerator ? (
-            <span className="ms-auto flex gap-2">
+            <span className="ms-auto flex gap-4">
               {c.state === 'held' || c.state === 'declined' ? (
-                <button className="underline" disabled={pending} onClick={() => moderate('approve')}>
+                <button className={MODERATE_BUTTON} disabled={pending} onClick={() => moderate('approve')}>
                   {labels.approve}
                 </button>
               ) : null}
               {c.state === 'held' ? (
-                <button className="underline" disabled={pending} onClick={() => moderate('decline')}>
+                <button className={MODERATE_BUTTON} disabled={pending} onClick={() => moderate('decline')}>
                   {labels.decline}
                 </button>
               ) : null}
               {c.state === 'removed' ? (
-                <button className="underline" disabled={pending} onClick={() => moderate('restore')}>
+                <button className={MODERATE_BUTTON} disabled={pending} onClick={() => moderate('restore')}>
                   {labels.restore}
                 </button>
               ) : null}
               {c.state === 'visible' ? (
                 <button
-                  className="underline"
+                  className={MODERATE_BUTTON}
                   disabled={pending}
                   onClick={() => moderateWithReason('remove', labels.removeReason)}
                 >
@@ -305,7 +312,7 @@ function CommentItem({
               ) : null}
               {!isReply && !c.locked && !unpublished ? (
                 <button
-                  className="underline"
+                  className={MODERATE_BUTTON}
                   disabled={pending}
                   onClick={() => moderateWithReason('lock', labels.lockReason)}
                 >

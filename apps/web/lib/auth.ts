@@ -14,6 +14,7 @@ import {
 import { auth } from '@/auth';
 import { authConfigured, hasDatabase, isProduction } from './env';
 import { UserError } from './action-result';
+import { sameSitePath } from './safe-url';
 
 // Auth plumbing reads memberships in the system context (getDb): deciding
 // who someone is cannot depend on the policies that decision feeds.
@@ -178,11 +179,10 @@ export async function requireUserId(): Promise<string> {
 
 /**
  * Only same-site relative paths survive as post-login destinations — closes
- * the v2 open redirect (`/login?next=https://evil.example`).
+ * the v2 open redirect (`/login?next=https://evil.example`) and the ones a
+ * prefix check misses (`/\t/evil.example`, which browsers read as
+ * `//evil.example`); see lib/safe-url.ts sameSitePath.
  */
 export function safeNextPath(next: string | null | undefined, fallback = '/account'): string {
-  if (!next || !next.startsWith('/') || next.startsWith('//') || next.startsWith('/\\')) {
-    return fallback;
-  }
-  return next;
+  return sameSitePath(next) ?? fallback;
 }

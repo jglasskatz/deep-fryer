@@ -1,4 +1,5 @@
 import { run } from 'graphile-worker';
+import { unknownDisabledFeaturesMessage } from '@deep-fryer/core';
 import { workerRunners } from './runners.js';
 
 /**
@@ -13,6 +14,10 @@ async function main() {
   if (!process.env.ANTHROPIC_API_KEY) {
     console.warn('ANTHROPIC_API_KEY is not set — research and policy sessions will fail at spawn.');
   }
+  // A misspelt kill-switch name switches nothing off (the worker would keep
+  // fetching alerts or running policy jobs): say so once, as the web app does.
+  const unknownFeatures = unknownDisabledFeaturesMessage(process.env.DF_DISABLED_FEATURES);
+  if (unknownFeatures) console.warn(unknownFeatures);
 
   const runners = await Promise.all(
     workerRunners(connectionString, Number(process.env.WORKER_CONCURRENCY ?? 1)).map((options) => run(options)),

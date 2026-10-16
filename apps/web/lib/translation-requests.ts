@@ -4,7 +4,7 @@ import { and, count, desc, eq, gte, sql } from 'drizzle-orm';
 import { tenantBySlug, translationRequests } from '@deep-fryer/db';
 import { UserError } from './action-result';
 import { userDb } from './db';
-import { portraitFeaturesById } from './features';
+import { portraitFeaturesIn } from './features';
 import { purposeKey } from './form-token';
 import { LOCALES, localeInfo, type Locale } from './i18n/locales';
 import { translationScope } from './translation-policy';
@@ -51,7 +51,10 @@ export async function recordTranslationRequest(input: {
     const tenant = await tenantBySlug(db, input.tenantSlug);
     if (!tenant || tenant.archivedAt) throw new UserError('That portrait does not exist.');
     // A translated portrait already has the language; nothing to ask for.
-    if ((await portraitFeaturesById(tenant.id)).translation) return { status: 'not_needed' as const };
+    // Read on this transaction, not through portraitFeaturesById: that would
+    // wait for a second pooled connection while this one is held, and a burst
+    // of anonymous requests would leave every connection waiting forever.
+    if ((await portraitFeaturesIn(db, tenant.id)).translation) return { status: 'not_needed' as const };
 
     const since = new Date(Date.now() - 60 * 60 * 1000);
     const [row] = await db.execute<{ count: string }>(

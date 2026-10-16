@@ -7,7 +7,7 @@ import { involvementSubmissionInputSchema, SUBMISSION_LIMITS } from '@deep-fryer
 import { involvementSubmissions, tenantBySlug } from '@deep-fryer/db';
 import { addressHash, clientAddress } from './client-address';
 import { userDb } from './db';
-import { portraitFeaturesById } from './features';
+import { portraitFeaturesIn } from './features';
 import { verifyFormToken } from './form-token';
 import { getLocale } from './i18n/server';
 
@@ -143,8 +143,11 @@ export async function submitInvolvement(input: SubmitInvolvementInput): Promise<
       const tenant = await tenantBySlug(db, tenantSlug);
       if (!tenant || tenant.archivedAt) return { status: 'failed' };
       // A portrait without the involvement feature has no form (SPEC-v7 §3);
-      // a forged post to it stores nothing.
-      if (!(await portraitFeaturesById(tenant.id)).involvement) return { status: 'failed' };
+      // a forged post to it stores nothing. Read on this transaction: a
+      // second one (portraitFeaturesById) would wait for another pooled
+      // connection while this one is held, and a burst of submissions would
+      // leave every connection waiting on another (lib/features.ts).
+      if (!(await portraitFeaturesIn(db, tenant.id)).involvement) return { status: 'failed' };
 
       // 5. Rate limits, under transaction-scoped advisory locks (released at
       //    commit or rollback; see LOCK_ADDRESS).

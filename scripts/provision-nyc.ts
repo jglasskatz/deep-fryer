@@ -10,6 +10,7 @@
  *   migration 0002 — those now-empty orgs are removed);
  * - sets family order and short labels (NYC, MN, BK, QN, BX, SI);
  * - refreshes each tenant's region config;
+ * - keeps translation on for every portrait (Local Law 30; see step 2);
  * - ensures a contract subscription (Metro plan by default — six portraits,
  *   a quarterly refresh of the whole family fits its 600 sessions/year);
  * - optionally makes --owner the organization owner (they sign in with that
@@ -24,6 +25,7 @@
  */
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import {
+  enableTenantFeatures,
   getDb,
   organizationBySlug,
   organizationMembers,
@@ -136,6 +138,7 @@ async function main() {
   // 2. The six portraits, inside it, in family order.
   for (const [order, t] of TENANTS.entries()) {
     let tenant = await tenantBySlug(db, t.slug);
+    const created = !tenant;
     if (!tenant) {
       ({ tenant } = await provisionTenant(db, {
         slug: t.slug,
@@ -173,6 +176,14 @@ async function main() {
         target: [tenantConfig.tenantId, tenantConfig.key],
         set: { value: region, updatedAt: new Date() },
       });
+    // Local Law 30 requires NYC's portraits to be translated (SPEC-v7 §3.5),
+    // but a new portrait starts with every feature off, and migration 0011's
+    // backfill reached only portraits that existed when it ran — so on a
+    // fresh deployment nothing else would turn translation on. A portrait
+    // created just now gets it whatever provisioning stored; one that
+    // already existed gets it only if its owners never set it, so an
+    // explicit choice in Settings is kept.
+    await enableTenantFeatures(db, tenant.id, ['translation'], { overrideStored: created });
   }
 
   // 3. Organizations left empty by the regrouping (one per borough from

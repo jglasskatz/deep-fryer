@@ -21,12 +21,26 @@ import {
   MODERATION_VERBS,
   planModeration,
   SYSTEM_ACTOR_ID,
+  type CommentState,
   type ModerationVerb,
 } from './discussion';
 
 // The v1 anti-spam floor (SPEC.md §10).
 const RATE_LIMIT_PER_MINUTE = 5;
 const MAX_COMMENT_LENGTH = 10_000;
+
+/**
+ * One comment's state (lib/discussion.ts CommentState), read in the system
+ * context, or undefined when this portrait has no such comment. Only the
+ * state leaves here. Callers run it outside any userDb transaction.
+ */
+async function commentStateInTenant(tenantId: string, commentId: string): Promise<CommentState | undefined> {
+  const [row] = await systemDb()
+    .select({ id: comments.id, removedAt: comments.removedAt, removedBy: comments.removedBy })
+    .from(comments)
+    .where(and(eq(comments.id, commentId), eq(comments.tenantId, tenantId)));
+  return row ? (await loadCommentStates(systemDb(), [row])).get(row.id) : undefined;
+}
 
 export const postComment = action(async (input: {
   tenantSlug: string;
@@ -54,6 +68,17 @@ export const postComment = action(async (input: {
     .where(and(eq(tenantConfig.tenantId, tenant.id), eq(tenantConfig.key, 'review_policy')))
     .then((rows) => (rows[0]?.value ?? null) as ReviewPolicyConfig | null);
   const role = await getRole(tenant.id);
+  // A held or declined comment was never published: everyone but its author
+  // and the moderators would see a reply with nothing above it (SPEC-v6
+  // §3.1), so replies wait until it is approved. The state needs the parent's
+  // moderation history, which only members can read — so it is derived in
+  // the system context, and only the state is used. It is read here, before
+  // the transaction below, not inside it: a systemDb read there would wait for
+  // a second pooled connection while the transaction holds the first, and a
+  // burst of replies would leave every connection waiting on another. It is
+  // only acted on inside, after the parent has been checked under the
+  // resident's own role, so it reveals nothing about another portrait's rows.
+  const parentState = input.parentId ? await commentStateInTenant(tenant.id, input.parentId) : undefined;
 
   // Everything the resident does runs as the user role: the database itself
   // refuses a comment attributed to anyone but the signed-in author.
@@ -87,12 +112,7 @@ export const postComment = action(async (input: {
         throw new UserError('Unknown parent comment.');
       }
       if (parent.parentId) throw new UserError('Replies nest one level deep.');
-      // A held or declined comment was never published: everyone but its
-      // author and the moderators would see a reply with nothing above it
-      // (SPEC-v6 §3.1). Replies wait until it is approved. The state needs
-      // the parent's moderation history, which only members can read — so
-      // it is derived in the system context, and only the state is used.
-      const parentState = (await loadCommentStates(systemDb(), [parent])).get(parent.id);
+      // Derived before the transaction (see parentState above).
       if (parentState === 'held' || parentState === 'declined') {
         throw new UserError('You can reply once this comment is approved.');
       }
@@ -210,8 +230,13 @@ export const moderateComment = action(async (input: {
   action: ModerationVerb;
   reason?: string;
 }) => {
+  // The role check reads memberships in the system context (lib/auth.ts), so
+  // it runs before the transaction, not inside it: inside, it would wait for
+  // a second pooled connection while the transaction holds the first, and a
+  // burst of requests — anyone can send one, signed in or not — would leave
+  // every connection waiting on another.
+  const { tenant } = await requireTenantRole(input.tenantSlug, 'moderator');
   return userDb(async (db) => {
-    const { tenant } = await requireTenantRole(input.tenantSlug, 'moderator');
     await assertFeatureForTenant(tenant.id, 'discussion', db);
     const actorId = await requireUserId();
     if (!(MODERATION_VERBS as readonly string[]).includes(input.action)) {

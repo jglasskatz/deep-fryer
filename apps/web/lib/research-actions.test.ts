@@ -17,15 +17,26 @@ vi.mock('@deep-fryer/research', async (orig) => ({
 }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }));
 
+/**
+ * A deployment that offers bring-your-own-key has DF_SECRETS_KEY (32 bytes,
+ * base64); research on a key on file is refused without it (lib/billing.ts
+ * ORG_KEY_UNREADABLE), so these tests run with one unless they say otherwise.
+ */
+const SECRETS_KEY = Buffer.alloc(32, 7).toString('base64');
+
 describe.skipIf(!hasDb)('buildDoughnut and the organization-key gate', () => {
   const savedSecret = process.env.AUTH_SECRET;
+  const savedSecretsKey = process.env.DF_SECRETS_KEY;
   const cleanup: (() => Promise<unknown>)[] = [];
   beforeAll(() => {
     delete process.env.AUTH_SECRET;
+    process.env.DF_SECRETS_KEY = SECRETS_KEY;
   });
   afterAll(async () => {
     for (const fn of cleanup.reverse()) await fn();
     if (savedSecret !== undefined) process.env.AUTH_SECRET = savedSecret;
+    if (savedSecretsKey === undefined) delete process.env.DF_SECRETS_KEY;
+    else process.env.DF_SECRETS_KEY = savedSecretsKey;
   });
 
   /**
@@ -162,5 +173,43 @@ describe.skipIf(!hasDb)('buildDoughnut and the organization-key gate', () => {
     // …and on the analysis itself, which the worker and the allowance count follow.
     const [analysis] = await m.getDb().select().from(m.policyAnalyses).where(eq(m.policyAnalyses.id, id));
     expect(analysis!.funding).toBe('organization_key');
+  });
+
+  it('refuses research on a key this server cannot read, instead of queuing work the worker would only fail', async () => {
+    // DF_SECRETS_KEY lost in a restore, or removed by an operator: the worker
+    // cannot decrypt the key, and work put on it never moves to the plan.
+    const { buildDoughnut } = await import('./research-actions');
+    const { createPolicyAnalysis } = await import('./policy-actions');
+    const { billingSummary, previewResearchSpend, ORG_KEY_UNREADABLE } = await import('./billing');
+    const { setPortraitFeatures } = await import('./test-features');
+    const m = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const { org, tenant, runs } = await portrait({ allowance: 30, withKey: true });
+    await setPortraitFeatures(tenant.id, { policy_analysis: true });
+    delete process.env.DF_SECRETS_KEY;
+    try {
+      // What /start shows before the click…
+      expect(previewResearchSpend(await billingSummary(org.id), 22)).toMatchObject({
+        funding: 'organization_key',
+        allowed: false,
+        message: ORG_KEY_UNREADABLE,
+      });
+      // …is what the click does: nothing planned, applied, or queued.
+      expect(await buildDoughnut({ tenantSlug: tenant.slug })).toEqual({ ok: false, error: ORG_KEY_UNREADABLE });
+      expect(await runs()).toEqual([]);
+      const brief = 'Open a cooling center in every community district from June through September, with extended hours.';
+      expect(await createPolicyAnalysis({ tenantSlug: tenant.slug, title: 'Cooling centers', brief })).toEqual({
+        ok: false,
+        error: ORG_KEY_UNREADABLE,
+      });
+      expect(await m.getDb().select().from(m.policyAnalyses).where(eq(m.policyAnalyses.tenantId, tenant.id))).toEqual([]);
+
+      // Without a key on file the plan pays, so the missing secret changes nothing.
+      const planOnly = await portrait({ allowance: 30, withKey: false });
+      expect(previewResearchSpend(await billingSummary(planOnly.org.id), 22)).toMatchObject({ funding: 'plan', allowed: true });
+      expect(await buildDoughnut({ tenantSlug: planOnly.tenant.slug })).toMatchObject({ ok: true, data: { funding: 'plan' } });
+    } finally {
+      process.env.DF_SECRETS_KEY = SECRETS_KEY;
+    }
   });
 });
