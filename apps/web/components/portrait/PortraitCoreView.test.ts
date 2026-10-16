@@ -195,7 +195,10 @@ describe('the portrait core view, server-rendered', () => {
     // lines on a phone): EmergencySections' ANCHOR, which measured it.
     expect(html).toMatch(/<section id="panel"[^>]*class="[^"]*scroll-mt-48[^"]*sm:scroll-mt-36/);
     // From lg the wrapper sticks 9rem down and fits the rest of the window.
-    expect(html).toMatch(/<div class="lg:sticky lg:top-36 lg:max-h-\[calc\(100vh_-_10rem\)\] lg:overflow-y-auto[^"]*"><section id="panel"/);
+    const wrapper = /<div class="([^"]*)"><section id="panel"/.exec(html)?.[1] ?? '';
+    for (const c of ['lg:sticky', 'lg:top-36', 'lg:max-h-[calc(100vh_-_10rem)]', 'lg:overflow-y-auto']) {
+      expect(wrapper.split(' ')).toContain(c);
+    }
   });
 
   it('nothing selected, or an unknown ?dim=: the empty panel explains the doughnut with its legend', () => {

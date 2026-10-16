@@ -46,6 +46,7 @@ export const zhHans: Messages = {
     year: '年份：{year}',
     source: '来源：{source}',
     fullPortrait: '完整画像与讨论',
+    clickForDetails: 'Click for details', // INTERIM ENGLISH (SPEC-v7) — to be translated
     level: {
       unknown: '不明',
       noProblem: '没有问题',
@@ -122,6 +123,7 @@ export const zhHans: Messages = {
     /** The visible list of dimensions under the doughnut (SPEC-v6 §2.1). */
     exploreTitle: 'Explore the dimensions',
     exploreIntro: 'Each dimension has its data, sources, ways to get involved, and a discussion.',
+    exploreIntroCore: 'Each dimension has its data, its sources, and what you can do.',
     // INTERIM ENGLISH (SPEC-v7) — to be translated
     /** The detail panel beside the doughnut (SPEC-v7 §2) — the Santa Cruz core view. */
     panelEmpty: 'Select a dimension on the doughnut or in the list to see its data, its sources, and what you can do.',

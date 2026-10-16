@@ -15,6 +15,7 @@ export interface DoughnutLabels {
   year: string;
   source: string;
   fullPortrait: string;
+  clickForDetails: string;
   social: string;
   ecological: string;
   level: Messages['doughnut']['level'];
@@ -32,6 +33,7 @@ export function doughnutLabels(m: Messages): DoughnutLabels {
     year: d.year,
     source: d.source,
     fullPortrait: d.fullPortrait,
+    clickForDetails: d.clickForDetails,
     social: m.common.socialFoundation,
     ecological: m.common.ecologicalCeiling,
     level: d.level,

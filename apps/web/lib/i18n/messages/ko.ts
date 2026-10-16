@@ -47,6 +47,7 @@ export const ko: Messages = {
     year: '연도: {year}',
     source: '출처: {source}',
     fullPortrait: '전체 프로필 및 토론',
+    clickForDetails: 'Click for details', // INTERIM ENGLISH (SPEC-v7) — to be translated
     level: {
       unknown: '알 수 없음',
       noProblem: '문제 없음',
@@ -123,6 +124,7 @@ export const ko: Messages = {
     /** The visible list of dimensions under the doughnut (SPEC-v6 §2.1). */
     exploreTitle: 'Explore the dimensions',
     exploreIntro: 'Each dimension has its data, sources, ways to get involved, and a discussion.',
+    exploreIntroCore: 'Each dimension has its data, its sources, and what you can do.',
     // INTERIM ENGLISH (SPEC-v7) — to be translated
     /** The detail panel beside the doughnut (SPEC-v7 §2) — the Santa Cruz core view. */
     panelEmpty: 'Select a dimension on the doughnut or in the list to see its data, its sources, and what you can do.',

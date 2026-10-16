@@ -67,6 +67,8 @@ export const en = {
     year: 'Year: {year}',
     source: 'Source: {source}',
     fullPortrait: 'Full portrait & discussion',
+    /** The hint under the doughnut's hover tooltip. */
+    clickForDetails: 'Click for details',
     level: {
       unknown: 'Unknown',
       noProblem: 'No problem',
@@ -149,6 +151,8 @@ export const en = {
     /** The visible list of dimensions under the doughnut (SPEC-v6 §2.1). */
     exploreTitle: 'Explore the dimensions',
     exploreIntro: 'Each dimension has its data, sources, ways to get involved, and a discussion.',
+    /** The list's intro when the portrait has no discussion (SPEC-v7 §3). */
+    exploreIntroCore: 'Each dimension has its data, its sources, and what you can do.',
     /** The detail panel beside the doughnut (SPEC-v7 §2) — the Santa Cruz core view. */
     panelEmpty: 'Select a dimension on the doughnut or in the list to see its data, its sources, and what you can do.',
     panelClose: 'Close',

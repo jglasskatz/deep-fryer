@@ -620,14 +620,23 @@ export class DoughnutRenderer {
             let intScale = ((this._outDonut - this._inDonut) / 2) / this._normalDonutLevelRadius;
             let type = null;
             let min = 0, max =0;
+            // min/max bound each dimension's hit area (the Path2D below), not
+            // what is drawn. deep-fryer change: the social and ecological hit
+            // areas meet at the green ring's OUTER edge (_outDonut), not its
+            // middle circle. The social names are drawn centred on that middle
+            // circle (_textInner == _midDonut), so with the split there a tap
+            // on the upper half of a top-half label such as "Housing" selected
+            // the ecological wedge beyond it. Nothing ecological is drawn inside
+            // _outDonut (_inOuter == _outDonut), so the whole ring belongs to
+            // the social dimension at that angle. doughnut-renderer.test.ts.
             if (extMax > this._outDonut) {
                 type = OUTER;
-                min = this._midDonut;
+                min = this._outDonut;
                 max = extMax;
             } else {
                 type = INNER;
                 min = extMin;
-                max = this._midDonut;
+                max = this._outDonut;
             }
             for (let dim = 0; dim < dims.length(); dim++) {
                 let levels = dims.get(dim).levels;

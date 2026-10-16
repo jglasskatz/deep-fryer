@@ -91,7 +91,7 @@ export default async function TenantPage({
             // line under the chart is kept for the demo's notice.
             explore={{
               title: m.portrait.exploreTitle,
-              intro: features.discussion ? m.portrait.exploreIntro : undefined,
+              intro: features.discussion ? m.portrait.exploreIntro : m.portrait.exploreIntroCore,
               hint: hasDatabase() ? undefined : m.portrait.demoHint,
             }}
             panel={{
