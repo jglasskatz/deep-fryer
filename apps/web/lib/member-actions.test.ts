@@ -13,8 +13,10 @@ import { onOneConnection } from '../test/one-connection';
  * where a tenant owner cannot read the organization's members), so each
  * action runs here on a one-connection pool (test/one-connection.ts), with
  * the session read through the pooled client as in production
- * (test/database-session.ts). And it locks what it counts: two owners
- * demoting each other at the same moment leave one owner, not none.
+ * (test/database-session.ts). And it locks what it counts, before it reads
+ * the member it acts on: two owners demoting each other at the same moment
+ * leave one owner, not none, and a promotion that lands first is counted.
+ * Those races are made to overlap on every run (whileOwnersLocked).
  */
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }));
@@ -186,19 +188,119 @@ describe.skipIf(!hasDb)('member actions and the last-owner guard', () => {
     expect(owners).toEqual([{ userId: o1 }]);
   });
 
+  /** Resolves once `n` other backends of this database are waiting on a lock. */
+  async function waiting(n: number): Promise<void> {
+    const m = await import('@deep-fryer/db');
+    const { sql } = await import('drizzle-orm');
+    for (let i = 0; i < 120; i++) {
+      const [row] = await m.getDb().execute<{ n: number }>(sql`
+        select count(*)::int as n from pg_stat_activity
+         where datname = current_database() and wait_event_type = 'Lock' and pid <> pg_backend_pid()`);
+      if (row!.n >= n) return;
+      await new Promise((r) => setTimeout(r, 25));
+    }
+    throw new Error(`fewer than ${n} requests ever waited on a lock`);
+  }
+
+  /**
+   * Run `requests` while a transaction of the test's own holds the
+   * portrait's tenant-level owner rows FOR UPDATE, in user_id order — as a
+   * role change on the portrait holds them (lock_tenant_owners) — and let go
+   * only once `waiters` of the requests are waiting on a lock. Without that
+   * barrier, requests started together need not overlap at all: the first
+   * can commit before the second reads anything. `meanwhile` runs on the
+   * held transaction just before it commits: changes that land while the
+   * requests wait.
+   */
+  async function whileOwnersLocked<T>(
+    tenantId: string,
+    waiters: number,
+    requests: () => Promise<T>,
+    meanwhile?: (tx: import('@deep-fryer/db').DbExecutor) => Promise<void>,
+  ): Promise<T> {
+    const m = await import('@deep-fryer/db');
+    const { and, eq } = await import('drizzle-orm');
+    let held!: () => void;
+    let release!: () => void;
+    const locked = new Promise<void>((r) => (held = r));
+    const released = new Promise<void>((r) => (release = r));
+    const blocker = m.getDb().transaction(async (tx) => {
+      await tx
+        .select({ userId: m.tenantMembers.userId })
+        .from(m.tenantMembers)
+        .where(and(eq(m.tenantMembers.tenantId, tenantId), eq(m.tenantMembers.role, 'owner')))
+        .orderBy(m.tenantMembers.userId)
+        .for('update');
+      held();
+      await released;
+      await meanwhile?.(tx);
+    });
+    try {
+      // Fail with the blocker's own error, not a timeout, if it ends early.
+      await Promise.race([
+        locked,
+        blocker.then(() => {
+          throw new Error('the test transaction ended before it locked the owners');
+        }),
+      ]);
+      const running = requests();
+      await waiting(waiters);
+      release();
+      await blocker;
+      return await running;
+    } finally {
+      release();
+      await blocker.catch(() => undefined);
+    }
+  }
+
   it('leaves one owner, not none, when two owners demote each other at the same moment', async () => {
     // The count used to come from a separate snapshot, without a lock: each
-    // request still counted the other as an owner and both went ahead.
+    // request still counted the other as an owner and both went ahead. Both
+    // requests are held until each is waiting inside its transaction, so
+    // they overlap on every run: with the lock they queue at the count, and
+    // the second counts after the first has committed.
     const [a, b] = [await person('a'), await person('b')];
     const tenant = await portrait({ [a]: 'owner', [b]: 'owner' });
     const { changeTenantMemberRole } = await import('./member-actions');
-    const results = await Promise.all([
-      requestUser.run(a, () => changeTenantMemberRole({ tenantSlug: tenant.slug, userId: b, role: 'editor' })),
-      requestUser.run(b, () => changeTenantMemberRole({ tenantSlug: tenant.slug, userId: a, role: 'editor' })),
-    ]);
+    const results = await whileOwnersLocked(tenant.id, 2, () =>
+      Promise.all([
+        requestUser.run(a, () => changeTenantMemberRole({ tenantSlug: tenant.slug, userId: b, role: 'editor' })),
+        requestUser.run(b, () => changeTenantMemberRole({ tenantSlug: tenant.slug, userId: a, role: 'editor' })),
+      ]),
+    );
     expect(results).toContainEqual({ ok: true, data: undefined });
     expect(results).toContainEqual(LAST_OWNER);
     const roles = [await tenantRole(tenant.id, a), await tenantRole(tenant.id, b)];
     expect(roles.sort()).toEqual(['editor', 'owner']);
+  });
+
+  it('reads the member only after taking the owner lock, so a promotion that lands first is counted', async () => {
+    // A demotes editor C while other role changes on the portrait hold the
+    // owner lock: C is promoted to owner, and then A steps down, leaving C as
+    // the only owner. A request that read C before the lock would still see
+    // an editor, skip the last-owner check, and demote the portrait's last
+    // owner.
+    const [a, c] = [await person('a'), await person('c')];
+    const tenant = await portrait({ [a]: 'owner', [c]: 'editor' });
+    const m = await import('@deep-fryer/db');
+    const { and, eq } = await import('drizzle-orm');
+    const { changeTenantMemberRole } = await import('./member-actions');
+    const setRole = (tx: import('@deep-fryer/db').DbExecutor, userId: string, role: 'owner' | 'editor') =>
+      tx
+        .update(m.tenantMembers)
+        .set({ role })
+        .where(and(eq(m.tenantMembers.tenantId, tenant.id), eq(m.tenantMembers.userId, userId)));
+    const result = await whileOwnersLocked(
+      tenant.id,
+      1,
+      () => requestUser.run(a, () => changeTenantMemberRole({ tenantSlug: tenant.slug, userId: c, role: 'viewer' })),
+      async (tx) => {
+        await setRole(tx, c, 'owner');
+        await setRole(tx, a, 'editor');
+      },
+    );
+    expect(result).toEqual(LAST_OWNER);
+    expect(await tenantRole(tenant.id, c)).toBe('owner');
   });
 });

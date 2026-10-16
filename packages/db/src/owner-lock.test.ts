@@ -67,6 +67,22 @@ describe.skipIf(!hasDb)('lock_tenant_owners', () => {
     return { promise, resolve };
   }
 
+  /**
+   * Waits for the held transaction `running` to reach `step`, or fails with
+   * its own error if it ends first. Awaiting `step` alone would turn any
+   * failure before it (an assertion, a missing grant) into a test timeout
+   * that reports the real error only as an unhandled rejection, and that
+   * abandons the test before its finally blocks run cleanup().
+   */
+  function reached(step: Promise<void>, running: Promise<unknown>): Promise<void> {
+    return Promise.race([
+      step,
+      running.then(() => {
+        throw new Error('the held transaction ended before it got there');
+      }),
+    ]);
+  }
+
   it('may be called by the app role only, since it takes row locks', async () => {
     const m = await import('./index.js');
     const { sql } = await import('drizzle-orm');
@@ -112,7 +128,7 @@ describe.skipIf(!hasDb)('lock_tenant_owners', () => {
         await commit.promise;
       });
       try {
-        await demoted.promise;
+        await reached(demoted.promise, first);
         // At the same moment B wants to demote A, and counts first. Without
         // the lock it would still count B (its snapshot predates A's commit)
         // and go ahead, leaving no owner.
@@ -151,7 +167,7 @@ describe.skipIf(!hasDb)('lock_tenant_owners', () => {
         await commit.promise;
       });
       try {
-        await removed.promise;
+        await reached(removed.promise, first);
         const second = m.withAuthContext(db, a, (tx) => ownerCount(tx, tenant.id));
         await someoneWaits(db);
         commit.resolve();
