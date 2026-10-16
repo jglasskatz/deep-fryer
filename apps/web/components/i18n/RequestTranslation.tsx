@@ -16,6 +16,21 @@ export interface RequestTranslationLabels {
 }
 
 /**
+ * A language's name in the language the confirmation is written in ("asked
+ * for Spanish" in English, "pidió español" in Spanish), so the sentence reads
+ * as one language; the language's own name when the runtime cannot name it.
+ */
+export function languageNameIn(labelsLang: string, code: string, ownName: string): string {
+  try {
+    // fallback 'none': no name rather than a made-up one ("xx (UNKNOWN)").
+    const name = new Intl.DisplayNames([labelsLang], { type: 'language', fallback: 'none' }).of(code);
+    return name && name !== code ? name : ownName;
+  } catch {
+    return ownName;
+  }
+}
+
+/**
  * "Request a translation" (SPEC-v7 §3.5), in the header where the language
  * menu sits on translated portraits. The page is English, but these labels
  * come in the reader's preferred language when we know it (remembered choice
@@ -70,7 +85,7 @@ export function RequestTranslation({
               setMessage(
                 res.data.status === 'limited'
                   ? labels.limited
-                  : labels.sent.replace('{language}', chosen?.name ?? code),
+                  : labels.sent.replace('{language}', languageNameIn(labelsLang, code, chosen?.name ?? code)),
               );
             });
           }}
