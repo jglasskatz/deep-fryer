@@ -94,12 +94,24 @@ describe.skipIf(!hasDb)('alerts_sync (Postgres, injected NWS feed)', () => {
     return tenant;
   }
 
+  /** Turn a portrait's features on or off (new portraits start with everything beyond core off). */
+  async function setFeatures(tenantId: string, features: Record<string, boolean>) {
+    const m = await import('@deep-fryer/db');
+    const { and, eq } = await import('drizzle-orm');
+    await m
+      .getDb()
+      .update(m.tenantConfig)
+      .set({ value: features })
+      .where(and(eq(m.tenantConfig.tenantId, tenantId), eq(m.tenantConfig.key, 'features')));
+  }
+
   async function setup(zones: string[]) {
     const m = await import('@deep-fryer/db');
     const db = m.getDb();
     const tenant = await provision('Alert City');
     const config = emergencyConfigSchema.parse({ nws_zones: zones });
     await db.insert(m.tenantConfig).values({ tenantId: tenant.id, key: 'emergency', value: config });
+    await setFeatures(tenant.id, { emergency: true });
     return { m, db, tenant, config };
   }
 
@@ -205,8 +217,10 @@ describe.skipIf(!hasDb)('alerts_sync (Postgres, injected NWS feed)', () => {
     const { m, db } = failing;
     const noZones = await provision('No Zones');
     await db.insert(m.tenantConfig).values({ tenantId: noZones.id, key: 'emergency', value: { nws_zones: [] } });
+    await setFeatures(noZones.id, { emergency: true });
     const broken = await provision('Broken');
     await db.insert(m.tenantConfig).values({ tenantId: broken.id, key: 'emergency', value: { nws_zones: ['Manhattan'] } });
+    await setFeatures(broken.id, { emergency: true });
 
     const logged: string[] = [];
     const all = await loadAlertTargets(db, (msg) => logged.push(msg));
@@ -230,6 +244,18 @@ describe.skipIf(!hasDb)('alerts_sync (Postgres, injected NWS feed)', () => {
     const w = await stored(working.tenant.id);
     expect(w.alerts.map((a) => a.areaDesc)).toEqual(['Richmond (Staten Island)']);
     expect(w.sync).toMatchObject({ lastError: null });
+  });
+
+  it('skips portraits whose emergency feature is off, and every portrait when the deployment disables it', async () => {
+    const { loadAlertTargets } = await import('./alerts-sync.js');
+    const { parseDisabledFeatures } = await import('@deep-fryer/core');
+    const on = await setup(['NYC047']);
+    const off = await setup(['NYC081']);
+    await setFeatures(off.tenant.id, { emergency: false });
+    // Configured zones alone do not make a target: the feature decides.
+    const ids = (targets: { tenantId: string }[]) => targets.map((t) => t.tenantId).filter((id) => id === on.tenant.id || id === off.tenant.id);
+    expect(ids(await loadAlertTargets(on.db, () => {}, new Set()))).toEqual([on.tenant.id]);
+    expect(ids(await loadAlertTargets(on.db, () => {}, parseDisabledFeatures('emergency').disabled))).toEqual([]);
   });
 
   it('keeps the stored copy of an alert the feed lists but this app cannot read', async () => {

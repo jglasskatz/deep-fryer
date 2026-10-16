@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import type { Family } from '@/lib/family';
+import { organizationFeatures } from '@/lib/features';
+import { familyViews } from './nav-links';
 import { fmt } from '@/lib/i18n/format';
 import { getI18n } from '@/lib/i18n/server';
 
@@ -17,7 +19,7 @@ export async function FamilyNav({
   currentSlug?: string;
   currentView?: 'compare' | 'insights' | 'progress';
 }) {
-  const { m, href } = await getI18n();
+  const [{ m, href }, features] = await Promise.all([getI18n(), organizationFeatures(family.organization.id)]);
   const base = `/o/${family.organization.slug}`;
   const pill = (active: boolean) =>
     `whitespace-nowrap rounded-full px-3 py-1 ${
@@ -44,15 +46,20 @@ export async function FamilyNav({
         <span aria-hidden className="mx-1 text-black/15">
           |
         </span>
-        <Link href={href(`${base}/compare`)} className={pill(currentView === 'compare')}>
-          {m.nav.compare} <span aria-hidden>⇆</span>
-        </Link>
-        <Link href={href(`${base}/insights`)} className={pill(currentView === 'insights')}>
-          {m.nav.insights}
-        </Link>
-        <Link href={href(`${base}/progress`)} className={pill(currentView === 'progress')}>
-          {m.nav.progress}
-        </Link>
+        {/* Compare and Insights are a feature (SPEC-v7 §3); progress is core (nav-links.ts). */}
+        {familyViews(features).map((view) => (
+          <Link key={view} href={href(`${base}/${view}`)} className={pill(currentView === view)}>
+            {view === 'compare' ? (
+              <>
+                {m.nav.compare} <span aria-hidden>⇆</span>
+              </>
+            ) : view === 'insights' ? (
+              m.nav.insights
+            ) : (
+              m.nav.progress
+            )}
+          </Link>
+        ))}
       </nav>
     </div>
   );

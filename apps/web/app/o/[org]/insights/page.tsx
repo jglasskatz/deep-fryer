@@ -8,7 +8,7 @@ import { getPortrait, evidenceUrl } from '@/lib/data';
 import { tenantBySlug } from '@deep-fryer/db';
 import { userDb } from '@/lib/db';
 import { getAuth, getRole } from '@/lib/auth';
-import { configValue } from '@/lib/admin-data';
+import { portraitFeaturesById, requireOrganizationFeature } from '@/lib/features';
 import { familyByOrgSlug, type FamilyMember } from '@/lib/family';
 import { safeHref } from '@/lib/safe-url';
 import type { PublishedPortrait, PublishedDimension } from '@/lib/portrait';
@@ -71,6 +71,8 @@ export default async function InsightsPage({
   const { dim: selectedSlug } = await searchParams;
   const [family, { m, href }] = await Promise.all([familyByOrgSlug(org), getI18n()]);
   if (!family || family.members.length < 2) notFound();
+  // Compare and Insights are a feature (SPEC-v7 §3), on when any of the family's portraits has it.
+  await requireOrganizationFeature(family.organization.id, 'family_compare');
   const FAMILY = family.members;
   const whole = family.whole;
   const { singular: noun, plural: nouns } = nounForms(m, family.noun);
@@ -120,8 +122,7 @@ export default async function InsightsPage({
       const tenantId = tenant.id;
       const role = await getRole(tenantId);
       if (role !== 'owner' && role !== 'editor') continue;
-      const features = await configValue(tenantId, 'features');
-      canRequest.set(m.slug, Boolean(features?.request_research));
+      canRequest.set(m.slug, (await portraitFeaturesById(tenantId)).request_research);
     }
   }
 

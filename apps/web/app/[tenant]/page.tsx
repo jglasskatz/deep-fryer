@@ -48,14 +48,18 @@ export default async function TenantPage({
             labels={doughnutLabels(m)}
             linkBase={`${href(`/${portrait.tenant.slug}`)}/dim`}
             size={720}
+            // The visible list of dimensions under the chart (SPEC-v6 §2.1):
+            // on a phone it, not the canvas, is the way into a dimension. The
+            // hint sits between the chart and the list, where it applies.
+            explore={{
+              title: m.portrait.exploreTitle,
+              intro: m.portrait.exploreIntro,
+              hint: hasDatabase() ? m.portrait.clickHint : m.portrait.demoHint,
+            }}
           />
         </section>
 
-        <p className="mt-6 text-center text-sm text-[color:var(--color-muted)]">
-          {hasDatabase() ? m.portrait.clickHint : m.portrait.demoHint}
-        </p>
-
-        <nav className="mt-4 text-center text-sm">
+        <nav className="mt-10 text-center text-sm">
           <a className="underline" href={href(`/${portrait.tenant.slug}/methodology`)}>
             {m.nav.methodology}
           </a>

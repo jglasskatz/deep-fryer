@@ -10,6 +10,7 @@ import { getAuth, getOrgRole } from '@/lib/auth';
 import { billingSummary, WARNING_COPY } from '@/lib/billing';
 import { getPortrait } from '@/lib/data';
 import { familyByOrgSlug } from '@/lib/family';
+import { organizationFeatures } from '@/lib/features';
 import { organizationMembersList, pendingInvitations } from '@/lib/member-data';
 import { fmt, fmtPlural } from '@/lib/i18n/format';
 import { getI18n } from '@/lib/i18n/server';
@@ -40,6 +41,8 @@ export default async function OrgPage({ params }: { params: Promise<{ org: strin
     Promise.all(family.members.map(async (m) => ({ m, p: await getPortrait(m.slug) }))),
   ]);
   const isOrgMember = orgRole !== null;
+  // Compare and Insights are a feature (SPEC-v7 §3): linked only when one of the family's portraits has it on.
+  const familyCompare = (await organizationFeatures(orgId)).family_compare;
   const [summary, members, invites] = isOrgMember
     ? await Promise.all([
         billingSummary(orgId),
@@ -61,14 +64,18 @@ export default async function OrgPage({ params }: { params: Promise<{ org: strin
           {fmtPlural(locale, m.org.portraitCount, family.members.length)}
           {family.members.length > 1 ? (
             <>
-              {' · '}
-              <Link className="underline" href={href(`/o/${orgSlug}/compare`)}>
-                {m.nav.compare}
-              </Link>
-              {' · '}
-              <Link className="underline" href={href(`/o/${orgSlug}/insights`)}>
-                {m.nav.insights}
-              </Link>
+              {familyCompare ? (
+                <>
+                  {' · '}
+                  <Link className="underline" href={href(`/o/${orgSlug}/compare`)}>
+                    {m.nav.compare}
+                  </Link>
+                  {' · '}
+                  <Link className="underline" href={href(`/o/${orgSlug}/insights`)}>
+                    {m.nav.insights}
+                  </Link>
+                </>
+              ) : null}
               {' · '}
               <Link className="underline" href={href(`/o/${orgSlug}/progress`)}>
                 {m.nav.progress}

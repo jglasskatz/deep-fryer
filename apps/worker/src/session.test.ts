@@ -141,6 +141,68 @@ describe('sessionEnv', () => {
   });
 });
 
+describe('sessionEnv with an organization key (SPEC-v7 §4)', () => {
+  const deployment = {
+    PATH: '/usr/bin',
+    HTTPS_PROXY: 'http://egress:3128',
+    ANTHROPIC_API_KEY: 'sk-ant-deployment',
+    ANTHROPIC_MODEL: 'claude-sonnet-5',
+    CLAUDE_CODE_MAX_OUTPUT_TOKENS: '8000',
+    // Deployment credentials and routing that must not outrank or receive the organization's key.
+    ANTHROPIC_AUTH_TOKEN: 'deployment-bearer',
+    ANTHROPIC_BASE_URL: 'https://gateway.internal',
+    ANTHROPIC_CUSTOM_HEADERS: 'X-Gateway-Auth: deployment',
+    CLAUDE_CODE_OAUTH_TOKEN: 'deployment-oauth',
+    CLAUDE_CODE_USE_BEDROCK: '1',
+    ANTHROPIC_BEDROCK_BASE_URL: 'https://bedrock.internal',
+  };
+
+  it('replaces the deployment key with the organization key and withholds deployment credentials', async () => {
+    const { sessionEnv } = await import('./session.js');
+    expect(sessionEnv({ ...SECRETS, ...deployment }, { apiKey: 'sk-ant-org-key' })).toEqual({
+      PATH: '/usr/bin',
+      HTTPS_PROXY: 'http://egress:3128',
+      ANTHROPIC_API_KEY: 'sk-ant-org-key',
+      ANTHROPIC_MODEL: 'claude-sonnet-5',
+      CLAUDE_CODE_MAX_OUTPUT_TOKENS: '8000',
+    });
+  });
+
+  it('leaves the environment as it was without one', async () => {
+    const { sessionEnv } = await import('./session.js');
+    expect(sessionEnv(deployment, {})).toEqual(deployment);
+    expect(sessionEnv(deployment, { apiKey: '' })).toEqual(deployment);
+  });
+
+  it('hands the organization key to the session subprocess only', async () => {
+    const saved = process.env.ANTHROPIC_API_KEY;
+    process.env.ANTHROPIC_API_KEY = 'sk-ant-deployment';
+    try {
+      const { runSession } = await import('./session.js');
+      sdk.calls.length = 0;
+      await runSession({ prompt: 'p', allowedTools: POLICY_SESSION_TOOLS, orchestrate: false, apiKey: 'sk-ant-org-key' });
+      const { options, prompt } = sdk.calls.at(-1)!;
+      expect((options.env as Record<string, string>).ANTHROPIC_API_KEY).toBe('sk-ant-org-key');
+      // Nowhere else in what the SDK is given.
+      expect(prompt).not.toContain('sk-ant-org-key');
+      expect(JSON.stringify({ ...options, env: undefined })).not.toContain('sk-ant-org-key');
+      // The worker's own environment is untouched.
+      expect(process.env.ANTHROPIC_API_KEY).toBe('sk-ant-deployment');
+    } finally {
+      if (saved === undefined) delete process.env.ANTHROPIC_API_KEY;
+      else process.env.ANTHROPIC_API_KEY = saved;
+    }
+  });
+
+  it('redacts the key from text that is stored', async () => {
+    const { redactSecret } = await import('./session.js');
+    expect(redactSecret('auth failed for sk-ant-org-key (sk-ant-org-key)', 'sk-ant-org-key')).toBe(
+      'auth failed for [redacted API key] ([redacted API key])',
+    );
+    expect(redactSecret('nothing to hide', undefined)).toBe('nothing to hide');
+  });
+});
+
 describe('extractJson', () => {
   it('reads one balanced value and ignores the prose after it', async () => {
     const { extractJson } = await import('./session.js');

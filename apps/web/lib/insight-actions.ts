@@ -5,7 +5,7 @@ import { and, eq } from 'drizzle-orm';
 import { dimensions } from '@deep-fryer/db';
 import { getAuth, requireTenantRole } from './auth';
 import { audit } from './audit';
-import { configValue } from './admin-data';
+import { portraitFeaturesById } from './features';
 import { createPlannedRun, applyRun } from './research';
 import { action, UserError } from './action-result';
 import { userDb } from './db';
@@ -24,8 +24,9 @@ export const requestResearch = action(async (input: {
 }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
 
-  const features = await configValue(tenant.id, 'features');
-  if (!features?.request_research) {
+  // Resolved like every other feature (SPEC-v7 §3): the deployment's kill
+  // switch wins over the portrait's setting.
+  if (!(await portraitFeaturesById(tenant.id)).request_research) {
     throw new UserError('Additional-research requests are not enabled for this portrait.');
   }
 

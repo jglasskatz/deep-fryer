@@ -122,7 +122,11 @@ function config(): NextAuthConfig {
     session: { strategy: 'database', maxAge: 30 * 24 * 60 * 60, updateAge: 24 * 60 * 60 },
     // Self-hosted behind Caddy: trust the forwarded host (AUTH_URL pins it).
     trustHost: true,
-    pages: { signIn: '/login', verifyRequest: '/login?sent=1', error: '/login' },
+    // verifyRequest is a page of its own: Auth.js appends `?provider=…` to
+    // it, which turned the old '/login?sent=1' into a malformed URL. The
+    // sign-in form goes there itself, carrying `next` (app/login/sign-in.ts
+    // afterEmailSignIn); Auth.js's own redirect lands there for any other caller.
+    pages: { signIn: '/login', verifyRequest: '/login/check-email', error: '/login' },
     callbacks: {
       async session({ session, user }) {
         const row = user as typeof user & { displayName?: string | null; isStaff?: boolean };

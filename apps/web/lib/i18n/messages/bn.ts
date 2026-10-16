@@ -135,6 +135,18 @@ export const bn: Messages = {
     /** The visible list of dimensions under the doughnut (SPEC-v6 §2.1). */
     exploreTitle: 'Explore the dimensions',
     exploreIntro: 'Each dimension has its data, sources, ways to get involved, and a discussion.',
+    // INTERIM ENGLISH (SPEC-v7) — to be translated
+    /** The detail panel beside the doughnut (SPEC-v7 §2) — the Santa Cruz core view. */
+    panelEmpty: 'Select a dimension on the doughnut or in the list to see its data, its sources, and what you can do.',
+    panelClose: 'Close',
+    panelSelected: 'Showing {name}',
+    openFull: 'Open the full page',
+    openFullDiscussion: 'Open the full page and discussion',
+    legendTitle: 'How to read the doughnut',
+    legendSafe: 'Green ring: the safe and just space',
+    legendShortfall: 'Red toward the centre: a shortfall below the social foundation',
+    legendOvershoot: 'Red outside the ring: an overshoot of the ecological ceiling',
+    legendNoData: 'Grey: no data yet',
   },
   dimension: {
     updated: 'হালনাগাদ {date}',
@@ -185,7 +197,7 @@ export const bn: Messages = {
     decline: 'decline',
     /** A held comment moderators did not approve; only its author sees it. */
     declined: 'Not approved',
-    declinedNote: 'The moderators did not approve this comment. Only you can see it.',
+    declinedNote: 'The moderators did not approve this comment. Only you and the moderators can see it.',
     /** Label beside a comment written by the portrait's team (SPEC-v6 §3.3). */
     staff: 'Staff',
     staffTitle: 'Member of this portrait’s team',
@@ -315,6 +327,22 @@ export const bn: Messages = {
     tooFast: 'That was very quick. Please wait a moment, then send again.',
     rateLimited: 'Too many submissions from here today. Please try again later.',
     expired: 'This form has expired. Reload the page and try again.',
+    failed: 'We could not send that. Please try again.',
+  },
+  // INTERIM ENGLISH (SPEC-v7) — to be translated
+  /**
+   * Asking for a portrait in another language while its translation is off
+   * (SPEC-v7 §3.5). Shown in the reader's preferred language even though the
+   * page itself is English. {language} is a language's own name (Español).
+   */
+  translationRequest: {
+    button: 'Request a translation',
+    intro: 'This portrait is published in English. Tell the staff which language you need — they see how many readers ask for each one.',
+    language: 'Language',
+    send: 'Send request',
+    sending: 'Sending…',
+    sent: 'Thank you. Staff will see that a reader asked for {language}.',
+    limited: 'Thank you — your requests are recorded. Please try again later.',
     failed: 'We could not send that. Please try again.',
   },
   /** The sign-in page (SPEC-v6 §2.2). */

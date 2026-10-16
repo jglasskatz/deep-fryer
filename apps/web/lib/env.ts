@@ -36,6 +36,22 @@ export const emailSignInEnabled = (): boolean => smtpConfigured() || !isProducti
 export const stripeConfigured = (): boolean =>
   Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET);
 
+/**
+ * DF_SECRETS_KEY (SPEC-v7 §4): the AES-256 key organizations' own Anthropic
+ * API keys are encrypted under, as configured (base64), or null when unset.
+ * Optional: without it, bring-your-own-key is unavailable and research runs
+ * on the deployment's ANTHROPIC_API_KEY only. When it is set, production
+ * refuses to boot unless it is 32 bytes of base64 (@deep-fryer/core
+ * deploy-env). Blank counts as unset, because docker compose passes
+ * `${DF_SECRETS_KEY:-}` through. Only the raw value lives here — server code
+ * that encrypts turns it into key material with @deep-fryer/core/secrets
+ * parseSecretsKey, so this module stays free of crypto.
+ */
+export const secretsKey = (): string | null => process.env.DF_SECRETS_KEY?.trim() || null;
+
+/** Organizations may store their own Anthropic API key on this deployment. */
+export const bringYourOwnKeyAvailable = (): boolean => secretsKey() !== null;
+
 /** Where customers reach a person (pricing, billing, error pages); optional. */
 export const supportEmail = (): string | null => process.env.SUPPORT_EMAIL?.trim() || null;
 

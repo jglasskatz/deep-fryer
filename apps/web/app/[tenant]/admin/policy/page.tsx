@@ -8,6 +8,7 @@ import { PolicyStatusBadge } from '@/components/policy/PolicyStatusBadge';
 import { requireAdminPage } from '@/lib/admin-guard';
 import { billingSummary, type BillingSummary } from '@/lib/billing';
 import { getPolicyAnalysis, listPolicyAnalyses } from '@/lib/policy';
+import { requireFeature } from '@/lib/features';
 import { safeHref } from '@/lib/safe-url';
 
 export const dynamic = 'force-dynamic';
@@ -56,6 +57,7 @@ export default async function PolicyPage({
   searchParams: Promise<{ from?: string | string[] }>;
 }) {
   const { tenant } = await params;
+  await requireFeature(tenant, 'policy_analysis');
   const { from } = await searchParams;
   const ctx = await requireAdminPage(tenant, 'editor', `/${tenant}/admin/policy`);
   const [analyses, billing, previous] = await Promise.all([

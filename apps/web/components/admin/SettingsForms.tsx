@@ -2,7 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import {
-  defaultFeatures,
+  FEATURE_REGISTRY,
+  PORTRAIT_FEATURES,
+  resolvePortraitFeatures,
   defaultProgressConfig,
   defaultNotifications,
   defaultRetention,
@@ -139,6 +141,8 @@ export function SettingsForms({
   notifications,
   progress,
   features,
+  deploymentDisabled = [],
+  translationRequests = [],
 }: {
   tenantSlug: string;
   region: PortraitConfig['region'] | null;
@@ -151,6 +155,10 @@ export function SettingsForms({
   notifications: NotificationConfig | null;
   progress: ProgressConfig | null;
   features: FeaturesConfig | null;
+  /** Features the deployment's operator switched off everywhere (DF_DISABLED_FEATURES). */
+  deploymentDisabled?: string[];
+  /** Readers' translation requests while translation is off, per language (SPEC-v7 §3.5). */
+  translationRequests?: { language: string; count: number }[];
 }) {
   const { isPending, status, save } = useSave(tenantSlug);
 
@@ -164,7 +172,9 @@ export function SettingsForms({
   );
   const [notif, setNotif] = useState<NotificationConfig>(notifications ?? defaultNotifications);
   const [prog, setProg] = useState<ProgressConfig>(progress ?? defaultProgressConfig);
-  const [feat, setFeat] = useState<FeaturesConfig>(features ?? defaultFeatures);
+  // Every feature shown with the value in effect: stored, or the registry
+  // default for one this portrait never set.
+  const [feat, setFeat] = useState<FeaturesConfig>(() => resolvePortraitFeatures(features));
 
   return (
     <div className="space-y-6">
@@ -381,22 +391,44 @@ export function SettingsForms({
         </form>
       </Section>
 
-      <Section title="Features" description="Optional surfaces for this portrait.">
+      <Section
+        title="Features"
+        description="The core portrait — the doughnut, dimension pages with their evidence, progress, and publishing — is always on. Everything else is a feature: off until you turn it on here. Changes reach public pages within a minute."
+      >
         <form
           onSubmit={(e) => {
             e.preventDefault();
             save('features', feat);
           }}
-          className="space-y-2 text-sm"
+          className="space-y-3 text-sm"
         >
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={feat.request_research}
-              onChange={(e) => setFeat({ ...feat, request_research: e.target.checked })}
-            />
-            Editors may request additional research from the family insights page
-          </label>
+          {PORTRAIT_FEATURES.map((f) => {
+            const blocked = deploymentDisabled.includes(f);
+            return (
+              <label key={f} className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={Boolean(feat[f]) && !blocked}
+                  disabled={blocked}
+                  onChange={(e) => setFeat({ ...feat, [f]: e.target.checked })}
+                />
+                <span>
+                  <span className="font-medium">{FEATURE_REGISTRY[f].label}</span>
+                  <span className="block text-xs text-[color:var(--color-muted)]">
+                    {FEATURE_REGISTRY[f].description}
+                    {blocked ? ' Turned off for this whole deployment by its operator (DF_DISABLED_FEATURES).' : ''}
+                  </span>
+                  {f === 'translation' && translationRequests.length ? (
+                    <span className="mt-1 block text-xs">
+                      Readers asked for:{' '}
+                      {translationRequests.map((r) => `${r.language} ${r.count.toLocaleString('en-US')}`).join(', ')}
+                    </span>
+                  ) : null}
+                </span>
+              </label>
+            );
+          })}
           {status.features ? <p className="text-xs">{status.features}</p> : null}
           <SaveButton pending={isPending('features')} />
         </form>

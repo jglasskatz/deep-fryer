@@ -100,10 +100,20 @@ export interface RetentionConfig {
   transcript_days: number;
 }
 
-/** Per-tenant feature flags (SPEC §6 behavior layer). */
+/**
+ * Per-tenant feature flags (SPEC §6 behavior layer; SPEC-v7 §3). Every key is
+ * optional: an unset key means the registry default (features.ts), so a
+ * portrait's stored config never needs rewriting when a feature is added.
+ */
 export interface FeaturesConfig {
+  emergency?: boolean;
+  policy_analysis?: boolean;
+  involvement?: boolean;
+  discussion?: boolean;
+  translation?: boolean;
+  family_compare?: boolean;
   /** Editors may request additional research runs from the public insights surface. */
-  request_research: boolean;
+  request_research?: boolean;
 }
 
 export interface NotificationConfig {

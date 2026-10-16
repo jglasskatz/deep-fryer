@@ -10,6 +10,9 @@ import {
 } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
 import { billingSummary, WARNING_COPY } from '@/lib/billing';
+import { countHeldComments } from '@/lib/discussion';
+import { portraitFeaturesById } from '@/lib/features';
+import { countNewSubmissions } from '@/lib/involvement-admin';
 import { tenantMembersList } from '@/lib/member-data';
 import { organizationMembersList } from '@/lib/member-data';
 
@@ -26,16 +29,33 @@ export default async function TenantAdminPage({
   const { welcome } = await searchParams;
   const ctx = await requireAdminPage(tenant, 'viewer');
 
-  const [dims, config, runs, audit, discussed, billing, members, orgMembers] = await Promise.all([
-    tenantDimensions(ctx.tenant.id),
-    tenantConfigMap(ctx.tenant.id),
-    tenantRuns(ctx.tenant.id),
-    recentAudit(ctx.tenant.id, 10),
-    commentCounts(ctx.tenant.id),
-    billingSummary(ctx.tenant.organizationId),
-    tenantMembersList(ctx.tenant.id),
-    organizationMembersList(ctx.tenant.organizationId),
-  ]);
+  const features = await portraitFeaturesById(ctx.tenant.id);
+  const [dims, config, runs, audit, discussed, billing, members, orgMembers, heldComments, newSubmissions] =
+    await Promise.all([
+      tenantDimensions(ctx.tenant.id),
+      tenantConfigMap(ctx.tenant.id),
+      tenantRuns(ctx.tenant.id),
+      recentAudit(ctx.tenant.id, 10),
+      commentCounts(ctx.tenant.id),
+      billingSummary(ctx.tenant.organizationId),
+      tenantMembersList(ctx.tenant.id),
+      organizationMembersList(ctx.tenant.organizationId),
+      // The queues (SPEC-v6 §3.2, §4.3), counted only for features that are
+      // on (SPEC-v7 §3). Under row-level security: submissions count 0 for
+      // anyone below editor, who cannot open that queue anyway.
+      features.discussion ? countHeldComments(ctx.tenant.id) : 0,
+      features.involvement ? countNewSubmissions(ctx.tenant.id) : 0,
+    ]);
+  const waiting = [
+    heldComments > 0 && {
+      href: `/${tenant}/admin/discussion`,
+      label: `${heldComments} comment${heldComments === 1 ? '' : 's'} awaiting approval`,
+    },
+    newSubmissions > 0 && {
+      href: `/${tenant}/admin/involvement#submissions`,
+      label: `${newSubmissions} new organization submission${newSubmissions === 1 ? '' : 's'} for Get involved`,
+    },
+  ].filter((w): w is { href: string; label: string } => Boolean(w));
 
   // Getting-started checklist (SPEC-v4 §2): derived from real state, so it
   // disappears on its own once the portrait is live.
@@ -100,6 +120,26 @@ export default async function TenantAdminPage({
           </p>
         ) : null}
 
+        {waiting.length > 0 ? (
+          <section
+            className="mt-4 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+            aria-labelledby="waiting"
+          >
+            <h2 id="waiting" className="font-semibold">
+              Waiting for you
+            </h2>
+            <ul className="mt-1 space-y-0.5">
+              {waiting.map((w) => (
+                <li key={w.href}>
+                  <Link className="underline" href={w.href}>
+                    {w.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
         {showChecklist ? (
           <section className="mt-6 rounded-lg border border-black/10 bg-white/60 p-4" aria-labelledby="getting-started">
             <h2 id="getting-started" className="text-base font-semibold">
@@ -138,7 +178,7 @@ export default async function TenantAdminPage({
                 <th className="py-2 pr-4">Published</th>
                 <th className="py-2 pr-4">Latest</th>
                 <th className="py-2 pr-4">Data year</th>
-                <th className="py-2 pr-4">Discussion</th>
+                {features.discussion ? <th className="py-2 pr-4">Discussion</th> : null}
                 <th className="py-2 pr-4"></th>
               </tr>
             </thead>
@@ -180,7 +220,9 @@ export default async function TenantAdminPage({
                         </span>
                       ) : null}
                     </td>
-                    <td className="py-2 pr-4">{count > 0 ? `${count} comment${count === 1 ? '' : 's'}` : '—'}</td>
+                    {features.discussion ? (
+                      <td className="py-2 pr-4">{count > 0 ? `${count} comment${count === 1 ? '' : 's'}` : '—'}</td>
+                    ) : null}
                     <td className="py-2 pr-4">
                       <Link className="underline" href={`/${tenant}/admin/dim/${dimension.id}`}>
                         Edit

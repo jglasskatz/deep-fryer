@@ -16,6 +16,8 @@ x-app-env: &app-env
   S3_SECRET_ACCESS_KEY: ${STORAGE_SECRET_KEY:?set STORAGE_SECRET_KEY}
   S3_FORCE_PATH_STYLE: 'true'
   S3_PUBLIC_URL: ${APP_URL:?set APP_URL}/files
+  # Features switched off for the whole deployment (SPEC-v7 §3); web and worker read the same list.
+  DF_DISABLED_FEATURES: ${DF_DISABLED_FEATURES:-}
 
 # Sign-in, mail, and billing: the web app's integrations, also given to the
 # ops shell (migrate) so scripts/preflight.ts can verify them live.
@@ -33,6 +35,8 @@ x-integrations-env: &integrations-env
   SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
   STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
   STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+  # Encrypts organizations' own Anthropic API keys (optional; the worker gets it too).
+  DF_SECRETS_KEY: ${DF_SECRETS_KEY:-}
 
 services:
   db:
@@ -141,6 +145,8 @@ services:
       <<: *app-env
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-5}
+      # Decrypts organizations' own Anthropic API keys for their sessions (same value as web).
+      DF_SECRETS_KEY: ${DF_SECRETS_KEY:-}
       WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-1}
       HTTPS_PROXY: ${WORKER_HTTPS_PROXY:-}
       # Run-complete / flagged-finding emails link back to the review queue.

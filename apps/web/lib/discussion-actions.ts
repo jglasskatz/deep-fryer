@@ -11,21 +11,22 @@ import {
   tenantConfig,
 } from '@deep-fryer/db';
 import type { ReviewPolicyConfig } from '@deep-fryer/core';
-import { requireTenantRole, requireUserId } from './auth';
+import { getAuth, getRole, requireTenantRole, requireUserId, roleAtLeast } from './auth';
 import { action, UserError } from './action-result';
 import { systemDb, userDb } from './db';
+import { assertFeatureForTenant } from './features';
+import {
+  loadCommentStates,
+  MODERATION_REASONS,
+  MODERATION_VERBS,
+  planModeration,
+  SYSTEM_ACTOR_ID,
+  type ModerationVerb,
+} from './discussion';
 
 // The v1 anti-spam floor (SPEC.md §10).
 const RATE_LIMIT_PER_MINUTE = 5;
 const MAX_COMMENT_LENGTH = 10_000;
-
-/**
- * Moderation actions taken by policy rather than a person (the first-post
- * hold) are attributed to this fixed system actor, never to the author
- * (SPEC-v3 §2.2): the audit trail must not say a resident removed their own
- * comment.
- */
-const SYSTEM_ACTOR_ID = '00000000-0000-0000-0000-000000000000';
 
 export const postComment = action(async (input: {
   tenantSlug: string;
@@ -41,6 +42,9 @@ export const postComment = action(async (input: {
 
   const tenant = await userDb((db) => tenantBySlug(db, input.tenantSlug));
   if (!tenant) throw new UserError('Unknown portrait.');
+  // Discussion is a feature a portrait turns on (SPEC-v7 §3): with it off the
+  // thread is not rendered, and a forged post is refused here.
+  await assertFeatureForTenant(tenant.id, 'discussion');
   const authorId = await requireUserId();
   // The moderation policy is behavior config, which the user role cannot
   // read (migration 0005) — read it in the system context.
@@ -49,6 +53,7 @@ export const postComment = action(async (input: {
     .from(tenantConfig)
     .where(and(eq(tenantConfig.tenantId, tenant.id), eq(tenantConfig.key, 'review_policy')))
     .then((rows) => (rows[0]?.value ?? null) as ReviewPolicyConfig | null);
+  const role = await getRole(tenant.id);
 
   // Everything the resident does runs as the user role: the database itself
   // refuses a comment attributed to anyone but the signed-in author.
@@ -82,6 +87,15 @@ export const postComment = action(async (input: {
         throw new UserError('Unknown parent comment.');
       }
       if (parent.parentId) throw new UserError('Replies nest one level deep.');
+      // A held or declined comment was never published: everyone but its
+      // author and the moderators would see a reply with nothing above it
+      // (SPEC-v6 §3.1). Replies wait until it is approved. The state needs
+      // the parent's moderation history, which only members can read — so
+      // it is derived in the system context, and only the state is used.
+      const parentState = (await loadCommentStates(systemDb(), [parent])).get(parent.id);
+      if (parentState === 'held' || parentState === 'declined') {
+        throw new UserError('You can reply once this comment is approved.');
+      }
       const [lastLockAction] = await db
         .select()
         .from(moderationActions)
@@ -92,9 +106,14 @@ export const postComment = action(async (input: {
     }
 
     // …and the per-tenant "require approval for first post" toggle: the
-    // first comment from a new account starts removed, pending a moderator.
+    // first comment from a new account is held — removed by the system
+    // actor — until a moderator approves or declines it (SPEC-v6 §3.1).
+    // People who can approve comments are not held: holding a moderator's
+    // comment for a moderator is circular, and the database would refuse
+    // to let them approve their own (comments_update_guard, migration 0006),
+    // leaving a portrait with one moderator unable to post at all.
     let pendingApproval = false;
-    if (policy?.first_post_requires_approval) {
+    if (policy?.first_post_requires_approval && !roleAtLeast(role, 'moderator')) {
       const prior = await db
         .select({ count: sql<number>`count(*)::int` })
         .from(comments)
@@ -125,7 +144,7 @@ export const postComment = action(async (input: {
       commentId: comment.row.id,
       actorId: SYSTEM_ACTOR_ID,
       action: 'remove',
-      reason: 'pending first-post approval',
+      reason: MODERATION_REASONS.hold,
     });
   }
 
@@ -143,11 +162,19 @@ export const voteComment = action(async (input: {
     const userId = await requireUserId();
     const tenant = await tenantBySlug(db, input.tenantSlug);
     if (!tenant) throw new UserError('Unknown portrait.');
+    await assertFeatureForTenant(tenant.id, 'discussion', db);
     const [comment] = await db
-      .select({ id: comments.id })
+      .select({ id: comments.id, removedAt: comments.removedAt })
       .from(comments)
       .where(and(eq(comments.id, input.commentId), eq(comments.tenantId, tenant.id)));
     if (!comment) throw new UserError('Unknown comment.');
+    // Scores belong to published comments. A held or declined comment was
+    // never public, and a removed one is a placeholder — a vote on either
+    // would be invisible, or (on a held comment) would count once a
+    // moderator approves it. Taking a vote back is always allowed.
+    if (comment.removedAt && input.vote !== 0) {
+      throw new UserError('Only published comments can be voted on.');
+    }
 
     if (input.vote === 0) {
       await db
@@ -166,41 +193,86 @@ export const voteComment = action(async (input: {
   });
 });
 
-/** Moderator actions (SPEC.md §10): remove/restore/lock with logged reasons. */
+/**
+ * Moderator actions (SPEC.md §10, SPEC-v6 §3.1): approve or decline a held
+ * first comment; remove, restore, or lock a published one — each logged with
+ * its reason. The allowed transitions live in planModeration (lib/
+ * discussion.ts); anything else is refused with a message saying what to do
+ * instead.
+ *
+ * Runs entirely as the moderator under row-level security: the role gate
+ * here, and in the database is_moderator() on both the comments update and
+ * the moderation_actions insert (whose actor must be the signed-in person).
+ */
 export const moderateComment = action(async (input: {
   tenantSlug: string;
   commentId: string;
-  action: 'remove' | 'restore' | 'lock';
+  action: ModerationVerb;
   reason?: string;
 }) => {
   return userDb(async (db) => {
     const { tenant } = await requireTenantRole(input.tenantSlug, 'moderator');
+    await assertFeatureForTenant(tenant.id, 'discussion', db);
     const actorId = await requireUserId();
+    if (!(MODERATION_VERBS as readonly string[]).includes(input.action)) {
+      throw new UserError('Unknown moderation action.');
+    }
 
     const [comment] = await db.select().from(comments).where(eq(comments.id, input.commentId));
     if (!comment || comment.tenantId !== tenant.id) throw new UserError('Unknown comment.');
 
+    // Moderators may read the history under their own role, so the state
+    // is derived inside this transaction.
+    const state = (await loadCommentStates(db, [comment])).get(comment.id)!;
+    const plan = planModeration(state, input.action, {
+      isReply: comment.parentId !== null,
+      reason: input.reason,
+    });
+    if (!plan.ok) throw new UserError(plan.error);
+
+    // The database never lets an author change their own comment's removal
+    // state (comments_update_guard, migration 0006) — say so plainly instead
+    // of failing on the trigger. Dev mode runs as the owner role, which the
+    // guard exempts, so the local developer can still moderate.
+    if (plan.update && comment.authorId === actorId && !(await getAuth()).devMode) {
+      throw new UserError('Another moderator needs to review your own comment.');
+    }
+
     await db.transaction(async (tx) => {
-      if (input.action === 'remove') {
-        await tx
+      if (plan.update) {
+        // Only if the row is still as it was read: two moderators acting on
+        // the same comment at once must not both succeed (an approve racing
+        // a decline would otherwise leave a log that disagrees with the row).
+        const changed = await tx
           .update(comments)
-          .set({ removedAt: new Date(), removedBy: actorId })
-          .where(eq(comments.id, input.commentId));
-      } else if (input.action === 'restore') {
-        await tx
-          .update(comments)
-          .set({ removedAt: null, removedBy: null })
-          .where(eq(comments.id, input.commentId));
+          .set(
+            plan.update === 'remove'
+              ? { removedAt: new Date(), removedBy: actorId }
+              : { removedAt: null, removedBy: null },
+          )
+          .where(
+            and(
+              eq(comments.id, comment.id),
+              sql`${comments.removedBy} is not distinct from ${comment.removedBy}::uuid`,
+            ),
+          )
+          .returning({ id: comments.id });
+        if (changed.length === 0) {
+          throw new UserError('Another moderator just changed this comment — reload to see where it stands.');
+        }
       }
       await tx.insert(moderationActions).values({
         tenantId: tenant.id,
-        commentId: input.commentId,
+        commentId: comment.id,
         actorId,
-        action: input.action,
-        reason: input.reason?.slice(0, 500),
+        action: plan.log,
+        reason: plan.reason,
       });
     });
 
     revalidatePath(`/${input.tenantSlug}/dim`);
+    revalidatePath(`/${input.tenantSlug}/admin`);
+    revalidatePath(`/${input.tenantSlug}/admin/discussion`);
+    return { state: plan.next };
   });
 });

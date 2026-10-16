@@ -8,6 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./scoring": "./src/scoring.ts",
+    "./secrets": "./src/secrets.ts",
     "./types": "./src/types.ts",
     "./validators": "./src/validators.ts"
   },

@@ -2,14 +2,19 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import type { CommentView } from '@/lib/discussion';
+import type { CommentView, ModerationVerb } from '@/lib/discussion';
 import { moderateComment, postComment, voteComment } from '@/lib/discussion-actions';
 import { useAction } from '@/lib/use-action';
 import { unwrap } from '@/lib/action-result';
 import { fmt, rich } from '@/lib/i18n/format';
 import type { Messages } from '@/lib/i18n/messages/en';
 
-/** The thread's words in the reader's language (lib/i18n catalogs). */
+/**
+ * The thread's words in the reader's language (lib/i18n catalogs). The page
+ * spreads the whole `discussion` catalog, so this includes the moderation
+ * words of SPEC-v6 §3.1/§3.3 — awaitingApproval / awaitingNote, declined /
+ * declinedNote, approve / decline, staff / staffTitle — beside v1's.
+ */
 export type ThreadLabels = Messages['discussion'] & { signIn: string };
 
 export function Thread({
@@ -134,6 +139,36 @@ export function Thread({
   );
 }
 
+/** A small inline label beside the author's name. */
+function Chip({ children, title, tone = 'neutral' }: { children: React.ReactNode; title?: string; tone?: 'neutral' | 'pending' | 'staff' }) {
+  const tones = {
+    neutral: 'bg-black/10',
+    pending: 'bg-amber-100 text-amber-900',
+    staff: 'bg-sky-100 text-sky-900',
+  };
+  return (
+    <span title={title} className={`rounded px-1.5 py-0.5 font-medium ${tones[tone]}`}>
+      {children}
+    </span>
+  );
+}
+
+/**
+ * One comment and its replies. What the viewer is shown was decided on the
+ * server (lib/discussion.ts commentDisclosure): a held or declined comment
+ * only reaches its author and moderators, and `body` is null exactly when
+ * this viewer gets the removal placeholder. This component only chooses the
+ * labels and the actions each state allows (SPEC-v6 §3.1):
+ *
+ * - visible  — votes, reply; moderators remove / lock.
+ * - held     — "Awaiting approval"; the author is told only they and the
+ *              moderators can see it; moderators approve / decline. No votes
+ *              or replies: it is not public yet.
+ * - declined — "Not approved"; the author is told so; moderators can still
+ *              approve it.
+ * - removed  — the placeholder for the public; moderators read the text and
+ *              restore it.
+ */
 function CommentItem({
   c,
   tenantSlug,
@@ -164,95 +199,115 @@ function CommentItem({
     act(() =>
       voteComment({ tenantSlug, commentId: c.id, vote: c.myVote === v ? 0 : v }),
     );
+  const moderate = (action: ModerationVerb, reason?: string) =>
+    act(() => moderateComment({ tenantSlug, commentId: c.id, action, reason }));
+  /** Remove and lock ask for a reason first; cancelling the prompt does nothing. */
+  const moderateWithReason = (action: 'remove' | 'lock', question: string) => {
+    const reason = window.prompt(question);
+    if (reason !== null) moderate(action, reason);
+  };
+
+  // Held and declined comments were never published: no score, no replies.
+  const unpublished = c.state === 'held' || c.state === 'declined';
+  const ownNote = c.mine ? (c.state === 'held' ? labels.awaitingNote : c.state === 'declined' ? labels.declinedNote : null) : null;
 
   return (
     <li className={isReply ? 'ms-8' : ''}>
-      <div className="rounded border border-black/10 p-3">
-        <div className="flex items-center gap-3 text-xs text-[color:var(--color-muted)]">
+      <div className={`rounded border p-3 ${unpublished ? 'border-dashed border-black/30' : 'border-black/10'}`}>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[color:var(--color-muted)]">
           <span className="font-medium text-[color:var(--color-fg,black)]">
             {c.mine ? labels.you : c.author}
           </span>
-          <span>{c.createdAt.toISOString().slice(0, 10)}</span>
-          {c.locked ? <span className="rounded bg-black/10 px-1.5 py-0.5">{labels.locked}</span> : null}
-          {c.removed ? <span className="rounded bg-black/10 px-1.5 py-0.5">{labels.removed}</span> : null}
+          {c.staff ? (
+            <Chip tone="staff" title={labels.staffTitle}>
+              {labels.staff}
+            </Chip>
+          ) : null}
+          <time dateTime={c.createdAt.toISOString()}>{c.createdAt.toISOString().slice(0, 10)}</time>
+          {c.locked ? <Chip>{labels.locked}</Chip> : null}
+          {c.state === 'held' ? <Chip tone="pending">{labels.awaitingApproval}</Chip> : null}
+          {c.state === 'declined' ? <Chip>{labels.declined}</Chip> : null}
+          {c.state === 'removed' ? <Chip>{labels.removed}</Chip> : null}
         </div>
-        {c.removed ? (
+        {c.body === null ? (
           <p className="mt-2 text-sm">
             <em className="text-[color:var(--color-muted)]">{labels.removedBody}</em>
           </p>
         ) : (
           // Comments are residents' own words in whatever language they wrote;
           // dir="auto" lets an Arabic comment read right-to-left on an English page.
-          <p dir="auto" className="mt-2 whitespace-pre-wrap text-sm">
+          // A removed comment's text reaches moderators only, dimmed so it is
+          // not mistaken for something the public can read.
+          <p
+            dir="auto"
+            className={`mt-2 whitespace-pre-wrap text-sm ${c.state === 'removed' ? 'text-[color:var(--color-muted)]' : ''}`}
+          >
             {c.body}
           </p>
         )}
-        <div className="mt-2 flex items-center gap-3 text-xs">
-          <button
-            className={`rounded px-1.5 py-0.5 ${c.myVote === 1 ? 'bg-black text-white' : 'border hover:bg-black/5'}`}
-            disabled={!canPost || pending}
-            onClick={() => vote(1)}
-            aria-label={labels.upvote}
-            aria-pressed={c.myVote === 1}
-          >
-            <span aria-hidden>▲</span>
-          </button>
-          <span className="font-medium" aria-label={fmt(labels.score, { n: c.score })}>
-            {c.score}
-          </span>
-          <button
-            className={`rounded px-1.5 py-0.5 ${c.myVote === -1 ? 'bg-black text-white' : 'border hover:bg-black/5'}`}
-            disabled={!canPost || pending}
-            onClick={() => vote(-1)}
-            aria-label={labels.downvote}
-            aria-pressed={c.myVote === -1}
-          >
-            <span aria-hidden>▼</span>
-          </button>
-          {!isReply && canPost && !c.locked ? (
+        {ownNote ? <p className="mt-2 text-xs text-[color:var(--color-muted)]">{ownNote}</p> : null}
+        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
+          {unpublished ? null : (
+            <>
+              <button
+                className={`rounded px-1.5 py-0.5 ${c.myVote === 1 ? 'bg-black text-white' : 'border hover:bg-black/5'}`}
+                disabled={!canPost || pending || c.state !== 'visible'}
+                onClick={() => vote(1)}
+                aria-label={labels.upvote}
+                aria-pressed={c.myVote === 1}
+              >
+                <span aria-hidden>▲</span>
+              </button>
+              <span className="font-medium" aria-label={fmt(labels.score, { n: c.score })}>
+                {c.score}
+              </span>
+              <button
+                className={`rounded px-1.5 py-0.5 ${c.myVote === -1 ? 'bg-black text-white' : 'border hover:bg-black/5'}`}
+                disabled={!canPost || pending || c.state !== 'visible'}
+                onClick={() => vote(-1)}
+                aria-label={labels.downvote}
+                aria-pressed={c.myVote === -1}
+              >
+                <span aria-hidden>▼</span>
+              </button>
+            </>
+          )}
+          {!isReply && canPost && !c.locked && !unpublished ? (
             <button className="underline" aria-expanded={replyOpen} onClick={() => setReplyOpen((o) => !o)}>
               {labels.reply}
             </button>
           ) : null}
           {isModerator ? (
             <span className="ms-auto flex gap-2">
-              {c.removed ? (
-                <button
-                  className="underline"
-                  onClick={() =>
-                    act(() =>
-                      moderateComment({ tenantSlug, commentId: c.id, action: 'restore' }),
-                    )
-                  }
-                >
+              {c.state === 'held' || c.state === 'declined' ? (
+                <button className="underline" disabled={pending} onClick={() => moderate('approve')}>
+                  {labels.approve}
+                </button>
+              ) : null}
+              {c.state === 'held' ? (
+                <button className="underline" disabled={pending} onClick={() => moderate('decline')}>
+                  {labels.decline}
+                </button>
+              ) : null}
+              {c.state === 'removed' ? (
+                <button className="underline" disabled={pending} onClick={() => moderate('restore')}>
                   {labels.restore}
                 </button>
-              ) : (
+              ) : null}
+              {c.state === 'visible' ? (
                 <button
                   className="underline"
-                  onClick={() => {
-                    const reason = window.prompt(labels.removeReason);
-                    if (reason !== null) {
-                      act(() =>
-                        moderateComment({ tenantSlug, commentId: c.id, action: 'remove', reason }),
-                      );
-                    }
-                  }}
+                  disabled={pending}
+                  onClick={() => moderateWithReason('remove', labels.removeReason)}
                 >
                   {labels.remove}
                 </button>
-              )}
-              {!isReply && !c.locked ? (
+              ) : null}
+              {!isReply && !c.locked && !unpublished ? (
                 <button
                   className="underline"
-                  onClick={() => {
-                    const reason = window.prompt(labels.lockReason);
-                    if (reason !== null) {
-                      act(() =>
-                        moderateComment({ tenantSlug, commentId: c.id, action: 'lock', reason }),
-                      );
-                    }
-                  }}
+                  disabled={pending}
+                  onClick={() => moderateWithReason('lock', labels.lockReason)}
                 >
                   {labels.lock}
                 </button>

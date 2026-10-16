@@ -25,7 +25,8 @@ import {
 } from '@deep-fryer/db';
 import { action, UserError } from './action-result';
 import { audit } from './audit';
-import { getAuth, requireTenantRole } from './auth';
+import { getAuth } from './auth';
+import { requireTenantRoleWithFeature } from './features';
 import { userDb } from './db';
 
 /**
@@ -97,7 +98,7 @@ async function rewriteHazardLinks(db: DbExecutor, tenantId: string, from: string
 // ---- Config (owners) ----------------------------------------------------------------
 
 export const saveEmergencyConfig = action(async (input: { tenantSlug: string; config: unknown }) => {
-  const { tenant } = await requireTenantRole(input.tenantSlug, 'owner');
+  const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'owner', 'emergency');
   const value = emergencyConfigSchema.parse(input.config);
   await userDb(async (db) => {
     const [existing] = await db
@@ -137,7 +138,7 @@ function hazardValues(data: Omit<HazardInput, 'published'>) {
 const duplicateSlug = (slug: string) => new UserError(`A hazard with the slug "${slug}" already exists on this portrait.`);
 
 export const createHazard = action(async (input: { tenantSlug: string; hazard: HazardInputDraft }) => {
-  const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+  const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'emergency');
   const data = hazardInputSchema.parse(input.hazard);
   const id = await userDb(async (db) => {
     const [clash] = await db
@@ -161,7 +162,7 @@ export const createHazard = action(async (input: { tenantSlug: string; hazard: H
 
 export const updateHazard = action(
   async (input: { tenantSlug: string; id: string; hazard: Omit<HazardInputDraft, 'published'> }) => {
-    const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+    const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'emergency');
     const id = idSchema.parse(input.id);
     const data = hazardUpdateSchema.parse(input.hazard);
     await userDb(async (db) => {
@@ -190,7 +191,7 @@ export const updateHazard = action(
 );
 
 export const deleteHazard = action(async (input: { tenantSlug: string; id: string }) => {
-  const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+  const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'emergency');
   const id = idSchema.parse(input.id);
   await userDb(async (db) => {
     const [before] = await db
@@ -221,7 +222,7 @@ function planValues(data: Omit<EmergencyPlanInput, 'published'>) {
 
 export const createPlan = action(
   async (input: { tenantSlug: string; plan: EmergencyPlanInputDraft }) => {
-    const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+    const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'emergency');
     const data = emergencyPlanInputSchema.parse(input.plan);
     const id = await userDb(async (db) => {
       await assertHazardSlugs(db, tenant.id, data.hazard_slugs);
@@ -239,7 +240,7 @@ export const createPlan = action(
 
 export const updatePlan = action(
   async (input: { tenantSlug: string; id: string; plan: Omit<EmergencyPlanInputDraft, 'published'> }) => {
-    const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+    const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'emergency');
     const id = idSchema.parse(input.id);
     const data = planUpdateSchema.parse(input.plan);
     await userDb(async (db) => {
@@ -261,7 +262,7 @@ export const updatePlan = action(
 );
 
 export const deletePlan = action(async (input: { tenantSlug: string; id: string }) => {
-  const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+  const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'emergency');
   const id = idSchema.parse(input.id);
   await userDb(async (db) => {
     const [before] = await db
@@ -290,7 +291,7 @@ function resourceValues(data: Omit<EmergencyResourceInput, 'published'>) {
 
 export const createResource = action(
   async (input: { tenantSlug: string; resource: EmergencyResourceInputDraft }) => {
-    const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+    const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'emergency');
     const data = emergencyResourceInputSchema.parse(input.resource);
     const id = await userDb(async (db) => {
       await assertHazardSlugs(db, tenant.id, data.hazard_slugs);
@@ -308,7 +309,7 @@ export const createResource = action(
 
 export const updateResource = action(
   async (input: { tenantSlug: string; id: string; resource: Omit<EmergencyResourceInputDraft, 'published'> }) => {
-    const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+    const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'emergency');
     const id = idSchema.parse(input.id);
     const data = resourceUpdateSchema.parse(input.resource);
     await userDb(async (db) => {
@@ -330,7 +331,7 @@ export const updateResource = action(
 );
 
 export const deleteResource = action(async (input: { tenantSlug: string; id: string }) => {
-  const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+  const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'emergency');
   const id = idSchema.parse(input.id);
   await userDb(async (db) => {
     const [before] = await db
@@ -358,7 +359,7 @@ export type EmergencyEntity = keyof typeof ENTITIES;
  */
 export const setEmergencyPublished = action(
   async (input: { tenantSlug: string; entity: EmergencyEntity; id: string; published: boolean }) => {
-    const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+    const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'emergency');
     const id = idSchema.parse(input.id);
     // Own keys only: the entity name arrives from the client.
     if (!Object.hasOwn(ENTITIES, input.entity)) throw new UserError('Unknown record type.');

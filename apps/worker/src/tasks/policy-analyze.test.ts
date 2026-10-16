@@ -173,7 +173,7 @@ describe.skipIf(!hasDb)('policyAnalyze (Postgres, mocked session)', () => {
   async function seed() {
     const m = await import('@deep-fryer/db');
     const core = await import('@deep-fryer/core');
-    const { eq } = await import('drizzle-orm');
+    const { and, eq } = await import('drizzle-orm');
     const db = m.getDb();
     const [requester] = await db.insert(m.users).values({ email: `${uniq()}@staff.gov` }).returning();
     const { tenant, dimensions } = await m.provisionTenant(db, { slug: uniq(), name: 'Policy City' });
@@ -182,6 +182,12 @@ describe.skipIf(!hasDb)('policyAnalyze (Postgres, mocked session)', () => {
       await db.delete(m.organizations).where(eq(m.organizations.id, tenant.organizationId));
       await db.delete(m.users).where(eq(m.users.id, requester!.id));
     });
+
+    // New portraits start with everything beyond core off; this one has policy analysis on.
+    await db
+      .update(m.tenantConfig)
+      .set({ value: { policy_analysis: true } })
+      .where(and(eq(m.tenantConfig.tenantId, tenant.id), eq(m.tenantConfig.key, 'features')));
 
     const housingId = dimensions.find((d) => d.slug === 'housing')!.dimensionId;
     const { level_pct, scoring } = core.computeScoring(52, 'housing.cost-burdened-renters', {
@@ -421,6 +427,25 @@ describe.skipIf(!hasDb)('policyAnalyze (Postgres, mocked session)', () => {
     expect(row.error).toContain('impacts › #1 › direction: unexpected value “better”');
     expect(row.error).not.toMatch(/\bat\s+\S+\s+\(/);
     expect(row.projections).toBeNull();
+  });
+
+  it('does not run an analysis whose portrait turned policy analysis off, and releases its session', async () => {
+    const { FEATURE_OFF } = await import('./policy-analyze.js');
+    const { runSessionWithRetry } = await import('../session.js');
+    const m = await import('@deep-fryer/db');
+    const { and, eq } = await import('drizzle-orm');
+    const { tenant, requester, analysis } = await seed();
+    await m
+      .getDb()
+      .update(m.tenantConfig)
+      .set({ value: { policy_analysis: false } })
+      .where(and(eq(m.tenantConfig.tenantId, tenant.id), eq(m.tenantConfig.key, 'features')));
+    const calls = vi.mocked(runSessionWithRetry).mock.calls.length;
+    const row = await run(analysis.id);
+    expect(row.status).toBe('failed');
+    expect(row.error).toBe(FEATURE_OFF);
+    expect(vi.mocked(runSessionWithRetry).mock.calls.length).toBe(calls);
+    expect(mailTo(requester.email!)).toContain('did not run');
   });
 
   it('fails a session that did not complete', async () => {

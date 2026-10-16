@@ -1,7 +1,12 @@
-import { LOCALES } from '@/lib/i18n/locales';
+import { cookies, headers } from 'next/headers';
+import { LOCALES, localeInfo } from '@/lib/i18n/locales';
+import { messagesFor } from '@/lib/i18n/messages';
+import { preferredLocale } from '@/lib/i18n/preferred';
 import { isLocalizablePath, localizeHref } from '@/lib/i18n/routing';
 import { rich } from '@/lib/i18n/format';
 import { getI18n, getRequestPath } from '@/lib/i18n/server';
+import { translationOnFor, translationScope } from '@/lib/translation-policy';
+import { RequestTranslation } from './RequestTranslation';
 
 /**
  * Language menu for the public plane (NYC Local Law 30): every language
@@ -15,6 +20,31 @@ export async function LanguageSwitcher() {
   const cut = full.indexOf('?');
   const path = cut === -1 ? full : full.slice(0, cut);
   if (!isLocalizablePath(path)) return null;
+
+  // A portrait with translation off (SPEC-v7 §3.5) is English only: instead
+  // of the language menu, readers may ask for their language. Its labels are
+  // in the reader's preferred language when we know it.
+  if (!(await translationOnFor(path))) {
+    const scope = translationScope(path);
+    if (scope?.kind !== 'tenant') return null;
+    const preferred = preferredLocale(
+      (await cookies()).get('df_lang')?.value,
+      (await headers()).get('accept-language'),
+    );
+    const shownIn = preferred ?? 'en';
+    return (
+      <RequestTranslation
+        tenantSlug={scope.slug}
+        path={path}
+        labels={messagesFor(shownIn).translationRequest}
+        labelsLang={shownIn}
+        labelsDir={localeInfo(shownIn).dir}
+        languages={LOCALES.filter((l) => l.code !== 'en').map((l) => ({ code: l.code, name: l.name, dir: l.dir }))}
+        initial={preferred}
+      />
+    );
+  }
+
   const query = new URLSearchParams(cut === -1 ? '' : full.slice(cut + 1));
   query.delete('hl');
 

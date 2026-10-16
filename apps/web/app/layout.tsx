@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
 import { ServiceWorkerRegistrar } from '@/components/pwa/ServiceWorkerRegistrar';
 import { DeepFryLayer } from '@/components/theme/DeepFryLayer';
+import { deploymentFeatureOn } from '@/lib/features';
 import { appUrl } from '@/lib/env';
 import { LOCALES } from '@/lib/i18n/locales';
 import { isLocalizablePath, localizeHref } from '@/lib/i18n/routing';
@@ -91,7 +92,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="min-h-screen antialiased">
         {children}
         <ServiceWorkerRegistrar labels={{ updateAvailable: m.common.updateAvailable, reload: m.common.reload }} />
-        {embed ? null : <DeepFryLayer fried={m.theme.fried} unfried={m.theme.unfried} />}
+        {/* The deep fry is a deployment feature (SPEC-v7 §3, DF_DISABLED_FEATURES=deep_fry); the theme
+            menu hides its item by the same check, and the fried state is never persisted, so nothing
+            is left half-fried when an operator turns it off. */}
+        {embed || !deploymentFeatureOn('deep_fry') ? null : <DeepFryLayer fried={m.theme.fried} unfried={m.theme.unfried} />}
       </body>
     </html>
   );

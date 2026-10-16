@@ -3,6 +3,7 @@ import { buildCsp, originOf } from '@/lib/csp';
 import { embedOriginsFor } from '@/lib/embed-policy';
 import { DEFAULT_LOCALE, asLocale, localeInfo, type Locale } from '@/lib/i18n/locales';
 import { isLocalizablePath, localizeHref, splitLocale } from '@/lib/i18n/routing';
+import { translationOnFor } from '@/lib/translation-policy';
 
 /** The reader's language choice, remembered across visits (1 year). */
 const LANG_COOKIE = 'df_lang';
@@ -26,17 +27,23 @@ const ROUTED_MARK = crypto.randomUUID();
  *   choice and redirects to the clean URL.
  * - `/nyc` for a reader who chose Spanish earlier redirects to /es/nyc —
  *   only for top-level page loads, never for embeds, APIs, or fetches.
+ * - A portrait whose `translation` feature is off (SPEC-v7 §3.5) is English
+ *   only: `/es/{portrait}/…` redirects to `/{portrait}/…`, and a remembered
+ *   language does not send its readers to a prefixed URL. The remembered
+ *   choice is kept, so portraits that are translated still open in it.
  */
-function routeLanguage(
+async function routeLanguage(
   request: NextRequest,
-): { redirect: NextResponse } | { locale: Locale; path: string; remember: Locale | null } {
+): Promise<{ redirect: NextResponse } | { locale: Locale; path: string; remember: Locale | null }> {
   const url = request.nextUrl;
   const { locale: prefixed, path } = splitLocale(url.pathname);
   if (prefixed) {
-    if (!isLocalizablePath(path)) {
+    if (!isLocalizablePath(path) || !(await translationOnFor(path))) {
       const to = url.clone();
       to.pathname = path;
-      return { redirect: NextResponse.redirect(to, 308) };
+      // 307 (not 308) for a portrait's pages: turning translation on later
+      // makes the prefixed URL valid again, so browsers must not cache this.
+      return { redirect: NextResponse.redirect(to, isLocalizablePath(path) ? 307 : 308) };
     }
     return { locale: prefixed, path, remember: prefixed };
   }
@@ -46,7 +53,7 @@ function routeLanguage(
     const chosen = asLocale(hl);
     const to = url.clone();
     to.searchParams.delete('hl');
-    to.pathname = localizeHref(chosen, url.pathname);
+    to.pathname = (await translationOnFor(url.pathname)) ? localizeHref(chosen, url.pathname) : url.pathname;
     const res = NextResponse.redirect(to, 303);
     rememberLanguage(res, chosen);
     return { redirect: res };
@@ -58,7 +65,12 @@ function routeLanguage(
     request.method === 'GET' &&
     request.headers.get('sec-fetch-dest') === 'document' &&
     request.headers.get('sec-fetch-site') !== 'cross-site';
-  if (preferred !== DEFAULT_LOCALE && topLevelPage && isLocalizablePath(url.pathname)) {
+  if (
+    preferred !== DEFAULT_LOCALE &&
+    topLevelPage &&
+    isLocalizablePath(url.pathname) &&
+    (await translationOnFor(url.pathname))
+  ) {
     const to = url.clone();
     to.pathname = `/${localeInfo(preferred).prefix}${url.pathname}`;
     return { redirect: NextResponse.redirect(to, 307) };
@@ -88,7 +100,7 @@ export async function middleware(request: NextRequest) {
   const alreadyRouted = request.headers.get('x-df-routed') === ROUTED_MARK;
   const language = alreadyRouted
     ? { locale: asLocale(request.headers.get('x-df-locale')), path: request.nextUrl.pathname, remember: null }
-    : routeLanguage(request);
+    : await routeLanguage(request);
   if ('redirect' in language) return language.redirect;
   const { locale, path } = language;
 

@@ -15,6 +15,7 @@ import { SaveForOffline } from '@/components/emergency/SaveForOffline';
 import { emergencyView } from '@/lib/emergency';
 import { fmt } from '@/lib/i18n/format';
 import { getI18n } from '@/lib/i18n/server';
+import { requireFeature } from '@/lib/features';
 
 // Official alerts change minute to minute: always render from the database.
 export const dynamic = 'force-dynamic';
@@ -44,6 +45,8 @@ export default async function EmergencyPage({
   searchParams: Promise<{ hazard?: string | string[] }>;
 }) {
   const [{ tenant }, query] = await Promise.all([params, searchParams]);
+  // Off unless the portrait turns the emergency view on (SPEC-v7 §3).
+  await requireFeature(tenant, 'emergency');
   const [view, { m, locale, href }] = await Promise.all([emergencyView(tenant), getI18n()]);
   if (!view) notFound();
   const e = m.emergency;

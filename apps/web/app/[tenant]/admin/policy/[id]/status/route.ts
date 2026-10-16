@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { adminTenant } from '@/lib/admin-data';
 import { getRole, roleAtLeast } from '@/lib/auth';
+import { portraitFeaturesById } from '@/lib/features';
 import { getPolicyAnalysisStatus } from '@/lib/policy';
 
 export const dynamic = 'force-dynamic';
@@ -26,6 +27,8 @@ export async function GET(
   if (!roleAtLeast(await getRole(tenant.id), 'editor')) {
     return json({ error: 'requires an editor or owner of this portrait' }, 403);
   }
+  // Like the page: with policy analysis off (SPEC-v7 §3) this does not exist.
+  if (!(await portraitFeaturesById(tenant.id)).policy_analysis) return json({ error: 'not found' }, 404);
   const row = await getPolicyAnalysisStatus(tenant.id, id);
   if (!row) return json({ error: 'unknown analysis' }, 404);
   return json({ status: row.status });

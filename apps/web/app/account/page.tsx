@@ -21,6 +21,13 @@ const PROVIDER_LABEL: Record<string, string> = {
 /**
  * Account home: who you are publicly, how you sign in, and every
  * organization and portrait you hold a role on — the signed-in landing page.
+ *
+ * Most accounts are residents who signed in to join a discussion; they hold
+ * no role anywhere. For them the page leads with the profile (the display
+ * name their comments show) and frames starting a portrait as something for
+ * city staff, further down (SPEC-v6 §2) — a resident should not land on
+ * "start a 30-day trial" as the page's main content. Staff (anyone with an
+ * organization or a portrait role) see their organizations first, as before.
  */
 export default async function AccountPage() {
   if (!hasDatabase()) redirect('/');
@@ -34,6 +41,9 @@ export default async function AccountPage() {
     // Signing in while signed in links the new provider to this user.
     await signIn(provider, { redirectTo: '/account' });
   }
+
+  /** Holds a role on an organization or a portrait — city staff, in practice. */
+  const onATeam = overview.organizations.length > 0 || overview.portraits.length > 0;
 
   const linkable = [
     googleConfigured() && !overview.providers.includes('google') ? ('google' as const) : null,
@@ -54,57 +64,59 @@ export default async function AccountPage() {
           </p>
         ) : null}
 
-        <section className="mt-10" aria-labelledby="orgs">
-          <div className="flex items-baseline justify-between">
-            <h2 id="orgs" className="text-lg font-semibold">
-              Organizations
-            </h2>
-            <Link href="/start" className="text-sm underline">
-              Start a new portrait
-            </Link>
-          </div>
-          {overview.organizations.length === 0 ? (
-            <p className="mt-3 text-sm text-[color:var(--color-muted)]">
-              You do not administer an organization yet.{' '}
-              <Link className="underline" href="/start">
-                Start a 30-day trial
-              </Link>{' '}
-              for your jurisdiction, or ask your city&apos;s portrait owner for an invitation.
-            </p>
-          ) : (
-            <ul className="mt-3 grid gap-3 sm:grid-cols-2">
-              {overview.organizations.map((o) => (
-                <li key={o.id} className="rounded-lg border border-black/10 p-4">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <Link href={`/o/${o.slug}`} className="font-semibold hover:underline">
-                      {o.name}
-                    </Link>
-                    <span className="text-xs text-[color:var(--color-muted)]">{o.role}</span>
-                  </div>
-                  <p className="mt-1 text-xs text-[color:var(--color-muted)]">
-                    {o.plan ? `${isPlanId(o.plan) ? PLANS[o.plan].name : o.plan} plan · ${o.status}` : 'No plan'}
-                    {' · '}
-                    <Link className="underline" href={`/o/${o.slug}/billing`}>
-                      Billing
-                    </Link>
-                  </p>
-                  <ul className="mt-2 flex flex-wrap gap-1.5 text-xs">
-                    {o.portraits.map((p) => (
-                      <li key={p.slug}>
-                        <Link
-                          href={`/${p.slug}/admin`}
-                          className="inline-block rounded-full border border-black/15 px-2 py-0.5 hover:bg-black/5"
-                        >
-                          {p.name}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        {onATeam ? (
+          <section className="mt-10" aria-labelledby="orgs">
+            <div className="flex items-baseline justify-between">
+              <h2 id="orgs" className="text-lg font-semibold">
+                Organizations
+              </h2>
+              <Link href="/start" className="text-sm underline">
+                Start a new portrait
+              </Link>
+            </div>
+            {overview.organizations.length === 0 ? (
+              <p className="mt-3 text-sm text-[color:var(--color-muted)]">
+                You do not administer an organization yet.{' '}
+                <Link className="underline" href="/start">
+                  Start a 30-day trial
+                </Link>{' '}
+                for your jurisdiction, or ask your city&apos;s portrait owner for an invitation.
+              </p>
+            ) : (
+              <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+                {overview.organizations.map((o) => (
+                  <li key={o.id} className="rounded-lg border border-black/10 p-4">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <Link href={`/o/${o.slug}`} className="font-semibold hover:underline">
+                        {o.name}
+                      </Link>
+                      <span className="text-xs text-[color:var(--color-muted)]">{o.role}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-[color:var(--color-muted)]">
+                      {o.plan ? `${isPlanId(o.plan) ? PLANS[o.plan].name : o.plan} plan · ${o.status}` : 'No plan'}
+                      {' · '}
+                      <Link className="underline" href={`/o/${o.slug}/billing`}>
+                        Billing
+                      </Link>
+                    </p>
+                    <ul className="mt-2 flex flex-wrap gap-1.5 text-xs">
+                      {o.portraits.map((p) => (
+                        <li key={p.slug}>
+                          <Link
+                            href={`/${p.slug}/admin`}
+                            className="inline-block rounded-full border border-black/15 px-2 py-0.5 hover:bg-black/5"
+                          >
+                            {p.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ) : null}
 
         {overview.portraits.length > 0 ? (
           <section className="mt-10" aria-labelledby="portraits">
@@ -163,6 +175,24 @@ export default async function AccountPage() {
             ))}
           </div>
         </section>
+
+        {onATeam ? null : (
+          // A resident's account: the same information the staff layout
+          // gives in "Organizations", framed for the staff it is meant for.
+          <section className="mt-10 rounded-lg border border-black/10 p-4" aria-labelledby="for-staff">
+            <h2 id="for-staff" className="text-lg font-semibold">
+              For city staff
+            </h2>
+            <p className="mt-2 text-sm text-[color:var(--color-muted)]">
+              Joining a portrait&apos;s discussion needs nothing more than this account. If you work
+              for a city or county, ask your portrait&apos;s owner for an invitation, or{' '}
+              <Link className="underline" href="/start">
+                start a 30-day trial
+              </Link>{' '}
+              for your jurisdiction.
+            </p>
+          </section>
+        )}
 
         <section className="mt-12 border-t border-black/10 pt-8">
           <h2 className="text-lg font-semibold">Security</h2>

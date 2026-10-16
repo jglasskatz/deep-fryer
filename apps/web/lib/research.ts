@@ -1,14 +1,12 @@
 import 'server-only';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { frameworkDimension } from '@deep-fryer/contract';
-import { checkResearchQuota } from '@deep-fryer/core';
 import {
   dimensions,
+  gateResearchSpend,
   latestVersion,
-  lockSubscription,
   organizationForTenant,
   researchRuns,
-  researchSessionsUsed,
 } from '@deep-fryer/db';
 import {
   enqueueResearchApply,
@@ -103,6 +101,12 @@ export async function createPlannedRun(input: {
  * stamp applied_at — so two concurrent applies cannot both fit into a quota
  * that only holds one of them. The queue insert happens after commit; if it
  * fails, applied_at is cleared again so the reservation does not leak.
+ *
+ * The gate is packages/db gateResearchSpend, shared with policy analyses:
+ * when the organization has its own Anthropic API key on file (SPEC-v7 §4)
+ * the session allowance is not checked — the run will execute on that key —
+ * but good standing still is. The returned run carries `funding`, which of
+ * the two paid, for the caller's audit entry.
  */
 export async function applyRun(tenantId: string, runId: string) {
   // System context: the quota is organization-wide (runs on portraits this
@@ -122,19 +126,15 @@ export async function applyRun(tenantId: string, runId: string) {
 
     const org = await organizationForTenant(tx, tenantId);
     if (!org) throw new Error(`tenant ${tenantId} has no organization`);
-    const sub = await lockSubscription(tx, org.id);
-    const used = sub
-      ? await researchSessionsUsed(tx, org.id, sub.currentPeriodStart, sub.currentPeriodEnd)
-      : 0;
-    const check = checkResearchQuota(sub, used, row.plan.sessions.length);
-    if (!check.allowed) throw new UserError(check.message ?? 'Research is not available on this plan.');
+    const gate = await gateResearchSpend(tx, org.id, row.plan.sessions.length);
+    if (!gate.check.allowed) throw new UserError(gate.check.message ?? 'Research is not available on this plan.');
 
     const [applied] = await tx
       .update(researchRuns)
       .set({ appliedAt: new Date() })
       .where(eq(researchRuns.id, row.id))
       .returning();
-    return applied!;
+    return { ...applied!, funding: gate.funding };
   });
 
   try {

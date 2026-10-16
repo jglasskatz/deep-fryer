@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { setPortraitFeatures } from './test-features';
 
 /**
  * The same actions for signed-in people (not dev mode): userDb runs as the
@@ -33,6 +34,7 @@ describe.skipIf(!hasDb)('emergency actions under row-level security', () => {
     const m = await import('@deep-fryer/db');
     const db = m.getDb();
     const { tenant } = await m.provisionTenant(db, { slug: uniq(), name: 'Policy City' });
+    await setPortraitFeatures(tenant.id, { emergency: true });
     tenantSlug = tenant.slug;
     tenantId = tenant.id;
     cleanup.tenantId = tenant.id;
@@ -99,6 +101,32 @@ describe.skipIf(!hasDb)('emergency actions under row-level security', () => {
       ok: false,
       error: 'This needs the editor role on this portrait.',
     });
+  });
+
+  it('refuses staff while Emergencies is off for the portrait (SPEC-v7 §3), and works again once it is on', async () => {
+    const a = await import('./emergency-actions');
+    const off = { ok: false, error: 'This feature is turned off for this portrait. An owner can turn it on in Settings.' };
+    await setPortraitFeatures(tenantId, { emergency: false });
+    try {
+      signedIn = people.editor;
+      expect(await a.createHazard({ tenantSlug, hazard: { ...hazard, slug: 'flag-off', name: 'Flag off' } })).toEqual(off);
+      signedIn = people.owner;
+      expect(await a.saveEmergencyConfig({ tenantSlug, config: { nws_zones: ['NYC061'] } })).toEqual(off);
+      // The role is checked before the feature: a viewer learns nothing about which features a portrait has.
+      signedIn = people.viewer;
+      expect(await a.createHazard({ tenantSlug, hazard })).toEqual({
+        ok: false,
+        error: 'This needs the editor role on this portrait.',
+      });
+    } finally {
+      await setPortraitFeatures(tenantId, { emergency: true });
+    }
+    signedIn = people.editor;
+    const res = await a.createHazard({ tenantSlug, hazard: { ...hazard, slug: 'flag-on', name: 'Flag on' } });
+    expect(res).toMatchObject({ ok: true });
+    const id = (res as { ok: true; data: { id: string } }).data.id;
+    expect(await a.deleteHazard({ tenantSlug, id })).toMatchObject({ ok: true });
+    signedIn = null;
   });
 
   it('serves the public page to an anonymous visitor through the public-read policies', async () => {

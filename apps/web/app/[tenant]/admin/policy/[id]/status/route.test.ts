@@ -20,11 +20,13 @@ describe.skipIf(!hasDb)('GET /{tenant}/admin/policy/{id}/status', () => {
     if (savedSecret !== undefined) process.env.AUTH_SECRET = savedSecret;
   });
 
-  async function portrait() {
+  async function portrait(policyAnalysis = true) {
     const m = await import('@deep-fryer/db');
     const { eq } = await import('drizzle-orm');
+    const { setPortraitFeatures } = await import('@/lib/test-features');
     const db = m.getDb();
     const { tenant } = await m.provisionTenant(db, { slug: uniq(), name: 'Status City' });
+    await setPortraitFeatures(tenant.id, { policy_analysis: policyAnalysis });
     cleanup.push(async () => {
       await db.delete(m.tenants).where(eq(m.tenants.id, tenant.id));
       await db.delete(m.organizations).where(eq(m.organizations.id, tenant.organizationId));
@@ -49,6 +51,13 @@ describe.skipIf(!hasDb)('GET /{tenant}/admin/policy/{id}/status', () => {
     expect(res.status).toBe(200);
     expect(res.headers.get('cache-control')).toBe('no-store');
     expect(await res.json()).toEqual({ status: 'running' });
+  });
+
+  it('is a 404 while policy analysis is off for the portrait (SPEC-v7 §3)', async () => {
+    const { tenant, analysis } = await portrait(false);
+    const res = await get(tenant.slug, analysis.id);
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'not found' });
   });
 
   it('is a 404 for another portrait’s analysis, a malformed id, or an unknown portrait', async () => {

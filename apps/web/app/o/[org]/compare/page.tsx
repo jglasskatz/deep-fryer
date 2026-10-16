@@ -5,6 +5,7 @@ import { formatIndicatorValue } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { PortraitDoughnut } from '@/components/doughnut/PortraitDoughnut';
 import { getPortrait } from '@/lib/data';
+import { requireOrganizationFeature } from '@/lib/features';
 import { familyByOrgSlug } from '@/lib/family';
 import { dimensionLabel, localizeDimensions, nounForms } from '@/lib/i18n/content';
 import { doughnutLabels } from '@/lib/i18n/doughnut';
@@ -98,6 +99,8 @@ export default async function ComparePage({ params }: { params: Promise<{ org: s
   const { org } = await params;
   const [family, { m, href }] = await Promise.all([familyByOrgSlug(org), getI18n()]);
   if (!family || family.members.length < 2) notFound();
+  // Compare and Insights are a feature (SPEC-v7 §3), on when any of the family's portraits has it.
+  await requireOrganizationFeature(family.organization.id, 'family_compare');
   const FAMILY = family.members;
   const whole = family.whole;
   const { singular: noun, plural: nouns } = nounForms(m, family.noun);

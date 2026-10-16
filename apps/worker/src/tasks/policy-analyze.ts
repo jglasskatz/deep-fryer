@@ -21,6 +21,8 @@ import {
   users,
 } from '@deep-fryer/db';
 import { policyJobKey, type PolicyJobPayload } from '@deep-fryer/research';
+import { portraitFeatures } from '../features.js';
+import { OrgKeyUnavailableError, orgApiKeyForTenant } from '../org-key.js';
 import { extractJson, runSessionWithRetry } from '../session.js';
 import { send, type ComposedEmail } from '../notify.js';
 
@@ -122,12 +124,36 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
     return;
   }
 
+  // Staff may have turned policy analysis off after this was queued (SPEC-v7
+  // §3.3): settle it failed before any session starts, which also releases
+  // the research session it reserved (failed analyses are not counted).
+  if (!(await portraitFeatures(db, analysis.tenantId)).policy_analysis) {
+    helpers.logger.warn(`policy analysis ${analysisId}: the feature is off for this portrait; not running`);
+    await settleFailed(analysisId, FEATURE_OFF, null, null);
+    await notifyPolicyRequester(analysisId);
+    return;
+  }
+
   // Kept outside the try so a failure after the session still records what
   // the session cost and what it said (the transcript is the audit trail).
   let usage: SessionTokenUsage | null = null;
   let transcript: Buffer | null = null;
 
   try {
+    // Whose key the session runs on (SPEC-v7 §4): the organization's own
+    // Anthropic API key when it has one, else the deployment's. A key on file
+    // that cannot be decrypted fails the analysis with a reason staff can act
+    // on — never a silent fall back to the deployment's key, because an
+    // analysis created while a key was on file was not checked against the
+    // plan's allowance (packages/db billing gateResearchSpend).
+    let apiKey: string | null;
+    try {
+      apiKey = await orgApiKeyForTenant(db, analysis.tenantId);
+    } catch (err) {
+      if (err instanceof OrgKeyUnavailableError) throw new AnalysisFailure(err.message);
+      throw err;
+    }
+
     const [tenant] = await db.select().from(tenants).where(eq(tenants.id, analysis.tenantId));
     if (!tenant) throw new Error(`tenant ${analysis.tenantId} missing`);
 
@@ -160,6 +186,7 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
       prompt,
       allowedTools: POLICY_SESSION_TOOLS,
       orchestrate: false,
+      ...(apiKey ? { apiKey } : {}),
     });
     usage = session.usage;
     transcript = session.transcript;
@@ -210,6 +237,10 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
   // Settled either way: tell the person who asked.
   await notifyPolicyRequester(analysisId);
 };
+
+/** Why an analysis queued before its feature was switched off did not run. */
+export const FEATURE_OFF =
+  'Policy analysis is turned off for this portrait, so this analysis did not run. It was not counted against your research sessions.';
 
 /** Fail a running analysis with a staff-readable reason; keeps whatever the session cost. */
 async function settleFailed(

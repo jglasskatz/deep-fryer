@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
+import { setPortraitFeatures } from './test-features';
 
 /**
  * Emergency curation actions in dev mode (no AUTH_SECRET: the local
@@ -43,6 +44,7 @@ describe.skipIf(!hasDb)('emergency actions (dev mode, Postgres)', () => {
   async function portrait() {
     const m = await import('@deep-fryer/db');
     const { tenant } = await m.provisionTenant(m.getDb(), { slug: uniq(), name: 'Storm City' });
+    await setPortraitFeatures(tenant.id, { emergency: true });
     created.push({ tenantId: tenant.id, organizationId: tenant.organizationId });
     return tenant;
   }

@@ -78,7 +78,18 @@ const ANNOUNCEMENT_MS = 5000;
  * working on pages without this header. Labels arrive as props from the
  * server-rendered SiteHeader, in the request's language.
  */
-export function ThemeToggle({ labels }: { labels: ThemeLabels }) {
+export function ThemeToggle({
+  labels,
+  deepFry,
+}: {
+  labels: ThemeLabels;
+  /**
+   * Whether the deployment offers the deep fry (SPEC-v7 §3, `deep_fry`): off,
+   * the menu is just the three themes and its keyboard wraps over those.
+   */
+  deepFry: boolean;
+}) {
+  const itemCount = deepFry ? ITEM_COUNT : PREFERENCES.length;
   const { preference, fried } = useSyncExternalStore(subscribeThemeState, getThemeState, getServerThemeState);
   const [open, setOpen] = useState(false);
   /** The menu item that holds focus (roving tabindex). */
@@ -237,7 +248,7 @@ export function ThemeToggle({ labels }: { labels: ThemeLabels }) {
       event.preventDefault();
       return;
     }
-    const next = menuFocusIndex(event.key, active, ITEM_COUNT);
+    const next = menuFocusIndex(event.key, active, itemCount);
     if (next !== null) {
       event.preventDefault();
       setActive(next);
@@ -361,23 +372,27 @@ export function ThemeToggle({ labels }: { labels: ThemeLabels }) {
               </button>
             ))}
           </div>
-          <div role="separator" className="my-1 border-t border-black/10" />
-          <button
-            ref={(el) => {
-              itemRefs.current[FRY_INDEX] = el;
-            }}
-            type="button"
-            role="menuitem"
-            tabIndex={active === FRY_INDEX ? 0 : -1}
-            onClick={toggleFry}
-            className={itemClass}
-          >
-            <span aria-hidden className="flex w-4 justify-center" />
-            <span aria-hidden className="w-[18px] text-center leading-none">
-              🍳
-            </span>
-            <span>{fried ? labels.unfry : labels.deepFry}</span>
-          </button>
+          {deepFry ? (
+            <>
+              <div role="separator" className="my-1 border-t border-black/10" />
+              <button
+                ref={(el) => {
+                  itemRefs.current[FRY_INDEX] = el;
+                }}
+                type="button"
+                role="menuitem"
+                tabIndex={active === FRY_INDEX ? 0 : -1}
+                onClick={toggleFry}
+                className={itemClass}
+              >
+                <span aria-hidden className="flex w-4 justify-center" />
+                <span aria-hidden className="w-[18px] text-center leading-none">
+                  🍳
+                </span>
+                <span>{fried ? labels.unfry : labels.deepFry}</span>
+              </button>
+            </>
+          ) : null}
         </div>
       ) : null}
     </div>

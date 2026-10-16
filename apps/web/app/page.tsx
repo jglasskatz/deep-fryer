@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { familyByOrgSlug } from '@/lib/family';
+import { organizationFeatures } from '@/lib/features';
 import { hasDatabase } from '@/lib/env';
 
 /**
@@ -11,6 +12,13 @@ import { hasDatabase } from '@/lib/env';
 export default async function HomePage() {
   const nyc = hasDatabase() ? await familyByOrgSlug('nyc') : null;
   const showcase = nyc && nyc.members.length > 1 ? nyc : null;
+  // The showcase opens on the family compare when NYC has it on (SPEC-v7 §3),
+  // otherwise on the city's own portrait — never on a page that would 404.
+  const showcaseHref = showcase
+    ? (await organizationFeatures(showcase.organization.id)).family_compare
+      ? `/o/${showcase.organization.slug}/compare`
+      : `/${showcase.whole ?? showcase.members[0]!.slug}`
+    : null;
 
   return (
     <>
@@ -34,7 +42,7 @@ export default async function HomePage() {
               Start a 30-day trial
             </Link>
             <Link
-              href={showcase ? `/o/${showcase.organization.slug}/compare` : '/santacruz'}
+              href={showcaseHref ?? '/santacruz'}
               className="rounded border border-black/20 px-5 py-2.5 text-sm font-medium hover:bg-black/5"
             >
               {showcase ? `See ${showcase.organization.name}` : 'View the demo portrait'}

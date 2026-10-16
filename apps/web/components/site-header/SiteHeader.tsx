@@ -1,14 +1,20 @@
 import Link from 'next/link';
 import { signOut } from '@/auth';
 import { FamilyNav } from './FamilyNav';
+import { adminNavLinks, tenantNavLinks, type NavLink, type PortraitFeatures } from './nav-links';
 import { LanguageNotice, LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { InstallAppButton } from '@/components/pwa/InstallAppButton';
 import { SignOutButton } from '@/components/pwa/SignOutButton';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { signInHref } from '@/app/login/sign-in';
+import { adminTenant } from '@/lib/admin-data';
 import { getAuth } from '@/lib/auth';
+import { countHeldComments } from '@/lib/discussion';
+import { deploymentFeatureOn, portraitFeatures } from '@/lib/features';
 import { authConfigured, hasDatabase } from '@/lib/env';
 import { familyForTenant, organizationOfTenant, type Family } from '@/lib/family';
-import { getI18n } from '@/lib/i18n/server';
+import { countNewSubmissions } from '@/lib/involvement-admin';
+import { getI18n, getRequestPath } from '@/lib/i18n/server';
 
 type Variant = 'landing' | 'tenant' | 'admin' | 'architecture' | 'org' | 'account';
 
@@ -22,10 +28,39 @@ interface SiteHeaderProps {
   org?: { slug: string; name: string; languageHelp?: string | null };
 }
 
-interface NavLink {
-  href: string;
-  label: string;
-  primary?: boolean;
+/**
+ * The admin queues' sizes for the navigation badges (SPEC-v6 §3.2, §4.3):
+ * held comments and new organization submissions. Read as the signed-in
+ * person, under row-level security: submissions (which hold contact
+ * details) count 0 for anyone below editor, so their badge does not show.
+ * A queue whose feature is off is not counted (its link is not shown).
+ */
+async function adminQueueCounts(
+  tenantSlug: string,
+  features: PortraitFeatures,
+): Promise<{ heldComments: number; newSubmissions: number } | null> {
+  const tenant = await adminTenant(tenantSlug);
+  if (!tenant) return null;
+  const [heldComments, newSubmissions] = await Promise.all([
+    features.discussion ? countHeldComments(tenant.id) : 0,
+    features.involvement ? countNewSubmissions(tenant.id) : 0,
+  ]);
+  return { heldComments, newSubmissions };
+}
+
+/**
+ * The admin link for the page being shown: the longest link path the
+ * request path falls under, so /nyc/admin/review/… marks Review rather than
+ * Overview. Overview itself is marked only on the overview page and on pages
+ * no other link covers (the dimension editor).
+ */
+function currentAdminHref(links: NavLink[], requestPath: string): string | undefined {
+  const path = requestPath.split('?')[0]!;
+  let best: string | undefined;
+  for (const l of links) {
+    if ((path === l.href || path.startsWith(`${l.href}/`)) && (!best || l.href.length > best.length)) best = l.href;
+  }
+  return best;
 }
 
 /**
@@ -40,7 +75,7 @@ interface NavLink {
  */
 export async function SiteHeader({ variant, tenant, family, familyView, org }: SiteHeaderProps) {
   const auth = hasDatabase() || !authConfigured() ? await getAuth() : null;
-  const { m, href } = await getI18n();
+  const [{ m, href }, requestPath] = await Promise.all([getI18n(), getRequestPath()]);
   const tenantFamily = tenant && !family ? await familyForTenant(tenant.slug) : null;
   const shownFamily = family ?? tenantFamily;
   const tenantOrg = tenant ? await organizationOfTenant(tenant.slug) : null;
@@ -53,23 +88,28 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
     if (auth?.userId) links.push({ href: '/account', label: 'My portraits' });
     links.push({ href: '/start', label: 'Start a portrait', primary: true });
   }
+  // Feature links follow the portrait's features (SPEC-v7 §3.3); the lists
+  // themselves are built, and tested, in nav-links.ts.
   if (variant === 'tenant' && tenant) {
-    links.push({ href: href(`/${tenant.slug}/progress`), label: m.nav.progress });
-    links.push({ href: href(`/${tenant.slug}/methodology`), label: m.nav.methodology });
-    links.push({ href: href(`/${tenant.slug}/outreach`), label: m.nav.getInvolved });
-    links.push({ href: href(`/${tenant.slug}/emergency`), label: m.emergency.navLabel });
+    const features = await portraitFeatures(tenant.slug);
+    links.push(
+      ...tenantNavLinks(
+        tenant.slug,
+        features,
+        {
+          progress: m.nav.progress,
+          methodology: m.nav.methodology,
+          getInvolved: m.nav.getInvolved,
+          emergency: m.emergency.navLabel,
+        },
+        href,
+      ),
+    );
   }
   if (variant === 'admin' && tenant) {
-    const a = `/${tenant.slug}/admin`;
-    links.push({ href: a, label: 'Overview' });
-    links.push({ href: `${a}/review`, label: 'Review' });
-    links.push({ href: `${a}/research`, label: 'Research' });
-    links.push({ href: `${a}/policy`, label: 'Policy' });
-    links.push({ href: `${a}/emergency`, label: 'Emergency' });
-    links.push({ href: `${a}/members`, label: 'Members' });
-    links.push({ href: `${a}/settings`, label: 'Settings' });
-    if (tenantOrg) links.push({ href: `/o/${tenantOrg.slug}/billing`, label: 'Billing' });
-    links.push({ href: `/${tenant.slug}`, label: 'Public site ↗' });
+    const features = await portraitFeatures(tenant.slug);
+    const counts = hasDatabase() ? await adminQueueCounts(tenant.slug, features) : null;
+    links.push(...adminNavLinks({ tenantSlug: tenant.slug, orgSlug: tenantOrg?.slug ?? null, features, counts }));
   }
 
   async function doSignOut() {
@@ -81,6 +121,35 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
     l.primary
       ? 'rounded bg-[color:var(--color-accent)] px-3 py-1.5 text-white hover:opacity-90'
       : 'rounded px-3 py-1.5 hover:bg-black/5';
+
+  /**
+   * Staff pages carry eleven links — too many for the header row: at
+   * 1280 px the row would need ~1300 px of a 1104 px content width, and the
+   * portrait's name in the breadcrumb is the first thing squeezed out. So
+   * from `md` up the admin links get a row of their own under the header
+   * row (wrapping, never scrolling sideways, so no section hides off-edge
+   * at tablet widths); below `md` they live in the menu like every
+   * variant's links.
+   */
+  const adminRow = variant === 'admin' && links.length > 0;
+  const activeHref = adminRow ? currentAdminHref(links, requestPath) : undefined;
+
+  const linkContent = (l: NavLink) => (
+    <>
+      {l.label}
+      {l.count ? (
+        <>
+          <span
+            aria-hidden
+            className="ms-1.5 inline-block min-w-5 rounded-full bg-amber-100 px-1.5 text-center text-xs font-semibold text-amber-900"
+          >
+            {l.count}
+          </span>
+          <span className="sr-only">{` (${l.count} ${l.countLabel ?? ''})`}</span>
+        </>
+      ) : null}
+    </>
+  );
 
   const accountControl =
     auth && !auth.devMode && hasDatabase() ? (
@@ -114,8 +183,10 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
           </div>
         </details>
       ) : (
+        // Back to this very page after signing in, in the reader's language
+        // (SPEC-v6 §2.2): someone who started on Housing returns to Housing.
         <Link
-          href={`/login${tenant ? `?next=${encodeURIComponent(href(`/${tenant.slug}`))}` : ''}`}
+          href={signInHref(requestPath, href)}
           className="whitespace-nowrap rounded border border-black/15 px-3 py-1.5 hover:bg-black/5"
         >
           {m.common.signIn}
@@ -177,13 +248,15 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
           </span>
         ) : null}
 
-        <nav aria-label={m.common.mainNav} className="ms-auto hidden items-center gap-1 text-sm md:flex">
-          {links.map((l) => (
-            <Link key={l.href} href={l.href} className={linkClass(l)}>
-              {l.label}
-            </Link>
-          ))}
-        </nav>
+        {adminRow ? null : (
+          <nav aria-label={m.common.mainNav} className="ms-auto hidden items-center gap-1 text-sm md:flex">
+            {links.map((l) => (
+              <Link key={l.href} href={l.href} className={linkClass(l)}>
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+        )}
         {/* The controls' dropdowns (language, theme, account, menu) are each
             `absolute end-0` under their own trigger. On phones that runs a
             224–240 px menu off the start edge when its trigger sits mid-row
@@ -196,10 +269,12 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
             static top (just under their summary); the theme menu's
             `top-full` is the group's height, which equals the toggle's.
             From `sm` up each menu sits under its own trigger again. */}
-        <div className="relative ms-auto flex items-center gap-1 text-sm md:ms-1 max-sm:[&>:is(details,div)]:static">
+        <div
+          className={`relative ms-auto flex items-center gap-1 text-sm max-sm:[&>:is(details,div)]:static ${adminRow ? '' : 'md:ms-1'}`}
+        >
           {publicPlane ? <LanguageSwitcher /> : null}
           {/* Every variant: light/dark, and press-and-hold for the fryer (SPEC-v5 §4). */}
-          <ThemeToggle labels={m.theme} />
+          <ThemeToggle labels={m.theme} deepFry={deploymentFeatureOn('deep_fry')} />
           {accountControl}
           {links.length > 0 ? (
             <details name="df-header-menu" className="relative md:hidden">
@@ -213,8 +288,13 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
               </summary>
               <div className="absolute end-0 z-50 mt-1 w-60 rounded border border-black/10 bg-white p-1 text-sm shadow-lg">
                 {links.map((l) => (
-                  <Link key={l.href} href={l.href} className="block rounded px-3 py-2.5 hover:bg-black/5">
-                    {l.label}
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    aria-current={l.href === activeHref ? 'page' : undefined}
+                    className={`block rounded px-3 py-2.5 hover:bg-black/5 ${l.href === activeHref ? 'bg-black/5 font-medium' : ''}`}
+                  >
+                    {linkContent(l)}
                   </Link>
                 ))}
               </div>
@@ -222,6 +302,25 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
           ) : null}
         </div>
       </div>
+      {adminRow ? (
+        <div className="hidden border-t border-black/5 md:block">
+          <nav
+            aria-label={m.common.mainNav}
+            className="mx-auto flex max-w-6xl flex-wrap items-center gap-1 px-4 py-1.5 text-sm sm:px-6"
+          >
+            {links.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                aria-current={l.href === activeHref ? 'page' : undefined}
+                className={`whitespace-nowrap ${linkClass(l)} ${l.href === activeHref ? 'bg-black/5 font-medium' : ''}`}
+              >
+                {linkContent(l)}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      ) : null}
       {variant !== 'landing' && shownFamily ? (
         <FamilyNav family={shownFamily} currentSlug={tenant?.slug} currentView={familyView} />
       ) : null}

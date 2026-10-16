@@ -9,9 +9,11 @@ import { UsageMeter } from '@/components/billing/UsageMeter';
 import { PlanPicker, type PickerPlan } from '@/components/billing/PlanPicker';
 import { PortalButton } from '@/components/billing/PortalButton';
 import { ContractForm } from '@/components/billing/ContractForm';
+import { ApiKeyForm } from '@/components/billing/ApiKeyForm';
+import { ResearchCostEstimate } from '@/components/billing/ResearchCostEstimate';
 import { getAuth, getOrgRole } from '@/lib/auth';
 import { billingSummary, WARNING_COPY } from '@/lib/billing';
-import { hasDatabase, stripeConfigured, supportEmail } from '@/lib/env';
+import { bringYourOwnKeyAvailable, hasDatabase, stripeConfigured, supportEmail } from '@/lib/env';
 import { catalogPrices, formatPrice, stripe } from '@/lib/stripe';
 import { systemDb } from '@/lib/db';
 
@@ -27,7 +29,10 @@ const COLLECTION_LABEL = {
  * Billing (SPEC-v4 §3): organization owners, billing contacts, and staff.
  * Shows standing and usage against the plan, the invoice history, and the
  * ways to buy — card checkout, annual invoice with PO, or (staff) a
- * negotiated contract.
+ * negotiated contract — and the organization's own Anthropic API key
+ * (SPEC-v7 §4), which owners add or remove here. The page only ever has the
+ * key's hint and dates (BillingSummary.apiKey); the key itself is never
+ * read back.
  */
 export default async function BillingPage({
   params,
@@ -156,12 +161,65 @@ export default async function BillingPage({
           <p className="mt-3 text-xs text-[color:var(--color-muted)]">
             Allowances are hard caps — there is never an overage charge. Published portraits stay
             online whatever the billing status.
+            {summary.apiKey
+              ? ' Research sessions on your own API key are listed in the count above but not limited by it while the key is on file.'
+              : ''}
           </p>
           {stripeConfigured() && org.stripeCustomerId ? (
             <div className="mt-4">
               <PortalButton orgSlug={org.slug} />
             </div>
           ) : null}
+        </section>
+
+        <section id="api-key" className="mt-8 rounded-lg border border-black/10 p-4" aria-labelledby="api-key-heading">
+          <h2 id="api-key-heading" className="text-lg font-semibold">
+            Your Anthropic API key
+          </h2>
+          <p className="mt-1 text-sm">
+            {summary.apiKey
+              ? 'Research and policy sessions for this organization run on your key and are not counted against your plan.'
+              : 'With your own Anthropic API key on file, research and policy sessions for this organization run on your key and are not counted against your plan.'}{' '}
+            A plan is still needed for hosting, review, and publishing.
+          </p>
+          <div className="mt-3">
+            <ResearchCostEstimate onKey showSingleSession />
+          </div>
+          <div className="mt-4">
+            {role === 'owner' ? (
+              <>
+                {!bringYourOwnKeyAvailable() ? (
+                  <p className="mb-3 rounded bg-black/5 p-2 text-sm">
+                    Using your own key is not available on this server: the operator has not set{' '}
+                    <code>DF_SECRETS_KEY</code>, which keys are encrypted with. Research runs on your plan.
+                  </p>
+                ) : null}
+                <ApiKeyForm
+                  orgSlug={org.slug}
+                  canSave={bringYourOwnKeyAvailable()}
+                  onFile={
+                    summary.apiKey
+                      ? {
+                          keyHint: summary.apiKey.keyHint,
+                          createdAt: summary.apiKey.createdAt.toISOString(),
+                          validatedAt: summary.apiKey.validatedAt?.toISOString() ?? null,
+                        }
+                      : null
+                  }
+                />
+              </>
+            ) : summary.apiKey ? (
+              <p className="text-sm">
+                Research runs on the organization&apos;s own key (<span className="font-mono">sk-ant-…{summary.apiKey.keyHint}</span>
+                , added {summary.apiKey.createdAt.toISOString().slice(0, 10)}). Only an organization owner can replace or
+                remove it.
+              </p>
+            ) : (
+              <p className="text-sm text-[color:var(--color-muted)]">
+                No key on file. An organization owner can add one here.
+              </p>
+            )}
+          </div>
         </section>
 
         {invoices.length > 0 ? (

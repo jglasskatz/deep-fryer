@@ -865,6 +865,67 @@ export const involvementSubmissions = pgTable(
 export type InvolvementListing = typeof involvementListings.$inferSelect;
 export type InvolvementSubmission = typeof involvementSubmissions.$inferSelect;
 
+// ---- Translation requests and organization API keys (SPEC-v7 §3.5, §4) ----
+
+/**
+ * A reader asking for a portrait in their language while the portrait's
+ * `translation` feature is off. Anyone may file one (no account); staff see
+ * counts per language. The network address is stored only as a keyed hash,
+ * for rate limiting.
+ */
+export const translationRequests = pgTable(
+  'translation_requests',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    /** A supported locale code (lib/i18n/locales), never 'en'. */
+    locale: text('locale').notNull(),
+    /** The unprefixed page the reader was on. */
+    path: text('path').notNull(),
+    ipHash: text('ip_hash').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    tenantLocaleIdx: index('translation_requests_tenant_locale_idx').on(t.tenantId, t.locale),
+    rateIdx: index('translation_requests_rate_idx').on(t.tenantId, t.ipHash, t.createdAt),
+    pathLength: check('translation_requests_path_length', sql`char_length(${t.path}) BETWEEN 1 AND 300`),
+    notEnglish: check('translation_requests_not_english', sql`${t.locale} <> 'en'`),
+  }),
+);
+
+/**
+ * An organization's own model-provider key (SPEC-v7 §4): research and policy
+ * sessions for the organization run on it. Stored only as AES-256-GCM
+ * ciphertext; the app role may read the hint and dates but never the
+ * ciphertext (column grants, migration 0011) — only the worker decrypts.
+ */
+export const organizationApiKeys = pgTable(
+  'organization_api_keys',
+  {
+    organizationId: uuid('organization_id')
+      .primaryKey()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    provider: text('provider').notNull().default('anthropic'),
+    /** base64(iv) . base64(ciphertext) . base64(auth tag), versioned: "v1:…". */
+    ciphertext: text('ciphertext').notNull(),
+    /** The key's last four characters, to show which key is on file. */
+    keyHint: text('key_hint').notNull(),
+    createdBy: uuid('created_by'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    /** When the provider last accepted the key. */
+    validatedAt: timestamp('validated_at', { withTimezone: true }),
+  },
+  (t) => ({
+    provider: check('organization_api_keys_provider', sql`${t.provider} = 'anthropic'`),
+    hintLength: check('organization_api_keys_hint_length', sql`char_length(${t.keyHint}) <= 8`),
+  }),
+);
+
+export type TranslationRequest = typeof translationRequests.$inferSelect;
+export type OrganizationApiKey = typeof organizationApiKeys.$inferSelect;
+
 export type PolicyAnalysis = typeof policyAnalyses.$inferSelect;
 export type Hazard = typeof hazards.$inferSelect;
 export type EmergencyPlan = typeof emergencyPlans.$inferSelect;

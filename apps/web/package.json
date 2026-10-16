@@ -12,6 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
     "@auth/drizzle-adapter": "1.11.3",
     "@deep-fryer/contract": "workspace:*",
     "@deep-fryer/core": "workspace:*",

@@ -1,5 +1,5 @@
 import type { RunnerOptions, Task } from 'graphile-worker';
-import { and, eq, isNull, notInArray, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNull, notInArray, sql } from 'drizzle-orm';
 import {
   alertIsCurrent,
   emergencyConfigSchema,
@@ -7,8 +7,11 @@ import {
   nwsAlertPageUrl,
   nwsAlertsUrl,
   nwsRequestHeaders,
+  parseDisabledFeatures,
   parseNwsAlerts,
+  resolvePortraitFeatures,
   type EmergencyConfig,
+  type Feature,
   type NormalizedAlert,
 } from '@deep-fryer/core';
 import {
@@ -262,14 +265,27 @@ function sqlExcluded(column: string) {
 export async function loadAlertTargets(
   db: DbExecutor,
   log: (message: string) => void = console.warn,
+  /** The deployment's kill switch (DF_DISABLED_FEATURES); the env by default. */
+  disabled: ReadonlySet<Feature> = parseDisabledFeatures(process.env.DF_DISABLED_FEATURES).disabled,
 ): Promise<AlertTarget[]> {
   const rows = await db
     .select({ tenantId: tenants.id, tenantSlug: tenants.slug, value: tenantConfig.value })
     .from(tenantConfig)
     .innerJoin(tenants, eq(tenants.id, tenantConfig.tenantId))
     .where(and(eq(tenantConfig.key, 'emergency'), isNull(tenants.archivedAt)));
+  // A portrait whose emergency feature is off (SPEC-v7 §3.3) is not fetched
+  // for at all: no traffic to the NWS, no rows, nothing to show if it is
+  // turned back on later until the next sync.
+  const featureRows = rows.length
+    ? await db
+        .select({ tenantId: tenantConfig.tenantId, value: tenantConfig.value })
+        .from(tenantConfig)
+        .where(and(eq(tenantConfig.key, 'features'), inArray(tenantConfig.tenantId, rows.map((r) => r.tenantId))))
+    : [];
+  const featuresOf = new Map(featureRows.map((r) => [r.tenantId, r.value as Record<string, unknown>]));
   const targets: AlertTarget[] = [];
   for (const row of rows) {
+    if (!resolvePortraitFeatures(featuresOf.get(row.tenantId), disabled).emergency) continue;
     const parsed = emergencyConfigSchema.safeParse(row.value);
     if (!parsed.success) {
       log(`alerts_sync: ${row.tenantSlug}: emergency config is invalid (${parsed.error.issues[0]?.message}); skipping`);

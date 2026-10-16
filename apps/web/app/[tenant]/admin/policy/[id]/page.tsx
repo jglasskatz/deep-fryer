@@ -18,6 +18,7 @@ import {
   type ImpactRow,
   type WedgeOutcome,
 } from '@/lib/policy';
+import { requireFeature } from '@/lib/features';
 import { safeHref } from '@/lib/safe-url';
 
 export const dynamic = 'force-dynamic';
@@ -63,6 +64,7 @@ export default async function PolicyAnalysisPage({
   params: Promise<{ tenant: string; id: string }>;
 }) {
   const { tenant, id } = await params;
+  await requireFeature(tenant, 'policy_analysis');
   const ctx = await requireAdminPage(tenant, 'editor', `/${tenant}/admin/policy/${id}`);
   const analysis = await getPolicyAnalysis(ctx.tenant.id, id);
   if (!analysis) notFound();

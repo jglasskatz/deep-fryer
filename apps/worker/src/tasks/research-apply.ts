@@ -1,6 +1,8 @@
+import { gzipSync } from 'node:zlib';
 import type { Task } from 'graphile-worker';
 import { and, eq, inArray } from 'drizzle-orm';
 import type { ContentSupported, FindingPayload, RunTokenUsage } from '@deep-fryer/core';
+import { keyHint } from '@deep-fryer/core/secrets';
 import {
   dimensions,
   findings,
@@ -8,6 +10,8 @@ import {
   researchRuns,
   researchSessions,
   tenants,
+  type DbExecutor,
+  type ResearchRun,
 } from '@deep-fryer/db';
 import {
   deterministicChecks,
@@ -19,6 +23,7 @@ import {
   type ApplyJobPayload,
 } from '@deep-fryer/research';
 import { closeEvidenceBrowser } from '../evidence.js';
+import { OrgKeyUnavailableError, orgApiKeyForTenant } from '../org-key.js';
 import { extractJson, runSession, runSessionWithRetry } from '../session.js';
 import { tenantStorage } from '../storage.js';
 import { notifyRunFinished } from '../notify.js';
@@ -30,6 +35,14 @@ import { settledRunStatus } from './run-status.js';
  * checks plus an independent verifier session; failures surface as
  * red-flagged findings, never dropped. Failed runs stay failed — reruns are
  * user-directed from review, not automatic.
+ *
+ * Paying for it (SPEC-v7 §4): when the portrait's organization has its own
+ * Anthropic API key on file, every session of the run — research and
+ * verifier alike — runs on that key; otherwise on the deployment's
+ * ANTHROPIC_API_KEY. The key is looked up once, before the first session, so
+ * a run never mixes the two. A key that is on file but cannot be decrypted
+ * fails the run (OrgKeyUnavailableError) rather than quietly spending the
+ * deployment's key on a run the plan's allowance never covered.
  */
 export const researchApply: Task = async (rawPayload, helpers) => {
   const { runId } = rawPayload as ApplyJobPayload;
@@ -79,6 +92,14 @@ export const researchApply: Task = async (rawPayload, helpers) => {
   };
 
   try {
+    // First, before anything else can fail or spend: whose key this run uses.
+    const apiKey = await orgApiKeyForTenant(db, run.tenantId);
+    if (apiKey) {
+      // The hint (last four characters) is what the billing page shows; never more.
+      helpers.logger.info(`run ${runId}: running on the organization's own Anthropic API key (…${keyHint(apiKey)})`);
+    }
+    const keyOption = apiKey ? { apiKey } : {};
+
     const [tenant] = await db.select().from(tenants).where(eq(tenants.id, run.tenantId));
     if (!tenant) throw new Error(`tenant ${run.tenantId} missing`);
 
@@ -104,6 +125,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
       const result = await runSessionWithRetry({
         prompt: regionSpec.prompt,
         allowedTools: regionSpec.tool_allowlist,
+        ...keyOption,
       });
       usage[row.id] = result.usage;
       await db
@@ -150,6 +172,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
         prompt,
         allowedTools: spec.tool_allowlist,
         storage,
+        ...keyOption,
       });
       usage[row.id] = result.usage;
 
@@ -169,7 +192,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
 
         let verdict: { content_supported: ContentSupported; verifier_note?: string } | null;
         if (payload?.kind === 'indicator') {
-          verdict = await runVerifier(payload, config.region.name, verifierUsage);
+          verdict = await runVerifier(payload, config.region.name, verifierUsage, apiKey);
         } else if (payload?.kind === 'gap') {
           verdict = {
             content_supported: 'uncertain',
@@ -232,6 +255,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
     else helpers.logger.error(`run ${runId} failed: no session succeeded`);
   } catch (err) {
     helpers.logger.error(`run ${runId} failed: ${err instanceof Error ? err.message : err}`);
+    if (err instanceof OrgKeyUnavailableError) await failPlannedSessions(db, run, err.message);
     await db
       .update(researchSessions)
       .set({ status: 'failed', completedAt: new Date() })
@@ -249,10 +273,46 @@ export const researchApply: Task = async (rawPayload, helpers) => {
   await notifyRunFinished(runId);
 };
 
+/**
+ * A run that could not start — the organization's key is on file but
+ * unreadable — still tells staff why. Each planned session gets a failed
+ * row whose transcript is the reason, in the shape a session that errored
+ * records (session.ts runSessionWithRetry: `{"type":"session_error",…}`).
+ * So the run page lists every dimension as failed, the run-finished email
+ * counts them, owners who download a transcript read the message, and —
+ * failed sessions being free — nothing is counted against the plan.
+ */
+async function failPlannedSessions(db: DbExecutor, run: ResearchRun, message: string): Promise<void> {
+  const dims = await db
+    .select({ id: dimensions.id, slug: dimensions.slug })
+    .from(dimensions)
+    .where(eq(dimensions.tenantId, run.tenantId));
+  const idBySlug = new Map(dims.map((d) => [d.slug, d.id]));
+  const transcript = gzipSync(JSON.stringify({ type: 'session_error', message }));
+  const now = new Date();
+  const rows = run.plan.sessions.flatMap((spec) => {
+    const dimensionId = spec.dimension_slug ? idBySlug.get(spec.dimension_slug) : undefined;
+    if (spec.kind === 'dimension' && !dimensionId) return [];
+    return [
+      {
+        runId: run.id,
+        kind: spec.kind,
+        dimensionId: dimensionId ?? null,
+        status: 'failed' as const,
+        transcript,
+        startedAt: now,
+        completedAt: now,
+      },
+    ];
+  });
+  if (rows.length) await db.insert(researchSessions).values(rows);
+}
+
 async function runVerifier(
   payload: Extract<FindingPayload, { kind: 'indicator' }>,
   regionName: string,
   acc: { input_tokens: number; output_tokens: number },
+  apiKey: string | null,
 ): Promise<{ content_supported: ContentSupported; verifier_note?: string } | null> {
   const prompt = renderVerifierPrompt({
     indicator_name: payload.name,
@@ -272,6 +332,8 @@ async function runVerifier(
       // researcher's model — a constant, maximally-skeptical judge, so strategy
       // comparisons measure the researcher, never the leniency of its grader.
       model: process.env.VERIFIER_MODEL ?? 'claude-opus-5',
+      // Verifiers are part of the run's spend: the same key as its researchers.
+      ...(apiKey ? { apiKey } : {}),
     });
     acc.input_tokens += result.usage.input_tokens;
     acc.output_tokens += result.usage.output_tokens;

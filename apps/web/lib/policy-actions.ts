@@ -5,22 +5,21 @@ import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import {
   POLICY_ANALYSIS_SESSIONS,
-  checkResearchQuota,
   standing,
   type ResearchQuotaCheck,
 } from '@deep-fryer/core';
 import {
-  lockSubscription,
+  gateResearchSpend,
   organizationForTenant,
   policyAnalyses,
-  researchSessionsUsed,
   type Subscription,
 } from '@deep-fryer/db';
 import { POLICY_TASK, ensureJobQueueSchema, policyJobKey } from '@deep-fryer/research';
 import { action, UserError } from './action-result';
 import { audit } from './audit';
-import { getAuth, requireTenantRole } from './auth';
+import { getAuth } from './auth';
 import { systemDb } from './db';
+import { requireTenantRoleWithFeature } from './features';
 import { POLICY_LIMITS } from './policy-limits';
 
 /**
@@ -107,7 +106,9 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const createPolicyAnalysis = action(
   async (input: { tenantSlug: string; title: string; brief: string; sourceUrl?: string }) => {
-    const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+    // Off means gone (SPEC-v7 §3.3): with policy analysis off for this
+    // portrait, a forged request cannot start one.
+    const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'policy_analysis');
     const fields = parseInput(input);
     const auth = await getAuth();
 
@@ -126,16 +127,17 @@ export const createPolicyAnalysis = action(
     // locked for the check, and the app role has no insert policy on
     // policy_analyses by design (migration 0008). The editor check above is
     // the authorization.
+    //
+    // The gate is the one research apply uses (packages/db
+    // gateResearchSpend): with the organization's own Anthropic API key on
+    // file (SPEC-v7 §4) the session runs on that key and the allowance is not
+    // checked; good standing is required either way.
     const db = systemDb();
     const analysis = await db.transaction(async (tx) => {
       const org = await organizationForTenant(tx, tenant.id);
       if (!org) throw new Error(`tenant ${tenant.id} has no organization`);
-      const sub = await lockSubscription(tx, org.id);
-      const used = sub
-        ? await researchSessionsUsed(tx, org.id, sub.currentPeriodStart, sub.currentPeriodEnd)
-        : 0;
-      const check = checkResearchQuota(sub, used, POLICY_ANALYSIS_SESSIONS);
-      if (!check.allowed) throw new UserError(quotaMessage(sub, check));
+      const gate = await gateResearchSpend(tx, org.id, POLICY_ANALYSIS_SESSIONS);
+      if (!gate.check.allowed) throw new UserError(quotaMessage(gate.subscription, gate.check));
 
       const [row] = await tx
         .insert(policyAnalyses)
@@ -157,7 +159,13 @@ export const createPolicyAnalysis = action(
         row.id,
         'create',
         null,
-        { title: fields.title, source_url: fields.sourceUrl ?? null, brief_chars: fields.brief.length },
+        {
+          title: fields.title,
+          source_url: fields.sourceUrl ?? null,
+          brief_chars: fields.brief.length,
+          // Who pays for the session: the organization's own key or the plan.
+          funding: gate.funding,
+        },
         tx,
       );
 
@@ -193,7 +201,7 @@ export const createPolicyAnalysis = action(
  * settled and skips it — so the job itself is left alone.
  */
 export const cancelPolicyAnalysis = action(async (input: { tenantSlug: string; id: string }) => {
-  const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+  const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'policy_analysis');
   if (!UUID.test(input.id)) throw new UserError('That analysis does not exist.');
 
   // System context: the app role has no update policy on policy_analyses

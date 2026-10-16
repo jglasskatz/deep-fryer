@@ -53,6 +53,9 @@ describe.skipIf(!hasDb)('createPolicyAnalysis', () => {
     const db = m.getDb();
     const org = await m.provisionOrganization(db, { slug: uniq(), name: 'Policy Town', startTrial: allowance !== null });
     const { tenant } = await m.provisionTenant(db, { slug: uniq(), name: 'Policy Town', organizationId: org.id });
+    // New portraits start with every feature off (SPEC-v7 §3); these actions sit behind policy_analysis.
+    const { setPortraitFeatures } = await import('./test-features');
+    await setPortraitFeatures(tenant.id, { policy_analysis: true });
     if (allowance !== null) {
       await db
         .update(m.subscriptions)

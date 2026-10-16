@@ -5,6 +5,8 @@ import { tenantConfigMap } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
 import { EmbedSettings } from '@/components/admin/EmbedSettings';
 import { appUrl } from '@/lib/env';
+import { deploymentDisabled } from '@/lib/features';
+import { translationRequestCounts } from '@/lib/translation-requests';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +17,10 @@ export default async function SettingsPage({
 }) {
   const { tenant } = await params;
   const ctx = await requireAdminPage(tenant, 'owner');
-  const config = await tenantConfigMap(ctx.tenant.id);
+  const [config, requests] = await Promise.all([
+    tenantConfigMap(ctx.tenant.id),
+    translationRequestCounts(ctx.tenant.id),
+  ]);
 
   return (
     <>
@@ -44,6 +49,8 @@ export default async function SettingsPage({
             notifications={config.notifications ?? null}
             progress={config.progress ?? null}
             features={config.features ?? null}
+            deploymentDisabled={[...deploymentDisabled()]}
+            translationRequests={requests}
           />
         </div>
         <div className="mt-6">

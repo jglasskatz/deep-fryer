@@ -13,6 +13,7 @@ import {
   setEmergencyPublished,
   type EmergencyEntity,
 } from '@/lib/emergency-actions';
+import { requireFeature } from '@/lib/features';
 import { safeHref } from '@/lib/safe-url';
 
 export const dynamic = 'force-dynamic';
@@ -106,6 +107,7 @@ function RowActions({
  */
 export default async function EmergencyAdminPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
+  await requireFeature(tenant, 'emergency');
   const ctx = await requireAdminPage(tenant, 'editor', `/${tenant}/admin/emergency`);
   const view = await emergencyAdminView(ctx.tenant);
   const slug = ctx.tenant.slug;

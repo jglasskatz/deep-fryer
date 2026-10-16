@@ -1,6 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
-import { middleware } from './middleware';
+
+// These tests are about routing, not about which portraits are translated:
+// every portrait here has translation on, whatever database the run points
+// at (middleware.translation.test.ts covers portraits that have it off).
+vi.mock('./lib/translation-policy', () => ({ translationOnFor: async () => true }));
+const { middleware } = await import('./middleware');
 
 /**
  * Language routing in middleware (lib/i18n/routing.ts): the URL prefix picks

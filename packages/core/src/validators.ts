@@ -152,9 +152,23 @@ export const notificationConfigSchema = z.object({
   email_on_flagged_finding: z.boolean(),
 });
 
-export const featuresConfigSchema = z.object({
-  request_research: z.boolean(),
-});
+/**
+ * Per-portrait feature settings (SPEC-v7 §3): any subset of the registry's
+ * portrait features (features.ts), booleans only; unknown keys are refused so
+ * a typo cannot silently create a flag nothing reads.
+ */
+export const featuresConfigSchema = z
+  .object({
+    emergency: z.boolean(),
+    policy_analysis: z.boolean(),
+    involvement: z.boolean(),
+    discussion: z.boolean(),
+    translation: z.boolean(),
+    family_compare: z.boolean(),
+    request_research: z.boolean(),
+  })
+  .partial()
+  .strict();
 
 export const progressConfigSchema = z.object({
   baseline_year: z.number().int().min(1900).max(2200).nullable(),

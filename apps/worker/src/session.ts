@@ -31,7 +31,9 @@ export async function runSessionWithRetry(
     try {
       return await runSession(input);
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
+      // The message is stored in the transcript: an organization's key must
+      // not ride along if a subprocess error ever echoed its environment.
+      const message = redactSecret(err instanceof Error ? err.message : String(err), input.apiKey);
       return {
         resultText: '',
         transcript: gzipSync(JSON.stringify({ type: 'session_error', message })),
@@ -152,8 +154,53 @@ const SESSION_ENV_KEYS = [
 /** The model client's own configuration namespaces (API key, base URL, CLI knobs). */
 const SESSION_ENV_PREFIXES = ['ANTHROPIC_', 'CLAUDE_CODE_', 'CLAUDE_AGENT_SDK_'];
 
-/** Pure: the subset of `source` a session subprocess may see (see SESSION_ENV_KEYS). */
-export function sessionEnv(source: NodeJS.ProcessEnv = process.env): Record<string, string> {
+/**
+ * The deployment's own credential and routing settings for the model API:
+ * a bearer token, an OAuth token, an LLM gateway, custom headers, a cloud
+ * provider switch (Bedrock, Vertex, Foundry) with its settings, workload
+ * identity federation. When a session runs on an organization's own key
+ * (SPEC-v7 §4) these are withheld. Otherwise one of them could take
+ * precedence over the organization's key — the deployment would pay for a
+ * session the organization was told runs on its key — or carry the key
+ * somewhere it was not given to (a gateway is the deployment's, not
+ * Anthropic's first-party API, which is what the organization's key is for).
+ * Model choice and CLI behavior settings (ANTHROPIC_MODEL, CLAUDE_CODE_…
+ * limits) still pass through.
+ */
+const DEPLOYMENT_CREDENTIAL_KEYS = [
+  'ANTHROPIC_AUTH_TOKEN',
+  'ANTHROPIC_BASE_URL',
+  'ANTHROPIC_CUSTOM_HEADERS',
+  'ANTHROPIC_PROFILE',
+  'ANTHROPIC_IDENTITY_TOKEN',
+  'ANTHROPIC_IDENTITY_TOKEN_FILE',
+  'ANTHROPIC_ORGANIZATION_ID',
+  'ANTHROPIC_SERVICE_ACCOUNT_ID',
+  'ANTHROPIC_WORKSPACE_ID',
+  'CLAUDE_CODE_OAUTH_TOKEN',
+  'CLAUDE_CODE_USE_BEDROCK',
+  'CLAUDE_CODE_USE_VERTEX',
+  'CLAUDE_CODE_USE_FOUNDRY',
+];
+const DEPLOYMENT_CREDENTIAL_PREFIXES = [
+  'ANTHROPIC_BEDROCK_',
+  'ANTHROPIC_VERTEX_',
+  'ANTHROPIC_FOUNDRY_',
+  'ANTHROPIC_FEDERATION_',
+];
+
+/**
+ * Pure: the subset of `source` a session subprocess may see (see
+ * SESSION_ENV_KEYS). With `apiKey` — an organization's own key, decrypted
+ * by org-key.ts for this organization's sessions only — the subprocess
+ * authenticates with that key instead of the deployment's ANTHROPIC_API_KEY,
+ * and the deployment's other credential and routing settings are withheld
+ * (DEPLOYMENT_CREDENTIAL_KEYS). Without it the environment is unchanged.
+ */
+export function sessionEnv(
+  source: NodeJS.ProcessEnv = process.env,
+  options: { apiKey?: string } = {},
+): Record<string, string> {
   const env: Record<string, string> = {};
   for (const [key, value] of Object.entries(source)) {
     if (value === undefined) continue;
@@ -161,7 +208,25 @@ export function sessionEnv(source: NodeJS.ProcessEnv = process.env): Record<stri
       env[key] = value;
     }
   }
+  if (options.apiKey) {
+    for (const key of Object.keys(env)) {
+      if (DEPLOYMENT_CREDENTIAL_KEYS.includes(key) || DEPLOYMENT_CREDENTIAL_PREFIXES.some((p) => key.startsWith(p))) {
+        delete env[key];
+      }
+    }
+    env.ANTHROPIC_API_KEY = options.apiKey;
+  }
   return env;
+}
+
+/**
+ * Pure: `text` with every occurrence of `secret` replaced. Transcripts and
+ * error messages are stored and shown to staff; an organization's key must
+ * never be among them, even if some tool or error echoed it back.
+ */
+export function redactSecret(text: string, secret: string | undefined): string {
+  if (!secret) return text;
+  return text.split(secret).join('[redacted API key]');
 }
 
 /**
@@ -192,6 +257,13 @@ export async function runSession(input: {
    * contract — pass false so no delegation note is appended after it.
    */
   orchestrate?: boolean;
+  /**
+   * The organization's own Anthropic API key (SPEC-v7 §4), when it has one:
+   * the session runs on it instead of the deployment's ANTHROPIC_API_KEY
+   * (see sessionEnv). It goes only into the subprocess environment — never
+   * into a log line, and it is redacted from the stored transcript.
+   */
+  apiKey?: string;
 }): Promise<SessionResult> {
   const workspace = await mkdtemp(path.join(tmpdir(), 'df-session-'));
   const transcriptLines: string[] = [];
@@ -263,7 +335,7 @@ export async function runSession(input: {
         allowedTools: allowed,
         disallowedTools: LOCAL_MACHINE_TOOLS.filter((t) => !allowed.includes(t)),
         permissionMode: 'dontAsk',
-        env: sessionEnv(),
+        env: sessionEnv(process.env, { apiKey: input.apiKey }),
         maxTurns: input.maxTurns ?? DEFAULT_SESSION_MAX_TURNS,
         ...(orchestrated && scoutModel ? { agents: SCOUT_AGENT(scoutModel) } : {}),
         ...(Object.keys(mcpServers).length ? { mcpServers } : {}),
@@ -271,7 +343,7 @@ export async function runSession(input: {
     });
 
     for await (const message of q) {
-      transcriptLines.push(JSON.stringify(message));
+      transcriptLines.push(redactSecret(JSON.stringify(message), input.apiKey));
       if (message.type === 'result') {
         succeeded = message.subtype === 'success';
         if ('result' in message && typeof message.result === 'string') {

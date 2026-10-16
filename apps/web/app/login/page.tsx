@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { AuthError } from 'next-auth';
 import { signIn } from '@/auth';
+import { SubmitButton } from '@/components/login/SubmitButton';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { getAuth, safeNextPath } from '@/lib/auth';
 import {
@@ -11,19 +13,32 @@ import {
   microsoftConfigured,
   smtpConfigured,
 } from '@/lib/env';
+import { rich } from '@/lib/i18n/format';
+import { loginI18n } from './i18n';
+import { afterEmailSignIn, checkEmailHref, loginErrorHref, loginErrorMessage, returnPath } from './sign-in';
 
-export const metadata: Metadata = { title: 'Sign in' };
+export async function generateMetadata(): Promise<Metadata> {
+  const { m } = await loginI18n();
+  return { title: m.login.title };
+}
 
-/** Auth.js error codes → what the person can actually do about it. */
-const ERRORS: Record<string, string> = {
-  OAuthAccountNotLinked:
-    'That email already signed in another way. Use the method you used before (or an email link), then link this provider from your account page.',
-  Verification: 'That sign-in link has expired or was already used. Request a new one.',
-  AccessDenied: 'Sign-in was declined.',
-  Configuration: 'Sign-in is misconfigured on this server. Contact the site administrator.',
-  EmailSignin: 'We could not send the sign-in email. Try again in a few minutes.',
-};
+/** A plausible address; Auth.js normalizes and validates it again. */
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/**
+ * Sign in (SPEC-v3 §2.1, SPEC-v6 §2.2): Microsoft and Google for city staff's
+ * work accounts, an emailed link for anyone.
+ *
+ * Residents arrive from the portrait — often from a translated page — so
+ * every word they read comes from the language catalogs, in the language
+ * they last chose (./i18n.ts). Two notices stay English because only an
+ * operator or developer can act on them: "authentication is not configured"
+ * and the development-only SMTP note.
+ *
+ * `next` is where the person was; it survives errors and the check-email
+ * page (./sign-in.ts), and lib/auth.ts safeNextPath validates it before any
+ * redirect follows it.
+ */
 export default async function LoginPage({
   searchParams,
 }: {
@@ -31,14 +46,25 @@ export default async function LoginPage({
 }) {
   const { next: rawNext, sent, error } = await searchParams;
   const next = safeNextPath(rawNext);
+  /** `next` as the sign-in pages carry it between themselves (null: nowhere particular). */
+  const carried = returnPath(rawNext);
+
+  // The verify-request page used to be /login?sent=1, which Auth.js turned
+  // into /login?sent=1?provider=nodemailer&type=email. Links and history
+  // entries with that shape go to the page that replaced it.
+  if (sent !== undefined) redirect(checkEmailHref(carried));
+
+  const { m, info } = await loginI18n();
+  const t = m.login;
 
   if (!authConfigured()) {
     return (
       <>
         <SiteHeader variant="landing" />
-        <main id="main" className="mx-auto max-w-md px-4 sm:px-6 py-20 text-center">
-          <h1 className="text-2xl font-bold">Sign in</h1>
-          <p className="mt-6 text-sm text-[color:var(--color-muted)]">
+        <main id="main" lang={info.code} dir={info.dir} className="mx-auto max-w-md px-4 sm:px-6 py-20 text-center">
+          <h1 className="text-2xl font-bold">{t.title}</h1>
+          {/* Operator-facing: English on every page (see the component comment). */}
+          <p lang="en" className="mt-6 text-sm text-[color:var(--color-muted)]">
             Authentication is not configured (no <code>AUTH_SECRET</code>). Local development runs
             in dev mode: every request acts as an owner, so there is nothing to sign in to.
           </p>
@@ -58,17 +84,19 @@ export default async function LoginPage({
   async function emailLink(formData: FormData) {
     'use server';
     const email = String(formData.get('email') ?? '').trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      redirect(`/login?error=EmailSignin&next=${encodeURIComponent(next)}`);
-    }
+    if (!EMAIL_PATTERN.test(email)) redirect(loginErrorHref('EmailSignin', carried));
+    let destination: string;
     try {
-      await signIn('nodemailer', { email, redirectTo: next });
+      // redirect: false — Auth.js's own redirect would go through its
+      // verify-request hop and lose `next` (afterEmailSignIn).
+      const authRedirect: unknown = await signIn('nodemailer', { email, redirectTo: next, redirect: false });
+      destination = afterEmailSignIn(String(authRedirect), carried);
     } catch (err) {
-      if (err instanceof AuthError) {
-        redirect(`/login?error=EmailSignin&next=${encodeURIComponent(next)}`);
-      }
+      // Sending failed (SMTP down, or the per-address link limit in auth.ts).
+      if (err instanceof AuthError) redirect(loginErrorHref('EmailSignin', carried));
       throw err;
     }
+    redirect(destination);
   }
 
   const providers = {
@@ -76,45 +104,32 @@ export default async function LoginPage({
     microsoft: microsoftConfigured(),
     email: emailSignInEnabled(),
   };
+  const errorText = loginErrorMessage(error, t.errors);
+  const providerButton =
+    'w-full rounded border border-black/20 bg-white px-4 py-2.5 text-sm font-medium hover:bg-black/5';
 
   return (
     <>
       <SiteHeader variant="landing" />
-      <main id="main" className="mx-auto max-w-md px-4 sm:px-6 py-16">
-        <h1 className="text-2xl font-bold">Sign in</h1>
-        <p className="mt-2 text-sm text-[color:var(--color-muted)]">
-          City staff use their work account. Residents can sign in to join a portrait&apos;s
-          discussion.
-        </p>
+      <main id="main" lang={info.code} dir={info.dir} className="mx-auto max-w-md px-4 sm:px-6 py-16">
+        <h1 className="text-2xl font-bold">{t.title}</h1>
+        <p className="mt-2 text-sm text-[color:var(--color-muted)]">{t.intro}</p>
 
-        {sent ? (
-          <div role="status" className="mt-6 rounded border border-green-700/30 bg-green-50 p-4 text-sm">
-            <p className="font-medium">Check your email.</p>
-            <p className="mt-1">
-              We sent a sign-in link. It expires in 15 minutes and works once.
-            </p>
-          </div>
-        ) : null}
-
-        {error ? (
+        {errorText ? (
           <p role="alert" className="mt-6 rounded border border-red-700/30 bg-red-50 p-3 text-sm text-red-900">
-            {ERRORS[error] ?? 'Sign-in failed. Try again.'}
+            {errorText}
           </p>
         ) : null}
 
         <div className="mt-8 space-y-3">
           {providers.microsoft ? (
             <form action={oauth.bind(null, 'microsoft-entra-id')}>
-              <button className="w-full rounded border border-black/20 bg-white px-4 py-2.5 text-sm font-medium hover:bg-black/5">
-                Continue with Microsoft (work account)
-              </button>
+              <SubmitButton label={t.microsoft} className={providerButton} />
             </form>
           ) : null}
           {providers.google ? (
             <form action={oauth.bind(null, 'google')}>
-              <button className="w-full rounded border border-black/20 bg-white px-4 py-2.5 text-sm font-medium hover:bg-black/5">
-                Continue with Google
-              </button>
+              <SubmitButton label={t.google} className={providerButton} />
             </form>
           ) : null}
         </div>
@@ -122,22 +137,26 @@ export default async function LoginPage({
         {providers.email ? (
           <form action={emailLink} className="mt-6 border-t border-black/10 pt-6">
             <label className="block text-sm font-medium" htmlFor="email">
-              Email me a sign-in link
+              {t.emailLabel}
             </label>
+            {/* Addresses are written left to right in every language. */}
             <input
               id="email"
               name="email"
               type="email"
               required
               autoComplete="email"
+              dir="ltr"
               className="mt-2 w-full rounded border border-black/20 bg-white px-3 py-2 text-sm"
-              placeholder="you@cityofexample.gov"
+              placeholder={t.emailPlaceholder}
             />
-            <button className="mt-3 w-full rounded bg-black px-4 py-2.5 text-sm font-medium text-white">
-              Send link
-            </button>
+            <SubmitButton
+              label={t.send}
+              pendingLabel={t.sending}
+              className="mt-3 w-full rounded bg-black px-4 py-2.5 text-sm font-medium text-white"
+            />
             {!smtpConfigured() ? (
-              <p className="mt-2 text-xs text-amber-800">
+              <p lang="en" className="mt-2 text-xs text-amber-800">
                 Development: SMTP is not configured, so the link prints to the server log.
               </p>
             ) : null}
@@ -145,17 +164,17 @@ export default async function LoginPage({
         ) : null}
 
         {!providers.google && !providers.microsoft && !providers.email ? (
-          <p className="mt-6 text-sm text-red-800">
-            No sign-in method is configured on this server.
-          </p>
+          <p className="mt-6 text-sm text-red-800">{t.noMethods}</p>
         ) : null}
 
         <p className="mt-10 text-xs text-[color:var(--color-muted)]">
-          New to deep-fryer? After signing in you can{' '}
-          <a className="underline" href="/start">
-            start a portrait for your jurisdiction
-          </a>
-          .
+          {rich(t.newHere, {
+            link: (
+              <Link className="underline" href="/start">
+                {t.startLink}
+              </Link>
+            ),
+          })}
         </p>
       </main>
     </>

@@ -45,7 +45,8 @@ OAuth redirect URIs to register:
   unverified email claims.
 
 Optional: `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` (online billing),
-`SUPPORT_EMAIL`, `ANTHROPIC_API_KEY` (research worker).
+`SUPPORT_EMAIL`, `ANTHROPIC_API_KEY` (research worker), `DF_SECRETS_KEY`
+(organizations' own API keys, below).
 
 ## 3. Start
 
@@ -118,6 +119,27 @@ docker compose run --rm migrate node --import tsx ../../scripts/create-tenant.ts
 Make yourself staff (contract editing on billing pages):
 `docker compose exec db psql -U deep_fryer -c "update users set is_staff = true where email = 'you@…'"`.
 
+### Features (SPEC-v7 §3)
+
+A portrait's core is always on: the doughnut with its detail panel, the
+dimension pages with their sources and evidence, methodology, progress,
+open data and embeds. Everything else is a feature that a portrait's owner
+turns on under **Settings → Features**: emergencies, policy analysis, the
+curated Get involved listings and organization form, discussion,
+translation, family compare and insights, and research requests. A new
+portrait starts with all of them off; portraits that existed before
+migration 0011 kept everything they showed (all on).
+
+Off means gone: the feature's pages are a 404, its links leave the header
+and the admin and family navigation, its server actions refuse, and the
+worker skips it (no alert fetches, no policy jobs). With translation off a
+portrait is English only and readers get a "Request a translation" button
+instead; the requests are counted for owners in Settings.
+
+To switch a feature off for the whole deployment, whatever the portraits
+say, list it in `DF_DISABLED_FEATURES` (comma-separated; `deep_fry` turns
+off the theme menu's deep fry) and restart web and worker.
+
 ### Emergency view (SPEC-v5 §3)
 
 Per portrait, staff set the National Weather Service zones — both the UGC
@@ -169,6 +191,25 @@ docker compose run --rm migrate node --import tsx ../../scripts/nyc-involvement.
 
 Each proposed listing names the public page it was taken from. Staff check
 the link ("Link checked today" stamps the date residents see) and publish.
+
+### Organizations' own Anthropic API keys (SPEC-v7 §4)
+
+Organization owners can store their own Anthropic API key under
+`/o/{org}/billing`; their research and policy sessions then run on that key
+and are not counted against the plan's session allowance (a plan, or the
+trial, is still needed). The key is checked with one Models API call, stored
+only as AES-256-GCM ciphertext, and shown afterwards by its last four
+characters; only the worker decrypts it, into the session's environment.
+
+To offer this, set `DF_SECRETS_KEY` (`openssl rand -base64 32`) in `.env` —
+compose passes it to web and worker, which must share it — and
+`docker compose up -d web worker`. Without it the billing page says the
+option is unavailable and research runs on `ANTHROPIC_API_KEY`. With it set,
+the web app refuses to start unless it decodes to exactly 32 bytes. Keep it
+with your other secrets and back it up: if it is changed or lost, stored keys
+cannot be decrypted — the worker then fails those organizations' research
+with a message asking an owner to enter the key again, and never falls back
+to the deployment's key.
 
 ## 5. Billing (optional)
 
