@@ -6,7 +6,7 @@ import { requireAdminPage } from '@/lib/admin-guard';
 import { EmbedSettings } from '@/components/admin/EmbedSettings';
 import { appUrl } from '@/lib/env';
 import { deploymentDisabled } from '@/lib/features';
-import { translationRequestCounts } from '@/lib/translation-requests';
+import { TRANSLATION_REQUEST_WINDOW_DAYS, translationRequestCounts } from '@/lib/translation-requests';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,6 +51,7 @@ export default async function SettingsPage({
             features={config.features ?? null}
             deploymentDisabled={[...deploymentDisabled()]}
             translationRequests={requests}
+            translationRequestDays={TRANSLATION_REQUEST_WINDOW_DAYS}
           />
         </div>
         <div className="mt-6">

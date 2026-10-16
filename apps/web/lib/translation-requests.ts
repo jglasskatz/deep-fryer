@@ -1,6 +1,6 @@
 import 'server-only';
 import { createHmac } from 'node:crypto';
-import { count, desc, eq, sql } from 'drizzle-orm';
+import { and, count, desc, eq, gte, sql } from 'drizzle-orm';
 import { tenantBySlug, translationRequests } from '@deep-fryer/db';
 import { UserError } from './action-result';
 import { userDb } from './db';
@@ -70,15 +70,27 @@ export async function recordTranslationRequest(input: {
 }
 
 /**
- * Requests per language for the settings page (members read them, RLS),
- * most-asked first, with each language's English name for staff.
+ * How far back the owner's counts look: recent demand is what an owner weighs
+ * when deciding whether to turn translation on, and a burst of requests from
+ * long ago should not keep looking current.
  */
-export async function translationRequestCounts(tenantId: string): Promise<{ language: string; count: number }[]> {
+export const TRANSLATION_REQUEST_WINDOW_DAYS = 90;
+
+/**
+ * Requests per language in the last TRANSLATION_REQUEST_WINDOW_DAYS, for the
+ * settings page (members read them, RLS), most-asked first, with each
+ * language's English name for staff.
+ */
+export async function translationRequestCounts(
+  tenantId: string,
+  now: Date = new Date(),
+): Promise<{ language: string; count: number }[]> {
+  const since = new Date(now.getTime() - TRANSLATION_REQUEST_WINDOW_DAYS * 24 * 60 * 60 * 1000);
   const rows = await userDb((db) =>
     db
       .select({ locale: translationRequests.locale, n: count() })
       .from(translationRequests)
-      .where(eq(translationRequests.tenantId, tenantId))
+      .where(and(eq(translationRequests.tenantId, tenantId), gte(translationRequests.createdAt, since)))
       .groupBy(translationRequests.locale)
       .orderBy(desc(count())),
   );

@@ -143,6 +143,7 @@ export function SettingsForms({
   features,
   deploymentDisabled = [],
   translationRequests = [],
+  translationRequestDays,
 }: {
   tenantSlug: string;
   region: PortraitConfig['region'] | null;
@@ -159,6 +160,8 @@ export function SettingsForms({
   deploymentDisabled?: string[];
   /** Readers' translation requests while translation is off, per language (SPEC-v7 §3.5). */
   translationRequests?: { language: string; count: number }[];
+  /** The window those counts cover (lib/translation-requests.ts). */
+  translationRequestDays: number;
 }) {
   const { isPending, status, save } = useSave(tenantSlug);
 
@@ -421,8 +424,8 @@ export function SettingsForms({
                   </span>
                   {f === 'translation' && translationRequests.length ? (
                     <span className="mt-1 block text-xs">
-                      Readers asked for:{' '}
-                      {translationRequests.map((r) => `${r.language} ${r.count.toLocaleString('en-US')}`).join(', ')}
+                      Readers asked for (last {translationRequestDays} days):{' '}
+                      {translationRequests.map((r) => `${r.language} (${r.count.toLocaleString('en-US')})`).join(', ')}
                     </span>
                   ) : null}
                 </span>

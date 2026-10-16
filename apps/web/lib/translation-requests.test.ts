@@ -66,6 +66,28 @@ describe.skipIf(!hasDb)('translation requests', () => {
     expect(await count(tenant.id)).toBe(0);
   });
 
+  it('counts requests per language for the owner over the last 90 days, most-asked first', async () => {
+    const { translationRequestCounts, TRANSLATION_REQUEST_WINDOW_DAYS } = await import('./translation-requests');
+    const m = await import('@deep-fryer/db');
+    const tenant = await portrait(false);
+    const now = new Date('2026-10-16T12:00:00Z');
+    const daysAgo = (d: number) => new Date(now.getTime() - d * 24 * 60 * 60 * 1000);
+    const row = (locale: string, createdAt: Date) => ({ tenantId: tenant.id, locale, path: `/${tenant.slug}`, ipHash: 'x', createdAt });
+    await m.getDb().insert(m.translationRequests).values([
+      row('es', daysAgo(1)),
+      row('es', daysAgo(30)),
+      row('bn', daysAgo(TRANSLATION_REQUEST_WINDOW_DAYS - 1)),
+      // Older than the window: a burst from long ago does not look current.
+      row('zh-Hant', daysAgo(TRANSLATION_REQUEST_WINDOW_DAYS + 1)),
+      row('zh-Hant', daysAgo(200)),
+      row('zh-Hant', daysAgo(400)),
+    ]);
+    expect(await translationRequestCounts(tenant.id, now)).toEqual([
+      { language: 'Spanish', count: 2 },
+      { language: 'Bengali', count: 1 },
+    ]);
+  });
+
   it('limits one address to ten requests an hour per portrait', async () => {
     const { recordTranslationRequest } = await import('./translation-requests');
     const tenant = await portrait(false);
