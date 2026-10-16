@@ -300,9 +300,9 @@ export const pl: Messages = {
     orgName: 'Nazwa organizacji lub grupy',
     about: 'O Państwa organizacji',
     aboutHint: 'Czym zajmuje się Państwa organizacja i komu pomaga.',
-    pitchListing: 'Dlaczego Państwa organizacja to dobry sposób na zaangażowanie się?',
+    pitchListing: 'Dlaczego warto zaangażować się w działania Państwa organizacji?',
     pitchListingHint:
-      'Co ludzie mogą robić z Państwa organizacją — działać jako wolontariusze, dołączyć, przyjść na spotkanie, uzyskać pomoc?',
+      'Co ludzie mogą robić razem z Państwem — działać jako wolontariusze, dołączyć do organizacji, przyjść na spotkanie, uzyskać pomoc?',
     pitchSuggestion: 'Państwa sugestia',
     pitchSuggestionHint: 'Jak ludzie mogliby się w to zaangażować?',
     websiteLabel: 'Strona internetowa',
@@ -332,7 +332,7 @@ export const pl: Messages = {
   translationRequest: {
     button: 'Poproś o tłumaczenie',
     intro:
-      'Ten portret jest opublikowany w języku angielskim. Prosimy przekazać pracownikom, jakiego języka Państwo potrzebują — widzą oni, ilu czytelników prosi o każdy język.',
+      'Ten portret jest opublikowany w języku angielskim. Prosimy przekazać pracownikom, jakiego języka Państwo potrzebują — widzą oni, ilu czytelników prosi o tłumaczenie na każdy język.',
     language: 'Język',
     send: 'Wyślij prośbę',
     sending: 'Wysyłanie…',

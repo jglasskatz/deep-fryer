@@ -327,7 +327,7 @@ export const fr: Messages = {
     /** Above the form when fields need fixing; each field also shows its own message. */
     invalid: 'Veuillez vérifier les champs signalés ci-dessous.',
     tooFast: 'C’était très rapide. Veuillez patienter un instant, puis renvoyer le formulaire.',
-    rateLimited: 'Trop de propositions ont été envoyées d’ici aujourd’hui. Veuillez réessayer plus tard.',
+    rateLimited: 'Aujourd’hui, trop de propositions ont été envoyées d’ici. Veuillez réessayer plus tard.',
     expired: 'Ce formulaire a expiré. Rechargez la page, puis réessayez.',
     failed: 'Nous n’avons pas pu l’envoyer. Veuillez réessayer.',
   },

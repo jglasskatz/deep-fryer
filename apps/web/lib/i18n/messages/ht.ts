@@ -358,7 +358,7 @@ export const ht: Messages = {
     checkHelp: 'Ou pa wè l apre kèk minit? Tcheke dosye spam ou, oswa voye yon lòt lyen.',
     sendAnother: 'Voye yon lòt lyen',
     errors: {
-      OAuthAccountNotLinked: 'Imèl sa a te deja konekte yon lòt fason. Sèvi ak menm fason ou te konekte anvan an (oswa yon lyen pa imèl), epi apre sa, ajoute sèvis sa a nan paj kont ou.',
+      OAuthAccountNotLinked: 'Ou te deja konekte ak imèl sa a yon lòt fason. Sèvi ak menm fason ou te konekte anvan an (oswa yon lyen pa imèl), epi apre sa, ajoute sèvis sa a nan paj kont ou.',
       Verification: 'Lyen pou konekte sa a ekspire oswa yo te deja sèvi avè l. Mande yon nouvo lyen.',
       AccessDenied: 'Yo refize koneksyon an.',
       Configuration: 'Koneksyon an pa byen konfigire sou sèvè sa a. Kontakte administratè sit la.',
