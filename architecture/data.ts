@@ -74,6 +74,24 @@ const data: ArchitectureMap = {
       },
     },
     {
+      id: "any-city-build",
+      label: "Any city: own key or plan",
+      layer: "frontend",
+      tech: "AES-256-GCM key store + one-click build + cost estimate",
+      description: "SPEC-v7 §4: a person enters a city and its state or country at /start and gets a trial portrait; the next screen says who pays (the organization's own Anthropic API key, or the plan's research allowance), shows the token-cost estimate per portrait (docs/research-cost.md as data), and one button plans and applies the full 22-session run. Owners save a key on the billing page: it is validated against the API, encrypted with DF_SECRETS_KEY bound to the organization's id, readable only by the worker (the app role cannot select the ciphertext), shown only as a hint, and used only for that organization's sessions. The gate records who pays on each run and analysis; key-funded sessions are not counted against the plan, and the worker never falls back to the deployment key for key-funded work",
+      keyFiles: ["packages/core/src/secrets.ts", "packages/core/src/base64.ts", "packages/core/src/research-cost.ts", "apps/worker/src/org-key.ts", "apps/web/lib/anthropic-key.ts", "apps/web/lib/api-key-actions.ts", "apps/web/lib/research-actions.ts", "apps/web/app/start", "apps/web/components/billing/ApiKeyForm.tsx", "apps/web/components/billing/ResearchCostEstimate.tsx", "apps/web/components/onboarding/BuildDoughnut.tsx"],
+      keyFunctionality: ["city-only start", "one-click full build", "bring your own Anthropic key", "per-portrait cost estimate", "funding recorded per run"],
+      fileCount: 14,
+      linesOfCode: "~1.5k",
+      principles: {
+        upholds: [
+          { id: "wrong-way-impossible", reason: "The web role cannot read key ciphertext (column grants), ciphertexts are bound to their organization, and a key-funded job without its key fails instead of running on the deployment's key" },
+          { id: "gate-is-reproducible", reason: "One gate decides who pays inside the spend's transaction, and the decision is stored on the run or analysis it funded" },
+        ],
+        violates: [],
+      },
+    },
+    {
       id: "progress-engine",
       label: "Progress engine",
       layer: "packages",
@@ -349,6 +367,9 @@ const data: ArchitectureMap = {
     { from: "web-app", to: "accounts", type: "uses", label: "sessions + roles" },
     { from: "web-app", to: "billing", type: "uses", label: "standing, usage, checkout" },
     { from: "billing", to: "research-worker", type: "uses", label: "apply-time research quota" },
+    { from: "web-app", to: "any-city-build", type: "uses", label: "start, build, key on the billing page" },
+    { from: "any-city-build", to: "billing", type: "uses", label: "one gate decides who pays" },
+    { from: "research-worker", to: "any-city-build", type: "uses", label: "decrypts the organization's key for its sessions" },
     { from: "web-app", to: "progress-engine", type: "uses", label: "progress pages + open-data exports" },
     { from: "progress-engine", to: "shared-contract", type: "grounds-on", label: "thresholds + target years" },
     { from: "service-worker", to: "web-app", type: "uses", label: "caches anonymous public pages" },
@@ -378,7 +399,7 @@ const data: ArchitectureMap = {
   ],
   contexts: [
     { id: "public-plane", label: "Public plane", description: "No AI visible; published versions only", nodeIds: ["web-app", "progress-engine", "service-worker", "language-access", "emergency-view", "theme", "get-involved", "discussion-moderation", "feature-flags"] },
-    { id: "accounts-billing", label: "Accounts & billing", description: "Who may act, and what the organization's plan allows", nodeIds: ["accounts", "billing"] },
+    { id: "accounts-billing", label: "Accounts & billing", description: "Who may act, and what the organization's plan allows", nodeIds: ["accounts", "billing", "any-city-build"] },
     { id: "review-plane", label: "Review plane", description: "Human gate between research and publication", nodeIds: ["web-app", "research-verify-gate", "policy-analysis", "get-involved", "discussion-moderation"] },
     { id: "research-plane", label: "Research plane", description: "Backstage research execution", nodeIds: ["research-worker", "dimension-researcher", "verifier-agent", "capture-evidence-tool"] },
     { id: "shared-contract-ctx", label: "Shared contract", description: "The product/OSS boundary", nodeIds: ["shared-contract"] },
