@@ -4,7 +4,9 @@ import { useEffect, useSyncExternalStore } from 'react';
 import {
   getPwaState,
   getServerPwaState,
+  requestUpdateReload,
   setPwaState,
+  shouldReloadOnControllerChange,
   subscribePwa,
   type BeforeInstallPromptEvent,
 } from './pwa-store';
@@ -48,7 +50,8 @@ export function ServiceWorkerRegistrar({
     let refreshing = false;
     let updateTimer: number | undefined;
     const onControllerChange = () => {
-      if (refreshing) return;
+      // Only for an update this tab asked for (pwa-store.ts): never for the first install's claim.
+      if (refreshing || !shouldReloadOnControllerChange()) return;
       refreshing = true;
       window.location.reload();
     };
@@ -94,7 +97,7 @@ export function ServiceWorkerRegistrar({
       <button
         type="button"
         className="rounded bg-white px-3 py-1 font-medium text-black"
-        onClick={() => waitingWorker.postMessage({ type: 'SKIP_WAITING' })}
+        onClick={() => requestUpdateReload(waitingWorker)}
       >
         {labels.reload}
       </button>
