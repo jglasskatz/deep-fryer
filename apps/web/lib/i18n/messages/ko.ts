@@ -132,6 +132,7 @@ export const ko: Messages = {
     panelSelected: '{name} 표시 중',
     openFull: '전체 페이지 열기',
     openFullDiscussion: '전체 페이지 및 토론 열기',
+    moreListings: { other: '전체 페이지에서 참여 방법 {n}개 더 보기' },
     legendTitle: '도넛 보는 방법',
     legendSafe: '초록색 고리: 안전하고 정의로운 공간',
     legendShortfall: '중심 쪽 빨간색: 사회적 기초에 미치지 못하는 결핍',

@@ -145,6 +145,10 @@ export const ur: Messages = {
     panelSelected: 'دکھایا جا رہا ہے: {name}',
     openFull: 'مکمل صفحہ کھولیں',
     openFullDiscussion: 'مکمل صفحہ اور بحث کھولیں',
+    moreListings: {
+      one: 'مکمل صفحے پر حصہ لینے کا ایک اور طریقہ',
+      other: 'مکمل صفحے پر حصہ لینے کے {n} مزید طریقے',
+    },
     legendTitle: 'ڈونٹ کو کیسے پڑھیں',
     legendSafe: 'سبز حلقہ: محفوظ اور منصفانہ دائرہ',
     legendShortfall: 'مرکز کی جانب سرخ: سماجی بنیاد سے نیچے کمی',

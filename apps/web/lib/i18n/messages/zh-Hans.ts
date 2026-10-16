@@ -131,6 +131,7 @@ export const zhHans: Messages = {
     panelSelected: '正在显示：{name}',
     openFull: '打开完整页面',
     openFullDiscussion: '打开完整页面和讨论',
+    moreListings: { other: '在完整页面查看其余{n}种参与方式' },
     legendTitle: '如何阅读甜甜圈图',
     legendSafe: '绿色圆环：安全且公正的空间',
     legendShortfall: '向中心延伸的红色：未达到社会基础，即“不足”',

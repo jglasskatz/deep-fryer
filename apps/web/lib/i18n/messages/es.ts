@@ -145,6 +145,11 @@ export const es: Messages = {
     panelSelected: 'Se muestra: {name}',
     openFull: 'Abrir la página completa',
     openFullDiscussion: 'Abrir la página completa y el debate',
+    moreListings: {
+      one: 'Ver {n} forma más de participar en la página completa',
+      many: 'Ver {n} formas más de participar en la página completa',
+      other: 'Ver {n} formas más de participar en la página completa',
+    },
     legendTitle: 'Cómo leer la rosquilla',
     legendSafe: 'Anillo verde: el espacio seguro y justo',
     legendShortfall: 'Rojo hacia el centro: un déficit, por debajo de la base social',

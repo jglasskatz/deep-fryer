@@ -131,6 +131,7 @@ export const zhHant: Messages = {
     panelSelected: '正在顯示：{name}',
     openFull: '開啟完整頁面',
     openFullDiscussion: '開啟完整頁面及討論',
+    moreListings: { other: '在完整頁面查看其餘{n}種參與方式' },
     legendTitle: '如何閱讀甜甜圈圖',
     legendSafe: '綠色圓環：安全且公正的空間',
     legendShortfall: '向中心延伸的紅色：未達到社會基礎，即「不足」',

@@ -135,6 +135,12 @@ export const pl: Messages = {
     panelSelected: 'Wyświetlany wymiar: {name}',
     openFull: 'Otwórz pełną stronę',
     openFullDiscussion: 'Otwórz pełną stronę i dyskusję',
+    moreListings: {
+      one: 'Zobacz jeszcze {n} sposób zaangażowania się na pełnej stronie',
+      few: 'Zobacz jeszcze {n} sposoby zaangażowania się na pełnej stronie',
+      many: 'Zobacz jeszcze {n} sposobów zaangażowania się na pełnej stronie',
+      other: 'Zobacz jeszcze {n} sposobu zaangażowania się na pełnej stronie',
+    },
     legendTitle: 'Jak czytać obwarzanek',
     legendSafe: 'Zielony pierścień — bezpieczna i sprawiedliwa przestrzeń',
     legendShortfall: 'Kolor czerwony w stronę środka — niedobór, czyli poziom poniżej fundamentu społecznego',

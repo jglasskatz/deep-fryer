@@ -145,6 +145,10 @@ export const bn: Messages = {
     panelSelected: '{name} দেখানো হচ্ছে',
     openFull: 'পূর্ণ পৃষ্ঠা খুলুন',
     openFullDiscussion: 'পূর্ণ পৃষ্ঠা ও আলোচনা খুলুন',
+    moreListings: {
+      one: 'পূর্ণ পৃষ্ঠায় যুক্ত হওয়ার আরও {n}টি উপায়',
+      other: 'পূর্ণ পৃষ্ঠায় যুক্ত হওয়ার আরও {n}টি উপায়',
+    },
     legendTitle: 'ডোনাটটি কীভাবে পড়বেন',
     legendSafe: 'সবুজ বলয়: নিরাপদ ও ন্যায্য পরিসর',
     legendShortfall: 'কেন্দ্রের দিকে লাল: সামাজিক ভিত্তির নিচে ঘাটতি',

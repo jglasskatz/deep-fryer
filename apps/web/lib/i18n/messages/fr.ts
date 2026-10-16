@@ -148,6 +148,11 @@ export const fr: Messages = {
     panelSelected: 'Affichage : {name}',
     openFull: 'Ouvrir la page complète',
     openFullDiscussion: 'Ouvrir la page complète et la discussion',
+    moreListings: {
+      one: 'Voir {n} autre façon de participer sur la page complète',
+      many: 'Voir {n} autres façons de participer sur la page complète',
+      other: 'Voir {n} autres façons de participer sur la page complète',
+    },
     legendTitle: 'Comment lire le donut',
     legendSafe: 'Anneau vert : l’espace sûr et juste',
     legendShortfall: 'Rouge vers le centre : un déficit, en dessous du plancher social',

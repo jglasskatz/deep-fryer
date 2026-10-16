@@ -147,6 +147,10 @@ export const ht: Messages = {
     panelSelected: 'N ap montre {name}',
     openFull: 'Louvri paj konplè a',
     openFullDiscussion: 'Louvri paj konplè a ak diskisyon an',
+    moreListings: {
+      one: '{n} lòt fason pou w patisipe sou paj konplè a',
+      other: '{n} lòt fason pou w patisipe sou paj konplè a',
+    },
     legendTitle: 'Kijan pou w li Doughnut la',
     legendSafe: 'Sèk vèt: espas ki an sekirite e ki jis la',
     legendShortfall: 'Wouj vè mitan an: yon defisi, anba fondasyon sosyal la',
