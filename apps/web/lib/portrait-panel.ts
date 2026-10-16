@@ -168,7 +168,10 @@ function panelListing(l: InvolvementListingView): PanelListing {
 }
 
 /** The panel's view of one published dimension. */
-export function portraitPanelView(dim: PublishedDimension, { m, evidenceUrl, listings }: PanelOptions): PortraitPanelView {
+export function portraitPanelView(
+  dim: PublishedDimension,
+  { m, evidenceUrl, listings }: PanelOptions,
+): PortraitPanelView {
   const data = dim.data;
   return {
     slug: dim.slug,
@@ -237,7 +240,10 @@ export interface PanelLabels {
     | 'searchedAt'
     | 'whatYouCanDo'
   >;
-  involvement: Pick<Messages['involvement'], 'title' | 'kind' | 'call' | 'forEveryDimension' | 'contentInEnglish' | 'none'>;
+  involvement: Pick<
+    Messages['involvement'],
+    'title' | 'kind' | 'call' | 'forEveryDimension' | 'contentInEnglish' | 'none'
+  >;
   noData: string;
 }
 

@@ -1,6 +1,6 @@
-import { createElement, type ReactElement } from 'react';
+import React, { createElement, type ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { AppRouterContext } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { SearchParamsContext } from 'next/dist/shared/lib/hooks-client-context.shared-runtime';
 import type { DimensionData, InvolvementListingView } from '@deep-fryer/core';
@@ -17,6 +17,11 @@ import type { PortraitPanelConfig } from './PortraitCoreView';
  * to `?dim=`, and features that are off leave nothing behind. Rendered with
  * the App Router's contexts provided, as Next provides them on the server.
  */
+
+// Vitest compiles the components' JSX with the classic runtime (the web
+// vitest config names no JSX runtime; Next uses its own), which expects
+// React in scope — as in lib/emergency.test.ts.
+vi.stubGlobal('React', React);
 
 const dim = (
   slug: string,
@@ -87,7 +92,10 @@ const LISTINGS: InvolvementListingView[] = [
   },
 ];
 
-function panel(dimParam: string | null, over: { involvement?: boolean; discussion?: boolean } = {}): PortraitPanelConfig {
+function panel(
+  dimParam: string | null,
+  over: { involvement?: boolean; discussion?: boolean } = {},
+): PortraitPanelConfig {
   const views = portraitPanelViews(DIMENSIONS, {
     m: en,
     evidenceUrl: (path) => `/evidence/santacruz/${path}`,
@@ -181,6 +189,15 @@ describe('the portrait core view, server-rendered', () => {
     expect(html.indexOf('id="panel"')).toBeLessThan(html.indexOf(en.portrait.exploreTitle));
   });
 
+  it('the panel clears the tallest sticky header, as a #panel target and stuck beside the doughnut', () => {
+    const html = render(portrait({ panel: panel('housing') }), 'dim=housing');
+    // Header + family bar + a translated page's language notice (up to four
+    // lines on a phone): EmergencySections' ANCHOR, which measured it.
+    expect(html).toMatch(/<section id="panel"[^>]*class="[^"]*scroll-mt-48[^"]*sm:scroll-mt-36/);
+    // From lg the wrapper sticks 9rem down and fits the rest of the window.
+    expect(html).toMatch(/<div class="lg:sticky lg:top-36 lg:max-h-\[calc\(100vh_-_10rem\)\] lg:overflow-y-auto[^"]*"><section id="panel"/);
+  });
+
   it('nothing selected, or an unknown ?dim=: the empty panel explains the doughnut with its legend', () => {
     for (const search of ['', 'dim=not-a-dimension']) {
       const params = new URLSearchParams(search);
@@ -188,9 +205,8 @@ describe('the portrait core view, server-rendered', () => {
       const p = section(html, 'panel');
       expect(p).toContain(en.portrait.legendTitle);
       expect(p).toContain(en.portrait.panelEmpty);
-      for (const line of [en.portrait.legendSafe, en.portrait.legendShortfall, en.portrait.legendOvershoot, en.portrait.legendNoData]) {
-        expect(p).toContain(line);
-      }
+      const { legendSafe, legendShortfall, legendOvershoot, legendNoData } = en.portrait;
+      for (const line of [legendSafe, legendShortfall, legendOvershoot, legendNoData]) expect(p).toContain(line);
       expect(html).not.toContain('aria-current');
     }
   });

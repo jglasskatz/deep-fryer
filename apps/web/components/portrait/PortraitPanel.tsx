@@ -70,9 +70,13 @@ export function PortraitPanel({
     <section
       id={PANEL_ID}
       aria-labelledby={headingId}
-      // Clear of the sticky site header (and the family nav under it) when a
-      // no-JS #panel link or a phone's scrollIntoView lands here.
-      className="scroll-mt-28 rounded-lg border border-black/10 bg-white p-4 sm:p-5"
+      // Clear of the sticky site header when a no-JS #panel link or a phone's
+      // scrollIntoView lands here: 56 px, plus the family bar on family
+      // portraits, plus the language notice on translated pages (up to four
+      // lines of small text on a phone) — EmergencySections' ANCHOR, which
+      // measured the same header. Generous on purpose: a heading a little low
+      // is harmless, one under the header hides where focus went.
+      className="scroll-mt-48 rounded-lg border border-black/10 bg-white p-4 sm:scroll-mt-36 sm:p-5"
     >
       {view ? (
         <>
@@ -132,7 +136,13 @@ export function PortraitPanel({
                         source: ind.sourceHref ? (
                           // A new tab: the reader keeps the doughnut and the
                           // panel where they were.
-                          <a lang="en" className="underline" href={ind.sourceHref} target="_blank" rel="noopener noreferrer">
+                          <a
+                            lang="en"
+                            className="underline"
+                            href={ind.sourceHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             {ind.source}
                           </a>
                         ) : (
@@ -160,7 +170,12 @@ export function PortraitPanel({
                         {ind.snapshot.pdfHref ? (
                           <>
                             {' · '}
-                            <a className="underline" href={ind.snapshot.pdfHref} target="_blank" rel="noopener noreferrer">
+                            <a
+                              className="underline"
+                              href={ind.snapshot.pdfHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
                               {d.originalDocument}
                             </a>
                           </>
@@ -219,7 +234,9 @@ export function PortraitPanel({
                     {view.listings.map((l) => (
                       <li key={l.id} className="border-t border-black/10 py-2.5 first:border-t-0">
                         <p className="flex flex-wrap items-center gap-1.5 text-xs">
-                          <span className="rounded border border-black/15 px-1.5 py-0.5 font-medium">{t.kind[l.kind]}</span>
+                          <span className="rounded border border-black/15 px-1.5 py-0.5 font-medium">
+                            {t.kind[l.kind]}
+                          </span>
                           {l.general ? (
                             <span className="rounded border border-black/15 px-1.5 py-0.5">{t.forEveryDimension}</span>
                           ) : null}
@@ -274,14 +291,21 @@ export function PortraitPanel({
             {(
               [
                 // The ring itself: green between its dark-green borders.
-                [p.legendSafe, { background: DOUGHNUT_COLOURS.ring, boxShadow: `inset 0 0 0 3px ${DOUGHNUT_COLOURS.ringEdge}` }],
+                [
+                  p.legendSafe,
+                  { background: DOUGHNUT_COLOURS.ring, boxShadow: `inset 0 0 0 3px ${DOUGHNUT_COLOURS.ringEdge}` },
+                ],
                 [p.legendShortfall, { background: DOUGHNUT_COLOURS.beyond }],
                 [p.legendOvershoot, { background: DOUGHNUT_COLOURS.beyond }],
                 [p.legendNoData, { background: DOUGHNUT_COLOURS.noData }],
               ] as const
             ).map(([text, swatch]) => (
               <li key={text} className="flex items-start gap-3">
-                <span aria-hidden className="mt-0.5 h-4 w-4 shrink-0 rounded-sm border border-black/15" style={swatch} />
+                <span
+                  aria-hidden
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded-sm border border-black/15"
+                  style={swatch}
+                />
                 <span>{text}</span>
               </li>
             ))}

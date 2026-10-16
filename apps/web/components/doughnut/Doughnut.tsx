@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Ring } from '@deep-fryer/core';
-import { DoughnutRenderer, type RendererHit } from './doughnut-renderer';
+import type { RendererHit } from './doughnut-renderer';
+import { LabelAwareDoughnutRenderer } from './doughnut-hit';
 import { fmt } from '@/lib/i18n/format';
 import type { DoughnutLabels } from '@/lib/i18n/doughnut';
 
@@ -93,7 +94,10 @@ export function Doughnut({ social, ecological, size = 640, onSelect, ariaLabel, 
       return byName.get(`${ring}:${hit.dim_info.name}`) ?? null;
     };
 
-    const renderer = new DoughnutRenderer({
+    // The vendored renderer, with a tap on a social dimension's label (drawn
+    // across the renderer's own inner/outer hit boundary) resolved to that
+    // dimension rather than the ecological wedge beyond it — doughnut-hit.ts.
+    const renderer = new LabelAwareDoughnutRenderer({
       canvas,
       size,
       donutScale: 1.0,

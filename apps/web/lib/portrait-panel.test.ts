@@ -141,7 +141,14 @@ describe('portraitPanelView', () => {
       }),
       options(),
     ).indicators;
-    expect(ind).toMatchObject({ value: null, target: null, year: null, snapshot: null, source: null, sourceHref: null });
+    expect(ind).toMatchObject({
+      value: null,
+      target: null,
+      year: null,
+      snapshot: null,
+      source: null,
+      sourceHref: null,
+    });
   });
 
   it('drops unsafe source URLs but keeps the source name as text', () => {

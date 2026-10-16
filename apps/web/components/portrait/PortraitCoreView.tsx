@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type MouseEvent } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { Doughnut, type DoughnutDimension } from '@/components/doughnut/Doughnut';
 import type { DoughnutLabels } from '@/lib/i18n/doughnut';
 import { fmt } from '@/lib/i18n/format';
@@ -43,6 +43,21 @@ export interface CoreListLabels {
 const BESIDE = '(min-width: 64rem)';
 
 /**
+ * Where the panel sticks beside the doughnut (lg and up), and how tall it may
+ * be. The sticky site header is 56 px, plus the 40 px family bar on family
+ * portraits, plus the language notice on translated pages (one or two lines
+ * of small text at this width): about 145 px at most, so the panel sticks
+ * 9rem (144 px) down — the same allowance as EmergencySections' ANCHOR at
+ * this width. A wider language's third notice line would overlap only the
+ * panel's own top padding, not its heading. The panel then takes the rest of
+ * the window less a 1rem gap below, scrolling inside itself when taller.
+ * On a page with no family bar or notice the gap above it is wider; that
+ * costs nothing but space, where too small an offset hides the heading and
+ * the Close link under the header.
+ */
+const STICKY = 'lg:sticky lg:top-36 lg:max-h-[calc(100vh_-_10rem)] lg:overflow-y-auto';
+
+/**
  * The portrait's core view (SPEC-v7 §2), after the Santa Cruz repository's
  * main screen: the doughnut, the detail panel beside it (below it on a
  * phone), and the dimension list. Selecting a dimension — a click or tap on
@@ -50,8 +65,10 @@ const BESIDE = '(min-width: 64rem)';
  * panel without leaving the page.
  *
  * The selection:
- * - starts as the server rendered it (`initial`, read from `?dim=`), so the
- *   first paint, a shared link and a reader without JavaScript agree;
+ * - starts as the server rendered it (the page reads `?dim=` into
+ *   `initial`, and the router's search params on the server are the same
+ *   request's), so the first paint, a shared link and a reader without
+ *   JavaScript agree;
  * - changes in place on a canvas click or a plain click on a list row, and
  *   the URL follows through history.replaceState — every published
  *   dimension's view is already here, so there is no server round trip, and
@@ -95,12 +112,24 @@ export function PortraitCoreView({
 }) {
   const headingId = useId();
   const headingRef = useRef<HTMLHeadingElement | null>(null);
+  // The panel's wrapper, which from lg is its own scroll container.
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
   const { views, labels: panelLabels, pageHref } = panel;
 
   const bySlug = useMemo(() => new Map(views.map((v) => [v.slug, v])), [views]);
   const slugs = useMemo(() => views.map((v) => v.slug), [views]);
 
-  const [selected, setSelected] = useState<string | null>(panel.initial);
+  // The selection in the URL as the router reports it. On the server it is
+  // the request's ?dim=, validated by the same rule as `initial`, so the two
+  // agree and hydration matches. It differs from `initial` only on a copy of
+  // the page restored from Next's router cache (Back from a dimension page),
+  // whose `initial` is from an earlier visit while the URL carries the
+  // selection made since — the URL wins. Null-safe: outside the App Router (a
+  // test render) there are no search params, and `initial` stands.
+  const params = useSearchParams() as ReturnType<typeof useSearchParams> | null;
+  const fromUrl = params ? selectedSlugFrom(slugs, params.get(DIM_PARAM)) : panel.initial;
+
+  const [selected, setSelected] = useState<string | null>(fromUrl);
   const [announcement, setAnnouncement] = useState('');
   // Each request to move focus to the panel's heading; a counter rather than
   // a flag so choosing the already-selected row from the list moves focus too.
@@ -112,13 +141,9 @@ export function PortraitCoreView({
     selectedRef.current = selected;
   }, [selected]);
 
-  // Follow the URL. On the first run it agrees with `initial` (both come
-  // from the request's ?dim=), unless this is a copy of the page restored
-  // from Next's router cache, whose `initial` is from an earlier visit.
-  // (Null-safe: outside the App Router — a test render — there are no
-  // search params, and `initial` stands.)
-  const params = useSearchParams() as ReturnType<typeof useSearchParams> | null;
-  const fromUrl = params ? selectedSlugFrom(slugs, params.get(DIM_PARAM)) : panel.initial;
+  // Follow the URL when it changes underneath: history traversal, a link to
+  // ?dim= elsewhere on the site. The echo of this view's own replaceState
+  // arrives with the value already selected, and changes nothing.
   useEffect(() => {
     setSelected(fromUrl);
   }, [fromUrl]);
@@ -139,6 +164,19 @@ export function PortraitCoreView({
     },
     [bySlug, panelLabels],
   );
+
+  // A new selection (or Close, or choosing the selected row again) shows the
+  // panel from its top. From lg the panel scrolls inside its sticky wrapper,
+  // which stays mounted across selections: without this, a reader who had
+  // scrolled down one dimension's snapshots and listings would get the next
+  // one opened partway down, its name and status out of sight — and, picking
+  // from the list, keyboard focus on a heading they cannot see (WCAG 2.4.7).
+  // A layout effect, so the new panel never paints mid-scroll, and before the
+  // focus effect below. Below lg the wrapper does not scroll and this does
+  // nothing; the window is left alone either way.
+  useLayoutEffect(() => {
+    if (scrollerRef.current) scrollerRef.current.scrollTop = 0;
+  }, [selected, focusRequest]);
 
   // Move focus to the panel's heading after the panel has re-rendered.
   useEffect(() => {
@@ -209,7 +247,7 @@ export function PortraitCoreView({
         {hint ? <p className="mt-4 text-center text-sm text-[color:var(--color-muted)]">{hint}</p> : null}
       </div>
 
-      <div className="lg:sticky lg:top-28 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:max-h-[calc(100vh_-_8rem)] lg:overflow-y-auto">
+      <div ref={scrollerRef} className={`${STICKY} lg:col-start-2 lg:row-span-2 lg:row-start-1`}>
         <PortraitPanel
           view={view}
           labels={panelLabels}
