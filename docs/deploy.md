@@ -146,6 +146,30 @@ them. Plan links that do not answer are refused at `--apply`.
 Staff-only, at `/{tenant}/admin/policy`. Each analysis is one research
 session against the plan and needs the worker's `ANTHROPIC_API_KEY`.
 
+### Getting involved and discussion (SPEC-v6)
+
+Every dimension page lists ways to get involved, and organizations can put
+themselves forward through a form on that page and on `/{tenant}/outreach`
+— no account needed. Submissions wait for an editor at
+`/{tenant}/admin/involvement`, where approving one turns it into a listing
+(edit it first); nothing is published automatically, and contact details are
+never shown publicly. The form's rate limits key on the client address
+Caddy passes in `X-Forwarded-For`; if you put another proxy or a CDN in
+front of Caddy, configure Caddy's `trusted_proxies` so the address is the
+resident's, not the proxy's.
+
+A new account's first comment is held: moderators approve or decline it on
+the thread or at `/{tenant}/admin/discussion`, and the admin overview counts
+what is waiting. NYC:
+
+```bash
+docker compose run --rm migrate node --import tsx ../../scripts/nyc-involvement.ts           # review the proposal
+docker compose run --rm migrate node --import tsx ../../scripts/nyc-involvement.ts --apply   # writes listings unpublished
+```
+
+Each proposed listing names the public page it was taken from. Staff check
+the link ("Link checked today" stamps the date residents see) and publish.
+
 ## 5. Billing (optional)
 
 ```bash

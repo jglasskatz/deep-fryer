@@ -134,6 +134,10 @@ export const ht: Messages = {
     population: 'popilasyon: {n}',
     clickHint: 'Chwazi yon segman pou wè endikatè yo, prèv yo, aksyon yo ak diskisyon an.',
     demoHint: 'Done demonstrasyon — mete DATABASE_URL epi pibliye vèsyon yo pou wè vrè kontni an.',
+    // INTERIM ENGLISH (SPEC-v6) — to be translated
+    /** The visible list of dimensions under the doughnut (SPEC-v6 §2.1). */
+    exploreTitle: 'Explore the dimensions',
+    exploreIntro: 'Each dimension has its data, sources, ways to get involved, and a discussion.',
   },
   dimension: {
     updated: 'mizajou: {date}',
@@ -147,6 +151,9 @@ export const ht: Messages = {
     dataGap: 'Mank done',
     searchedAt: 'Nivo nou chèche: {scales}',
     whatYouCanDo: 'Sa ou ka fè',
+    // INTERIM ENGLISH (SPEC-v6) — to be translated
+    /** Short actions listed after the dimension's involvement listings. */
+    moreYouCanDo: 'More things you can do',
   },
   discussion: {
     title: 'Diskisyon',
@@ -173,6 +180,18 @@ export const ht: Messages = {
     lock: 'bloke',
     removeReason: 'Rezon ou retire kòmantè a (n ap anrejistre l nan yon jounal anplwaye yo ka wè):',
     lockReason: 'Rezon ou bloke diskisyon sa a:',
+    // INTERIM ENGLISH (SPEC-v6) — to be translated
+    /** A first comment held for a moderator (SPEC-v6 §3.1). Shown to its author and to moderators only. */
+    awaitingApproval: 'Awaiting approval',
+    awaitingNote: 'Only you and the moderators can see this until it is approved.',
+    approve: 'approve',
+    decline: 'decline',
+    /** A held comment moderators did not approve; only its author sees it. */
+    declined: 'Not approved',
+    declinedNote: 'The moderators did not approve this comment. Only you can see it.',
+    /** Label beside a comment written by the portrait's team (SPEC-v6 §3.3). */
+    staff: 'Staff',
+    staffTitle: 'Member of this portrait’s team',
   },
   progress: {
     metaTitle: 'Pwogrè · {name}',
@@ -234,6 +253,97 @@ export const ht: Messages = {
     title: 'Patisipe',
     empty:
       'N ap mete òganizasyon lokal yo isit la pandan pòtre a ap grandi. Antretan, chak paj dimansyon gen aksyon konkrè ou ka fè.',
+    // INTERIM ENGLISH (SPEC-v6) — to be translated
+    intro: 'Programs, organizations, and public bodies where you can take part, by dimension. Staff check each listing before it appears here.',
+    /** Organizations working on the portrait's data (research contacts), when any are published. */
+    partnersTitle: 'Organizations working on this data',
+  },
+  // INTERIM ENGLISH (SPEC-v6) — to be translated
+  /** Ways to get involved and the organization form (SPEC-v6 §4). */
+  involvement: {
+    title: 'How to get involved',
+    kind: {
+      volunteer: 'Volunteer',
+      services: 'Get help or enroll',
+      civic: 'Have your say',
+      organize: 'Join a group',
+      other: 'Get involved',
+    },
+    website: 'Website',
+    call: 'Call {phone}',
+    /** {date} is a formatted date. */
+    checked: 'Link checked {date}',
+    forEveryDimension: 'For every dimension',
+    filterLabel: 'Dimension',
+    filterAll: 'All dimensions',
+    none: 'No listings for this dimension yet.',
+    noneAtAll: 'No listings yet.',
+    contentInEnglish: 'Listings are written by staff and published in English.',
+    formTitle: 'Know a way to get involved?',
+    /** On a dimension page; {dimension} is the dimension's name. */
+    formIntro:
+      'Is your organization a good way for people to get involved with {dimension}? Or do you have a suggestion? Tell staff — they review every submission before anything is published.',
+    formIntroGeneral:
+      'Is your organization a good way for people to get involved? Or do you have a suggestion? Tell staff — they review every submission before anything is published.',
+    open: 'Suggest a way to get involved',
+    kindLegend: 'What are you sharing?',
+    kindListing: 'My organization is a way to get involved',
+    kindSuggestion: 'A suggestion for how people can get involved',
+    dimensionLabel: 'Dimension',
+    dimensionAny: 'Several, or not sure',
+    orgName: 'Organization or group name',
+    about: 'Who you are',
+    aboutHint: 'What your organization does, and who it serves.',
+    pitchListing: 'Why is it a good way for people to get involved?',
+    pitchListingHint: 'What can people do with you — volunteer, join, attend, get help?',
+    pitchSuggestion: 'Your suggestion',
+    pitchSuggestionHint: 'How could people get involved with this?',
+    websiteLabel: 'Website',
+    contactLegend: 'How staff can reach you',
+    contactName: 'Your name',
+    email: 'Email',
+    phone: 'Phone',
+    optional: '(optional)',
+    privacy: 'Your contact details go only to staff and are never published.',
+    send: 'Send to staff',
+    sending: 'Sending…',
+    thanks:
+      'Thank you. Staff review every submission. If it is a good fit it will appear on this page, and they may contact you first.',
+    sendAnother: 'Send another',
+    /** Above the form when fields need fixing; each field also shows its own message. */
+    invalid: 'Please check the fields marked below.',
+    tooFast: 'That was very quick. Please wait a moment, then send again.',
+    rateLimited: 'Too many submissions from here today. Please try again later.',
+    expired: 'This form has expired. Reload the page and try again.',
+    failed: 'We could not send that. Please try again.',
+  },
+  /** The sign-in page (SPEC-v6 §2.2). */
+  login: {
+    title: 'Sign in',
+    intro: 'Residents sign in to join a portrait’s discussion. City staff use their work account.',
+    microsoft: 'Continue with Microsoft (work account)',
+    google: 'Continue with Google',
+    emailLabel: 'Email me a sign-in link',
+    emailPlaceholder: 'you@example.org',
+    send: 'Send link',
+    sending: 'Sending…',
+    noMethods: 'No sign-in method is configured on this server.',
+    /** {link} is the "start a portrait" link. */
+    newHere: 'Are you city staff? After signing in you can {link}.',
+    startLink: 'start a portrait for your jurisdiction',
+    checkTitle: 'Check your email',
+    checkBody: 'We sent a sign-in link to the address you entered. It works once and expires in 15 minutes.',
+    checkHelp: 'Not there after a few minutes? Check your spam folder, or send another link.',
+    sendAnother: 'Send another link',
+    errors: {
+      OAuthAccountNotLinked:
+        'That email already signed in another way. Use the method you used before (or an email link), then link this provider from your account page.',
+      Verification: 'That sign-in link has expired or was already used. Request a new one.',
+      AccessDenied: 'Sign-in was declined.',
+      Configuration: 'Sign-in is misconfigured on this server. Contact the site administrator.',
+      EmailSignin: 'We could not send the sign-in email. Check the address and try again in a few minutes.',
+      default: 'Sign-in failed. Try again.',
+    },
   },
   org: {
     portraitCount: { one: '{n} pòtre', other: '{n} pòtre' },

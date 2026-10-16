@@ -743,6 +743,128 @@ export const emergencyAlertSyncs = pgTable('emergency_alert_syncs', {
   lastError: text('last_error'),
 });
 
+// ---- Getting involved (SPEC-v6 §4) ----
+
+/** How a listing lets people take part, shown in words on the public pages. */
+export const involvementKindEnum = pgEnum('involvement_kind', [
+  'volunteer',
+  'services',
+  'civic',
+  'organize',
+  'other',
+]);
+
+/** What an organization's form submission offers. */
+export const involvementSubmissionKindEnum = pgEnum('involvement_submission_kind', ['listing', 'suggestion']);
+
+/** Where a submission stands in staff review. */
+export const involvementSubmissionStatusEnum = pgEnum('involvement_submission_status', [
+  'new',
+  'approved',
+  'declined',
+  'spam',
+]);
+
+/**
+ * One way to get involved — a program, organization, public body, or
+ * campaign — curated by staff or created from an approved submission.
+ * Public once published.
+ */
+export const involvementListings = pgTable(
+  'involvement_listings',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    /** What a resident can do, in plain language. */
+    description: text('description').notNull(),
+    url: text('url'),
+    phone: text('phone'),
+    kind: involvementKindEnum('kind').notNull(),
+    /** Framework dimension slugs this serves; empty = every dimension. */
+    dimensionSlugs: text('dimension_slugs').array().notNull().default(sql`'{}'::text[]`),
+    /** The public page this listing was drawn from (seed scripts), for staff checking it. */
+    sourceUrl: text('source_url'),
+    /** When staff (or a seed run that reached it) last confirmed the link works. */
+    linkCheckedAt: timestamp('link_checked_at', { withTimezone: true }),
+    /** The submission this listing was approved from, if any. */
+    submissionId: uuid('submission_id'),
+    displayOrder: integer('display_order').notNull().default(0),
+    published: boolean('published').notNull().default(false),
+    createdBy: uuid('created_by'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    tenantName: unique('involvement_listings_tenant_name').on(t.tenantId, t.name),
+    httpsUrl: check('involvement_listings_https_url', sql`${t.url} IS NULL OR ${t.url} LIKE 'https://%'`),
+    httpsSource: check(
+      'involvement_listings_https_source',
+      sql`${t.sourceUrl} IS NULL OR ${t.sourceUrl} LIKE 'https://%'`,
+    ),
+    nameLength: check('involvement_listings_name_length', sql`char_length(${t.name}) BETWEEN 1 AND 160`),
+    descriptionLength: check(
+      'involvement_listings_description_length',
+      sql`char_length(${t.description}) BETWEEN 1 AND 600`,
+    ),
+  }),
+);
+
+/**
+ * An organization putting itself forward (or a suggestion), from the public
+ * form; no account needed. Contact details live only here and are readable
+ * only by the portrait's editors (RLS).
+ */
+export const involvementSubmissions = pgTable(
+  'involvement_submissions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    kind: involvementSubmissionKindEnum('kind').notNull(),
+    /** Framework dimension slug, or null for "several / not sure". */
+    dimensionSlug: text('dimension_slug'),
+    orgName: text('org_name'),
+    about: text('about'),
+    /** Why it is a good way to get involved — or the suggestion itself. */
+    pitch: text('pitch').notNull(),
+    website: text('website'),
+    contactName: text('contact_name').notNull(),
+    email: text('email').notNull(),
+    phone: text('phone'),
+    /** The language the form was shown in. */
+    locale: text('locale').notNull(),
+    /** Keyed hash of the network address, for rate limits only. */
+    ipHash: text('ip_hash').notNull(),
+    status: involvementSubmissionStatusEnum('status').notNull().default('new'),
+    reviewNote: text('review_note'),
+    reviewedBy: uuid('reviewed_by'),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    listingId: uuid('listing_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    tenantStatusIdx: index('involvement_submissions_tenant_status_idx').on(t.tenantId, t.status, t.createdAt),
+    rateIdx: index('involvement_submissions_rate_idx').on(t.tenantId, t.ipHash, t.createdAt),
+    pitchLength: check('involvement_submissions_pitch_length', sql`char_length(${t.pitch}) BETWEEN 1 AND 2000`),
+    aboutLength: check('involvement_submissions_about_length', sql`${t.about} IS NULL OR char_length(${t.about}) <= 1000`),
+    orgRequired: check(
+      'involvement_submissions_org_required',
+      sql`${t.kind} = 'suggestion' OR (${t.orgName} IS NOT NULL AND ${t.about} IS NOT NULL)`,
+    ),
+    httpsWebsite: check(
+      'involvement_submissions_https_website',
+      sql`${t.website} IS NULL OR ${t.website} LIKE 'https://%' OR ${t.website} LIKE 'http://%'`,
+    ),
+  }),
+);
+
+export type InvolvementListing = typeof involvementListings.$inferSelect;
+export type InvolvementSubmission = typeof involvementSubmissions.$inferSelect;
+
 export type PolicyAnalysis = typeof policyAnalyses.$inferSelect;
 export type Hazard = typeof hazards.$inferSelect;
 export type EmergencyPlan = typeof emergencyPlans.$inferSelect;
