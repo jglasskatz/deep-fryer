@@ -17,6 +17,8 @@ const session = vi.hoisted(() => ({
   succeeded: true,
   calls: 0,
   lastInput: null as null | { prompt: string; allowedTools: string[]; orchestrate?: boolean },
+  /** The SDK's error for the session's last call, as runSessionWithRetry reports it. */
+  apiError: undefined as string | undefined,
 }));
 vi.mock('../session.js', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../session.js')>()),
@@ -28,6 +30,7 @@ vi.mock('../session.js', async (importOriginal) => ({
       succeeded: session.succeeded,
       transcript: Buffer.from('transcript'),
       usage: { input_tokens: 1200, output_tokens: 340 },
+      ...(session.apiError ? { apiError: session.apiError } : {}),
     };
   }),
 }));
@@ -448,6 +451,27 @@ describe.skipIf(!hasDb)('policyAnalyze (Postgres, mocked session)', () => {
     expect(mailTo(requester.email!)).toContain('did not run');
   });
 
+  it('completes a result salvaged from malformed output, and says so first among the adjustments', async () => {
+    const { PARTIAL_OUTPUT_NOTE } = await import('./policy-analyze.js');
+    const { analysis } = await seed();
+    session.succeeded = true;
+    // A malformed wrapper (trailing comma) around a valid analysis: only the inner object reads.
+    session.resultText = `{"analysis": ${JSON.stringify({ summary: 'Little measurable effect.', impacts: [], assumptions: [], risks: [] })}, }`;
+    const row = await run(analysis.id);
+    expect(row.status).toBe('complete');
+    expect(row.adjustments).toEqual([PARTIAL_OUTPUT_NOTE]);
+  });
+
+  it('names malformed output when the part that could be read fails validation', async () => {
+    const { analysis } = await seed();
+    session.succeeded = true;
+    // A trailing comma after the impacts: the first readable object is one impact, not an analysis.
+    session.resultText = `{"summary":"s","impacts":[${JSON.stringify(validImpact)}],}`;
+    const row = await run(analysis.id);
+    expect(row.status).toBe('failed');
+    expect(row.error).toMatch(/^The analysis returned malformed JSON, and the part that could be read failed validation/);
+  });
+
   it('fails a session that did not complete', async () => {
     const { analysis } = await seed();
     session.succeeded = false;
@@ -455,6 +479,21 @@ describe.skipIf(!hasDb)('policyAnalyze (Postgres, mocked session)', () => {
     const row = await run(analysis.id);
     expect(row.status).toBe('failed');
     expect(row.error).toMatch(/did not complete/);
+  });
+
+  it('says plainly when the deployment’s own key was refused, which is not retried or temporary', async () => {
+    const { analysis } = await seed();
+    session.succeeded = false;
+    session.resultText = '';
+    session.apiError = 'billing_error';
+    try {
+      const row = await run(analysis.id);
+      expect(row.status).toBe('failed');
+      expect(row.error).toMatch(/refused the request\. This is not temporary/);
+      expect(row.error).not.toMatch(/even after a retry/);
+    } finally {
+      session.apiError = undefined;
+    }
   });
 
   it('runs a job once: a settled analysis is skipped, an interrupted one is failed', async () => {

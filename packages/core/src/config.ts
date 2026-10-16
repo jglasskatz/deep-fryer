@@ -21,10 +21,19 @@ export function acceptedScales(
   return scalePolicy.per_dimension?.[dimensionSlug] ?? scalePolicy.default_accepted;
 }
 
-/** A finding is red-flagged for review when any check fails (never dropped). */
+/**
+ * A finding is red-flagged for review when any check fails (never dropped),
+ * or when it was salvaged from a session's malformed output (partial_output:
+ * the session may have returned findings that could not be read).
+ */
 export function isFlagged(v: FindingVerification): boolean {
   return (
-    !v.schema_ok || !v.url_ok || !v.recency_ok || !v.scale_ok || v.content_supported !== 'pass'
+    !v.schema_ok ||
+    !v.url_ok ||
+    !v.recency_ok ||
+    !v.scale_ok ||
+    v.content_supported !== 'pass' ||
+    v.partial_output === true
   );
 }
 

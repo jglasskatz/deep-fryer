@@ -22,7 +22,9 @@ open-doughnut plugin.
 ## Isolation & provenance (production deploy)
 
 - One container instance per worker (App Platform worker or compose replica); `WORKER_CONCURRENCY=1`
-  keeps one session per container at a time. Scale out with more replicas —
+  keeps one job (a research run or a policy analysis) per container at a
+  time, and a research run keeps up to `RESEARCH_SESSION_CONCURRENCY`
+  dimension sessions going inside it. Scale out with more replicas —
   sessions are independent.
 - Outbound egress goes through the allowlist proxy (`HTTPS_PROXY`): no
   paywall circumvention, and every fetched URL is logged at the
@@ -54,10 +56,14 @@ open-doughnut plugin.
 | `DATABASE_URL` | Postgres (queue + rows) |
 | `ANTHROPIC_API_KEY` | Inference (our key — metered per tenant) |
 | `ANTHROPIC_MODEL` | Session model (default `claude-sonnet-5`) |
+| `ANTHROPIC_SMALL_FAST_MODEL` | The page reader: Claude Code's WebFetch summarizes each fetched page with it, for researchers and the verifier alike (compose default `claude-haiku-4-5-20251001`). Pinned so an SDK update cannot swap it; a first-party API id (behind Bedrock, Vertex, Foundry or a gateway, the provider's own id). Never set it empty: the CLI treats that as unset and drops the pin |
+| `VERIFIER_MODEL` | Verifier sessions, one per indicator finding (default `claude-opus-5`) |
+| `RESEARCH_SUBAGENT_MODEL` | `source-scout` subagents for researcher sessions; unset or empty = scouts off (the default) |
+| `RESEARCH_SESSION_CONCURRENCY` | Dimension sessions one research run keeps going at once (default 3; `1` = one after another) |
 | `S3_BUCKET`, `S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_FORCE_PATH_STYLE` | Evidence storage (SeaweedFS in compose / Spaces / S3) |
 | `OPEN_DOUGHNUT_PLUGIN_DIR` | Plugin location (set by the image) |
 | `CHROMIUM_PATH` | Playwright browser binary |
-| `WORKER_CONCURRENCY` | Parallel sessions per instance (default 1) |
+| `WORKER_CONCURRENCY` | Jobs (research runs, policy analyses) per instance at once (default 1) |
 | `APP_URL`, `SMTP_URL`, `EMAIL_FROM` | Run-complete / flagged-finding emails to portrait owners, editors, and organization owners (per each portrait's notification settings) |
 
 ## Local development

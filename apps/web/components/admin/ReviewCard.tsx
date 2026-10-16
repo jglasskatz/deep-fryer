@@ -16,6 +16,19 @@ export interface ReviewFinding {
   verification: FindingVerification | null;
 }
 
+/**
+ * Shown on every finding salvaged from a session's malformed output
+ * (FindingVerification.partial_output): the session may have returned more
+ * findings than were recorded, so the dimension may be missing some. The
+ * finding itself is flagged (core isFlagged) and judged like any other.
+ */
+const PARTIAL_OUTPUT_NOTE =
+  'Partial output: the research session returned malformed JSON and only part of it could be read, so this dimension may be missing findings. Consider re-research.';
+
+function PartialOutputNote() {
+  return <p className="mt-2 rounded bg-red-50 p-2 text-xs text-red-900">{PARTIAL_OUTPUT_NOTE}</p>;
+}
+
 function Badge({ ok, label, title }: { ok: boolean; label: string; title?: string }) {
   return (
     <span
@@ -204,6 +217,7 @@ function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; evidenc
           {payload.tiers_tried?.length ? ` · tiers ${payload.tiers_tried.join(', ')}` : ''}
           {payload.nearest_data ? ` · nearest: ${payload.nearest_data}` : ''}
         </p>
+        {v?.partial_output ? <PartialOutputNote /> : null}
       </div>
     );
   }
@@ -232,6 +246,7 @@ function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; evidenc
                 label={`source ${v.content_supported}`}
                 title={v.verifier_note}
               />
+              {v.partial_output ? <Badge ok={false} label="partial output" title={PARTIAL_OUTPUT_NOTE} /> : null}
             </>
           ) : null}
         </div>
@@ -262,6 +277,7 @@ function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; evidenc
           Verifier: {v.verifier_note}
         </p>
       ) : null}
+      {v?.partial_output ? <PartialOutputNote /> : null}
       {payload.notes ? (
         <p className="mt-1 text-xs text-[color:var(--color-muted)]">Session notes: {payload.notes}</p>
       ) : null}

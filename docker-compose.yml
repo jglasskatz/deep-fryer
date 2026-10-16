@@ -145,6 +145,24 @@ services:
       <<: *app-env
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-5}
+      # Model settings (docs/deploy.md "Models"). Compose's `${VAR:-default}` substitutes the default when VAR
+      # is unset OR empty in .env or the shell, so a pinned model can be replaced but never blanked.
+      # The page reader: Claude Code's WebFetch hands each fetched page to this model and returns its
+      # summary, for the researchers AND the verifier. Pinned to the CLI's current implicit default so an SDK
+      # update cannot swap it silently (later SDKs map the `haiku` alias to Haiku 5.5; docs/haiku-5-5.md
+      # §3.2). A blank must never get through: CLI 0.3.220 trims the value and treats '' as unset, so a blank
+      # would silently put the page reader back on that alias. The CLI sends a set id verbatim, so it must be
+      # a first-party API id; a Bedrock, Vertex, Foundry or LLM-gateway deployment sets its provider's own id.
+      ANTHROPIC_SMALL_FAST_MODEL: ${ANTHROPIC_SMALL_FAST_MODEL:-claude-haiku-4-5-20251001}
+      # One verifier session per indicator finding. research-apply.ts reads it with `??`, which would keep an
+      # empty string as the model id; the `:-` default keeps it set.
+      VERIFIER_MODEL: ${VERIFIER_MODEL:-claude-opus-5}
+      # source-scout subagents under each researcher session. Empty (the default) = scouts off: session.ts
+      # turns orchestration on only for a non-empty value.
+      RESEARCH_SUBAGENT_MODEL: ${RESEARCH_SUBAGENT_MODEL:-}
+      # Dimension sessions one research run keeps going at once (a whole number >= 1). Run outside compose,
+      # an empty value would mean 1 (Number('') is 0, floored to 1); here it means 3.
+      RESEARCH_SESSION_CONCURRENCY: ${RESEARCH_SESSION_CONCURRENCY:-3}
       # Decrypts organizations' own Anthropic API keys for their sessions (same value as web).
       DF_SECRETS_KEY: ${DF_SECRETS_KEY:-}
       WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-1}

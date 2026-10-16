@@ -49,7 +49,7 @@ That last finding bears directly on `DEFAULT_SESSION_MAX_TURNS = 60`.
 | Fabrication rate | `content_supported === 'fail'` ÷ non-gap |
 | Uncertain rate | `content_supported === 'uncertain'` ÷ non-gap |
 | Tier-1 share | self-reported, audited separately |
-| Cost per verified finding | (researcher + verifier tokens) ÷ passes |
+| Cost per verified finding | dollars (researcher + verifier, every model, priced by `packages/core/src/model-pricing.ts`) ÷ passes; reported as unpriced, never guessed, while any model in the run has no confirmed price |
 
 **Yield is the headline.** The all-gap strategy scores 0 on coverage; the
 reckless strategy scores 0 on accuracy. Neither degenerate case can win.

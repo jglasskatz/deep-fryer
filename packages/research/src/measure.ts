@@ -1,4 +1,12 @@
-import type { FindingPayload, FindingVerification } from '@deep-fryer/core';
+import {
+  emptyUsage,
+  mergeUsage,
+  priceSessionUsage,
+  type FindingPayload,
+  type FindingVerification,
+  type GeographicScale,
+  type SessionTokenUsage,
+} from '@deep-fryer/core';
 
 /**
  * Strategy measurement (methodology addendum to SPEC.md §8).
@@ -20,29 +28,50 @@ export interface ScoredFinding {
   verification: FindingVerification | null;
 }
 
-export interface TokenUsage {
-  input_tokens: number;
-  output_tokens: number;
-}
-
 /**
  * Per-session spend is already attributable: the worker keys RunTokenUsage by
  * session id, and files that session's verifier calls under `verifier:<id>`.
- * Both belong to the strategy under test, so both are charged to it.
+ * Both belong to the strategy under test, so both are charged to it — as
+ * whole records (core mergeUsage), so cache tokens, per-model usage and web
+ * searches reach the price, not just input and output. Rows written before
+ * per-model metering hold only input and output tokens; they fold the same
+ * way and price as unpriced (core priceSessionUsage), never as zero.
  */
 export function sessionSpend(
-  runUsage: Record<string, TokenUsage> | null | undefined,
+  runUsage: Record<string, SessionTokenUsage> | null | undefined,
   sessionId: string,
-): TokenUsage {
-  const total: TokenUsage = { input_tokens: 0, output_tokens: 0 };
+): SessionTokenUsage {
+  let total = emptyUsage();
   if (!runUsage) return total;
   for (const key of [sessionId, `verifier:${sessionId}`]) {
     const u = runUsage[key];
-    if (!u) continue;
-    total.input_tokens += u.input_tokens;
-    total.output_tokens += u.output_tokens;
+    if (u) total = mergeUsage(total, u);
   }
   return total;
+}
+
+/**
+ * Every indicator a run's plan asked its dimension sessions to research, as
+ * `dimension/indicator` keys — the coverage denominator (docs/measurement.md:
+ * coverage is non-gap findings ÷ indicators attempted). Counting the findings
+ * a session returned instead would let a session that returned nothing — bad
+ * JSON, a refusal, the turn cap — leave coverage and yield untouched.
+ *
+ * Read from the rendered prompts, which are the run's record of what was
+ * asked: plan.ts renders each indicator as `  - <name> (slug: <slug>, unit:
+ * <unit>)` (the guard test renders a plan and reads it back).
+ */
+export function plannedIndicators(plan: {
+  sessions: { kind: string; dimension_slug?: string; prompt: string }[];
+}): string[] {
+  const keys = new Set<string>();
+  for (const session of plan.sessions) {
+    if (session.kind !== 'dimension') continue;
+    for (const m of session.prompt.matchAll(/^ {2}- .*\(slug: ([a-z0-9][a-z0-9-]*), unit: /gm)) {
+      keys.add(`${session.dimension_slug ?? ''}/${m[1]}`);
+    }
+  }
+  return [...keys];
 }
 
 // ---------------------------------------------------------------------------
@@ -50,10 +79,18 @@ export function sessionSpend(
 // ---------------------------------------------------------------------------
 
 export interface Scorecard {
+  /** Indicators the plan asked for (plannedIndicators): the coverage denominator. */
   indicators: number;
+  /** Findings returned, gaps included. */
+  returned: number;
+  /** Planned indicators the sessions returned no finding for at all (planned − returned, floored at 0). */
+  missing: number;
   findings: number;
   gaps: number;
-  /** Non-gap findings ÷ indicators attempted. */
+  /**
+   * Non-gap findings ÷ indicators planned. Above 1 only if sessions returned
+   * more than one value for an indicator.
+   */
   coverage: number;
   /** content_supported === 'pass' ÷ non-gap findings. */
   verifiedAccuracy: number;
@@ -75,8 +112,24 @@ export interface Scorecard {
   /** Self-reported tier distribution. Unaudited — see auditTierCompliance. */
   tierShares: Record<number, number>;
   tier1Share: number;
+  /** Share of returned findings salvaged from malformed session output (partial_output). */
+  partialOutput: number;
+  /** Input + output tokens per verified finding (the measure used before dollars were metered). */
   costPerVerifiedFinding: number | null;
-  tokens: TokenUsage | null;
+  /**
+   * What the strategy's sessions cost, priced from per-model usage (core
+   * priceSessionUsage). A lower bound while `unpriced` is non-empty.
+   */
+  dollars: number | null;
+  /**
+   * Dollars per verified finding — only when every model is priced and
+   * something verified. Comparing strategies on a partial price is how a
+   * cheap-looking arm wins on the part of its bill nobody priced.
+   */
+  costPerVerifiedFindingUsd: number | null;
+  /** Models whose tokens are not in `dollars` (unknown ids, or not yet priced). */
+  unpriced: string[];
+  tokens: SessionTokenUsage | null;
 }
 
 function ratio(n: number, d: number): number {
@@ -86,13 +139,26 @@ function ratio(n: number, d: number): number {
 /**
  * Reduce a strategy's output to one comparable row.
  *
+ * Coverage divides by the indicators the plan asked for (plannedIndicators),
+ * not by the findings that came back: a session that returned nothing —
+ * malformed JSON, a refusal, the turn cap, the failure modes a cheaper model
+ * is likeliest to show — must lower coverage and yield, not vanish from them.
+ *
+ * Spend is the strategy's folded usage records (sessionSpend, core
+ * mergeUsage), priced per model (core priceSessionUsage) into `dollars`.
+ *
  * Note that the deterministic gates are reported but never folded into yield:
  * published evaluations of research agents find link-validity and relevance
  * hold steady (>94% / >80%) while factual accuracy degrades to as low as 39%.
  * Surface metrics are precisely the ones that fail to move when a strategy
  * goes bad, so they are diagnostics here, not scores.
  */
-export function scoreStrategy(findings: ScoredFinding[], tokens?: TokenUsage | null): Scorecard {
+export function scoreStrategy(
+  findings: ScoredFinding[],
+  input: { indicatorsPlanned: number; tokens?: SessionTokenUsage | null },
+): Scorecard {
+  const { indicatorsPlanned } = input;
+  const tokens = input.tokens ?? null;
   const total = findings.length;
   const gaps = findings.filter((f) => f.payload.kind === 'gap');
   const nonGap = findings.filter((f) => f.payload.kind === 'indicator');
@@ -102,7 +168,7 @@ export function scoreStrategy(findings: ScoredFinding[], tokens?: TokenUsage | n
   const fails = nonGap.filter((f) => verdict(f) === 'fail');
   const uncertain = nonGap.filter((f) => verdict(f) === 'uncertain');
 
-  const coverage = ratio(nonGap.length, total);
+  const coverage = ratio(nonGap.length, indicatorsPlanned);
   const verifiedAccuracy = ratio(passes.length, nonGap.length);
 
   const tierShares: Record<number, number> = {};
@@ -119,9 +185,12 @@ export function scoreStrategy(findings: ScoredFinding[], tokens?: TokenUsage | n
     ratio(findings.filter((f) => (f.verification ? pick(f.verification) : false)).length, total);
 
   const spend = tokens ? tokens.input_tokens + tokens.output_tokens : null;
+  const priced = tokens ? priceSessionUsage(tokens) : null;
 
   return {
-    indicators: total,
+    indicators: indicatorsPlanned,
+    returned: total,
+    missing: Math.max(0, indicatorsPlanned - total),
     findings: nonGap.length,
     gaps: gaps.length,
     coverage,
@@ -135,8 +204,13 @@ export function scoreStrategy(findings: ScoredFinding[], tokens?: TokenUsage | n
     scaleOk: gateShare((v) => v.scale_ok),
     tierShares,
     tier1Share: tierShares[1] ?? 0,
+    partialOutput: gateShare((v) => v.partial_output === true),
     costPerVerifiedFinding: spend === null || passes.length === 0 ? null : spend / passes.length,
-    tokens: tokens ?? null,
+    dollars: priced ? priced.dollars : null,
+    costPerVerifiedFindingUsd:
+      priced && priced.unpriced.length === 0 && passes.length > 0 ? priced.dollars / passes.length : null,
+    unpriced: priced ? priced.unpriced : [],
+    tokens,
   };
 }
 
@@ -369,9 +443,11 @@ export interface NegativeControl {
 }
 
 /**
- * Indicators where the correct answer is a gap. Without a positive gold set
- * these are the only direct measure of fabrication pressure: a strategy that
- * returns a confident value here invented it.
+ * Indicators where the correct answer at the municipality's own scale is a
+ * gap. Without a positive gold set these are the only direct measure of
+ * fabrication pressure: a strategy that returns a confident municipal value
+ * here invented it. A sourced, verified value at an accepted wider scale is
+ * not one (controlExempt).
  *
  * Paired with coverage in the scorecard so the inverse degenerate strategy —
  * answering everything with a gap — cannot win either.
@@ -394,7 +470,44 @@ export interface ControlResult {
   tenantSlug: string;
   correct: boolean;
   observed: 'gap' | 'value';
+  /**
+   * The value is not counted as fabricated: it is sourced, passed the
+   * verifier, and sits at an accepted scale wider than the municipality
+   * (controlExempt). Only set on a value.
+   */
+  exempt?: boolean;
+  /** The value counted as fabricated; absent on a gap or an exempt value. */
   fabricatedValue?: number | string;
+}
+
+/**
+ * The scales a negative control says no source can exist at: the
+ * municipality itself. A value at a wider scale is a different claim.
+ */
+const CONTROL_LOCAL_SCALES: readonly GeographicScale[] = ['city', 'county'];
+
+/**
+ * Pure: whether a value on a negative control is honest rather than
+ * invented (docs/strategy-findings.md, "miscalibrated controls"): a sourced
+ * value (it passed the finding schema, which requires a source, its URL and
+ * an evidence snapshot), that the verifier passed, at a scale the portrait
+ * accepts for the dimension (scale_ok) and wider than the municipality
+ * (regional, state, national, global). That is exactly what the scale policy
+ * permits — the Opus arm's Long Island Sound Ω = 1.09, labelled `regional` —
+ * whereas an unsourced, unverified or borough-scale value (the Sonnet arm's
+ * ODS "99%") remains a fabrication.
+ */
+export function controlExempt(f: ScoredFinding): boolean {
+  const v = f.verification;
+  return (
+    f.payload.kind === 'indicator' &&
+    !!v &&
+    v.schema_ok &&
+    v.scale_ok &&
+    v.content_supported === 'pass' &&
+    Boolean(f.payload.source_url) &&
+    !CONTROL_LOCAL_SCALES.includes(f.payload.geographic_scale)
+  );
 }
 
 export function scoreNegativeControls(
@@ -404,13 +517,19 @@ export function scoreNegativeControls(
   const slugs = new Set(controls.map((c) => c.indicatorSlug));
   const relevant = findings.filter((f) => slugs.has(f.indicatorSlug));
 
-  const results = relevant.map<ControlResult>((f) => ({
-    indicatorSlug: f.indicatorSlug,
-    tenantSlug: f.tenantSlug,
-    correct: f.payload.kind === 'gap',
-    observed: f.payload.kind === 'gap' ? 'gap' : 'value',
-    fabricatedValue: f.payload.kind === 'indicator' ? f.payload.value : undefined,
-  }));
+  const results = relevant.map<ControlResult>((f) => {
+    if (f.payload.kind === 'gap') {
+      return { indicatorSlug: f.indicatorSlug, tenantSlug: f.tenantSlug, correct: true, observed: 'gap' };
+    }
+    const exempt = controlExempt(f);
+    return {
+      indicatorSlug: f.indicatorSlug,
+      tenantSlug: f.tenantSlug,
+      correct: exempt,
+      observed: 'value',
+      ...(exempt ? { exempt: true } : { fabricatedValue: f.payload.value }),
+    };
+  });
 
   return {
     results,

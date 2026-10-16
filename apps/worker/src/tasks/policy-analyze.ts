@@ -22,7 +22,7 @@ import {
 } from '@deep-fryer/db';
 import { policyJobKey, type PolicyJobPayload } from '@deep-fryer/research';
 import { portraitFeatures } from '../features.js';
-import { OrgKeyUnavailableError, sessionApiKey } from '../org-key.js';
+import { OrgKeyUnavailableError, isKeyRejectedError, modelNamedIn, modelNotFoundLog, sessionApiKey } from '../org-key.js';
 import { extractJson, runSessionWithRetry } from '../session.js';
 import { send, type ComposedEmail } from '../notify.js';
 
@@ -74,8 +74,24 @@ const INTERRUPTED =
   'The analysis was interrupted (the worker restarted before it finished). It was not counted against your plan; start it again.';
 const SESSION_FAILED =
   'The analysis session did not complete, even after a retry. This is usually temporary; try again in a few minutes. If it keeps failing, ask your administrator to check the research service.';
+
+/**
+ * The deployment's own key was refused (dead, out of credit, or not allowed the model). Such
+ * refusals are not retried (org-key.ts KEY_REJECTED_ERRORS), so SESSION_FAILED's "even after a
+ * retry" and "usually temporary" would be untrue; this is for the operator, not the requester.
+ */
+const DEPLOYMENT_KEY_REFUSED =
+  'The analysis did not run: the research service’s Anthropic account refused the request. This is not temporary — ask your administrator to check the research service’s API key and model settings. It was not counted against your research sessions.';
 const NO_JSON =
   'The analysis finished without a structured result, so there was nothing to project. Try running it again.';
+/**
+ * Shown with a result read from malformed output (session.ts extractJson
+ * `salvaged`): only part of the answer could be read, so parts of the
+ * analysis may be missing. Listed first among the adjustments on the result
+ * page, where staff read how the answer was fitted to the format.
+ */
+export const PARTIAL_OUTPUT_NOTE =
+  'The analysis returned malformed JSON and only part of it could be read, so parts of the analysis may be missing. Consider running it again.';
 const UNEXPECTED =
   'The analysis failed on our side before it finished. It has been logged; try again in a moment.';
 
@@ -188,30 +204,58 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
     });
     // Not orchestrated: a policy prompt ends with its own output contract,
     // and research's delegation note must not follow it.
-    const session = await runSessionWithRetry({
-      prompt,
-      allowedTools: POLICY_SESSION_TOOLS,
-      orchestrate: false,
-      ...(apiKey ? { apiKey } : {}),
-    });
+    let session: Awaited<ReturnType<typeof runSessionWithRetry>>;
+    try {
+      session = await runSessionWithRetry({
+        prompt,
+        allowedTools: POLICY_SESSION_TOOLS,
+        orchestrate: false,
+        ...(apiKey ? { apiKey } : {}),
+      });
+    } catch (err) {
+      // Anthropic refused the organization's own key (revoked, out of
+      // credit, model not allowed): the session is not retried, and staff
+      // read why, with what the session had spent kept on the row.
+      if (err instanceof OrgKeyUnavailableError) {
+        usage = err.usage ?? null;
+        // A model id the API did not find may be the deployment's model
+        // setting rather than the key: the operator reads this, staff the reason.
+        if (err.rejection === 'model_not_found') {
+          helpers.logger.error(`policy analysis ${analysisId}: ${modelNotFoundLog(err.model ?? '(model not named)', true)}`);
+        }
+        throw new AnalysisFailure(err.message);
+      }
+      throw err;
+    }
     usage = session.usage;
     transcript = session.transcript;
-    if (!session.succeeded) throw new AnalysisFailure(SESSION_FAILED);
+    if (!session.succeeded) {
+      if (session.apiError === 'model_not_found') {
+        const model = modelNamedIn(session.apiErrorText) ?? session.usage.model ?? '(model not named)';
+        helpers.logger.error(`policy analysis ${analysisId}: ${modelNotFoundLog(model, Boolean(apiKey))}`);
+      }
+      throw new AnalysisFailure(isKeyRejectedError(session.apiError) ? DEPLOYMENT_KEY_REFUSED : SESSION_FAILED);
+    }
 
     let raw: unknown;
+    let salvaged: boolean;
     try {
-      raw = extractJson(session.resultText, { kind: 'object' });
+      ({ value: raw, salvaged } = extractJson(session.resultText, { kind: 'object' }));
     } catch {
       throw new AnalysisFailure(NO_JSON);
     }
     // Recoverable slips (a cited http:// page, a summary a little over the
     // limit) are fixed and noted for staff rather than failing an analysis
     // that already spent minutes of web research; what remains invalid fails.
+    // A result read from malformed output is noted first (PARTIAL_OUTPUT_NOTE).
     const fitted = fitToContract(raw);
+    if (salvaged) fitted.adjustments.unshift(PARTIAL_OUTPUT_NOTE);
     const parsed = policyAnalysisOutputSchema.safeParse(fitted.value);
     if (!parsed.success) {
       throw new AnalysisFailure(
-        `The analysis returned a result that failed validation, so nothing from it was saved (${describeIssue(parsed.error)}). Try running it again.`,
+        salvaged
+          ? `The analysis returned malformed JSON, and the part that could be read failed validation, so nothing from it was saved (${describeIssue(parsed.error)}). Try running it again.`
+          : `The analysis returned a result that failed validation, so nothing from it was saved (${describeIssue(parsed.error)}). Try running it again.`,
       );
     }
 

@@ -12,11 +12,12 @@ import { encryptSecret, keyHint, parseSecretsKey } from '@deep-fryer/core/secret
  * instead; and a plan-funded analysis runs on the deployment's key even with
  * a key on file now.
  */
-const session = vi.hoisted(() => ({ inputs: [] as { apiKey?: string }[] }));
+const session = vi.hoisted(() => ({ inputs: [] as { apiKey?: string }[], throws: null as Error | null }));
 vi.mock('../session.js', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../session.js')>()),
   runSessionWithRetry: vi.fn(async (input: { apiKey?: string }) => {
     session.inputs.push(input);
+    if (session.throws) throw session.throws;
     return {
       resultText: JSON.stringify({ summary: 'No measurable effect.', impacts: [], assumptions: [], risks: [] }),
       succeeded: true,
@@ -39,6 +40,7 @@ describe.skipIf(!hasDb)('policyAnalyze with an organization key (Postgres, mocke
   const savedSecretsKey = process.env.DF_SECRETS_KEY;
   beforeEach(() => {
     session.inputs.length = 0;
+    session.throws = null;
   });
   afterAll(async () => {
     for (const fn of cleanup.reverse()) await fn();
@@ -124,6 +126,43 @@ describe.skipIf(!hasDb)('policyAnalyze with an organization key (Postgres, mocke
     expect(row.status).toBe('failed');
     // Within the 400 characters the row keeps, so staff read all of it.
     expect(row.error).toBe(ORG_KEY_REMOVED);
+  });
+
+  it('fails once with the reason, keeping what was spent, when Anthropic refuses the organization key', async () => {
+    const secretsKey = randomSecretsKey();
+    process.env.DF_SECRETS_KEY = secretsKey;
+    const { analysisId, settled } = await seed(secretsKey, 'organization_key');
+    const { orgKeyRejected } = await import('../org-key.js');
+    // As session.ts runSessionWithRetry throws it: after one attempt, with that attempt's usage.
+    session.throws = orgKeyRejected('billing_error', 'claude-sonnet-5', { input_tokens: 700, output_tokens: 20, partial: true });
+    const { policyAnalyze } = await import('./policy-analyze.js');
+    await policyAnalyze({ analysisId }, helpers);
+
+    expect(session.inputs).toHaveLength(1);
+    const row = await settled();
+    expect(row.status).toBe('failed');
+    // Shown verbatim on the analysis page and in the email: whose key, and what an owner can do.
+    expect(row.error).toBe(session.throws.message);
+    expect(row.error).toMatch(/organization's own API key/);
+    expect(row.error).not.toMatch(/administrator/);
+    expect(row.tokenUsage).toEqual({ input_tokens: 700, output_tokens: 20, partial: true });
+  });
+
+  it('logs a model id the API did not find for the operator, while staff read the reason', async () => {
+    const secretsKey = randomSecretsKey();
+    process.env.DF_SECRETS_KEY = secretsKey;
+    const { analysisId, settled } = await seed(secretsKey, 'organization_key');
+    const { orgKeyRejected } = await import('../org-key.js');
+    session.throws = orgKeyRejected('model_not_found', 'claude-sonnet-5-typo');
+    const error = vi.mocked(helpers.logger.error);
+    error.mockClear();
+    const { policyAnalyze } = await import('./policy-analyze.js');
+    await policyAnalyze({ analysisId }, helpers);
+
+    expect((await settled()).error).toBe(session.throws.message);
+    expect(error).toHaveBeenCalledWith(
+      `policy analysis ${analysisId}: Anthropic reported model_not_found for model "claude-sonnet-5-typo" on the organization's own API key: check that ANTHROPIC_MODEL / VERIFIER_MODEL name a valid model id, or that the key's workspace may use it`,
+    );
   });
 
   it('runs a plan-funded analysis on the deployment key, even with a key on file now', async () => {

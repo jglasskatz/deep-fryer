@@ -11,6 +11,7 @@ import {
   tenantMembers,
   tenants,
   users,
+  type ResearchFunding,
 } from '@deep-fryer/db';
 
 /**
@@ -28,6 +29,14 @@ export interface RunSummary {
   tenantSlug: string;
   runId: string;
   status: 'complete' | 'failed';
+  /**
+   * Whose key the run used (research_runs.funding, migration 0012). A run on
+   * the organization's own key is never counted against the plan, and when
+   * all of it fails the usual cause is that key — which the organization's
+   * owners fix, not the deployment's administrator — so the failure email
+   * says so.
+   */
+  funding: ResearchFunding;
   sessions: number;
   failedSessions: number;
   findings: number;
@@ -57,13 +66,26 @@ export function composeRunEmail(
       : 'No findings were flagged by verification.';
 
   if (s.status === 'failed') {
+    const ownKey = s.funding === 'organization_key';
+    const recorded = `Findings recorded before the failure (${s.findings}) are in the review queue.`;
+    // A run on the organization's own key: its failures are most often the
+    // key itself (revoked, out of credit, a model it may not use), which the
+    // session transcripts name and an organization owner fixes under Billing.
+    // One reason is not always the key's: "model not found" can also be the
+    // research service's own model setting (org-key.ts orgKeyRejected), so the
+    // email says where to send that one rather than blaming either side.
+    const reason = ownKey
+      ? s.findings > 0
+        ? `${recorded} This run used your organization's own Anthropic API key, so none of it is counted against your plan. If the key was refused, each failed session's transcript says why.`
+        : "No findings were recorded. This run used your organization's own Anthropic API key, so none of it is counted against your plan. If every session failed the same way, check that key first: a failed session's transcript says why, and an organization owner can replace the key under Billing. If the transcript says the model setting may be wrong instead, pass it on to your administrator."
+      : s.findings > 0
+        ? `${recorded} Failed sessions are not counted against your plan.`
+        : 'No findings were recorded. Failed sessions are not counted against your plan; if every session failed the same way, ask your administrator to check the research service configuration.';
     return {
       subject: `Research run failed — ${s.tenantName}`,
       text: [
         `A research run for ${s.tenantName} failed: ${s.failedSessions} of ${s.sessions} sessions did not complete.`,
-        s.findings > 0
-          ? `Findings recorded before the failure (${s.findings}) are in the review queue. Failed sessions are not counted against your plan.`
-          : 'No findings were recorded. Failed sessions are not counted against your plan; if every session failed the same way, ask your administrator to check the research service configuration.',
+        reason,
         `Re-plan the affected dimensions from the review queue: ${link}`,
       ].join('\n\n'),
     };
@@ -142,6 +164,7 @@ export async function runSummary(runId: string): Promise<RunSummary | null> {
     tenantSlug: row.tenant.slug,
     runId,
     status: row.run.status === 'failed' ? 'failed' : 'complete',
+    funding: row.run.funding,
     sessions: sessions.length,
     failedSessions: sessions.filter((s) => s.status === 'failed').length,
     findings: runFindings.length,

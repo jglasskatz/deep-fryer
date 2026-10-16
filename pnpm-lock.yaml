@@ -152,7 +152,7 @@ importers:
   apps/worker:
     dependencies:
       '@anthropic-ai/claude-agent-sdk':
-        specifier: ^0.3.220
+        specifier: 0.3.220
         version: 0.3.220(@anthropic-ai/sdk@0.135.0(zod@3.25.76))(@modelcontextprotocol/sdk@1.30.0(zod@3.25.76))(zod@3.25.76)
       '@deep-fryer/contract':
         specifier: workspace:*

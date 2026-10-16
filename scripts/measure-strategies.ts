@@ -9,6 +9,12 @@
  *   tsx scripts/measure-strategies.ts enqueue --run <runId>
  *   tsx scripts/measure-strategies.ts status
  *   tsx scripts/measure-strategies.ts score --label sonnet --runs <id>,<id> [--label2 opus --runs2 <id>,<id>]
+ *
+ * `score` folds each run's usage records whole (core mergeUsage) and prices
+ * them per model (core priceSessionUsage), so arms are compared in dollars —
+ * cache tokens, web searches and the CLI's page reader included — not in
+ * tokens, which differ in price ~25× between models and in count between
+ * tokenizers. Coverage divides by the indicators each plan asked for.
  */
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { frameworkDimension } from '@deep-fryer/contract';
@@ -21,16 +27,24 @@ import {
   tenantBySlug,
   tenantConfig,
 } from '@deep-fryer/db';
-import type { PortraitConfig, RunTokenUsage } from '@deep-fryer/core';
+import {
+  emptyUsage,
+  mergeUsage,
+  modelsInUsage,
+  priceSessionUsage,
+  type PortraitConfig,
+  type RunTokenUsage,
+  type SessionTokenUsage,
+} from '@deep-fryer/core';
 import {
   enqueueResearchApply,
+  plannedIndicators,
   renderPlan,
   replicationAgreement,
   scoreNegativeControls,
   scoreStrategy,
   type PlanDimensionSpec,
   type ScoredFinding,
-  type TokenUsage,
 } from '@deep-fryer/research';
 
 function arg(name: string): string | undefined {
@@ -126,7 +140,30 @@ async function status() {
   }
 }
 
-async function loadRun(runId: string): Promise<{ scored: ScoredFinding[]; tokens: TokenUsage }> {
+/** What one run contributes to a scorecard, plus the per-run facts an arm comparison needs. */
+interface LoadedRun {
+  runId: string;
+  scored: ScoredFinding[];
+  /** Every usage record of the run (region, research, verifiers) folded into one. */
+  spend: SessionTokenUsage;
+  indicatorsPlanned: number;
+  /**
+   * Every model the run's records say ran, main loops and side calls alike.
+   * A run row does not record its arm's models, so this is how a ledger
+   * entry is checked against the arm it claims to be.
+   */
+  models: string[];
+  sessions: { complete: number; failed: number; other: number };
+  refusals: number;
+  /** Refusals the CLI answered on another model: findings or verdicts from an unintended model. */
+  refusalFallbacks: number;
+  /** Records whose attempt threw before its result: their side-call spend is missing. */
+  partialRecords: number;
+  dollars: number;
+  unpriced: string[];
+}
+
+async function loadRun(runId: string): Promise<LoadedRun> {
   const db = getDb();
   const [run] = await db.select().from(researchRuns).where(eq(researchRuns.id, runId));
   if (!run) throw new Error(`run ${runId} not found`);
@@ -140,10 +177,12 @@ async function loadRun(runId: string): Promise<{ scored: ScoredFinding[]; tokens
       d,
     ]),
   );
-  const rows = await db
-    .select()
-    .from(findings)
-    .where(inArray(findings.sessionId, sessions.map((s) => s.id)));
+  const rows = sessions.length
+    ? await db
+        .select()
+        .from(findings)
+        .where(inArray(findings.sessionId, sessions.map((s) => s.id)))
+    : [];
 
   const scored: ScoredFinding[] = rows.map((f) => ({
     indicatorSlug: f.indicatorSlug,
@@ -153,29 +192,58 @@ async function loadRun(runId: string): Promise<{ scored: ScoredFinding[]; tokens
     verification: f.verification,
   }));
 
-  const usage = (run.tokenUsage ?? {}) as RunTokenUsage;
-  const tokens: TokenUsage = { input_tokens: 0, output_tokens: 0 };
-  for (const u of Object.values(usage)) {
-    tokens.input_tokens += u.input_tokens ?? 0;
-    tokens.output_tokens += u.output_tokens ?? 0;
-  }
-  return { scored, tokens };
+  // Whole records, folded: rows from before per-model metering hold only
+  // input and output tokens and fold the same way (they price as unpriced).
+  const records = Object.values((run.tokenUsage ?? {}) as RunTokenUsage);
+  const spend = records.reduce(mergeUsage, emptyUsage());
+  const priced = priceSessionUsage(spend);
+  const models = [...new Set(records.flatMap(modelsInUsage))].sort();
+  return {
+    runId,
+    scored,
+    spend,
+    indicatorsPlanned: plannedIndicators(run.plan).length,
+    models,
+    sessions: {
+      complete: sessions.filter((s) => s.status === 'complete').length,
+      failed: sessions.filter((s) => s.status === 'failed').length,
+      other: sessions.filter((s) => s.status !== 'complete' && s.status !== 'failed').length,
+    },
+    refusals: records.reduce((n, u) => n + (u.refusals ?? 0), 0),
+    refusalFallbacks: records.reduce((n, u) => n + (u.refusal_fallbacks?.length ?? 0), 0),
+    partialRecords: records.filter((u) => u.partial).length,
+    dollars: priced.dollars,
+    unpriced: priced.unpriced,
+  };
 }
 
 async function scoreLabel(label: string, runIds: string[]) {
   const perRun = await Promise.all(runIds.map(loadRun));
   const all = perRun.flatMap((r) => r.scored);
-  const tokens = perRun.reduce(
-    (acc, r) => ({
-      input_tokens: acc.input_tokens + r.tokens.input_tokens,
-      output_tokens: acc.output_tokens + r.tokens.output_tokens,
-    }),
-    { input_tokens: 0, output_tokens: 0 },
-  );
-  const card = scoreStrategy(all, tokens);
+  const spend = perRun.map((r) => r.spend).reduce(mergeUsage, emptyUsage());
+  const card = scoreStrategy(all, {
+    indicatorsPlanned: perRun.reduce((n, r) => n + r.indicatorsPlanned, 0),
+    tokens: spend,
+  });
   const controls = scoreNegativeControls(all);
   const agreement = perRun.length > 1 ? replicationAgreement(perRun.map((r) => r.scored)) : [];
-  return { label, runIds, scorecard: card, negativeControls: controls, replication: agreement };
+  return {
+    label,
+    runIds,
+    // Dollars, per-model tokens and the unpriced models are on the scorecard
+    // (dollars, tokens.by_model, unpriced); the rest is per run.
+    scorecard: card,
+    perModelTokens: spend.by_model ?? {},
+    runs: perRun.map(({ scored: _scored, spend: _spend, ...facts }) => facts),
+    sessions: {
+      complete: perRun.reduce((n, r) => n + r.sessions.complete, 0),
+      failed: perRun.reduce((n, r) => n + r.sessions.failed, 0),
+    },
+    refusals: perRun.reduce((n, r) => n + r.refusals, 0),
+    refusalFallbacks: perRun.reduce((n, r) => n + r.refusalFallbacks, 0),
+    negativeControls: controls,
+    replication: agreement,
+  };
 }
 
 async function score() {

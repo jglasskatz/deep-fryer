@@ -103,3 +103,103 @@ describe.skipIf(!hasDb)('orgApiKeyForTenant (Postgres)', () => {
     expect(await sessionApiKey(db, tenant.id, 'plan', undefined)).toBeNull();
   });
 });
+
+describe('orgKeyRejected', () => {
+  /** The bundled CLI's (0.3.220) error-frame texts for the two dead-key cases it reports as invalid_request. */
+  const DISABLED_ORG = 'Your ANTHROPIC_API_KEY belongs to a disabled organization \u00b7 Update or unset the environment variable';
+  const API_KEYS_OFF =
+    'Your organization has disabled API key authentication \u00b7 Unset ANTHROPIC_API_KEY and run /login to sign in with your claude.ai account';
+
+  it('names only the errors no retry can fix', async () => {
+    const { isKeyRejectedError, keyRejection } = await import('./org-key.js');
+    for (const e of ['authentication_failed', 'billing_error', 'model_not_found', 'oauth_org_not_allowed']) {
+      expect(isKeyRejectedError(e)).toBe(true);
+      expect(keyRejection(e)).toBe(e);
+    }
+    for (const e of ['rate_limit', 'overloaded', 'server_error', 'invalid_request', 'unknown', 'max_output_tokens', undefined]) {
+      expect(isKeyRejectedError(e)).toBe(false);
+      expect(keyRejection(e, 'Overloaded')).toBeNull();
+    }
+  });
+
+  it('reads a disabled organization and API keys turned off out of an invalid_request frame', async () => {
+    const { keyRejection } = await import('./org-key.js');
+    expect(keyRejection('invalid_request', DISABLED_ORG)).toBe('organization_disabled');
+    expect(keyRejection('invalid_request', API_KEYS_OFF)).toBe('api_key_auth_disabled');
+    // The subscription-login variant of the same message.
+    expect(keyRejection('invalid_request', 'Your ANTHROPIC_API_KEY belongs to a disabled organization \u00b7 Unset the environment variable to use your subscription instead')).toBe(
+      'organization_disabled',
+    );
+    // Any other invalid request (a malformed message, a prompt too long) may be the session's own doing: retried as before.
+    expect(keyRejection('invalid_request', 'API Error: 400 messages.1.content: text content blocks must be non-empty')).toBeNull();
+    expect(keyRejection('invalid_request')).toBeNull();
+    // The wording alone, on another error, is not a key refusal.
+    expect(keyRejection('server_error', DISABLED_ORG)).toBeNull();
+  });
+
+  it('tells staff whose key was refused and what an organization owner can do, within what a row keeps', async () => {
+    const { OrgKeyUnavailableError, orgKeyRejected } = await import('./org-key.js');
+    const rejections = [
+      'authentication_failed',
+      'billing_error',
+      'model_not_found',
+      'oauth_org_not_allowed',
+      'organization_disabled',
+      'api_key_auth_disabled',
+    ] as const;
+    const messages = new Set<string>();
+    for (const rejection of rejections) {
+      const err = orgKeyRejected(rejection, 'claude-opus-5-'.padEnd(80, 'x'), { input_tokens: 5, output_tokens: 1 });
+      expect(err).toBeInstanceOf(OrgKeyUnavailableError);
+      expect(err.message).toMatch(/this organization's own API key/i);
+      expect(err.message).toContain("the deployment's own key is never used in its place");
+      expect(err.message).toMatch(/An organization owner can .* then start this again\.$/);
+      expect(err.message.length).toBeLessThanOrEqual(400);
+      // What the session spent before the refusal rides along for the caller to record.
+      expect(err.usage).toEqual({ input_tokens: 5, output_tokens: 1 });
+      expect(err.rejection).toBe(rejection);
+      // The organization's own key is the organization's to fix, not the operator's —
+      // except a model id the API did not find, which the service's model setting can cause too.
+      if (rejection === 'model_not_found') {
+        expect(err.message).toMatch(/the key may not allow it, or the model setting is wrong/);
+        expect(err.message).toMatch(/or ask the operator to check the setting/);
+        expect(err.message).not.toMatch(/administrator/);
+      } else {
+        expect(err.message).not.toMatch(/administrator|operator/);
+      }
+      messages.add(err.message);
+    }
+    // Each refusal has its own reason.
+    expect(messages.size).toBe(rejections.length);
+    expect(orgKeyRejected('model_not_found', 'claude-opus-5').message).toContain('(claude-opus-5)');
+    expect(orgKeyRejected('model_not_found', 'claude-opus-5').model).toBe('claude-opus-5');
+    expect(orgKeyRejected('billing_error', 'claude-opus-5').usage).toBeUndefined();
+  });
+
+  it('names the model the error frame says was not found, which may be a refusal fallback’s', async () => {
+    const { modelNamedIn, rejectedKeyError } = await import('./org-key.js');
+    const notFound = "There's an issue with the selected model (claude-opus-4-8). It may not exist or you may not have access to it.";
+    expect(modelNamedIn(notFound)).toBe('claude-opus-4-8');
+    expect(modelNamedIn('The model claude-sonnet-5 is not available on your bedrock deployment. Try switching to x')).toBe('claude-sonnet-5');
+    expect(modelNamedIn('Overloaded')).toBeNull();
+    expect(modelNamedIn(undefined)).toBeNull();
+
+    // Started on claude-opus-5; the CLI's refusal fallback asked for claude-opus-4-8, which the key may not use.
+    const err = rejectedKeyError({ apiError: 'model_not_found', apiErrorText: notFound }, 'claude-opus-5');
+    expect(err?.message).toContain('(claude-opus-4-8)');
+    expect(err?.model).toBe('claude-opus-4-8');
+    // Without a model in the text, the session's own model is named.
+    expect(rejectedKeyError({ apiError: 'model_not_found' }, 'claude-opus-5')?.message).toContain('(claude-opus-5)');
+    expect(rejectedKeyError({ apiError: 'invalid_request', apiErrorText: DISABLED_ORG }, 'claude-opus-5')?.rejection).toBe('organization_disabled');
+    expect(rejectedKeyError({ apiError: 'overloaded' }, 'claude-opus-5')).toBeNull();
+    expect(rejectedKeyError({}, 'claude-opus-5')).toBeNull();
+  });
+
+  it('tells the operator which model id was not found, and where to look', async () => {
+    const { modelNotFoundLog } = await import('./org-key.js');
+    expect(modelNotFoundLog('claude-opus-5-typo', false)).toBe(
+      'Anthropic reported model_not_found for model "claude-opus-5-typo" on the deployment\'s API key: check that ANTHROPIC_MODEL / VERIFIER_MODEL name a valid model id',
+    );
+    expect(modelNotFoundLog('claude-opus-5', true)).toMatch(/on the organization's own API key: .*, or that the key's workspace may use it$/);
+  });
+});

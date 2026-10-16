@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { framework } from '@deep-fryer/contract';
+import { defaultPortraitConfig, framework } from '@deep-fryer/contract';
+import { emptyUsage, mergeUsage } from '@deep-fryer/core';
 import {
   CUSTOM_INDICATOR_SLUGS,
   DENOMINATORS,
   NEGATIVE_CONTROLS,
+  plannedIndicators,
   reconcileBoroughs,
   replicationAgreement,
   scoreNegativeControls,
@@ -11,6 +13,7 @@ import {
   sessionSpend,
   type ScoredFinding,
 } from './measure.js';
+import { renderPlan } from './plan.js';
 
 const frameworkSlugs = framework.dimensions.flatMap((d) => d.indicators.map((i) => i.slug));
 
@@ -22,6 +25,9 @@ function indicatorFinding(
     tier: number;
     verdict: 'pass' | 'fail' | 'uncertain';
     url: string;
+    scale: 'city' | 'county' | 'regional' | 'state' | 'national' | 'global';
+    scaleOk: boolean;
+    partialOutput: boolean;
   }> = {},
 ): ScoredFinding {
   const {
@@ -31,6 +37,9 @@ function indicatorFinding(
     tier = 1,
     verdict = 'pass',
     url = 'https://example.gov/a',
+    scale = 'city',
+    scaleOk = true,
+    partialOutput = false,
   } = overrides;
   return {
     indicatorSlug,
@@ -56,14 +65,15 @@ function indicatorFinding(
       source_tier: tier,
       evidence: { snapshot_path: 'p.png', captured_at: '2026-08-04T00:00:00Z' },
       confidence: 'high',
-      geographic_scale: 'city',
+      geographic_scale: scale,
     },
     verification: {
       schema_ok: true,
       url_ok: true,
       recency_ok: true,
-      scale_ok: true,
+      scale_ok: scaleOk,
       content_supported: verdict,
+      ...(partialOutput ? { partial_output: true } : {}),
     },
   } as ScoredFinding;
 }
@@ -92,20 +102,37 @@ function gapFinding(indicatorSlug: string, tenantSlug = 'nyc'): ScoredFinding {
 
 describe('scoreStrategy', () => {
   it('scores yield as coverage times verified accuracy', () => {
-    const card = scoreStrategy([
-      indicatorFinding({ verdict: 'pass' }),
-      indicatorFinding({ indicatorSlug: 'b', verdict: 'pass' }),
-      indicatorFinding({ indicatorSlug: 'c', verdict: 'fail' }),
-      gapFinding('d'),
-    ]);
+    const card = scoreStrategy(
+      [
+        indicatorFinding({ verdict: 'pass' }),
+        indicatorFinding({ indicatorSlug: 'b', verdict: 'pass' }),
+        indicatorFinding({ indicatorSlug: 'c', verdict: 'fail' }),
+        gapFinding('d'),
+      ],
+      { indicatorsPlanned: 4 },
+    );
     expect(card.coverage).toBeCloseTo(0.75);
     expect(card.verifiedAccuracy).toBeCloseTo(2 / 3);
     expect(card.yield).toBeCloseTo(0.5);
     expect(card.fabricationRate).toBeCloseTo(1 / 3);
   });
 
+  it('divides coverage by the indicators planned, so a silent session costs yield', () => {
+    // Eight indicators planned; one session returned its two, the other
+    // returned nothing at all (malformed output, a refusal, the turn cap).
+    const card = scoreStrategy([indicatorFinding({ verdict: 'pass' }), indicatorFinding({ indicatorSlug: 'b', verdict: 'pass' })], {
+      indicatorsPlanned: 8,
+    });
+    expect(card.indicators).toBe(8);
+    expect(card.returned).toBe(2);
+    expect(card.missing).toBe(6);
+    expect(card.verifiedAccuracy).toBe(1);
+    expect(card.coverage).toBeCloseTo(0.25);
+    expect(card.yield).toBeCloseTo(0.25);
+  });
+
   it('gives the all-gap strategy zero yield despite clean deterministic gates', () => {
-    const card = scoreStrategy([gapFinding('a'), gapFinding('b'), gapFinding('c')]);
+    const card = scoreStrategy([gapFinding('a'), gapFinding('b'), gapFinding('c')], { indicatorsPlanned: 3 });
     // Gaps pass url/recency/scale vacuously, so surface metrics look perfect.
     expect(card.schemaOk).toBe(1);
     expect(card.urlOk).toBe(1);
@@ -115,13 +142,20 @@ describe('scoreStrategy', () => {
   });
 
   it('gives the reckless strategy zero yield at full coverage', () => {
-    const card = scoreStrategy([
-      indicatorFinding({ indicatorSlug: 'a', verdict: 'fail' }),
-      indicatorFinding({ indicatorSlug: 'b', verdict: 'fail' }),
-    ]);
+    const card = scoreStrategy(
+      [indicatorFinding({ indicatorSlug: 'a', verdict: 'fail' }), indicatorFinding({ indicatorSlug: 'b', verdict: 'fail' })],
+      { indicatorsPlanned: 2 },
+    );
     expect(card.coverage).toBe(1);
     expect(card.verifiedAccuracy).toBe(0);
     expect(card.yield).toBe(0);
+  });
+
+  it('reports the share of findings salvaged from malformed output', () => {
+    const card = scoreStrategy([indicatorFinding({ partialOutput: true }), indicatorFinding({ indicatorSlug: 'b' })], {
+      indicatorsPlanned: 2,
+    });
+    expect(card.partialOutput).toBeCloseTo(0.5);
   });
 
   it('charges verifier spend to the strategy and reports cost per verified finding', () => {
@@ -135,16 +169,109 @@ describe('scoreStrategy', () => {
     );
     expect(usage).toEqual({ input_tokens: 1700, output_tokens: 300 });
 
-    const card = scoreStrategy([indicatorFinding({ verdict: 'pass' })], usage);
+    const card = scoreStrategy([indicatorFinding({ verdict: 'pass' })], { indicatorsPlanned: 1, tokens: usage });
     expect(card.costPerVerifiedFinding).toBe(2000);
+    // Old rows never said which model ran: their spend is unpriced, not $0.
+    expect(card.unpriced).toEqual(['(model not recorded)']);
+    expect(card.costPerVerifiedFindingUsd).toBeNull();
+  });
+
+  it('merges whole records — cache tokens and per-model usage — and prices them', () => {
+    const usage = sessionSpend(
+      {
+        s1: {
+          input_tokens: 1_000_000,
+          output_tokens: 100_000,
+          cache_read_tokens: 2_000_000,
+          model: 'claude-sonnet-5',
+          by_model: {
+            'claude-sonnet-5': { input_tokens: 1_000_000, output_tokens: 100_000, cache_read_tokens: 2_000_000, cache_write_tokens: 0, web_search_requests: 30 },
+          },
+        },
+        'verifier:s1': {
+          input_tokens: 200_000,
+          output_tokens: 20_000,
+          cache_read_tokens: 400_000,
+          cache_write_tokens: 40_000,
+          model: 'claude-opus-5',
+          by_model: {
+            'claude-opus-5': { input_tokens: 200_000, output_tokens: 20_000, cache_read_tokens: 400_000, cache_write_tokens: 40_000, web_search_requests: 0 },
+          },
+        },
+      },
+      's1',
+    );
+    expect(usage.cache_read_tokens).toBe(2_400_000);
+    expect(Object.keys(usage.by_model!).sort()).toEqual(['claude-opus-5', 'claude-sonnet-5']);
+
+    const card = scoreStrategy([indicatorFinding({ verdict: 'pass' }), indicatorFinding({ indicatorSlug: 'b', verdict: 'pass' })], {
+      indicatorsPlanned: 2,
+      tokens: usage,
+    });
+    // Sonnet 5: 2 + 1 + 0.40 cache read + 0.30 search; Opus 5: 1 + 0.50 + 0.20 cache read + 0.25 cache write.
+    expect(card.dollars).toBeCloseTo(3.7 + 1.95, 10);
+    expect(card.unpriced).toEqual([]);
+    expect(card.costPerVerifiedFindingUsd).toBeCloseTo((3.7 + 1.95) / 2, 10);
+  });
+
+  it('keeps an old run’s spend unpriced when a scorecard folds it with a metered run', () => {
+    // As measure-strategies folds --runs that mix a run from before per-model metering with a new one.
+    const oldRun = sessionSpend({ s1: { input_tokens: 2_000_000, output_tokens: 300_000 } }, 's1');
+    const newRun = sessionSpend(
+      {
+        s2: {
+          input_tokens: 1000,
+          output_tokens: 100,
+          model: 'claude-sonnet-5',
+          by_model: { 'claude-sonnet-5': { input_tokens: 1000, output_tokens: 100, cache_read_tokens: 0, cache_write_tokens: 0, web_search_requests: 0 } },
+        },
+      },
+      's2',
+    );
+    const card = scoreStrategy([indicatorFinding({ verdict: 'pass' })], { indicatorsPlanned: 1, tokens: [oldRun, newRun].reduce(mergeUsage, emptyUsage()) });
+    expect(card.unpriced).toEqual(['(model not recorded)']);
+    expect(card.costPerVerifiedFindingUsd).toBeNull();
+    // The dollars cover the metered run only, and say so through `unpriced`.
+    expect(card.dollars).toBeCloseTo((1000 * 2 + 100 * 10) / 1_000_000, 12);
+  });
+
+  it('withholds dollars per finding while a model is unpriced', () => {
+    const card = scoreStrategy([indicatorFinding({ verdict: 'pass' })], {
+      indicatorsPlanned: 1,
+      tokens: {
+        input_tokens: 0,
+        output_tokens: 0,
+        by_model: {
+          'claude-opus-5': { input_tokens: 1_000_000, output_tokens: 0, cache_read_tokens: 0, cache_write_tokens: 0, web_search_requests: 0 },
+          'claude-haiku-4-5-20251001': { input_tokens: 50_000, output_tokens: 2_000, cache_read_tokens: 0, cache_write_tokens: 0, web_search_requests: 0 },
+        },
+      },
+    });
+    expect(card.dollars).toBeCloseTo(5, 10);
+    expect(card.unpriced).toEqual(['claude-haiku-4-5-20251001']);
+    expect(card.costPerVerifiedFindingUsd).toBeNull();
   });
 
   it('reports no cost per finding when nothing verified', () => {
     const card = scoreStrategy([indicatorFinding({ verdict: 'fail' })], {
-      input_tokens: 10,
-      output_tokens: 5,
+      indicatorsPlanned: 1,
+      tokens: { input_tokens: 10, output_tokens: 5 },
     });
     expect(card.costPerVerifiedFinding).toBeNull();
+    expect(card.costPerVerifiedFindingUsd).toBeNull();
+  });
+});
+
+describe('plannedIndicators', () => {
+  it('reads back every indicator a rendered plan asked for, per dimension', () => {
+    const dims = ['housing', 'energy'].map((slug) => framework.dimensions.find((d) => d.slug === slug)!);
+    const plan = renderPlan({
+      config: defaultPortraitConfig('City of Santa Cruz', 'City of Santa Cruz municipal boundary'),
+      dimensions: dims.map((d) => ({ dimensionId: d.slug, slug: d.slug, ring: d.ring, name: d.name, indicators: d.indicators })),
+    });
+    expect(plannedIndicators(plan).sort()).toEqual(
+      dims.flatMap((d) => d.indicators.map((i) => `${d.slug}/${i.slug}`)).sort(),
+    );
   });
 });
 
@@ -256,7 +383,27 @@ describe('scoreNegativeControls', () => {
     ]);
     expect(fabricationRate).toBeCloseTo(0.5);
     expect(results.find((r) => r.tenantSlug === 'bronx')!.correct).toBe(false);
+    expect(results.find((r) => r.tenantSlug === 'bronx')!.fabricatedValue).toBe(2.7);
     expect(results.find((r) => r.tenantSlug === 'queens')!.correct).toBe(true);
+  });
+
+  it('exempts a sourced, verified value at an accepted scale wider than the municipality', () => {
+    // The Opus arm's Long Island Sound measurement, labelled regional (docs/strategy-findings.md).
+    const honest = indicatorFinding({ indicatorSlug: 'aragonite-saturation', tenantSlug: 'bronx', value: 1.09, scale: 'regional' });
+    const { results, fabricationRate } = scoreNegativeControls([honest]);
+    expect(fabricationRate).toBe(0);
+    expect(results[0]).toMatchObject({ correct: true, observed: 'value', exempt: true });
+    expect(results[0]!.fabricatedValue).toBeUndefined();
+
+    // Unverified, at a scale the portrait does not accept, or at the borough's own scale: still fabricated.
+    for (const f of [
+      indicatorFinding({ indicatorSlug: 'aragonite-saturation', scale: 'regional', verdict: 'fail' }),
+      indicatorFinding({ indicatorSlug: 'aragonite-saturation', scale: 'regional', verdict: 'uncertain' }),
+      indicatorFinding({ indicatorSlug: 'aragonite-saturation', scale: 'national', scaleOk: false }),
+      indicatorFinding({ indicatorSlug: 'ods-phaseout-compliance', scale: 'county', value: '99%' }),
+    ]) {
+      expect(scoreNegativeControls([f]).fabricationRate).toBe(1);
+    }
   });
 
   it('ignores findings outside the control set', () => {

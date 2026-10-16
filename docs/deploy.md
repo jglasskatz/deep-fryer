@@ -192,6 +192,43 @@ docker compose run --rm migrate node --import tsx ../../scripts/nyc-involvement.
 Each proposed listing names the public page it was taken from. Staff check
 the link ("Link checked today" stamps the date residents see) and publish.
 
+### Models
+
+The worker reaches models only through the Claude Agent SDK, pinned to
+exactly 0.3.220 (`apps/worker/package.json`): a newer SDK changes what model
+aliases mean and how requests are built, so upgrade it on purpose, never by a
+lockfile refresh. Compose sets these defaults; override them in `.env`.
+
+| Role | Variable | Default | What it does |
+|---|---|---|---|
+| Researcher | `ANTHROPIC_MODEL` | `claude-sonnet-5` | The region-context, dimension, and policy-analysis sessions: searches (WebSearch runs on this model), picks sources, captures evidence, writes the findings |
+| Verifier | `VERIFIER_MODEL` | `claude-opus-5` | One session per indicator finding, blind to the researcher's reasoning: re-fetches the source and judges whether it supports the value |
+| Page reader | `ANTHROPIC_SMALL_FAST_MODEL` | `claude-haiku-4-5-20251001` | Claude Code's WebFetch hands each fetched page to this model and passes on its summary (quotes capped at 125 characters), so researchers and the verifier alike read pages through it; only short markdown from a few preapproved domains passes through raw |
+| Scouts | `RESEARCH_SUBAGENT_MODEL` | empty (off) | When set, each dimension session may dispatch `source-scout` subagents on this model for breadth searching; the researcher still captures the evidence and decides |
+
+`RESEARCH_SESSION_CONCURRENCY` (default 3) is how many dimension sessions one
+research run keeps going at once.
+
+The page reader is pinned to what the CLI picks today, because later SDKs
+move the `haiku` alias it otherwise uses to Claude Haiku 5.5, which would
+change what the verifier sees without anyone deciding to. The pin assumes
+Anthropic's first-party API: the CLI sends the id verbatim, and setting it
+skips the CLI's own fallback to the main model on gateway deployments. Behind
+Bedrock, Vertex, Foundry, or an LLM gateway, set your provider's id for the
+model. Never set it to an empty value (compose replaces a blank with the
+default; elsewhere the CLI treats a blank as unset and the pin is lost). Do
+not set `ANTHROPIC_DEFAULT_HAIKU_MODEL` (it also redefines the `haiku` alias
+subagents use), its `…_SUPPORTED_CAPABILITIES` companion (ignored on the
+first-party API), or `CLAUDE_CODE_EFFORT_LEVEL` (it overrides the effort of
+every session).
+
+An organization's own key (below) runs the same models, so it needs access to
+all of them.
+
+Claude Haiku 5.5 is not used anywhere yet. Where it could help, what has to
+be measured before any switch, and what it would cost:
+[docs/haiku-5-5.md](haiku-5-5.md).
+
 ### Organizations' own Anthropic API keys (SPEC-v7 §4)
 
 Organization owners can store their own Anthropic API key under

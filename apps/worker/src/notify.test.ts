@@ -7,6 +7,7 @@ const base: RunSummary = {
   tenantSlug: 'bronx',
   runId: 'run-1',
   status: 'complete',
+  funding: 'plan',
   sessions: 22,
   failedSessions: 0,
   findings: 30,
@@ -42,6 +43,23 @@ describe('composeRunEmail', () => {
     expect(e.text).toContain('7 of 7 sessions did not complete');
     expect(e.text).toContain('No findings were recorded');
     expect(e.text).not.toContain('Findings recorded before the failure');
+  });
+
+  it('points at the organization’s own key, not an administrator, when the run used it', () => {
+    const nothing = composeRunEmail({ ...base, funding: 'organization_key', status: 'failed', findings: 0, failedSessions: 7, sessions: 7 }, all, 'https://x')!;
+    expect(nothing.text).toContain("This run used your organization's own Anthropic API key, so none of it is counted against your plan.");
+    expect(nothing.text).toContain('check that key first');
+    expect(nothing.text).toContain('an organization owner can replace the key under Billing');
+    // The administrator comes in only for the one reason that can be the
+    // service's own setting (a model id the API did not find), and only after the key.
+    expect(nothing.text).toContain("If the transcript says the model setting may be wrong instead, pass it on to your administrator.");
+    expect(nothing.text.indexOf('administrator')).toBeGreaterThan(nothing.text.indexOf('check that key first'));
+    expect(nothing.text).not.toMatch(/ask your administrator to check the research service configuration/);
+
+    const some = composeRunEmail({ ...base, funding: 'organization_key', status: 'failed', failedSessions: 3 }, all, 'https://x')!;
+    expect(some.text).toContain('Findings recorded before the failure (30) are in the review queue.');
+    expect(some.text).toContain("each failed session's transcript says why");
+    expect(some.text).not.toMatch(/administrator/);
   });
 });
 

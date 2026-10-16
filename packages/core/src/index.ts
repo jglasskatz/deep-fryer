@@ -15,3 +15,4 @@ export * from './emergency.js';
 export * from './involvement.js';
 export * from './features.js';
 export * from './research-cost.js';
+export * from './model-pricing.js';

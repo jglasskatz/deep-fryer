@@ -218,7 +218,7 @@ Document all four in:
 
 **Caveat on the pin.** The CLI sends this value verbatim (its id mapper is the identity function), and setting it skips the CLI's fallback to the main model on gateway deployments. The pin therefore assumes a first-party API deployment, which is the only kind the repo documents.
 - A deployment routed through Bedrock, Vertex, Foundry or an LLM gateway must set its provider's own id.
-- An empty value breaks WebFetch, and compose's `:-` form cannot unset the variable.
+- An empty value does not break WebFetch on CLI 0.3.220: the CLI treats `''` as unset and falls back to its built-in Haiku default, so the pin is silently lost. Compose's `:-` form supplies the default for an unset or empty variable, so the worker never receives it blank.
 
 **`apps/worker/package.json:15`:** change `"^0.3.220"` to `"0.3.220"`, then run `pnpm install` to update the importer specifier. The resolved version does not change. Any SDK bump should be a deliberate decision (§8).
 
