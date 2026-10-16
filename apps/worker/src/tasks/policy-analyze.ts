@@ -22,7 +22,7 @@ import {
 } from '@deep-fryer/db';
 import { policyJobKey, type PolicyJobPayload } from '@deep-fryer/research';
 import { portraitFeatures } from '../features.js';
-import { OrgKeyUnavailableError, orgApiKeyForTenant } from '../org-key.js';
+import { OrgKeyUnavailableError, sessionApiKey } from '../org-key.js';
 import { extractJson, runSessionWithRetry } from '../session.js';
 import { send, type ComposedEmail } from '../notify.js';
 
@@ -35,13 +35,15 @@ import { send, type ComposedEmail } from '../notify.js';
  * a measured wedge share one scale. Nothing here is ever published — the
  * result lives in the staff plane, labeled as a projection.
  *
- * Billing: the analysis was counted as one research session when it was
- * queued (apps/web/lib/policy-actions.ts, under the subscription lock).
- * Settling it as failed releases that session, because
+ * Billing: the research gate decided who pays when the analysis was queued
+ * (apps/web/lib/policy-actions.ts, under the subscription lock) and stored it
+ * on the row as `funding`. A plan-funded analysis was counted as one research
+ * session then; settling it as failed releases that session, because
  * researchSessionsUsed() skips failed analyses — so every failure path below
  * must end in status 'failed', never leave the row queued or running. The
  * one path this task cannot see — a job that never runs at all — is the
- * policy_sweep task's (policySweep, below).
+ * policy_sweep task's (policySweep, below). The session runs on the key
+ * `funding` names (org-key.ts sessionApiKey), not on whatever is on file now.
  *
  * Exports for the worker's task list (apps/worker/src/index.ts):
  * policyAnalyze as POLICY_TASK, and policySweep as POLICY_SWEEP_TASK on the
@@ -106,6 +108,7 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
       title: policyAnalyses.title,
       brief: policyAnalyses.brief,
       sourceUrl: policyAnalyses.sourceUrl,
+      funding: policyAnalyses.funding,
     });
   if (!analysis) {
     const [existing] = await db
@@ -140,15 +143,18 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
   let transcript: Buffer | null = null;
 
   try {
-    // Whose key the session runs on (SPEC-v7 §4): the organization's own
-    // Anthropic API key when it has one, else the deployment's. A key on file
-    // that cannot be decrypted fails the analysis with a reason staff can act
-    // on — never a silent fall back to the deployment's key, because an
-    // analysis created while a key was on file was not checked against the
-    // plan's allowance (packages/db billing gateResearchSpend).
+    // Whose key the session runs on (SPEC-v7 §4), as the research gate
+    // decided when the analysis was created and stored in `funding`: the
+    // organization's own Anthropic API key for a key-funded analysis, the
+    // deployment's for a plan-funded one — even if a key has been added since,
+    // because the analysis was counted against the plan. A key-funded analysis
+    // whose key was removed since, or cannot be decrypted, fails with a reason
+    // staff can act on — never a silent fall back to the deployment's key,
+    // because it was not checked against the plan's allowance (packages/db
+    // billing gateResearchSpend).
     let apiKey: string | null;
     try {
-      apiKey = await orgApiKeyForTenant(db, analysis.tenantId);
+      apiKey = await sessionApiKey(db, analysis.tenantId, analysis.funding);
     } catch (err) {
       if (err instanceof OrgKeyUnavailableError) throw new AnalysisFailure(err.message);
       throw err;

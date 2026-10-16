@@ -189,6 +189,13 @@ async function score() {
   console.log(JSON.stringify(out, null, 2));
 }
 
+/**
+ * An operator's measurement run bypasses the billing gate on purpose: it is
+ * never applied (applied_at stays null), so no organization's allowance
+ * counts it, and it keeps research_runs.funding at its default 'plan', so the
+ * worker runs it on the deployment's key — never on the organization's own
+ * key, even if one is on file (migration 0012).
+ */
 async function enqueue() {
   const runId = arg('run');
   if (!runId) throw new Error('--run required');

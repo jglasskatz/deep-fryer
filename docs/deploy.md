@@ -200,6 +200,12 @@ and are not counted against the plan's session allowance (a plan, or the
 trial, is still needed). The key is checked with one Models API call, stored
 only as AES-256-GCM ciphertext, and shown afterwards by its last four
 characters; only the worker decrypts it, into the session's environment.
+Who pays is decided when a run is applied or an analysis is queued and is
+stored with it, so sessions started on the key never count against the
+allowance (even after the key is removed), and plan-funded work stays on
+`ANTHROPIC_API_KEY` if a key is added later. Work queued on a key that is
+removed before it starts fails with a message asking staff to start it again —
+it never runs on the deployment's key instead.
 
 To offer this, set `DF_SECRETS_KEY` (`openssl rand -base64 32`) in `.env` —
 compose passes it to web and worker, which must share it — and

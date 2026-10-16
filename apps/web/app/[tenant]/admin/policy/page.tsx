@@ -6,7 +6,7 @@ import { UsageMeter } from '@/components/billing/UsageMeter';
 import { NewPolicyForm } from '@/components/policy/NewPolicyForm';
 import { PolicyStatusBadge } from '@/components/policy/PolicyStatusBadge';
 import { requireAdminPage } from '@/lib/admin-guard';
-import { billingSummary, type BillingSummary } from '@/lib/billing';
+import { billingSummary, previewResearchSpend, type BillingSummary } from '@/lib/billing';
 import { getPolicyAnalysis, listPolicyAnalyses } from '@/lib/policy';
 import { requireFeature } from '@/lib/features';
 import { safeHref } from '@/lib/safe-url';
@@ -30,12 +30,16 @@ function hostOf(url: string): string {
 /**
  * Why the form cannot start an analysis right now, or null. The server
  * action re-checks under the subscription lock; this only spares staff a
- * round trip when the answer is already known.
+ * round trip when the answer is already known. With the organization's own
+ * API key on file the analysis would run on that key and the allowance is not
+ * checked (the gate's own rule, previewResearchSpend), so a spent allowance
+ * does not block the form then.
  */
 function blockedReason(billing: BillingSummary): string | null {
   if (!billing.limits || billing.blockedMessage) {
     return billing.blockedMessage ?? 'Research is not available on this plan.';
   }
+  if (previewResearchSpend(billing, POLICY_ANALYSIS_SESSIONS).allowed) return null;
   const remaining = billing.limits.researchSessions - billing.usage.researchSessions;
   if (remaining >= POLICY_ANALYSIS_SESSIONS) return null;
   const renews = billing.subscription!.currentPeriodEnd.toISOString().slice(0, 10);
@@ -99,6 +103,9 @@ export default async function PolicyPage({
             Each analysis uses {sessions} from the same allowance
             as research runs, shared across every portrait in the organization. Failed analyses are
             not counted.
+            {billing.apiKey
+              ? ' While the organization’s own API key is on file, analyses run on that key and are not counted.'
+              : ''}
           </p>
         </section>
 

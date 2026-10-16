@@ -47,6 +47,9 @@ export default async function ResearchPage({
           <p className="mt-1 text-xs text-[color:var(--color-muted)]">
             Planning is free. Sessions count when a run is applied; failed sessions are not
             counted. Shared across every portrait in the organization.
+            {billing.apiKey
+              ? ' While the organization’s own API key is on file, runs use that key and are not counted.'
+              : ''}
           </p>
         </section>
 

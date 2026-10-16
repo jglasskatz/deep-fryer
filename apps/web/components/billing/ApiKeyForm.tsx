@@ -52,7 +52,7 @@ export function ApiKeyForm({
               onClick={() => {
                 if (
                   !window.confirm(
-                    'Remove this API key? Research started from now on runs on your plan and counts against its session allowance.',
+                    'Remove this API key? Research started from now on runs on your plan and counts against its session allowance. Research already queued on this key that has not started will not run; it can be started again.',
                   )
                 ) {
                   return;

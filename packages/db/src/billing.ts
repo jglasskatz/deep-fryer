@@ -12,6 +12,7 @@ import {
   organizationMembers,
   organizations,
   policyAnalyses,
+  researchFundingEnum,
   researchRuns,
   subscriptions,
   tenantMembers,
@@ -55,16 +56,51 @@ export async function lockSubscription(
 }
 
 /**
- * Research sessions consumed by an organization's runs applied in
- * [since, until). Runs still queued or running count their full planned
- * session list (a reservation); finished runs count only sessions that did
- * not fail — the customer never pays for our infrastructure failures.
+ * Research sessions of the plan's allowance an organization used in
+ * [since, until): its research runs applied in that window and its policy
+ * analyses created in it, counting only those the research gate funded from
+ * the plan (`funding = 'plan'`, stored on the row when the gate let it
+ * through — migration 0012). Runs still queued or running count their full
+ * planned session list (a reservation); finished runs count only sessions
+ * that did not fail — the customer never pays for our infrastructure
+ * failures. A policy analysis is one session unless it failed.
+ *
+ * Sessions paid for with the organization's own Anthropic API key are not
+ * part of this number, before or after the key is removed: they never ran on
+ * the plan (SPEC-v7 §4). researchSessionsOnOrganizationKey counts them, for
+ * the billing page.
  */
 export async function researchSessionsUsed(
   db: DbExecutor,
   organizationId: string,
   since: Date,
   until: Date,
+): Promise<number> {
+  return researchSessionsFunded(db, organizationId, since, until, 'plan');
+}
+
+/**
+ * Research sessions in [since, until) that ran (or are reserved to run) on
+ * the organization's own Anthropic API key — the same counting rules as
+ * researchSessionsUsed, for the other funding. Informational: no allowance
+ * applies to them; the billing page lists them next to the plan's meter.
+ */
+export async function researchSessionsOnOrganizationKey(
+  db: DbExecutor,
+  organizationId: string,
+  since: Date,
+  until: Date,
+): Promise<number> {
+  return researchSessionsFunded(db, organizationId, since, until, 'organization_key');
+}
+
+/** The count behind researchSessionsUsed and researchSessionsOnOrganizationKey, for one funding. */
+async function researchSessionsFunded(
+  db: DbExecutor,
+  organizationId: string,
+  since: Date,
+  until: Date,
+  funding: ResearchFunding,
 ): Promise<number> {
   const rows = await db
     .select({
@@ -80,6 +116,7 @@ export async function researchSessionsUsed(
     .where(
       and(
         eq(tenants.organizationId, organizationId),
+        eq(researchRuns.funding, funding),
         gte(researchRuns.appliedAt, since),
         lt(researchRuns.appliedAt, until),
       ),
@@ -93,6 +130,7 @@ export async function researchSessionsUsed(
     .where(
       and(
         eq(tenants.organizationId, organizationId),
+        eq(policyAnalyses.funding, funding),
         ne(policyAnalyses.status, 'failed'),
         gte(policyAnalyses.createdAt, since),
         lt(policyAnalyses.createdAt, until),
@@ -223,9 +261,10 @@ export async function deleteOrganizationApiKey(db: DbExecutor, organizationId: s
 /**
  * Who pays for a research spend (SPEC-v7 §4): the organization's own
  * Anthropic API key, or the plan's research-session allowance on the
- * deployment's key.
+ * deployment's key. The values of the `research_funding` column the decision
+ * is stored in (schema.ts researchFundingEnum), so the two cannot drift.
  */
-export type ResearchFunding = 'organization_key' | 'plan';
+export type ResearchFunding = (typeof researchFundingEnum.enumValues)[number];
 
 export interface ResearchGate {
   subscription: Subscription | null;
@@ -247,8 +286,13 @@ export interface ResearchGate {
  * - With a key on file, the sessions run on that key, so the plan's session
  *   allowance is not checked — that is the only thing a key waives
  *   (SPEC-v7 §4: "sessions are then not counted against a plan's allowance").
+ *   `used` is then reported as information only.
  * - Without one, the allowance is checked as always (core
  *   checkResearchQuota).
+ *
+ * `used` is the plan's usage (researchSessionsUsed: plan-funded sessions
+ * only), so sessions an organization paid for with its own key never eat
+ * into the allowance it falls back to once the key is removed.
  */
 export function decideResearchSpend(
   sub: Subscription | null,
@@ -279,11 +323,14 @@ export function decideResearchSpend(
  * two concurrent spends are decided one after the other. The rules are
  * decideResearchSpend's.
  *
- * Usage stays recorded per session as before: researchSessionsUsed counts
- * every run and analysis, whoever paid, because neither row records how it
- * was paid (the decision is in the audit entry of the apply or creation).
- * While a key is on file that count is informational; if the key is
- * removed, sessions already run in the period count toward the allowance.
+ * The caller must store the returned `funding` on the row it writes in the
+ * same transaction (research_runs.funding when the run is applied,
+ * policy_analyses.funding when the analysis is created — migration 0012).
+ * Everything downstream follows that stored decision, never the key on file
+ * later: researchSessionsUsed counts only 'plan' rows against the allowance,
+ * and the worker runs a 'plan' row on the deployment's key and an
+ * 'organization_key' row on the organization's key — failing it, never
+ * falling back, if that key has been removed or cannot be read by then.
  */
 export async function gateResearchSpend(
   tx: DbExecutor,

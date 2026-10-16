@@ -13,7 +13,8 @@ import { userDb } from './db';
 /**
  * Request additional research for one dimension from the insights surface.
  * Gated on the per-tenant `features.request_research` flag (SPEC §6 behavior
- * layer), editor role, and the organization's research quota (applyRun);
+ * layer), editor role, and the research gate (applyRun: the plan's quota, or
+ * the organization's own API key, which it records on the run);
  * plans a single-dimension run with the requester's note injected verbatim
  * (SPEC §8 Rerun) and enqueues it.
  */
@@ -46,12 +47,15 @@ export const requestResearch = action(async (input: {
     reviewerNotes: note ? { [dimension.id]: note } : undefined,
     requestedBy: auth.userId,
   });
-  await applyRun(tenant.id, run.id);
+  const applied = await applyRun(tenant.id, run.id);
 
   await audit(tenant.id, 'research_run', run.id, 'request_research', null, {
     dimension: dimension.slug,
     sessions: sessionCount,
     note: note || null,
+    // Who pays (SPEC-v7 §4), as on every other apply's audit entry: the
+    // organization's own key or the plan's allowance (also stored on the run).
+    funding: applied.funding,
   });
 
   revalidatePath('/o', 'layout');

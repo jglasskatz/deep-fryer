@@ -53,6 +53,14 @@ export const researchSessionKindEnum = pgEnum('research_session_kind', [
   'region_context',
   'dimension',
 ]);
+/**
+ * Who pays for a research spend (SPEC-v7 §4): the plan's session allowance on
+ * the deployment's key, or the organization's own Anthropic API key. Decided
+ * by the research gate (billing.ts gateResearchSpend) and stored on the run
+ * or analysis it let through (migration 0012); billing.ts ResearchFunding is
+ * this enum's value type.
+ */
+export const researchFundingEnum = pgEnum('research_funding', ['plan', 'organization_key']);
 export const moderationActionEnum = pgEnum('moderation_action', ['remove', 'restore', 'lock']);
 export const orgRoleEnum = pgEnum('org_role', ['owner', 'billing']);
 // Mirrors Stripe's subscription statuses so webhook sync is a straight copy;
@@ -299,6 +307,16 @@ export const researchRuns = pgTable('research_runs', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   /** Set when the run is handed to the worker: the moment it counts against the plan. */
   appliedAt: timestamp('applied_at', { withTimezone: true }),
+  /**
+   * Who pays for the run's sessions, as the research gate decided when the run
+   * was applied (apps/web/lib/research.ts applyRun, in the gate's transaction).
+   * The plan's allowance counts only 'plan' runs (billing.ts
+   * researchSessionsUsed), and the worker runs every session of the run —
+   * verifiers included — on the key this names, whatever is on file by then
+   * (apps/worker research-apply.ts). 'plan' until applied; the app role can
+   * neither set nor change it (migration 0012).
+   */
+  funding: researchFundingEnum('funding').notNull().default('plan'),
   completedAt: timestamp('completed_at', { withTimezone: true }),
   tokenUsage: jsonb('token_usage').$type<RunTokenUsage>(),
 }, (t) => ({
@@ -555,8 +573,9 @@ export const policyAnalysisStatusEnum = pgEnum('policy_analysis_status', [
 
 /**
  * A policy brief and its AI-drafted projected impacts — staff plane only.
- * Counts as one research session against the organization's plan while
- * queued, running, or complete (failed analyses are not billed).
+ * A plan-funded analysis counts as one research session against the
+ * organization's plan while queued, running, or complete (failed analyses
+ * are not billed); one funded by the organization's own key is not counted.
  */
 export const policyAnalyses = pgTable(
   'policy_analyses',
@@ -569,6 +588,14 @@ export const policyAnalyses = pgTable(
     brief: text('brief').notNull(),
     sourceUrl: text('source_url'),
     status: policyAnalysisStatusEnum('status').notNull().default('queued'),
+    /**
+     * Who pays for the session, as the research gate decided when the analysis
+     * was created (apps/web/lib/policy-actions.ts, in the gate's transaction).
+     * The plan's allowance counts only 'plan' analyses, and the worker runs the
+     * session on the key this names (apps/worker policy-analyze.ts). Written in
+     * the system context only; the app role reads it (migration 0012).
+     */
+    funding: researchFundingEnum('funding').notNull().default('plan'),
     /** Schema-validated model output (core policyAnalysisOutputSchema). */
     result: jsonb('result').$type<PolicyAnalysisOutput>(),
     /** Per-dimension projections re-scored with the published thresholds. */

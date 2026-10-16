@@ -136,7 +136,10 @@ export const saveApiKey = action(async (orgSlug: string, apiKey: string) => {
 /**
  * Remove the organization's key at once. Research applied from now on is
  * checked against the plan's allowance and runs on the deployment's key; a
- * run the worker has already started keeps the key it started with.
+ * run the worker has already started keeps the key it started with. Work the
+ * gate put on the key that has not started yet fails when the worker reaches
+ * it (apps/worker org-key.ts ORG_KEY_REMOVED) — it never moves onto the
+ * deployment's key, because it was never checked against the allowance.
  */
 export const removeApiKey = action(async (orgSlug: string) => {
   const org = await orgForOwner(orgSlug);

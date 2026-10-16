@@ -14,6 +14,7 @@ import {
   decideResearchSpend,
   organizationApiKeyInfo,
   portraitCount,
+  researchSessionsOnOrganizationKey,
   researchSessionsUsed,
   seatCount,
   subscriptionFor,
@@ -35,7 +36,14 @@ export interface BillingSummary {
   /** Human-readable reason research is unavailable, when it is. */
   blockedMessage: string | null;
   limits: Limits | null;
-  usage: { researchSessions: number; portraits: number; seats: number };
+  /**
+   * `researchSessions` is the plan's allowance used this period — plan-funded
+   * sessions only (packages/db researchSessionsUsed), the number the research
+   * gate checks. `researchSessionsOnKey` counts, by the same rules, sessions
+   * that ran or are reserved to run on the organization's own API key: no
+   * allowance applies to them, so pages list them apart from the meter.
+   */
+  usage: { researchSessions: number; researchSessionsOnKey: number; portraits: number; seats: number };
   /**
    * The organization's own Anthropic API key on file (SPEC-v7 §4) — its
    * hint and dates only; the ciphertext is never selected — or null.
@@ -46,8 +54,9 @@ export interface BillingSummary {
 export const billingSummary = cache(async (organizationId: string): Promise<BillingSummary> => {
   const db = systemDb();
   const sub = await subscriptionFor(db, organizationId);
-  const [researchSessions, portraits, seats, apiKey] = await Promise.all([
+  const [researchSessions, researchSessionsOnKey, portraits, seats, apiKey] = await Promise.all([
     sub ? researchSessionsUsed(db, organizationId, sub.currentPeriodStart, sub.currentPeriodEnd) : 0,
+    sub ? researchSessionsOnOrganizationKey(db, organizationId, sub.currentPeriodStart, sub.currentPeriodEnd) : 0,
     portraitCount(db, organizationId),
     seatCount(db, organizationId),
     organizationApiKeyInfo(db, organizationId),
@@ -59,7 +68,7 @@ export const billingSummary = cache(async (organizationId: string): Promise<Bill
     standing: s,
     blockedMessage: standingMessage(s.reason),
     limits: sub ? effectiveLimits(sub) : null,
-    usage: { researchSessions, portraits, seats },
+    usage: { researchSessions, researchSessionsOnKey, portraits, seats },
     apiKey,
   };
 });

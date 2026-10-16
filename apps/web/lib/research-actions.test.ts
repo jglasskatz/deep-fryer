@@ -4,7 +4,9 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
  * "Build my doughnut" and the research gate with an organization's own API
  * key (SPEC-v7 §4), against real Postgres as the dev-mode identity. The
  * queue is graphile-worker's and is stubbed for research runs; the gate,
- * the plan, and the run rows are the production code path.
+ * the plan, and the run rows are the production code path — including the
+ * gate's decision stored on the run or analysis (`funding`, migration 0012),
+ * which the allowance count and the worker follow.
  */
 const hasDb = Boolean(process.env.DATABASE_URL);
 const uniq = () => `t-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
@@ -74,6 +76,8 @@ describe.skipIf(!hasDb)('buildDoughnut and the organization-key gate', () => {
     expect(run!.status).toBe('planned');
     expect(run!.appliedAt).toBeInstanceOf(Date);
     expect(run!.plan.sessions).toHaveLength(22);
+    // The gate's decision is stored with the apply: this run is the plan's to count.
+    expect(run!.funding).toBe('plan');
     expect((await applyAudit())[0]!.after).toMatchObject({ sessions: 22, funding: 'plan', via: 'build_doughnut' });
 
     // A second click while the first run is queued would spend twice.
@@ -84,12 +88,35 @@ describe.skipIf(!hasDb)('buildDoughnut and the organization-key gate', () => {
 
   it('runs on the organization key past an allowance that could not hold it', async () => {
     const { buildDoughnut } = await import('./research-actions');
-    const { tenant, runs, applyAudit } = await portrait({ allowance: 5, withKey: true });
+    const m = await import('@deep-fryer/db');
+    const { org, tenant, runs, applyAudit } = await portrait({ allowance: 5, withKey: true });
 
     const res = await buildDoughnut({ tenantSlug: tenant.slug });
     expect(res).toMatchObject({ ok: true, data: { sessionCount: 22, funding: 'organization_key' } });
-    expect((await runs())[0]!.appliedAt).toBeInstanceOf(Date);
+    const [run] = await runs();
+    expect(run!.appliedAt).toBeInstanceOf(Date);
+    // Stored on the run, so the worker runs it on the key and the plan never counts it.
+    expect(run!.funding).toBe('organization_key');
     expect((await applyAudit())[0]!.after).toMatchObject({ funding: 'organization_key' });
+    const sub = await m.subscriptionFor(m.getDb(), org.id);
+    expect(await m.researchSessionsUsed(m.getDb(), org.id, sub!.currentPeriodStart, sub!.currentPeriodEnd)).toBe(0);
+  });
+
+  it('records who pays for a request for more research, on the run and in its audit entry', async () => {
+    const { requestResearch } = await import('./insight-actions');
+    const { setPortraitFeatures } = await import('./test-features');
+    const m = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const { tenant, runs } = await portrait({ allowance: 0, withKey: true });
+    await setPortraitFeatures(tenant.id, { request_research: true });
+
+    // One dimension: the region context plus its own session, past a spent allowance on the key.
+    const res = await requestResearch({ tenantSlug: tenant.slug, dimensionSlug: 'housing', note: 'Use the 2025 survey.' });
+    expect(res).toMatchObject({ ok: true, data: { sessionCount: 2 } });
+    const [run] = await runs();
+    expect(run!.funding).toBe('organization_key');
+    const [entry] = await m.getDb().select().from(m.auditLog).where(eq(m.auditLog.entityId, run!.id));
+    expect(entry).toMatchObject({ action: 'request_research', after: { funding: 'organization_key', sessions: 2 } });
   });
 
   it('refuses without a key when the allowance cannot hold the run, leaving nothing planned', async () => {
@@ -132,5 +159,8 @@ describe.skipIf(!hasDb)('buildDoughnut and the organization-key gate', () => {
       .from(m.auditLog)
       .where(eq(m.auditLog.entityId, id));
     expect(entry!.after).toMatchObject({ funding: 'organization_key' });
+    // …and on the analysis itself, which the worker and the allowance count follow.
+    const [analysis] = await m.getDb().select().from(m.policyAnalyses).where(eq(m.policyAnalyses.id, id));
+    expect(analysis!.funding).toBe('organization_key');
   });
 });

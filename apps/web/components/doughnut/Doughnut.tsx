@@ -26,7 +26,24 @@ export interface DoughnutProps {
   ariaLabel?: string;
   /** The reader's language (lib/i18n/doughnut.ts). */
   labels: DoughnutLabels;
+  /**
+   * Controlled selection (the portrait's core view, SPEC-v7 §2): the slug of
+   * the dimension to mark on the canvas, or null for none. When given, the
+   * canvas shows exactly this selection — see SELECTED_COLOUR. Left out
+   * (embeds, the family comparison), a click navigates away and the
+   * renderer's own click outline is all there is.
+   */
+  selectedSlug?: string | null;
 }
+
+/**
+ * The selected dimension's mark: the renderer's highlight (a level's colour),
+ * which fills the wedge and draws the label on a pill of this colour, so the
+ * mark shows even on a wedge with no size (a dimension inside the safe
+ * space). The Santa Cruz view's selection blue (#0066cc); white label text on
+ * it is 5.6:1. The status is always written out in the panel beside it.
+ */
+export const SELECTED_COLOUR = '#0066cc';
 
 /** The doughnut's own status words for a viz_level (-100…150 scale). */
 export function statusLabel(level: number | null, words: DoughnutLabels['level']): string {
@@ -44,8 +61,16 @@ export function statusLabel(level: number | null, words: DoughnutLabels['level']
  * (the canonical visual, SPEC.md §4). Social dimensions draw on the inner
  * ring, ecological on the outer; viz_level uses the -100..150 scale.
  */
-export function Doughnut({ social, ecological, size = 640, onSelect, ariaLabel, labels }: DoughnutProps) {
+export function Doughnut({ social, ecological, size = 640, onSelect, ariaLabel, labels, selectedSlug }: DoughnutProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const controlled = selectedSlug !== undefined;
+  // Bumped on every canvas click while controlled, to rebuild the renderer.
+  // The renderer keeps a click selection of its own (a blue outline that a
+  // second click toggles off) and has no API to set or clear it; a fresh
+  // renderer has none, so after any click the canvas shows the parent's
+  // selection and nothing else — including a click on the wedge already
+  // selected, which the parent keeps.
+  const [epoch, setEpoch] = useState(0);
   const [tooltip, setTooltip] = useState<{
     dim: DoughnutDimension;
     x: number;
@@ -87,6 +112,12 @@ export function Doughnut({ social, ecological, size = 640, onSelect, ariaLabel, 
         }
       },
       onSelect: (hit) => {
+        if (controlled) {
+          setEpoch((n) => n + 1);
+          // The panel now shows what the tooltip said; on a phone a tap
+          // leaves the tooltip up (there is no mouseleave), over the canvas.
+          setTooltip(null);
+        }
         onSelect?.(resolve(hit));
       },
     });
@@ -95,17 +126,27 @@ export function Doughnut({ social, ecological, size = 640, onSelect, ariaLabel, 
     // shortfall/overshoot wedges. Part of the canonical visual.
     renderer.setColours(2, 1, '#883251', '#E096C6');
 
-    for (const d of social) {
-      renderer.addDimension('inner', d.name, d.viz_level ?? 'NaN');
-    }
-    for (const d of ecological) {
-      renderer.addDimension('outer', d.name, d.viz_level ?? 'NaN');
-    }
+    // Every level in one redraw (addDimension redraws per call), inner ring
+    // then outer in display order, as before; the selected one highlighted.
+    renderer.setLevels([
+      ...social.map((d) => ({
+        type: 'inner' as const,
+        name: d.name,
+        level: d.viz_level ?? 'NaN',
+        colour: d.slug === selectedSlug ? SELECTED_COLOUR : null,
+      })),
+      ...ecological.map((d) => ({
+        type: 'outer' as const,
+        name: d.name,
+        level: d.viz_level ?? 'NaN',
+        colour: d.slug === selectedSlug ? SELECTED_COLOUR : null,
+      })),
+    ]);
 
     return () => {
       renderer.destroy();
     };
-  }, [social, ecological, size, byName, onSelect]);
+  }, [social, ecological, size, byName, onSelect, controlled, selectedSlug, epoch]);
 
   return (
     <div

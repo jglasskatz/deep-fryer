@@ -131,7 +131,11 @@ export const createPolicyAnalysis = action(
     // The gate is the one research apply uses (packages/db
     // gateResearchSpend): with the organization's own Anthropic API key on
     // file (SPEC-v7 §4) the session runs on that key and the allowance is not
-    // checked; good standing is required either way.
+    // checked; good standing is required either way. Its decision is stored
+    // on the analysis as `funding` (migration 0012) in the same insert, so it
+    // is fixed from the moment the analysis exists: only plan-funded analyses
+    // count against the allowance, and the worker runs the session on the key
+    // `funding` names, not on whatever key is on file when the job runs.
     const db = systemDb();
     const analysis = await db.transaction(async (tx) => {
       const org = await organizationForTenant(tx, tenant.id);
@@ -147,6 +151,7 @@ export const createPolicyAnalysis = action(
           brief: fields.brief,
           sourceUrl: fields.sourceUrl ?? null,
           status: 'queued',
+          funding: gate.funding,
           requestedBy: auth.userId,
         })
         .returning({ id: policyAnalyses.id });

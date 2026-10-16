@@ -126,6 +126,8 @@ describe.skipIf(!hasDb)('createPolicyAnalysis', () => {
       brief: BRIEF,
       sourceUrl: 'https://example.gov/cooling.pdf',
       requestedBy: DEV_USER_ID,
+      // No key on file: the gate funded it from the plan, and the row says so (migration 0012).
+      funding: 'plan',
     });
     const audit = await auditOf(tenant.id);
     expect(audit).toHaveLength(1);

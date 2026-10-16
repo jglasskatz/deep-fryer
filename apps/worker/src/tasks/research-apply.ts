@@ -23,7 +23,7 @@ import {
   type ApplyJobPayload,
 } from '@deep-fryer/research';
 import { closeEvidenceBrowser } from '../evidence.js';
-import { OrgKeyUnavailableError, orgApiKeyForTenant } from '../org-key.js';
+import { OrgKeyUnavailableError, sessionApiKey } from '../org-key.js';
 import { extractJson, runSession, runSessionWithRetry } from '../session.js';
 import { tenantStorage } from '../storage.js';
 import { notifyRunFinished } from '../notify.js';
@@ -36,13 +36,18 @@ import { settledRunStatus } from './run-status.js';
  * red-flagged findings, never dropped. Failed runs stay failed — reruns are
  * user-directed from review, not automatic.
  *
- * Paying for it (SPEC-v7 §4): when the portrait's organization has its own
- * Anthropic API key on file, every session of the run — research and
- * verifier alike — runs on that key; otherwise on the deployment's
- * ANTHROPIC_API_KEY. The key is looked up once, before the first session, so
- * a run never mixes the two. A key that is on file but cannot be decrypted
- * fails the run (OrgKeyUnavailableError) rather than quietly spending the
- * deployment's key on a run the plan's allowance never covered.
+ * Paying for it (SPEC-v7 §4): the research gate decided who pays when the
+ * run was applied and stored it on the run (`funding`, migration 0012); the
+ * worker follows that decision, not whatever key is on file now
+ * (org-key.ts sessionApiKey). A key-funded run runs every session — research
+ * and verifier alike — on the organization's own Anthropic API key; a
+ * plan-funded run runs on the deployment's ANTHROPIC_API_KEY, even if the
+ * organization has added a key since (the run was counted against the plan).
+ * The key is resolved once, before the first session, so a run never mixes
+ * the two. A key-funded run whose key was removed after it was queued, or
+ * cannot be decrypted, fails (OrgKeyUnavailableError) with the reason on
+ * every planned session, rather than quietly spending the deployment's key on
+ * a run the plan's allowance never covered.
  */
 export const researchApply: Task = async (rawPayload, helpers) => {
   const { runId } = rawPayload as ApplyJobPayload;
@@ -92,8 +97,9 @@ export const researchApply: Task = async (rawPayload, helpers) => {
   };
 
   try {
-    // First, before anything else can fail or spend: whose key this run uses.
-    const apiKey = await orgApiKeyForTenant(db, run.tenantId);
+    // First, before anything else can fail or spend: whose key this run uses,
+    // as the gate decided when the run was applied.
+    const apiKey = await sessionApiKey(db, run.tenantId, run.funding);
     if (apiKey) {
       // The hint (last four characters) is what the billing page shows; never more.
       helpers.logger.info(`run ${runId}: running on the organization's own Anthropic API key (…${keyHint(apiKey)})`);
@@ -274,13 +280,14 @@ export const researchApply: Task = async (rawPayload, helpers) => {
 };
 
 /**
- * A run that could not start — the organization's key is on file but
- * unreadable — still tells staff why. Each planned session gets a failed
- * row whose transcript is the reason, in the shape a session that errored
- * records (session.ts runSessionWithRetry: `{"type":"session_error",…}`).
- * So the run page lists every dimension as failed, the run-finished email
- * counts them, owners who download a transcript read the message, and —
- * failed sessions being free — nothing is counted against the plan.
+ * A key-funded run that could not start — the organization's key was removed
+ * after the run was queued, or is on file but unreadable — still tells staff
+ * why. Each planned session gets a failed row whose transcript is the reason,
+ * in the shape a session that errored records (session.ts
+ * runSessionWithRetry: `{"type":"session_error",…}`). So the run page lists
+ * every dimension as failed, the run-finished email counts them, owners who
+ * download a transcript read the message, and — failed sessions being free,
+ * and key-funded ones never counted — nothing is counted against the plan.
  */
 async function failPlannedSessions(db: DbExecutor, run: ResearchRun, message: string): Promise<void> {
   const dims = await db
@@ -332,7 +339,8 @@ async function runVerifier(
       // researcher's model — a constant, maximally-skeptical judge, so strategy
       // comparisons measure the researcher, never the leniency of its grader.
       model: process.env.VERIFIER_MODEL ?? 'claude-opus-5',
-      // Verifiers are part of the run's spend: the same key as its researchers.
+      // Verifiers are part of the run's spend: the same key as its researchers,
+      // which is the run's stored funding (the deployment's key when apiKey is null).
       ...(apiKey ? { apiKey } : {}),
     });
     acc.input_tokens += result.usage.input_tokens;

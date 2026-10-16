@@ -105,8 +105,17 @@ export async function createPlannedRun(input: {
  * The gate is packages/db gateResearchSpend, shared with policy analyses:
  * when the organization has its own Anthropic API key on file (SPEC-v7 §4)
  * the session allowance is not checked — the run will execute on that key —
- * but good standing still is. The returned run carries `funding`, which of
- * the two paid, for the caller's audit entry.
+ * but good standing still is. Its decision is stamped on the run as
+ * `funding` in the same update as applied_at, so it is recorded exactly when
+ * the run starts to count: the allowance counts only plan-funded runs, and
+ * the worker runs every session on the key `funding` names, whatever key is
+ * on file by the time the run starts (apps/worker research-apply.ts).
+ *
+ * Every path in the app that starts a run — the research page, "Build my
+ * doughnut", a request for more research — comes through here. The returned
+ * run carries `funding` for the caller's audit entry. If the enqueue fails,
+ * only applied_at is cleared: an unapplied run counts nowhere, whatever its
+ * funding says, and the next apply decides funding afresh.
  */
 export async function applyRun(tenantId: string, runId: string) {
   // System context: the quota is organization-wide (runs on portraits this
@@ -131,10 +140,10 @@ export async function applyRun(tenantId: string, runId: string) {
 
     const [applied] = await tx
       .update(researchRuns)
-      .set({ appliedAt: new Date() })
+      .set({ appliedAt: new Date(), funding: gate.funding })
       .where(eq(researchRuns.id, row.id))
       .returning();
-    return { ...applied!, funding: gate.funding };
+    return applied!;
   });
 
   try {
