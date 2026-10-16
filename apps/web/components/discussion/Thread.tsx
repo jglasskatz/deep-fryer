@@ -72,7 +72,7 @@ export function Thread({
       {canPost ? (
         <div className="mt-4">
           <textarea
-            className="w-full rounded border border-black/20 px-3 py-2 text-sm"
+            className="w-full rounded border border-field-border px-3 py-2 text-sm"
             rows={3}
             aria-label={labels.title}
             placeholder={labels.placeholder}
@@ -265,8 +265,12 @@ function CommentItem({
               >
                 <span aria-hidden>▲</span>
               </button>
-              <span className="font-medium" aria-label={fmt(labels.score, { n: c.score })}>
-                {c.score}
+              {/* The score's wording is real (visually hidden) text, not an aria-label: a name
+                  on a plain span is prohibited in ARIA 1.2, and screen readers read only the
+                  bare number between the two vote buttons. */}
+              <span className="font-medium">
+                <span aria-hidden>{c.score}</span>
+                <span className="sr-only">{fmt(labels.score, { n: c.score })}</span>
               </span>
               <button
                 className={`rounded px-1.5 py-0.5 ${c.myVote === -1 ? 'bg-black text-white' : 'border hover:bg-black/5'}`}
@@ -326,7 +330,7 @@ function CommentItem({
         {replyOpen ? (
           <div className="mt-3">
             <textarea
-              className="w-full rounded border border-black/20 px-2 py-1 text-sm"
+              className="w-full rounded border border-field-border px-2 py-1 text-sm"
               rows={2}
               aria-label={labels.replyLabel}
               value={replyBody}

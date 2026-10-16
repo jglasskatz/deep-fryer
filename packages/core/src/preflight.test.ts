@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { parseDisabledFeatures } from './features.js';
 import {
   alertCheckTargets,
+  appRoleVerdict,
   disabledFeaturesVerdict,
   oauthCredentialVerdict,
   storedApiKeysVerdict,
@@ -83,5 +84,24 @@ describe('preflight verdicts', () => {
     const lost = storedApiKeysVerdict(2, false);
     expect(lost.status).toBe('warn');
     expect(lost.detail).toMatch(/2 organization\(s\).*DF_SECRETS_KEY is not set/);
+  });
+
+  it('fails a database restored without its roles even after the role is created by hand', () => {
+    const migrated = { exists: true, bypass: false, member: true, readsTenants: true, insertGuard: true, ownerLockPublic: false };
+    expect(appRoleVerdict(migrated).status).toBe('pass');
+    // A plain pg_restore into a cluster without the roles.
+    const restored = appRoleVerdict({ exists: false, bypass: null, member: null, readsTenants: null, insertGuard: false, ownerLockPublic: true });
+    expect(restored.status).toBe('fail');
+    expect(restored.detail).toContain('restore again into a fresh database');
+    // The same database after CREATE ROLE deep_fryer_app ...; GRANT deep_fryer_app TO deep_fryer:
+    // the old check passed it (exists, no BYPASSRLS, assumable) while every portrait page was a 500.
+    const patched = appRoleVerdict({ ...migrated, readsTenants: false, insertGuard: false, ownerLockPublic: true });
+    expect(patched.status).toBe('fail');
+    expect(patched.detail).toContain('cannot read tenants');
+    expect(patched.detail).toContain('research_runs_app_insert_planned');
+    expect(patched.detail).toContain('PUBLIC can execute lock_tenant_owners');
+    expect(appRoleVerdict({ ...migrated, ownerLockPublic: null }).detail).toContain('lock_tenant_owners missing');
+    expect(appRoleVerdict({ ...migrated, bypass: true }).detail).toContain('BYPASSRLS');
+    expect(appRoleVerdict({ ...migrated, member: false }).detail).toContain('cannot SET ROLE');
   });
 });

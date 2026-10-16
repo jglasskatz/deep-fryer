@@ -43,6 +43,57 @@ export function storedApiKeysVerdict(keysOnFile: number, secretsKeySet: boolean)
 }
 
 /**
+ * What the preflight reads about the row-level-security role (SPEC-v4 §6).
+ * The privilege fields are null when the object they ask about does not
+ * exist, since Postgres refuses to evaluate a privilege on a missing role or
+ * function.
+ */
+export type AppRoleFacts = {
+  /** deep_fryer_app exists (migration 0005). */
+  exists: boolean;
+  bypass: boolean | null;
+  /** The connecting user may SET ROLE deep_fryer_app. */
+  member: boolean | null;
+  /** deep_fryer_app may read tenants: 0005's table grants are in place. */
+  readsTenants: boolean | null;
+  /** The restrictive research_runs_app_insert_planned policy exists (0013). */
+  insertGuard: boolean;
+  /** PUBLIC may execute lock_tenant_owners (0014 revokes it); null when the function is missing. */
+  ownerLockPublic: boolean | null;
+};
+
+/**
+ * The role every user-driven query runs as. Its existence alone proves
+ * little: pg_dump carries no roles, so restoring a dump into a cluster
+ * without deep_fryer_app drops every object the dump ties to the role — its
+ * grants, the restrictive research_runs insert policy, and the REVOKE that
+ * keeps lock_tenant_owners from PUBLIC (restored in the same entry as its
+ * GRANT) — while the migration journal comes back complete, so migrate
+ * re-creates none of them. Creating the role afterwards then passes an
+ * existence check while every portrait page is a 500 (permission denied for
+ * table tenants). Each of those losses is checked here by name, and the fix
+ * names the only repair: restore again into a fresh database after creating
+ * the roles (docs/deploy.md §6, Restore).
+ */
+export function appRoleVerdict(f: AppRoleFacts): Verdict {
+  const restoreFix = 'create the roles and restore again into a fresh database (docs/deploy.md §6, Restore)';
+  if (!f.exists) {
+    return { status: 'fail', detail: `role deep_fryer_app missing: migration 0005 creates it, a pg_dump restore does not — ${restoreFix}` };
+  }
+  if (f.bypass) return { status: 'fail', detail: 'deep_fryer_app has BYPASSRLS — policies would not apply' };
+  if (!f.member) return { status: 'fail', detail: 'the connecting user cannot SET ROLE deep_fryer_app' };
+  const lost = [
+    !f.readsTenants && 'deep_fryer_app cannot read tenants (its grants are missing)',
+    !f.insertGuard && 'policy research_runs_app_insert_planned missing',
+    f.ownerLockPublic === null && 'function lock_tenant_owners missing',
+    f.ownerLockPublic === true && 'PUBLIC can execute lock_tenant_owners',
+  ].filter((problem): problem is string => Boolean(problem));
+  return lost.length
+    ? { status: 'fail', detail: `${lost.join('; ')} — the database was restored before its roles existed; ${restoreFix}` }
+    : { status: 'pass', detail: 'deep_fryer_app exists, NOBYPASSRLS, assumable, granted; insert policy and function ACL in place' };
+}
+
+/**
  * Which portraits' NWS alerts the preflight checks: those the worker polls —
  * the emergency view on (the portrait's setting, under the deployment's kill
  * switch, resolved as the worker resolves it) and zones configured. A portrait

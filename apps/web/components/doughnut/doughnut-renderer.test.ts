@@ -44,18 +44,26 @@ function stubCanvas() {
   const drawn: Drawn[] = [];
   const listeners: Record<string, (e: { clientX: number; clientY: number }) => void> = {};
   let textSize = 13;
+  /** The context's scale (setTransform), applied to paths as a browser applies its transform. */
+  let scale = 1;
   const ctx = new Proxy<Record<string | symbol, unknown>>(
     {
       createRadialGradient: () => ({ addColorStop() {} }),
       getLineDash: () => [],
       measureText: (s: string) => ({ width: s.length * textSize * 0.56 }),
       fillText: (text: string, x: number, y: number) => drawn.push({ text, x, y }),
-      isPointInPath(path: StubPath2D, x: number, y: number) {
+      setTransform: (a: number) => {
+        scale = a;
+      },
+      isPointInPath(path: StubPath2D, px: number, py: number) {
         // The renderer's hit path: the outer arc a0→a1, then the inner arc
         // back, about the centre of the canvas (which the renderer sizes).
+        // The point is in backing-store pixels and the path is transformed
+        // by the context's scale, so undo the scale to compare.
         const [outer, inner] = path.arcs;
         if (!outer || !inner) return false;
-        const centre = canvas.width / 2;
+        const [x, y] = [px / scale, py / scale];
+        const centre = canvas.width / scale / 2;
         const r = Math.hypot(x - centre, y - centre);
         let theta = Math.atan2(y - centre, x - centre);
         if (theta < 0) theta += 2 * Math.PI;
@@ -92,12 +100,13 @@ const ordered = [...mockPortrait.dimensions].sort((a, b) => a.display_order - b.
 const SOCIAL = ordered.filter((d) => d.ring === 'social').map((d) => d.data.name);
 const ECOLOGICAL = ordered.filter((d) => d.ring === 'ecological').map((d) => d.data.name);
 
-function build(size = 720) {
+function build(size = 720, pixelRatio?: number) {
   const stub = stubCanvas();
   const onSelect = vi.fn<(hit: RendererHit | null) => void>();
   const renderer = new DoughnutRenderer({
     canvas: stub.canvas,
     size,
+    pixelRatio,
     donutScale: 1,
     textSize: Math.round((size / 640) * 13),
     onSelect,
@@ -207,5 +216,28 @@ describe('doughnut renderer hit testing', () => {
     listeners.click!({ clientX: line.x * scale, clientY: (line.y - 0.35 * internals._textSize) * scale });
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(describeHit(onSelect.mock.calls[0]![0])).toBe('inner:Networks');
+  });
+});
+
+describe('doughnut renderer pixel ratio', () => {
+  it('sizes the backing store at the screen density and keeps drawing in size units', () => {
+    const { canvas, drawn } = build(720, 3);
+    expect([canvas.width, canvas.height]).toEqual([2160, 2160]);
+    // Labels are laid out exactly as at 1x: the context's scale does the rest.
+    const at1x = build(720).drawn.map((d) => [d.text, d.x, d.y]);
+    expect(drawn.map((d) => [d.text, d.x, d.y])).toEqual(at1x);
+  });
+
+  it('still resolves a tap on a phone-width canvas to the dimension under it at 3x', () => {
+    const { listeners, onSelect, drawn, internals } = build(720, 3);
+    const line = labels(drawn).find((l) => l.name === 'Networks')!.lines[0]!;
+    const scale = CSS_WIDTH / 720;
+    listeners.click!({ clientX: line.x * scale, clientY: (line.y - 0.35 * internals._textSize) * scale });
+    expect(describeHit(onSelect.mock.calls[0]![0])).toBe('inner:Networks');
+    // The ecological label band (past the outer ring), found by angle in size units.
+    const angle = (0.5 * 2 * Math.PI) / ECOLOGICAL.length;
+    const c = internals._middleX;
+    listeners.click!({ clientX: (c + 340 * Math.cos(angle)) * scale, clientY: (c + 340 * Math.sin(angle)) * scale });
+    expect(describeHit(onSelect.mock.calls[1]![0])).toBe(`outer:${ECOLOGICAL[0]}`);
   });
 });

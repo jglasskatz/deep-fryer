@@ -4,9 +4,11 @@ import { localizeHref } from '@/lib/i18n/routing';
 import {
   afterEmailSignIn,
   checkEmailHref,
+  isPlausibleEmail,
   loginErrorHref,
   loginErrorMessage,
   loginHref,
+  MAX_EMAIL_LENGTH,
   returnPath,
   signInHref,
 } from './sign-in';
@@ -100,6 +102,50 @@ describe('sign-in page links', () => {
   it('checkEmailHref is the well-formed verify-request page', () => {
     expect(checkEmailHref()).toBe('/login/check-email');
     expect(checkEmailHref('/nyc/dim/housing')).toBe('/login/check-email?next=%2Fnyc%2Fdim%2Fhousing');
+  });
+});
+
+describe('isPlausibleEmail (the email form, before Auth.js and nodemailer)', () => {
+  it('accepts ordinary addresses', () => {
+    for (const ok of ['owner@nyc.example.gov', 'first.last+tag@sub.example.org', "o'brien@example.ie", 'x@ex-ample.co']) {
+      expect(isPlausibleEmail(ok), ok).toBe(true);
+    }
+  });
+
+  it('rejects what is not one address', () => {
+    for (const bad of ['', 'owner', 'owner@example', '@example.org', 'a@b@example.org', 'a b@example.org', 'a@example.org\n']) {
+      expect(isPlausibleEmail(bad), JSON.stringify(bad)).toBe(false);
+    }
+  });
+
+  it('rejects address-list and display-name syntax, which makes the To header a list', () => {
+    // Auth.js keeps commas before the @, so this reached nodemailer whole.
+    expect(isPlausibleEmail(`${'a,'.repeat(5000)}x@example.com`)).toBe(false);
+    for (const bad of [
+      'a,x@example.com',
+      'a;x@example.com',
+      'g:x@example.com',
+      'Name<x@example.com>',
+      'x@example.com(comment)',
+      '"a b"@example.com',
+      'x@[127.0.0.1].example',
+      'a\\b@example.com',
+    ]) {
+      expect(isPlausibleEmail(bad), bad).toBe(false);
+    }
+  });
+
+  it('caps the length at what SMTP carries, before the pattern runs', () => {
+    const local = 'a'.repeat(64);
+    const fits = `${local}@${'d'.repeat(MAX_EMAIL_LENGTH - local.length - 5)}.com`;
+    expect(fits).toHaveLength(MAX_EMAIL_LENGTH);
+    expect(isPlausibleEmail(fits)).toBe(true);
+    expect(isPlausibleEmail(`a${fits}`)).toBe(false);
+    // A form field's worth of dots: the pattern alone backtracks for minutes
+    // on this; the length check answers at once.
+    const started = performance.now();
+    expect(isPlausibleEmail(`a@${'.'.repeat(1_000_000)}@`)).toBe(false);
+    expect(performance.now() - started).toBeLessThan(1000);
   });
 });
 

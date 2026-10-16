@@ -34,7 +34,7 @@ export function DangerZone({ email }: { email: string | null }) {
           <strong>{email}</strong> to confirm.
         </p>
         <input
-          className="mt-2 w-full rounded border border-black/20 bg-white px-2 py-1.5 text-sm"
+          className="mt-2 w-full rounded border border-field-border bg-white px-2 py-1.5 text-sm"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
           aria-label="Type your email to confirm"

@@ -69,4 +69,23 @@ describe.skipIf(!hasDb)('userDb wiring', () => {
       delete process.env.AUTH_SECRET;
     }
   });
+
+  it('runs onOneConnection on one connection and puts the usual pool back afterwards', async () => {
+    // What every onOneConnection test leans on: a query that needs a second
+    // connection must wait, or those tests pass without proving anything.
+    // getDb() keeps the process's client on globalThis (packages/db
+    // client.ts), so the harness has to swap it there, and restore it.
+    const { getDb } = await import('@deep-fryer/db');
+    const usual = getDb();
+    await expect(
+      onOneConnection(async () => {
+        const { getDb: oneConnection } = await import('@deep-fryer/db');
+        const db = oneConnection();
+        return db.transaction(() => db.execute(sql`select 1`));
+      }, 500),
+    ).rejects.toThrow(/still waiting/);
+    const { getDb: afterwards } = await import('@deep-fryer/db');
+    expect(afterwards()).toBe(usual);
+    expect(await usual.execute(sql`select 1 as one`)).toEqual([{ one: 1 }]);
+  });
 });

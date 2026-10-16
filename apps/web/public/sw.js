@@ -16,6 +16,25 @@
  *   admin, account, billing,
  *   auth, API, RSC payloads    network only — never cached
  *
+ * A page reached without a document navigation never passes through the
+ * fetch handler as a page: Next's in-app links load React Server Component
+ * payloads (not cached, above), and the very first visit loads before this
+ * worker controls the tab. So the app tells the worker which page it is
+ * showing — { type: 'CACHE_PAGE', url, assets } after each in-app
+ * navigation and once the worker first takes control
+ * (components/pwa/ServiceWorkerRegistrar.tsx) — and the worker fetches that
+ * page and stores it under exactly the rule a visit uses (x-df-cache:
+ * public), along with the /_next/static files the page loaded before it was
+ * controlled. A copy stored in the last few minutes is not fetched again,
+ * and while the server has recently answered `private` (someone is signed
+ * in) no page is fetched for this at all.
+ *
+ * Offline, a page is looked up by its address with `source` dropped (the
+ * installed app's old start URL, /?source=pwa, is the home page), then
+ * without `dim` too: ?dim= only picks the dimension a portrait's panel
+ * shows (the page selects it again from the URL), so the stored portrait
+ * beats the offline notice.
+ *
  * Pages can also ask for copies ahead of need: the emergency page's "save
  * for offline" posts { type: 'CACHE_URLS', urls } (SPEC-v5 §3), and this
  * worker fetches each same-origin page and stores it under exactly the same
@@ -29,13 +48,15 @@
  * Bump VERSION whenever this file's behavior changes; the page shows an
  * "update available" prompt and activation waits for the user.
  */
-const VERSION = 'v4';
+const VERSION = 'v5';
 const STATIC = `df-static-${VERSION}`;
 const PAGES = `df-pages-${VERSION}`;
 const IMAGES = `df-images-${VERSION}`;
 /** Pages a reader saved on purpose: unversioned, so updates keep them. */
 const SAVED = 'df-saved';
-const KEEP = new Set([STATIC, PAGES, IMAGES, SAVED]);
+/** One marker: when the server last answered a page `x-df-cache: private` (see notePrivacy). */
+const SESSION = 'df-session';
+const KEEP = new Set([STATIC, PAGES, IMAGES, SAVED, SESSION]);
 const PRECACHE = ['/icons/icon-192.png', '/icons/icon.svg', '/manifest.webmanifest'];
 const MAX_PAGES = 60;
 /** Room for a few portraits' emergency and front pages, in a language or two. */
@@ -79,7 +100,12 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
   // Sent on sign-out, belt and braces: signed-in pages are never cached anyway.
-  if (event.data?.type === 'CLEAR_PAGES') event.waitUntil(Promise.all([caches.delete(PAGES), caches.delete(SAVED)]));
+  // The privacy marker goes too, so the signed-out reader's pages are kept at once.
+  if (event.data?.type === 'CLEAR_PAGES') {
+    event.waitUntil(Promise.all([caches.delete(PAGES), caches.delete(SAVED), caches.delete(SESSION)]));
+  }
+  // The page an in-app navigation (or the first visit) is showing.
+  if (event.data?.type === 'CACHE_PAGE') event.waitUntil(cachePage(event.data.url, event.data.assets));
   // "Save for offline" checks it is talking to a worker that can save.
   if (event.data?.type === 'PING') event.ports?.[0]?.postMessage({ type: 'PONG', version: VERSION });
   // "Save for offline": reply over the MessageChannel port the page sent.
@@ -147,6 +173,125 @@ async function cacheUrls(urls, port) {
   if (port) port.postMessage({ type: 'CACHE_URLS_RESULT', results });
 }
 
+/**
+ * The address a page is stored under: its own, minus `source` — a tag the
+ * installed app once launched with (/?source=pwa) that changes nothing on
+ * the page, so it must not make a second copy of it or miss the first.
+ */
+function pageKey(url) {
+  const u = new URL(url);
+  u.searchParams.delete('source');
+  return u.href;
+}
+
+/**
+ * The same page with its view-only query removed: `dim` picks the dimension
+ * a portrait's panel (or a list's filter) shows. Offline, any stored copy of
+ * the page itself beats the offline notice; the portrait re-selects the
+ * dimension from the URL on the client.
+ */
+function viewlessKey(url) {
+  const u = new URL(pageKey(url));
+  u.searchParams.delete('dim');
+  return u.href;
+}
+
+/** How recently a stored page counts as fresh enough that CACHE_PAGE need not fetch it again. */
+const PAGE_FRESH_MS = 5 * 60 * 1000;
+/** How long a `private` answer stops CACHE_PAGE fetching (a session may also just expire). */
+const PRIVATE_TTL_MS = 30 * 60 * 1000;
+const PRIVATE_KEY = '/__df-session/private';
+const MAX_PAGE_ASSETS = 150;
+/** Page keys being fetched for CACHE_PAGE, so a burst of messages fetches each once. */
+const pagesInFlight = new Set();
+
+/**
+ * Remember whether the server last said someone is signed in. Kept in Cache
+ * Storage rather than a variable because the browser stops idle workers
+ * within seconds; without it every in-app navigation of a signed-in reader
+ * would cost the server a second render that is then refused.
+ */
+async function notePrivacy(response) {
+  const marker = response.headers.get('x-df-cache');
+  if (marker !== 'private' && marker !== 'public') return;
+  const cache = await caches.open(SESSION);
+  if (marker === 'public') await cache.delete(PRIVATE_KEY);
+  else await cache.put(PRIVATE_KEY, new Response('', { headers: { 'x-df-at': String(Date.now()) } }));
+}
+
+async function recentlyPrivate() {
+  const mark = await (await caches.open(SESSION)).match(PRIVATE_KEY);
+  return Boolean(mark) && Date.now() - Number(mark.headers.get('x-df-at')) < PRIVATE_TTL_MS;
+}
+
+/**
+ * CACHE_PAGE: keep the page the app is showing, and the static files it
+ * loaded, as a document visit would have. Same refusals as cacheUrls
+ * (other origins, NEVER_CACHE, RSC payloads, anything not `public`), no
+ * reply: the page does not wait on it.
+ */
+async function cachePage(raw, assets) {
+  await Promise.all([storePage(raw), storeAssets(assets)]);
+}
+
+async function storePage(raw) {
+  let url;
+  try {
+    url = new URL(String(raw), self.location.origin);
+  } catch {
+    return;
+  }
+  if (url.origin !== self.location.origin || NEVER_CACHE.some((re) => re.test(url.pathname))) return;
+  if (url.searchParams.has('_rsc')) return;
+  const key = pageKey(url.href);
+  if (pagesInFlight.has(key)) return;
+  pagesInFlight.add(key);
+  try {
+    const cache = await caches.open(PAGES);
+    const have = await cache.match(key);
+    if (have && Date.now() - Date.parse(have.headers.get('date') ?? '') < PAGE_FRESH_MS) return;
+    if (await recentlyPrivate()) return;
+    const response = await Promise.race([fetch(url.href, { credentials: 'same-origin' }), timeout(SAVE_TIMEOUT_MS)]);
+    await notePrivacy(response);
+    if (!storable(response)) return;
+    const saved = await caches.open(SAVED);
+    const keep = (await saved.match(key)) ? response.clone() : null;
+    // Re-storing moves the page to the newest end, so trim drops the oldest first.
+    await cache.delete(key);
+    await cache.put(key, response);
+    if (keep) await saved.put(key, keep);
+    await trim(PAGES, MAX_PAGES);
+  } catch {
+    // Offline or slow: the page simply is not stored this time.
+  } finally {
+    pagesInFlight.delete(key);
+  }
+}
+
+/** The page's own /_next/static files (content-hashed), each fetched only if not already stored. */
+async function storeAssets(list) {
+  if (!Array.isArray(list)) return;
+  const cache = await caches.open(STATIC);
+  await Promise.all(
+    list.slice(0, MAX_PAGE_ASSETS).map(async (raw) => {
+      let url;
+      try {
+        url = new URL(String(raw), self.location.origin);
+      } catch {
+        return;
+      }
+      if (url.origin !== self.location.origin || !url.pathname.startsWith('/_next/static/')) return;
+      try {
+        if (await cache.match(url.href)) return;
+        const response = await fetch(url.href);
+        if (response.ok) await cache.put(url.href, response);
+      } catch {
+        // A missing chunk is fetched again the next time the page needs it.
+      }
+    }),
+  );
+}
+
 async function trim(cacheName, max) {
   const cache = await caches.open(cacheName);
   const keys = await cache.keys();
@@ -160,22 +305,30 @@ function timeout(ms) {
 async function networkFirstPage(request) {
   const cache = await caches.open(PAGES);
   const saved = await caches.open(SAVED);
+  const key = pageKey(request.url);
   try {
     const response = await Promise.race([fetch(request), timeout(NETWORK_TIMEOUT_MS)]);
+    // Whether someone is signed in, for CACHE_PAGE (a small write to one marker).
+    await notePrivacy(response).catch(() => undefined);
     if (storable(response)) {
       // A page the reader saved stays as fresh as their last visit to it.
       // (Both copies are cloned before either is read.)
-      const refreshSaved = Boolean(await saved.match(request));
+      const refreshSaved = Boolean(await saved.match(key));
       const visit = response.clone();
       const keep = refreshSaved ? response.clone() : null;
-      await cache.put(request, visit);
+      await cache.put(key, visit);
       trim(PAGES, MAX_PAGES);
-      if (keep) await saved.put(request, keep);
+      if (keep) await saved.put(key, keep);
     }
     return response;
   } catch {
-    const cached = (await cache.match(request)) ?? (await saved.match(request));
+    const cached = (await cache.match(key)) ?? (await saved.match(key));
     if (cached) return cached;
+    const viewless = viewlessKey(request.url);
+    if (viewless !== key) {
+      const page = (await cache.match(viewless)) ?? (await saved.match(viewless));
+      if (page) return page;
+    }
     // The emergency page's ?hazard=… only picks which threat the doughnut
     // shows: offline, any stored copy of the page beats the offline notice.
     if (/\/emergency\/?$/.test(new URL(request.url).pathname)) {
@@ -222,7 +375,7 @@ async function offlinePage(pageCaches, request) {
   const saved = [
     ...new Set(
       keys
-        .map((r) => new URL(r.url))
+        .map((r) => new URL(pageKey(r.url)))
         .filter((u) => u.origin === self.location.origin)
         .map((u) => u.pathname + u.search),
     ),

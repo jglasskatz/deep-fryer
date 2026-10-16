@@ -25,13 +25,16 @@ import { KIND_OPTIONS, RINGS } from './labels';
  *   words into a listing before anything is created.
  *
  * It posts through useAction, which shows the server's validation message
- * (from the shared core schema) and refreshes the page on success. The
- * client only shapes input (empty fields become null, checkboxes a list);
- * the server decides what is valid.
+ * (from the shared core schema). On success the page updates from the
+ * action's own response: both actions revalidate this page, so Next.js
+ * renders it into that response, and a router.refresh() on top would render
+ * the whole page again (lib/use-action.ts). The client only shapes input
+ * (empty fields become null, checkboxes a list); the server decides what is
+ * valid.
  *
  * Like the emergency forms, an edit form copies its listing into local
- * state once; the page keys it by the listing's id and updatedAt, so a
- * refresh bringing a changed listing remounts it with the new values.
+ * state once; ListingEditDetails keys it by the listing's updatedAt, so an
+ * update bringing a changed listing remounts it with the new values.
  */
 
 /** What the edit form needs of a listing (a plain object, so it crosses the server/client boundary as-is). */
@@ -47,7 +50,7 @@ export interface ListingFormListing {
   displayOrder: number;
 }
 
-const field = 'w-full rounded border border-black/20 bg-white px-2 py-1 text-sm';
+const field = 'w-full rounded border border-field-border bg-white px-2 py-1 text-sm';
 const label = 'block text-sm';
 const hint = 'mt-0.5 block text-xs text-[color:var(--color-muted)]';
 
@@ -143,16 +146,20 @@ export function ListingForm({
           // Ignored by the server on an edit (see above).
           published: isNew ? s.published : undefined,
         };
-        run(async () => {
-          const r = approve
-            ? await approveSubmission({ tenantSlug, submissionId: approve.submissionId, listing: input })
-            : await saveListing({ tenantSlug, id: listing?.id ?? null, listing: input });
-          if (r.ok) {
-            setSaved(true);
-            if (!listing && !approve) set(BLANK);
-          }
-          return r;
-        });
+        run(
+          async () => {
+            const r = approve
+              ? await approveSubmission({ tenantSlug, submissionId: approve.submissionId, listing: input })
+              : await saveListing({ tenantSlug, id: listing?.id ?? null, listing: input });
+            if (r.ok) {
+              setSaved(true);
+              if (!listing && !approve) set(BLANK);
+            }
+            return r;
+          },
+          // Both actions revalidate this page: their response already carries it.
+          { refresh: false },
+        );
       }}
     >
       <div className="grid gap-3 sm:grid-cols-2">
@@ -274,7 +281,7 @@ export function ListingForm({
         <label className="flex items-center gap-2 text-sm">
           <span className="font-medium">Order</span>
           <input
-            className="w-20 rounded border border-black/20 bg-white px-2 py-1 text-sm"
+            className="w-20 rounded border border-field-border bg-white px-2 py-1 text-sm"
             type="number"
             min={0}
             max={10000}
@@ -311,5 +318,37 @@ export function ListingForm({
         ) : null}
       </div>
     </form>
+  );
+}
+
+/**
+ * A listing's "Edit" disclosure on the admin page. The form is mounted only
+ * while the disclosure is open: the page lists every listing, and a form
+ * rendered closed under each one put a whole form per listing into the page
+ * (80 forms and 2,056 inputs at 78 listings) that the browser built and
+ * hydrated on every load, though staff edit one listing at a time.
+ *
+ * `version` (the listing's updatedAt) keys the form, so a save that changes
+ * the listing remounts it with the saved values while it stays open.
+ */
+export function ListingEditDetails({
+  tenantSlug,
+  listing,
+  version,
+}: {
+  tenantSlug: string;
+  listing: ListingFormListing;
+  version: number;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <details className="mt-2" onToggle={(e) => setOpen(e.currentTarget.open)}>
+      <summary className="cursor-pointer text-sm underline">Edit</summary>
+      {open ? (
+        <div className="mt-3">
+          <ListingForm key={version} tenantSlug={tenantSlug} listing={listing} />
+        </div>
+      ) : null}
+    </details>
   );
 }

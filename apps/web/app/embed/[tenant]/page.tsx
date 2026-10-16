@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { EmbedFrame } from '@/components/embed/EmbedFrame';
 import { getPortrait } from '@/lib/data';
@@ -6,8 +7,15 @@ import { appUrl } from '@/lib/env';
 import { localizeDimensions } from '@/lib/i18n/content';
 import { doughnutLabels } from '@/lib/i18n/doughnut';
 import { getI18n } from '@/lib/i18n/server';
+import { pageTitle } from '@/lib/page-meta';
 
 export const dynamic = 'force-dynamic';
+
+/** "Doughnut portrait · New York City": what a screen reader announces inside the city's iframe. */
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  const [portrait, { m }] = await Promise.all([getPortrait((await params).tenant), getI18n()]);
+  return { title: portrait ? pageTitle(m.doughnut.portrait, portrait.tenant.name) : m.notFound.title };
+}
 
 /**
  * Embed view (SPEC.md §10): iframe target for the loader script. Who may

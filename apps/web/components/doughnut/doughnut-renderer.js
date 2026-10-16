@@ -34,6 +34,9 @@ SOFTWARE.
 //     the dimension stays marked when its wedge has no size (no shortfall or
 //     overshoot) and a highlight cannot be mistaken for the red of an
 //     ordinary shortfall/overshoot wedge
+//   - a pixelRatio option: the backing store is size × pixelRatio and the
+//     context is scaled to match, so the drawing stays crisp on dense
+//     screens while every drawing coordinate stays in `size` units
 // Drawing math is unchanged.
 
 // Black or white text, whichever contrasts more with a #rrggbb fill
@@ -169,11 +172,15 @@ export class DoughnutRenderer {
     //   canvas: HTMLCanvasElement to draw into (required)
     //   size: intrinsic size of the whole doughnut in px
     //   donutScale: scaling factor for the doughnut (between 0.5 and 1.5)
+    //   pixelRatio: backing-store pixels per `size` unit (the screen's
+    //     devicePixelRatio; default 1). Drawing and hit-testing stay in
+    //     `size` units; only the bitmap is denser.
     //   textSize: text size in px
     //   onHover: optional ({dim_type, dim_num, dim_info, lvl_num} | null) => void
     //   onSelect: optional ({dim_type, dim_num, dim_info, lvl_num} | null) => void
-    constructor({ canvas, size, donutScale = 1.0, textSize = 14, onHover, onSelect }) {
+    constructor({ canvas, size, pixelRatio = 1, donutScale = 1.0, textSize = 14, onHover, onSelect }) {
         this._donutSize = size;
+        this._pixelRatio = pixelRatio > 0 && Number.isFinite(pixelRatio) ? pixelRatio : 1;
         this._textSize = textSize;
         if (donutScale >= 0.5 && donutScale <= 1.5) {
             this._donutScale = donutScale;
@@ -215,10 +222,12 @@ export class DoughnutRenderer {
 
         this._canvas = canvas;
         this._ctx = this._canvas.getContext("2d");
-        // Set intrinsic size of canvas to the required doughnut size; display
-        // sizing is the wrapper's concern (hit-testing rescales below).
-        this._canvas.width = this._donutSize;
-        this._canvas.height = this._donutSize;
+        // Set intrinsic size of canvas to the required doughnut size at the
+        // screen's density; display sizing is the wrapper's concern
+        // (hit-testing rescales below). _setupCanvas scales the context by
+        // the same ratio before every draw (setting width resets it).
+        this._canvas.width = Math.round(this._donutSize * this._pixelRatio);
+        this._canvas.height = Math.round(this._donutSize * this._pixelRatio);
 
         this._grdGlobal = this._ctx.createRadialGradient(this._middleX, this._middleY, this._outOuter, this._middleX, this._middleY, this._extraDonut);
         this._grdGlobal.addColorStop(0, "rgb(211,63,54)");
@@ -260,11 +269,12 @@ export class DoughnutRenderer {
     }
 
     _checkMouse(e, click) {
-        // Canvas may be CSS-scaled (responsive layout) while its intrinsic resolution
-        // stays at _donutSize. Hit-testing runs in intrinsic coords, so rescale here.
+        // Canvas may be CSS-scaled (responsive layout) while its drawing stays in
+        // _donutSize units. Hit-testing runs in those units, so rescale here
+        // (not by canvas.width, which also carries the pixel ratio).
         const rect = this._canvas.getBoundingClientRect();
-        const x = (e.clientX - rect.left) * (this._canvas.width / rect.width);
-        const y = (e.clientY - rect.top) * (this._canvas.height / rect.height);
+        const x = (e.clientX - rect.left) * (this._donutSize / rect.width);
+        const y = (e.clientY - rect.top) * (this._donutSize / rect.height);
         let hoverDimInfo = this._checkMouseOver(x, y);
         if (hoverDimInfo) {
             this._canvas.style.cursor = "crosshair";
@@ -294,7 +304,9 @@ export class DoughnutRenderer {
         for (dim = 0; dim < dims.length(); dim++) {
             let subpaths = paths[dim];
             for (lvl = 0; lvl < subpaths.length; lvl++) {
-                if (this._ctx.isPointInPath(subpaths[lvl], x, y)) {
+                // isPointInPath takes backing-store pixels and applies the
+                // context's transform to the path, so scale the point to match.
+                if (this._ctx.isPointInPath(subpaths[lvl], x * this._pixelRatio, y * this._pixelRatio)) {
                     found = { dim_num: dim,
                               dim_type: dims.type,
                               dim_info: dims.get(dim),
@@ -734,6 +746,8 @@ export class DoughnutRenderer {
     }
 
     _setupCanvas() {
+        // Draw in _donutSize units onto the denser backing store.
+        this._ctx.setTransform(this._pixelRatio, 0, 0, this._pixelRatio, 0, 0);
         this._ctx.font = this._textSize + "px Arial";
         this._ctx.textAlign = "center";
         this._ctx.lineWidth = 1;

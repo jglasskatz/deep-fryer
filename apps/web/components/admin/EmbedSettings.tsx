@@ -38,7 +38,7 @@ export function EmbedSettings({
       >
         <textarea
           aria-label="Allowed embedding origins"
-          className="mt-3 w-full rounded border border-black/20 bg-white px-2 py-1 font-mono text-xs"
+          className="mt-3 w-full rounded border border-field-border bg-white px-2 py-1 font-mono text-xs"
           rows={4}
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -57,7 +57,7 @@ export function EmbedSettings({
       <textarea
         readOnly
         aria-label="Embed snippet"
-        className="mt-1 w-full rounded border border-black/15 bg-black/[0.03] px-2 py-1 font-mono text-xs"
+        className="mt-1 w-full rounded border border-field-border bg-black/[0.03] px-2 py-1 font-mono text-xs"
         rows={2}
         value={snippet}
         onFocus={(e) => e.currentTarget.select()}

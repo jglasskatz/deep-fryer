@@ -16,9 +16,24 @@ export type DbExecutor = PgDatabase<
   ExtractTablesWithRelations<typeof schema>
 >;
 
-let cached: DrizzleClient | null = null;
+/**
+ * Where the process's one client lives: on globalThis, under a registry
+ * symbol, not in a module-level variable. Next.js bundles this module more
+ * than once into the web server — the page (RSC) layer, the server-action
+ * layer and the Node-runtime middleware each get their own copy, with their
+ * own module variables — so a module-level cache built one pool per copy:
+ * three pools, 3 × DATABASE_POOL_MAX connections per web process. Every copy
+ * sees the same globalThis and Symbol.for key, so they share one pool.
+ * Exported for test/one-connection.ts in apps/web, which swaps in a
+ * one-connection pool for the length of a test.
+ */
+export const DB_CLIENT_KEY: unique symbol = Symbol.for('deep-fryer.db');
+
+type ClientHolder = { [DB_CLIENT_KEY]?: DrizzleClient };
 
 export function getDb(): DrizzleClient {
+  const holder = globalThis as ClientHolder;
+  const cached = holder[DB_CLIENT_KEY];
   if (cached) return cached;
   const url = process.env.DATABASE_URL;
   if (!url) {
@@ -26,11 +41,13 @@ export function getDb(): DrizzleClient {
   }
   const sql = postgres(url, {
     prepare: false,
-    // Bounded pool: web replicas × max must stay under Postgres max_connections.
+    // Bounded pool, one per process (see DB_CLIENT_KEY): web replicas × max,
+    // plus each worker's pools, must stay under Postgres max_connections.
     max: Number(process.env.DATABASE_POOL_MAX ?? 10),
   });
-  cached = drizzle(sql, { schema });
-  return cached;
+  const client = drizzle(sql, { schema });
+  holder[DB_CLIENT_KEY] = client;
+  return client;
 }
 
 export const db: DrizzleClient = new Proxy({} as DrizzleClient, {

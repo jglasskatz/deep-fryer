@@ -1,12 +1,19 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { dimensionSlugMap, runWithSessions } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
+import { adminPageMetadata } from '@/lib/page-meta';
 import { applyResearchAction } from '@/lib/research-actions';
 import { ActionButton } from '@/components/admin/ActionButton';
 
 export const dynamic = 'force-dynamic';
+
+/** Research run · Admin · <portrait> (WCAG 2.4.2): the generic site title named none of the staff pages. */
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  return adminPageMetadata((await params).tenant, 'Research run');
+}
 
 export default async function RunDetailPage({
   params,
@@ -96,8 +103,17 @@ export default async function RunDetailPage({
 
         {run.tokenUsage ? (
           <section className="mt-8">
-            <h2 className="text-lg font-semibold">Metering</h2>
-            <div className="mt-3 overflow-x-auto">
+            <h2 id="metering-heading" className="text-lg font-semibold">
+              Metering
+            </h2>
+            {/* Focusable and named so the keyboard can scroll the table on a phone in every
+                browser (Safari does not focus scroll containers itself; nothing inside can). */}
+            <div
+              tabIndex={0}
+              role="region"
+              aria-labelledby="metering-heading"
+              className="mt-3 overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-accent)]"
+            >
 <table className="w-full min-w-[560px] border-collapse text-sm">
               <thead>
                 <tr className="border-b text-left text-[color:var(--color-muted)]">

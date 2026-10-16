@@ -24,7 +24,7 @@ export function ContractForm({
   const { run, pending, error } = useAction();
   const [v, setV] = useState(initial);
   const num = (s: string) => (s === '' ? null : Number(s));
-  const field = 'mt-1 w-full rounded border border-black/20 bg-white px-2 py-1 text-sm';
+  const field = 'mt-1 w-full rounded border border-field-border bg-white px-2 py-1 text-sm';
   return (
     <form
       className="grid gap-3 sm:grid-cols-3"

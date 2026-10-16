@@ -1,14 +1,21 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { SettingsForms } from '@/components/admin/SettingsForms';
 import { tenantConfigMap } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
+import { adminPageMetadata } from '@/lib/page-meta';
 import { EmbedSettings } from '@/components/admin/EmbedSettings';
 import { appUrl } from '@/lib/env';
 import { deploymentDisabled } from '@/lib/features';
 import { TRANSLATION_REQUEST_WINDOW_DAYS, translationRequestCounts } from '@/lib/translation-requests';
 
 export const dynamic = 'force-dynamic';
+
+/** Settings · Admin · <portrait> (WCAG 2.4.2): the generic site title named none of the staff pages. */
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  return adminPageMetadata((await params).tenant, 'Settings');
+}
 
 export default async function SettingsPage({
   params,

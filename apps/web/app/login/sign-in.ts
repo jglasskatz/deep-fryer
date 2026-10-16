@@ -105,6 +105,41 @@ export function signInHref(requestPath: string, localize: (path: string) => stri
 }
 
 /**
+ * The longest address SMTP carries: a 256-octet forward path less its angle
+ * brackets (RFC 5321 §4.5.3.1.3). Nobody's real address is longer.
+ */
+export const MAX_EMAIL_LENGTH = 254;
+
+/**
+ * One plain address, something@domain.tld. Besides whitespace and a second
+ * `@`, it may not contain the characters that make a mail header more than
+ * one address — `,` and `;` separate a list, `:` opens a group, `<>` `()`
+ * `"` `[]` `\` belong to display names, comments and quoting. A real address
+ * only needs them inside quotes, which Auth.js rejects anyway.
+ */
+const EMAIL_PATTERN = /^[^\s@,;:<>()[\]\\"]+@[^\s@,;:<>()[\]\\"]+\.[^\s@,;:<>()[\]\\"]+$/;
+
+/**
+ * Whether the email form's address is worth handing to Auth.js, which
+ * normalizes it again and makes it the To header of the sign-in email.
+ *
+ * This is the only check before an unauthenticated request reaches the mail
+ * library, so it bounds what that request can cost:
+ * - The length is checked first. EMAIL_PATTERN backtracks quadratically on
+ *   a long run of dots (40,000 of them take about a second), and a server
+ *   action accepts a ~1 MB form field.
+ * - Auth.js keeps commas in the part before `@`, so `a,a,…,x@example.com`
+ *   reached nodemailer whole: an address list thousands of entries long,
+ *   whose parsing cost grew with the square of its length
+ *   (GHSA-2x7j-588g-ccc2, fixed in the nodemailer version we pin; refused
+ *   here whatever the version). nodemailer then mailed the link for that
+ *   whole string to whichever entry in it was a real address.
+ */
+export function isPlausibleEmail(email: string): boolean {
+  return email.length <= MAX_EMAIL_LENGTH && EMAIL_PATTERN.test(email);
+}
+
+/**
  * Where the email form goes once Auth.js has handled the request.
  *
  * The form calls signIn without letting Auth.js redirect, because Auth.js

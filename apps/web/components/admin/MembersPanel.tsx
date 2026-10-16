@@ -93,7 +93,7 @@ export function MembersPanel({
               id={`invite-email-${scope}`}
               type="email"
               required
-              className="flex-1 rounded border border-black/20 bg-white px-2 py-1.5 text-sm"
+              className="flex-1 rounded border border-field-border bg-white px-2 py-1.5 text-sm"
               placeholder="colleague@cityofexample.gov"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -103,7 +103,7 @@ export function MembersPanel({
             </label>
             <select
               id={`invite-role-${scope}`}
-              className="rounded border border-black/20 bg-white px-2 py-1.5 text-sm"
+              className="rounded border border-field-border bg-white px-2 py-1.5 text-sm"
               value={role}
               onChange={(e) => setRole(e.target.value)}
             >
@@ -134,7 +134,7 @@ export function MembersPanel({
                   link yourself:
                   <input
                     readOnly
-                    className="mt-2 w-full rounded border border-black/15 bg-white px-2 py-1 font-mono text-xs"
+                    className="mt-2 w-full rounded border border-field-border bg-white px-2 py-1 font-mono text-xs"
                     value={sent.url}
                     onFocus={(e) => e.currentTarget.select()}
                   />
@@ -152,8 +152,18 @@ export function MembersPanel({
       ) : null}
 
       <section>
-        <h2 className="text-base font-semibold">People ({members.length})</h2>
-        <div className="mt-2 overflow-x-auto">
+        <h2 id={`people-heading-${scope}`} className="text-base font-semibold">
+          People ({members.length})
+        </h2>
+        {/* Focusable and named so the keyboard can scroll the table on a phone in every
+            browser (Safari does not focus scroll containers itself); a viewer, or an empty
+            list, has no control inside that could. */}
+        <div
+          tabIndex={0}
+          role="region"
+          aria-labelledby={`people-heading-${scope}`}
+          className="mt-2 overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-accent)]"
+        >
           <table className="w-full min-w-[520px] text-sm">
             <thead>
               <tr className="border-b text-left text-[color:var(--color-muted)]">
@@ -177,7 +187,7 @@ export function MembersPanel({
                     {canManage && scope === 'tenant' ? (
                       <select
                         aria-label={`Role for ${m.email ?? m.name ?? 'member'}`}
-                        className="rounded border border-black/20 bg-white px-1.5 py-0.5"
+                        className="rounded border border-field-border bg-white px-1.5 py-0.5"
                         value={m.role}
                         disabled={pending}
                         onChange={(e) =>

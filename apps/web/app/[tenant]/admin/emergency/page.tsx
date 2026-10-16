@@ -1,9 +1,11 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { nwsAlertRecordUrl } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { ActionButton } from '@/components/admin/ActionButton';
 import { EmergencyConfigForm, HazardForm, PlanForm, ResourceForm } from '@/components/emergency/AdminForms';
 import { requireAdminPage } from '@/lib/admin-guard';
+import { adminPageMetadata } from '@/lib/page-meta';
 import { roleAtLeast } from '@/lib/auth';
 import { emergencyAdminView, type SyncState } from '@/lib/emergency';
 import {
@@ -17,6 +19,11 @@ import { requireFeature } from '@/lib/features';
 import { safeHref } from '@/lib/safe-url';
 
 export const dynamic = 'force-dynamic';
+
+/** Emergency view · Admin · <portrait> (WCAG 2.4.2): the generic site title named none of the staff pages. */
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  return adminPageMetadata((await params).tenant, 'Emergency view');
+}
 
 /** Staff timestamps: unambiguous, in the portrait's own zone. */
 function when(date: Date | null, timeZone: string): string {

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { PortraitDoughnut } from '@/components/doughnut/PortraitDoughnut';
@@ -8,9 +9,20 @@ import { fmt } from '@/lib/i18n/format';
 import { doughnutLabels } from '@/lib/i18n/doughnut';
 import { getI18n } from '@/lib/i18n/server';
 import { involvementView } from '@/lib/involvement';
+import { pageTitle } from '@/lib/page-meta';
 import { panelLabels, portraitPanelViews, selectedPanelView } from '@/lib/portrait-panel';
 
 export const dynamic = 'force-dynamic';
+
+/** The portrait's own name as the title (WCAG 2.4.2), and a description in the reader's language. */
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  const [portrait, { m }] = await Promise.all([getPortrait((await params).tenant), getI18n()]);
+  if (!portrait) return { title: m.notFound.title };
+  return {
+    title: pageTitle(portrait.tenant.name),
+    description: fmt(m.portrait.metaDescription, { name: portrait.tenant.name }),
+  };
+}
 
 /**
  * The portrait's front page: the core view (SPEC-v7 §2), after the Santa Cruz

@@ -117,6 +117,7 @@ export const zhHant: Messages = {
     baseline_only: '目前只有基線測量數據；下次更新時將顯示趨勢。',
   },
   portrait: {
+    metaDescription: '{name}的 Doughnut Economics 畫像：社會基礎與生態天花板，每個數字都附有資料來源。',
     population: '人口：{n}',
     clickHint: '選擇一個扇形區域，即可查看指標、證據、行動和討論。',
     demoHint: '示範數據 — 請設定 DATABASE_URL 並發布版本，以顯示真實內容。',
@@ -139,6 +140,7 @@ export const zhHant: Messages = {
     legendNoData: '灰色：暫無數據',
   },
   dimension: {
+    metaDescription: '{name}的{dimension}：數據、資料來源，以及您可以做的事。',
     updated: '更新於{date}',
     target: '目標：{value}',
     noTarget: '未設目標',
@@ -226,6 +228,7 @@ export const zhHant: Messages = {
     trendTarget: '目標：{value}',
   },
   methodology: {
+    metaDescription: '{name}畫像的衡量方法：地理範圍、資料來源，以及每項目標及其依據。',
     title: '研究方法',
     intro:
       '本畫像採用 Doughnut Economics（甜甜圈經濟學）應用於地方層級的方法，包括社會基礎（未達到基礎即為「不足」，在圖中向中心延伸）和生態天花板（超出天花板即為「超標」，在圖中向外延伸）。每項指標都設有明確的目標，並附有書面依據，詳列如下。如本畫像採用的目標與框架預設值不同，則會顯示地方的依據。',
@@ -244,6 +247,7 @@ export const zhHant: Messages = {
     contentInEnglish: '指標名稱和依據以英文發布。',
   },
   outreach: {
+    metaDescription: '在{name}參與的方式，以及參與這些數據工作的組織。',
     title: '參與',
     empty: '隨著本畫像不斷擴充，這裡將列出本地組織。在此期間，每個維度頁面都列有您可以採取的具體行動。',
     intro: '按維度列出您可以參與的項目、組織和公共機構。每項資訊都由工作人員核實後，才會在這裡顯示。',

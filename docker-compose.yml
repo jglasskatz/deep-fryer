@@ -9,6 +9,9 @@
 # and run web/worker with pnpm (evidence then lands on local disk).
 x-app-env: &app-env
   DATABASE_URL: postgres://${POSTGRES_USER:-deep_fryer}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-deep_fryer}
+  # Connections in each process's pool (docs/deploy.md "Database connections"). Listed here because compose
+  # passes containers only the variables it names; `:-` keeps an empty value from becoming a pool of 0.
+  DATABASE_POOL_MAX: ${DATABASE_POOL_MAX:-10}
   S3_ENDPOINT: http://storage:8333
   S3_REGION: us-east-1
   S3_BUCKET: ${S3_BUCKET:-deep-fryer-evidence}

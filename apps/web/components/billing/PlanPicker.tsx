@@ -153,7 +153,7 @@ export function PlanPicker({
               <input
                 type="email"
                 required
-                className="mt-1 w-full rounded border border-black/20 bg-white px-2 py-1.5"
+                className="mt-1 w-full rounded border border-field-border bg-white px-2 py-1.5"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -161,7 +161,7 @@ export function PlanPicker({
             <label className="block text-sm">
               <span className="font-medium">PO number (optional)</span>
               <input
-                className="mt-1 w-full rounded border border-black/20 bg-white px-2 py-1.5"
+                className="mt-1 w-full rounded border border-field-border bg-white px-2 py-1.5"
                 value={po}
                 maxLength={30}
                 onChange={(e) => setPo(e.target.value)}

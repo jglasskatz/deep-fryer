@@ -136,7 +136,9 @@ export default async function InsightsPage({
         <p className="mt-2 max-w-3xl text-sm text-[color:var(--color-muted)]">{fmt(m.insights.intro, { noun })}</p>
 
         {spreads.length > 0 && (
-          <section className="mt-6 rounded-lg border border-black/10 bg-black/[0.02] p-4">
+          // No tint behind this card: the muted heading is 4.6:1 on the page but
+          // falls to 4.4:1 on even a 2 % black wash (WCAG 1.4.3 asks 4.5:1).
+          <section className="mt-6 rounded-lg border border-black/10 p-4">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--color-muted)]">
               {m.insights.biggestDivides}
             </h2>
@@ -162,6 +164,13 @@ export default async function InsightsPage({
         <section className="mt-8">
           <h2 className="text-xl font-semibold">{m.insights.matrix}</h2>
           <p className="mt-1 text-sm text-[color:var(--color-muted)]">{m.insights.matrixIntro}</p>
+          {/* What the row markers mean, for everyone: a title tooltip alone is out of reach of
+              keyboard and touch. Screen readers get the ring in each row's link instead. */}
+          <p className="mt-1 text-sm text-[color:var(--color-muted)]">
+            <span aria-hidden>●</span> {m.common.socialFoundation}
+            <span className="mx-2">·</span>
+            <span aria-hidden>○</span> {m.common.ecologicalCeiling}
+          </p>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[640px] border-collapse text-sm">
               <thead>
@@ -186,11 +195,17 @@ export default async function InsightsPage({
                   >
                     <td className="py-1.5 pe-3">
                       <Link href={`${base}?dim=${d.slug}#dimension`} className="hover:underline">
+                        {/* The glyph is decoration; the ring is said in text, so the link reads
+                            "Social foundation: Food" rather than "black circle Food". */}
                         <span
+                          aria-hidden
                           className="me-1 text-xs text-[color:var(--color-muted)]"
                           title={d.ring === 'social' ? m.common.socialFoundation : m.common.ecologicalCeiling}
                         >
                           {d.ring === 'social' ? '●' : '○'}
+                        </span>
+                        <span className="sr-only">
+                          {d.ring === 'social' ? m.common.socialFoundation : m.common.ecologicalCeiling}:{' '}
                         </span>
                         {dimName(d)}
                       </Link>

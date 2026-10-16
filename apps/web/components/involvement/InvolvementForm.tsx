@@ -74,7 +74,7 @@ const FIELD_ORDER: InvolvementField[] = [
 const HONEYPOT = 'homepage';
 
 const input =
-  'mt-1 block w-full rounded border border-black/20 bg-white px-3 py-2 text-base aria-invalid:border-red-700 aria-invalid:border-2';
+  'mt-1 block w-full rounded border border-field-border bg-white px-3 py-2 text-base aria-invalid:border-red-700 aria-invalid:border-2';
 const hint = 'mt-0.5 block text-sm text-[color:var(--color-muted)]';
 const fieldLabel = 'block font-medium';
 

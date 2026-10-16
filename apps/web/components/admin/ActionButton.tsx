@@ -7,7 +7,8 @@ import { useAction } from '@/lib/use-action';
  * A button bound to one server action, with pending state and the action's
  * error message rendered beside it. Server components pass a bound action
  * (`publishVersion.bind(null, {...})`), so no client code re-implements the
- * call.
+ * call. `refresh={false}` for an action that revalidates the page the button
+ * is on, whose response already carries that page (lib/use-action.ts).
  */
 export function ActionButton({
   action,
@@ -15,6 +16,7 @@ export function ActionButton({
   pendingLabel,
   className,
   confirm,
+  refresh = true,
 }: {
   action: () => Promise<ActionResult<unknown>>;
   children: React.ReactNode;
@@ -22,6 +24,8 @@ export function ActionButton({
   className?: string;
   /** Optional confirmation prompt before running. */
   confirm?: string;
+  /** Refresh the page after success (the default); see useAction. */
+  refresh?: boolean;
 }) {
   const { run, pending, error } = useAction();
   return (
@@ -32,7 +36,7 @@ export function ActionButton({
         className={className ?? 'rounded border px-2 py-1 text-xs hover:bg-black/5 disabled:opacity-50'}
         onClick={() => {
           if (confirm && !window.confirm(confirm)) return;
-          run(action);
+          run(action, { refresh });
         }}
       >
         {pending && pendingLabel ? pendingLabel : children}

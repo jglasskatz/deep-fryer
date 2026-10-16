@@ -41,7 +41,10 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function normalizeEmail(raw: string): string {
   const email = raw.trim().toLowerCase();
-  if (!EMAIL_RE.test(email) || email.length > 254) throw new UserError('Enter a valid email address.');
+  // Length first: EMAIL_RE backtracks quadratically on a long run of dots,
+  // so a megabyte-long field must be refused before the pattern sees it
+  // (the sign-in form does the same, app/login/sign-in.ts).
+  if (email.length > 254 || !EMAIL_RE.test(email)) throw new UserError('Enter a valid email address.');
   return email;
 }
 

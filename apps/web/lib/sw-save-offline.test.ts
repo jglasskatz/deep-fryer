@@ -26,7 +26,7 @@ interface FakeResponse {
   clone(): FakeResponse;
 }
 
-type Page = { status?: number; cache?: 'public' | 'private'; redirected?: boolean } | 'offline';
+type Page = { status?: number; cache?: 'public' | 'private'; redirected?: boolean; date?: string } | 'offline';
 type Key = string | { url: string };
 const keyUrl = (key: Key) => (typeof key === 'string' ? new URL(key, ORIGIN).href : key.url);
 
@@ -69,7 +69,7 @@ function loadWorker(pages: Record<string, Page>) {
       status,
       type: 'basic',
       redirected: Boolean(page.redirected),
-      headers: new Headers({ 'x-df-cache': page.cache ?? 'public' }),
+      headers: new Headers({ 'x-df-cache': page.cache ?? 'public', date: page.date ?? new Date().toUTCString() }),
       body: `${new URL(url, ORIGIN).pathname}#${++served}`,
       clone: () => ({ ...response }),
     };
@@ -116,6 +116,12 @@ function loadWorker(pages: Record<string, Page>) {
     });
     return answer!;
   }
+  /** Any other message the page posts (CACHE_PAGE, CLEAR_PAGES); resolves when the worker is done. */
+  async function post(data: unknown) {
+    let work: Promise<unknown> = Promise.resolve();
+    listeners.message!({ data, ports: [], waitUntil: (p: Promise<unknown>) => (work = p) });
+    await work;
+  }
   async function ping() {
     let reply: unknown;
     listeners.message!({ data: { type: 'PING' }, ports: [{ postMessage: (m: unknown) => (reply = m) }], waitUntil: () => undefined });
@@ -126,8 +132,12 @@ function loadWorker(pages: Record<string, Page>) {
     listeners.activate!({ waitUntil: (p: Promise<unknown>) => (work = p) });
     await work;
   }
-  const saved = () => [...(stores.get('df-saved')?.keys() ?? [])].map((u) => new URL(u).pathname + new URL(u).search).sort();
-  return { save, saved, fetched, stores, navigate, ping, activate, pages };
+  const paths = (name: string) => [...(stores.get(name)?.keys() ?? [])].map((u) => new URL(u).pathname + new URL(u).search).sort();
+  const saved = () => paths('df-saved');
+  /** What ordinary browsing has stored (the versioned page cache). */
+  const visited = () => paths([...stores.keys()].find((k) => k.startsWith('df-pages-')) ?? 'df-pages-none');
+  const statics = () => paths([...stores.keys()].find((k) => k.startsWith('df-static-')) ?? 'df-static-none');
+  return { save, saved, visited, statics, fetched, stores, navigate, post, ping, activate, pages };
 }
 
 describe('service worker: save for offline', () => {
@@ -207,5 +217,92 @@ describe('service worker: save for offline', () => {
     expect(notice).toBeInstanceOf(Response);
     const html = await (notice as Response).text();
     expect(html).toContain('href="/nyc/emergency"');
+  });
+});
+
+describe('service worker: pages the app is showing (CACHE_PAGE)', () => {
+  const page = (url: string, assets: string[] = []) => ({ type: 'CACHE_PAGE', url, assets });
+
+  it('stores a public page reached by an in-app link, which then opens offline', async () => {
+    const sw = loadWorker({ '/manhattan': {}, '/nyc/dim/housing': {} });
+    // Next's links load RSC payloads; the app names the page it is showing instead.
+    await sw.post(page('/manhattan'));
+    await sw.post(page('/nyc/dim/housing'));
+    expect(sw.visited()).toEqual(['/manhattan', '/nyc/dim/housing']);
+    sw.pages['/manhattan'] = 'offline';
+    const offline = (await sw.navigate('/manhattan')) as FakeResponse;
+    expect(offline.body).toBe('/manhattan#1');
+  });
+
+  it('does not fetch a page it stored moments ago, but refreshes an older copy', async () => {
+    const sw = loadWorker({ '/nyc': {}, '/bronx': { date: new Date(Date.now() - 10 * 60 * 1000).toUTCString() } });
+    // A document visit stores the page; the app's message on load then changes nothing.
+    await sw.navigate('/nyc');
+    await sw.post(page('/nyc'));
+    expect(sw.fetched.filter((u) => u.endsWith('/nyc'))).toHaveLength(1);
+    await sw.post(page('/bronx'));
+    await sw.post(page('/bronx'));
+    // Stored ten minutes ago by the server's clock: fetched again.
+    expect(sw.fetched.filter((u) => u.endsWith('/bronx'))).toHaveLength(2);
+  });
+
+  it('never stores a signed-in page, and stops fetching for this while someone is signed in', async () => {
+    const sw = loadWorker({ '/nyc': { cache: 'private' }, '/queens': { cache: 'private' } });
+    await sw.post(page('/nyc'));
+    expect(sw.visited()).toEqual([]);
+    // The server said "private": no second render just to be refused.
+    await sw.post(page('/queens'));
+    expect(sw.fetched.map((u) => new URL(u).pathname)).toEqual(['/nyc']);
+    // Signing out clears the marker, and pages are kept again.
+    sw.pages['/queens'] = {};
+    await sw.post({ type: 'CLEAR_PAGES' });
+    await sw.post(page('/queens'));
+    expect(sw.visited()).toEqual(['/queens']);
+  });
+
+  it('refuses staff pages, other origins and RSC payloads without fetching them', async () => {
+    const sw = loadWorker({ '/nyc/admin': {}, '/nyc': {} });
+    await sw.post(page('/nyc/admin'));
+    await sw.post(page('https://evil.example/nyc'));
+    await sw.post(page('/nyc?_rsc=abc'));
+    await sw.post(page('/account'));
+    expect(sw.fetched).toEqual([]);
+  });
+
+  it("stores the first visit's static files it does not have, and only same-origin /_next/static ones", async () => {
+    const sw = loadWorker({ '/nyc': {}, '/_next/static/chunks/app.js': {}, '/_next/static/css/app.css': {} });
+    await sw.post(
+      page('/nyc', ['/_next/static/chunks/app.js', '/_next/static/css/app.css', '/icons/icon.svg', 'https://cdn.example/_next/static/x.js']),
+    );
+    expect(sw.statics()).toEqual(['/_next/static/chunks/app.js', '/_next/static/css/app.css']);
+    sw.fetched.length = 0;
+    await sw.post(page('/nyc', ['/_next/static/chunks/app.js']));
+    expect(sw.fetched).toEqual([]);
+  });
+});
+
+describe('service worker: view-only query parameters offline', () => {
+  it('serves the stored portrait for a URL that only adds ?dim= (a selection, or Back to it)', async () => {
+    const sw = loadWorker({ '/nyc': {} });
+    await sw.navigate('/nyc');
+    sw.pages['/nyc'] = 'offline';
+    const selected = (await sw.navigate('/nyc?dim=housing')) as FakeResponse;
+    expect(selected.body).toBe('/nyc#1');
+    // Other queries still need their own copy.
+    expect(await sw.navigate('/nyc?sort=new')).toBeInstanceOf(Response);
+  });
+
+  it("stores and finds the installed app's /?source=pwa launch as the home page", async () => {
+    const sw = loadWorker({ '/': {} });
+    await sw.navigate('/?source=pwa');
+    expect(sw.visited()).toEqual(['/']);
+    sw.pages['/'] = 'offline';
+    expect(((await sw.navigate('/?source=pwa')) as FakeResponse).body).toBe('/#1');
+    expect(((await sw.navigate('/')) as FakeResponse).body).toBe('/#1');
+    // And the offline notice lists it as Home, not as a raw address.
+    const notice = (await sw.navigate('/nyc')) as Response;
+    const html = await notice.text();
+    expect(html).toContain('<a href="/">Home</a>');
+    expect(html).not.toContain('source=pwa');
   });
 });

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { removeApiKey, saveApiKey } from '@/lib/api-key-actions';
 import { useAction } from '@/lib/use-action';
 
-const field = 'mt-1 w-full rounded border border-black/20 bg-white px-2 py-1.5 font-mono text-sm';
+const field = 'mt-1 w-full rounded border border-field-border bg-white px-2 py-1.5 font-mono text-sm';
 
 /**
  * Add, replace, or remove the organization's Anthropic API key (SPEC-v7 §4),

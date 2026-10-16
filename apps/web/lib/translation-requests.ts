@@ -20,6 +20,17 @@ import { translationScope } from './translation-policy';
  */
 
 const PER_ADDRESS_PER_HOUR = 10;
+
+/**
+ * Advisory-lock namespace (the first key of pg_advisory_xact_lock(int, int))
+ * that makes the count and the insert atomic per portrait and address:
+ * without it a burst of parallel requests all count the same "0 so far"
+ * before any insert commits, and about one pool's worth more than the limit
+ * is stored. The second key hashes tenant + address; a collision only
+ * serializes two unrelated requests briefly. Distinct from the involvement
+ * form's namespaces (lib/involvement-actions.ts, 61_001 and 61_002).
+ */
+const LOCK_ADDRESS = 61_003;
 const REQUESTABLE = new Set<string>(LOCALES.filter((l) => l.code !== 'en').map((l) => l.code));
 
 export type TranslationRequestResult = { status: 'sent' | 'limited' | 'not_needed' };
@@ -56,6 +67,8 @@ export async function recordTranslationRequest(input: {
     // of anonymous requests would leave every connection waiting forever.
     if ((await portraitFeaturesIn(db, tenant.id)).translation) return { status: 'not_needed' as const };
 
+    // Held until this transaction commits or rolls back (see LOCK_ADDRESS).
+    await db.execute(sql`SELECT pg_advisory_xact_lock(${LOCK_ADDRESS}::int, hashtext(${`${tenant.id}:${ipHash}`}))`);
     const since = new Date(Date.now() - 60 * 60 * 1000);
     const [row] = await db.execute<{ count: string }>(
       sql`SELECT translation_request_count(${tenant.id}::uuid, ${ipHash}, ${since.toISOString()}::timestamptz) AS count`,

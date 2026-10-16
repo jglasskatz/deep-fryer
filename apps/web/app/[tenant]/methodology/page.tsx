@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { framework, getThreshold } from '@deep-fryer/contract';
@@ -7,8 +8,19 @@ import { getPortrait, hasDatabase } from '@/lib/data';
 import { dimensionLabel } from '@/lib/i18n/content';
 import { fmt, fmtPlural, rich } from '@/lib/i18n/format';
 import { getI18n } from '@/lib/i18n/server';
+import { pageTitle } from '@/lib/page-meta';
 
 export const dynamic = 'force-dynamic';
+
+/** "Methodology · New York City" (WCAG 2.4.2), in the reader's language. */
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  const [portrait, { m }] = await Promise.all([getPortrait((await params).tenant), getI18n()]);
+  if (!portrait) return { title: m.notFound.title };
+  return {
+    title: pageTitle(m.methodology.title, portrait.tenant.name),
+    description: fmt(m.methodology.metaDescription, { name: portrait.tenant.name }),
+  };
+}
 
 /**
  * The public methodology page (SPEC.md §10): auto-generated from config —

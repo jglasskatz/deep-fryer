@@ -57,6 +57,21 @@ export function statusLabel(level: number | null, words: DoughnutLabels['level']
 }
 
 /**
+ * The canvas backing store's density: the screen's device pixel ratio,
+ * capped at 3 (a 720 px doughnut is then at most 2160 px square, well within
+ * mobile canvas limits) and never below 1.
+ */
+export function doughnutPixelRatio(devicePixelRatio: number | undefined): number {
+  if (!devicePixelRatio || !Number.isFinite(devicePixelRatio)) return 1;
+  return Math.min(3, Math.max(1, devicePixelRatio));
+}
+
+/** Whether a keydown should hide the hover tooltip: an Escape no other widget used. */
+export function dismissesTooltip(event: { key: string; defaultPrevented: boolean; isComposing?: boolean }): boolean {
+  return event.key === 'Escape' && !event.defaultPrevented && !event.isComposing;
+}
+
+/**
  * React wrapper around the vendored canvas renderer from doughnut-santa-cruz
  * (the canonical visual, SPEC.md §4). Social dimensions draw on the inner
  * ring, ecological on the outer; viz_level uses the -100..150 scale.
@@ -96,6 +111,9 @@ export function Doughnut({ social, ecological, size = 640, onSelect, ariaLabel, 
     const renderer = new DoughnutRenderer({
       canvas,
       size,
+      // A backing store at the screen's density, so the canvas-drawn labels
+      // are not a 720 px bitmap stretched over a phone's 1000+ device pixels.
+      pixelRatio: doughnutPixelRatio(window.devicePixelRatio),
       donutScale: 1.0,
       textSize: Math.round((size / 640) * 13),
       onHover: (hit, event) => {
@@ -148,15 +166,39 @@ export function Doughnut({ social, ecological, size = 640, onSelect, ariaLabel, 
     };
   }, [social, ecological, size, byName, onSelect, controlled, selectedSlug, epoch]);
 
+  // Escape hides the hover tooltip without moving the pointer (WCAG 1.4.13:
+  // it covers part of the chart). It stays hidden until the pointer reaches
+  // another wedge: the renderer reports hover only when the wedge under it
+  // changes. preventDefault marks the Escape as spent, so DeepFryLayer does
+  // not also un-fry the page with it.
+  const tooltipShown = tooltip !== null;
+  useEffect(() => {
+    if (!tooltipShown) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (dismissesTooltip(event)) {
+        event.preventDefault();
+        setTooltip(null);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [tooltipShown]);
+
   return (
     <div
       style={{ position: 'relative', width: '100%', maxWidth: size }}
       onMouseLeave={() => setTooltip(null)}
     >
+      {/* width/height give the server-rendered canvas its square shape before the
+          renderer runs (it then sets the backing store, at the same 1:1 ratio). Without
+          them the canvas lays out at the default 300×150 until hydration, and the panel
+          and list below it jump by half its width. */}
       <canvas
         ref={canvasRef}
         role="img"
         aria-label={ariaLabel ?? labels.chartLabel}
+        width={size}
+        height={size}
         style={{ width: '100%', height: 'auto', display: 'block' }}
       />
       {tooltip ? (

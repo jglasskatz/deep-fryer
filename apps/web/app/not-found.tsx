@@ -1,5 +1,12 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getI18n } from '@/lib/i18n/server';
+
+/** "Page not found", in the language of the URL that missed, rather than the site's generic title. */
+export async function generateMetadata(): Promise<Metadata> {
+  const { m } = await getI18n();
+  return { title: m.notFound.title };
+}
 
 /** 404 in the language of the URL that missed (/es/… → Spanish). */
 export default async function NotFound() {

@@ -167,10 +167,14 @@ export function ImpactDoughnut({
 
   return (
     <div className="w-full" style={{ maxWidth: size }}>
+      {/* width/height in the server HTML reserve the square before the
+          renderer runs, so the controls below do not jump at hydration. */}
       <canvas
         ref={canvasRef}
         role="img"
         aria-label={ariaLabel}
+        width={size}
+        height={size}
         style={{ width: '100%', height: 'auto', display: 'block' }}
       />
       <div role="group" aria-label={labels.controls} className="mt-3 flex flex-wrap items-center justify-center gap-2">

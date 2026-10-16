@@ -20,6 +20,8 @@ import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import {
   PLANS,
   alertCheckTargets,
+  appRoleVerdict,
+  type AppRoleFacts,
   disabledFeaturesVerdict,
   nwsAlertsUrl,
   nwsFeedVerdict,
@@ -87,16 +89,22 @@ async function databaseChecks() {
       ? { status: 'pass', detail: `${applied} of ${expected} applied` }
       : { status: 'fail', detail: `${applied} of ${expected} applied — the migrate service did not finish` };
   });
+  // Beyond the role itself, the objects a pg_dump restore drops when the role
+  // was missing at restore time (appRoleVerdict). Privilege functions raise on
+  // a missing role or function, so each is asked only when its object exists.
   await guarded('database', 'row-level security role', async () => {
-    const [r] = await db.execute<{ exists: boolean; bypass: boolean | null; member: boolean | null }>(sql`
-      select exists(select 1 from pg_roles where rolname = 'deep_fryer_app') as exists,
-             (select rolbypassrls from pg_roles where rolname = 'deep_fryer_app') as bypass,
-             (select pg_has_role(current_user, 'deep_fryer_app', 'MEMBER')
-                where exists(select 1 from pg_roles where rolname = 'deep_fryer_app')) as member`);
-    if (!r?.exists) return { status: 'fail', detail: 'role deep_fryer_app missing (migration 0005)' };
-    if (r.bypass) return { status: 'fail', detail: 'deep_fryer_app has BYPASSRLS — policies would not apply' };
-    if (!r.member) return { status: 'fail', detail: 'the connecting user cannot SET ROLE deep_fryer_app' };
-    return { status: 'pass', detail: 'deep_fryer_app exists, NOBYPASSRLS, assumable' };
+    const [r] = await db.execute<AppRoleFacts>(sql`
+      with app as (select rolbypassrls from pg_roles where rolname = 'deep_fryer_app'),
+           owner_lock as (select to_regprocedure('public.lock_tenant_owners(uuid)') as fn)
+      select exists(select 1 from app) as exists,
+             (select rolbypassrls from app) as bypass,
+             (select pg_has_role(current_user, 'deep_fryer_app', 'MEMBER') where exists(select 1 from app)) as member,
+             (select has_table_privilege('deep_fryer_app', 'public.tenants', 'SELECT') where exists(select 1 from app)) as "readsTenants",
+             exists(select 1 from pg_policies
+                     where schemaname = 'public' and tablename = 'research_runs'
+                       and policyname = 'research_runs_app_insert_planned') as "insertGuard",
+             (select has_function_privilege('public', fn, 'EXECUTE') from owner_lock where fn is not null) as "ownerLockPublic"`);
+    return appRoleVerdict(r ?? { exists: false, bypass: null, member: null, readsTenants: null, insertGuard: false, ownerLockPublic: null });
   });
   // Blank counts as unset, as in the web app (compose passes `${DF_SECRETS_KEY:-}`).
   await guarded('database', 'organization API keys readable', async () => {

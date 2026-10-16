@@ -74,3 +74,11 @@ describe('Thread moderation controls', () => {
     expect(render([{ ...held, state: 'visible' }], false)).not.toContain('ms-auto flex');
   });
 });
+
+describe('Thread vote row', () => {
+  it('says the score in text a screen reader reads, not in an aria-label on a plain span', () => {
+    const html = render([{ ...held, state: 'visible', score: 7 }], false);
+    expect(html).toContain('<span aria-hidden="true">7</span><span class="sr-only">Score 7</span>');
+    expect(html).not.toMatch(/<span[^>]*aria-label="Score/);
+  });
+});

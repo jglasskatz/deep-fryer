@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useId, useState, useTransition } from 'react';
 import {
   FEATURE_REGISTRY,
   PORTRAIT_FEATURES,
@@ -19,22 +19,33 @@ import {
 } from '@deep-fryer/core';
 import { updateConfig } from '@/lib/actions';
 
-const field = 'w-full rounded border border-black/20 bg-white px-2 py-1 text-sm';
+const field = 'w-full rounded border border-field-border bg-white px-2 py-1 text-sm';
 
+/**
+ * A settings section. `ids` lets a lone field inside take the heading as its
+ * label and the description as its description (JsonEditor), where a
+ * visible <label> would only repeat the heading.
+ */
 function Section({
   title,
   description,
+  ids,
   children,
 }: {
   title: string;
   description?: string;
+  ids?: { heading: string; description: string };
   children: React.ReactNode;
 }) {
   return (
     <section className="rounded border border-black/15 p-4">
-      <h2 className="text-base font-semibold">{title}</h2>
+      <h2 id={ids?.heading} className="text-base font-semibold">
+        {title}
+      </h2>
       {description ? (
-        <p className="mt-1 text-xs text-[color:var(--color-muted)]">{description}</p>
+        <p id={ids?.description} className="mt-1 text-xs text-[color:var(--color-muted)]">
+          {description}
+        </p>
       ) : null}
       <div className="mt-3">{children}</div>
     </section>
@@ -101,8 +112,14 @@ function JsonEditor({
 }) {
   const [text, setText] = useState(JSON.stringify(initial ?? {}, null, 2));
   const [parseError, setParseError] = useState<string | null>(null);
+  // The textarea is named by the section heading and described by its text
+  // (and by the parse error while one shows); without these a screen reader
+  // announces only the raw JSON, with no field name (WCAG 1.3.1 / 4.1.2).
+  const id = useId();
+  const ids = { heading: `${id}-heading`, description: `${id}-description` };
+  const errorId = `${id}-error`;
   return (
-    <Section title={label} description={description}>
+    <Section title={label} description={description} ids={ids}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -120,8 +137,15 @@ function JsonEditor({
           rows={12}
           value={text}
           onChange={(e) => setText(e.target.value)}
+          aria-labelledby={ids.heading}
+          aria-describedby={parseError ? `${ids.description} ${errorId}` : ids.description}
+          aria-invalid={parseError ? true : undefined}
         />
-        {parseError ? <p className="mt-1 text-xs text-red-700">{parseError}</p> : null}
+        {parseError ? (
+          <p id={errorId} className="mt-1 text-xs text-red-700">
+            {parseError}
+          </p>
+        ) : null}
         {status ? <p className="mt-1 text-xs">{status}</p> : null}
         <SaveButton pending={pending} />
       </form>

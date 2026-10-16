@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DEFAULT_EMERGENCY_TIME_ZONE } from '@deep-fryer/core';
@@ -10,6 +11,7 @@ import { dimensionLabel } from '@/lib/i18n/content';
 import { fmt } from '@/lib/i18n/format';
 import type { Messages } from '@/lib/i18n/messages/en';
 import { getI18n } from '@/lib/i18n/server';
+import { pageTitle } from '@/lib/page-meta';
 import {
   formDimensionOptions,
   groupListingsByDimension,
@@ -22,6 +24,16 @@ import { portraitFeatures } from '@/lib/features';
 import { safeHref } from '@/lib/safe-url';
 
 export const dynamic = 'force-dynamic';
+
+/** "Get involved · New York City" (WCAG 2.4.2), in the reader's language. */
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  const [portrait, { m }] = await Promise.all([getPortrait((await params).tenant), getI18n()]);
+  if (!portrait) return { title: m.notFound.title };
+  return {
+    title: pageTitle(m.outreach.title, portrait.tenant.name),
+    description: fmt(m.outreach.metaDescription, { name: portrait.tenant.name }),
+  };
+}
 
 /**
  * Get involved (SPEC-v6 §4.1–4.2; listings and form behind the involvement

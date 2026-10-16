@@ -1,12 +1,19 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { NewRunForm } from '@/components/admin/NewRunForm';
 import { tenantDimensions, tenantRuns } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
+import { adminPageMetadata } from '@/lib/page-meta';
 import { billingSummary, keyFundedSessionsNote } from '@/lib/billing';
 import { UsageMeter } from '@/components/billing/UsageMeter';
 
 export const dynamic = 'force-dynamic';
+
+/** Research runs · Admin · <portrait> (WCAG 2.4.2): the generic site title named none of the staff pages. */
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  return adminPageMetadata((await params).tenant, 'Research runs');
+}
 
 export default async function ResearchPage({
   params,

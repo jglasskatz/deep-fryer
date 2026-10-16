@@ -12,7 +12,9 @@ import { RequestTranslation } from './RequestTranslation';
  * Language menu for the public plane (NYC Local Law 30): every language
  * listed in its own script, each linking to this same page in that language.
  * English is reached through `?hl=en`, which also clears a remembered choice
- * (middleware.ts). A <details> disclosure — no JavaScript, works offline.
+ * (middleware.ts). A <details> disclosure — no JavaScript, works offline;
+ * with script, the header's HeaderMenuDismiss also closes it on Escape, on
+ * focus leaving it, and on a press outside (site-header/header-menus.ts).
  */
 export async function LanguageSwitcher() {
   const { locale, info, m } = await getI18n();

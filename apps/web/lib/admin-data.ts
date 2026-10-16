@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import {
   defaultTenantConfig,
@@ -35,9 +36,13 @@ import { userDb } from './db';
 
 const CONFIG_FALLBACK = defaultTenantConfig('', '');
 
-export function adminTenant(slug: string): Promise<Tenant | null> {
+/**
+ * Memoized for one request (React cache): the admin guard, the header's
+ * queue badges and the page title all look the portrait up.
+ */
+export const adminTenant = cache((slug: string): Promise<Tenant | null> => {
   return userDb((db) => tenantBySlug(db, slug));
-}
+});
 
 export interface DimensionWithVersions {
   dimension: Dimension;

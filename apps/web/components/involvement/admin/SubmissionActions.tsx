@@ -46,6 +46,9 @@ export function SubmissionActions({
   const [note, setNote] = useState('');
   const review = useAction();
   const reopen = useAction();
+  // Both actions revalidate this page, so their response already carries it
+  // (lib/use-action.ts): no router.refresh() on top.
+  const noRefresh = { refresh: false };
   const panelId = `submission-${submissionId}-decision`;
 
   if (status === 'approved') return null;
@@ -57,7 +60,7 @@ export function SubmissionActions({
           type="button"
           disabled={reopen.pending}
           className="rounded border px-2 py-1 text-xs hover:bg-black/5 disabled:opacity-50"
-          onClick={() => reopen.run(() => reopenSubmission({ tenantSlug, submissionId }))}
+          onClick={() => reopen.run(() => reopenSubmission({ tenantSlug, submissionId }), noRefresh)}
         >
           {reopen.pending ? 'Moving…' : 'Move back to New'}
         </button>
@@ -125,14 +128,14 @@ export function SubmissionActions({
             onSubmit={(e) => {
               e.preventDefault();
               const decision = open;
-              review.run(() => reviewSubmission({ tenantSlug, submissionId, status: decision, note }));
+              review.run(() => reviewSubmission({ tenantSlug, submissionId, status: decision, note }), noRefresh);
             }}
           >
             <label className="block text-sm">
               <span className="font-medium">Note for staff</span>{' '}
               <span className="text-xs text-[color:var(--color-muted)]">(optional, never sent to the submitter)</span>
               <textarea
-                className="mt-1 w-full rounded border border-black/20 bg-white px-2 py-1 text-sm"
+                className="mt-1 w-full rounded border border-field-border bg-white px-2 py-1 text-sm"
                 rows={2}
                 maxLength={INVOLVEMENT_LIMITS.reviewNote}
                 value={note}

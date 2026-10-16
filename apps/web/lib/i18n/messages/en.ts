@@ -146,6 +146,8 @@ export const en = {
     baseline_only: 'Only the baseline measurement exists so far; the next refresh will show the trend.',
   },
   portrait: {
+    /** The portrait page's search and share description. */
+    metaDescription: 'The Doughnut Economics portrait of {name}: the social foundation and the ecological ceiling, with the source behind every number.',
     population: 'pop. {n}',
     clickHint: 'Select a segment for indicators, evidence, actions, and discussion.',
     /** The visible list of dimensions under the doughnut (SPEC-v6 §2.1). */
@@ -172,6 +174,8 @@ export const en = {
     demoHint: 'Demo data — set DATABASE_URL and publish versions for real content.',
   },
   dimension: {
+    /** A dimension page's search and share description; {dimension} is its name. */
+    metaDescription: '{dimension} in {name}: the data, its sources, and what you can do.',
     updated: 'updated {date}',
     target: 'target: {value}',
     noTarget: 'no target set',
@@ -259,6 +263,8 @@ export const en = {
     trendTarget: 'target {value}',
   },
   methodology: {
+    /** The methodology page's search and share description. */
+    metaDescription: 'How the {name} portrait is measured: geography, sources, and every target with its rationale.',
     title: 'Methodology',
     intro:
       'This portrait follows the Doughnut Economics downscaling approach: a social foundation (falling short is a shortfall, drawn toward the center) and an ecological ceiling (exceeding it is an overshoot, drawn outward). Every indicator has an explicit target with a written rationale, listed below. Where this portrait uses a target different from the framework default, the local rationale is shown.',
@@ -279,6 +285,8 @@ export const en = {
     contentInEnglish: 'Indicator names and rationales are published in English.',
   },
   outreach: {
+    /** The get-involved page's search and share description. */
+    metaDescription: 'Ways to take part in {name}, and the organizations working on its data.',
     title: 'Get involved',
     empty:
       'Local organizations will be listed here as the portrait grows. In the meantime, each dimension page lists concrete actions.',

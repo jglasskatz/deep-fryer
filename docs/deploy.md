@@ -106,7 +106,8 @@ Things only the operator can supply; the preflight confirms each one.
    while its feature is off.
 6. **Language access** — certified review of the translation catalogs before
    an agency relies on them under Local Law 30 (docs/language-access.md).
-7. **Backups** — nightly `pg_dump` plus the `storage` volume (§6).
+7. **Backups** — the nightly database, `storage` volume and `.env` backup
+   copied off the host, and one restore rehearsed on a scratch host (§6).
 
 ## 4. First organization
 
@@ -286,21 +287,160 @@ In the Stripe Dashboard, enable the invoice payment methods governments use
 
 ## 6. Operations
 
-- **Backups:** `docker compose exec db pg_dump -U deep_fryer -Fc deep_fryer > backup.dump`
-  nightly, plus the `storage` volume (evidence is the audit record — back it
-  up with the same retention as the database).
+- **Backups and restore:** the database, the `storage` volume, and `.env`
+  ([Backups](#backups) and [Restore](#restore) below).
 - **Upgrades:** `git pull && docker compose up -d --build` — the migrate job
   runs first and the app waits for it.
 - **Scaling research:** `docker compose up -d --scale worker=3`; sessions are
   independent and the queue is in Postgres.
+- **Database connections:** each web and worker container keeps one pool of
+  up to `DATABASE_POOL_MAX` connections (default 10; set it in `.env`, and
+  compose passes it to web, worker and migrate). Each worker also holds
+  graphile-worker's queue connections: four at `WORKER_CONCURRENCY=1`, more
+  as it rises. Keep (web containers + worker containers) × `DATABASE_POOL_MAX`,
+  plus the queue connections, below Postgres's `max_connections` (100 in the
+  bundled `postgres:16`), with room left for migrate, backups and `psql`: one
+  web and three workers at the defaults need about 4 × 10 + 3 × 4 = 52.
 - **Legacy Supabase data:** memberships from the Supabase era point at user
   ids with no login; re-invite those people from each portrait's Members page.
-- **Database roles:** migrations create `deep_fryer_app` (no login, no
-  `BYPASSRLS`) and grant it to the connecting user. Every user-driven query
-  runs inside a transaction that switches to that role and sets the caller's
+- **Database roles:** `deep_fryer_app` (no login, no `BYPASSRLS`), `anon`
+  and `authenticated` belong to the Postgres cluster, not to the database.
+  Migrations create them on a new database and grant `deep_fryer_app` to the
+  connecting user; `pg_dump` does not carry them, so a restore must create
+  them itself, before `pg_restore` ([Restore](#restore)). Every user-driven
+  query runs inside a transaction that switches to that role and sets the caller's
   id, so row-level security is enforced by Postgres (SPEC-v4 §6). Only
   identity resolution, billing, invitations, webhooks, and the worker use the
   owner connection.
 - **Mail:** with `SMTP_URL` set, the worker emails each portrait's owners,
   editors, and organization owners when a research run finishes, fails, or
   flags findings (per the portrait's notification settings).
+
+### Backups
+
+Three things, all needed to recover: the database, the `storage` volume
+(evidence is the audit record behind every published claim), and `.env`.
+Without `DF_SECRETS_KEY` from `.env`, organizations' stored API keys cannot
+be decrypted
+([Organizations' own Anthropic API keys](#organizations-own-anthropic-api-keys-spec-v7-4)),
+so keep `.env` with the backups, as protected as the database itself.
+
+Run this nightly from the deep-fryer checkout, for example from cron with
+`15 3 * * * cd /srv/deep-fryer && ./backup.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+day=$(date +%F)
+mkdir -p backups
+
+# Database. pg_dump writes to a temporary name, the archive is read back,
+# and only then is it renamed. A failed run exits non-zero and never
+# replaces an earlier backup with an empty file.
+docker compose exec -T db pg_dump -U deep_fryer -Fc deep_fryer > "backups/db-$day.dump.tmp"
+docker compose exec -T db pg_restore -l < "backups/db-$day.dump.tmp" > /dev/null
+mv "backups/db-$day.dump.tmp" "backups/db-$day.dump"
+
+# Evidence. SeaweedFS is stopped so that its metadata store is copied in a
+# consistent state. Until it starts again, evidence images do not load and
+# the worker cannot save evidence. `run` mounts the project's own storage
+# volume, so you never need its name. The trap restarts storage if tar fails.
+docker compose stop storage
+trap 'docker compose start storage' EXIT
+docker compose run --rm --no-deps -v "$PWD/backups":/backup --entrypoint tar storage \
+  czf "/backup/storage-$day.tgz.tmp" -C /data .
+docker compose start storage
+trap - EXIT
+mv "backups/storage-$day.tgz.tmp" "backups/storage-$day.tgz"
+
+# Keep 30 days on the host. The patterns also match .tmp files left by
+# failed runs.
+find backups -name 'db-*.dump*' -mtime +30 -delete
+find backups -name 'storage-*.tgz*' -mtime +30 -delete
+```
+
+Then copy `backups/` and `.env` off the host every night, to an rsync
+target or a bucket with another provider. A backup kept only on the
+droplet is lost along with it. Keep at least the same 30 days there, or
+longer if the city's records schedule requires it for evidence.
+
+### Restore
+
+The only way to know a backup works is to restore it. Rehearse this on a
+scratch host before go-live and after upgrades.
+
+Restore onto the release the backup was taken on, or a newer one. Follow
+§1 to get a checkout, put the saved `.env` in place, and copy the backup
+files into `backups/`. Do **not** run `docker compose up` until step 5.
+These steps also work on a host where the stack has already started, but
+they replace its data, so back that up first if you still need it.
+
+```bash
+d=2026-10-15   # the date of the backup to restore
+
+# 1. Run only the database, so nothing writes while you restore.
+docker compose stop caddy web worker storage
+docker compose up -d --wait db
+
+# 2. Create an empty database that migrate has never touched, and the
+#    cluster roles the dump refers to but does not contain.
+docker compose exec -T db psql -U deep_fryer -d postgres -v ON_ERROR_STOP=1 <<'SQL'
+DROP DATABASE IF EXISTS deep_fryer;
+CREATE DATABASE deep_fryer OWNER deep_fryer;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN CREATE ROLE anon NOLOGIN; END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'deep_fryer_app') THEN
+    CREATE ROLE deep_fryer_app NOLOGIN NOBYPASSRLS;
+  END IF;
+END $$;
+GRANT deep_fryer_app TO deep_fryer;
+SQL
+
+# 3. Restore the database. This must exit 0; any error rolls the whole
+#    restore back.
+docker compose exec -T db pg_restore -U deep_fryer -d deep_fryer --exit-on-error --single-transaction \
+  < "backups/db-$d.dump"
+
+# 4. Restore the evidence into an emptied storage volume.
+docker compose run --rm --no-deps -v "$PWD/backups":/backup:ro --entrypoint sh storage \
+  -c "find /data -mindepth 1 -delete && tar xzf /backup/storage-$d.tgz -C /data"
+
+# 5. Start everything. Migrate finds every migration already recorded and
+#    applies only those newer than the backup.
+docker compose up -d --build
+```
+
+Why the order matters:
+
+- **The roles must exist before `pg_restore` runs.** Without them, every
+  grant to `deep_fryer_app` is dropped, along with the restrictive
+  `research_runs_app_insert_planned` policy and the REVOKE that keeps
+  `lock_tenant_owners` from PUBLIC. The migration journal still comes back
+  complete, so migrate repairs none of this, and every portrait page
+  returns a 500. Creating the roles after the restore does not bring those
+  objects back. The only fix is to start again from step 2.
+- **The database must be one that migrate has never touched.** Restoring
+  over the tables a `docker compose up` created fails on every object that
+  already exists, and foreign keys reject whole tables of data. A
+  `pg_restore` without `--exit-on-error --single-transaction` then exits 1
+  with only an "errors ignored on restore" warning. That warning looks the
+  same as a restore that only lacked roles, but this time the portraits are
+  left with no data and no audit log.
+- **Create the roles with step 2, not with `pg_dumpall --roles-only`.** On a
+  cluster whose bootstrap superuser is not `deep_fryer`, its
+  `GRANT deep_fryer_app TO deep_fryer … GRANTED BY deep_fryer` line fails.
+
+Then check the restored site. The preflight's row-level-security check
+fails on any grant, policy or function permission missing from a restore,
+and `/api/health` answers 200 only when a visitor's query works:
+
+```bash
+docker compose run --rm migrate node --import tsx ../../scripts/preflight.ts
+curl -fsS https://<SITE_ADDRESS>/api/health                                # {"ok":true}
+curl -fsS -o /dev/null -w '%{http_code}\n' https://<SITE_ADDRESS>/<portrait>  # 200
+```
+
+Last, open a dimension page and one of its evidence snapshots (a `/files/…`
+link). A 404 there means the storage archive did not restore.

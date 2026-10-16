@@ -10,7 +10,7 @@ const CONFIDENCES: Confidence[] = ['high', 'medium', 'low'];
 const SCALES: GeographicScale[] = ['city', 'county', 'regional', 'state', 'national', 'global'];
 
 const field =
-  'w-full rounded border border-black/20 bg-white px-2 py-1 text-sm';
+  'w-full rounded border border-field-border bg-white px-2 py-1 text-sm';
 
 /** Form input → indicator value: empty is null, numeric strings are numbers. */
 const parseValueInput = (raw: string): number | string | null =>

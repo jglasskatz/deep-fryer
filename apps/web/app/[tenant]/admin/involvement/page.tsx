@@ -1,12 +1,14 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { linkHost, telHref } from '@deep-fryer/core';
 import type { InvolvementListing } from '@deep-fryer/db';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { ActionButton } from '@/components/admin/ActionButton';
-import { ListingForm, type ListingFormListing } from '@/components/involvement/admin/ListingForm';
+import { ListingEditDetails, ListingForm, type ListingFormListing } from '@/components/involvement/admin/ListingForm';
 import { SubmissionActions } from '@/components/involvement/admin/SubmissionActions';
 import { KIND_LABELS, dimensionName, dimensionsInWords } from '@/components/involvement/admin/labels';
 import { requireAdminPage } from '@/lib/admin-guard';
+import { adminPageMetadata } from '@/lib/page-meta';
 import {
   SUBMISSION_STATUSES,
   SUBMISSIONS_PER_TAB,
@@ -22,6 +24,11 @@ import { requireFeature } from '@/lib/features';
 import { safeHref } from '@/lib/safe-url';
 
 export const dynamic = 'force-dynamic';
+
+/** Get involved · Admin · <portrait> (WCAG 2.4.2): the generic site title named none of the staff pages. */
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  return adminPageMetadata((await params).tenant, 'Get involved');
+}
 
 const STATUS_TAB: Record<SubmissionStatus, { tab: string; empty: string }> = {
   new: { tab: 'New', empty: 'No new submissions. Organizations reach this queue through the form on every dimension page.' },
@@ -271,15 +278,21 @@ function ListingRow({ tenantSlug, listing: l, timeZone }: { tenantSlug: string; 
           </p>
         </div>
         <span className="flex flex-wrap items-start gap-2">
+          {/* Every listing action revalidates this page, so its response already carries it: no refresh on top. */}
           <ActionButton
             action={setListingPublished.bind(null, { tenantSlug, id: l.id, published: !l.published })}
             pendingLabel="Saving…"
             confirm={publishConfirm}
+            refresh={false}
           >
             {l.published ? 'Unpublish' : 'Publish'}
           </ActionButton>
           {l.url ? (
-            <ActionButton action={markLinkChecked.bind(null, { tenantSlug, id: l.id })} pendingLabel="Saving…">
+            <ActionButton
+              action={markLinkChecked.bind(null, { tenantSlug, id: l.id })}
+              pendingLabel="Saving…"
+              refresh={false}
+            >
               Link checked today
             </ActionButton>
           ) : null}
@@ -288,18 +301,14 @@ function ListingRow({ tenantSlug, listing: l, timeZone }: { tenantSlug: string; 
             pendingLabel="Deleting…"
             confirm={`Delete “${l.name}”? This cannot be undone.`}
             className="rounded border border-red-300 px-2 py-1 text-xs text-red-800 hover:bg-red-50 disabled:opacity-50"
+            refresh={false}
           >
             Delete
           </ActionButton>
         </span>
       </div>
-      <details className="mt-2">
-        <summary className="cursor-pointer text-sm underline">Edit</summary>
-        <div className="mt-3">
-          {/* Keyed by updatedAt: a changed listing remounts with its new values (ListingForm). */}
-          <ListingForm key={`${l.id}:${l.updatedAt.getTime()}`} tenantSlug={tenantSlug} listing={formListing} />
-        </div>
-      </details>
+      {/* The form mounts only when Edit is opened; updatedAt remounts it with a changed listing's values. */}
+      <ListingEditDetails tenantSlug={tenantSlug} listing={formListing} version={l.updatedAt.getTime()} />
     </li>
   );
 }

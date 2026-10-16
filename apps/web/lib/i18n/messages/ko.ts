@@ -118,6 +118,7 @@ export const ko: Messages = {
     baseline_only: '아직 기준선 측정값만 있습니다. 다음 업데이트 때 추세가 표시됩니다.',
   },
   portrait: {
+    metaDescription: '{name}의 Doughnut Economics 프로필: 사회적 기초와 생태적 한계, 모든 수치의 출처를 함께 제공합니다.',
     population: '인구 {n}명',
     clickHint: '도넛 조각을 선택하면 지표, 증거 자료, 실천 방안, 토론을 볼 수 있습니다.',
     demoHint: '데모 데이터입니다 — 실제 콘텐츠를 표시하려면 DATABASE_URL을 설정하고 버전을 게시하십시오.',
@@ -140,6 +141,7 @@ export const ko: Messages = {
     legendNoData: '회색: 아직 데이터 없음',
   },
   dimension: {
+    metaDescription: '{name}의 {dimension}: 데이터, 출처, 주민이 할 수 있는 일.',
     updated: '{date} 업데이트',
     target: '목표: {value}',
     noTarget: '목표 미설정',
@@ -228,6 +230,7 @@ export const ko: Messages = {
     trendTarget: '목표 {value}',
   },
   methodology: {
+    metaDescription: '{name} 프로필의 측정 방법: 지리적 범위, 출처, 각 목표와 그 근거.',
     title: '방법론',
     intro:
       '이 프로필은 Doughnut Economics(도넛 경제학)을 지역 단위에 적용하는 방식을 따릅니다. 이 방식은 사회적 기초(여기에 미치지 못하면 결핍이며, 중심 쪽으로 표시됨)와 생태적 한계(이를 넘어서면 초과이며, 바깥쪽으로 표시됨)로 구성됩니다. 모든 지표에는 명확한 목표와 서면 근거가 있으며, 아래에 나와 있습니다. 이 프로필이 프레임워크 기본값과 다른 목표를 사용하는 경우에는 지역의 근거가 표시됩니다.',
@@ -247,6 +250,7 @@ export const ko: Messages = {
     contentInEnglish: '지표 이름과 근거는 영어로 게시됩니다.',
   },
   outreach: {
+    metaDescription: '{name}에서 참여하는 방법과 이 데이터 작업에 참여하는 단체.',
     title: '참여하기',
     empty:
       '프로필이 확대됨에 따라 지역 단체들이 이곳에 소개될 예정입니다. 그동안에는 각 영역 페이지에서 구체적인 실천 방안을 확인하실 수 있습니다.',

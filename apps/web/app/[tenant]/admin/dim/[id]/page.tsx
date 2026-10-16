@@ -1,13 +1,34 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { DimensionEditor } from '@/components/admin/DimensionEditor';
 import { dimensionById, versionTimeline } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
+import { hasDatabase } from '@/lib/env';
+import { en } from '@/lib/i18n/messages/en';
+import { adminPageMetadata } from '@/lib/page-meta';
 import { publishVersion } from '@/lib/actions';
 import { ActionButton } from '@/components/admin/ActionButton';
 
 export const dynamic = 'force-dynamic';
+
+/**
+ * "Housing · Admin · <portrait>" (WCAG 2.4.2), so a staff member editing
+ * several dimensions can tell their tabs apart. The framework name from the
+ * slug (the admin pages are English); a portrait's own dimension shows its
+ * slug. dimensionById is a primary-key read under the reader's row security.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ tenant: string; id: string }>;
+}): Promise<Metadata> {
+  const { tenant, id } = await params;
+  const dimension = hasDatabase() ? await dimensionById(id) : null;
+  const name = dimension ? (en.dimensions[dimension.slug as keyof typeof en.dimensions] ?? dimension.slug) : 'Dimension';
+  return adminPageMetadata(tenant, name);
+}
 
 export default async function DimensionAdminPage({
   params,

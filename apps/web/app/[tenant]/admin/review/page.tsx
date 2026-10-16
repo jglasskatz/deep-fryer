@@ -1,11 +1,18 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { ReviewCard } from '@/components/admin/ReviewCard';
 import { requireAdminPage } from '@/lib/admin-guard';
+import { adminPageMetadata } from '@/lib/page-meta';
 import { evidenceBase } from '@/lib/data';
 import { reviewQueue } from '@/lib/review-data';
 
 export const dynamic = 'force-dynamic';
+
+/** Review queue · Admin · <portrait> (WCAG 2.4.2): the generic site title named none of the staff pages. */
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  return adminPageMetadata((await params).tenant, 'Review queue');
+}
 
 export default async function ReviewQueuePage({
   params,

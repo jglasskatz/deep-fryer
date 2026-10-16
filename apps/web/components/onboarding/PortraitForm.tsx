@@ -5,7 +5,7 @@ import { slugify } from '@deep-fryer/core';
 import { addPortrait, startTrial } from '@/lib/org-actions';
 import { useAction } from '@/lib/use-action';
 
-const field = 'mt-1 w-full rounded border border-black/20 bg-white px-2 py-1.5 text-sm';
+const field = 'mt-1 w-full rounded border border-field-border bg-white px-2 py-1.5 text-sm';
 
 /**
  * The portrait-creation form, used by /start (new organization on a trial)
@@ -87,7 +87,10 @@ export function PortraitForm({
         <div className="mt-3 space-y-4">
           <label className="block">
             <span className="font-medium">Public address</span>
-            <span className="mt-1 flex items-center rounded border border-black/20 bg-white">
+            {/* The bordered span is what reads as the field (the prefix sits inside it), so the
+                input's own focus ring is off and the span draws one instead: without it this
+                field would show no focus indicator at all (WCAG 2.4.7). */}
+            <span className="mt-1 flex items-center rounded border border-field-border bg-white focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[color:var(--color-accent)]">
               <span className="pl-2 text-[color:var(--color-muted)]">deep-fryer/</span>
               <input
                 className="w-full bg-transparent px-1 py-1.5 outline-none"

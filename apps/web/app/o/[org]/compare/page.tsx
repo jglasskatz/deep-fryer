@@ -158,12 +158,22 @@ export default async function ComparePage({ params }: { params: Promise<{ org: s
         </section>
 
         <section className="mt-12">
-          <h2 className="text-xl font-semibold">{fmt(m.compare.divergeTitle, { nouns })}</h2>
+          <h2 id="diverge-heading" className="text-xl font-semibold">
+            {fmt(m.compare.divergeTitle, { nouns })}
+          </h2>
           <p className="mt-1 text-sm text-[color:var(--color-muted)]">
             {fmt(m.compare.divergeIntro, { noun, nouns })}
             {whole ? ` ${m.compare.wholeColumn}` : ''}
           </p>
-          <div className="mt-4 overflow-x-auto">
+          {/* A phone shows half this table, and nothing inside it takes focus: the box itself
+              is focusable (and named by the heading) so the keyboard can scroll it in every
+              browser — Safari does not make scroll containers focusable on its own. */}
+          <div
+            tabIndex={0}
+            role="region"
+            aria-labelledby="diverge-heading"
+            className="mt-4 overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-accent)]"
+          >
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-black/15">

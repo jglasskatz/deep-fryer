@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import {
@@ -9,6 +10,7 @@ import {
   tenantRuns,
 } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
+import { adminPageMetadata } from '@/lib/page-meta';
 import { billingSummary, WARNING_COPY } from '@/lib/billing';
 import { countHeldComments } from '@/lib/discussion';
 import { portraitFeaturesById } from '@/lib/features';
@@ -17,6 +19,11 @@ import { tenantMembersList } from '@/lib/member-data';
 import { organizationMembersList } from '@/lib/member-data';
 
 export const dynamic = 'force-dynamic';
+
+/** Admin · <portrait> (WCAG 2.4.2): the generic site title named none of the staff pages. */
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  return adminPageMetadata((await params).tenant);
+}
 
 export default async function TenantAdminPage({
   params,
@@ -243,11 +250,14 @@ export default async function TenantAdminPage({
               <li className="text-[color:var(--color-muted)]">No audit entries yet.</li>
             ) : (
               audit.map((entry) => (
-                <li key={String(entry.id)} className="flex gap-3">
-                  <span className="w-40 shrink-0 text-[color:var(--color-muted)]">
+                // The row wraps, and the entity may break anywhere: names such as
+                // involvement_submission are one unbreakable word that, beside a fixed
+                // timestamp column, pushed a 320 px page sideways (WCAG 1.4.10).
+                <li key={String(entry.id)} className="flex flex-wrap gap-x-3">
+                  <span className="shrink-0 text-[color:var(--color-muted)] sm:w-40">
                     {entry.ts.toISOString().slice(0, 16).replace('T', ' ')}
                   </span>
-                  <span>
+                  <span className="min-w-0 wrap-anywhere">
                     <code>{entry.action}</code> on {entry.entity}
                   </span>
                 </li>

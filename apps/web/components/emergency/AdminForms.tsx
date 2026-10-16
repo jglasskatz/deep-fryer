@@ -39,7 +39,7 @@ import { useAction } from '@/lib/use-action';
  * the row's Publish / Unpublish button changes it.
  */
 
-const field = 'w-full rounded border border-black/20 bg-white px-2 py-1 text-sm';
+const field = 'w-full rounded border border-field-border bg-white px-2 py-1 text-sm';
 const label = 'block text-sm';
 const hint = 'mt-0.5 block text-xs text-[color:var(--color-muted)]';
 
@@ -358,7 +358,7 @@ export function HazardForm({ tenantSlug, hazard }: { tenantSlug: string; hazard?
                         {impact ? (
                           <select
                             aria-label={`Impact on ${d.name}`}
-                            className="rounded border border-black/20 bg-white px-1 py-0.5 text-xs"
+                            className="rounded border border-field-border bg-white px-1 py-0.5 text-xs"
                             value={impact}
                             onChange={(e) => set({ ...s, impacts: { ...s.impacts, [d.slug]: e.target.value as Impact } })}
                           >
@@ -379,7 +379,7 @@ export function HazardForm({ tenantSlug, hazard }: { tenantSlug: string; hazard?
         <label className="flex items-center gap-2 text-sm">
           <span className="font-medium">Order</span>
           <input
-            className="w-20 rounded border border-black/20 bg-white px-2 py-1 text-sm"
+            className="w-20 rounded border border-field-border bg-white px-2 py-1 text-sm"
             type="number"
             min={0}
             max={10000}
@@ -555,7 +555,7 @@ export function PlanForm({
         <label className="flex items-center gap-2 text-sm">
           <span className="font-medium">Order</span>
           <input
-            className="w-20 rounded border border-black/20 bg-white px-2 py-1 text-sm"
+            className="w-20 rounded border border-field-border bg-white px-2 py-1 text-sm"
             type="number"
             min={0}
             max={10000}
@@ -677,7 +677,7 @@ export function ResourceForm({
         <label className="flex items-center gap-2 text-sm">
           <span className="font-medium">Order</span>
           <input
-            className="w-20 rounded border border-black/20 bg-white px-2 py-1 text-sm"
+            className="w-20 rounded border border-field-border bg-white px-2 py-1 text-sm"
             type="number"
             min={0}
             max={10000}

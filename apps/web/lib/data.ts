@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { eq, inArray } from 'drizzle-orm';
 import { evidencePublicBase, type OutreachContactData } from '@deep-fryer/core';
 import {
@@ -17,13 +18,16 @@ export { hasDatabase };
  * The public read path. Goes through the published_doughnut(slug) SQL
  * function so the app serves exactly what RLS-governed clients would see.
  * Local dev without DATABASE_URL falls back to the bundled demo portrait.
+ *
+ * Memoized for one request (React cache): a page and its generateMetadata
+ * both need the portrait, and read it once.
  */
-export async function getPortrait(slug: string): Promise<PublishedPortrait | null> {
+export const getPortrait = cache(async (slug: string): Promise<PublishedPortrait | null> => {
   if (!hasDatabase()) {
     return slug === mockPortrait.tenant.slug ? mockPortrait : null;
   }
   return userDb((db) => publishedDoughnut<PublishedPortrait>(db, slug));
-}
+});
 
 /**
  * Public base URL for a tenant's evidence (SPEC-v3 §2.1). The URL scheme is

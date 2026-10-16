@@ -8,7 +8,7 @@ import { POLICY_LIMITS, briefLength } from '@/lib/policy-limits';
 import { useAction } from '@/lib/use-action';
 import { unwrap } from '@/lib/action-result';
 
-const field = 'w-full rounded border border-black/20 bg-white px-2 py-1.5 text-sm';
+const field = 'w-full rounded border border-field-border bg-white px-2 py-1.5 text-sm';
 const sessions = `${POLICY_ANALYSIS_SESSIONS} research session${POLICY_ANALYSIS_SESSIONS === 1 ? '' : 's'}`;
 
 /**

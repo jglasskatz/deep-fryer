@@ -55,7 +55,9 @@ export function confirmationFor(
  * come in the reader's preferred language when we know it (remembered choice
  * or browser language), and `lang`/`dir` follow them, so a reader who cannot
  * read English can still ask. A <details> disclosure like the language menu,
- * sharing its exclusive-open group.
+ * sharing its exclusive-open group — and so its Escape / focus-out /
+ * press-outside dismissal (site-header/header-menus.ts), which keys on the
+ * group's name.
  *
  * `lang`/`dir` go on the text, never on the <details> or its positioned
  * panel. Those two stay in the page's direction: the panel is pinned with
@@ -121,7 +123,7 @@ export function RequestTranslation({
             <label className="grow">
               <span className="block text-xs">{labels.language}</span>
               <select
-                className="mt-1 w-full rounded border border-black/20 bg-white px-2 py-1.5"
+                className="mt-1 w-full rounded border border-field-border bg-white px-2 py-1.5"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
               >

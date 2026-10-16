@@ -15,15 +15,20 @@ import {
 } from '@/lib/env';
 import { rich } from '@/lib/i18n/format';
 import { loginI18n } from './i18n';
-import { afterEmailSignIn, checkEmailHref, loginErrorHref, loginErrorMessage, returnPath } from './sign-in';
+import {
+  afterEmailSignIn,
+  checkEmailHref,
+  isPlausibleEmail,
+  loginErrorHref,
+  loginErrorMessage,
+  MAX_EMAIL_LENGTH,
+  returnPath,
+} from './sign-in';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { m } = await loginI18n();
   return { title: m.login.title };
 }
-
-/** A plausible address; Auth.js normalizes and validates it again. */
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * Sign in (SPEC-v3 §2.1, SPEC-v6 §2.2): Microsoft and Google for city staff's
@@ -84,7 +89,9 @@ export default async function LoginPage({
   async function emailLink(formData: FormData) {
     'use server';
     const email = String(formData.get('email') ?? '').trim().toLowerCase();
-    if (!EMAIL_PATTERN.test(email)) redirect(loginErrorHref('EmailSignin', carried));
+    // A plausible single address of bounded length (./sign-in.ts says why);
+    // Auth.js normalizes and validates it again.
+    if (!isPlausibleEmail(email)) redirect(loginErrorHref('EmailSignin', carried));
     let destination: string;
     try {
       // redirect: false — Auth.js's own redirect would go through its
@@ -145,9 +152,10 @@ export default async function LoginPage({
               name="email"
               type="email"
               required
+              maxLength={MAX_EMAIL_LENGTH}
               autoComplete="email"
               dir="ltr"
-              className="mt-2 w-full rounded border border-black/20 bg-white px-3 py-2 text-sm"
+              className="mt-2 w-full rounded border border-field-border bg-white px-3 py-2 text-sm"
               placeholder={t.emailPlaceholder}
             />
             <SubmitButton

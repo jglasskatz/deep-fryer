@@ -133,6 +133,7 @@ export const ht: Messages = {
       'Pou kounye a, se sèlman mezi pwen depa a ki egziste; pwochen mizajou a ap montre evolisyon an.',
   },
   portrait: {
+    metaDescription: 'Pòtre Doughnut Economics {name}: fondasyon sosyal ak plafon ekolojik, ak sous chak chif.',
     population: 'popilasyon: {n}',
     clickHint: 'Chwazi yon segman pou wè endikatè yo, prèv yo, aksyon yo ak diskisyon an.',
     demoHint: 'Done demonstrasyon — mete DATABASE_URL epi pibliye vèsyon yo pou wè vrè kontni an.',
@@ -158,6 +159,7 @@ export const ht: Messages = {
     legendNoData: 'Gri: poko gen done',
   },
   dimension: {
+    metaDescription: '{dimension} nan {name}: done yo, sous yo, ak sa ou ka fè.',
     updated: 'mizajou: {date}',
     target: 'sib: {value}',
     noTarget: 'pa gen sib ki fikse',
@@ -246,6 +248,7 @@ export const ht: Messages = {
     trendTarget: 'sib {value}',
   },
   methodology: {
+    metaDescription: 'Kijan yo mezire pòtre {name}: zòn jeyografik, sous, ak chak sib ak jistifikasyon li.',
     title: 'Metodoloji',
     intro:
       'Pòtre sa a swiv metòd Doughnut Economics la pou aplike modèl la a nivo lokal: yon fondasyon sosyal (lè yon kote pa rive ladan l, se yon defisi, ki desine vè mitan an) ak yon plafon ekolojik (lè yon kote depase l, se yon depasman, ki desine vè deyò). Chak endikatè gen yon sib klè ak yon jistifikasyon ekri, ki parèt anba a. Lè pòtre sa a sèvi ak yon sib ki diferan de sib pa defo kad la, nou montre jistifikasyon lokal la.',
@@ -266,6 +269,7 @@ export const ht: Messages = {
     contentInEnglish: 'Non endikatè yo ak jistifikasyon yo pibliye an angle.',
   },
   outreach: {
+    metaDescription: 'Fason pou w patisipe nan {name}, ak òganizasyon k ap travay sou done li yo.',
     title: 'Patisipe',
     empty:
       'N ap mete òganizasyon lokal yo isit la pandan pòtre a ap grandi. Antretan, chak paj dimansyon gen aksyon konkrè ou ka fè.',

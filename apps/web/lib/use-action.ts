@@ -24,6 +24,13 @@ function isFailedResult(value: unknown): value is { ok: false; error: string } {
  *
  * Each hook instance has its own pending state, so independent forms on one
  * page (SettingsForms) never disable each other.
+ *
+ * Pass `{ refresh: false }` when the action calls revalidatePath for the page
+ * it is run from. Next.js then re-renders that page into the action's own
+ * response, and the router applies it; router.refresh() would ask the server
+ * to render the whole page a second time for nothing — on a long page like
+ * /{tenant}/admin/involvement, a second full render per save, which under
+ * load doubled what staff waited for.
  */
 export function useAction() {
   const router = useRouter();

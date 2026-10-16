@@ -133,6 +133,7 @@ export const fr: Messages = {
       'Seule la mesure de référence existe pour l’instant ; la prochaine mise à jour indiquera la tendance.',
   },
   portrait: {
+    metaDescription: '{name} : le portrait Doughnut Economics — plancher social et plafond écologique, avec la source de chaque chiffre.',
     population: 'population : {n}',
     clickHint: 'Sélectionnez un segment pour afficher les indicateurs, les preuves, les actions et la discussion.',
     demoHint:
@@ -160,6 +161,7 @@ export const fr: Messages = {
     legendNoData: 'Gris : pas encore de données',
   },
   dimension: {
+    metaDescription: '{dimension} — {name} : les données, leurs sources et ce que vous pouvez faire.',
     updated: 'mis à jour : {date}',
     target: 'cible : {value}',
     noTarget: 'aucune cible fixée',
@@ -252,6 +254,7 @@ export const fr: Messages = {
     trendTarget: 'cible {value}',
   },
   methodology: {
+    metaDescription: '{name} : comment le portrait est établi — périmètre géographique, sources, et chaque cible avec sa justification.',
     title: 'Méthodologie',
     intro:
       'Ce portrait suit l’approche de déclinaison locale de Doughnut Economics (l’économie du donut) : un plancher social (ne pas l’atteindre constitue un déficit, représenté vers le centre) et un plafond écologique (le franchir constitue un dépassement, représenté vers l’extérieur). Chaque indicateur a une cible explicite assortie d’une justification écrite, présentée ci-dessous. Lorsque ce portrait utilise une cible différente de la valeur par défaut du cadre, la justification locale est indiquée.',
@@ -274,6 +277,7 @@ export const fr: Messages = {
     contentInEnglish: 'Les noms des indicateurs et les justifications sont publiés en anglais.',
   },
   outreach: {
+    metaDescription: '{name} : les façons de participer et les organisations qui travaillent sur ces données.',
     title: 'Participer',
     empty:
       'Des organisations locales figureront ici à mesure que le portrait s’enrichira. En attendant, chaque page de dimension propose des actions concrètes.',

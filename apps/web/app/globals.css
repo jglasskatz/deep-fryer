@@ -7,6 +7,14 @@
   --color-fg: #1a1a1a;
   --color-accent: #2f7d32;
   --color-muted: #6b7280;
+  /*
+   * The edge of a text field, select or textarea (`border-field-border`).
+   * The border is the only thing that shows where a field is — its white
+   * fill is 1.05:1 against the page — so it must reach 3:1 against both the
+   * page and the fill (WCAG 1.4.11). #767676 is 4.4:1 on --color-bg and
+   * 4.5:1 on white; lib/field-border.test.ts checks both themes.
+   */
+  --color-field-border: #767676;
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -39,6 +47,8 @@
     --color-fg: #efeee9;
     --color-muted: #a8aba3;
     --color-accent: #7cc47f;
+    /* 5.5:1 on the dark page, 5.0:1 on the raised field fill (--color-white). */
+    --color-field-border: #8a8d86;
     --color-white: #1c1f1b;
     --color-black: #efeee9;
   }

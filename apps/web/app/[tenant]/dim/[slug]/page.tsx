@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
@@ -16,8 +17,26 @@ import { DEFAULT_EMERGENCY_TIME_ZONE, formatIndicatorValue, listingsForDimension
 import { dimensionLabel, scaleLabel } from '@/lib/i18n/content';
 import { fmt, rich } from '@/lib/i18n/format';
 import { getI18n } from '@/lib/i18n/server';
+import { pageTitle } from '@/lib/page-meta';
 
 export const dynamic = 'force-dynamic';
+
+/** "Housing · New York City" (WCAG 2.4.2), in the reader's language. */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ tenant: string; slug: string }>;
+}): Promise<Metadata> {
+  const { tenant, slug } = await params;
+  const [portrait, { m }] = await Promise.all([getPortrait(tenant), getI18n()]);
+  const dim = portrait?.dimensions.find((d) => d.slug === slug);
+  if (!portrait || !dim) return { title: m.notFound.title };
+  const name = dimensionLabel(m, dim.slug, dim.data.name);
+  return {
+    title: pageTitle(name, portrait.tenant.name),
+    description: fmt(m.dimension.metaDescription, { dimension: name, name: portrait.tenant.name }),
+  };
+}
 
 /**
  * The public drilldown (SPEC.md §10): value, target, plain-language context,

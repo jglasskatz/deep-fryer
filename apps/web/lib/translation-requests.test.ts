@@ -112,4 +112,18 @@ describe.skipIf(!hasDb)('translation requests', () => {
     expect(await send('198.51.100.2')).toEqual({ status: 'sent' });
     expect(await count(tenant.id)).toBe(11);
   });
+
+  it('holds the limit when one address sends many requests at once', async () => {
+    // Counting and inserting without a lock let every request in a burst
+    // count the same total before any insert committed: 40 at once stored
+    // 11, or 15 after five earlier ones, against a limit of ten.
+    const { recordTranslationRequest } = await import('./translation-requests');
+    const tenant = await portrait(false);
+    const send = () => recordTranslationRequest({ tenantSlug: tenant.slug, locale: 'ru', path: `/${tenant.slug}`, address: '192.0.2.77' });
+    for (let i = 0; i < 5; i++) expect(await send()).toEqual({ status: 'sent' });
+    const results = await Promise.all(Array.from({ length: 40 }, send));
+    expect(results.filter((r) => r.status === 'sent')).toHaveLength(5);
+    expect(results.filter((r) => r.status === 'limited')).toHaveLength(35);
+    expect(await count(tenant.id)).toBe(10);
+  });
 });

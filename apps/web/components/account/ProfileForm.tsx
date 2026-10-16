@@ -35,7 +35,7 @@ export function ProfileForm({
           pseudonym.
         </span>
         <input
-          className="mt-1 w-full rounded border border-black/20 bg-white px-2 py-1.5"
+          className="mt-1 w-full rounded border border-field-border bg-white px-2 py-1.5"
           value={dn}
           maxLength={40}
           onChange={(e) => setDn(e.target.value)}
@@ -48,7 +48,7 @@ export function ProfileForm({
           Visible only to teammates on portraits you work on.
         </span>
         <input
-          className="mt-1 w-full rounded border border-black/20 bg-white px-2 py-1.5"
+          className="mt-1 w-full rounded border border-field-border bg-white px-2 py-1.5"
           value={nm}
           maxLength={120}
           onChange={(e) => setNm(e.target.value)}

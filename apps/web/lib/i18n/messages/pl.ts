@@ -120,6 +120,7 @@ export const pl: Messages = {
     baseline_only: 'Na razie istnieje tylko pomiar bazowy; tendencja będzie widoczna po następnej aktualizacji.',
   },
   portrait: {
+    metaDescription: '{name}: portret w modelu Doughnut Economics — fundament społeczny i pułap ekologiczny, ze źródłem każdej liczby.',
     population: 'ludność: {n}',
     clickHint: 'Po wybraniu segmentu wyświetlą się wskaźniki, dowody, działania i dyskusja.',
     demoHint: 'Dane demonstracyjne — aby wyświetlić rzeczywiste treści, należy ustawić DATABASE_URL i opublikować wersje.',
@@ -148,6 +149,7 @@ export const pl: Messages = {
     legendNoData: 'Kolor szary — na razie brak danych',
   },
   dimension: {
+    metaDescription: '{dimension} — {name}: dane, ich źródła i to, co można zrobić.',
     updated: 'zaktualizowano: {date}',
     target: 'cel: {value}',
     noTarget: 'nie wyznaczono celu',
@@ -241,6 +243,7 @@ export const pl: Messages = {
     trendTarget: 'cel: {value}',
   },
   methodology: {
+    metaDescription: '{name}: jak powstaje portret — zasięg geograficzny, źródła oraz każdy cel wraz z uzasadnieniem.',
     title: 'Metodologia',
     intro:
       'Ten portret stosuje metodę przeniesienia modelu Doughnut Economics (ekonomii obwarzanka) na poziom lokalny. Obejmuje ona fundament społeczny (gdy nie jest osiągnięty, mówimy o niedoborze, zaznaczanym w stronę środka) oraz pułap ekologiczny (gdy zostaje przekroczony, mówimy o przekroczeniu, zaznaczanym na zewnątrz). Każdy wskaźnik ma jednoznacznie określony cel z pisemnym uzasadnieniem — ich lista znajduje się poniżej. Jeśli ten portret stosuje cel inny niż domyślny w modelu, podano lokalne uzasadnienie.',
@@ -263,6 +266,7 @@ export const pl: Messages = {
     contentInEnglish: 'Nazwy wskaźników i uzasadnienia są publikowane w języku angielskim.',
   },
   outreach: {
+    metaDescription: '{name}: jak się zaangażować i które organizacje pracują z tymi danymi.',
     title: 'Jak się zaangażować',
     empty:
       'W miarę rozwoju portretu pojawi się tu lista lokalnych organizacji. Tymczasem na stronie każdego wymiaru znajdują się konkretne działania.',

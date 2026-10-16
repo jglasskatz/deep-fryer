@@ -12,7 +12,12 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'deep-fryer',
     description:
       'Sourced, reviewed Doughnut Economics portraits for municipalities, with progress against adopted goals.',
-    start_url: '/?source=pwa',
+    // The plain home page, so an offline launch finds the copy the service
+    // worker stored when the home page was visited. (It used to carry
+    // ?source=pwa, which nothing read; iOS keeps the start URL it was
+    // installed with, so public/sw.js also ignores `source` when it stores
+    // or looks up a page.)
+    start_url: '/',
     scope: '/',
     display: 'standalone',
     display_override: ['window-controls-overlay', 'standalone', 'minimal-ui'],

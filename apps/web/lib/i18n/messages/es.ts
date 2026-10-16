@@ -131,6 +131,7 @@ export const es: Messages = {
       'Por ahora solo existe la medición de la línea de base; la próxima actualización mostrará la tendencia.',
   },
   portrait: {
+    metaDescription: 'El retrato Doughnut Economics de {name}: la base social y el techo ecológico, con la fuente de cada cifra.',
     population: 'población: {n}',
     clickHint: 'Seleccione un segmento para ver indicadores, evidencia, acciones y el debate.',
     demoHint: 'Datos de demostración: configure DATABASE_URL y publique versiones para ver contenido real.',
@@ -157,6 +158,7 @@ export const es: Messages = {
     legendNoData: 'Gris: todavía no hay datos',
   },
   dimension: {
+    metaDescription: '{dimension} en {name}: los datos, sus fuentes y lo que usted puede hacer.',
     updated: 'actualizado: {date}',
     target: 'meta: {value}',
     noTarget: 'sin meta establecida',
@@ -249,6 +251,7 @@ export const es: Messages = {
     trendTarget: 'meta {value}',
   },
   methodology: {
+    metaDescription: 'Cómo se mide el retrato de {name}: ámbito geográfico, fuentes y cada meta con su justificación.',
     title: 'Metodología',
     intro:
       'Este retrato sigue el enfoque de Doughnut Economics (Economía Rosquilla) para llevar el modelo a escala local: una base social (no alcanzarla es un déficit, que se dibuja hacia el centro) y un techo ecológico (sobrepasarlo es una extralimitación, que se dibuja hacia afuera). Cada indicador tiene una meta explícita con una justificación por escrito, que se detalla a continuación. Cuando este retrato usa una meta distinta de la predeterminada del marco, se muestra la justificación local.',
@@ -271,6 +274,7 @@ export const es: Messages = {
     contentInEnglish: 'Los nombres y las justificaciones de los indicadores se publican en inglés.',
   },
   outreach: {
+    metaDescription: 'Formas de participar en {name} y organizaciones que trabajan con sus datos.',
     title: 'Participe',
     empty:
       'A medida que el retrato crezca, aquí aparecerán organizaciones locales. Mientras tanto, la página de cada dimensión incluye acciones concretas.',

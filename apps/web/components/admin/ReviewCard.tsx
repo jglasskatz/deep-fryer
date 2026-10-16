@@ -139,7 +139,7 @@ export function ReviewCard({
           </summary>
           <div className="mt-2 w-80">
             <textarea
-              className="w-full rounded border border-black/20 px-2 py-1"
+              className="w-full rounded border border-field-border px-2 py-1"
               rows={3}
               placeholder="Reviewer notes — injected verbatim into the new session"
               value={notes}
@@ -172,7 +172,7 @@ export function ReviewCard({
           </summary>
           <div className="mt-2 w-80">
             <textarea
-              className="w-full rounded border border-black/20 px-2 py-1"
+              className="w-full rounded border border-field-border px-2 py-1"
               rows={2}
               placeholder="Why no acceptable data exists — published on the gray wedge"
               value={gapReason}

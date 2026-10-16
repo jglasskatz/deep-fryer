@@ -52,7 +52,9 @@ export function EmbedFrame({
         linkBase={`${portraitUrl}/dim`}
         labels={labels}
       />
-      <p className="mt-1 text-center text-[11px] text-black/50">
+      {/* The widget's only link out, on cities' own sites: muted ink, not translucent
+          black (3.9:1), so it reaches 4.5:1 on the embed's always-light page. */}
+      <p className="mt-1 text-center text-xs text-[color:var(--color-muted)]">
         <a href={portraitUrl} target="_blank" rel="noreferrer" className="underline">
           {labels.fullPortrait}
         </a>

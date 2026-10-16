@@ -1,13 +1,20 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { ActionButton } from '@/components/admin/ActionButton';
 import { tenantDimensions } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
+import { adminPageMetadata } from '@/lib/page-meta';
 import { moderationQueue, RECENTLY_REMOVED_LIMIT, type QueueComment } from '@/lib/discussion';
 import { moderateComment } from '@/lib/discussion-actions';
 import { requireFeature } from '@/lib/features';
 
 export const dynamic = 'force-dynamic';
+
+/** Discussion · Admin · <portrait> (WCAG 2.4.2): the generic site title named none of the staff pages. */
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  return adminPageMetadata((await params).tenant, 'Discussion');
+}
 
 /** Staff timestamps: unambiguous, on the portrait's own clock, with the zone named. */
 function when(date: Date, timeZone: string): string {

@@ -33,7 +33,7 @@ export function LanguageHelpForm({ orgSlug, initial }: { orgSlug: string; initia
       <div className="mt-3 flex flex-wrap gap-2">
         <input
           id="language-help"
-          className="min-w-0 flex-1 rounded border border-black/20 bg-white px-3 py-1.5 text-sm"
+          className="min-w-0 flex-1 rounded border border-field-border bg-white px-3 py-1.5 text-sm"
           maxLength={120}
           value={value}
           onChange={(e) => setValue(e.target.value)}

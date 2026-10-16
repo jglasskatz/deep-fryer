@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { signOut } from '@/auth';
 import { FamilyNav } from './FamilyNav';
+import { HeaderMenuDismiss } from './HeaderMenuDismiss';
 import { adminNavLinks, tenantNavLinks, type NavLink, type PortraitFeatures } from './nav-links';
 import { LanguageNotice, LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { InstallAppButton } from '@/components/pwa/InstallAppButton';
@@ -69,6 +70,8 @@ function currentAdminHref(links: NavLink[], requestPath: string): string | undef
  * show the account menu. On small screens the links fold into a disclosure
  * menu (<details>, no JavaScript needed) — the installed PWA is used on
  * phones at community-board meetings as much as on desktops at City Hall.
+ * With script, HeaderMenuDismiss also closes the <details> menus on Escape,
+ * on focus leaving them, and on a press outside.
  *
  * Public-plane labels come from the request's language catalog; staff and
  * product labels (admin, landing) are English because those pages only
@@ -336,6 +339,7 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
         <FamilyNav family={shownFamily} currentSlug={tenant?.slug} currentView={familyView} />
       ) : null}
       {publicPlane ? <LanguageNotice languageHelp={languageHelp} /> : null}
+      <HeaderMenuDismiss />
     </header>
   );
 }
