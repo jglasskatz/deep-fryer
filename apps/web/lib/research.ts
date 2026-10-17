@@ -17,6 +17,7 @@ import { portraitConfigFromMap, tenantConfigMapIn } from './admin-data';
 import { UserError } from './action-result';
 import { assertFundingUsable } from './billing';
 import { systemDb, userDb } from './db';
+import { alreadyAppliedMessage } from './run-progress';
 
 /**
  * Plan (SPEC.md §8): render the full session list — prompts, tool
@@ -103,7 +104,12 @@ export async function createPlannedRun(input: {
  * subscription row, compute the period's usage, check the plan's quota, and
  * stamp applied_at — so two concurrent applies cannot both fit into a quota
  * that only holds one of them. The queue insert happens after commit; if it
- * fails, applied_at is cleared again so the reservation does not leak.
+ * fails, applied_at is cleared again so the reservation does not leak — but
+ * only while the run is still planned. An enqueue can fail after the job was
+ * in fact written (the reply lost); the worker then either finds applied_at
+ * cleared and skips the run (apps/worker research-apply.ts claims only
+ * applied runs), or has already claimed it, and then the clear changes
+ * nothing, so a run that executes always counts against the allowance.
  *
  * The gate is packages/db gateResearchSpend, shared with policy analyses:
  * when the organization has its own Anthropic API key on file (SPEC-v7 §4)
@@ -132,8 +138,11 @@ export async function applyRun(tenantId: string, runId: string) {
       .where(and(eq(researchRuns.id, runId), eq(researchRuns.tenantId, tenantId)))
       .for('update');
     if (!row) throw new UserError('Unknown run.');
+    // A page opened before the run was applied still offers "Apply": say
+    // where the run is in words (queued, running, finished), never the
+    // database status — run-progress.ts alreadyAppliedMessage.
     if (row.status !== 'planned' || row.appliedAt) {
-      throw new UserError(`This run was already applied (status: ${row.status}).`);
+      throw new UserError(alreadyAppliedMessage(row));
     }
 
     const org = await organizationForTenant(tx, tenantId);
@@ -154,7 +163,10 @@ export async function applyRun(tenantId: string, runId: string) {
   try {
     await enqueueResearchApply(run.id);
   } catch (err) {
-    await db.update(researchRuns).set({ appliedAt: null }).where(eq(researchRuns.id, run.id));
+    await db
+      .update(researchRuns)
+      .set({ appliedAt: null })
+      .where(and(eq(researchRuns.id, run.id), eq(researchRuns.status, 'planned')));
     throw err;
   }
   return run;

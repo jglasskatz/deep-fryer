@@ -1,6 +1,6 @@
 import React, { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AppRouterContext } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { localeInfo } from '@/lib/i18n/locales';
 import { messagesFor } from '@/lib/i18n/messages';
@@ -23,8 +23,10 @@ const i18n = (code: 'en' | 'es') => ({
   href: (path: string) => localizeHref(code, path),
 });
 let requestPath = '/login?next=%2Fnyc';
+/** The language of the URL (getI18n): English for /login, Spanish for a /es/… page. */
+let pageLocale: 'en' | 'es' = 'en';
 vi.mock('@/lib/i18n/server', () => ({
-  getI18n: vi.fn(async () => i18n('en')),
+  getI18n: vi.fn(async () => i18n(pageLocale)),
   getRequestPath: vi.fn(async () => requestPath),
 }));
 vi.mock('@/app/login/i18n', () => ({ loginI18n: vi.fn(async () => i18n('es')) }));
@@ -68,5 +70,35 @@ describe('SiteHeader on the sign-in pages', () => {
     // The product's own pages keep them.
     requestPath = '/';
     expect(await header('landing')).toContain('Start a portrait');
+  });
+});
+
+describe('SiteHeader’s product links', () => {
+  afterEach(async () => {
+    delete process.env.DF_DISABLED_FEATURES;
+    (await import('@/lib/features')).resetDeploymentDisabledForTests();
+    pageLocale = 'en';
+  });
+
+  it('carries no "Start a portrait" link where the deployment has no self-serve start, so it never leads to a 404', async () => {
+    requestPath = '/';
+    process.env.DF_DISABLED_FEATURES = 'self_serve';
+    (await import('@/lib/features')).resetDeploymentDisabledForTests();
+    const html = await header('landing');
+    expect(html).not.toContain('href="/start"');
+    expect(html).not.toContain('Start a portrait');
+    // Pricing stays: reading what plans cost needs no self-serve start.
+    expect(html).toContain('href="/pricing"');
+  });
+
+  it('marks the English product links as English on a page in another language (a 404 under /es/…)', async () => {
+    requestPath = '/es/nyc/dim/missing';
+    pageLocale = 'es';
+    const html = await header('landing');
+    expect(html).toMatch(/<a[^>]*href="\/pricing"[^>]*lang="en"|<a[^>]*lang="en"[^>]*href="\/pricing"/);
+    expect(html).toMatch(/<a[^>]*href="\/start"[^>]*lang="en"|<a[^>]*lang="en"[^>]*href="\/start"/);
+    // On an English page they need no attribute of their own.
+    pageLocale = 'en';
+    expect(await header('landing')).not.toContain('lang="en"');
   });
 });

@@ -26,9 +26,14 @@ open-doughnut plugin.
   time, and a research run keeps up to `RESEARCH_SESSION_CONCURRENCY`
   dimension sessions going inside it. Scale out with more replicas —
   sessions are independent.
-- Outbound egress goes through the allowlist proxy (`HTTPS_PROXY`): no
-  paywall circumvention, and every fetched URL is logged at the
-  infrastructure level — provenance is enforced below the model.
+- Outbound egress goes through the allowlist proxy (`HTTPS_PROXY`; compose
+  sets it from `WORKER_HTTPS_PROXY`): no paywall circumvention, and every
+  fetched URL is logged at the infrastructure level — provenance is enforced
+  below the model. The sessions' CLI and Chromium read `HTTPS_PROXY`
+  themselves; Node's own fetch (source checks, PDF downloads, the NWS feed)
+  uses it only with `NODE_USE_ENV_PROXY=1`, which compose sets whenever a
+  proxy is configured. Without a proxy, egress is limited only by the egress
+  guard below (docs/deploy.md "Worker egress").
 - The container filesystem is scratch-only; each session gets a temp
   workspace that is deleted afterward. Evidence goes to one S3-compatible
   bucket under a per-tenant prefix (`tenant-<slug>/`); the prefix is chosen
@@ -54,7 +59,7 @@ open-doughnut plugin.
 | Var | Purpose |
 |---|---|
 | `DATABASE_URL` | Postgres (queue + rows) |
-| `ANTHROPIC_API_KEY` | Inference (our key — metered per tenant) |
+| `ANTHROPIC_API_KEY` | The deployment's key: every session a plan funds runs on it (metered per organization against the plan's allowance). Unset, plan-funded runs are refused in the web app before they are queued — compose tells the web app through `DF_RESEARCH_KEY_CONFIGURED`, never by giving it the key — and only sessions on an organization's own key run |
 | `ANTHROPIC_MODEL` | Session model (default `claude-sonnet-5`) |
 | `ANTHROPIC_SMALL_FAST_MODEL` | The page reader: Claude Code's WebFetch summarizes each fetched page with it, for researchers and the verifier alike (compose default `claude-haiku-4-5-20251001`). Pinned so an SDK update cannot swap it; a first-party API id (behind Bedrock, Vertex, Foundry or a gateway, the provider's own id). Never set it empty: the CLI treats that as unset and drops the pin |
 | `VERIFIER_MODEL` | Verifier sessions, one per indicator finding (default `claude-opus-5`) |
@@ -64,7 +69,10 @@ open-doughnut plugin.
 | `OPEN_DOUGHNUT_PLUGIN_DIR` | Plugin location (set by the image) |
 | `CHROMIUM_PATH` | Playwright browser binary |
 | `WORKER_CONCURRENCY` | Jobs (research runs, policy analyses) per instance at once (default 1) |
+| `HTTPS_PROXY`, `NODE_USE_ENV_PROXY` | The egress proxy (compose: `WORKER_HTTPS_PROXY`, with `NODE_USE_ENV_PROXY=1` set alongside it) |
+| `DF_SECRETS_KEY` | Decrypts organizations' own Anthropic API keys for their sessions (same value as the web app) |
 | `APP_URL`, `SMTP_URL`, `EMAIL_FROM` | Run-complete / flagged-finding emails to portrait owners, editors, and organization owners (per each portrait's notification settings) |
+| `SUPPORT_EMAIL` | The contact a failed run's email names, and the contact in the NWS alerts feed's User-Agent (falls back to `EMAIL_FROM`'s address) |
 
 ## Local development
 
@@ -73,5 +81,8 @@ pnpm --filter @deep-fryer/worker dev
 ```
 
 Without `S3_*` env, evidence lands in `apps/web/public/evidence/<tenant>/`
-so the drilldown renders it. Without `ANTHROPIC_API_KEY`, sessions fail at
-spawn and the run is marked failed — plan/enqueue still works end to end.
+so the drilldown renders it. The web app queues plan-funded runs only with
+`DF_RESEARCH_KEY_CONFIGURED=true` in its own environment (compose derives it
+from `ANTHROPIC_API_KEY`); set it locally only when this worker has a key,
+or the sessions fail at spawn and the run is marked failed. Planning works
+end to end either way.

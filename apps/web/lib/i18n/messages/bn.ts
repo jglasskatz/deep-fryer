@@ -130,7 +130,7 @@ export const bn: Messages = {
     baseline_only: 'এখন পর্যন্ত শুধু ভিত্তিরেখার পরিমাপ আছে; পরবর্তী হালনাগাদে প্রবণতা দেখা যাবে।',
   },
   portrait: {
-    metaDescription: '{name}-এর Doughnut Economics চিত্র: সামাজিক ভিত্তি ও পরিবেশগত ঊর্ধ্বসীমা, প্রতিটি সংখ্যার তথ্যসূত্রসহ।',
+    metaDescription: '{name}-এর ডোনাট চিত্র: সামাজিক ভিত্তি ও পরিবেশগত ঊর্ধ্বসীমা, প্রতিটি সংখ্যার তথ্যসূত্রসহ।',
     population: 'জনসংখ্যা: {n}',
     clickHint: 'সূচক, প্রমাণ, করণীয় ও আলোচনা দেখতে একটি অংশ বেছে নিন।',
     demoHint: 'নমুনা তথ্য — প্রকৃত বিষয়বস্তুর জন্য DATABASE_URL সেট করুন এবং সংস্করণ প্রকাশ করুন।',
@@ -362,6 +362,8 @@ export const bn: Messages = {
   login: {
     title: 'সাইন ইন করুন',
     intro: 'বাসিন্দারা কোনো চিত্রের আলোচনায় যোগ দিতে সাইন ইন করেন। শহরের কর্মীরা তাঁদের অফিসের অ্যাকাউন্ট ব্যবহার করেন।',
+    /** Replaces `intro` when the person is on the way to setting up their city's portrait (/start): city staff, not residents. */
+    startIntro: 'আপনার শহরের ডোনাট তৈরি করতে সাইন ইন করুন — আপনার অফিসের ইমেইল ব্যবহার করুন।',
     microsoft: 'Microsoft দিয়ে চালিয়ে যান (অফিসের অ্যাকাউন্ট)',
     google: 'Google দিয়ে চালিয়ে যান',
     emailLabel: 'আমাকে ইমেইলে একটি সাইন ইন লিংক পাঠান',
@@ -384,6 +386,12 @@ export const bn: Messages = {
       AccessDenied: 'সাইন ইন করার অনুমতি দেওয়া হয়নি।',
       Configuration: 'এই সার্ভারে সাইন ইনের সেটিংসে সমস্যা আছে। সাইটের প্রশাসকের সঙ্গে যোগাযোগ করুন।',
       EmailSignin: 'আমরা সাইন ইন ইমেইল পাঠাতে পারিনি। ঠিকানাটি যাচাই করে কয়েক মিনিট পর আবার চেষ্টা করুন।',
+      /** Nothing was sent: this address already has three unused sign-in links from the last 15 minutes. */
+      TooManyLinks:
+        'গত 15 মিনিটে আমরা এই ঠিকানায় ইতিমধ্যে কয়েকটি সাইন ইন লিংক পাঠিয়েছি। সবচেয়ে নতুন লিংকটি ব্যবহার করুন, অথবা 15 মিনিট পর আবার চেষ্টা করুন।',
+      /** Nothing was sent: this network has asked for its hourly share of sign-in emails (shared Wi-Fi counts as one). */
+      TooManyEmails:
+        'এই নেটওয়ার্ক থেকে অনেক বেশি সাইন ইন ইমেইলের অনুরোধ করা হয়েছে, তাই এটি পাঠানো হয়নি। অনুগ্রহ করে এক ঘণ্টা পর আবার চেষ্টা করুন।',
       default: 'সাইন ইন করা যায়নি। আবার চেষ্টা করুন।',
     },
   },
@@ -582,6 +590,37 @@ export const bn: Messages = {
     signupNamed: '{name} সেবায় নিবন্ধন করুন',
     resourceHazards: 'যেসব হুমকিতে সহায়ক:',
     doughnutLegend: 'ডোনাটের রংগুলোর অর্থ:',
+  },
+  /** The site footer, on every page but embeds (components/site-footer/SiteFooter.tsx). */
+  footer: {
+    /** The footer's navigation landmark. */
+    label: 'এই সাইট সম্পর্কে',
+    /** {email} is the support address of whoever runs this site, as a link. */
+    contact: 'যোগাযোগ: {email}',
+    accessibility: 'প্রবেশগম্যতা',
+    privacy: 'গোপনীয়তা',
+    terms: 'ব্যবহারের শর্তাবলি',
+    /**
+     * The Doughnut's attribution (docs/OPEN-SOURCE.md §3.3), also under every
+     * embedded doughnut. {license} is the license's name as a link; {book}
+     * and {method} are the English titles of the book and the method guide.
+     * Keep all three, and keep the people's and the organization's names.
+     */
+    credit:
+      'ডোনাট ডায়াগ্রাম: Kate Raworth ও Christian Guthier, {license}, স্থানীয় তথ্য দিয়ে অভিযোজিত (Raworth, {book}, 2017)। শহর-চিত্রের পদ্ধতি Doughnut Economics Action Lab-এর {method} অনুসারে। এই সাইটটি Doughnut Economics Action Lab-এর সঙ্গে যুক্ত নয় এবং তাদের দ্বারা সমর্থিতও নয়।',
+  },
+  /**
+   * On a portrait seeded with synthetic values (scripts/seed-demo-data.ts):
+   * its page, its dimension pages, its embed, its organization's compare,
+   * insights and progress pages, so a screenshot cannot pass for research.
+   */
+  sampleData: {
+    title: 'নমুনা তথ্য — গবেষণার ফল নয়',
+    /** A portrait's own pages and its embed; {name} is the portrait. */
+    body: 'এই সাইটে {name}-এর সংখ্যাগুলো সফটওয়্যারটি প্রদর্শনের জন্য তৈরি করা হয়েছে। এগুলো কোনো পরিমাপ নয় এবং এগুলো উদ্ধৃত করা যাবে না।',
+    /** An organization's pages, when any portrait shown there is seeded; {org} is the organization. */
+    bodyOrg:
+      'এই পৃষ্ঠায় {org}-এর কিছু বা সব সংখ্যা সফটওয়্যারটি প্রদর্শনের জন্য তৈরি করা হয়েছে। এগুলো কোনো পরিমাপ নয় এবং এগুলো উদ্ধৃত করা যাবে না।',
   },
   /** Theme toggle and the fryer (SPEC-v5 §4). */
   theme: {

@@ -20,7 +20,7 @@ export const PORTRAIT_FEATURES = [
 export type PortraitFeature = (typeof PORTRAIT_FEATURES)[number];
 
 /** Features that are one setting for the whole deployment (no portrait context). */
-export const DEPLOYMENT_FEATURES = ['deep_fry'] as const;
+export const DEPLOYMENT_FEATURES = ['deep_fry', 'self_serve'] as const;
 export type DeploymentFeature = (typeof DEPLOYMENT_FEATURES)[number];
 
 export type Feature = PortraitFeature | DeploymentFeature;
@@ -76,6 +76,15 @@ export const FEATURE_REGISTRY: Record<Feature, FeatureInfo> = {
   deep_fry: {
     label: 'Deep fry',
     description: 'The "Deep fry this page" item in the theme menu.',
+    defaultOn: true,
+  },
+  // Off for a sales-led deployment: organizations are then created by staff
+  // (scripts/create-tenant.ts), /start is a 404, and nothing invites visitors
+  // to build a doughnut. Reading published portraits is unaffected either way.
+  self_serve: {
+    label: 'Self-serve start',
+    description:
+      'Anyone signed in can set up an organization and a portrait at /start and buy a plan to build it; the "build your city’s doughnut" links point there.',
     defaultOn: true,
   },
 };

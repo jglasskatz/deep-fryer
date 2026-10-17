@@ -1,12 +1,22 @@
 import { NextResponse } from 'next/server';
+import { publicTenant } from '@/lib/data';
 import { tenantProgress } from '@/lib/progress';
+import { publicPortraitSampleData } from '@/lib/sample-data';
 
 export const dynamic = 'force-dynamic';
 
-/** GET /api/v1/portraits/{tenant}/progress.json — statuses, series, and gaps. */
+/**
+ * GET /api/v1/portraits/{tenant}/progress.json — statuses, series, and gaps.
+ * Public portraits only, whoever calls (lib/data.ts publicTenant): the answer
+ * is publicly cacheable, so a member's request for their portrait before it
+ * is public (migration 0015) gets the same 404 as everyone else's.
+ * `sample_data` says whether the values are synthetic, as on the portrait
+ * endpoint (`/api/v1/portraits/{tenant}`).
+ */
 export async function GET(_req: Request, { params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const p = await tenantProgress(tenant);
+  const p = (await publicTenant(tenant)) ? await tenantProgress(tenant) : null;
+  const sampleData = p ? await publicPortraitSampleData(tenant) : false;
   const headers = {
     'access-control-allow-origin': '*',
     'cache-control': 'public, max-age=300, stale-while-revalidate=600',
@@ -16,6 +26,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ tenant:
     {
       schema: 'deep-fryer.progress/v1',
       portrait: { slug: p.tenant.slug, name: p.tenant.name },
+      sample_data: sampleData,
       baseline: p.config,
       generated_at: new Date().toISOString(),
       indicators: p.rows.map((r) => ({

@@ -165,8 +165,14 @@ export const tenantProgress = cache(async (tenantSlug: string): Promise<TenantPr
   });
 });
 
-/** CSV for open-data portals and council packets (RFC 4180 quoting). */
-export function progressCsv(p: TenantProgress): string {
+/**
+ * CSV for open-data portals and council packets (RFC 4180 quoting). The last
+ * column, `sample_data`, is `true` on every row of a portrait seeded with
+ * synthetic values (as progress.json's top-level `sample_data` says): a CSV
+ * travels without the page's notice, and a comment line would break the
+ * portals that read it, so each row carries the mark itself.
+ */
+export function progressCsv(p: TenantProgress, { sampleData = false }: { sampleData?: boolean } = {}): string {
   const header = [
     'portrait',
     'ring',
@@ -186,6 +192,7 @@ export function progressCsv(p: TenantProgress): string {
     'geographic_scale',
     'source',
     'source_url',
+    'sample_data',
   ];
   const q = (v: unknown) => {
     if (v === null || v === undefined) return '';
@@ -214,6 +221,7 @@ export function progressCsv(p: TenantProgress): string {
         r.geographicScale,
         r.source,
         r.sourceUrl,
+        sampleData,
       ]
         .map(q)
         .join(','),

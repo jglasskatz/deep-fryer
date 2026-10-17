@@ -3,8 +3,10 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { formatIndicatorValue, summarizeProgress, type ProgressStatus } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
+import { SampleDataNotice } from '@/components/sample-data/SampleDataNotice';
 import { StatusChip } from '@/components/progress/StatusChip';
 import { familyByOrgSlug } from '@/lib/family';
+import { anySampleData } from '@/lib/sample-data';
 import { tenantProgress, type ProgressRow } from '@/lib/progress';
 import { dimensionLabel, nounForms } from '@/lib/i18n/content';
 import { fmt, fmtPlural, rich } from '@/lib/i18n/format';
@@ -33,7 +35,10 @@ export default async function FamilyProgressPage({ params }: { params: Promise<{
   if (!family) notFound();
   const { singular: noun } = nounForms(m, family.noun);
 
-  const progress = await Promise.all(family.members.map((m) => tenantProgress(m.slug)));
+  const [progress, sample] = await Promise.all([
+    Promise.all(family.members.map((m) => tenantProgress(m.slug))),
+    anySampleData(family.members.map((m) => m.slug)),
+  ]);
   const byMember = new Map(
     family.members.map((m, i) => [m.slug, new Map((progress[i]?.rows ?? []).map((r) => [`${r.dimensionSlug}::${r.indicator}`, r]))]),
   );
@@ -72,6 +77,10 @@ export default async function FamilyProgressPage({ params }: { params: Promise<{
             baseline: <span lang="en">{baselineLabel}</span>,
           })}
         </p>
+        {/* One seeded portrait (scripts/seed-demo-data.ts) among the family labels the whole page. */}
+        {sample ? (
+          <SampleDataNotice labels={m.sampleData} name={family.organization.name} org className="mt-4 max-w-3xl" />
+        ) : null}
 
         <section
           className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"

@@ -2,8 +2,15 @@
 
 import { useState } from 'react';
 import { setContract } from '@/lib/billing-actions';
-import type { PlanId } from '@deep-fryer/core';
+import { CONTRACT_PLANS, type ContractPlanId } from '@deep-fryer/core';
 import { useAction } from '@/lib/use-action';
+
+/*
+ * The plans offered are core CONTRACT_PLANS, the list setContract validates
+ * against on the server too. Not 'trial': trials are retired — no research
+ * is free — so a row that still says 'trial' is edited onto a real plan (the
+ * form starts it on Metro, the NYC shape) rather than renewed.
+ */
 
 /** Staff-only contract editor (negotiated terms invoiced outside Stripe). */
 export function ContractForm({
@@ -22,7 +29,10 @@ export function ContractForm({
   };
 }) {
   const { run, pending, error } = useAction();
-  const [v, setV] = useState(initial);
+  const [v, setV] = useState(() => ({
+    ...initial,
+    plan: (CONTRACT_PLANS as readonly string[]).includes(initial.plan) ? initial.plan : 'metro',
+  }));
   const num = (s: string) => (s === '' ? null : Number(s));
   const field = 'mt-1 w-full rounded border border-field-border bg-white px-2 py-1 text-sm';
   return (
@@ -30,13 +40,13 @@ export function ContractForm({
       className="grid gap-3 sm:grid-cols-3"
       onSubmit={(e) => {
         e.preventDefault();
-        run(() => setContract({ orgSlug, ...v, plan: v.plan as PlanId, poNumber: v.poNumber || undefined }));
+        run(() => setContract({ orgSlug, ...v, plan: v.plan as ContractPlanId, poNumber: v.poNumber || undefined }));
       }}
     >
       <label className="text-sm">
         Plan
         <select className={field} value={v.plan} onChange={(e) => setV({ ...v, plan: e.target.value })}>
-          {['trial', 'community', 'city', 'metro', 'enterprise'].map((p) => (
+          {CONTRACT_PLANS.map((p) => (
             <option key={p}>{p}</option>
           ))}
         </select>

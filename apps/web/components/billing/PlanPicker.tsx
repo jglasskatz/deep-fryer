@@ -18,7 +18,12 @@ export interface PickerPlan {
 /**
  * Plan selection with the two ways cities pay: a card now (Stripe Checkout,
  * self-serve plans), or an annual invoice to accounts payable with a PO
- * number and net-30 terms (any purchasable plan).
+ * number and net-30 terms (any purchasable plan). Research waits for the
+ * money either way: a card is charged before the plan starts, and an
+ * invoice plan researches once its first invoice is paid (core standing
+ * 'awaiting_payment'), so the invoice copy says so. The Monthly/Annual
+ * switch appears only when some plan is sold by the month (the billing
+ * page passes only the prices of intervals a plan is sold by).
  */
 export function PlanPicker({
   orgSlug,
@@ -40,25 +45,28 @@ export function PlanPicker({
   const [po, setPo] = useState('');
   const [exempt, setExempt] = useState(defaultTaxExempt);
   const [done, setDone] = useState<string | null>(null);
+  const monthlySold = plans.some((p) => p.prices.month);
 
   return (
     <div>
-      <div role="radiogroup" aria-label="Billing interval" className="inline-flex rounded border border-black/15 p-0.5 text-sm">
-        {(['year', 'month'] as const).map((i) => (
-          <button
-            key={i}
-            type="button"
-            role="radio"
-            aria-checked={interval === i}
-            onClick={() => setInterval(i)}
-            className={`rounded px-3 py-1 ${interval === i ? 'bg-black text-white' : ''}`}
-          >
-            {i === 'year' ? 'Annual' : 'Monthly'}
-          </button>
-        ))}
-      </div>
+      {monthlySold ? (
+        <div role="radiogroup" aria-label="Billing interval" className="mb-4 inline-flex rounded border border-black/15 p-0.5 text-sm">
+          {(['year', 'month'] as const).map((i) => (
+            <button
+              key={i}
+              type="button"
+              role="radio"
+              aria-checked={interval === i}
+              onClick={() => setInterval(i)}
+              className={`rounded px-3 py-1 ${interval === i ? 'bg-black text-white' : ''}`}
+            >
+              {i === 'year' ? 'Annual' : 'Monthly'}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
-      <div className="mt-4 grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-3">
         {plans.map((p) => {
           const price = p.prices[interval];
           const current = currentPlan === p.id;
@@ -133,7 +141,9 @@ export function PlanPicker({
                 taxExempt: exempt,
               });
               if (r.ok) {
-                setDone(`Subscribed to ${plans.find((p) => p.id === invoicePlan)?.name}. The first invoice is on its way to ${email} (net 30).`);
+                setDone(
+                  `Subscribed to ${plans.find((p) => p.id === invoicePlan)?.name}. The first invoice is on its way to ${email} (net 30); research starts once it is paid.`,
+                );
                 setInvoicePlan(null);
               }
               return r;
@@ -144,8 +154,9 @@ export function PlanPicker({
             Annual invoice — {plans.find((p) => p.id === invoicePlan)?.name}
           </h3>
           <p className="mt-1 text-xs text-[color:var(--color-muted)]">
-            Service starts now. The invoice goes to accounts payable with net-30 terms and can be
-            paid by ACH, check, or card. Research continues while an invoice is past due.
+            Research starts once the first invoice is paid. It goes to accounts payable with net-30
+            terms and can be paid by ACH, check, or card. After that, research continues while a later
+            invoice is past due.
           </p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <label className="block text-sm">

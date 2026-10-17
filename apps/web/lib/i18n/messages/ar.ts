@@ -131,7 +131,7 @@ export const ar: Messages = {
     baseline_only: 'لا يتوفر حتى الآن سوى قياس خط الأساس؛ وسيُظهر التحديث القادم الاتجاه.',
   },
   portrait: {
-    metaDescription: 'صورة Doughnut Economics لـ {name}: الأساس الاجتماعي والسقف البيئي، مع مصدر كل رقم.',
+    metaDescription: 'صورة الدونات لـ {name}: الأساس الاجتماعي والسقف البيئي، مع مصدر كل رقم.',
     population: 'عدد السكان: {n}',
     clickHint: 'يمكنكم تحديد أي شريحة لعرض المؤشرات والأدلة والإجراءات والنقاش.',
     demoHint: 'بيانات تجريبية — لعرض محتوى حقيقي، يلزم ضبط DATABASE_URL ونشر الإصدارات.',
@@ -380,6 +380,8 @@ export const ar: Messages = {
   login: {
     title: 'تسجيل الدخول',
     intro: 'يسجّل السكان الدخول للمشاركة في نقاش الصورة. أما موظفو المدينة فيستخدمون حساب العمل.',
+    /** Replaces `intro` when the person is on the way to setting up their city's portrait (/start): city staff, not residents. */
+    startIntro: 'سجّلوا الدخول لإعداد دونات مدينتكم — استخدموا بريد العمل الإلكتروني.',
     microsoft: 'المتابعة باستخدام Microsoft (حساب العمل)',
     google: 'المتابعة باستخدام Google',
     emailLabel: 'إرسال رابط تسجيل الدخول إلى بريدي الإلكتروني',
@@ -402,6 +404,12 @@ export const ar: Messages = {
       AccessDenied: 'رُفض تسجيل الدخول.',
       Configuration: 'إعدادات تسجيل الدخول على هذا الخادم غير صحيحة. يُرجى التواصل مع مسؤول الموقع.',
       EmailSignin: 'تعذّر علينا إرسال رسالة تسجيل الدخول. تحقّقوا من العنوان وحاولوا مرة أخرى بعد بضع دقائق.',
+      /** Nothing was sent: this address already has three unused sign-in links from the last 15 minutes. */
+      TooManyLinks:
+        'أرسلنا بالفعل عدة روابط لتسجيل الدخول إلى هذا العنوان خلال آخر 15 دقيقة. استخدموا أحدثها، أو حاولوا مرة أخرى بعد 15 دقيقة.',
+      /** Nothing was sent: this network has asked for its hourly share of sign-in emails (shared Wi-Fi counts as one). */
+      TooManyEmails:
+        'طُلب عدد كبير جدًا من رسائل تسجيل الدخول من هذه الشبكة، لذلك لم تُرسَل هذه الرسالة. يُرجى المحاولة مرة أخرى بعد ساعة.',
       default: 'تعذّر تسجيل الدخول. يُرجى المحاولة مرة أخرى.',
     },
   },
@@ -639,6 +647,39 @@ export const ar: Messages = {
     signupNamed: 'الاشتراك في {name}',
     resourceHazards: 'للمساعدة في حالات:',
     doughnutLegend: 'ألوان الدونات:',
+  },
+  /** The site footer, on every page but embeds (components/site-footer/SiteFooter.tsx). */
+  footer: {
+    /** The footer's navigation landmark. */
+    label: 'عن هذا الموقع',
+    /** {email} is the support address of whoever runs this site, as a link (already marked dir="ltr", so no isolate here). */
+    contact: 'للتواصل: {email}',
+    accessibility: 'إمكانية الوصول',
+    privacy: 'الخصوصية',
+    terms: 'شروط الاستخدام',
+    /**
+     * The Doughnut's attribution (docs/OPEN-SOURCE.md §3.3), also under every
+     * embedded doughnut. {license} is the license's name as a link; {book}
+     * and {method} are the English titles of the book and the method guide.
+     * The names stay in Latin script; "منظمة" before the Lab's name lets the
+     * Arabic prepositions attach to an Arabic word rather than to Latin text.
+     */
+    credit:
+      'مخطط الدونات: Kate Raworth و Christian Guthier، {license}، مُكيَّف باستخدام بيانات محلية (Raworth، {book}، 2017). يستند منهج صور المدن إلى دليل {method} الصادر عن منظمة Doughnut Economics Action Lab. هذا الموقع غير تابع لمنظمة Doughnut Economics Action Lab ولا يحظى بتأييدها.',
+  },
+  /**
+   * On a portrait seeded with synthetic values (scripts/seed-demo-data.ts):
+   * its page, its dimension pages, its embed, its organization's compare,
+   * insights and progress pages, so a screenshot cannot pass for research.
+   * "توضيحية" (illustrative), not "تجريبية", which also reads as "empirical".
+   */
+  sampleData: {
+    title: 'بيانات توضيحية — ليست نتائج أبحاث',
+    /** A portrait's own pages and its embed; {name} is the portrait. */
+    body: 'وُلِّدت الأرقام الخاصة بـ {name} على هذا الموقع لعرض طريقة عمل البرنامج. وهي ليست قياسات، ولا يجوز الاستشهاد بها.',
+    /** An organization's pages, when any portrait shown there is seeded; {org} is the organization. */
+    bodyOrg:
+      'وُلِّد بعض الأرقام الخاصة بـ {org} في هذه الصفحة أو جميعها لعرض طريقة عمل البرنامج. وهي ليست قياسات، ولا يجوز الاستشهاد بها.',
   },
   /** Theme toggle and the fryer (SPEC-v5 §4). */
   theme: {

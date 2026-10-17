@@ -221,4 +221,31 @@ describe.skipIf(!hasDb)('deleteAccount and the owner locks', () => {
     const left = await db.select().from(m.tenantMembers).where(eq(m.tenantMembers.userId, leaving.id));
     expect(left).toEqual([]);
   });
+
+  it('takes the unused sign-in links sent to the address with the account, and nobody else’s', async () => {
+    // Auth.js keys a link by the address itself and deletes it only when it is used, so these would keep the
+    // address an account deleted for good — the privacy notice says deleting removes it.
+    const m = await import('@deep-fryer/db');
+    const { inArray } = await import('drizzle-orm');
+    const db = m.getDb();
+    const leaving = await person('tokens');
+    const other = await person('tokens-other');
+    const soon = new Date(Date.now() + 10 * 60_000);
+    await db.insert(m.verificationTokens).values([
+      { identifier: leaving.email, token: `${uniq()}-a`, expires: soon },
+      { identifier: leaving.email.toUpperCase(), token: `${uniq()}-b`, expires: new Date(Date.now() - 60_000) },
+      { identifier: other.email, token: `${uniq()}-c`, expires: soon },
+    ]);
+    const identifiers = [leaving.email, leaving.email.toUpperCase(), other.email];
+    try {
+      expect(await deleteAs(leaving)).toBe('redirected');
+      const left = await db
+        .select({ identifier: m.verificationTokens.identifier })
+        .from(m.verificationTokens)
+        .where(inArray(m.verificationTokens.identifier, identifiers));
+      expect(left).toEqual([{ identifier: other.email }]);
+    } finally {
+      await db.delete(m.verificationTokens).where(inArray(m.verificationTokens.identifier, identifiers));
+    }
+  });
 });

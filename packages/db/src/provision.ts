@@ -1,12 +1,5 @@
 import { framework, getThreshold } from '@deep-fryer/contract';
-import {
-  TRIAL_DAYS,
-  defaultTenantConfig,
-  slugError,
-  type DimensionData,
-  type PlanId,
-  type PortraitFeature,
-} from '@deep-fryer/core';
+import { defaultTenantConfig, slugError, type DimensionData, type PortraitFeature } from '@deep-fryer/core';
 import { eq, sql } from 'drizzle-orm';
 import type { DbExecutor } from './client.js';
 import {
@@ -15,7 +8,6 @@ import {
   dimensionVersions,
   organizationMembers,
   organizations,
-  subscriptions,
   tenantConfig,
   tenantMembers,
   tenants,
@@ -28,15 +20,19 @@ export interface ProvisionOrganizationArgs {
   billingEmail?: string;
   /** Becomes the organization's owner (and so owner of all its portraits). */
   ownerUserId?: string;
-  /**
-   * Starting plan. 'trial' starts a TRIAL_DAYS self-serve trial; a contract
-   * plan is set by staff tooling (scripts/seed-nyc-org.ts). Omitted = no
-   * subscription row (the organization must choose a plan to research).
-   */
-  startTrial?: boolean;
 }
 
-/** Create an organization, its owner membership, and optionally a trial. */
+/**
+ * Create an organization and its owner membership — never a subscription.
+ * Setting up is free and research never is (core plans.ts): a new
+ * organization has no plan, so it may hold its first portrait and the people
+ * who set it up (FREE_SETUP_LIMITS) and every research spend is refused until
+ * it buys a plan (Stripe checkout or invoice, lib/billing-actions.ts) or staff
+ * record a contract (setContract, scripts/create-tenant.ts --plan,
+ * scripts/provision-nyc.ts). There is deliberately no option here to start
+ * one: the self-serve trial that used to live here gave every new
+ * organization free research sessions.
+ */
 export async function provisionOrganization(
   db: DbExecutor,
   args: ProvisionOrganizationArgs,
@@ -56,19 +52,6 @@ export async function provisionOrganization(
       .values({ organizationId: org.id, userId: args.ownerUserId, role: 'owner' });
   }
 
-  if (args.startTrial) {
-    const start = new Date();
-    const end = new Date(start.getTime() + TRIAL_DAYS * 86_400_000);
-    await db.insert(subscriptions).values({
-      organizationId: org.id,
-      plan: 'trial' satisfies PlanId,
-      status: 'trialing',
-      collection: 'card',
-      currentPeriodStart: start,
-      currentPeriodEnd: end,
-      trialEndsAt: end,
-    });
-  }
   return org;
 }
 

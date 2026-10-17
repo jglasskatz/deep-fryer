@@ -1,16 +1,47 @@
-import { desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql, type SQL } from 'drizzle-orm';
 import type { DbExecutor } from './client.js';
-import { dimensionVersions, type DimensionVersion, type NewDimensionVersion } from './schema.js';
+import {
+  dimensionVersions,
+  tenants,
+  type DimensionVersion,
+  type NewDimensionVersion,
+  type Tenant,
+} from './schema.js';
 
 /**
  * The public read path (SPEC.md §11): published versions only, via the same
- * SQL function RLS-governed clients use.
+ * SQL function RLS-governed clients use. The function runs as the caller
+ * (migration 0015), so it answers with what the caller's policies allow: for
+ * an anonymous visitor, nothing unless the portrait is public; for a member,
+ * their portrait (published dimensions only, none before the first publish);
+ * in the system context, any portrait.
  */
 export async function publishedDoughnut<T = unknown>(db: DbExecutor, slug: string): Promise<T | null> {
   const result = await db.execute<{ portrait: T | null }>(
     sql`SELECT published_doughnut(${slug}) AS portrait`,
   );
   return result[0]?.portrait ?? null;
+}
+
+/**
+ * The public-plane rule (migration 0015) as a condition on `tenants`: live,
+ * and published at least once. Row-level security applies it to every read
+ * made as a person (tenants_public_read); this is for the few public reads
+ * that run in the system context and so bypass it — the web middleware's
+ * embed and translation lookups, listings of public portraits — which must
+ * apply it themselves. The same predicate as SQL tenant_is_public().
+ */
+export function tenantIsPublic(): SQL {
+  return sql`(${tenants.archivedAt} IS NULL AND ${tenants.firstPublishedAt} IS NOT NULL)`;
+}
+
+/** A portrait by slug only if it is public (tenantIsPublic), for system-context reads of the public plane. */
+export async function publicTenantBySlug(db: DbExecutor, slug: string): Promise<Tenant | null> {
+  const [tenant] = await db
+    .select()
+    .from(tenants)
+    .where(and(eq(tenants.slug, slug), tenantIsPublic()));
+  return tenant ?? null;
 }
 
 /** Newest version of one dimension, or null. */

@@ -68,7 +68,8 @@ describe.skipIf(!mockUrl || !hasDb)('billing against stripe-mock', () => {
   it('starts card checkout with a valid Checkout Session request', async () => {
     const { startCheckout } = await import('./billing-actions');
     const org = await newOrg();
-    const res = await startCheckout({ orgSlug: org.slug, plan: 'community', interval: 'month' });
+    // Annual: Community is not sold by the month (core sellsInterval).
+    const res = await startCheckout({ orgSlug: org.slug, plan: 'community', interval: 'year' });
     expect(res).toMatchObject({ ok: true });
     expect((res as { ok: true; data: { url: string } }).data.url).toMatch(/^https:\/\//);
   });

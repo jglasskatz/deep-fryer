@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { formatIndicatorValue } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { PortraitDoughnut } from '@/components/doughnut/PortraitDoughnut';
+import { SampleDataNotice } from '@/components/sample-data/SampleDataNotice';
 import { getPortrait } from '@/lib/data';
 import { requireOrganizationFeature } from '@/lib/features';
 import { familyByOrgSlug } from '@/lib/family';
@@ -12,6 +13,7 @@ import { doughnutLabels } from '@/lib/i18n/doughnut';
 import { fmt } from '@/lib/i18n/format';
 import { getI18n } from '@/lib/i18n/server';
 import type { PublishedPortrait } from '@/lib/portrait';
+import { anySampleData } from '@/lib/sample-data';
 
 export async function generateMetadata({
   params,
@@ -106,9 +108,10 @@ export default async function ComparePage({ params }: { params: Promise<{ org: s
   const { singular: noun, plural: nouns } = nounForms(m, family.noun);
   const labels = doughnutLabels(m);
 
-  const entries = await Promise.all(
-    FAMILY.map(async (m) => [m.slug, await getPortrait(m.slug)] as const),
-  );
+  const [entries, sample] = await Promise.all([
+    Promise.all(FAMILY.map(async (m) => [m.slug, await getPortrait(m.slug)] as const)),
+    anySampleData(FAMILY.map((m) => m.slug)),
+  ]);
   const portraits = Object.fromEntries(
     entries.filter(([, p]) => p !== null) as [string, PublishedPortrait][],
   );
@@ -127,6 +130,10 @@ export default async function ComparePage({ params }: { params: Promise<{ org: s
         <p className="mt-2 max-w-3xl text-sm text-[color:var(--color-muted)]">
           {fmt(whole ? m.compare.introJurisdiction : m.compare.introFamily, { n: FAMILY.length, noun })}
         </p>
+        {/* One seeded portrait (scripts/seed-demo-data.ts) among the family labels the whole page. */}
+        {sample ? (
+          <SampleDataNotice labels={m.sampleData} name={family.organization.name} org className="mt-4 max-w-3xl" />
+        ) : null}
 
         <section className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
           {FAMILY.map((member) => {

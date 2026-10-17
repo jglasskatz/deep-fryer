@@ -85,7 +85,7 @@ function parseInput(input: unknown): z.infer<typeof inputSchema> {
 
 /**
  * The quota refusal in the terms of this action. An organization without
- * good standing (no plan, trial over, unpaid) keeps the billing message;
+ * good standing (no plan yet, a lapsed or unpaid one) keeps the billing message;
  * one that has simply spent its allowance hears what an analysis costs —
  * the shared research message speaks of "this run".
  */
@@ -145,7 +145,8 @@ export const createPolicyAnalysis = action(
       if (!org) throw new Error(`tenant ${tenant.id} has no organization`);
       const gate = await gateResearchSpend(tx, org.id, POLICY_ANALYSIS_SESSIONS);
       if (!gate.check.allowed) throw new UserError(quotaMessage(gate.subscription, gate.check));
-      // On a key this server cannot read, the session would fail in the worker: refuse now, saving nothing.
+      // A session this server cannot run — on a key it cannot read, or on the plan without a research key of
+      // its own — would only fail in the worker: refuse now, saving and counting nothing.
       assertFundingUsable(gate.funding);
 
       const [row] = await tx

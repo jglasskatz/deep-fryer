@@ -9,6 +9,7 @@ import { DangerZone } from '@/components/account/DangerZone';
 import { accountOverview } from '@/lib/account-data';
 import { getAuth } from '@/lib/auth';
 import { googleConfigured, hasDatabase, microsoftConfigured } from '@/lib/env';
+import { deploymentFeatureOn } from '@/lib/features';
 
 export const metadata: Metadata = { title: 'Your account' };
 
@@ -24,10 +25,16 @@ const PROVIDER_LABEL: Record<string, string> = {
  *
  * Most accounts are residents who signed in to join a discussion; they hold
  * no role anywhere. For them the page leads with the profile (the display
- * name their comments show) and frames starting a portrait as something for
- * city staff, further down (SPEC-v6 §2) — a resident should not land on
- * "start a 30-day trial" as the page's main content. Staff (anyone with an
- * organization or a portrait role) see their organizations first, as before.
+ * name their comments show) and frames setting up a portrait as something
+ * for city staff, further down (SPEC-v6 §2) — a resident should not land on
+ * it as the page's main content. Staff (anyone with an organization or a
+ * portrait role) see their organizations first, as before.
+ *
+ * Setting up a portrait is offered as what it is — free to set up, paid to
+ * build; there is no trial ("No free trials for making donuts, but free to
+ * view") — and only where the deployment offers self-serve start (the
+ * self_serve feature): without it /start is a 404, so the page points to an
+ * invitation from the portrait's owner instead.
  */
 export default async function AccountPage() {
   if (!hasDatabase()) redirect('/');
@@ -44,6 +51,7 @@ export default async function AccountPage() {
 
   /** Holds a role on an organization or a portrait — city staff, in practice. */
   const onATeam = overview.organizations.length > 0 || overview.portraits.length > 0;
+  const selfServe = deploymentFeatureOn('self_serve');
 
   const linkable = [
     googleConfigured() && !overview.providers.includes('google') ? ('google' as const) : null,
@@ -70,17 +78,26 @@ export default async function AccountPage() {
               <h2 id="orgs" className="text-lg font-semibold">
                 Organizations
               </h2>
-              <Link href="/start" className="text-sm underline">
-                Start a new portrait
-              </Link>
+              {selfServe ? (
+                <Link href="/start" className="text-sm underline">
+                  Start a new portrait
+                </Link>
+              ) : null}
             </div>
             {overview.organizations.length === 0 ? (
               <p className="mt-3 text-sm text-[color:var(--color-muted)]">
                 You do not administer an organization yet.{' '}
-                <Link className="underline" href="/start">
-                  Start a 30-day trial
-                </Link>{' '}
-                for your jurisdiction, or ask your city&apos;s portrait owner for an invitation.
+                {selfServe ? (
+                  <>
+                    <Link className="underline" href="/start">
+                      Set up a portrait
+                    </Link>{' '}
+                    for your jurisdiction — free to set up; building it needs a plan — or ask your city&apos;s
+                    portrait owner for an invitation.
+                  </>
+                ) : (
+                  <>Ask your city&apos;s portrait owner for an invitation.</>
+                )}
               </p>
             ) : (
               <ul className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -185,11 +202,18 @@ export default async function AccountPage() {
             </h2>
             <p className="mt-2 text-sm text-[color:var(--color-muted)]">
               Joining a portrait&apos;s discussion needs nothing more than this account. If you work
-              for a city or county, ask your portrait&apos;s owner for an invitation, or{' '}
-              <Link className="underline" href="/start">
-                start a 30-day trial
-              </Link>{' '}
-              for your jurisdiction.
+              for a city or county, ask your portrait&apos;s owner for an invitation
+              {selfServe ? (
+                <>
+                  , or{' '}
+                  <Link className="underline" href="/start">
+                    set up a portrait
+                  </Link>{' '}
+                  for your jurisdiction (free to set up; building it needs a plan).
+                </>
+              ) : (
+                '.'
+              )}
             </p>
           </section>
         )}

@@ -133,7 +133,7 @@ export const ht: Messages = {
       'Pou kounye a, se sèlman mezi pwen depa a ki egziste; pwochen mizajou a ap montre evolisyon an.',
   },
   portrait: {
-    metaDescription: 'Pòtre Doughnut Economics {name}: fondasyon sosyal ak plafon ekolojik, ak sous chak chif.',
+    metaDescription: 'Pòtre Doughnut {name}: fondasyon sosyal ak plafon ekolojik, ak sous ki dèyè chak chif.',
     population: 'popilasyon: {n}',
     clickHint: 'Chwazi yon segman pou wè endikatè yo, prèv yo, aksyon yo ak diskisyon an.',
     demoHint: 'Done demonstrasyon — mete DATABASE_URL epi pibliye vèsyon yo pou wè vrè kontni an.',
@@ -355,6 +355,8 @@ export const ht: Messages = {
   login: {
     title: 'Konekte',
     intro: 'Rezidan yo konekte pou yo patisipe nan diskisyon yon pòtre. Anplwaye vil la sèvi ak kont travay yo.',
+    /** Replaces `intro` when the person is on the way to setting up their city's portrait (/start): city staff, not residents. */
+    startIntro: 'Konekte pou w kreye Doughnut vil ou a — sèvi ak imèl travay ou.',
     microsoft: 'Kontinye ak Microsoft (kont travay)',
     google: 'Kontinye ak Google',
     emailLabel: 'Resevwa yon lyen pou konekte pa imèl',
@@ -375,6 +377,12 @@ export const ht: Messages = {
       AccessDenied: 'Yo refize koneksyon an.',
       Configuration: 'Koneksyon an pa byen konfigire sou sèvè sa a. Kontakte administratè sit la.',
       EmailSignin: 'Nou pa t ka voye imèl pou konekte a. Tcheke adrès la epi eseye ankò nan kèk minit.',
+      /** Nothing was sent: this address already has three unused sign-in links from the last 15 minutes. */
+      TooManyLinks:
+        'Nou deja voye plizyè lyen pou konekte nan adrès sa a nan 15 dènye minit yo. Sèvi ak lyen ki pi resan an, oswa eseye ankò nan 15 minit.',
+      /** Nothing was sent: this network has asked for its hourly share of sign-in emails (shared Wi-Fi counts as one). */
+      TooManyEmails:
+        'Gen twòp demann imèl pou konekte ki soti nan rezo sa a, kidonk nou pa t voye imèl sa a. Tanpri eseye ankò nan yon èdtan.',
       default: 'Koneksyon an pa mache. Eseye ankò.',
     },
   },
@@ -573,6 +581,37 @@ export const ht: Messages = {
     signupNamed: 'Enskri nan {name}',
     resourceHazards: 'Itil pandan:',
     doughnutLegend: 'Koulè sou Doughnut la:',
+  },
+  /** The site footer, on every page but embeds (components/site-footer/SiteFooter.tsx). */
+  footer: {
+    /** The footer's navigation landmark. */
+    label: 'Konsènan sit sa a',
+    /** {email} is the support address of whoever runs this site, as a link. */
+    contact: 'Kontak: {email}',
+    accessibility: 'Aksesiblite',
+    privacy: 'Konfidansyalite',
+    terms: 'Kondisyon itilizasyon',
+    /**
+     * The Doughnut's attribution (docs/OPEN-SOURCE.md §3.3), also under every
+     * embedded doughnut. {license} is the license's name as a link; {book}
+     * and {method} are the English titles of the book and the method guide.
+     * Keep all three, and keep the people's and the organization's names.
+     */
+    credit:
+      'Dyagram Doughnut la: Kate Raworth ak Christian Guthier, {license}, adapte ak done lokal (Raworth, {book}, 2017). Metòd pòtre vil yo baze sou {method}, yon gid Doughnut Economics Action Lab. Sit sa a pa afilye ak Doughnut Economics Action Lab, e òganizasyon sa a pa apiye l non plis.',
+  },
+  /**
+   * On a portrait seeded with synthetic values (scripts/seed-demo-data.ts):
+   * its page, its dimension pages, its embed, its organization's compare,
+   * insights and progress pages, so a screenshot cannot pass for research.
+   */
+  sampleData: {
+    title: 'Done egzanp — se pa rezilta rechèch',
+    /** A portrait's own pages and its embed; {name} is the portrait. */
+    body: 'Yo te kreye chif ki parèt pou {name} sou sit sa a pou montre kijan lojisyèl la mache. Chif sa yo pa soti nan okenn mezi, e ou pa dwe site yo.',
+    /** An organization's pages, when any portrait shown there is seeded; {org} is the organization. */
+    bodyOrg:
+      'Yo te kreye kèk oswa tout chif ki parèt pou {org} sou paj sa a pou montre kijan lojisyèl la mache. Chif sa yo pa soti nan okenn mezi, e ou pa dwe site yo.',
   },
   /** Theme toggle and the fryer (SPEC-v5 §4). */
   theme: {

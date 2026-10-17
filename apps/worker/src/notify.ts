@@ -20,8 +20,14 @@ import {
  *
  * Recipients are the people who act on a run: the portrait's owners and
  * editors plus the organization's owners. One email per run; a failure to
- * send is logged and never fails the run — the review queue is the system
- * of record, email is a nudge.
+ * send is logged and never fails the run — the review queue and the run
+ * page are the system of record, email is a nudge.
+ *
+ * Where each email points: a run with findings to review, to the review
+ * queue; a failed run, to its run page, which names the reason each session
+ * stopped and who can fix it (apps/web lib/run-failure.ts) and offers to
+ * plan the failed dimensions again. The email itself does not guess the
+ * reason beyond what it knows — whose key the run used.
  */
 
 export interface RunSummary {
@@ -37,7 +43,9 @@ export interface RunSummary {
    * says so.
    */
   funding: ResearchFunding;
+  /** The run's planned sessions. */
   sessions: number;
+  /** Of those, the ones that did not complete: failed, or never started because the run stopped first. */
   failedSessions: number;
   findings: number;
   flagged: number;
@@ -49,17 +57,24 @@ export interface ComposedEmail {
   text: string;
 }
 
-/** Pure: what to send for a run, given the tenant's preferences — or null for nothing. */
+/**
+ * Pure: what to send for a run, given the tenant's preferences — or null for
+ * nothing. `support` is the deployment's SUPPORT_EMAIL, named when a failure
+ * is most likely the research service's own to fix.
+ */
 export function composeRunEmail(
   s: RunSummary,
   prefs: NotificationConfig,
   appUrl: string,
+  support: string | null = null,
 ): ComposedEmail | null {
   const wantsRun = prefs.email_on_run_complete;
   const wantsFlags = prefs.email_on_flagged_finding && s.flagged > 0;
   if (!wantsRun && !wantsFlags) return null;
 
-  const link = `${appUrl.replace(/\/+$/, '')}/${s.tenantSlug}/admin/review?run=${s.runId}`;
+  const base = appUrl.replace(/\/+$/, '');
+  const link = `${base}/${s.tenantSlug}/admin/review?run=${s.runId}`;
+  const runLink = `${base}/${s.tenantSlug}/admin/research/${s.runId}`;
   const flaggedLine =
     s.flagged > 0
       ? `${s.flagged} finding${s.flagged === 1 ? '' : 's'} flagged by verification — each needs a human decision before anything is published.`
@@ -67,26 +82,35 @@ export function composeRunEmail(
 
   if (s.status === 'failed') {
     const ownKey = s.funding === 'organization_key';
-    const recorded = `Findings recorded before the failure (${s.findings}) are in the review queue.`;
-    // A run on the organization's own key: its failures are most often the
-    // key itself (revoked, out of credit, a model it may not use), which the
-    // session transcripts name and an organization owner fixes under Billing.
-    // One reason is not always the key's: "model not found" can also be the
-    // research service's own model setting (org-key.ts orgKeyRejected), so the
-    // email says where to send that one rather than blaming either side.
+    const recorded =
+      s.findings > 0
+        ? `Findings recorded before the failure (${s.findings}) can be reviewed from the run page.`
+        : 'No findings were recorded.';
+    // Who acts depends on whose key the run used. On the organization's own
+    // key, its failures are most often the key itself (revoked, out of
+    // credit, a model it may not use), which an organization owner fixes
+    // under Billing; one reason is not always the key's — "model not found"
+    // can also be the research service's own model setting (org-key.ts
+    // orgKeyRejected) — so the email says where to send that one rather than
+    // blaming either side. On the plan's sessions, a run in which every
+    // session failed the same way is almost always the research service's
+    // own key or settings — never something the portrait's staff did — so
+    // the email says it is for the people who run the service, and names
+    // their address when the deployment has one. The run page says which.
+    const operator = support ? `the people who run this service (${support})` : 'the people who run this service';
     const reason = ownKey
       ? s.findings > 0
-        ? `${recorded} This run used your organization's own Anthropic API key, so none of it is counted against your plan. If the key was refused, each failed session's transcript says why.`
-        : "No findings were recorded. This run used your organization's own Anthropic API key, so none of it is counted against your plan. If every session failed the same way, check that key first: a failed session's transcript says why, and an organization owner can replace the key under Billing. If the transcript says the model setting may be wrong instead, pass it on to your administrator."
+        ? `${recorded} This run used your organization's own Anthropic API key, so none of it is counted against your plan. If the key was refused, the run page says why and what an organization owner can do.`
+        : `${recorded} This run used your organization's own Anthropic API key, so none of it is counted against your plan. If every session failed the same way, check that key first: the run page says why each session stopped, and an organization owner can replace the key under Billing. If it says the model setting may be wrong instead, pass it on to ${operator}.`
       : s.findings > 0
-        ? `${recorded} Failed sessions are not counted against your plan.`
-        : 'No findings were recorded. Failed sessions are not counted against your plan; if every session failed the same way, ask your administrator to check the research service configuration.';
+        ? `${recorded} Sessions that failed or did not run are not counted against your plan. The run page says why each one stopped.`
+        : `${recorded} Sessions that failed or did not run are not counted against your plan. When every session fails the same way, the cause is usually on the research service's side (its key or its settings), which is for ${operator} to fix, not you; the run page says why each session stopped.`;
     return {
       subject: `Research run failed — ${s.tenantName}`,
       text: [
         `A research run for ${s.tenantName} failed: ${s.failedSessions} of ${s.sessions} sessions did not complete.`,
         reason,
-        `Re-plan the affected dimensions from the review queue: ${link}`,
+        `See why, and plan the failed dimensions again: ${runLink}`,
       ].join('\n\n'),
     };
   }
@@ -101,8 +125,11 @@ export function composeRunEmail(
   return {
     subject: `Research run complete — ${s.tenantName}: ${s.findings} findings${s.flagged ? `, ${s.flagged} flagged` : ''}`,
     text: [
-      `The research run for ${s.tenantName} finished: ${s.findings} findings (${s.gaps} documented data gap${s.gaps === 1 ? '' : 's'}) from ${s.sessions} sessions${s.failedSessions ? `, ${s.failedSessions} of which failed` : ''}.`,
+      `The research run for ${s.tenantName} finished: ${s.findings} findings (${s.gaps} documented data gap${s.gaps === 1 ? '' : 's'}) from ${s.sessions} sessions${s.failedSessions ? `, ${s.failedSessions} of which did not complete` : ''}.`,
       flaggedLine,
+      ...(s.failedSessions
+        ? [`The run page says why ${s.failedSessions === 1 ? 'that session' : 'those sessions'} stopped, and can plan ${s.failedSessions === 1 ? 'it' : 'them'} again: ${runLink}`]
+        : []),
       'Nothing is public until a reviewer approves and publishes it.',
       `Open the review queue: ${link}`,
     ].join('\n\n'),
@@ -153,6 +180,11 @@ export async function runSummary(runId: string): Promise<RunSummary | null> {
     .select({ id: researchSessions.id, status: researchSessions.status })
     .from(researchSessions)
     .where(eq(researchSessions.runId, runId));
+  // The worker inserts a session row only when the session starts, so a run
+  // stopped part-way has planned sessions with no row: they did not complete
+  // either, and the email counts them with the failed ones.
+  const planned = Math.max(row.run.plan.sessions.length, sessions.length);
+  const neverStarted = planned - sessions.length;
   const runFindings = sessions.length
     ? await db
         .select({ payload: findings.payload, verification: findings.verification })
@@ -165,8 +197,8 @@ export async function runSummary(runId: string): Promise<RunSummary | null> {
     runId,
     status: row.run.status === 'failed' ? 'failed' : 'complete',
     funding: row.run.funding,
-    sessions: sessions.length,
-    failedSessions: sessions.filter((s) => s.status === 'failed').length,
+    sessions: planned,
+    failedSessions: sessions.filter((s) => s.status === 'failed').length + neverStarted,
     findings: runFindings.length,
     gaps: runFindings.filter((f) => f.payload.kind === 'gap').length,
     flagged: runFindings.filter(
@@ -204,7 +236,12 @@ export async function notifyRunFinished(runId: string): Promise<void> {
       email_on_run_complete: true,
       email_on_flagged_finding: true,
     };
-    const email = composeRunEmail(summary, prefs, process.env.APP_URL ?? 'http://localhost:3000');
+    const email = composeRunEmail(
+      summary,
+      prefs,
+      process.env.APP_URL ?? 'http://localhost:3000',
+      process.env.SUPPORT_EMAIL?.trim() || null,
+    );
     if (!email) return;
     const to = await runRecipients(run!.tenantId);
     if (to.length === 0) return;

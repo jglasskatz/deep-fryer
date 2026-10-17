@@ -1,4 +1,4 @@
-import { and, eq, gte, isNull, lt, ne, sql } from 'drizzle-orm';
+import { and, eq, gte, isNull, ne, sql } from 'drizzle-orm';
 import {
   POLICY_ANALYSIS_SESSIONS,
   checkResearchQuota,
@@ -56,32 +56,36 @@ export async function lockSubscription(
 }
 
 /**
- * Research sessions of the plan's allowance an organization used in
- * [since, until): its research runs applied in that window and its policy
- * analyses created in it, counting only those the research gate funded from
- * the plan (`funding = 'plan'`, stored on the row when the gate let it
- * through — migration 0012). Runs still queued or running count their full
- * planned session list (a reservation); finished runs count only sessions
- * that did not fail — the customer never pays for our infrastructure
- * failures. A policy analysis is one session unless it failed.
+ * Research sessions of the plan's allowance an organization has used since
+ * `since` — the start of its current billing period: its research runs
+ * applied since then and its policy analyses created since then, counting
+ * only those the research gate funded from the plan (`funding = 'plan'`,
+ * stored on the row when the gate let it through — migration 0012). Runs
+ * still queued or running count their full planned session list (a
+ * reservation); finished runs count only sessions that did not fail — the
+ * customer never pays for our infrastructure failures. A policy analysis is
+ * one session unless it failed.
+ *
+ * There is no upper bound, on purpose. The period's recorded end is only as
+ * fresh as the last Stripe sync; bounding the count by it would leave every
+ * spend after a stale end uncounted — an allowance that never runs down.
+ * Counting everything since the period began charges such spends to the
+ * period on record, so the gate still stops at the allowance (and core
+ * standing stops a row that stays stale past STRIPE_SYNC_GRACE_MS). When the
+ * period does renew, `since` moves to the new start.
  *
  * Sessions paid for with the organization's own Anthropic API key are not
  * part of this number, before or after the key is removed: they never ran on
  * the plan (SPEC-v7 §4). researchSessionsOnOrganizationKey counts them, for
  * the billing page.
  */
-export async function researchSessionsUsed(
-  db: DbExecutor,
-  organizationId: string,
-  since: Date,
-  until: Date,
-): Promise<number> {
-  return researchSessionsFunded(db, organizationId, since, until, 'plan');
+export async function researchSessionsUsed(db: DbExecutor, organizationId: string, since: Date): Promise<number> {
+  return researchSessionsFunded(db, organizationId, since, 'plan');
 }
 
 /**
- * Research sessions in [since, until) that ran (or are reserved to run) on
- * the organization's own Anthropic API key — the same counting rules as
+ * Research sessions since `since` that ran (or are reserved to run) on the
+ * organization's own Anthropic API key — the same counting rules as
  * researchSessionsUsed, for the other funding. Informational: no allowance
  * applies to them; the billing page lists them next to the plan's meter.
  */
@@ -89,9 +93,8 @@ export async function researchSessionsOnOrganizationKey(
   db: DbExecutor,
   organizationId: string,
   since: Date,
-  until: Date,
 ): Promise<number> {
-  return researchSessionsFunded(db, organizationId, since, until, 'organization_key');
+  return researchSessionsFunded(db, organizationId, since, 'organization_key');
 }
 
 /** The count behind researchSessionsUsed and researchSessionsOnOrganizationKey, for one funding. */
@@ -99,7 +102,6 @@ async function researchSessionsFunded(
   db: DbExecutor,
   organizationId: string,
   since: Date,
-  until: Date,
   funding: ResearchFunding,
 ): Promise<number> {
   const rows = await db
@@ -118,7 +120,6 @@ async function researchSessionsFunded(
         eq(tenants.organizationId, organizationId),
         eq(researchRuns.funding, funding),
         gte(researchRuns.appliedAt, since),
-        lt(researchRuns.appliedAt, until),
       ),
     );
   // A policy analysis is one session (SPEC-v5 §2), counted from creation
@@ -133,7 +134,6 @@ async function researchSessionsFunded(
         eq(policyAnalyses.funding, funding),
         ne(policyAnalyses.status, 'failed'),
         gte(policyAnalyses.createdAt, since),
-        lt(policyAnalyses.createdAt, until),
       ),
     );
   return (rows[0]?.used ?? 0) + (analyses?.n ?? 0) * POLICY_ANALYSIS_SESSIONS;
@@ -280,9 +280,11 @@ export interface ResearchGate {
  * and the decision cannot disagree.
  *
  * - The organization must be in good standing, whoever pays (core
- *   `standing`: no plan, an expired trial, a canceled or unpaid subscription
- *   all refuse). The key pays for model tokens, not for hosting, review, and
- *   support (SPEC-v7 §4: "Hosting after the trial still needs a plan").
+ *   `standing`: no plan — every organization /start creates, until it buys
+ *   one — a canceled or unpaid subscription, or a retired trial that has
+ *   ended all refuse). Research is never free, and the key pays for model
+ *   tokens, not for hosting, review, and support (SPEC-v7 §4), so a key on
+ *   file never stands in for a plan.
  * - With a key on file, the sessions run on that key, so the plan's session
  *   allowance is not checked — that is the only thing a key waives
  *   (SPEC-v7 §4: "sessions are then not counted against a plan's allowance").
@@ -339,7 +341,7 @@ export async function gateResearchSpend(
   now: Date = new Date(),
 ): Promise<ResearchGate> {
   const sub = await lockSubscription(tx, organizationId);
-  const used = sub ? await researchSessionsUsed(tx, organizationId, sub.currentPeriodStart, sub.currentPeriodEnd) : 0;
+  const used = sub ? await researchSessionsUsed(tx, organizationId, sub.currentPeriodStart) : 0;
   const hasKey = (await organizationApiKeyInfo(tx, organizationId)) !== null;
   return { subscription: sub, ...decideResearchSpend(sub, used, hasKey, requested, now) };
 }

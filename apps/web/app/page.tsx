@@ -1,24 +1,64 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
-import { familyByOrgSlug } from '@/lib/family';
-import { organizationFeatures } from '@/lib/features';
-import { hasDatabase } from '@/lib/env';
+import { hasDatabase, publicPortraits, type PublicPortraitSummary } from '@/lib/data';
+import { deploymentFeatureOn, portraitFeatures } from '@/lib/features';
+import { mockPortrait } from '@/lib/mock-data';
+import { showcaseOrgSlug } from '@/lib/site-settings';
+
+export const metadata: Metadata = {
+  description:
+    'Sourced, reviewed city portraits on Kate Raworth’s Doughnut of social and planetary boundaries: every number with its evidence, progress against adopted goals, free for anyone to read.',
+};
+
+/** The organization the landing page features, from what is public in it — or null. */
+interface Showcase {
+  organization: { slug: string; name: string };
+  members: PublicPortraitSummary[];
+  /** Where "See …" goes: the family compare, or a portrait — always a page that exists for everyone. */
+  href: string;
+}
 
 /**
- * Product landing. Public-plane rule (SPEC §10) applies to portraits, not
- * this page — but the pitch here is the same one cities hear: sourced,
- * reviewed, accountable numbers, not "AI".
+ * The showcase (DF_SHOWCASE_ORG): shown only when that organization has at
+ * least one public portrait, and built only from public portraits, so every
+ * link on it opens for a signed-out visitor. It opens on the family compare
+ * when two or more of them are public and one has the compare turned on —
+ * the same test the compare page applies for a visitor (SPEC-v7 §3) —
+ * otherwise on the whole-jurisdiction portrait (the member sharing the
+ * organization's slug) or the first one.
+ */
+async function showcaseFor(slug: string | null): Promise<Showcase | null> {
+  if (!slug) return null;
+  const members = await publicPortraits(slug);
+  if (members.length === 0) return null;
+  const organization = members[0]!.organization;
+  const compare =
+    members.length > 1 &&
+    (await Promise.all(members.map((m) => portraitFeatures(m.slug)))).some((f) => f.family_compare);
+  const whole = members.find((m) => m.slug === organization.slug) ?? members[0]!;
+  return { organization, members, href: compare ? `/o/${organization.slug}/compare` : `/${whole.slug}` };
+}
+
+/**
+ * Product landing. Reading is free and open to everyone: the landing page
+ * leads to every public portrait on this deployment. Building one is paid
+ * (a plan, or an operator-set contract), so the call to action is to build
+ * your city's doughnut — shown only while self-serve start is on (the
+ * deployment's self_serve feature; off, /start is a 404 and nothing invites
+ * a visitor to it) and never promising a free trial.
+ *
+ * Every link here opens for a signed-out visitor: the portrait lists come
+ * from lib/data.ts publicPortraits (published portraits only, the same for
+ * every reader, so a member never sees their private portrait listed and a
+ * cached copy never shows one), and without a database the one link is the
+ * bundled demo portrait, which is what /{slug} serves then.
  */
 export default async function HomePage() {
-  const nyc = hasDatabase() ? await familyByOrgSlug('nyc') : null;
-  const showcase = nyc && nyc.members.length > 1 ? nyc : null;
-  // The showcase opens on the family compare when NYC has it on (SPEC-v7 §3),
-  // otherwise on the city's own portrait — never on a page that would 404.
-  const showcaseHref = showcase
-    ? (await organizationFeatures(showcase.organization.id)).family_compare
-      ? `/o/${showcase.organization.slug}/compare`
-      : `/${showcase.whole ?? showcase.members[0]!.slug}`
-    : null;
+  const selfServe = deploymentFeatureOn('self_serve');
+  const showcase = await showcaseFor(showcaseOrgSlug());
+  const listed = (await publicPortraits()).filter((p) => p.organization.slug !== showcase?.organization.slug);
+  const demo = hasDatabase() ? null : mockPortrait.tenant;
 
   return (
     <>
@@ -29,25 +69,48 @@ export default async function HomePage() {
             Know where your city stands — and whether it&apos;s on track.
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-[color:var(--color-muted)]">
-            deep-fryer builds and maintains a Doughnut Economics portrait of your jurisdiction:
-            the social foundation residents should never fall below, the ecological ceiling the
-            city should not overshoot, every number sourced with the evidence beside it, and
-            progress measured against the goals your council already adopted.
+            deep-fryer builds and maintains a portrait of your jurisdiction on Kate Raworth&apos;s Doughnut of
+            social and planetary boundaries: the social foundation residents should never fall below, the
+            ecological ceiling the city should not overshoot, every number sourced with the evidence beside it,
+            and progress measured against the goals your council already adopted.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/start"
-              className="rounded bg-[color:var(--color-accent)] px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
-            >
-              Start a 30-day trial
-            </Link>
-            <Link
-              href={showcaseHref ?? '/santacruz'}
-              className="rounded border border-black/20 px-5 py-2.5 text-sm font-medium hover:bg-black/5"
-            >
-              {showcase ? `See ${showcase.organization.name}` : 'View the demo portrait'}
-            </Link>
-          </div>
+          {selfServe || showcase || demo ? (
+            <div className="mt-8 flex flex-wrap gap-3">
+              {selfServe ? (
+                <Link
+                  href="/start"
+                  className="rounded bg-[color:var(--color-accent)] px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
+                >
+                  Build your city&apos;s doughnut
+                </Link>
+              ) : null}
+              {showcase ? (
+                <Link
+                  href={showcase.href}
+                  className="rounded border border-black/20 px-5 py-2.5 text-sm font-medium hover:bg-black/5"
+                >
+                  See {showcase.organization.name}
+                </Link>
+              ) : demo ? (
+                <Link
+                  href={`/${demo.slug}`}
+                  className="rounded border border-black/20 px-5 py-2.5 text-sm font-medium hover:bg-black/5"
+                >
+                  View the demo portrait
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
+          {selfServe ? (
+            <p className="mt-4 max-w-2xl text-sm text-[color:var(--color-muted)]">
+              Published portraits are free for anyone to read. Building one, the research behind every number,
+              needs a plan or a contract —{' '}
+              <Link href="/pricing" className="underline">
+                see pricing
+              </Link>
+              .
+            </p>
+          ) : null}
         </section>
 
         <section className="border-t border-black/10 bg-white/50">
@@ -82,11 +145,12 @@ export default async function HomePage() {
         {showcase ? (
           <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
             <h2 className="text-2xl font-semibold">{showcase.organization.name}</h2>
-            <p className="mt-2 max-w-2xl text-sm text-[color:var(--color-muted)]">
-              {showcase.members.length} portraits measured against identical thresholds —
-              the whole city and each {showcase.noun} — so differences between neighborhoods are
-              visible instead of averaged away.
-            </p>
+            {showcase.members.length > 1 ? (
+              <p className="mt-2 max-w-2xl text-sm text-[color:var(--color-muted)]">
+                {showcase.members.length} portraits measured against identical thresholds, so differences
+                between places are visible instead of averaged away.
+              </p>
+            ) : null}
             <ul className="mt-4 flex flex-wrap gap-2 text-sm">
               {showcase.members.map((m) => (
                 <li key={m.slug}>
@@ -96,7 +160,10 @@ export default async function HomePage() {
                 </li>
               ))}
               <li>
-                <Link className="inline-block rounded-full bg-black px-3 py-1 text-white" href={`/o/${showcase.organization.slug}/progress`}>
+                <Link
+                  className="inline-block rounded-full bg-black px-3 py-1 text-white"
+                  href={`/o/${showcase.organization.slug}/progress`}
+                >
                   Progress since the baseline →
                 </Link>
               </li>
@@ -104,17 +171,38 @@ export default async function HomePage() {
           </section>
         ) : null}
 
-        <footer className="border-t border-black/10">
-          <div className="mx-auto flex max-w-5xl flex-wrap gap-4 px-4 py-6 text-xs text-[color:var(--color-muted)] sm:px-6">
-            <Link href="/pricing" className="hover:underline">
-              Pricing
-            </Link>
-            <Link href="/login" className="hover:underline">
-              Sign in
-            </Link>
-            <span>Portraits follow the Doughnut Economics Action Lab city-portrait methodology.</span>
-          </div>
-        </footer>
+        {/* Every other public portrait, so a visitor can find their city. With a
+            showcase this is "the rest" and is left out when there is none; without
+            one it is the whole directory, and an empty one says so plainly. */}
+        {showcase && listed.length === 0 ? null : (
+          <section aria-labelledby="portraits-heading" className="mx-auto max-w-5xl px-4 pb-16 pt-4 sm:px-6">
+            <h2 id="portraits-heading" className="text-xl font-semibold">
+              {showcase ? 'More portraits on this site' : 'Portraits on this site'}
+            </h2>
+            {listed.length > 0 ? (
+              <ul className="mt-4 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2 md:grid-cols-3">
+                {listed.map((p) => (
+                  <li key={p.slug}>
+                    <Link className="inline-block py-1 underline" href={`/${p.slug}`}>
+                      {p.name}
+                    </Link>
+                    {p.region ? <span className="text-[color:var(--color-muted)]"> · {p.region}</span> : null}
+                  </li>
+                ))}
+              </ul>
+            ) : demo ? (
+              <p className="mt-2 text-sm text-[color:var(--color-muted)]">
+                This server has no database, so it shows only the bundled{' '}
+                <Link className="underline" href={`/${demo.slug}`}>
+                  demo portrait
+                </Link>
+                .
+              </p>
+            ) : (
+              <p className="mt-2 text-sm text-[color:var(--color-muted)]">No portraits have been published on this site yet.</p>
+            )}
+          </section>
+        )}
       </main>
     </>
   );

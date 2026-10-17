@@ -5,6 +5,7 @@ import {
   afterEmailSignIn,
   checkEmailHref,
   isPlausibleEmail,
+  isStartPath,
   loginErrorHref,
   loginErrorMessage,
   loginHref,
@@ -84,6 +85,20 @@ describe('returnPath', () => {
     }
     expect(loginHref('/\t/evil.example')).toBe('/login');
     expect(signInHref('/login?next=%2F%09%2Fevil.example')).toBe('/login');
+  });
+});
+
+describe('isStartPath (the staff-facing sign-in page and email)', () => {
+  it('is the start flow and the pages under it, with any query', () => {
+    for (const ok of ['/start', '/start?portrait=gotham', '/start?portrait=gotham&checkout=success&at=1', '/start/', '/start#build']) {
+      expect(isStartPath(ok), ok).toBe(true);
+    }
+  });
+
+  it('is nothing else: other pages, look-alikes, missing and off-site next values', () => {
+    for (const no of [undefined, null, '', '/', '/nyc', '/starting', '/started?x=1', '/es/start', '/nyc/start', '//start', 'https://evil.example/start', '/login?next=/start']) {
+      expect(isStartPath(no), String(no)).toBe(false);
+    }
   });
 });
 

@@ -60,16 +60,29 @@ describe('stripe helpers (pure)', () => {
 });
 
 describe.skipIf(!hasDb)('syncSubscription (Postgres)', () => {
+  /** Stripe's answer to "has an invoice of this subscription been paid?", per test. */
+  let paidAt: Date | null = null;
+  const lookups: string[] = [];
+  const paidInvoiceAt = async (sub: Stripe.Subscription) => {
+    lookups.push(sub.id);
+    return paidAt;
+  };
+
   it('writes Stripe facts, keeps contract overrides, and ignores stale terminal events', async () => {
     const { syncSubscription } = await import('./stripe');
     const { getDb, provisionOrganization, subscriptions, organizations } = await import('@deep-fryer/db');
     const { eq } = await import('drizzle-orm');
     const db = getDb();
-    const org = await provisionOrganization(db, { slug: uniq(), name: 'Sync City', startTrial: true });
-    await db.update(subscriptions).set({ researchSessionsOverride: 999 }).where(eq(subscriptions.organizationId, org.id));
+    const org = await provisionOrganization(db, { slug: uniq(), name: 'Sync City' });
+    // A contract staff set before the organization moved to Stripe: its overrides must survive the sync.
+    await db.insert(subscriptions).values({
+      organizationId: org.id, plan: 'city', status: 'active', collection: 'contract',
+      currentPeriodStart: new Date(), currentPeriodEnd: new Date(Date.now() + 86_400_000), researchSessionsOverride: 999,
+    });
+    paidAt = new Date('2026-10-01T00:00:00Z');
 
     const live = fakeSubscription({ orgId: org.id });
-    expect(await syncSubscription(db, live)).toBe(org.id);
+    expect(await syncSubscription(db, live, { paidInvoiceAt })).toBe(org.id);
     const [row] = await db.select().from(subscriptions).where(eq(subscriptions.organizationId, org.id));
     expect(row).toMatchObject({
       plan: 'city',
@@ -78,23 +91,72 @@ describe.skipIf(!hasDb)('syncSubscription (Postgres)', () => {
       stripeSubscriptionId: live.id,
       poNumber: 'PO-77',
       researchSessionsOverride: 999,
+      firstInvoicePaidAt: paidAt,
     });
     expect(row!.currentPeriodEnd.getTime()).toBe(1_821_536_000 * 1000);
     const [o] = await db.select().from(organizations).where(eq(organizations.id, org.id));
     expect(o!.stripeCustomerId).toBe(live.customer);
 
     // A different, older subscription ending later must not cancel the live one.
-    await syncSubscription(db, fakeSubscription({ orgId: org.id, status: 'canceled' }));
+    await syncSubscription(db, fakeSubscription({ orgId: org.id, status: 'canceled' }), { paidInvoiceAt });
     const [still] = await db.select().from(subscriptions).where(eq(subscriptions.organizationId, org.id));
     expect(still!.status).toBe('active');
     expect(still!.stripeSubscriptionId).toBe(live.id);
 
     // The live one being canceled does land.
-    await syncSubscription(db, { ...live, status: 'canceled' } as Stripe.Subscription);
+    await syncSubscription(db, { ...live, status: 'canceled' } as Stripe.Subscription, { paidInvoiceAt });
     const [ended] = await db.select().from(subscriptions).where(eq(subscriptions.organizationId, org.id));
     expect(ended!.status).toBe('canceled');
 
     await db.delete(organizations).where(eq(organizations.id, org.id));
+  });
+
+  it('gives a new invoice subscription no standing until Stripe reports its first invoice paid, and keeps it after', async () => {
+    const { syncSubscription } = await import('./stripe');
+    const { standing } = await import('@deep-fryer/core');
+    const { getDb, provisionOrganization, subscriptionFor, organizations } = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const db = getDb();
+    const org = await provisionOrganization(db, { slug: uniq(), name: 'Invoice Town' });
+    try {
+      // "Request an annual invoice": Stripe answers active, with the first invoice open.
+      paidAt = null;
+      lookups.length = 0;
+      const requested = fakeSubscription({ orgId: org.id, lookupKey: 'deep_fryer_metro_annual' });
+      await syncSubscription(db, requested, { paidInvoiceAt });
+      const before = await subscriptionFor(db, org.id);
+      expect(before).toMatchObject({ plan: 'metro', status: 'active', collection: 'invoice', firstInvoicePaidAt: null });
+      expect(standing(before)).toMatchObject({ active: false, reason: 'awaiting_payment' });
+
+      // invoice.paid: the next sync finds the payment and records it.
+      paidAt = new Date(Date.now() - 60_000);
+      await syncSubscription(db, requested, { paidInvoiceAt });
+      const after = await subscriptionFor(db, org.id);
+      expect(after!.firstInvoicePaidAt).toEqual(paidAt);
+      expect(standing(after)).toMatchObject({ active: true, reason: 'ok' });
+
+      // Kept without asking again, also when a later invoice runs past due.
+      const asked = lookups.length;
+      await syncSubscription(db, { ...requested, status: 'past_due' } as Stripe.Subscription, { paidInvoiceAt });
+      expect(lookups).toHaveLength(asked);
+      expect(standing(await subscriptionFor(db, org.id))).toMatchObject({ active: true, warning: 'past_due' });
+
+      // A new invoice subscription replacing a canceled one starts unpaid again.
+      await syncSubscription(db, { ...requested, status: 'canceled' } as Stripe.Subscription, { paidInvoiceAt });
+      paidAt = null;
+      await syncSubscription(db, fakeSubscription({ orgId: org.id, lookupKey: 'deep_fryer_metro_annual' }), { paidInvoiceAt });
+      expect(standing(await subscriptionFor(db, org.id))).toMatchObject({ active: false, reason: 'awaiting_payment' });
+
+      // A card subscription is never looked up: Stripe charges the card before it is active.
+      lookups.length = 0;
+      await syncSubscription(db, fakeSubscription({ orgId: org.id, collection_method: 'charge_automatically' }), {
+        paidInvoiceAt,
+      });
+      expect(lookups).toEqual([]);
+      expect(standing(await subscriptionFor(db, org.id))).toMatchObject({ active: true });
+    } finally {
+      await db.delete(organizations).where(eq(organizations.id, org.id));
+    }
   });
 });
 

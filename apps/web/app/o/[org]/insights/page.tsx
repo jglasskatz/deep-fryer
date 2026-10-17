@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { formatIndicatorValue } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
+import { SampleDataNotice } from '@/components/sample-data/SampleDataNotice';
 import { RequestResearchForm } from '@/components/insights/RequestResearchForm';
 import { getPortrait, evidenceUrl } from '@/lib/data';
 import { tenantBySlug } from '@deep-fryer/db';
@@ -10,6 +11,7 @@ import { userDb } from '@/lib/db';
 import { getAuth, getRole } from '@/lib/auth';
 import { portraitFeaturesById, requireOrganizationFeature } from '@/lib/features';
 import { familyByOrgSlug, type FamilyMember } from '@/lib/family';
+import { anySampleData } from '@/lib/sample-data';
 import { safeHref } from '@/lib/safe-url';
 import type { PublishedPortrait, PublishedDimension } from '@/lib/portrait';
 import { dimensionLabel, nounForms } from '@/lib/i18n/content';
@@ -81,9 +83,10 @@ export default async function InsightsPage({
   const state = (level: number) =>
     level <= 0 ? m.insights.insideSafeZone : fmt(m.insights.beyondBoundary, { n: Math.round(level) });
 
-  const entries = await Promise.all(
-    FAMILY.map(async (m) => [m.slug, await getPortrait(m.slug)] as const),
-  );
+  const [entries, sample] = await Promise.all([
+    Promise.all(FAMILY.map(async (m) => [m.slug, await getPortrait(m.slug)] as const)),
+    anySampleData(FAMILY.map((m) => m.slug)),
+  ]);
   const portraits = new Map(
     entries.filter(([, p]) => p !== null) as [string, PublishedPortrait][],
   );
@@ -134,6 +137,10 @@ export default async function InsightsPage({
           {fmt(m.insights.title, { noun, org: family.organization.name })}
         </h1>
         <p className="mt-2 max-w-3xl text-sm text-[color:var(--color-muted)]">{fmt(m.insights.intro, { noun })}</p>
+        {/* One seeded portrait (scripts/seed-demo-data.ts) among the family labels the whole page. */}
+        {sample ? (
+          <SampleDataNotice labels={m.sampleData} name={family.organization.name} org className="mt-4 max-w-3xl" />
+        ) : null}
 
         {spreads.length > 0 && (
           // No tint behind this card: the muted heading is 4.6:1 on the page but

@@ -51,7 +51,7 @@ describe.skipIf(!hasDb)('researchApply with an organization key (Postgres, mocke
    * organization's key, encrypted under `secretsKey`, is on file unless
    * `withKey` is false (it was removed after the run was queued).
    */
-  async function seed(secretsKey: string, funding: 'plan' | 'organization_key', { withKey = true } = {}) {
+  async function seed(secretsKey: string, funding: 'plan' | 'organization_key', { withKey = true, applied = true } = {}) {
     const m = await import('@deep-fryer/db');
     const { defaultPortraitConfig } = await import('@deep-fryer/contract');
     const { eq } = await import('drizzle-orm');
@@ -87,7 +87,7 @@ describe.skipIf(!hasDb)('researchApply with an organization key (Postgres, mocke
           plugin_version: 'test',
         },
         configSnapshot: defaultPortraitConfig('Key City', 'The Key City municipal boundary'),
-        appliedAt: new Date(),
+        appliedAt: applied ? new Date() : null,
         // As apps/web applyRun stamps it from the gate's decision.
         funding,
       })
@@ -154,6 +154,26 @@ describe.skipIf(!hasDb)('researchApply with an organization key (Postgres, mocke
     for (const row of rows) {
       expect(JSON.parse(gunzipSync(row.transcript!).toString())).toEqual({ type: 'session_error', message: ORG_KEY_REMOVED });
     }
+  });
+
+  it('skips a job for a run whose apply was undone, so no session runs uncounted', async () => {
+    // applyRun's enqueue failed after the job was in fact written, and it cleared applied_at: the run counts in
+    // no billing period (researchSessionsUsed reads applied_at), so running it would be research nobody paid for.
+    const secretsKey = randomSecretsKey();
+    process.env.DF_SECRETS_KEY = secretsKey;
+    const { db, m, eq, run } = await seed(secretsKey, 'plan', { withKey: false, applied: false });
+    const { researchApply } = await import('./research-apply.js');
+    await researchApply({ runId: run.id }, helpers);
+
+    expect(sessions.inputs).toEqual([]);
+    const [still] = await db.select().from(m.researchRuns).where(eq(m.researchRuns.id, run.id));
+    // Still planned and unapplied: applying it again goes through the gate, and only then does it run.
+    expect(still).toMatchObject({ status: 'planned', appliedAt: null });
+    expect(await db.select().from(m.researchSessions).where(eq(m.researchSessions.runId, run.id))).toEqual([]);
+
+    // An operator's measurement run is unapplied on purpose, and its job says so: that one runs.
+    await researchApply({ runId: run.id, unmetered: true }, helpers);
+    expect(sessions.inputs.map((i) => i.prompt)).toEqual(['Describe the region.', 'Research housing.']);
   });
 
   it('runs a plan-funded run on the deployment key, even with a key on file now', async () => {

@@ -92,7 +92,8 @@ describe.skipIf(!hasDb)('db integration', () => {
       researchSessionsUsed, portraitCount, seatCount, users, tenantMembers,
     } = await import('./index.js');
     const db = getDb();
-    const org = await provisionOrganization(db, { slug: uniq(), name: 'Metro', startTrial: true });
+    // Metering counts runs whatever the plan; the organization needs none here.
+    const org = await provisionOrganization(db, { slug: uniq(), name: 'Metro' });
     const a = await provisionTenant(db, { slug: uniq(), name: 'Borough A', organizationId: org.id });
     const b = await provisionTenant(db, { slug: uniq(), name: 'Borough B', organizationId: org.id });
     expect(await portraitCount(db, org.id)).toBe(2);
@@ -123,7 +124,7 @@ describe.skipIf(!hasDb)('db integration', () => {
     });
     expect(queued).toBeTruthy();
 
-    const used = await researchSessionsUsed(db, org.id, new Date(now.getTime() - 1000), new Date(now.getTime() + 1000));
+    const used = await researchSessionsUsed(db, org.id, new Date(now.getTime() - 1000));
     expect(used).toBe(5 + 2);
 
     const [u1] = await db.insert(users).values({ email: `${uniq()}@example.gov` }).returning();

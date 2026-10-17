@@ -3,7 +3,15 @@
 import { revalidatePath } from 'next/cache';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { PLANS, PURCHASABLE_PLANS, isPlanId, type BillingInterval, type PlanId } from '@deep-fryer/core';
+import {
+  CONTRACT_PLANS,
+  PLANS,
+  PURCHASABLE_PLANS,
+  isPlanId,
+  sellsInterval,
+  type BillingInterval,
+  type PlanId,
+} from '@deep-fryer/core';
 import {
   organizationBySlug,
   organizations,
@@ -29,14 +37,42 @@ function purchasable(plan: string): PlanId {
   return plan;
 }
 
-/** One live Stripe subscription per organization; changes go through the portal. */
-async function refuseIfStripeManaged(orgId: string) {
-  const sub = await subscriptionFor(systemDb(), orgId);
-  if (
-    sub?.stripeSubscriptionId &&
-    !['canceled', 'incomplete_expired'].includes(sub.status)
-  ) {
-    throw new UserError('This organization already has a subscription — change plans from "Manage billing".');
+/**
+ * Refuse an interval the plan is not sold by (core sellsInterval): one with
+ * no Stripe price, or whose period's research allowance could not build a
+ * doughnut — Community by the month — which the billing page no longer
+ * offers, but a page opened before, or a forged request, still could ask for.
+ */
+function sold(plan: PlanId, interval: BillingInterval): void {
+  if (!sellsInterval(PLANS[plan], interval)) {
+    throw new UserError(
+      interval === 'month'
+        ? `The ${PLANS[plan].name} plan is sold annually: a month's research allowance is too small to build a doughnut.`
+        : `The ${PLANS[plan].name} plan is not sold annually — contact us.`,
+    );
+  }
+}
+
+/** Stripe statuses of a subscription that is still live: one the customer pays, or is being asked to. */
+const LIVE_STRIPE_STATUSES = new Set(['active', 'trialing', 'past_due', 'unpaid', 'paused', 'incomplete']);
+
+/**
+ * One live Stripe subscription per organization; changes go through the
+ * portal. Checked on our row and on Stripe itself: right after a checkout,
+ * the subscription exists at Stripe before its webhook writes our row, and a
+ * page opened before the payment (or the post-checkout wait, when the
+ * webhook is slow) still offers "Pay by card" — a second checkout then would
+ * charge the customer twice for one organization.
+ */
+async function refuseIfStripeManaged(org: Organization) {
+  const refusal = 'This organization already has a subscription — change plans from "Manage billing".';
+  const sub = await subscriptionFor(systemDb(), org.id);
+  if (sub?.stripeSubscriptionId && !['canceled', 'incomplete_expired'].includes(sub.status)) {
+    throw new UserError(refusal);
+  }
+  if (org.stripeCustomerId) {
+    const atStripe = await stripe().subscriptions.list({ customer: org.stripeCustomerId, status: 'all', limit: 20 });
+    if (atStripe.data.some((s) => LIVE_STRIPE_STATUSES.has(s.status))) throw new UserError(refusal);
   }
 }
 
@@ -48,7 +84,8 @@ export const startCheckout = action(
     if (!PLANS[plan].selfServe) {
       throw new UserError(`${PLANS[plan].name} is billed by invoice — use "Request an invoice".`);
     }
-    await refuseIfStripeManaged(org.id);
+    sold(plan, input.interval);
+    await refuseIfStripeManaged(org);
     const price = await priceFor(plan, input.interval);
     const ctx = await getAuth();
     const customer = await ensureCustomer(org, { email: org.billingEmail ?? ctx.email });
@@ -83,7 +120,13 @@ const invoiceSchema = z.object({
  * invoices are emailed to accounts payable with net-30 terms, the PO number
  * printed on every invoice, and tax-exempt status on the customer. Stripe
  * collects by card, ACH, or check per the account's invoice settings.
- * Active immediately; Stripe's dunning (past_due → unpaid) governs lapses.
+ *
+ * Stripe makes the subscription active at once, but research is never
+ * free: the organization has no standing — no research, no growth past the
+ * free setup limits — until the first invoice is paid (core standing
+ * 'awaiting_payment'; syncSubscription records the payment when Stripe
+ * reports it). After that Stripe's dunning (past_due → unpaid) governs
+ * lapses, with research continuing while a later invoice is past due.
  */
 export const requestInvoiceBilling = action(
   async (input: {
@@ -96,7 +139,8 @@ export const requestInvoiceBilling = action(
     const org = await orgForBilling(input.orgSlug);
     const plan = purchasable(input.plan);
     const details = invoiceSchema.parse(input);
-    await refuseIfStripeManaged(org.id);
+    sold(plan, 'year');
+    await refuseIfStripeManaged(org);
     const price = await priceFor(plan, 'year');
 
     const db = systemDb();
@@ -136,7 +180,8 @@ export const openBillingPortal = action(async (input: { orgSlug: string }) => {
 });
 
 const contractSchema = z.object({
-  plan: z.enum(['trial', 'community', 'city', 'metro', 'enterprise']),
+  // The contract plans only (core CONTRACT_PLANS, which the form offers too): never the retired trial.
+  plan: z.enum(CONTRACT_PLANS),
   /** Contract term; research usage is counted within it, so a renewal starts a fresh allowance. */
   periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD.'),
   periodEnd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD.'),
@@ -155,9 +200,10 @@ export const setContract = action(
   async (input: z.input<typeof contractSchema> & { orgSlug: string }) => {
     const ctx = await getAuth();
     if (!ctx.isStaff) throw new UserError('Only deep-fryer staff can set contract terms.');
+    // Validated before anything is read, so a request naming a plan no contract may have changes nothing.
+    const c = contractSchema.parse(input);
     const org = await organizationBySlug(systemDb(), input.orgSlug);
     if (!org) throw new UserError('Unknown organization.');
-    const c = contractSchema.parse(input);
     const db = systemDb();
     const existing = await subscriptionFor(db, org.id);
     if (existing?.stripeSubscriptionId && !['canceled', 'incomplete_expired'].includes(existing.status)) {

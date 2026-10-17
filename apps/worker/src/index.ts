@@ -4,9 +4,9 @@ import { workerRunners } from './runners.js';
 
 /**
  * The research-plane worker (SPEC.md §4, §8; SPEC-v5 §2–3): consumes the
- * Postgres-backed queue — research runs, policy analyses, and the official
- * alert refresh — on the runners described in runners.ts. The web app only
- * enqueues.
+ * Postgres-backed queue — research runs, policy analyses, the official
+ * alert refresh, and the privacy sweep of expired sign-in records — on the
+ * runners described in runners.ts. The web app only enqueues.
  */
 async function main() {
   const connectionString = process.env.DATABASE_URL;
@@ -22,7 +22,7 @@ async function main() {
   const runners = await Promise.all(
     workerRunners(connectionString, Number(process.env.WORKER_CONCURRENCY ?? 1)).map((options) => run(options)),
   );
-  console.log('deep-fryer worker: listening for research, policy, and alert jobs');
+  console.log('deep-fryer worker: listening for research, policy, alert, and privacy-sweep jobs');
   await Promise.all(runners.map((r) => r.promise));
 }
 

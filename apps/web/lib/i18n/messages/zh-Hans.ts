@@ -117,7 +117,7 @@ export const zhHans: Messages = {
     baseline_only: '目前只有基线测量数据；下次更新时将显示趋势。',
   },
   portrait: {
-    metaDescription: '{name}的 Doughnut Economics 画像：社会基础与生态天花板，每个数字都附有数据来源。',
+    metaDescription: '{name}的甜甜圈画像：社会基础与生态天花板，每个数字都附有数据来源。',
     population: '人口：{n}',
     clickHint: '选择一个扇形区域，即可查看指标、证据、行动和讨论。',
     demoHint: '演示数据 — 请设置 DATABASE_URL 并发布版本，以显示真实内容。',
@@ -334,6 +334,7 @@ export const zhHans: Messages = {
   login: {
     title: '登录',
     intro: '居民登录后即可参与画像的讨论。市政府工作人员请使用工作账户。',
+    startIntro: '登录即可为您所在的城市创建甜甜圈。请使用您的工作电子邮件。',
     microsoft: '使用 Microsoft 继续（工作账户）',
     google: '使用 Google 继续',
     emailLabel: '通过电子邮件接收登录链接',
@@ -355,6 +356,8 @@ export const zhHans: Messages = {
       AccessDenied: '登录被拒绝。',
       Configuration: '此服务器的登录设置有误。请联系网站管理员。',
       EmailSignin: '无法发送登录邮件。请检查地址，几分钟后再试。',
+      TooManyLinks: '过去15分钟内，我们已向此地址发送了多个登录链接。请使用最新的链接，或15分钟后再试。',
+      TooManyEmails: '来自此网络的登录邮件申请过多，因此本封邮件未发送。请一小时后再试。',
       default: '登录失败。请重试。',
     },
   },
@@ -541,6 +544,23 @@ export const zhHans: Messages = {
     signupNamed: '订阅{name}',
     resourceHazards: '适用于：',
     doughnutLegend: '甜甜圈上的颜色：',
+  },
+  /** The site footer, on every page but embeds (components/site-footer/SiteFooter.tsx). */
+  footer: {
+    label: '关于本网站',
+    contact: '联系方式：{email}',
+    accessibility: '无障碍声明',
+    privacy: '隐私声明',
+    terms: '使用条款',
+    /** {license} is the license's name as a link; {book} and {method} are the English titles, filled in untranslated. */
+    credit:
+      '甜甜圈图：Kate Raworth 和 Christian Guthier，{license}，已结合本地数据改编（Raworth，《{book}》，2017年）。城市画像方法参照 Doughnut Economics Action Lab 的《{method}》。本网站与 Doughnut Economics Action Lab 无任何隶属关系，也未获其认可。',
+  },
+  /** On a portrait seeded with synthetic values (scripts/seed-demo-data.ts). */
+  sampleData: {
+    title: '示例数据 — 并非研究结果',
+    body: '本网站上{name}的数据是为演示本软件而生成的，并非实际测量结果，不得引用。',
+    bodyOrg: '本页上{org}的部分或全部数据是为演示本软件而生成的，并非实际测量结果，不得引用。',
   },
   /** Theme toggle and the fryer (SPEC-v5 §4). */
   theme: {

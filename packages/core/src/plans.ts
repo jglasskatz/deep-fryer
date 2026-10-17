@@ -9,9 +9,24 @@
  *   carry hard research quotas, never metered overage. When a quota runs out,
  *   research pauses until the next period, an upgrade, or a contract
  *   amendment (staff sets an override) — the bill never surprises anyone.
- * - The public plane is never gated. A lapsed subscription pauses research
- *   and growth (new portraits, invitations); it never takes a published
- *   portrait offline. Civic data does not disappear over an unpaid invoice.
+ * - Viewing is free; building is not (the owner's rule: "No free trials for
+ *   making donuts, but free to view"). The public plane is never gated, and a
+ *   lapsed subscription never takes a published portrait offline — civic data
+ *   does not disappear over an unpaid invoice. Research is never free: every
+ *   session needs an organization in good standing, a paid plan or a staff
+ *   contract. Nothing creates a trial any more (the 'trial' id stays only for
+ *   organizations that started one before), so an organization that has not
+ *   chosen a plan has no subscription row at all.
+ * - Setting up is free. Without a plan in good standing — none yet, or one
+ *   that lapsed — an organization keeps FREE_SETUP_LIMITS: one portrait
+ *   (private until its first publish) and a few people to set it up, invite,
+ *   configure and review, but no research (limitsInEffect).
+ * - Good standing means paid, or contracted by staff. A Stripe subscription
+ *   collected by invoice is active the moment it is created, before anything
+ *   is paid, so it researches nothing until its first invoice is paid
+ *   (`firstInvoicePaidAt`); a retired trial confers nothing at all; and a
+ *   Stripe-managed row whose period ended without word from Stripe fails
+ *   closed (standing).
  * - Prices are not in this file. Stripe prices are found by lookup key
  *   (`stripeLookupKeys`) and their amounts are whatever the owner set in
  *   Stripe, so the price shown on /pricing is always the price charged.
@@ -49,23 +64,24 @@ export interface PlanDefinition {
   selfServe: boolean;
 }
 
-/** Trial length for self-serve signups. */
-export const TRIAL_DAYS = 30;
-
 /** Sessions in one full refresh of a framework portrait: region context + 21 dimensions. */
 export const SESSIONS_PER_FULL_REFRESH = 22;
 
 export const PLANS: Record<PlanId, PlanDefinition> = {
+  // Retired: no code path creates a trial, and a row still on it — from
+  // before trials were retired — has no standing (standing() refuses it), so
+  // it researches nothing. The entry stays so those rows still name a plan;
+  // it is not purchasable, not offered for contracts, and nothing public
+  // lists it.
   trial: {
     id: 'trial',
     name: 'Trial',
-    audience: 'Evaluate deep-fryer on your own jurisdiction for 30 days.',
+    audience: 'A retired evaluation plan, kept for organizations that started one before; no longer offered.',
     portraits: 1,
     seats: 3,
-    // Prorates to 30 sessions over a 30-day trial: one full research pass
-    // (22 sessions) plus a few targeted re-runs.
+    // What those subscriptions were once given, prorated over 30 days; no longer granted (standing).
     researchSessionsPerYear: 365,
-    highlights: ['One portrait', 'One full research pass', 'Review queue and publishing'],
+    highlights: [],
     stripeLookupKeys: {},
     selfServe: false,
   },
@@ -130,6 +146,41 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
 export const PURCHASABLE_PLANS: PlanId[] = ['community', 'city', 'metro'];
 
 /**
+ * The plans staff may put on a contract (apps/web lib/billing-actions.ts
+ * setContract, which validates against this list, and the staff ContractForm,
+ * which offers it). Never 'trial': trials are retired, and a row that still
+ * says 'trial' is moved onto a real plan rather than renewed.
+ */
+export const CONTRACT_PLANS = ['community', 'city', 'metro', 'enterprise'] as const satisfies readonly PlanId[];
+export type ContractPlanId = (typeof CONTRACT_PLANS)[number];
+
+/** The shortest billing period of each interval, in days (a February month, a 365-day year). */
+const SHORTEST_PERIOD_DAYS: Record<BillingInterval, number> = { month: 28, year: 365 };
+
+/**
+ * Research sessions the shortest billing period of `interval` grants on
+ * `plan`, prorated as effectiveLimits prorates a real period.
+ */
+export function periodResearchSessions(plan: PlanDefinition, interval: BillingInterval): number {
+  return Math.ceil((plan.researchSessionsPerYear * SHORTEST_PERIOD_DAYS[interval]) / 365);
+}
+
+/**
+ * Whether `plan` is sold by `interval` — on the pricing and billing pages,
+ * and by checkout or invoice: it has a Stripe price for that interval, and
+ * one period's research allowance builds a whole doughnut
+ * (SESSIONS_PER_FULL_REFRESH). With no trial, a plan's first period pays for
+ * the first build, so a price whose period cannot cover one would sell a
+ * customer a plan that can never do what /start sells it for: Community by
+ * the month (6 sessions a month against 22 for the build) is not sold. A
+ * subscription already on such a price keeps its allowance and keeps
+ * syncing (planForLookupKey still knows its key).
+ */
+export function sellsInterval(plan: PlanDefinition, interval: BillingInterval): boolean {
+  return Boolean(plan.stripeLookupKeys[interval]) && periodResearchSessions(plan, interval) >= SESSIONS_PER_FULL_REFRESH;
+}
+
+/**
  * Stripe events the billing webhook consumes. Shared by the webhook route
  * (which handles them) and scripts/stripe-setup.ts (which registers them).
  */
@@ -176,6 +227,14 @@ export interface SubscriptionSnapshot {
   trialEndsAt: Date | null;
   /** Stripe: the subscription ends at period close instead of renewing. */
   cancelAtPeriodEnd?: boolean;
+  /**
+   * Stripe invoice collection only: when a paid invoice of this subscription
+   * was first seen (apps/web lib/stripe.ts syncSubscription). Stripe makes a
+   * `send_invoice` subscription active as soon as it is created, before
+   * anything is paid; until this is set it has no standing
+   * ('awaiting_payment'). Null on card and contract rows, which do not use it.
+   */
+  firstInvoicePaidAt: Date | null;
   researchSessionsOverride: number | null;
   portraitsOverride: number | null;
   seatsOverride: number | null;
@@ -191,12 +250,25 @@ export interface Limits {
 const DAY_MS = 86_400_000;
 
 /**
+ * What an organization may hold without a plan in good standing: setting up
+ * is free, building is not. One portrait — the one /start creates, private
+ * until its first publish — and enough people to set it up and review it
+ * (seats count everyone with any role, the owner included), but no research
+ * sessions at all. Applies equally before a first plan and after one lapses:
+ * a lapsed organization keeps everything it has, and grows again once it is
+ * in good standing.
+ */
+export const FREE_SETUP_LIMITS: Readonly<Limits> = Object.freeze({ portraits: 1, seats: 3, researchSessions: 0 });
+
+/**
  * Effective limits for the current period. Contract overrides win over the
  * catalog. The yearly research allowance is prorated to the period length so
- * monthly and annual subscribers get the same yearly total.
+ * monthly and annual subscribers get the same yearly total. A plan id the
+ * catalog does not know (a hand-edited row) gets the smallest paid plan's
+ * limits, never more.
  */
 export function effectiveLimits(sub: SubscriptionSnapshot): Limits {
-  const plan = isPlanId(sub.plan) ? PLANS[sub.plan] : PLANS.trial;
+  const plan = isPlanId(sub.plan) ? PLANS[sub.plan] : PLANS.community;
   const periodDays = Math.max(
     1,
     Math.round((sub.currentPeriodEnd.getTime() - sub.currentPeriodStart.getTime()) / DAY_MS),
@@ -213,29 +285,62 @@ export type StandingReason =
   | 'ok'
   | 'no_subscription'
   | 'trial_expired'
+  | 'awaiting_payment'
   | 'period_ended'
+  | 'billing_out_of_date'
   | 'canceled'
   | 'unpaid'
   | 'incomplete';
 
 export interface Standing {
-  /** Research, new portraits, and invitations are allowed. */
+  /**
+   * Research is allowed, and growth past FREE_SETUP_LIMITS (more portraits,
+   * more seats) up to the plan's limits (limitsInEffect).
+   */
   active: boolean;
   /** Something the billing contact should act on, even while active. */
-  warning: 'past_due' | 'trial_ending' | 'cancel_scheduled' | null;
+  warning: 'past_due' | 'cancel_scheduled' | null;
   reason: StandingReason;
 }
 
 /**
- * Whether an organization is in good standing at `now`.
+ * How long past its period end a Stripe-managed subscription keeps its
+ * standing while the renewal (or the cancellation) has not reached us.
+ * Stripe renews at the period boundary and the webhook usually lands within
+ * seconds, retrying for days when it fails; three days covers a slow
+ * delivery or a short outage. Past it the row has stopped hearing from
+ * Stripe — a sync that keeps failing, a rotated webhook secret — and nothing
+ * shows whether anyone is still paying, so it fails closed.
+ */
+export const STRIPE_SYNC_GRACE_MS = 3 * DAY_MS;
+
+/**
+ * Whether an organization is in good standing at `now`: paid, or under a
+ * staff contract — never free.
  *
- * past_due stays active on purpose: government accounts-payable routinely
- * runs past net-30, and pausing a city's research over a slow check run
- * would punish the customer for its own procurement process. Stripe's dunning
- * moves a truly unpaid invoice to `unpaid`, which does pause.
+ * - A retired trial has no standing, whatever its dates: research is never
+ *   free, so a trial started before trials were retired ends now, not when
+ *   its period does (reason 'trial_expired'). So does any 'trialing' row: we
+ *   never start a Stripe trial (no-free-research.test.ts).
+ * - A Stripe invoice subscription has none until its first invoice is paid
+ *   ('awaiting_payment'): Stripe activates it at creation, and net-30 terms
+ *   must not mean thirty days of research nobody has paid for.
+ * - past_due stays active on purpose, once something has been paid: a
+ *   government's accounts-payable routinely runs past net-30, and pausing a
+ *   city's research over a slow check run would punish the customer for its
+ *   own procurement process. Stripe's dunning moves a truly unpaid invoice
+ *   to `unpaid`, which does pause.
+ * - A contract has no renewal webhook: its period end is the signal
+ *   ('period_ended'). A Stripe-managed row renews by webhook, so its period
+ *   end alone is not a lapse — until STRIPE_SYNC_GRACE_MS past it with no
+ *   update ('billing_out_of_date'), when it fails closed rather than keep
+ *   researching on a subscription nobody may be paying for.
  */
 export function standing(sub: SubscriptionSnapshot | null, now: Date = new Date()): Standing {
   if (!sub) return { active: false, warning: null, reason: 'no_subscription' };
+  if (sub.plan === 'trial' || sub.status === 'trialing') {
+    return { active: false, warning: null, reason: 'trial_expired' };
+  }
   switch (sub.status) {
     case 'canceled':
     case 'incomplete_expired':
@@ -245,22 +350,35 @@ export function standing(sub: SubscriptionSnapshot | null, now: Date = new Date(
       return { active: false, warning: null, reason: 'unpaid' };
     case 'incomplete':
       return { active: false, warning: null, reason: 'incomplete' };
-    case 'trialing': {
-      const end = sub.trialEndsAt ?? sub.currentPeriodEnd;
-      if (now >= end) return { active: false, warning: null, reason: 'trial_expired' };
-      const endingSoon = end.getTime() - now.getTime() < 7 * DAY_MS;
-      return { active: true, warning: endingSoon ? 'trial_ending' : null, reason: 'ok' };
-    }
     case 'past_due':
-      return { active: true, warning: 'past_due', reason: 'ok' };
     case 'active': {
-      // Contracts have no renewal webhook: a lapsed period end is the signal.
-      if (sub.collection === 'contract' && now >= sub.currentPeriodEnd) {
-        return { active: false, warning: null, reason: 'period_ended' };
+      if (sub.collection === 'contract') {
+        if (now >= sub.currentPeriodEnd) return { active: false, warning: null, reason: 'period_ended' };
+      } else {
+        if (sub.collection === 'invoice' && !sub.firstInvoicePaidAt) {
+          return { active: false, warning: null, reason: 'awaiting_payment' };
+        }
+        if (now.getTime() >= sub.currentPeriodEnd.getTime() + STRIPE_SYNC_GRACE_MS) {
+          return { active: false, warning: null, reason: 'billing_out_of_date' };
+        }
       }
+      if (sub.status === 'past_due') return { active: true, warning: 'past_due', reason: 'ok' };
       return { active: true, warning: sub.cancelAtPeriodEnd ? 'cancel_scheduled' : null, reason: 'ok' };
     }
   }
+}
+
+/**
+ * The limits that apply to an organization right now: its plan's (with any
+ * contract overrides) while it is in good standing, FREE_SETUP_LIMITS
+ * otherwise — no subscription yet, or one that lapsed. Adding a portrait and
+ * inviting someone check their counts against this, so an organization with
+ * no plan can still own its portrait and bring in the people who set it up;
+ * research is checked by checkResearchQuota, which refuses without standing.
+ */
+export function limitsInEffect(sub: SubscriptionSnapshot | null, now: Date = new Date()): Limits {
+  if (sub && standing(sub, now).active) return effectiveLimits(sub);
+  return { ...FREE_SETUP_LIMITS };
 }
 
 export interface ResearchQuotaCheck {
@@ -310,12 +428,20 @@ export function standingMessage(reason: StandingReason): string | null {
   switch (reason) {
     case 'ok':
       return null;
+    // The usual case for a portrait just set up at /start: say what to do and
+    // where, and that what they did so far stays free.
     case 'no_subscription':
-      return 'This organization has no plan yet. Choose one under Billing to run research.';
+      return 'Choose a plan to build your doughnut: on your organization’s page, open Billing and choose a plan, or ask us for a contract. Setting up the portrait and inviting your team need no plan.';
+    // Only organizations that started a trial before trials were retired.
     case 'trial_expired':
-      return 'The trial has ended. Choose a plan under Billing to keep researching — published portraits stay online.';
+      return 'The evaluation period has ended. Choose a plan under Billing to keep researching — published portraits stay online.';
+    // A plan billed by invoice: chosen, but not paid for yet.
+    case 'awaiting_payment':
+      return 'Research starts once the first invoice is paid. Pay it from the invoice email or under Billing — published portraits stay online.';
     case 'period_ended':
       return 'The contract period has ended. Contact us to renew — published portraits stay online.';
+    case 'billing_out_of_date':
+      return 'Research is paused: this subscription has not been updated since its billing period ended. Check it under Billing, or contact us — published portraits stay online.';
     case 'canceled':
       return 'The subscription is canceled. Published portraits stay online; choose a plan under Billing to resume research.';
     case 'unpaid':

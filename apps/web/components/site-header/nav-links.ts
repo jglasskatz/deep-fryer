@@ -14,6 +14,8 @@ export interface NavLink {
   count?: number;
   /** What the count is of, read after it by screen readers ("3 awaiting approval"). */
   countLabel?: string;
+  /** The label's language, when it differs from the page's (English product links on a translated page). */
+  lang?: string;
 }
 
 export type PortraitFeatures = Record<PortraitFeature, boolean>;

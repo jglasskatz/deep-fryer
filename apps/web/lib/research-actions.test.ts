@@ -20,39 +20,56 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }
 /**
  * A deployment that offers bring-your-own-key has DF_SECRETS_KEY (32 bytes,
  * base64); research on a key on file is refused without it (lib/billing.ts
- * ORG_KEY_UNREADABLE), so these tests run with one unless they say otherwise.
+ * orgKeyUnreadableMessage), so these tests run with one unless they say
+ * otherwise. Likewise the deployment's own research key: compose tells the
+ * web app it exists with DF_RESEARCH_KEY_CONFIGURED=true, and research the
+ * plan pays for is refused without it (researchUnavailableMessage).
  */
 const SECRETS_KEY = Buffer.alloc(32, 7).toString('base64');
 
 describe.skipIf(!hasDb)('buildDoughnut and the organization-key gate', () => {
-  const savedSecret = process.env.AUTH_SECRET;
-  const savedSecretsKey = process.env.DF_SECRETS_KEY;
+  const saved = {
+    AUTH_SECRET: process.env.AUTH_SECRET,
+    DF_SECRETS_KEY: process.env.DF_SECRETS_KEY,
+    DF_RESEARCH_KEY_CONFIGURED: process.env.DF_RESEARCH_KEY_CONFIGURED,
+  };
   const cleanup: (() => Promise<unknown>)[] = [];
   beforeAll(() => {
     delete process.env.AUTH_SECRET;
     process.env.DF_SECRETS_KEY = SECRETS_KEY;
+    process.env.DF_RESEARCH_KEY_CONFIGURED = 'true';
   });
   afterAll(async () => {
     for (const fn of cleanup.reverse()) await fn();
-    if (savedSecret !== undefined) process.env.AUTH_SECRET = savedSecret;
-    if (savedSecretsKey === undefined) delete process.env.DF_SECRETS_KEY;
-    else process.env.DF_SECRETS_KEY = savedSecretsKey;
+    for (const [k, v] of Object.entries(saved)) {
+      if (v === undefined) delete process.env[k];
+      else process.env[k] = v;
+    }
   });
 
   /**
-   * A portrait on a trial whose allowance is `allowance` sessions, with a key
-   * on file when `withKey` (a stand-in ciphertext: nothing here decrypts it).
+   * A portrait whose organization is on a paid plan with an allowance of
+   * `allowance` sessions (in bad standing when `status` says so), or on no
+   * plan at all when `allowance` is null — as every organization /start
+   * creates is until it buys one — with a key on file when `withKey` (a
+   * stand-in ciphertext: nothing here decrypts it).
    */
-  async function portrait({ allowance, withKey, status }: { allowance: number; withKey: boolean; status?: 'canceled' }) {
+  async function portrait({
+    allowance,
+    withKey,
+    status,
+  }: {
+    allowance: number | null;
+    withKey: boolean;
+    status?: 'canceled';
+  }) {
     const m = await import('@deep-fryer/db');
     const { eq } = await import('drizzle-orm');
+    const { givePlan } = await import('./test-plans');
     const db = m.getDb();
-    const org = await m.provisionOrganization(db, { slug: uniq(), name: 'Doughnut Town', startTrial: true });
+    const org = await m.provisionOrganization(db, { slug: uniq(), name: 'Doughnut Town' });
     const { tenant } = await m.provisionTenant(db, { slug: uniq(), name: 'Doughnut Town', organizationId: org.id });
-    await db
-      .update(m.subscriptions)
-      .set({ researchSessionsOverride: allowance, ...(status ? { status } : {}) })
-      .where(eq(m.subscriptions.organizationId, org.id));
+    if (allowance !== null) await givePlan(org.id, { researchSessions: allowance, ...(status ? { status } : {}) });
     if (withKey) {
       await m.upsertOrganizationApiKey(db, {
         organizationId: org.id,
@@ -77,7 +94,7 @@ describe.skipIf(!hasDb)('buildDoughnut and the organization-key gate', () => {
     return { org, tenant, runs, applyAudit };
   }
 
-  it('plans and applies the full run on the trial allowance in one click, once', async () => {
+  it('plans and applies the full run on the plan’s allowance in one click, once', async () => {
     const { buildDoughnut } = await import('./research-actions');
     const { tenant, runs, applyAudit } = await portrait({ allowance: 30, withKey: false });
 
@@ -110,7 +127,7 @@ describe.skipIf(!hasDb)('buildDoughnut and the organization-key gate', () => {
     expect(run!.funding).toBe('organization_key');
     expect((await applyAudit())[0]!.after).toMatchObject({ funding: 'organization_key' });
     const sub = await m.subscriptionFor(m.getDb(), org.id);
-    expect(await m.researchSessionsUsed(m.getDb(), org.id, sub!.currentPeriodStart, sub!.currentPeriodEnd)).toBe(0);
+    expect(await m.researchSessionsUsed(m.getDb(), org.id, sub!.currentPeriodStart)).toBe(0);
   });
 
   it('records who pays for a request for more research, on the run and in its audit entry', async () => {
@@ -180,7 +197,8 @@ describe.skipIf(!hasDb)('buildDoughnut and the organization-key gate', () => {
     // cannot decrypt the key, and work put on it never moves to the plan.
     const { buildDoughnut } = await import('./research-actions');
     const { createPolicyAnalysis } = await import('./policy-actions');
-    const { billingSummary, previewResearchSpend, ORG_KEY_UNREADABLE } = await import('./billing');
+    const { billingSummary, previewResearchSpend, orgKeyUnreadableMessage } = await import('./billing');
+    const ORG_KEY_UNREADABLE = orgKeyUnreadableMessage();
     const { setPortraitFeatures } = await import('./test-features');
     const m = await import('@deep-fryer/db');
     const { eq } = await import('drizzle-orm');
@@ -210,6 +228,77 @@ describe.skipIf(!hasDb)('buildDoughnut and the organization-key gate', () => {
       expect(await buildDoughnut({ tenantSlug: planOnly.tenant.slug })).toMatchObject({ ok: true, data: { funding: 'plan' } });
     } finally {
       process.env.DF_SECRETS_KEY = SECRETS_KEY;
+    }
+  });
+  it('refuses an organization with no plan — setting up was free, building is not — leaving nothing planned', async () => {
+    const { buildDoughnut } = await import('./research-actions');
+    const { billingSummary, previewResearchSpend } = await import('./billing');
+    for (const withKey of [false, true]) {
+      const { org, tenant, runs } = await portrait({ allowance: null, withKey });
+      // The build step shows a disabled button with the way to a plan…
+      const preview = previewResearchSpend(await billingSummary(org.id), 22);
+      expect(preview).toMatchObject({ allowed: false, message: expect.stringMatching(/^Choose a plan to build your doughnut/) });
+      // …and a forged click is refused with the same words, whoever would have paid.
+      expect(await buildDoughnut({ tenantSlug: tenant.slug })).toEqual({ ok: false, error: preview.message });
+      expect(await runs()).toEqual([]);
+    }
+  });
+
+  it('refuses plan-funded research on a server without a research key, before anything is spent, and still runs it on the organization key', async () => {
+    const { buildDoughnut, applyResearchAction, planResearchAction } = await import('./research-actions');
+    const { createPolicyAnalysis } = await import('./policy-actions');
+    const { billingSummary, previewResearchSpend, researchUnavailableMessage } = await import('./billing');
+    const { setPortraitFeatures } = await import('./test-features');
+    const m = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const onPlan = await portrait({ allowance: 30, withKey: false });
+    const onKey = await portrait({ allowance: 30, withKey: true });
+    await setPortraitFeatures(onPlan.tenant.id, { policy_analysis: true });
+    for (const value of [undefined, '', 'false', 'TRUE']) {
+      if (value === undefined) delete process.env.DF_RESEARCH_KEY_CONFIGURED;
+      else process.env.DF_RESEARCH_KEY_CONFIGURED = value;
+      try {
+        // The build step's button is disabled…
+        expect(previewResearchSpend(await billingSummary(onPlan.org.id), 22)).toMatchObject({ funding: 'plan', allowed: false });
+        // …the one-click build is refused in plain words, with nothing planned, applied or counted…
+        expect(await buildDoughnut({ tenantSlug: onPlan.tenant.slug })).toEqual({ ok: false, error: researchUnavailableMessage() });
+        expect(await onPlan.runs()).toEqual([]);
+        // …a run planned by hand (a re-run) cannot be applied…
+        const planned = await planResearchAction({ tenantSlug: onPlan.tenant.slug });
+        expect(planned.ok).toBe(true);
+        const { runId } = (planned as { ok: true; data: { runId: string } }).data;
+        expect(await applyResearchAction({ tenantSlug: onPlan.tenant.slug, runId })).toEqual({
+          ok: false,
+          error: researchUnavailableMessage(),
+        });
+        expect((await onPlan.runs()).every((r) => r.appliedAt === null)).toBe(true);
+        await m.getDb().delete(m.researchRuns).where(eq(m.researchRuns.id, runId));
+        // …and so is a policy analysis.
+        const brief = 'Open a cooling center in every community district from June through September, with extended hours.';
+        expect(await createPolicyAnalysis({ tenantSlug: onPlan.tenant.slug, title: 'Cooling centers', brief })).toEqual({
+          ok: false,
+          error: researchUnavailableMessage(),
+        });
+        expect(
+          await m.getDb().select().from(m.policyAnalyses).where(eq(m.policyAnalyses.tenantId, onPlan.tenant.id)),
+        ).toEqual([]);
+      } finally {
+        process.env.DF_RESEARCH_KEY_CONFIGURED = 'true';
+      }
+    }
+    // The organization's own key never needed the deployment's: its build goes ahead without it.
+    delete process.env.DF_RESEARCH_KEY_CONFIGURED;
+    try {
+      expect(previewResearchSpend(await billingSummary(onKey.org.id), 22)).toMatchObject({
+        funding: 'organization_key',
+        allowed: true,
+      });
+      expect(await buildDoughnut({ tenantSlug: onKey.tenant.slug })).toMatchObject({
+        ok: true,
+        data: { funding: 'organization_key' },
+      });
+    } finally {
+      process.env.DF_RESEARCH_KEY_CONFIGURED = 'true';
     }
   });
 });

@@ -8,13 +8,24 @@ describe('productionEnvProblems', () => {
     APP_URL: 'https://app.example.gov',
     SMTP_URL: 'smtps://relay',
     EMAIL_FROM: 'a@b.c',
+    SUPPORT_EMAIL: 'help@city.gov',
   };
   it('accepts a minimal complete deployment', () => {
     expect(productionEnvProblems(ok)).toEqual([]);
   });
   it('lists every problem at once', () => {
     const problems = productionEnvProblems({ STRIPE_SECRET_KEY: 'sk_live_x', STRIPE_API_BASE: 'http://mock' });
-    expect(problems).toHaveLength(6);
+    expect(problems).toHaveLength(7);
+  });
+  // The footer, error pages and every refusal a customer reads end in this
+  // address, so production does not start without one.
+  it('requires SUPPORT_EMAIL, treating a blank one as unset, and says where it shows', () => {
+    const { SUPPORT_EMAIL: _, ...withoutSupport } = ok;
+    for (const env of [withoutSupport, { ...ok, SUPPORT_EMAIL: '' }, { ...ok, SUPPORT_EMAIL: '   ' }]) {
+      const problems = productionEnvProblems(env);
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toMatch(/^SUPPORT_EMAIL is required: .*footer.*error pages/);
+    }
   });
   it('refuses a test Stripe server in production', () => {
     expect(productionEnvProblems({ ...ok, STRIPE_API_BASE: 'http://localhost:12111' })[0]).toMatch(/stripe-mock/);

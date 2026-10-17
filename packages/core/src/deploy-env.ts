@@ -46,6 +46,16 @@ export function productionEnvProblems(env: Env): string[] {
     );
   }
   if (!env.APP_URL) problems.push('APP_URL is required (the public https origin)');
+  // Every customer-facing dead end — the site footer, error pages, a refused
+  // research spend — ends in "contact <this address>", so a production site
+  // without one would leave people nowhere to turn. Blank counts as unset:
+  // compose passes `${SUPPORT_EMAIL:-}` through. Its shape is the preflight's
+  // warning (contactAddressesVerdict), not a boot failure.
+  if (!env.SUPPORT_EMAIL?.trim()) {
+    problems.push(
+      'SUPPORT_EMAIL is required: the address people write to for help, shown in the site footer and on error pages (e.g. SUPPORT_EMAIL=help@yourcity.gov)',
+    );
+  }
   if (Boolean(env.STRIPE_SECRET_KEY) !== Boolean(env.STRIPE_WEBHOOK_SECRET)) {
     problems.push('set STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET together (or neither)');
   }

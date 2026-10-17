@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { EmbedFrame } from '@/components/embed/EmbedFrame';
+import { SampleDataNotice } from '@/components/sample-data/SampleDataNotice';
 import { getPortrait } from '@/lib/data';
 import { embedOriginsFor } from '@/lib/embed-policy';
 import { appUrl } from '@/lib/env';
@@ -8,13 +9,26 @@ import { localizeDimensions } from '@/lib/i18n/content';
 import { doughnutLabels } from '@/lib/i18n/doughnut';
 import { getI18n } from '@/lib/i18n/server';
 import { pageTitle } from '@/lib/page-meta';
+import { portraitSampleData } from '@/lib/sample-data';
 
 export const dynamic = 'force-dynamic';
 
-/** "Doughnut portrait · New York City": what a screen reader announces inside the city's iframe. */
+/**
+ * "Doughnut portrait · New York City": what a screen reader announces inside
+ * the city's iframe. Never indexed, and canonical to the portrait itself in
+ * the embed's language: an embed is a framed copy of that page, so search
+ * engines are sent to the portrait (app/robots.ts also keeps them out).
+ * Replaces the layout's alternates — an embed lists no language versions.
+ */
 export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
-  const [portrait, { m }] = await Promise.all([getPortrait((await params).tenant), getI18n()]);
-  return { title: portrait ? pageTitle(m.doughnut.portrait, portrait.tenant.name) : m.notFound.title };
+  const { tenant } = await params;
+  const [portrait, { m, href }] = await Promise.all([getPortrait(tenant), getI18n()]);
+  if (!portrait) return { title: m.notFound.title };
+  return {
+    title: pageTitle(m.doughnut.portrait, portrait.tenant.name),
+    robots: { index: false, follow: true },
+    alternates: { canonical: `${appUrl()}${href(`/${portrait.tenant.slug}`)}` },
+  };
 }
 
 /**
@@ -34,10 +48,11 @@ export default async function EmbedPage({
   const { tenant } = await params;
   const { origin } = await searchParams;
 
-  const [portrait, allowedOrigins, { m, href }] = await Promise.all([
+  const [portrait, allowedOrigins, { m, href }, sample] = await Promise.all([
     getPortrait(tenant),
     embedOriginsFor(tenant),
     getI18n(),
+    portraitSampleData(tenant),
   ]);
   if (!portrait) notFound();
 
@@ -52,6 +67,8 @@ export default async function EmbedPage({
         parentOrigin={parentOrigin}
         portraitUrl={`${appUrl()}${href(`/${tenant}`)}`}
         labels={doughnutLabels(m)}
+        credit={m.footer.credit}
+        notice={sample ? <SampleDataNotice labels={m.sampleData} name={portrait.tenant.name} compact /> : undefined}
       />
     </main>
   );

@@ -24,12 +24,39 @@ describe.skipIf(!hasDb)('embed policy (Postgres)', () => {
       await db.delete(m.tenants).where(eq(m.tenants.id, tenant.id));
       await db.delete(m.organizations).where(eq(m.organizations.id, tenant.organizationId));
     });
+    // Public: marked as having published, in the system context, as the
+    // database's publish trigger does (migration 0015).
     await db
       .update(m.tenants)
-      .set({ embedOrigins: ['https://www.example.gov', 'javascript:alert(1)'] })
+      .set({ embedOrigins: ['https://www.example.gov', 'javascript:alert(1)'], firstPublishedAt: new Date() })
       .where(eq(m.tenants.id, tenant.id));
     expect(await embedOriginsFor(tenant.slug)).toEqual(['https://www.example.gov']);
     expect(await embedOriginsFor(uniq())).toEqual([]);
+  });
+
+  it('frames a portrait that is not public on no other site, like an unknown one', async () => {
+    const m = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const db = m.getDb();
+    const { tenant } = await m.provisionTenant(db, { slug: uniq(), name: 'Draft City' });
+    cleanup.push(async () => {
+      await db.delete(m.tenants).where(eq(m.tenants.id, tenant.id));
+      await db.delete(m.organizations).where(eq(m.organizations.id, tenant.organizationId));
+    });
+    await db.update(m.tenants).set({ embedOrigins: ['https://www.example.gov'] }).where(eq(m.tenants.id, tenant.id));
+    // Not published yet (the answer is cached for a minute, so each state gets its own portrait)…
+    expect(await embedOriginsFor(tenant.slug)).toEqual([]);
+    const { tenant: archived } = await m.provisionTenant(db, { slug: uniq(), name: 'Former City' });
+    cleanup.push(async () => {
+      await db.delete(m.tenants).where(eq(m.tenants.id, archived.id));
+      await db.delete(m.organizations).where(eq(m.organizations.id, archived.organizationId));
+    });
+    // …or published once and archived since.
+    await db
+      .update(m.tenants)
+      .set({ embedOrigins: ['https://www.example.gov'], firstPublishedAt: new Date(), archivedAt: new Date() })
+      .where(eq(m.tenants.id, archived.id));
+    expect(await embedOriginsFor(archived.slug)).toEqual([]);
   });
 
   it('keeps its cache bounded, and never spends a lookup or an entry on a segment that is not a slug', async () => {

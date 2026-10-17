@@ -35,13 +35,19 @@ describe('modelPricing', () => {
     }
   });
 
-  it('leaves Haiku 4.5 unpriced until the operator confirms its rate', () => {
-    expect(modelPricing('claude-haiku-4-5')).toBeNull();
-    expect(modelPricing('claude-haiku-4-5-20251001')).toBeNull();
-    expect(priceSessionUsage({ ...emptyUsage(), by_model: { 'claude-haiku-4-5-20251001': tokens(5000, 300) } })).toEqual({
-      dollars: 0,
-      unpriced: ['claude-haiku-4-5-20251001'],
-    });
+  it('prices Haiku 4.5, the page reader, under its alias and its pinned dated id', () => {
+    // Published rate: $1 input, $1.25 5-minute cache write, $0.10 cache read, $5 output.
+    for (const id of ['claude-haiku-4-5', 'claude-haiku-4-5-20251001']) {
+      expect(modelPricing(id)).toEqual({ standard: { input: 1, output: 5, cacheRead: 0.1 } });
+      expect(priceModelTokens(id, tokens(M, M, M, M))).toBeCloseTo(1 + 5 + 0.1 + 1.25, 10);
+    }
+    // One page summary: 5,000 tokens in, 300 out ≈ $0.0065, and nothing left unpriced.
+    const priced = priceSessionUsage({ ...emptyUsage(), by_model: { 'claude-haiku-4-5-20251001': tokens(5000, 300) } });
+    expect(priced.unpriced).toEqual([]);
+    expect(priced.dollars).toBeCloseTo((5000 * 1 + 300 * 5) / M, 12);
+    // A different Haiku is still not priced as this one.
+    expect(modelPricing('claude-haiku-4')).toBeNull();
+    expect(modelPricing('claude-3-5-haiku-20241022')).toBeNull();
   });
 
   it('strips only a trailing release date', () => {
@@ -105,9 +111,21 @@ describe('priceSessionUsage', () => {
       },
     };
     const priced = priceSessionUsage(usage);
-    expect(priced.dollars).toBeCloseTo(2 + 1 + 0.4 + 1.25 + 0.12, 10);
-    // The reader's tokens are not in the figure, so it says which model is missing.
-    expect(priced.unpriced).toEqual(['claude-haiku-4-5-20251001']);
+    // Sonnet 5: $2 + $1 + $0.40 + $1.25; 12 searches $0.12; the page reader 400K × $1 + 20K × $5 = $0.50.
+    expect(priced.dollars).toBeCloseTo(2 + 1 + 0.4 + 1.25 + 0.12 + 0.5, 10);
+    expect(priced.unpriced).toEqual([]);
+  });
+
+  it('names a model it cannot price and leaves its tokens out of the lower bound', () => {
+    const usage: SessionTokenUsage = {
+      input_tokens: 1,
+      output_tokens: 1,
+      by_model: {
+        'claude-sonnet-5': tokens(M, 0),
+        'claude-sonnet-5[1m]': tokens(400_000, 20_000),
+      },
+    };
+    expect(priceSessionUsage(usage)).toEqual({ dollars: 2, unpriced: ['claude-sonnet-5[1m]'] });
   });
 
   it('reads old rows: main-loop fields on a recorded model, or unpriced with none', () => {

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getPortrait } from '@/lib/data';
+import { getPublicPortrait } from '@/lib/data';
 import { appUrl } from '@/lib/env';
+import { publicPortraitSampleData } from '@/lib/sample-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,16 +14,27 @@ const OPEN = {
  * GET /api/v1/portraits/{tenant} — the published portrait as open data:
  * exactly what the public page shows (published versions only, through
  * published_doughnut()), with provenance links. Read-only, CORS-open, cached.
+ *
+ * Read as an anonymous visitor whoever calls (getPublicPortrait): the answer
+ * is publicly cacheable, so a member's request for their portrait before it
+ * is public (migration 0015) must get the same 404 as everyone else's, not a
+ * view a shared cache would then serve to all.
+ *
+ * `sample_data` is true when the portrait's values were generated to
+ * demonstrate the software (core SAMPLE_DATA_CONFIG_KEY,
+ * scripts/seed-demo-data.ts), so a dataset pulled from a demo stack says so
+ * at its top level instead of passing for research. Always present.
  */
 export async function GET(_req: Request, { params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const portrait = await getPortrait(tenant);
+  const [portrait, sampleData] = await Promise.all([getPublicPortrait(tenant), publicPortraitSampleData(tenant)]);
   if (!portrait) return NextResponse.json({ error: 'unknown portrait' }, { status: 404, headers: OPEN });
   const base = appUrl();
   return NextResponse.json(
     {
       schema: 'deep-fryer.portrait/v1',
       generated_at: new Date().toISOString(),
+      sample_data: sampleData,
       links: {
         html: `${base}/${tenant}`,
         methodology: `${base}/${tenant}/methodology`,

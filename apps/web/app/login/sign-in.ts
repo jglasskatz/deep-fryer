@@ -16,6 +16,8 @@ import { sameSitePath } from '@/lib/safe-url';
 export const LOGIN_PATH = '/login';
 /** Auth.js's verify-request page (auth.ts pages.verifyRequest). */
 export const CHECK_EMAIL_PATH = '/login/check-email';
+/** The self-serve flow where city staff set up their own portrait (app/start). */
+export const START_PATH = '/start';
 
 /**
  * A path on this site, by the same rule as safeNextPath (lib/safe-url.ts
@@ -64,6 +66,20 @@ function withNext(base: string, next: string | null | undefined, extra?: Record<
   if (carried) params.set('next', carried);
   const query = params.toString();
   return query ? `${base}?${query}` : base;
+}
+
+/**
+ * Whether `next` leads into the self-serve start flow: `/start` itself or a
+ * page under it, with any query (`/start?portrait=…` after checkout), but not
+ * a page that merely begins with the same letters (`/starting`). The sign-in
+ * page then speaks to city staff rather than residents, and the sign-in
+ * email says what the link is for (./sign-in-email.ts).
+ */
+export function isStartPath(next: string | null | undefined): boolean {
+  const path = returnPath(next);
+  if (path === null) return false;
+  const pathname = pathnameOf(path);
+  return pathname === START_PATH || pathname.startsWith(`${START_PATH}/`);
 }
 
 /** The sign-in page, carrying `next` when there is somewhere worth returning to. */

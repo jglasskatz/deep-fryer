@@ -5,7 +5,7 @@ import { ReviewCard } from '@/components/admin/ReviewCard';
 import { requireAdminPage } from '@/lib/admin-guard';
 import { adminPageMetadata } from '@/lib/page-meta';
 import { evidenceBase } from '@/lib/data';
-import { reviewQueue } from '@/lib/review-data';
+import { reviewQueue, type FailedRunSummary } from '@/lib/review-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,9 +23,14 @@ export default async function ReviewQueuePage({
 }) {
   const { tenant } = await params;
   const { run } = await searchParams;
-  const ctx = await requireAdminPage(tenant, 'editor');
+  // This page's own address, ?run= included, so a signed-out editor following the review email comes back to it.
+  const ctx = await requireAdminPage(
+    tenant,
+    'editor',
+    `/${tenant}/admin/review${run ? `?run=${encodeURIComponent(run)}` : ''}`,
+  );
 
-  const { completeRuns, selectedRun, cards } = await reviewQueue(ctx.tenant.id, run);
+  const { reviewableRuns, selectedRun, cards, failedRuns } = await reviewQueue(ctx.tenant.id, run);
 
   return (
     <>
@@ -38,18 +43,24 @@ export default async function ReviewQueuePage({
         </p>
         <h1 className="mt-2 text-2xl font-bold">Review queue</h1>
 
-        {completeRuns.length === 0 ? (
+        {reviewableRuns.length === 0 ? (
           <p className="mt-6 text-sm text-[color:var(--color-muted)]">
-            No completed research runs yet.{' '}
-            <Link className="underline" href={`/${tenant}/admin/research`}>
-              Plan one
-            </Link>
-            .
+            {failedRuns.length > 0 ? (
+              'Nothing to review yet: no research run has finished with findings. The runs that failed are listed below, with why.'
+            ) : (
+              <>
+                No completed research runs yet.{' '}
+                <Link className="underline" href={`/${tenant}/admin/research`}>
+                  Plan one
+                </Link>
+                .
+              </>
+            )}
           </p>
         ) : (
           <>
             <div className="mt-4 flex flex-wrap gap-2 text-xs">
-              {completeRuns.map((r) => (
+              {reviewableRuns.map((r) => (
                 <Link
                   key={r.id}
                   href={`/${tenant}/admin/review?run=${r.id}`}
@@ -58,6 +69,7 @@ export default async function ReviewQueuePage({
                   }`}
                 >
                   {r.createdAt.toISOString().slice(0, 10)} · {r.id.slice(0, 8)}
+                  {r.status === 'failed' ? ' · failed' : ''}
                 </Link>
               ))}
             </div>
@@ -97,7 +109,46 @@ export default async function ReviewQueuePage({
             </div>
           </>
         )}
+
+        <FailedRuns tenant={tenant} failedRuns={failedRuns} />
       </main>
     </>
+  );
+}
+
+/**
+ * Failed runs (newest first, a few at most): each with the reason that
+ * stopped most of its sessions (lib/run-failure.ts) and a link to its run
+ * page, which names the reason per session and offers to plan the failed
+ * dimensions again. Without this, a portrait whose only run failed showed
+ * "No completed research runs yet" — as if nothing had happened.
+ */
+function FailedRuns({ tenant, failedRuns }: { tenant: string; failedRuns: FailedRunSummary[] }) {
+  if (failedRuns.length === 0) return null;
+  return (
+    <section className="mt-10" aria-labelledby="failed-runs-heading">
+      <h2 id="failed-runs-heading" className="text-lg font-semibold">
+        Runs that failed
+      </h2>
+      <ul className="mt-3 space-y-3">
+        {failedRuns.map((f) => (
+          <li key={f.run.id} className="rounded border-s-4 border-red-700 bg-red-50 p-3 text-sm">
+            <p className="font-medium">
+              {f.run.createdAt.toISOString().slice(0, 10)} · {f.run.id.slice(0, 8)} —{' '}
+              {f.incompleteSessions} of {f.run.plan.sessions.length} sessions did not complete
+              {f.findings > 0
+                ? ` · ${f.findings} finding${f.findings === 1 ? '' : 's'} recorded before it stopped (listed above)`
+                : ''}
+            </p>
+            <p className="mt-1">{f.cause.message}</p>
+            <p className="mt-1">
+              <Link className="underline" href={`/${tenant}/admin/research/${f.run.id}`}>
+                See what happened, and plan the failed dimensions again
+              </Link>
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

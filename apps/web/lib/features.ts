@@ -39,9 +39,23 @@ export function resetDeploymentDisabledForTests(): void {
   disabledCache = null;
 }
 
-/** A deployment-wide feature (the deep fryer). */
+/** A deployment-wide feature (the deep fryer, self-serve start). */
 export function deploymentFeatureOn(feature: DeploymentFeature): boolean {
   return deploymentFeatureEnabled(feature, deploymentDisabled());
+}
+
+/** Page guard for a deployment-wide feature: off means the page does not exist (404) — /start without self_serve. */
+export function requireDeploymentFeature(feature: DeploymentFeature): void {
+  if (!deploymentFeatureOn(feature)) notFound();
+}
+
+/**
+ * Action guard for a deployment-wide feature: a forged request to an action
+ * behind an off feature is refused before it does anything. The words are
+ * the visitor's, not the operator's: there is no setting they could change.
+ */
+export function assertDeploymentFeature(feature: DeploymentFeature): void {
+  if (!deploymentFeatureOn(feature)) throw new UserError('This is not available on this server.');
 }
 
 async function storedFeatures(db: DbExecutor, tenantId: string): Promise<Record<string, unknown> | null> {

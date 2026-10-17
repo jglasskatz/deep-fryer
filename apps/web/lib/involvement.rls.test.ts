@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { markPortraitPublic } from './test-portraits';
 
 /**
  * Getting involved under row-level security (migration 0010), as each kind
@@ -50,6 +51,8 @@ describe.skipIf(!hasDb)('involvement under row-level security', () => {
     const db = m.getDb();
     for (const which of ['A', 'B'] as const) {
       const { tenant } = await m.provisionTenant(db, { slug: uniq(), name: `City ${which}` });
+      // Public, as its first publish would make it (migration 0015): anonymous visitors only reach public portraits.
+      await markPortraitPublic(tenant.id);
       cleanup.tenantIds.push(tenant.id);
       cleanup.organizationIds.push(tenant.organizationId);
       if (which === 'A') cityA = { id: tenant.id, slug: tenant.slug };
@@ -139,6 +142,8 @@ describe.skipIf(!hasDb)('involvement under row-level security', () => {
     const { tenant } = await m.provisionTenant(m.getDb(), { slug: uniq(), name: 'Archived City' });
     cleanup.tenantIds.push(tenant.id);
     cleanup.organizationIds.push(tenant.organizationId);
+    // Public once, then archived: the refusal below is the archive's, not the portrait being private.
+    await markPortraitPublic(tenant.id);
     const { eq } = await import('drizzle-orm');
     await m.getDb().update(m.tenants).set({ archivedAt: new Date() }).where(eq(m.tenants.id, tenant.id));
     await expect(insert({}, tenant.id)).rejects.toThrow(RLS);

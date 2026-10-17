@@ -13,17 +13,19 @@ import type { Subscription } from './schema.js';
 const now = new Date('2026-10-16T12:00:00Z');
 const DAY = 86_400_000;
 
-function trial(overrides: Partial<Subscription> = {}): Subscription {
+/** A paid card plan in good standing with a 30-session allowance this period (a contract override). */
+function paid(overrides: Partial<Subscription> = {}): Subscription {
   return {
     organizationId: '00000000-0000-4000-8000-000000000001',
-    plan: 'trial',
-    status: 'trialing',
+    plan: 'community',
+    status: 'active',
     collection: 'card',
     currentPeriodStart: new Date(now.getTime() - 5 * DAY),
     currentPeriodEnd: new Date(now.getTime() + 25 * DAY),
-    trialEndsAt: new Date(now.getTime() + 25 * DAY),
+    trialEndsAt: null,
     cancelAtPeriodEnd: false,
-    researchSessionsOverride: null,
+    firstInvoicePaidAt: null,
+    researchSessionsOverride: 30,
     portraitsOverride: null,
     seatsOverride: null,
     ...overrides,
@@ -32,36 +34,80 @@ function trial(overrides: Partial<Subscription> = {}): Subscription {
 
 describe('decideResearchSpend', () => {
   it('checks the allowance when there is no key', () => {
-    expect(decideResearchSpend(trial(), 0, false, 22, now)).toMatchObject({ funding: 'plan', check: { allowed: true } });
-    const over = decideResearchSpend(trial(), 22, false, 22, now);
+    expect(decideResearchSpend(paid(), 0, false, 22, now)).toMatchObject({ funding: 'plan', check: { allowed: true } });
+    const over = decideResearchSpend(paid(), 22, false, 22, now);
     expect(over.funding).toBe('plan');
     expect(over.check).toMatchObject({ allowed: false, remaining: 8 });
     expect(over.check.message).toMatch(/needs 22 research sessions; 8 of 30 remain/);
   });
 
   it('waives the allowance with a key on file, and reports the count as information', () => {
-    const spent = decideResearchSpend(trial(), 30, true, 22, now);
+    const spent = decideResearchSpend(paid(), 30, true, 22, now);
     expect(spent).toEqual({
       funding: 'organization_key',
       check: { allowed: true, used: 30, limit: 30, remaining: 0, message: null },
     });
     // However large the run.
-    expect(decideResearchSpend(trial({ researchSessionsOverride: 0 }), 0, true, 500, now).check.allowed).toBe(true);
+    expect(decideResearchSpend(paid({ researchSessionsOverride: 0 }), 0, true, 500, now).check.allowed).toBe(true);
+  });
+
+  it('refuses an organization without a plan — every one /start creates — whoever would pay', () => {
+    for (const hasKey of [false, true]) {
+      const { funding, check } = decideResearchSpend(null, 0, hasKey, 22, now);
+      expect(funding).toBe(hasKey ? 'organization_key' : 'plan');
+      expect(check).toMatchObject({ allowed: false, limit: 0, remaining: 0 });
+      expect(check.message).toMatch(/^Choose a plan to build your doughnut/);
+    }
   });
 
   it('still requires good standing with a key on file', () => {
     expect(decideResearchSpend(null, 0, true, 1, now)).toMatchObject({
       funding: 'organization_key',
-      check: { allowed: false, message: expect.stringMatching(/no plan yet/) },
+      check: { allowed: false, message: expect.stringMatching(/Choose a plan/) },
     });
-    expect(decideResearchSpend(trial({ status: 'canceled' }), 0, true, 1, now).check).toMatchObject({
+    expect(decideResearchSpend(paid({ status: 'canceled' }), 0, true, 1, now).check).toMatchObject({
       allowed: false,
       message: expect.stringMatching(/canceled/),
     });
-    const ended = trial({ trialEndsAt: new Date(now.getTime() - DAY), currentPeriodEnd: new Date(now.getTime() - DAY) });
-    expect(decideResearchSpend(ended, 0, true, 1, now).check).toMatchObject({
-      allowed: false,
-      message: expect.stringMatching(/trial has ended/),
+  });
+
+  it('refuses a trial started before trials were retired, mid-trial, whoever would pay', () => {
+    // Five days into its 30 days: it was once promised 30 sessions, enough for a 22-session build.
+    const trial = paid({
+      plan: 'trial',
+      status: 'trialing',
+      trialEndsAt: new Date(now.getTime() + 25 * DAY),
+      researchSessionsOverride: null,
+    });
+    for (const hasKey of [false, true]) {
+      expect(decideResearchSpend(trial, 0, hasKey, 22, now).check).toMatchObject({
+        allowed: false,
+        limit: 0,
+        message: expect.stringMatching(/evaluation period has ended/),
+      });
+    }
+  });
+
+  it('refuses a fresh invoice subscription whose first invoice is still open, whoever would pay', () => {
+    // What "Request an annual invoice" writes for Metro on day 0: Stripe calls a send_invoice subscription active.
+    const requested = paid({
+      plan: 'metro',
+      collection: 'invoice',
+      currentPeriodStart: now,
+      currentPeriodEnd: new Date(now.getTime() + 365 * DAY),
+      researchSessionsOverride: null,
+      firstInvoicePaidAt: null,
+    });
+    for (const hasKey of [false, true]) {
+      expect(decideResearchSpend(requested, 0, hasKey, 22, now).check).toMatchObject({
+        allowed: false,
+        message: expect.stringMatching(/^Research starts once the first invoice is paid/),
+      });
+    }
+    // Once it is paid, the plan's allowance.
+    expect(decideResearchSpend({ ...requested, firstInvoicePaidAt: now }, 0, false, 22, now).check).toMatchObject({
+      allowed: true,
+      limit: 600,
     });
   });
 });
@@ -139,14 +185,36 @@ describe.skipIf(!hasDb)('research funding as stored on runs and analyses (Postgr
       ]);
 
       const since = new Date(now.getTime() - 60_000);
-      const until = new Date(now.getTime() + 60_000);
-      expect(await m.researchSessionsUsed(db, tenant.organizationId, since, until)).toBe(5 + 2 + 2 + 1);
-      expect(await m.researchSessionsOnOrganizationKey(db, tenant.organizationId, since, until)).toBe(7 + 4 + 2);
+      expect(await m.researchSessionsUsed(db, tenant.organizationId, since)).toBe(5 + 2 + 2 + 1);
+      expect(await m.researchSessionsOnOrganizationKey(db, tenant.organizationId, since)).toBe(7 + 4 + 2);
 
       // Removing the key changes neither number: what ran on it was never the plan's.
       expect(await m.deleteOrganizationApiKey(db, tenant.organizationId)).toBe('Ab12');
-      expect(await m.researchSessionsUsed(db, tenant.organizationId, since, until)).toBe(10);
-      expect(await m.researchSessionsOnOrganizationKey(db, tenant.organizationId, since, until)).toBe(13);
+      expect(await m.researchSessionsUsed(db, tenant.organizationId, since)).toBe(10);
+      expect(await m.researchSessionsOnOrganizationKey(db, tenant.organizationId, since)).toBe(13);
+      // Nothing before the period's start counts.
+      expect(await m.researchSessionsUsed(db, tenant.organizationId, new Date(now.getTime() + 60_000))).toBe(0);
+    } finally {
+      await cleanup();
+    }
+  });
+
+  it('charges spends made after a stale period end to that period, so the allowance still runs down', async () => {
+    const { m, db, tenant, cleanup } = await portrait();
+    try {
+      // A card plan of 30 sessions whose period ended yesterday: its renewal has not reached us yet (core
+      // standing keeps it active within STRIPE_SYNC_GRACE_MS). A full build applied today, after that end…
+      const now = Date.now();
+      await db.insert(m.subscriptions).values({
+        organizationId: tenant.organizationId, plan: 'community', status: 'active', collection: 'card',
+        currentPeriodStart: new Date(now - 31 * DAY), currentPeriodEnd: new Date(now - DAY), researchSessionsOverride: 30,
+      });
+      await db.insert(m.researchRuns).values({
+        tenantId: tenant.id, status: 'planned', plan: plan(22), configSnapshot: {} as never, appliedAt: new Date(now), funding: 'plan',
+      });
+      // …counts, so a second one does not fit: it used to fall outside [start, end) and leave the allowance untouched.
+      const gate = await db.transaction((tx) => m.gateResearchSpend(tx, tenant.organizationId, 22));
+      expect(gate.check).toMatchObject({ allowed: false, used: 22, remaining: 8 });
     } finally {
       await cleanup();
     }

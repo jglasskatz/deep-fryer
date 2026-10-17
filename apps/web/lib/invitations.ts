@@ -1,7 +1,7 @@
 import 'server-only';
 import { createHash, randomBytes } from 'node:crypto';
 import { and, eq, gt, isNull, sql } from 'drizzle-orm';
-import { effectiveLimits, standing, type Role } from '@deep-fryer/core';
+import { limitsInEffect, standing, type Role } from '@deep-fryer/core';
 import {
   invitations,
   organizationMembers,
@@ -23,8 +23,12 @@ import { systemDb } from './db';
  * Invitations (SPEC-v4 §2). A token is shown once (in the email or the
  * copyable link) and only its sha256 is stored. Accepting requires being
  * signed in with the invited address, so a forwarded link grants nothing.
- * Invitations expire after a week and count against the plan's seats while
- * pending, so a lapsed or full organization cannot overcommit.
+ * Invitations expire after a week and count against the seats in effect
+ * while pending, so a full organization cannot overcommit. The seats in
+ * effect are the plan's while it is in good standing, and the free setup
+ * limit otherwise (core limitsInEffect: three people, the owner included) —
+ * inviting the people who set a portrait up and review it needs no plan,
+ * as /start and the billing page promise; only growing past that does.
  */
 
 export const INVITATION_DAYS = 7;
@@ -91,17 +95,16 @@ export async function createInvitation(input: {
   const organizationId = await organizationIdFor(input.scope);
 
   const sub = await subscriptionFor(db, organizationId);
-  if (!standing(sub).active) {
-    throw new UserError('Invitations are paused until the organization has an active plan (see Billing).');
-  }
-  const limit = effectiveLimits(sub!).seats;
+  const limit = limitsInEffect(sub).seats;
   const [seats, pending] = await Promise.all([
     seatCount(db, organizationId),
     pendingSeatReservations(db, organizationId),
   ]);
   if (seats + pending >= limit) {
     throw new UserError(
-      `All ${limit} seats on this plan are in use or reserved by pending invitations. Remove someone, revoke an invitation, or upgrade the plan.`,
+      standing(sub).active
+        ? `All ${limit} seats on this plan are in use or reserved by pending invitations. Remove someone, revoke an invitation, or upgrade the plan.`
+        : `Without a plan an organization has ${limit} seats, and all are in use or reserved by pending invitations. Remove someone, revoke an invitation, or choose a plan under Billing to add more.`,
     );
   }
 

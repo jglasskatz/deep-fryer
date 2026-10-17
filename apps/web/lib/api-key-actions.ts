@@ -16,6 +16,7 @@ import { action, UserError } from './action-result';
 import { audit } from './audit';
 import { getAuth, requireOrgRole } from './auth';
 import { validateAnthropicKey } from './anthropic-key';
+import { contactSentence } from './billing';
 import { systemDb, userDb } from './db';
 import { secretsKey } from './env';
 
@@ -43,10 +44,13 @@ import { secretsKey } from './env';
  * enforces the same rule as requireOrgRole.
  */
 
-const SECRETS_KEY_MISSING =
-  'Using your own Anthropic API key is not available on this server: the operator has not set DF_SECRETS_KEY, which stored keys are encrypted with. Ask the operator to set it (docs/deploy.md), or run research on your plan instead.';
-const SECRETS_KEY_INVALID =
-  'Using your own Anthropic API key is not available on this server: its DF_SECRETS_KEY setting is not a valid 32-byte key. Ask the operator to correct it (docs/deploy.md).';
+/**
+ * Why a key cannot be saved on this server, for the owner who tried. The
+ * owner cannot fix it and the setting means nothing to them, so the message
+ * names no setting: the server log does (encryptionKey), for the operator.
+ */
+const keysNotStorable = () =>
+  `This server isn’t set up to store organization keys. ${contactSentence()} Research can still run on your plan.`;
 
 async function orgForOwner(orgSlug: string): Promise<Organization> {
   const org = await organizationBySlug(systemDb(), orgSlug);
@@ -64,14 +68,20 @@ async function orgForOwner(orgSlug: string): Promise<Organization> {
   return org;
 }
 
-/** DF_SECRETS_KEY as key material, or a UserError the owner can pass to the operator. */
+/** DF_SECRETS_KEY as key material, or a UserError the owner can act on (and the setting's name in the log). */
 function encryptionKey(): Uint8Array {
   const raw = secretsKey();
-  if (!raw) throw new UserError(SECRETS_KEY_MISSING);
+  if (!raw) {
+    console.warn('[api-key] an owner tried to save a key, but DF_SECRETS_KEY is not set (docs/deploy.md)');
+    throw new UserError(keysNotStorable());
+  }
   try {
     return parseSecretsKey(raw);
   } catch (err) {
-    if (err instanceof SecretsKeyError) throw new UserError(SECRETS_KEY_INVALID);
+    if (err instanceof SecretsKeyError) {
+      console.error('[api-key] DF_SECRETS_KEY is not a valid 32-byte base64 key (docs/deploy.md); keys cannot be saved');
+      throw new UserError(keysNotStorable());
+    }
     throw err;
   }
 }

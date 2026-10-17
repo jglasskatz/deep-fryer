@@ -3,12 +3,14 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { summarizeProgress, type ProgressStatus } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
+import { SampleDataNotice } from '@/components/sample-data/SampleDataNotice';
 import { ProgressTable } from '@/components/progress/ProgressTable';
 import { StatusChip } from '@/components/progress/StatusChip';
 import { dimensionLabel } from '@/lib/i18n/content';
 import { fmt, fmtPlural, rich } from '@/lib/i18n/format';
 import { getI18n } from '@/lib/i18n/server';
 import { tenantProgress } from '@/lib/progress';
+import { portraitSampleData } from '@/lib/sample-data';
 
 export async function generateMetadata({
   params,
@@ -29,10 +31,19 @@ const HEADLINE_ORDER: ProgressStatus[] = ['met', 'on_track', 'improving', 'off_t
  * to the latest measurement, against the adopted target and its due date.
  * The data-gap list is part of the deliverable, not a footnote — it is what
  * a portrait asks the city to start measuring.
+ *
+ * A portrait seeded with synthetic values (scripts/seed-demo-data.ts, which
+ * publishes several years so every status shows) says so under the heading,
+ * before any count: "met / worsening" over made-up numbers is exactly the
+ * screenshot the notice exists to prevent.
  */
 export default async function ProgressPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const [p, { m, locale, href }] = await Promise.all([tenantProgress(tenant), getI18n()]);
+  const [p, { m, locale, href }, sample] = await Promise.all([
+    tenantProgress(tenant),
+    getI18n(),
+    portraitSampleData(tenant),
+  ]);
   if (!p) notFound();
 
   const tracked = p.rows.filter((r) => r.status !== 'no_data' && r.status !== 'no_target');
@@ -49,6 +60,7 @@ export default async function ProgressPage({ params }: { params: Promise<{ tenan
           </Link>
         </p>
         <h1 className="mt-2 text-3xl font-bold">{fmt(m.progress.title, { name: p.tenant.name })}</h1>
+        {sample ? <SampleDataNotice labels={m.sampleData} name={p.tenant.name} className="mt-4 max-w-3xl" /> : null}
         <p className="mt-2 max-w-3xl text-sm text-[color:var(--color-muted)]">
           <strong className="font-medium text-[color:var(--color-fg)]">{m.progress.baseline}</strong>{' '}
           <span lang="en">{p.config.baseline_label}</span>. {m.progress.intro}

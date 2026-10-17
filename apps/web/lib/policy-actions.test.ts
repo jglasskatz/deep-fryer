@@ -45,30 +45,33 @@ const BRIEF =
 
 describe.skipIf(!hasDb)('createPolicyAnalysis', () => {
   const savedSecret = process.env.AUTH_SECRET;
+  const savedResearchKey = process.env.DF_RESEARCH_KEY_CONFIGURED;
   const cleanup: (() => Promise<unknown>)[] = [];
   beforeAll(() => {
     delete process.env.AUTH_SECRET;
+    // A plan-funded analysis runs on the deployment's research key, which compose announces with this flag.
+    process.env.DF_RESEARCH_KEY_CONFIGURED = 'true';
   });
   afterAll(async () => {
     for (const fn of cleanup.reverse()) await fn();
     if (savedSecret !== undefined) process.env.AUTH_SECRET = savedSecret;
+    if (savedResearchKey === undefined) delete process.env.DF_RESEARCH_KEY_CONFIGURED;
+    else process.env.DF_RESEARCH_KEY_CONFIGURED = savedResearchKey;
   });
 
-  /** A portrait whose organization is on a trial with `allowance` research sessions. */
+  /** A portrait whose organization has a paid plan of `allowance` research sessions this period, or no plan (null). */
   async function portrait(allowance: number | null) {
     const m = await import('@deep-fryer/db');
     const { eq } = await import('drizzle-orm');
     const db = m.getDb();
-    const org = await m.provisionOrganization(db, { slug: uniq(), name: 'Policy Town', startTrial: allowance !== null });
+    const org = await m.provisionOrganization(db, { slug: uniq(), name: 'Policy Town' });
     const { tenant } = await m.provisionTenant(db, { slug: uniq(), name: 'Policy Town', organizationId: org.id });
     // New portraits start with every feature off (SPEC-v7 §3); these actions sit behind policy_analysis.
     const { setPortraitFeatures } = await import('./test-features');
     await setPortraitFeatures(tenant.id, { policy_analysis: true });
     if (allowance !== null) {
-      await db
-        .update(m.subscriptions)
-        .set({ researchSessionsOverride: allowance })
-        .where(eq(m.subscriptions.organizationId, org.id));
+      const { givePlan } = await import('./test-plans');
+      await givePlan(org.id, { researchSessions: allowance });
     }
     cleanup.push(async () => {
       await db.delete(m.tenants).where(eq(m.tenants.id, tenant.id));
@@ -219,7 +222,7 @@ describe.skipIf(!hasDb)('createPolicyAnalysis', () => {
     const { createPolicyAnalysis } = await import('./policy-actions');
     const { tenant } = await portrait(null);
     const res = await createPolicyAnalysis({ tenantSlug: tenant.slug, title: 'No plan', brief: BRIEF });
-    expect((res as { ok: false; error: string }).error).toMatch(/no plan yet/);
+    expect((res as { ok: false; error: string }).error).toMatch(/^Choose a plan to build your doughnut/);
     expect(await analysesOf(tenant.id)).toHaveLength(0);
   });
 

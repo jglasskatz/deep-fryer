@@ -1,9 +1,8 @@
-import { Fragment } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import type Stripe from 'stripe';
-import { PLANS, PURCHASABLE_PLANS } from '@deep-fryer/core';
+import { FREE_SETUP_LIMITS, PLANS, PURCHASABLE_PLANS, sellsInterval } from '@deep-fryer/core';
 import { organizationBySlug } from '@deep-fryer/db';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { UsageMeter } from '@/components/billing/UsageMeter';
@@ -12,9 +11,17 @@ import { PortalButton } from '@/components/billing/PortalButton';
 import { ContractForm } from '@/components/billing/ContractForm';
 import { ApiKeyForm } from '@/components/billing/ApiKeyForm';
 import { ResearchCostEstimate } from '@/components/billing/ResearchCostEstimate';
-import { getAuth, getOrgRole } from '@/lib/auth';
-import { apiKeyUnavailableNotice, billingSummary, keyFundedSessionsNote, WARNING_COPY } from '@/lib/billing';
+import { ContactText } from '@/components/billing/ContactText';
+import { getAuth, getOrgRole, getRole, roleAtLeast } from '@/lib/auth';
+import {
+  apiKeyUnavailableNotice,
+  billingSummary,
+  firstUnbuiltPortrait,
+  keyFundedSessionsNote,
+  WARNING_COPY,
+} from '@/lib/billing';
 import { bringYourOwnKeyAvailable, hasDatabase, stripeConfigured, supportEmail } from '@/lib/env';
+import { deploymentFeatureOn } from '@/lib/features';
 import { catalogPrices, formatPrice, stripe } from '@/lib/stripe';
 import { systemDb } from '@/lib/db';
 
@@ -34,6 +41,13 @@ const COLLECTION_LABEL = {
  * (SPEC-v7 §4), which owners add or remove here. The page only ever has the
  * key's hint and dates (BillingSummary.apiKey); the key itself is never
  * read back.
+ *
+ * Most people arrive from /start's build step, sent here to choose a plan or
+ * add a key for a portrait that has not been built yet. While the
+ * organization has such a portrait and this person may build it, the page
+ * links back to that step, and a completed Stripe Checkout (which returns
+ * here, `?checkout=success`) forwards straight to it — paying was the step
+ * before "Build my doughnut".
  */
 export default async function BillingPage({
   params,
@@ -52,9 +66,21 @@ export default async function BillingPage({
   const role = await getOrgRole(org.id);
   if (!role && !auth.isStaff) redirect(`/o/${orgSlug}`);
 
+  // The build step this person can go back to: /start for the organization's first portrait not built yet,
+  // while self-serve start exists on this deployment and they may start research on that portrait.
+  const unbuilt = deploymentFeatureOn('self_serve') ? await firstUnbuiltPortrait(org.id) : null;
+  const buildStep =
+    unbuilt && roleAtLeast(await getRole(unbuilt.id), 'editor')
+      ? { href: `/start?portrait=${encodeURIComponent(unbuilt.slug)}`, name: unbuilt.name }
+      : null;
+  // Paid by card: on to the build step, which says the payment arrived and waits for the plan to land.
+  // `at` lets the build step stop waiting for the webhook after a while (start/page.tsx CHECKOUT_CONFIRM_MS).
+  if (checkout === 'success' && buildStep) redirect(`${buildStep.href}&checkout=success&at=${Date.now()}`);
+
   const [summary, prices] = await Promise.all([billingSummary(org.id), catalogPrices()]);
   const sub = summary.subscription;
-  // Set when this server cannot read stored keys (DF_SECRETS_KEY unset); its words depend on whether one is on file.
+  const contact = supportEmail();
+  // Set when this server cannot store or read organization keys; its words depend on whether one is on file.
   const keyNotice = apiKeyUnavailableNotice(summary.apiKey !== null);
 
   let invoices: Stripe.Invoice[] = [];
@@ -68,7 +94,9 @@ export default async function BillingPage({
 
   const pickerPlans: PickerPlan[] = PURCHASABLE_PLANS.map((id) => {
     const p = PLANS[id];
+    // Only the intervals the plan is sold by (core sellsInterval; startCheckout refuses the others).
     const price = (interval: 'month' | 'year') => {
+      if (!sellsInterval(p, interval)) return undefined;
       const key = p.stripeLookupKeys[interval];
       const found = key ? prices.get(key) : undefined;
       return found ? formatPrice(found) : undefined;
@@ -90,7 +118,9 @@ export default async function BillingPage({
   const stripeManaged = Boolean(
     sub?.stripeSubscriptionId && !['canceled', 'incomplete_expired'].includes(sub.status),
   );
-  const contact = supportEmail();
+  // Just back from a paid checkout whose webhook has not written the plan yet: offering the plans again
+  // would invite paying twice, so the picker waits (startCheckout refuses a second subscription anyway).
+  const awaitingCheckout = checkout === 'success' && !stripeManaged;
   // The meter counts plan-funded sessions only; sessions the research gate put
   // on the organization's own key this period are named beside it, worded as on
   // the org hub and the research and policy pages (lib/billing.ts).
@@ -106,10 +136,29 @@ export default async function BillingPage({
           </Link>
         </p>
         <h1 className="mt-2 text-3xl font-bold">Billing</h1>
+        {buildStep ? (
+          <p className="mt-3 rounded bg-black/[0.03] p-3 text-sm">
+            <Link className="font-medium underline" href={buildStep.href}>
+              ← Back to building your doughnut
+            </Link>{' '}
+            <span className="text-[color:var(--color-muted)]">
+              ({buildStep.name}: choose a plan or add your key here, then build it there)
+            </span>
+          </p>
+        ) : null}
 
         {checkout === 'success' ? (
           <p role="status" className="mt-4 rounded bg-green-50 p-3 text-sm text-green-900">
             Payment received — thank you. Your plan updates here within a few seconds.
+            {awaitingCheckout ? (
+              <>
+                {' '}
+                <Link className="underline" href={`/o/${org.slug}/billing`}>
+                  Reload this page
+                </Link>{' '}
+                to see it.
+              </>
+            ) : null}
           </p>
         ) : checkout === 'canceled' ? (
           <p className="mt-4 rounded bg-black/5 p-3 text-sm">Checkout canceled; nothing was charged.</p>
@@ -149,9 +198,21 @@ export default async function BillingPage({
               ) : null}
             </dl>
           ) : null}
-          {summary.blockedMessage ? (
+          {!sub ? (
+            // In place of the standing message, which sends people to this page: here, say what is free and where to go.
+            <p className="mt-2 text-sm">
+              Without a plan this organization can hold {FREE_SETUP_LIMITS.portraits} portrait, private until it
+              is published, and up to {FREE_SETUP_LIMITS.seats} people to set it up and review it — free. Building
+              it, the research, needs a plan or a contract:{' '}
+              <a className="underline" href="#choose">
+                choose a plan below
+              </a>
+              . Reading published portraits is always free.
+            </p>
+          ) : null}
+          {summary.blockedMessage && sub ? (
             <p role="alert" className="mt-3 rounded bg-red-50 p-2 text-sm text-red-900">
-              {summary.blockedMessage}
+              <ContactText text={summary.blockedMessage} contact={contact} />
             </p>
           ) : summary.standing.warning ? (
             <p className="mt-3 rounded bg-amber-50 p-2 text-sm text-amber-900">
@@ -181,25 +242,25 @@ export default async function BillingPage({
           <h2 id="api-key-heading" className="text-lg font-semibold">
             Your Anthropic API key
           </h2>
-          <p className="mt-1 text-sm">
-            {summary.apiKey && !keyNotice
-              ? 'Research and policy sessions for this organization run on your key and are not counted against your plan.'
-              : 'With your own Anthropic API key on file, research and policy sessions for this organization run on your key and are not counted against your plan.'}{' '}
-            A plan is still needed for hosting, review, and publishing.
-          </p>
-          <div className="mt-3">
-            <ResearchCostEstimate onKey showSingleSession />
-          </div>
+          {keyNotice && !summary.apiKey ? null : (
+            <>
+              <p className="mt-1 text-sm">
+                {summary.apiKey && !keyNotice
+                  ? 'Research and policy sessions for this organization run on your key and are not counted against your plan.'
+                  : 'With your own Anthropic API key on file, research and policy sessions for this organization run on your key and are not counted against your plan.'}{' '}
+                A plan is still needed: your key pays for the model usage, the plan for hosting, review, and support.
+              </p>
+              <div className="mt-3">
+                <ResearchCostEstimate onKey showSingleSession />
+              </div>
+            </>
+          )}
           <div className="mt-4">
             {keyNotice ? (
-              // For everyone who sees the section: with a key on file, research is refused until this is resolved.
+              // For everyone who sees the section: with a key on file, research is refused until this is resolved;
+              // without one, this is the whole story — the server cannot take a key, so nothing here is offered.
               <p className="mb-3 rounded bg-black/5 p-2 text-sm">
-                {keyNotice.split('DF_SECRETS_KEY').map((part, i) => (
-                  <Fragment key={i}>
-                    {i > 0 ? <code>DF_SECRETS_KEY</code> : null}
-                    {part}
-                  </Fragment>
-                ))}
+                <ContactText text={keyNotice} contact={contact} />
               </p>
             ) : null}
             {role === 'owner' ? (
@@ -223,7 +284,7 @@ export default async function BillingPage({
                 , added {summary.apiKey.createdAt.toISOString().slice(0, 10)}). Only an organization owner can replace or
                 remove it.
               </p>
-            ) : (
+            ) : keyNotice ? null : (
               <p className="text-sm text-[color:var(--color-muted)]">
                 No key on file. An organization owner can add one here.
               </p>
@@ -276,7 +337,7 @@ export default async function BillingPage({
           </section>
         ) : null}
 
-        {!stripeManaged ? (
+        {!stripeManaged && !awaitingCheckout ? (
           <section className="mt-10" aria-labelledby="choose">
             <h2 id="choose" className="text-lg font-semibold">
               {sub && sub.plan !== 'trial' && summary.standing.active ? 'Move to online billing' : 'Choose a plan'}
@@ -324,7 +385,8 @@ export default async function BillingPage({
               <ContractForm
                 orgSlug={org.slug}
                 initial={{
-                  plan: sub?.plan ?? 'metro',
+                  // A retired trial is moved onto a real plan, never renewed (ContractForm offers no trial).
+                  plan: sub && sub.plan !== 'trial' ? sub.plan : 'metro',
                   periodStart: (sub?.collection === 'contract' ? sub.currentPeriodStart : new Date()).toISOString().slice(0, 10),
                   periodEnd: (sub?.currentPeriodEnd ?? new Date(Date.now() + 365 * 86_400_000)).toISOString().slice(0, 10),
                   poNumber: sub?.poNumber ?? '',

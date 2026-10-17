@@ -10,8 +10,10 @@ export default function manifest(): MetadataRoute.Manifest {
     id: '/',
     name: 'deep-fryer — city doughnut portraits',
     short_name: 'deep-fryer',
+    // "Doughnut" is Kate Raworth's diagram, described rather than used as a
+    // label, so nothing reads as DEAL's endorsement (docs/OPEN-SOURCE.md §3.2(5)).
     description:
-      'Sourced, reviewed Doughnut Economics portraits for municipalities, with progress against adopted goals.',
+      'Sourced, reviewed city portraits on Kate Raworth’s Doughnut of social and planetary boundaries, with progress against adopted goals.',
     // The plain home page, so an offline launch finds the copy the service
     // worker stored when the home page was visited. (It used to carry
     // ?source=pwa, which nothing read; iOS keeps the start URL it was

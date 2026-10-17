@@ -147,7 +147,7 @@ export const en = {
   },
   portrait: {
     /** The portrait page's search and share description. */
-    metaDescription: 'The Doughnut Economics portrait of {name}: the social foundation and the ecological ceiling, with the source behind every number.',
+    metaDescription: 'The doughnut portrait of {name}: the social foundation and the ecological ceiling, with the source behind every number.',
     population: 'pop. {n}',
     clickHint: 'Select a segment for indicators, evidence, actions, and discussion.',
     /** The visible list of dimensions under the doughnut (SPEC-v6 §2.1). */
@@ -383,6 +383,8 @@ export const en = {
   login: {
     title: 'Sign in',
     intro: 'Residents sign in to join a portrait’s discussion. City staff use their work account.',
+    /** Replaces `intro` when the person is on the way to setting up their city's portrait (/start): city staff, not residents. */
+    startIntro: 'Sign in to set up your city’s doughnut — use your work email.',
     microsoft: 'Continue with Microsoft (work account)',
     google: 'Continue with Google',
     emailLabel: 'Email me a sign-in link',
@@ -404,6 +406,12 @@ export const en = {
       AccessDenied: 'Sign-in was declined.',
       Configuration: 'Sign-in is misconfigured on this server. Contact the site administrator.',
       EmailSignin: 'We could not send the sign-in email. Check the address and try again in a few minutes.',
+      /** Nothing was sent: this address already has three unused sign-in links from the last 15 minutes. */
+      TooManyLinks:
+        'We have already sent several sign-in links to this address in the last 15 minutes. Use the newest one, or try again in 15 minutes.',
+      /** Nothing was sent: this network has asked for its hourly share of sign-in emails (shared Wi-Fi counts as one). */
+      TooManyEmails:
+        'Too many sign-in emails have been requested from this network, so this one was not sent. Please try again in an hour.',
       default: 'Sign-in failed. Try again.',
     },
   },
@@ -601,6 +609,37 @@ export const en = {
     signupNamed: 'Sign up for {name}',
     resourceHazards: 'Helps with:',
     doughnutLegend: 'Colors on the doughnut:',
+  },
+  /** The site footer, on every page but embeds (components/site-footer/SiteFooter.tsx). */
+  footer: {
+    /** The footer's navigation landmark. */
+    label: 'About this site',
+    /** {email} is the support address of whoever runs this site, as a link. */
+    contact: 'Contact: {email}',
+    accessibility: 'Accessibility',
+    privacy: 'Privacy',
+    terms: 'Terms',
+    /**
+     * The Doughnut's attribution (docs/OPEN-SOURCE.md §3.3), also under every
+     * embedded doughnut. {license} is the license's name as a link; {book}
+     * and {method} are the English titles of the book and the method guide.
+     * Keep all three, and keep the people's and the organization's names.
+     */
+    credit:
+      'Doughnut diagram: Kate Raworth and Christian Guthier, {license}, adapted with local data (Raworth, {book}, 2017). City-portrait method after Doughnut Economics Action Lab’s {method}. This site is not affiliated with or endorsed by Doughnut Economics Action Lab.',
+  },
+  /**
+   * On a portrait seeded with synthetic values (scripts/seed-demo-data.ts):
+   * its page, its dimension pages, its embed, its organization's compare,
+   * insights and progress pages, so a screenshot cannot pass for research.
+   */
+  sampleData: {
+    title: 'Sample data — not research',
+    /** A portrait's own pages and its embed; {name} is the portrait. */
+    body: 'The figures for {name} on this site were generated to demonstrate the software. They are not measurements and must not be cited.',
+    /** An organization's pages, when any portrait shown there is seeded; {org} is the organization. */
+    bodyOrg:
+      'Some or all of the figures for {org} on this page were generated to demonstrate the software. They are not measurements and must not be cited.',
   },
   /** Theme toggle and the fryer (SPEC-v5 §4). */
   theme: {

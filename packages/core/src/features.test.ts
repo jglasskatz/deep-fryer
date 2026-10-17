@@ -44,6 +44,18 @@ describe('feature flags', () => {
     expect(parseDisabledFeatures(undefined).disabled.size).toBe(0);
   });
 
+  it('offers self-serve start unless the deployment turns it off', () => {
+    // On by default: anyone signed in may set up a portrait and buy a plan to build it.
+    expect(DEPLOYMENT_FEATURES).toContain('self_serve');
+    expect(deploymentFeatureEnabled('self_serve')).toBe(true);
+    const { disabled, unknown } = parseDisabledFeatures('SELF_SERVE');
+    expect(unknown).toEqual([]);
+    expect(deploymentFeatureEnabled('self_serve', disabled)).toBe(false);
+    // One switch does not touch the other deployment feature, nor any portrait's.
+    expect(deploymentFeatureEnabled('deep_fry', disabled)).toBe(true);
+    expect(resolvePortraitFeatures(ALL_PORTRAIT_FEATURES_ON, disabled)).toEqual(ALL_PORTRAIT_FEATURES_ON);
+  });
+
   it('validates stored settings: any subset of the features, booleans only', () => {
     expect(featuresConfigSchema.safeParse({ request_research: true }).success).toBe(true);
     expect(featuresConfigSchema.safeParse({ ...ALL_PORTRAIT_FEATURES_ON }).success).toBe(true);

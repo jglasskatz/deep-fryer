@@ -1,13 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import { parseDisabledFeatures } from './features.js';
 import {
+  addressDomain,
   alertCheckTargets,
+  anthropicModelVerdict,
   appRoleVerdict,
+  contactAddressesVerdict,
   disabledFeaturesVerdict,
+  errorDetail,
+  modelAliasVerdict,
+  modelLookupId,
+  termsUrlToCheck,
   oauthCredentialVerdict,
+  researchKeyMissingVerdict,
+  researchModels,
+  sampleDataVerdict,
+  showcaseVerdict,
+  smtpLoginConfigured,
+  smtpVerifiedVerdict,
   storedApiKeysVerdict,
   stripeCatalogVerdict,
   stripeWebhookVerdict,
+  termsUrlVerdict,
 } from './preflight.js';
 
 describe('preflight verdicts', () => {
@@ -103,5 +117,126 @@ describe('preflight verdicts', () => {
     expect(appRoleVerdict({ ...migrated, ownerLockPublic: null }).detail).toContain('lock_tenant_owners missing');
     expect(appRoleVerdict({ ...migrated, bypass: true }).detail).toContain('BYPASSRLS');
     expect(appRoleVerdict({ ...migrated, member: false }).detail).toContain('cannot SET ROLE');
+  });
+
+  // What Node's fetch actually throws: a bare "fetch failed" whose reason is
+  // only in the cause (shapes copied from Node 22/24 failures).
+  it('keeps the cause of a failed fetch, not just "fetch failed"', () => {
+    const refused = Object.assign(new Error('connect ECONNREFUSED 127.0.0.1:8443'), { code: 'ECONNREFUSED' });
+    expect(errorDetail(new TypeError('fetch failed', { cause: refused }))).toBe('fetch failed: connect ECONNREFUSED 127.0.0.1:8443');
+    const untrusted = Object.assign(new Error('self-signed certificate in certificate chain'), { code: 'SELF_SIGNED_CERT_IN_CHAIN' });
+    expect(errorDetail(new TypeError('fetch failed', { cause: untrusted }))).toBe(
+      'fetch failed: self-signed certificate in certificate chain (SELF_SIGNED_CERT_IN_CHAIN)',
+    );
+    // Every address of the host refused: an AggregateError with no message of its own.
+    const both = Object.assign(
+      new AggregateError([new Error('connect ECONNREFUSED ::1:443'), new Error('connect ECONNREFUSED 127.0.0.1:443')], ''),
+      { code: 'ECONNREFUSED' },
+    );
+    expect(errorDetail(new TypeError('fetch failed', { cause: both }))).toBe(
+      'fetch failed: connect ECONNREFUSED ::1:443; connect ECONNREFUSED 127.0.0.1:443',
+    );
+    expect(errorDetail(new Error('NoSuchBucket\nstack-ish detail'))).toBe('NoSuchBucket');
+    expect(errorDetail('plain string')).toBe('plain string');
+    expect(errorDetail(new Error('x'.repeat(400)))).toHaveLength(220);
+  });
+
+  it('warns about placeholder sender and support addresses, and a support address that cannot be a mailto link', () => {
+    expect(addressDomain('deep-fryer <no-reply@Example.gov>')).toBe('example.gov');
+    expect(addressDomain('help@city.gov')).toBe('city.gov');
+    expect(addressDomain('nobody')).toBeNull();
+    // What .env.example ships.
+    const shipped = contactAddressesVerdict({ EMAIL_FROM: 'deep-fryer <no-reply@example.gov>', SUPPORT_EMAIL: 'support@example.gov' });
+    expect(shipped.status).toBe('warn');
+    expect(shipped.detail).toMatch(/EMAIL_FROM is on example\.gov.*SPF and DKIM/);
+    expect(shipped.detail).toMatch(/SUPPORT_EMAIL is on example\.gov/);
+    expect(contactAddressesVerdict({ SUPPORT_EMAIL: 'help@city.test' }).status).toBe('warn');
+    expect(contactAddressesVerdict({ SUPPORT_EMAIL: 'Help Desk <help@city.gov>' }).detail).toMatch(/plain address/);
+    // A real city whose name merely contains "example" is not a placeholder.
+    expect(contactAddressesVerdict({ EMAIL_FROM: 'Doughnut <no-reply@cityofexample.gov>', SUPPORT_EMAIL: 'help@cityofexample.gov' })).toEqual({
+      status: 'pass',
+      detail: 'sender on cityofexample.gov, support on cityofexample.gov',
+    });
+  });
+
+  it('says "no login configured" when SMTP_URL carries no credentials', () => {
+    expect(smtpLoginConfigured('smtps://user:pass@smtp.city.gov:465')).toBe(true);
+    expect(smtpLoginConfigured('smtp://relay.internal:25')).toBe(false);
+    expect(smtpLoginConfigured('not a url')).toBe(false);
+    expect(smtpVerifiedVerdict('smtps://user:pass@smtp.city.gov:465', 'x <a@city.gov>')).toEqual({
+      status: 'pass',
+      detail: 'connected and authenticated (x <a@city.gov>)',
+    });
+    const anonymous = smtpVerifiedVerdict('smtp://relay.internal:25', undefined);
+    expect(anonymous.status).toBe('warn');
+    expect(anonymous.detail).toContain('no login configured');
+    expect(anonymous.detail).not.toContain('authenticated');
+  });
+
+  it('checks the models compose gives the worker, scouts only when set', () => {
+    expect(researchModels({}).map((m) => [m.variable, m.model, m.fromDefault])).toEqual([
+      ['ANTHROPIC_MODEL', 'claude-sonnet-5', true],
+      ['VERIFIER_MODEL', 'claude-opus-5', true],
+      ['ANTHROPIC_SMALL_FAST_MODEL', 'claude-haiku-4-5-20251001', true],
+    ]);
+    const custom = researchModels({ VERIFIER_MODEL: ' claude-opus-5-5 ', ANTHROPIC_MODEL: '  ', RESEARCH_SUBAGENT_MODEL: 'claude-sonnet-5' });
+    expect(custom.find((m) => m.variable === 'VERIFIER_MODEL')).toMatchObject({ model: 'claude-opus-5-5', fromDefault: false });
+    expect(custom.find((m) => m.variable === 'ANTHROPIC_MODEL')).toMatchObject({ model: 'claude-sonnet-5', fromDefault: true });
+    expect(custom.at(-1)).toMatchObject({ role: 'scouts', variable: 'RESEARCH_SUBAGENT_MODEL', model: 'claude-sonnet-5' });
+    expect(modelLookupId('claude-sonnet-5[1m]')).toBe('claude-sonnet-5');
+    expect(modelLookupId('sonnet')).toBeNull();
+    const alias = modelAliasVerdict({ role: 'scouts', variable: 'RESEARCH_SUBAGENT_MODEL', model: 'sonnet', fromDefault: false });
+    expect(alias.status).toBe('warn');
+    expect(alias.detail).toMatch(/^RESEARCH_SUBAGENT_MODEL=sonnet is a Claude Code alias/);
+  });
+
+  it('reads the Models API answer for each model with the fix for 401, 403 and 404', () => {
+    const [researcher, verifier] = researchModels({ VERIFIER_MODEL: 'claude-opus-5-typo' });
+    expect(anthropicModelVerdict(researcher!, 200, { type: 'model', id: 'claude-sonnet-5', display_name: 'Claude Sonnet 5' })).toEqual({
+      status: 'pass',
+      detail: "claude-sonnet-5 available to the deployment's key",
+    });
+    expect(anthropicModelVerdict(researcher!, 200, { id: 'claude-sonnet-5-20260101' }).detail).toContain('(as claude-sonnet-5-20260101)');
+    const badKey = anthropicModelVerdict(researcher!, 401, { type: 'error', error: { type: 'authentication_error', message: 'invalid x-api-key' } });
+    expect(badKey.status).toBe('fail');
+    expect(badKey.detail).toMatch(/^ANTHROPIC_API_KEY was refused \(HTTP 401 authentication_error invalid x-api-key\)/);
+    const forbidden = anthropicModelVerdict(researcher!, 403, { error: { type: 'permission_error', message: 'no access' } });
+    expect(forbidden.status).toBe('fail');
+    expect(forbidden.detail).toMatch(/may not use claude-sonnet-5.*set ANTHROPIC_MODEL in \.env/);
+    const typo = anthropicModelVerdict(verifier!, 404, { error: { type: 'not_found_error', message: 'model: claude-opus-5-typo' } });
+    expect(typo.status).toBe('fail');
+    expect(typo.detail).toMatch(/correct VERIFIER_MODEL in \.env, or remove it to use the default \(claude-opus-5\)/);
+    const scouts = researchModels({ RESEARCH_SUBAGENT_MODEL: 'claude-nope' }).at(-1)!;
+    expect(anthropicModelVerdict(scouts, 404, null).detail).toContain('empty it to turn scouts off');
+    expect(anthropicModelVerdict(researcher!, 529, { error: { type: 'overloaded_error', message: 'Overloaded' } }).status).toBe('warn');
+  });
+
+  it('warns, not fails, when the deployment has no research key', () => {
+    const missing = researchKeyMissingVerdict();
+    expect(missing.status).toBe('warn');
+    expect(missing.detail).toMatch(/^not set: plan-funded research is off/);
+  });
+
+  it('warns before launch about sample data, a showcase that shows nothing, and the Terms link', () => {
+    expect(sampleDataVerdict([]).status).toBe('pass');
+    const demo = sampleDataVerdict(['nyc', 'manhattan']);
+    expect(demo.status).toBe('warn');
+    expect(demo.detail).toMatch(/2 portrait\(s\) hold seeded sample data \(nyc, manhattan\).*never promote a demo database/);
+
+    expect(showcaseVerdict(undefined, null).status).toBe('pass');
+    expect(showcaseVerdict('NYC', { organization: true, publicPortraits: 6 })).toEqual({
+      status: 'pass',
+      detail: 'organization "nyc": 6 public portrait(s) showcased',
+    });
+    expect(showcaseVerdict('nyc', { organization: true, publicPortraits: 0 }).detail).toMatch(/no public portrait yet/);
+    expect(showcaseVerdict('nyx', { organization: false, publicPortraits: 0 }).detail).toMatch(/no organization "nyx"/);
+    expect(showcaseVerdict('not a slug!', null).status).toBe('warn');
+
+    expect(termsUrlVerdict(undefined, null).detail).toMatch(/^not set: the footer has no Terms link/);
+    expect(termsUrlVerdict('javascript:alert(1)', null).detail).toMatch(/not an http\(s\) URL/);
+    expect(termsUrlVerdict('https://city.gov/terms', 200)).toEqual({ status: 'pass', detail: 'https://city.gov/terms answers 200' });
+    expect(termsUrlVerdict('https://city.gov/terms', 404).status).toBe('warn');
+    expect(termsUrlToCheck(' https://city.gov/terms ')).toBe('https://city.gov/terms');
+    expect(termsUrlToCheck('/terms')).toBeNull();
   });
 });

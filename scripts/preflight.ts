@@ -6,12 +6,19 @@
  *   docker compose run --rm migrate node --import tsx ../../scripts/preflight.ts
  *
  * Each check talks to the real thing — Postgres, the object store, the SMTP
- * relay, Google / Microsoft Entra, Stripe, the National Weather Service
- * alerts feed, and the public URL through Caddy — and prints PASS / WARN /
- * FAIL with what to fix. Exit 1 if anything
+ * relay, Google / Microsoft Entra, Stripe, the Anthropic Models API, the
+ * National Weather Service alerts feed, and the public URL through Caddy —
+ * and prints PASS / WARN / FAIL with what to fix. Exit 1 if anything
  * fails. Nothing is written except one throwaway SMTP verification (no
  * message is sent); OAuth credentials are proven by redeeming a deliberately
- * invalid code (see oauthCredentialVerdict); Stripe is read-only.
+ * invalid code (see oauthCredentialVerdict); Stripe is read-only; the
+ * research key is proven by looking up each configured model (free, no
+ * tokens spent).
+ *
+ * The web checks fetch APP_URL from inside this container, so APP_URL must
+ * resolve to Caddy there and present a certificate the container trusts
+ * (docs/deploy.md, "Verify against the live services", has the rehearsal
+ * setup for a host without a public name).
  */
 import nodemailer from 'nodemailer';
 import { HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
@@ -19,10 +26,17 @@ import Stripe from 'stripe';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import {
   PLANS,
+  SAMPLE_DATA_CONFIG_KEY,
   alertCheckTargets,
+  anthropicModelVerdict,
   appRoleVerdict,
   type AppRoleFacts,
+  contactAddressesVerdict,
   disabledFeaturesVerdict,
+  errorDetail,
+  isSampleDataValue,
+  modelAliasVerdict,
+  modelLookupId,
   nwsAlertsUrl,
   nwsFeedVerdict,
   nwsZonesVerdict,
@@ -34,13 +48,22 @@ import {
   parseDisabledFeatures,
   productionEnvProblems,
   type CredentialProbe,
+  researchKeyMissingVerdict,
+  researchModels,
+  sampleDataVerdict,
+  showcaseSlug,
+  showcaseVerdict,
+  smtpLoginConfigured,
+  smtpVerifiedVerdict,
   storedApiKeysVerdict,
   stripeCatalogVerdict,
   stripeEndpoint,
   stripeWebhookVerdict,
+  termsUrlToCheck,
+  termsUrlVerdict,
   type Verdict,
 } from '@deep-fryer/core';
-import { getDb, tenantConfig, tenants } from '@deep-fryer/db';
+import { getDb, organizations, tenantConfig, tenantIsPublic, tenants } from '@deep-fryer/db';
 import { s3SettingsFromEnv } from '@deep-fryer/research';
 import journal from '../packages/db/migrations/meta/_journal.json' with { type: 'json' };
 
@@ -49,13 +72,23 @@ const rows: Row[] = [];
 const record = (area: string, check: string, v: Verdict) => rows.push({ area, check, ...v });
 const skip = (area: string, check: string, why: string) => record(area, check, { status: 'warn', detail: `skipped: ${why}` });
 
-async function guarded(area: string, check: string, fn: () => Promise<Verdict>) {
+/**
+ * Runs one check; a throw is a FAIL that keeps the error's cause (a bare
+ * "fetch failed" says nothing; its cause names the refused port, the name
+ * that did not resolve, or the certificate that is not trusted). `hint` is
+ * the usual fix for checks that can only throw by not reaching the service.
+ */
+async function guarded(area: string, check: string, fn: () => Promise<Verdict>, hint?: string) {
   try {
     record(area, check, await fn());
   } catch (err) {
-    record(area, check, { status: 'fail', detail: err instanceof Error ? err.message.split('\n')[0]!.slice(0, 220) : String(err) });
+    record(area, check, { status: 'fail', detail: hint ? `${errorDetail(err)} — ${hint}` : errorDetail(err) });
   }
 }
+
+/** Why a fetch of APP_URL from this container fails when the site itself is fine. */
+const APP_URL_HINT =
+  'APP_URL must resolve to Caddy from inside the containers and present a certificate they trust (docs/deploy.md, "Verify against the live services")';
 
 const env = process.env;
 const appUrl = (env.APP_URL ?? '').replace(/\/+$/, '');
@@ -77,6 +110,8 @@ async function configChecks() {
   );
   // A misspelt name switches nothing off and would otherwise go unnoticed.
   await guarded('config', 'DF_DISABLED_FEATURES', async () => disabledFeaturesVerdict(env.DF_DISABLED_FEATURES));
+  // Placeholders copied from .env.example pass the boot rules; mail from them bounces or lands in spam.
+  await guarded('config', 'sender and support addresses', async () => contactAddressesVerdict(env));
 }
 
 async function databaseChecks() {
@@ -128,21 +163,61 @@ async function storageChecks() {
   });
   const publicBase = process.env.S3_PUBLIC_URL?.replace(/\/+$/, '');
   if (!publicBase) return skip('storage', 'public evidence URL', 'S3_PUBLIC_URL not set');
-  await guarded('storage', 'public evidence URL serves objects, not listings', async () => {
-    const missing = await fetch(`${publicBase}/preflight/${crypto.randomUUID()}.png`);
-    const listing = await fetch(`${publicBase}/`);
-    if (missing.status !== 404) return { status: 'fail', detail: `missing object answered ${missing.status} (want 404: is /files/ routed to the bucket?)` };
-    if (listing.ok && /ListBucketResult/.test(await listing.text())) return { status: 'fail', detail: 'the bucket listing is public' };
-    return { status: 'pass', detail: `${publicBase}/… routed; no public listing` };
-  });
+  await guarded(
+    'storage',
+    'public evidence URL serves objects, not listings',
+    async () => {
+      const missing = await fetch(`${publicBase}/preflight/${crypto.randomUUID()}.png`);
+      const listing = await fetch(`${publicBase}/`);
+      if (missing.status !== 404) return { status: 'fail', detail: `missing object answered ${missing.status} (want 404: is /files/ routed to the bucket?)` };
+      if (listing.ok && /ListBucketResult/.test(await listing.text())) return { status: 'fail', detail: 'the bucket listing is public' };
+      return { status: 'pass', detail: `${publicBase}/… routed; no public listing` };
+    },
+    APP_URL_HINT,
+  );
 }
 
 async function mailChecks() {
-  if (!process.env.SMTP_URL) return skip('mail', 'SMTP relay', 'SMTP_URL not set (no email sign-in or notifications)');
-  await guarded('mail', 'SMTP relay accepts our login', async () => {
-    await nodemailer.createTransport(process.env.SMTP_URL).verify();
-    return { status: 'pass', detail: `connected and authenticated (${process.env.EMAIL_FROM ?? 'EMAIL_FROM unset'})` };
+  const smtpUrl = process.env.SMTP_URL;
+  if (!smtpUrl) return skip('mail', 'SMTP relay', 'SMTP_URL not set (no email sign-in or notifications)');
+  // verify() logs in only when SMTP_URL carries a login; without one it proves a connection, and says so.
+  await guarded('mail', smtpLoginConfigured(smtpUrl) ? 'SMTP relay accepts our login' : 'SMTP relay answers', async () => {
+    await nodemailer.createTransport(smtpUrl).verify();
+    return smtpVerifiedVerdict(smtpUrl, process.env.EMAIL_FROM);
   });
+}
+
+/**
+ * The deployment's research key (the worker's ANTHROPIC_API_KEY, given to
+ * this ops shell by compose with the worker's model settings). Each model a
+ * run calls is looked up in the Models API with that key — the same
+ * account, workspace and model access the sessions get — so a wrong key, a
+ * workspace not allowed a model, or a mistyped model id fails here instead
+ * of in the first paid build. A 401 is the key itself, so the remaining
+ * lookups would only repeat it. Talks to api.anthropic.com directly, not
+ * through the worker's egress proxy.
+ */
+async function anthropicChecks() {
+  const key = env.ANTHROPIC_API_KEY?.trim();
+  if (!key) return record('anthropic', 'research key (ANTHROPIC_API_KEY)', researchKeyMissingVerdict());
+  for (const m of researchModels(env)) {
+    const check = `${m.role} model (${m.variable})`;
+    const id = modelLookupId(m.model);
+    if (!id) {
+      record('anthropic', check, modelAliasVerdict(m));
+      continue;
+    }
+    let refused = false;
+    await guarded('anthropic', check, async () => {
+      const res = await fetch(`https://api.anthropic.com/v1/models/${encodeURIComponent(id)}`, {
+        headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+        signal: AbortSignal.timeout(15_000),
+      });
+      refused = res.status === 401;
+      return anthropicModelVerdict(m, res.status, await res.json().catch(() => null));
+    });
+    if (refused) break;
+  }
 }
 
 async function discover(area: string, issuer: string, tenantFix: (iss: string) => string = (iss) => iss) {
@@ -231,7 +306,7 @@ async function stripeChecks() {
     const configs = (await stripe.billingPortal.configurations.list({ is_default: true, limit: 1 })).data;
     return configs[0]?.active
       ? { status: 'pass', detail: `default configuration ${configs[0].id}` }
-      : { status: 'fail', detail: 'no active default portal configuration — run pnpm stripe:setup --portal' };
+      : { status: 'fail', detail: 'no active default portal configuration — run scripts/stripe-setup.ts --portal (docs/deploy.md §5)' };
   });
 }
 
@@ -324,20 +399,73 @@ async function alertsChecks() {
 
 async function webChecks() {
   if (!appUrl) return;
-  await guarded('web', 'public health check through the proxy', async () => {
-    const res = await fetch(`${appUrl}/api/health`);
-    const body = (await res.json().catch(() => ({}))) as { ok?: boolean };
-    if (!res.ok || !body.ok) return { status: 'fail', detail: `${appUrl}/api/health answered ${res.status}` };
-    return { status: 'pass', detail: `${appUrl} healthy` };
+  await guarded(
+    'web',
+    'public health check through the proxy',
+    async () => {
+      const res = await fetch(`${appUrl}/api/health`);
+      const body = (await res.json().catch(() => ({}))) as { ok?: boolean };
+      if (!res.ok || !body.ok) return { status: 'fail', detail: `${appUrl}/api/health answered ${res.status}` };
+      return { status: 'pass', detail: `${appUrl} healthy` };
+    },
+    APP_URL_HINT,
+  );
+  await guarded(
+    'web',
+    'security headers',
+    async () => {
+      const res = await fetch(`${appUrl}/`, { redirect: 'manual' });
+      const missing = ['content-security-policy', 'strict-transport-security', 'x-content-type-options'].filter(
+        (h) => !res.headers.get(h),
+      );
+      return missing.length
+        ? { status: 'fail', detail: `missing ${missing.join(', ')}` }
+        : { status: 'pass', detail: 'CSP, HSTS, nosniff present' };
+    },
+    APP_URL_HINT,
+  );
+}
+
+/**
+ * What the public will see on launch day that nothing else checks (docs/deploy.md,
+ * "Before a public launch"): seeded sample data in the database, a landing-page
+ * showcase that silently shows nothing, and the footer's Terms link. Warnings
+ * only — each is the operator's call — except that a check that cannot run fails.
+ */
+async function launchChecks() {
+  const db = getDb();
+  await guarded('launch', 'seeded sample data', async () => {
+    const rows = await db
+      .select({ slug: tenants.slug, value: tenantConfig.value })
+      .from(tenantConfig)
+      .innerJoin(tenants, eq(tenants.id, tenantConfig.tenantId))
+      .where(and(eq(tenantConfig.key, SAMPLE_DATA_CONFIG_KEY), isNull(tenants.archivedAt)))
+      .orderBy(tenants.slug);
+    return sampleDataVerdict(rows.filter((r) => isSampleDataValue(r.value)).map((r) => r.slug));
   });
-  await guarded('web', 'security headers', async () => {
-    const res = await fetch(`${appUrl}/`, { redirect: 'manual' });
-    const missing = ['content-security-policy', 'strict-transport-security', 'x-content-type-options'].filter(
-      (h) => !res.headers.get(h),
-    );
-    return missing.length
-      ? { status: 'fail', detail: `missing ${missing.join(', ')}` }
-      : { status: 'pass', detail: 'CSP, HSTS, nosniff present' };
+  await guarded('launch', 'landing showcase (DF_SHOWCASE_ORG)', async () => {
+    const slug = showcaseSlug(env.DF_SHOWCASE_ORG);
+    if (!slug) return showcaseVerdict(env.DF_SHOWCASE_ORG, null);
+    const [org] = await db.select({ id: organizations.id }).from(organizations).where(eq(organizations.slug, slug));
+    const [count] = org
+      ? await db
+          .select({ n: sql<number>`count(*)::int` })
+          .from(tenants)
+          .where(and(eq(tenants.organizationId, org.id), tenantIsPublic()))
+      : [];
+    return showcaseVerdict(env.DF_SHOWCASE_ORG, { organization: Boolean(org), publicPortraits: Number(count?.n ?? 0) });
+  });
+  await guarded('launch', 'terms page (TERMS_URL)', async () => {
+    const url = termsUrlToCheck(env.TERMS_URL);
+    if (!url) return termsUrlVerdict(env.TERMS_URL, null);
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+      await res.body?.cancel();
+      return termsUrlVerdict(url, res.status);
+    } catch (err) {
+      // Someone else's site, perhaps unreachable from here: worth a look, not a blocker.
+      return { status: 'warn', detail: `${url} did not answer: ${errorDetail(err)}` };
+    }
   });
 }
 
@@ -348,8 +476,10 @@ async function main() {
   await mailChecks();
   await signInChecks();
   await stripeChecks();
+  await anthropicChecks();
   await alertsChecks();
   await webChecks();
+  await launchChecks();
 
   const mark = { pass: 'PASS', warn: 'WARN', fail: 'FAIL' } as const;
   for (const r of rows) console.log(`${mark[r.status]}  ${r.area.padEnd(10)} ${r.check.padEnd(46)} ${r.detail}`);

@@ -55,15 +55,20 @@ export const WEB_SEARCH_USD_PER_REQUEST = 0.01;
 /**
  * Rates by exact model id (docs/haiku-5-5.md §3.1). Input, output and
  * cache-read rates are the published model rates; cache writes are derived
- * (CACHE_WRITE_MULTIPLIER), which reproduces the Sonnet and Opus write
- * rates in docs/research-cost.md.
+ * (CACHE_WRITE_MULTIPLIER), which reproduces the published 5-minute write
+ * rates and the Sonnet and Opus write rates in docs/research-cost.md.
  *
- * `null` marks a model we know runs but have deliberately not priced:
- * `claude-haiku-4-5`, today's page reader. The bundled CLI's catalog lists
- * it at $1 / $5, but that figure is the operator's to confirm (§8 Q10);
- * until a row is added here its tokens are reported as unpriced.
+ * `claude-haiku-4-5` is today's page reader (ANTHROPIC_SMALL_FAST_MODEL,
+ * pinned to `claude-haiku-4-5-20251001`, which the release-date rule below
+ * matches). Its row is the published first-party rate — $1 input, $1.25
+ * 5-minute cache write, $0.10 cache read, $5 output per million tokens, at
+ * any prompt length — checked against Anthropic's pricing page on
+ * 2026-10-17 rather than taken from the bundled CLI's catalog. Before it
+ * was added, every run that fetched a page reported its dollars as a lower
+ * bound. A model not in this table is unpriced (modelPricing), never
+ * guessed.
  */
-export const MODEL_PRICES: Readonly<Record<string, ModelPricing | null>> = {
+export const MODEL_PRICES: Readonly<Record<string, ModelPricing>> = {
   'claude-sonnet-5': { standard: { input: 2, output: 10, cacheRead: 0.2 } },
   'claude-sonnet-5-5': { standard: { input: 2, output: 10, cacheRead: 0.1 } },
   'claude-opus-5': { standard: { input: 5, output: 25, cacheRead: 0.5 } },
@@ -72,14 +77,14 @@ export const MODEL_PRICES: Readonly<Record<string, ModelPricing | null>> = {
     standard: { input: 0.1, output: 0.5, cacheRead: 0.01 },
     longPrompt: { input: 0.5, output: 2.5, cacheRead: 0.05 },
   },
-  'claude-haiku-4-5': null,
+  'claude-haiku-4-5': { standard: { input: 1, output: 5, cacheRead: 0.1 } },
 };
 
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
- * The table entry for `modelId`, or null when the model is unknown or not
- * yet priced. A model id matches a table id only as `^id(-\d{8})?$` — the id
+ * The table entry for `modelId`, or null when the table does not price
+ * it. A model id matches a table id only as `^id(-\d{8})?$` — the id
  * itself or the id with a release-date suffix (`claude-haiku-4-5-20251001`).
  * Never by prefix or substring: `claude-sonnet-5-5` must not match
  * `claude-sonnet-5`, and an id we have not seen (`claude-opus-5[1m]`, a

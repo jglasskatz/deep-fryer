@@ -3,10 +3,14 @@ import Google from 'next-auth/providers/google';
 import MicrosoftEntraID from 'next-auth/providers/microsoft-entra-id';
 import Nodemailer from 'next-auth/providers/nodemailer';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
-import { and, eq, gt, sql } from 'drizzle-orm';
+import { headers } from 'next/headers';
 import { accounts, getDb, sessions, users, verificationTokens } from '@deep-fryer/db';
-import { sendEmail, simpleHtml } from '@/lib/email';
+import { loginErrorHref } from '@/app/login/sign-in';
+import { signInEmail } from '@/app/login/sign-in-email';
+import { clientAddress } from '@/lib/client-address';
+import { sendEmail } from '@/lib/email';
 import { emailSignInEnabled, googleConfigured, microsoftConfigured } from '@/lib/env';
+import { signInEmailRefusal } from '@/lib/sign-in-limit';
 
 /**
  * Accounts (SPEC-v3 §2.1): Auth.js v5 on our own Postgres. Database sessions
@@ -17,7 +21,8 @@ import { emailSignInEnabled, googleConfigured, microsoftConfigured } from '@/lib
  * - Google (AUTH_GOOGLE_ID/SECRET) — residents and Google Workspace cities.
  * - Microsoft Entra ID (AUTH_MICROSOFT_ENTRA_ID_ID/SECRET/ISSUER) — most
  *   municipal staff, NYC agencies included, sign in with Microsoft 365.
- * - Email magic link (SMTP_URL + EMAIL_FROM) — anyone, no IdP required.
+ * - Email magic link (SMTP_URL + EMAIL_FROM) — anyone, no IdP required,
+ *   within the per-inbox and per-network limits of lib/sign-in-limit.ts.
  */
 
 declare module 'next-auth' {
@@ -30,9 +35,8 @@ declare module 'next-auth' {
   }
 }
 
-/** Magic links live 15 minutes; at most this many may be outstanding per address. */
+/** Magic links live 15 minutes (how many may be outstanding: lib/sign-in-limit.ts). */
 const MAGIC_LINK_MAX_AGE_S = 15 * 60;
-const MAX_OUTSTANDING_LINKS = 3;
 
 function config(): NextAuthConfig {
   const db = getDb();
@@ -77,35 +81,9 @@ function config(): NextAuthConfig {
         from: process.env.EMAIL_FROM || 'deep-fryer <no-reply@localhost>',
         maxAge: MAGIC_LINK_MAX_AGE_S,
         async sendVerificationRequest({ identifier, url }) {
-          // Throttle per address in the database (works across replicas).
-          // Auth.js writes this request's token concurrently with this call,
-          // so the count may or may not include it — the bound is approximate
-          // by one, which is fine for abuse prevention.
-          const [row] = await db
-            .select({ n: sql<number>`count(*)::int` })
-            .from(verificationTokens)
-            .where(
-              and(
-                eq(verificationTokens.identifier, identifier),
-                gt(verificationTokens.expires, new Date()),
-              ),
-            );
-          if ((row?.n ?? 0) > MAX_OUTSTANDING_LINKS) {
-            throw new Error('too many sign-in links requested; try again in 15 minutes');
-          }
-          const host = new URL(url).host;
-          await sendEmail({
-            to: identifier,
-            subject: `Sign in to ${host}`,
-            text: `Use this link to sign in to ${host}. It expires in 15 minutes and works once.\n\n${url}\n\nIf you did not ask to sign in, ignore this email.`,
-            html: simpleHtml(
-              [
-                `Use the button below to sign in to ${host}.`,
-                'The link expires in 15 minutes and works once. If you did not ask to sign in, ignore this email.',
-              ],
-              { href: url, label: 'Sign in' },
-            ),
-          });
+          // Whether to send at all was decided in callbacks.signIn below,
+          // before Auth.js stored the token.
+          await sendEmail({ to: identifier, ...signInEmail(url, MAGIC_LINK_MAX_AGE_S / 60) });
         },
       }),
     );
@@ -128,6 +106,26 @@ function config(): NextAuthConfig {
     // afterEmailSignIn); Auth.js's own redirect lands there for any other caller.
     pages: { signIn: '/login', verifyRequest: '/login/check-email', error: '/login' },
     callbacks: {
+      /**
+       * The limits on sign-in emails (lib/sign-in-limit.ts), for every way a
+       * link can be asked for: the sign-in form's server action and a direct
+       * POST to /api/auth/signin/nodemailer both come through here. Auth.js
+       * calls this with `email.verificationRequest` before it makes the
+       * token or sends anything, and a string answer is where it sends the
+       * browser instead: the sign-in page with the reason, which the form's
+       * action reads back out of that URL (app/login/sign-in.ts
+       * afterEmailSignIn). The address comes from the request headers
+       * (next/headers holds them for both paths); OAuth sign-ins and the
+       * link's own callback pass straight through.
+       */
+      async signIn({ user, account, email }) {
+        if (!email?.verificationRequest) return true;
+        const refusal = await signInEmailRefusal({
+          email: account?.providerAccountId ?? user.email ?? '',
+          address: clientAddress(await headers()),
+        });
+        return refusal ? loginErrorHref(refusal) : true;
+      },
       async session({ session, user }) {
         const row = user as typeof user & { displayName?: string | null; isStaff?: boolean };
         session.user.id = user.id;

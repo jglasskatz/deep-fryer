@@ -3,21 +3,64 @@
 Fully self-hosted (SPEC-v3 §2.4, SPEC-v4): one droplet (or any Docker host)
 running `docker compose` — Postgres 16, SeaweedFS (S3-compatible) for evidence, a one-shot
 migration job, the web app, the research worker, and Caddy for TLS. No
-managed services are required; Stripe and an SMTP relay are optional
-integrations.
+managed services are required. An Anthropic API key pays for research; Stripe
+and an SMTP relay are optional integrations.
+
+## What is free, and what is paid
+
+- **Viewing is always free.** Published portraits, dimension pages, embeds,
+  the open-data API and progress pages need no plan, payment or sign-in.
+- **Setting up is free.** Anyone signed in can create an organization and a
+  portrait at **/start** (unless the deployment turns self-serve off, §2) and
+  invite their people. A portrait stays private to its members until it
+  first publishes.
+- **Building is never free.** Every research spend — a full build, a re-run,
+  a policy analysis — needs an organization in good standing: an active paid
+  plan (Stripe checkout on its billing page, where Stripe is configured) or
+  a contract that staff set. There is no trial, and nothing gives a new
+  organization free research sessions: a plan billed by annual invoice
+  researches only once its first invoice is paid (Stripe calls it active
+  before that), a trial an organization started before trials were retired
+  confers nothing, and a Stripe subscription whose period ended more than
+  three days ago without word from Stripe stops until the webhook catches
+  up. An organization's own Anthropic API
+  key (below) pays for the model tokens, not for hosting, review or support,
+  so it still needs a plan or contract; it only spares the plan's allowance.
+- **Plan-funded research also needs this server's `ANTHROPIC_API_KEY`.**
+  Without it, such research is refused before anything is spent ("nothing
+  was charged", with `SUPPORT_EMAIL`), while organizations with their own key
+  can still build.
 
 ## 1. Host
 
-A 4 GB droplet is a comfortable start (the worker's Chromium likes RAM). Point
-your DNS name (e.g. `doughnut.cityofexample.gov` or `app.deep-fryer.io`) at it
-and open ports 80/443.
+A 4 GB droplet is a comfortable start (the worker's Chromium likes RAM). Give
+it at least **25 GB of disk**: the images take about 7 GB (the worker image,
+which carries Chromium and doubles as the ops shell, is 5.2 GB; web, Postgres,
+SeaweedFS and Caddy about 2 GB together), and the build cache, the database,
+evidence and 30 days of backups (§6) need the rest. Point your DNS name
+(e.g. `doughnut.cityofexample.gov` or `app.deep-fryer.io`) at it and open
+ports 80/443.
+
+Get the release you are deploying. Name it explicitly: the default branch
+is not necessarily the release, and a fresh clone checks out whatever the
+default branch is that day.
 
 ```bash
 git clone https://github.com/jglasskatz/deep-fryer.git && cd deep-fryer
+git checkout <release>     # the release tag (or branch) named in the release notes
 cp .env.example .env
 ```
 
+While the repository is private, cloning needs read access to it: a GitHub
+account the owner has added (with `gh auth login` or an SSH key), or a
+read-only deploy key on the host.
+
 ## 2. Configure `.env`
+
+`.env.example` has two halves. The first, "Local development only", is for
+running the app with pnpm; compose ignores it, because it builds the
+database and storage settings for its own services. Fill in the second half,
+"Deployment".
 
 Required:
 
@@ -28,9 +71,40 @@ Required:
 | `AUTH_SECRET` | `openssl rand -base64 32` |
 | `POSTGRES_PASSWORD`, `STORAGE_SECRET_KEY` | `openssl rand -hex 32` (the storage key may contain only letters, digits, `.`, `_`, `-`) |
 | a sign-in method | `AUTH_MICROSOFT_ENTRA_ID_*` (Microsoft 365 cities), `AUTH_GOOGLE_*`, and/or `SMTP_URL` + `EMAIL_FROM` |
+| `SUPPORT_EMAIL` | a plain address people write to for help (`help@yourcity.gov`), read by a person: the site footer, error pages, and every refusal ("nothing was charged — contact …") show it as a mailto link |
+| `ANTHROPIC_API_KEY` | the deployment's Anthropic API key: it pays for every research session a plan funds. Without it, plan-funded research is refused before any spend and only organizations with their own key can build, so leave it unset only if every organization brings its own key. Only the worker (and the preflight) receive it |
 
-The web app **refuses to start** in production if any required value is
-missing (it lists every problem), rather than running in anonymous dev mode.
+Compose refuses to start without `SITE_ADDRESS`, `APP_URL`, `AUTH_SECRET`,
+`POSTGRES_PASSWORD` and `STORAGE_SECRET_KEY`, and the web app **refuses to
+start** in production without a sign-in method or `SUPPORT_EMAIL` (it lists
+every problem) rather than running in anonymous dev mode. `ANTHROPIC_API_KEY`
+is the exception: nothing refuses to start without it, so the preflight (§3)
+warns.
+
+With `SMTP_URL`, `EMAIL_FROM` must be an address on a domain the relay may
+send for — the domain's SPF record includes the relay and the relay signs
+for it with DKIM — or recipients refuse the mail or file it as spam,
+sign-in links included. Replace the `example.gov` placeholders from
+`.env.example`; the preflight warns while one is left.
+
+Optional:
+
+| Var | What it does |
+|---|---|
+| `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` | self-serve online billing (§5). Without them, organizations run on contracts staff set |
+| `DF_SECRETS_KEY` | lets organizations store their own Anthropic API key ([below](#organizations-own-anthropic-api-keys-spec-v7-4)) |
+| `TERMS_URL` | your terms of use; the site footer links "Terms" to it. Unset, the footer has no Terms link |
+| `DF_SHOWCASE_ORG` | the slug of the organization the landing page showcases (as in `/o/<slug>`). It appears once that organization has a public portrait, never as a link that 404s; unset, or with nothing published yet, the landing page lists the deployment's public portraits instead |
+| `DF_DISABLED_FEATURES` | features off for the whole deployment ([Features](#features-spec-v7-3)). `self_serve` turns off public sign-up for a sales-led deployment: `/start` is a 404, no "build your city's doughnut" link appears, and staff create organizations with `create-tenant.ts` (§4). Reading published portraits is unaffected |
+| `WORKER_HTTPS_PROXY` | the worker's egress proxy ([Worker egress](#worker-egress)) |
+| model settings | [Models](#models) |
+
+Set by compose, never by hand: **`DF_RESEARCH_KEY_CONFIGURED`**. The web app
+must know whether the worker has a research key without ever seeing it, so
+compose gives the web service `${ANTHROPIC_API_KEY:+true}` — `true` when the
+key is set, empty otherwise — and ignores any value in `.env`. After adding
+or removing `ANTHROPIC_API_KEY`, run `docker compose up -d web worker` so both
+pick it up (a plain `restart` keeps the old environment).
 
 OAuth redirect URIs to register:
 - Google: `https://<SITE_ADDRESS>/api/auth/callback/google`
@@ -44,9 +118,26 @@ OAuth redirect URIs to register:
   profile photo fetched. Keep the app registration's default of omitting
   unverified email claims.
 
-Optional: `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` (online billing),
-`SUPPORT_EMAIL`, `ANTHROPIC_API_KEY` (research worker), `DF_SECRETS_KEY`
-(organizations' own API keys, below).
+### Worker egress
+
+Research agents choose which pages the worker opens, so its outbound traffic
+deserves its own control. Set `WORKER_HTTPS_PROXY` to an https forward proxy
+you run (Squid, Smokescreen and the like), e.g. `http://egress.internal:3128`.
+Compose gives it to the worker as `HTTPS_PROXY`, and sets
+`NODE_USE_ENV_PROXY=1` with it so Node's own requests use it too. The
+research traffic then goes through the proxy: the sessions' model calls and
+page reads, Chromium's evidence captures, the worker's source checks and PDF
+downloads, and the NWS alerts feed. The database, mail and the bundled
+storage stay direct. The proxy is where every URL research touched is
+logged and where you enforce an egress policy; it must allow
+`api.anthropic.com`, `api.weather.gov` (if any portrait uses the emergency
+view), and the public sources research reads.
+
+Without it, the worker reaches the internet directly, and its egress is
+limited only by the in-code guard (`packages/research/src/egress.ts`): https
+only, and hosts that resolve to public addresses only — never loopback,
+private networks or the cloud metadata address. Nothing below the
+application records what was fetched.
 
 ## 3. Start
 
@@ -55,6 +146,13 @@ docker compose up -d --build
 docker compose logs -f migrate web     # migrations apply, then web starts
 curl https://<SITE_ADDRESS>/api/health # {"ok":true}
 ```
+
+The first `--build` pulls about 5 GB of base images, unpacked (Playwright's
+alone is 3.5 GB), and builds the web and worker images. On a 4-vCPU host with the base
+images already pulled, the two builds took about five minutes together, two
+of them in the web app's Next.js build; expect longer on a 2-vCPU droplet,
+plus the download. Run it in `tmux` or `screen` so a dropped SSH session
+does not stop it.
 
 Evidence snapshots live in the `storage` service (SeaweedFS) and are served
 read-only at `https://<SITE_ADDRESS>/files/…` (same origin, so the CSP and the
@@ -65,6 +163,35 @@ anonymous callers can fetch objects but not list them
 the `S3_*` entries of `x-app-env` in `docker-compose.yml` at them and drop the
 `storage` services.
 
+### Other ports, or a second stack on one host
+
+To serve on ports other than 80/443 (because the host already uses them, or
+for a rehearsal), replace Caddy's published ports in a
+`compose.override.yml` next to `docker-compose.yml`, which compose reads
+automatically. Use `!override`: a plain `ports:` list is merged with the
+original one, so compose would still try to bind 80 and 443.
+
+```yaml
+# compose.override.yml
+services:
+  caddy:
+    ports: !override
+      - '8080:80'
+      - '8443:8443'
+```
+
+Then put the port in the address: `SITE_ADDRESS=app.example.gov:8443` and
+`APP_URL=https://app.example.gov:8443`. Caddy listens on the port its site
+address names, so publish that same port on both sides of the mapping.
+Caddy obtains a public certificate only through ports 80 and 443 at the DNS
+name, so on other ports it cannot get one by itself: use this for a
+rehearsal on `localhost` (Caddy then serves its own local certificate
+authority's certificate) or behind a front proxy that holds the
+certificate. A second stack on a host that already runs one also needs its
+own project name (`docker compose -p <name>`) and the `db` and `storage`
+ports overridden the same way (`127.0.0.1:55432:5432`,
+`127.0.0.1:18333:8333`).
+
 ### Verify against the live services
 
 ```bash
@@ -73,16 +200,50 @@ docker compose run --rm migrate node --import tsx ../../scripts/preflight.ts
 
 Talks to every real dependency and prints PASS / WARN / FAIL with the fix:
 the production environment rules (the same ones the web app enforces at
-boot), migrations applied, the row-level-security role, the storage bucket
-and its public `/files/` route (objects yes, listings no), the SMTP relay's
-login, Google and Microsoft Entra discovery **and the client id/secret**
+boot) and placeholder sender or support addresses, migrations applied, the
+row-level-security role, the storage bucket and its public `/files/` route
+(objects yes, listings no), the SMTP relay's login (or that `SMTP_URL` has
+none), Google and Microsoft Entra discovery **and the client id/secret**
 (proved without a user: Google rejects an invalid code only after
 authenticating the client; Entra is probed with a permissionless app-only
 token from your tenant, so pin the issuer), Stripe (live vs test key, every
 catalog price active and non-zero, the webhook registered for this
-`APP_URL` with every synced event, the customer portal), and `APP_URL`
-health and security headers through Caddy. Exit 1 on any failure — do not
-onboard a city until it passes.
+`APP_URL` with every synced event, the customer portal), the research key
+and every model it runs (one free Models API lookup per model: a refused
+key, a model the key's workspace may not use, or a mistyped id fails here,
+not in the first paid build), `APP_URL` health and security headers through
+Caddy, and the launch items below (sample data, the showcase, the Terms
+link). A failure names its cause — a refused connection, a name that does
+not resolve, an untrusted certificate — not just "fetch failed". Exit 1 on
+any failure — do not onboard a city until it passes.
+
+The storage and web checks fetch `APP_URL` from inside the migrate
+container, so **`APP_URL` must resolve to Caddy from inside the containers
+and present a certificate they trust**. With a real DNS name and Caddy's
+public certificate that holds by itself. On a rehearsal host serving
+`https://localhost:8443` it does not: `localhost` inside the migrate
+container is the container itself, and Caddy's local certificate authority
+is not trusted there. Run the preflight in Caddy's network namespace with
+Caddy's root certificate instead:
+
+```bash
+docker compose cp caddy:/data/caddy/pki/authorities/local/root.crt ./caddy-root.crt
+chmod 644 caddy-root.crt   # the image runs as an unprivileged user; at 0600 Node ignores the file
+cat > compose.preflight.yml <<'YAML'
+services:
+  migrate:
+    network_mode: service:caddy
+    environment:
+      NODE_EXTRA_CA_CERTS: /certs/caddy-root.crt
+    volumes:
+      - ./caddy-root.crt:/certs/caddy-root.crt:ro
+YAML
+docker compose -f docker-compose.yml -f compose.override.yml -f compose.preflight.yml \
+  run --rm migrate node --import tsx ../../scripts/preflight.ts
+```
+
+(Leave out `-f compose.override.yml` if you have none: naming files with
+`-f` stops compose reading the override by itself.)
 
 ## Go-live checklist
 
@@ -91,27 +252,77 @@ Things only the operator can supply; the preflight confirms each one.
 1. **DNS and host** — `SITE_ADDRESS` resolves to the droplet; ports 80/443 open.
 2. **Sign-in** — register the OAuth apps (§2): Microsoft Entra in the city's
    own tenant (pinned issuer; GCC High uses `login.microsoftonline.us`),
-   and/or Google. An SMTP relay for email links and notifications.
-3. **Billing** — write the real price sheet (`docs/billing/prices.json`,
-   §5), run `pnpm stripe:setup` with the live key, set
+   and/or Google. An SMTP relay for email links and notifications, with
+   `EMAIL_FROM` on a domain it may send for.
+3. **Research key** — `ANTHROPIC_API_KEY` set, with access to every model in
+   [Models](#models).
+4. **Billing** — write the real price sheet (`docs/billing/prices.json`,
+   §5), run the Stripe setup through the ops container with the live key, set
    `STRIPE_WEBHOOK_SECRET`; enable ACH/check for invoices in the Dashboard.
    Contract-only deployments (NYC's Metro contract) can leave Stripe unset.
-4. **Preflight** passes with no FAIL.
-5. **Organization** — `provision-nyc.ts` (or `create-tenant.ts`) with the
+5. **Preflight** passes with no FAIL.
+6. **Organization** — `provision-nyc.ts` (or `create-tenant.ts`) with the
    owner's email; for NYC set the contract end and PO. `provision-nyc.ts`
    turns translation on for all six NYC portraits (Local Law 30); every other
    feature starts off, so turn on what the city will use — emergencies, Get
    involved, compare and insights — under **Settings → Features** before
    running `nyc-emergency.ts` and `nyc-involvement.ts`, whose data is hidden
    while its feature is off.
-6. **Language access** — certified review of the translation catalogs before
+7. **Language access** — certified review of the translation catalogs before
    an agency relies on them under Local Law 30 (docs/language-access.md).
-7. **Backups** — the nightly database, `storage` volume and `.env` backup
+8. **Backups** — the nightly database, `storage` volume and `.env` backup
    copied off the host, and one restore rehearsed on a scratch host (§6).
+
+## Before a public launch
+
+What the public will see, which the software cannot decide for you:
+
+- **Legal pages.** `/privacy` and `/accessibility` ship with the software and
+  describe what it does: what it collects and keeps, its cookies, who can see
+  what; the WCAG 2.1 AA target and how it was tested. They are written by the
+  software's makers, not by your counsel, and they speak for you once you
+  publish them: review both against your own obligations (your
+  jurisdiction's privacy law, records retention, your accessibility
+  policy and contact) before launch. Terms of
+  use are yours to write: publish them and set `TERMS_URL` (the preflight
+  warns while it is unset and checks that the page answers).
+- **Prices.** The price sheet (§5) holds the real amounts; the preflight
+  refuses a missing or zero price. Nothing offers or advertises a trial.
+- **Self-serve or sales-led.** With self-serve on (the default), anyone can
+  set up an organization at `/start` and buy a plan; for a sales-led
+  deployment, set `DF_DISABLED_FEATURES=self_serve` and create organizations
+  with `create-tenant.ts`.
+- **Attribution.** Wherever a doughnut is drawn, the product credits the
+  diagram (Kate Raworth and Christian Guthier, CC BY-SA 4.0) and says the site
+  is not affiliated with Doughnut Economics Action Lab (DEAL). Keep
+  "Doughnut Economics" out of the site's name, domain and logo, and send DEAL
+  a short note before launch saying what the tool is and how it attributes
+  (docs/OPEN-SOURCE.md §3).
+- **Never promote a demo database.** `scripts/seed-demo-data.ts` marks every
+  portrait it seeds as sample data (the `sample_data` portrait setting), and
+  those portraits then say "Sample data — not research" on every page and in
+  the open-data API. Production starts from an empty database and real
+  research; the preflight warns when any portrait carries the mark.
+- **Real addresses.** `SUPPORT_EMAIL` is an inbox a person reads, and
+  `EMAIL_FROM` is on a domain your relay may send for. Send yourself a
+  sign-in link and check it arrives, not in spam.
+- **Showcase.** Set `DF_SHOWCASE_ORG` to the organization the landing page
+  should feature; it appears once that organization has published.
 
 ## 4. First organization
 
-Self-serve: sign in and use **/start** (30-day trial).
+Organizations and portraits cost nothing to set up and stay private until
+their first publish; building one needs a plan or a contract.
+
+Self-serve (unless `self_serve` is off): sign in and use **/start** to set up
+the organization and its portrait (up to three people, the owner included,
+can set it up and review it without a plan), then buy a plan on the
+organization's billing page before the first build — by card, which starts
+at once, or by annual invoice, which starts once the invoice is paid (where
+Stripe is not configured, staff set a contract instead). Plans are sold only
+by an interval whose allowance builds a whole doughnut: Community annually,
+not monthly (six sessions a month never reach the 22 a build takes).
+
 Sales-led / NYC:
 
 ```bash
@@ -121,6 +332,10 @@ docker compose run --rm migrate node --import tsx ../../scripts/provision-nyc.ts
 docker compose run --rm migrate node --import tsx ../../scripts/create-tenant.ts \
   --slug ithaca --name "Ithaca" --owner clerk@cityofithaca.org --plan city
 ```
+
+`--plan` records a staff contract (through `--contract-end`, default one
+year). Without it the organization has no plan: it can set up and invite
+people, and buys a plan under Billing before any research.
 
 Make yourself staff (contract editing on billing pages):
 `docker compose exec db psql -U deep_fryer -c "update users set is_staff = true where email = 'you@…'"`.
@@ -147,8 +362,10 @@ instead; the requests are counted for owners in Settings.
 To switch a feature off for the whole deployment, whatever the portraits
 say, list it in `DF_DISABLED_FEATURES`, comma-separated, by these exact
 names: `emergency`, `policy_analysis`, `involvement`, `discussion`,
-`translation`, `family_compare`, `request_research`, and `deep_fry` (the
-theme menu's deep fry). Then run `docker compose up -d web worker`: a plain
+`translation`, `family_compare`, `request_research`, `deep_fry` (the
+theme menu's deep fry), and `self_serve` (public sign-up at `/start` and
+every "build your city's doughnut" link; the last two are deployment-wide
+only, with no portrait setting). Then run `docker compose up -d web worker`: a plain
 `docker compose restart` keeps the environment the containers were created
 with and does not re-read `.env`. A name that is not on the list switches
 nothing off; the preflight warns about it, and web and worker log it when
@@ -164,10 +381,11 @@ official alert sign-up link, and
 the emergency / information phone numbers at `/{tenant}/admin/emergency`,
 then rate and publish hazards, plans, and help resources. The worker
 refreshes alerts every five minutes from `api.weather.gov` — allow that host
-in the worker's egress proxy, and set `SUPPORT_EMAIL` (or `EMAIL_FROM`): the
-NWS requires a contact in the User-Agent. The preflight checks the feed for
-every configured portrait and looks up every zone's NWS record, so a
-mistyped or retired code fails there instead of showing "no alerts". NYC:
+in the worker's egress proxy ([Worker egress](#worker-egress)); the NWS
+requires a contact in the User-Agent, and the worker sends `SUPPORT_EMAIL`.
+The preflight checks the feed for every configured portrait and looks up
+every zone's NWS record, so a mistyped or retired code fails there instead
+of showing "no alerts". NYC:
 
 ```bash
 docker compose run --rm migrate node --import tsx ../../scripts/nyc-emergency.ts           # review the proposal
@@ -180,7 +398,8 @@ them. Plan links that do not answer are refused at `--apply`.
 ### Policy analysis (SPEC-v5 §2)
 
 Staff-only, at `/{tenant}/admin/policy`. Each analysis is one research
-session against the plan and needs the worker's `ANTHROPIC_API_KEY`.
+session: like any research it needs a plan or contract, and it runs on the
+deployment's `ANTHROPIC_API_KEY` or on the organization's own key.
 
 ### Getting involved and discussion (SPEC-v6)
 
@@ -247,8 +466,9 @@ be measured before any switch, and what it would cost:
 
 Organization owners can store their own Anthropic API key under
 `/o/{org}/billing`; their research and policy sessions then run on that key
-and are not counted against the plan's session allowance (a plan, or the
-trial, is still needed). The key is checked with one Models API call, stored
+and are not counted against the plan's session allowance (a plan or contract
+is still needed: the key pays for model tokens, not for hosting, review or
+support). The key is checked with one Models API call, stored
 only as AES-256-GCM ciphertext, and shown afterwards by its last four
 characters; only the worker decrypts it, into the session's environment.
 Who pays is decided when a run is applied or an analysis is queued and is
@@ -275,22 +495,39 @@ to the deployment's key.
 
 ## 5. Billing (optional)
 
+Without Stripe, organizations build on contracts staff set (§4). With it,
+organizations buy a plan themselves on their billing page. Run the setup
+from the checkout, through the ops container (no Node or pnpm on the host):
+
 ```bash
 cp docs/billing/prices.example.json docs/billing/prices.json   # set real amounts
-STRIPE_SECRET_KEY=sk_live_… pnpm stripe:setup --prices docs/billing/prices.json \
+docker compose run --rm --no-deps -v "$PWD/docs/billing:/billing:ro" -e STRIPE_SECRET_KEY=sk_live_… \
+  migrate node --import tsx ../../scripts/stripe-setup.ts --prices /billing/prices.json \
   --portal --webhook-url https://<SITE_ADDRESS>/api/billing/webhook
 ```
 
-Put the printed `STRIPE_WEBHOOK_SECRET` in `.env` and `docker compose up -d web`.
+(`-e STRIPE_SECRET_KEY` with no value passes the key from your shell
+instead, keeping it out of the shell history; with the key already in
+`.env`, leave `-e` out.) Put the key and the printed
+`STRIPE_WEBHOOK_SECRET` in `.env` — both or neither, or the web app refuses
+to start — and `docker compose up -d web`.
 In the Stripe Dashboard, enable the invoice payment methods governments use
-(ACH credit transfer / bank transfer, check) under Invoice settings.
+(ACH credit transfer / bank transfer, check) under Invoice settings. Mark a
+check received as paid in the Dashboard ("paid out of band"): research on an
+invoice plan starts when Stripe reports its first invoice paid. Upgrading
+from a release before migration 0017? An invoice subscription created
+earlier researches again as soon as Stripe sends any event for it; to bring
+one up to date at once, resend its latest event from the Dashboard
+(Developers → Events) or with `stripe events resend <event id>`.
 
 ## 6. Operations
 
 - **Backups and restore:** the database, the `storage` volume, and `.env`
   ([Backups](#backups) and [Restore](#restore) below).
-- **Upgrades:** `git pull && docker compose up -d --build` — the migrate job
-  runs first and the app waits for it.
+- **Upgrades:** `git fetch --tags && git checkout <new release> && docker
+  compose up -d --build` — the migrate job runs first and the app waits for
+  it. Each build leaves the previous images and build cache on disk;
+  `docker image prune` and `docker builder prune` reclaim the space.
 - **Scaling research:** `docker compose up -d --scale worker=3`; sessions are
   independent and the queue is in Postgres.
 - **Database connections:** each web and worker container keeps one pool of

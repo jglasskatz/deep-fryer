@@ -2,14 +2,15 @@
 
 import { useState } from 'react';
 import { slugify } from '@deep-fryer/core';
-import { addPortrait, startTrial } from '@/lib/org-actions';
+import { addPortrait, startPortrait } from '@/lib/org-actions';
 import { useAction } from '@/lib/use-action';
 
 const field = 'mt-1 w-full rounded border border-field-border bg-white px-2 py-1.5 text-sm';
 
 /**
- * The portrait-creation form, used by /start (new organization on a trial)
- * and the organization hub (another portrait in an existing family).
+ * The portrait-creation form, used by /start (a new organization and its
+ * first portrait — free to set up, with no plan yet) and the organization hub
+ * (another portrait in an existing family).
  *
  * Two fields are required — the city's name and its state/country (SPEC-v7
  * §4: "that is all"). Everything else is under "More options" and may stay
@@ -53,7 +54,7 @@ export function PortraitForm({
         };
         run(() =>
           mode === 'start'
-            ? startTrial({ ...common, organizationName: orgName, billingEmail })
+            ? startPortrait({ ...common, organizationName: orgName, billingEmail })
             : addPortrait({ ...common, orgSlug: orgSlug! }),
         );
       }}
@@ -167,7 +168,7 @@ export function PortraitForm({
         className="rounded bg-[color:var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
         disabled={pending}
       >
-        {pending ? 'Creating…' : mode === 'start' ? 'Start 30-day trial' : 'Add portrait'}
+        {pending ? 'Creating…' : mode === 'start' ? 'Create the portrait' : 'Add portrait'}
       </button>
     </form>
   );

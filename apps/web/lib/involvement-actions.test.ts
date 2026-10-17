@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { onOneConnection } from '../test/one-connection';
 import { setPortraitFeatures } from './test-features';
+import { markPortraitPublic } from './test-portraits';
 import { issueFormToken } from './form-token';
 import type { InvolvementField, SubmitInvolvementInput } from './involvement-actions';
 
@@ -109,6 +110,8 @@ describe('submitInvolvement', () => {
       const m = await import('@deep-fryer/db');
       const { tenant } = await m.provisionTenant(m.getDb(), { slug: uniq(), name: 'Involvement City' });
       await setPortraitFeatures(tenant.id, { involvement: true });
+      // Public, as its first publish would make it (migration 0015): anonymous visitors only reach public portraits.
+      await markPortraitPublic(tenant.id);
       created.push({ tenantId: tenant.id, organizationId: tenant.organizationId });
       return tenant;
     }
@@ -175,6 +178,16 @@ describe('submitInvolvement', () => {
       const m = await import('@deep-fryer/db');
       const { eq } = await import('drizzle-orm');
       await m.getDb().update(m.tenants).set({ archivedAt: new Date() }).where(eq(m.tenants.id, tenant.id));
+      expect(await submit(as(tenant.slug))).toEqual({ status: 'failed' });
+      expect(await stored(tenant.id)).toHaveLength(0);
+    });
+
+    it('fails, storing nothing, for a portrait that has never published (private until then, migration 0015)', async () => {
+      from('198.51.100.29');
+      const tenant = await portrait();
+      const m = await import('@deep-fryer/db');
+      const { eq } = await import('drizzle-orm');
+      await m.getDb().update(m.tenants).set({ firstPublishedAt: null }).where(eq(m.tenants.id, tenant.id));
       expect(await submit(as(tenant.slug))).toEqual({ status: 'failed' });
       expect(await stored(tenant.id)).toHaveLength(0);
     });

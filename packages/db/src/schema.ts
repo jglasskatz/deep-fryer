@@ -211,6 +211,16 @@ export const tenants = pgTable('tenants', {
   familyOrder: integer('family_order').notNull().default(0),
   /** Compact label for family matrices ("BX", "SI"). */
   shortName: text('short_name'),
+  /**
+   * When the portrait first published a dimension version: from then on it
+   * is public (until archived); before, only its members can see it at all
+   * (migration 0015). Set by the database — a trigger on dimension_versions
+   * sets it on the first publish, whichever path publishes — and never
+   * cleared: un-publishing a portrait is archiving it. The app role cannot
+   * write it (a guard trigger refuses); the same rule in queries is
+   * queries.ts tenantIsPublic.
+   */
+  firstPublishedAt: timestamp('first_published_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   archivedAt: timestamp('archived_at', { withTimezone: true }),
 });
@@ -541,6 +551,14 @@ export const subscriptions = pgTable('subscriptions', {
   currentPeriodEnd: timestamp('current_period_end', { withTimezone: true }).notNull(),
   trialEndsAt: timestamp('trial_ends_at', { withTimezone: true }),
   cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),
+  /**
+   * Stripe invoice collection only (migration 0017): when a paid invoice of
+   * this Stripe subscription was first seen. Stripe makes a send_invoice
+   * subscription active before anything is paid; research waits for this
+   * (core standing 'awaiting_payment'). Kept while the row follows the same
+   * Stripe subscription, cleared when another one replaces it.
+   */
+  firstInvoicePaidAt: timestamp('first_invoice_paid_at', { withTimezone: true }),
   poNumber: text('po_number'),
   /** Contract terms set by staff; null means the plan's catalog limit. */
   researchSessionsOverride: integer('research_sessions_override'),
@@ -950,8 +968,34 @@ export const organizationApiKeys = pgTable(
   }),
 );
 
+/**
+ * One magic-link email asked for, by network address (migration 0016): the
+ * ledger behind the per-address limit on sign-in emails (sign-in-requests.ts
+ * admitSignInRequest), so nobody can turn the sign-in form into a way to mail
+ * strangers in bulk. The address is stored only as a keyed hash, like
+ * translation_requests.ip_hash. Auth plumbing: written and read before any
+ * session exists, in the system context only — the app role has no grant on
+ * it at all. Rows matter only inside the limit's window; older ones are
+ * deleted as the same address asks again, and by the worker's privacy sweep
+ * every quarter hour (pruneExpiredSignInRecords), which the created_at index
+ * (migration 0017) serves.
+ */
+export const signInRequests = pgTable(
+  'sign_in_requests',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    ipHash: text('ip_hash').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    rateIdx: index('sign_in_requests_rate_idx').on(t.ipHash, t.createdAt),
+    createdIdx: index('sign_in_requests_created_idx').on(t.createdAt),
+  }),
+);
+
 export type TranslationRequest = typeof translationRequests.$inferSelect;
 export type OrganizationApiKey = typeof organizationApiKeys.$inferSelect;
+export type SignInRequest = typeof signInRequests.$inferSelect;
 
 export type PolicyAnalysis = typeof policyAnalyses.$inferSelect;
 export type Hazard = typeof hazards.$inferSelect;

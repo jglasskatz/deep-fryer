@@ -10,6 +10,7 @@ import {
   sessions,
   tenantMembers,
   users,
+  verificationTokens,
 } from '@deep-fryer/db';
 import { signOut } from '@/auth';
 import { getAuth, requireUserId } from './auth';
@@ -117,6 +118,13 @@ export const deleteAccount = action(async (input: { confirm: string }) => {
     await tx.delete(organizationMembers).where(eq(organizationMembers.userId, userId));
     await tx.delete(accounts).where(eq(accounts.userId, userId));
     await tx.delete(sessions).where(eq(sessions.userId, userId));
+    // Sign-in links sent to the address and never used: Auth.js keys them by the address itself and deletes
+    // one only when it is used, so they would keep the address the account no longer has (/privacy promises
+    // it goes). Read from the row, in the case Auth.js stored it, rather than from the session.
+    const [person] = await tx.select({ email: users.email }).from(users).where(eq(users.id, userId));
+    if (person?.email) {
+      await tx.delete(verificationTokens).where(sql`lower(${verificationTokens.identifier}) = lower(${person.email})`);
+    }
     await tx
       .update(users)
       .set({ email: null, name: null, image: null, emailVerified: null, displayName: 'Deleted account' })

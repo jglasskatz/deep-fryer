@@ -4,17 +4,29 @@ export const APPLY_TASK = 'research_apply';
 
 export interface ApplyJobPayload {
   runId: string;
+  /**
+   * An operator's measurement run (scripts/measure-strategies.ts), which is
+   * never applied and so counts against no organization's allowance, on
+   * purpose. Without this the worker runs only applied runs (applied_at set
+   * by the web app's research gate): a job for a run whose apply was undone
+   * is stale, and running it would be research nobody was charged for. Only
+   * server-side code writes jobs, so nothing a customer does can set it.
+   */
+  unmetered?: true;
 }
 
-/** Enqueue a run for the worker (SPEC.md §8 Apply). The web app calls this. */
-export async function enqueueResearchApply(runId: string): Promise<void> {
+/**
+ * Enqueue a run for the worker (SPEC.md §8 Apply). The web app calls this
+ * after the research gate applied the run; the measurement script passes
+ * `unmetered` for its deliberately unapplied runs.
+ */
+export async function enqueueResearchApply(runId: string, options: { unmetered?: true } = {}): Promise<void> {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error('DATABASE_URL is not set');
+  const payload: ApplyJobPayload = options.unmetered ? { runId, unmetered: true } : { runId };
   // jobKey dedupes concurrent applies of the same run: two racing POSTs
   // collapse to one job instead of two workers executing the same plan.
-  await quickAddJob({ connectionString }, APPLY_TASK, { runId } satisfies ApplyJobPayload, {
-    jobKey: runId,
-  });
+  await quickAddJob({ connectionString }, APPLY_TASK, payload, { jobKey: runId });
 }
 
 /**
@@ -83,3 +95,17 @@ export const POLICY_SWEEP_CRONTAB = `*/10 * * * * ${POLICY_SWEEP_TASK}`;
  */
 export const ALERTS_TASK = 'alerts_sync';
 export const ALERTS_CRONTAB = `*/5 * * * * ${ALERTS_TASK} ?max=1&jobKey=${ALERTS_TASK}`;
+
+/**
+ * The privacy sweep: every quarter hour the worker deletes what the sign-in
+ * path keeps once it has no use left — network-address hashes outside the
+ * sign-in limit's window, and expired, unused sign-in links with the email
+ * addresses they were sent to (packages/db pruneExpiredSignInRecords). The
+ * privacy notice (apps/web/app/privacy) promises exactly this schedule.
+ *
+ * Same options as the alerts tick: a failed sweep is not retried (the next
+ * one a quarter hour later is the retry), and ticks waiting behind a busy
+ * runner collapse into one.
+ */
+export const PRIVACY_SWEEP_TASK = 'privacy_sweep';
+export const PRIVACY_SWEEP_CRONTAB = `*/15 * * * * ${PRIVACY_SWEEP_TASK} ?max=1&jobKey=${PRIVACY_SWEEP_TASK}`;

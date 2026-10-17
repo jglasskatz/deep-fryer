@@ -130,7 +130,7 @@ export const ur: Messages = {
     baseline_only: 'اب تک صرف بنیادی سطح کی پیمائش موجود ہے؛ اگلی تازہ کاری میں رجحان نظر آئے گا۔',
   },
   portrait: {
-    metaDescription: '{name} کا Doughnut Economics خاکہ: سماجی بنیاد اور ماحولیاتی بالائی حد، ہر عدد کے ماخذ کے ساتھ۔',
+    metaDescription: '{name} کا ڈونٹ خاکہ: سماجی بنیاد اور ماحولیاتی بالائی حد، ہر عدد کے ماخذ کے ساتھ۔',
     population: 'آبادی: {n}',
     clickHint: 'اشاریے، شواہد، اقدامات اور بحث دیکھنے کے لیے کوئی حصہ منتخب کریں۔',
     demoHint: 'نمونہ ڈیٹا — اصل مواد دکھانے کے لیے DATABASE_URL سیٹ کریں اور ورژن شائع کریں۔',
@@ -370,6 +370,8 @@ export const ur: Messages = {
   login: {
     title: 'سائن ان کریں',
     intro: 'رہائشی کسی خاکے کی بحث میں حصہ لینے کے لیے سائن ان کرتے ہیں۔ شہر کا عملہ اپنے کام کا اکاؤنٹ استعمال کرتا ہے۔',
+    /** Replaces `intro` when the person is on the way to setting up their city's portrait (/start): city staff, not residents. */
+    startIntro: 'اپنے شہر کا ڈونٹ ترتیب دینے کے لیے سائن ان کریں — اپنے کام کی ای میل استعمال کریں۔',
     microsoft: 'Microsoft کے ساتھ جاری رکھیں (کام کا اکاؤنٹ)',
     google: 'Google کے ساتھ جاری رکھیں',
     emailLabel: 'مجھے سائن ان کا لنک ای میل کریں',
@@ -392,6 +394,12 @@ export const ur: Messages = {
       AccessDenied: 'سائن ان کی اجازت نہیں دی گئی۔',
       Configuration: 'اس سرور پر سائن ان کی ترتیبات درست نہیں۔ سائٹ کے منتظم سے رابطہ کریں۔',
       EmailSignin: 'ہم سائن ان کی ای میل نہیں بھیج سکے۔ ای میل کا پتہ جانچ لیں اور چند منٹ بعد دوبارہ کوشش کریں۔',
+      /** Nothing was sent: this address already has three unused sign-in links from the last 15 minutes. */
+      TooManyLinks:
+        'ہم پچھلے 15 منٹ میں اس پتے پر سائن ان کے کئی لنک پہلے ہی بھیج چکے ہیں۔ سب سے نیا لنک استعمال کریں، یا 15 منٹ بعد دوبارہ کوشش کریں۔',
+      /** Nothing was sent: this network has asked for its hourly share of sign-in emails (shared Wi-Fi counts as one). */
+      TooManyEmails:
+        'اس نیٹ ورک سے سائن ان کی بہت زیادہ ای میلز منگوائی جا چکی ہیں، اس لیے یہ ای میل نہیں بھیجی گئی۔ براہ کرم ایک گھنٹے بعد دوبارہ کوشش کریں۔',
       default: 'سائن ان نہیں ہو سکا۔ دوبارہ کوشش کریں۔',
     },
   },
@@ -593,6 +601,41 @@ export const ur: Messages = {
     signupNamed: '{name} کے لیے سائن اپ کریں',
     resourceHazards: 'ان خطرات میں مددگار:',
     doughnutLegend: 'ڈونٹ پر رنگوں کا مطلب:',
+  },
+  /** The site footer, on every page but embeds (components/site-footer/SiteFooter.tsx). */
+  footer: {
+    /** The footer's navigation landmark. */
+    label: 'اس سائٹ کے بارے میں',
+    /** {email} is the support address of whoever runs this site, as a link (already marked dir="ltr", so no isolate here). */
+    contact: 'رابطہ: {email}',
+    accessibility: 'رسائی کی سہولت',
+    privacy: 'رازداری',
+    terms: 'استعمال کی شرائط',
+    /**
+     * The Doughnut's attribution (docs/OPEN-SOURCE.md §3.3), also under every
+     * embedded doughnut. {license} is the license's name as a link; {book}
+     * and {method} are the English titles of the book and the method guide.
+     * The names stay in Latin script. "Diagram" is ڈائیگرام, not خاکہ, which
+     * this catalog reserves for a portrait. The Urdu word لائسنس before
+     * {license} keeps the Latin license name from running into Christian
+     * Guthier's name as one left-to-right stretch on this right-to-left page.
+     */
+    credit:
+      'ڈونٹ ڈائیگرام: Kate Raworth اور Christian Guthier، لائسنس {license}، مقامی ڈیٹا کے ساتھ ڈھالا گیا (Raworth، {book}، 2017)۔ شہر کے خاکے کا طریقۂ کار Doughnut Economics Action Lab کے رہنما کتابچے {method} پر مبنی ہے۔ یہ سائٹ Doughnut Economics Action Lab سے وابستہ نہیں، اور نہ ہی اسے اس ادارے کی تائید حاصل ہے۔',
+  },
+  /**
+   * On a portrait seeded with synthetic values (scripts/seed-demo-data.ts):
+   * its page, its dimension pages, its embed, its organization's compare,
+   * insights and progress pages, so a screenshot cannot pass for research.
+   * "نمونہ ڈیٹا" as in portrait.demoHint.
+   */
+  sampleData: {
+    title: 'نمونہ ڈیٹا — تحقیقی نتائج نہیں',
+    /** A portrait's own pages and its embed; {name} is the portrait. */
+    body: 'اس سائٹ پر {name} کے اعداد و شمار سافٹ ویئر کا مظاہرہ کرنے کے لیے بنائے گئے ہیں۔ یہ پیمائشیں نہیں ہیں، اور ان کا حوالہ نہ دیا جائے۔',
+    /** An organization's pages, when any portrait shown there is seeded; {org} is the organization. */
+    bodyOrg:
+      'اس صفحے پر {org} کے کچھ یا تمام اعداد و شمار سافٹ ویئر کا مظاہرہ کرنے کے لیے بنائے گئے ہیں۔ یہ پیمائشیں نہیں ہیں، اور ان کا حوالہ نہ دیا جائے۔',
   },
   /** Theme toggle and the fryer (SPEC-v5 §4). */
   theme: {

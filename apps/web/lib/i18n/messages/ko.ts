@@ -118,7 +118,7 @@ export const ko: Messages = {
     baseline_only: '아직 기준선 측정값만 있습니다. 다음 업데이트 때 추세가 표시됩니다.',
   },
   portrait: {
-    metaDescription: '{name}의 Doughnut Economics 프로필: 사회적 기초와 생태적 한계, 모든 수치의 출처를 함께 제공합니다.',
+    metaDescription: '{name}의 도넛 프로필: 사회적 기초와 생태적 한계, 모든 수치의 출처를 함께 제공합니다.',
     population: '인구 {n}명',
     clickHint: '도넛 조각을 선택하면 지표, 증거 자료, 실천 방안, 토론을 볼 수 있습니다.',
     demoHint: '데모 데이터입니다 — 실제 콘텐츠를 표시하려면 DATABASE_URL을 설정하고 버전을 게시하십시오.',
@@ -340,6 +340,8 @@ export const ko: Messages = {
   login: {
     title: '로그인',
     intro: '주민은 로그인하여 프로필 토론에 참여할 수 있습니다. 시 직원은 업무용 계정을 사용하십시오.',
+    /** Replaces `intro` when the person is on the way to setting up their city's portrait (/start): city staff, not residents. */
+    startIntro: '소속 시의 도넛을 만들려면 업무용 이메일로 로그인하십시오.',
     microsoft: 'Microsoft로 계속하기(업무용 계정)',
     google: 'Google로 계속하기',
     emailLabel: '이메일로 로그인 링크 받기',
@@ -361,6 +363,12 @@ export const ko: Messages = {
       AccessDenied: '로그인이 거부되었습니다.',
       Configuration: '이 서버의 로그인 설정에 문제가 있습니다. 사이트 관리자에게 문의하십시오.',
       EmailSignin: '로그인 이메일을 보내지 못했습니다. 주소를 확인하고 몇 분 후에 다시 시도하십시오.',
+      /** Nothing was sent: this address already has three unused sign-in links from the last 15 minutes. */
+      TooManyLinks:
+        '지난 15분 동안 이 주소로 이미 여러 개의 로그인 링크를 보냈습니다. 가장 최근에 받은 링크를 사용하시거나 15분 후에 다시 시도하십시오.',
+      /** Nothing was sent: this network has asked for its hourly share of sign-in emails (shared Wi-Fi counts as one). */
+      TooManyEmails:
+        '이 네트워크에서 로그인 이메일 요청이 너무 많이 들어와 이번 이메일은 보내지 않았습니다. 한 시간 후에 다시 시도해 주십시오.',
       default: '로그인하지 못했습니다. 다시 시도하십시오.',
     },
   },
@@ -552,6 +560,35 @@ export const ko: Messages = {
     signupNamed: '{name} 가입하기',
     resourceHazards: '대응하는 위협:',
     doughnutLegend: '도넛 색상 안내:',
+  },
+  /** The site footer, on every page but embeds (components/site-footer/SiteFooter.tsx). */
+  footer: {
+    /** The footer's navigation landmark. */
+    label: '사이트 정보',
+    /** {email} is the support address of whoever runs this site, as a link. */
+    contact: '문의: {email}',
+    accessibility: '접근성',
+    privacy: '개인정보 보호',
+    terms: '이용약관',
+    /**
+     * {license} is the license's name as a link; {book} and {method} are the
+     * English titles, filled in untranslated (hence the 『』 around them).
+     */
+    credit:
+      '도넛 다이어그램: Kate Raworth 및 Christian Guthier, {license}, 지역 데이터를 반영하여 수정함(Raworth, 『{book}』, 2017). 도시 프로필 작성 방법은 Doughnut Economics Action Lab의 『{method}』에 기반합니다. 이 사이트는 Doughnut Economics Action Lab과 제휴 관계가 없으며, Doughnut Economics Action Lab의 보증을 받지 않았습니다.',
+  },
+  /**
+   * On a portrait seeded with synthetic values (scripts/seed-demo-data.ts):
+   * its page, its dimension pages, its embed, its organization's compare,
+   * insights and progress pages, so a screenshot cannot pass for research.
+   */
+  sampleData: {
+    title: '예시 데이터 — 연구 결과가 아닙니다',
+    /** A portrait's own pages and its embed; {name} is the portrait. */
+    body: '이 사이트에 표시된 {name}의 수치는 소프트웨어 시연을 위해 생성된 것입니다. 측정값이 아니므로 인용해서는 안 됩니다.',
+    /** An organization's pages, when any portrait shown there is seeded; {org} is the organization. */
+    bodyOrg:
+      '이 페이지에 표시된 {org}의 수치 중 일부 또는 전부는 소프트웨어 시연을 위해 생성된 것입니다. 측정값이 아니므로 인용해서는 안 됩니다.',
   },
   /** Theme toggle and the fryer (SPEC-v5 §4). */
   theme: {

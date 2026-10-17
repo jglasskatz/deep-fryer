@@ -121,7 +121,7 @@ export const ru: Messages = {
       'Пока есть только измерение базового уровня; динамика станет видна после следующего обновления.',
   },
   portrait: {
-    metaDescription: '{name}: портрет по модели Doughnut Economics — социальный фундамент и экологический потолок, с источником каждой цифры.',
+    metaDescription: '{name}: портрет по модели «бублика» — социальный фундамент и экологический потолок, с источником каждой цифры.',
     population: 'население: {n}',
     clickHint: 'Выберите сегмент, чтобы увидеть показатели, подтверждающие материалы, возможные действия и обсуждение.',
     demoHint: 'Демонстрационные данные — задайте DATABASE_URL и опубликуйте версии, чтобы увидеть реальное содержание.',
@@ -361,6 +361,8 @@ export const ru: Messages = {
     title: 'Вход',
     intro:
       'Жители входят на сайт, чтобы участвовать в обсуждении портрета. Сотрудники городских служб входят через рабочую учётную запись.',
+    /** Replaces `intro` when the person is on the way to setting up their city's portrait (/start): city staff, not residents. */
+    startIntro: 'Чтобы создать «бублик» своего города, войдите, указав рабочий адрес электронной почты.',
     microsoft: 'Войти через Microsoft (рабочая учётная запись)',
     google: 'Войти через Google',
     emailLabel: 'Получить ссылку для входа на электронную почту',
@@ -384,6 +386,12 @@ export const ru: Messages = {
       Configuration: 'Вход на этом сервере настроен неправильно. Обратитесь к администратору сайта.',
       EmailSignin:
         'Не удалось отправить письмо со ссылкой для входа. Проверьте адрес и попробуйте ещё раз через несколько минут.',
+      /** Nothing was sent: this address already has three unused sign-in links from the last 15 minutes. */
+      TooManyLinks:
+        'За последние 15 минут мы уже отправили на этот адрес несколько ссылок для входа. Воспользуйтесь ссылкой из последнего письма или попробуйте ещё раз через 15 минут.',
+      /** Nothing was sent: this network has asked for its hourly share of sign-in emails (shared Wi-Fi counts as one). */
+      TooManyEmails:
+        'Из этой сети запрошено слишком много писем со ссылкой для входа, поэтому это письмо не было отправлено. Пожалуйста, попробуйте ещё раз через час.',
       default: 'Не удалось войти. Попробуйте ещё раз.',
     },
   },
@@ -609,6 +617,37 @@ export const ru: Messages = {
     signupNamed: 'Подписаться на {name}',
     resourceHazards: 'Помогает при угрозах:',
     doughnutLegend: 'Цвета на «бублике»:',
+  },
+  /** The site footer, on every page but embeds (components/site-footer/SiteFooter.tsx). */
+  footer: {
+    /** The footer's navigation landmark. */
+    label: 'Об этом сайте',
+    /** {email} is the support address of whoever runs this site, as a link. */
+    contact: 'Контактный адрес: {email}',
+    accessibility: 'Доступность сайта',
+    privacy: 'Конфиденциальность',
+    terms: 'Условия использования',
+    /**
+     * The Doughnut's attribution (docs/OPEN-SOURCE.md §3.3), also under every
+     * embedded doughnut. {license} is the license's name as a link; {book}
+     * and {method} are the English titles of the book and the method guide,
+     * filled in untranslated (Latin-script titles take no Russian quotes).
+     */
+    credit:
+      'Диаграмма «бублик»: Kate Raworth и Christian Guthier, {license}, адаптирована с использованием местных данных (Raworth, {book}, 2017). Методика составления портретов городов основана на руководстве {method} организации Doughnut Economics Action Lab. Этот сайт не связан с Doughnut Economics Action Lab и не одобрен этой организацией.',
+  },
+  /**
+   * On a portrait seeded with synthetic values (scripts/seed-demo-data.ts):
+   * its page, its dimension pages, its embed, its organization's compare,
+   * insights and progress pages, so a screenshot cannot pass for research.
+   */
+  sampleData: {
+    title: 'Демонстрационные данные — не результаты исследований',
+    /** A portrait's own pages and its embed; {name} is the portrait. */
+    body: '{name}: цифры на этом сайте сгенерированы для демонстрации работы программы. Это не результаты измерений, и ссылаться на них нельзя.',
+    /** An organization's pages, when any portrait shown there is seeded; {org} is the organization. */
+    bodyOrg:
+      '{org}: некоторые или все цифры на этой странице сгенерированы для демонстрации работы программы. Это не результаты измерений, и ссылаться на них нельзя.',
   },
   /** Theme toggle and the fryer (SPEC-v5 §4). */
   theme: {

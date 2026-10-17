@@ -262,12 +262,13 @@ async function score() {
  * never applied (applied_at stays null), so no organization's allowance
  * counts it, and it keeps research_runs.funding at its default 'plan', so the
  * worker runs it on the deployment's key — never on the organization's own
- * key, even if one is on file (migration 0012).
+ * key, even if one is on file (migration 0012). The job says so (`unmetered`):
+ * the worker runs no other unapplied run.
  */
 async function enqueue() {
   const runId = arg('run');
   if (!runId) throw new Error('--run required');
-  await enqueueResearchApply(runId);
+  await enqueueResearchApply(runId, { unmetered: true });
   console.log(`enqueued ${runId}`);
 }
 

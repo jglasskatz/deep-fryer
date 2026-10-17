@@ -45,13 +45,17 @@ export const applyResearchAction = action(async (input: { tenantSlug: string; ru
  * and applyRun every other run goes through, so the billing gate, the
  * queue, and the run page behave exactly as for a run planned by hand. The
  * gate picks who pays: the organization's own Anthropic API key when one is
- * on file, otherwise the trial's or plan's session allowance.
+ * on file, otherwise the plan's session allowance. Either way it needs a
+ * plan in good standing — building is never free — and research on the plan
+ * also needs the deployment's research key (lib/billing.ts
+ * assertFundingUsable).
  *
- * One step, all or nothing: if the gate refuses (an allowance that does not
- * fit, a trial that has ended), the run this click planned is removed again,
- * so a refused click leaves nothing behind to clean up. And while a run for
- * the portrait is already queued or running, the click is refused — a second
- * full run would spend twice for the same doughnut.
+ * One step, all or nothing: if the gate refuses (no plan yet, an allowance
+ * that does not fit, a server that cannot run research on the plan), the run
+ * this click planned is removed again, so a refused click leaves nothing
+ * behind to clean up. And while a run for the portrait is already queued or
+ * running, the click is refused — a second full run would spend twice for
+ * the same doughnut.
  */
 export const buildDoughnut = action(async (input: { tenantSlug: string }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');

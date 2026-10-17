@@ -1,6 +1,6 @@
 import { gzipSync } from 'node:zlib';
 import type { Task } from 'graphile-worker';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, isNotNull } from 'drizzle-orm';
 import {
   emptyUsage,
   type ContentSupported,
@@ -73,22 +73,34 @@ import { settledRunStatus } from './run-status.js';
  * every session that had not started is recorded as failed with that reason.
  */
 export const researchApply: Task = async (rawPayload, helpers) => {
-  const { runId } = rawPayload as ApplyJobPayload;
+  const { runId, unmetered } = rawPayload as ApplyJobPayload;
   const db = getDb();
 
-  // Atomic claim: only the transition planned → running executes the plan.
-  // A no-op claim means either a duplicate/stale job or a crash-interrupted
+  // Atomic claim: only the transition planned → running executes the plan,
+  // and only for a run the research gate applied (applied_at set). applied_at
+  // is what puts a run in a billing period (packages/db researchSessionsUsed),
+  // so a run without it would spend sessions no allowance counts. That
+  // happens when the web app's enqueue failed after the job was in fact
+  // written — the connection dropped before the reply — and applyRun cleared
+  // applied_at again: the job is stale, and running it would be research
+  // nobody was charged for. The run stays planned, to be applied again. The
+  // one exception is an operator's measurement run, unapplied on purpose and
+  // marked so on its job (ApplyJobPayload.unmetered).
+  // A no-op claim otherwise means a duplicate/stale job or a crash-interrupted
   // run redelivered by the queue — the latter is settled as failed below so
   // it can never sit in `running` forever.
-  const [run] = await db
-    .update(researchRuns)
-    .set({ status: 'running' })
-    .where(and(eq(researchRuns.id, runId), eq(researchRuns.status, 'planned')))
-    .returning();
+  const claimable = and(
+    eq(researchRuns.id, runId),
+    eq(researchRuns.status, 'planned'),
+    unmetered ? undefined : isNotNull(researchRuns.appliedAt),
+  );
+  const [run] = await db.update(researchRuns).set({ status: 'running' }).where(claimable).returning();
   if (!run) {
     const [existing] = await db.select().from(researchRuns).where(eq(researchRuns.id, runId));
     if (!existing) {
       helpers.logger.error(`run ${runId} not found`);
+    } else if (existing.status === 'planned') {
+      helpers.logger.warn(`run ${runId} is planned but not applied (its apply was undone); skipping`);
     } else if (existing.status === 'running') {
       helpers.logger.error(`run ${runId} was interrupted mid-run; marking failed`);
       await db

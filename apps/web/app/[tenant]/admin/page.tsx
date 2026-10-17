@@ -10,6 +10,7 @@ import {
   tenantRuns,
 } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
+import { roleAtLeast } from '@/lib/auth';
 import { adminPageMetadata } from '@/lib/page-meta';
 import { billingSummary, WARNING_COPY } from '@/lib/billing';
 import { countHeldComments } from '@/lib/discussion';
@@ -108,6 +109,12 @@ export default async function TenantAdminPage({
             <Link className="rounded border px-3 py-1.5 hover:bg-black/5" href={`/${tenant}/admin/review`}>
               Review queue{activeRuns.length ? ` (${activeRuns.length} active)` : ''}
             </Link>
+            {/* Editors and up only, like the page itself (it shows unpublished research). */}
+            {roleAtLeast(ctx.role, 'editor') ? (
+              <Link className="rounded border px-3 py-1.5 hover:bg-black/5" href={`/${tenant}/admin/draft`}>
+                Draft doughnut
+              </Link>
+            ) : null}
             <Link className="rounded border px-3 py-1.5 hover:bg-black/5" href={`/${tenant}/admin/research`}>
               Research runs
             </Link>

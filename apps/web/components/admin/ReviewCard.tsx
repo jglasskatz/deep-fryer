@@ -77,7 +77,10 @@ export function ReviewCard({
   ).length;
 
   return (
-    <div className="rounded-lg border border-black/15 p-4">
+    // The id is the draft doughnut's link target (admin/draft: a wedge or row
+    // opens its dimension's card, `?run=<run>#review-<dimension id>`); the
+    // scroll margin keeps the card's heading clear of the sticky header.
+    <div id={`review-${dimensionId}`} className="scroll-mt-24 rounded-lg border border-black/15 p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-base font-semibold">
           {dimensionName}

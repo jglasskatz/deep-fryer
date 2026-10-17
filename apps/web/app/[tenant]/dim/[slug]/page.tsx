@@ -5,6 +5,7 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { Thread } from '@/components/discussion/Thread';
 import { InvolvementForm } from '@/components/involvement/InvolvementForm';
 import { InvolvementLanguageNote, InvolvementListings } from '@/components/involvement/InvolvementListings';
+import { SampleDataNotice } from '@/components/sample-data/SampleDataNotice';
 import { evidenceUrl, getPortrait, hasDatabase } from '@/lib/data';
 import { dimensionForPublicSlug, dimensionThread } from '@/lib/discussion';
 import { getAuth, getRole, roleAtLeast } from '@/lib/auth';
@@ -18,6 +19,7 @@ import { dimensionLabel, scaleLabel } from '@/lib/i18n/content';
 import { fmt, rich } from '@/lib/i18n/format';
 import { getI18n } from '@/lib/i18n/server';
 import { pageTitle } from '@/lib/page-meta';
+import { portraitSampleData } from '@/lib/sample-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,12 +66,13 @@ export default async function DimensionDrilldownPage({
   // (SPEC-v7 §3); with one off its section is not rendered at all, and the
   // core page (the dimension's data, evidence, gaps) is unchanged.
   const features = await portraitFeatures(tenant);
-  const [portrait, resolved, auth, { m, href, locale }, involvement] = await Promise.all([
+  const [portrait, resolved, auth, { m, href, locale }, involvement, sample] = await Promise.all([
     getPortrait(tenant),
     hasDatabase() && features.discussion ? dimensionForPublicSlug(tenant, slug) : Promise.resolve(null),
     getAuth(),
     getI18n(),
     features.involvement ? involvementView(tenant) : Promise.resolve(null),
+    portraitSampleData(tenant),
   ]);
   if (!portrait) notFound();
   const dim = portrait.dimensions.find((d) => d.slug === slug);
@@ -114,6 +117,8 @@ export default async function DimensionDrilldownPage({
           {dim.ring === 'social' ? m.common.socialFoundation : m.common.ecologicalCeiling}
           {dim.published_at ? ` · ${fmt(m.dimension.updated, { date: dim.published_at.slice(0, 10) })}` : ''}
         </p>
+        {/* Seeded synthetic values (scripts/seed-demo-data.ts) are labelled before any number. */}
+        {sample ? <SampleDataNotice labels={m.sampleData} name={portrait.tenant.name} className="mt-4" /> : null}
 
         {data.context ? (
           <p lang="en" className="mt-5 max-w-prose">

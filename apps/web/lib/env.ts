@@ -52,6 +52,20 @@ export const secretsKey = (): string | null => process.env.DF_SECRETS_KEY?.trim(
 /** Organizations may store their own Anthropic API key on this deployment. */
 export const bringYourOwnKeyAvailable = (): boolean => secretsKey() !== null;
 
+/**
+ * The deployment has a research key of its own: the worker's
+ * ANTHROPIC_API_KEY, which runs every session a plan pays for. The web app
+ * never sees that key — docker compose passes the web service
+ * DF_RESEARCH_KEY_CONFIGURED=${ANTHROPIC_API_KEY:+true}, "true" exactly when
+ * the worker's key is set and empty otherwise — so this is the one fact it
+ * may know about it. Without it, research the plan would pay for is refused
+ * before anything is spent (lib/billing.ts assertFundingUsable), and
+ * research on an organization's own key still runs. Anything but the exact
+ * string "true" counts as not configured, so a missing or mistyped variable
+ * fails closed rather than queuing work no session could run.
+ */
+export const deploymentResearchKeyConfigured = (): boolean => process.env.DF_RESEARCH_KEY_CONFIGURED === 'true';
+
 /** Where customers reach a person (pricing, billing, error pages); optional. */
 export const supportEmail = (): string | null => process.env.SUPPORT_EMAIL?.trim() || null;
 

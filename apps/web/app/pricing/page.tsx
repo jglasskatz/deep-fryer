@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { PLANS, PURCHASABLE_PLANS, SESSIONS_PER_FULL_REFRESH, TRIAL_DAYS } from '@deep-fryer/core';
+import { PLANS, PURCHASABLE_PLANS, SESSIONS_PER_FULL_REFRESH, sellsInterval } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { supportEmail } from '@/lib/env';
+import { deploymentFeatureOn } from '@/lib/features';
 import { catalogPrices, formatPrice } from '@/lib/stripe';
 
 export const metadata: Metadata = {
@@ -15,11 +16,22 @@ export const metadata: Metadata = {
  * Public pricing. Amounts come from Stripe by lookup key, so this page always
  * shows what checkout will charge; without Stripe it says "contact us"
  * rather than inventing numbers.
+ *
+ * There is no trial to offer ("No free trials for making donuts, but free to
+ * view"): what is free is setting up a portrait and reading published ones,
+ * and every plan pays for its research. Each plan's call to action starts a
+ * portrait at /start when the deployment offers self-serve start, and is an
+ * email to support when it does not (a sales-led deployment), so no button
+ * leads to a page that does not exist.
  */
 export default async function PricingPage() {
   const prices = await catalogPrices();
   const contact = supportEmail();
+  const selfServe = deploymentFeatureOn('self_serve');
+  // Only the intervals each plan is sold by (core sellsInterval): not Community by the month, whose
+  // allowance could never build the doughnut the plan is bought for.
   const price = (id: (typeof PURCHASABLE_PLANS)[number], interval: 'month' | 'year') => {
+    if (!sellsInterval(PLANS[id], interval)) return null;
     const key = PLANS[id].stripeLookupKeys[interval];
     const p = key ? prices.get(key) : undefined;
     return p ? formatPrice(p) : null;
@@ -35,6 +47,11 @@ export default async function PricingPage() {
           your adopted goals, the review queue, discussion boards, and the embed widget. Plans
           differ in portraits, seats, and research allowance. A full refresh of one portrait is{' '}
           {SESSIONS_PER_FULL_REFRESH} research sessions.
+        </p>
+        <p className="mt-3 max-w-2xl text-[color:var(--color-muted)]">
+          Reading published portraits is always free, for everyone. Setting up a portrait is free too —
+          it stays private until your team publishes it; building it, the research behind every number,
+          needs a plan or a contract.
         </p>
 
         <div className="mt-10 grid gap-6 md:grid-cols-3">
@@ -66,12 +83,21 @@ export default async function PricingPage() {
                     <li key={h}>{h}</li>
                   ))}
                 </ul>
-                <Link
-                  href="/start"
-                  className="mt-6 rounded bg-[color:var(--color-accent)] px-4 py-2 text-center text-sm font-medium text-white hover:opacity-90"
-                >
-                  Start a {TRIAL_DAYS}-day trial
-                </Link>
+                {selfServe ? (
+                  <Link
+                    href="/start"
+                    className="mt-6 rounded bg-[color:var(--color-accent)] px-4 py-2 text-center text-sm font-medium text-white hover:opacity-90"
+                  >
+                    Start a portrait
+                  </Link>
+                ) : contact ? (
+                  <a
+                    href={`mailto:${contact}?subject=${encodeURIComponent(`${p.name} plan`)}`}
+                    className="mt-6 rounded border border-black/20 px-4 py-2 text-center text-sm font-medium hover:bg-black/5"
+                  >
+                    Contact us
+                  </a>
+                ) : null}
               </section>
             );
           })}

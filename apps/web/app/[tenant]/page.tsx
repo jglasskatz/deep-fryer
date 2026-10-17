@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { PortraitDoughnut } from '@/components/doughnut/PortraitDoughnut';
+import { SampleDataNotice } from '@/components/sample-data/SampleDataNotice';
 import { evidenceUrl, getPortrait, hasDatabase } from '@/lib/data';
 import { portraitFeatures } from '@/lib/features';
 import { localizeDimensions } from '@/lib/i18n/content';
@@ -11,6 +12,7 @@ import { getI18n } from '@/lib/i18n/server';
 import { involvementView } from '@/lib/involvement';
 import { pageTitle } from '@/lib/page-meta';
 import { panelLabels, portraitPanelViews, selectedPanelView } from '@/lib/portrait-panel';
+import { portraitSampleData } from '@/lib/sample-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,10 +52,11 @@ export default async function TenantPage({
   // `involvement` off no listings are read at all, and with `discussion` off
   // nothing here mentions one.
   const features = await portraitFeatures(tenant);
-  const [portrait, { m, href, locale }, involvement] = await Promise.all([
+  const [portrait, { m, href, locale }, involvement, sample] = await Promise.all([
     getPortrait(tenant),
     getI18n(),
     features.involvement ? involvementView(tenant) : Promise.resolve(null),
+    portraitSampleData(tenant),
   ]);
   if (!portrait) notFound();
 
@@ -86,6 +89,10 @@ export default async function TenantPage({
             <p lang="en" className="mt-4 max-w-2xl">
               {portrait.tenant.description}
             </p>
+          ) : null}
+          {/* Seeded synthetic values (scripts/seed-demo-data.ts) are labelled before any number. */}
+          {sample ? (
+            <SampleDataNotice labels={m.sampleData} name={portrait.tenant.name} className="mt-4 max-w-2xl" />
           ) : null}
         </header>
 

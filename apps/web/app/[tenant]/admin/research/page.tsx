@@ -7,6 +7,9 @@ import { requireAdminPage } from '@/lib/admin-guard';
 import { adminPageMetadata } from '@/lib/page-meta';
 import { billingSummary, keyFundedSessionsNote } from '@/lib/billing';
 import { UsageMeter } from '@/components/billing/UsageMeter';
+import { AutoRefresh } from '@/components/admin/AutoRefresh';
+import { runInProgress, runPhase } from '@/lib/run-progress';
+import { RunPhaseBadge } from './RunBadges';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,10 +33,13 @@ export default async function ResearchPage({
   // The meter is the plan's allowance (plan-funded sessions only); what ran on the organization's own key is named
   // under it, in the same words as on the billing page and the org hub (lib/billing.ts keyFundedSessionsNote).
   const keyNote = keyFundedSessionsNote(billing);
+  // A queued run turns into a running one, and a running one settles, without anyone touching this page.
+  const anyInProgress = runs.some((run) => runInProgress(runPhase(run)));
 
   return (
     <>
       <SiteHeader variant="admin" tenant={{ slug: ctx.tenant.slug, name: ctx.tenant.name }} />
+      <AutoRefresh everyMs={10_000} active={anyInProgress} />
       <main id="main" className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
         <p className="text-sm">
           <Link className="underline" href={`/${tenant}/admin`}>
@@ -109,7 +115,7 @@ export default async function ResearchPage({
                         </Link>
                       </td>
                       <td className="py-2 pr-4">
-                        <StatusBadge status={run.status} />
+                        <RunPhaseBadge phase={runPhase(run)} />
                       </td>
                       <td className="py-2 pr-4">{run.plan.sessions.length}</td>
                       <td className="py-2 pr-4">
@@ -127,16 +133,4 @@ export default async function ResearchPage({
       </main>
     </>
   );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const cls =
-    status === 'complete'
-      ? 'bg-green-100 text-green-900'
-      : status === 'failed'
-        ? 'bg-red-100 text-red-900'
-        : status === 'running'
-          ? 'bg-blue-100 text-blue-900'
-          : 'bg-black/5';
-  return <span className={`rounded px-1.5 py-0.5 text-xs ${cls}`}>{status}</span>;
 }

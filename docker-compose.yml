@@ -22,8 +22,9 @@ x-app-env: &app-env
   # Features switched off for the whole deployment (SPEC-v7 §3); web and worker read the same list.
   DF_DISABLED_FEATURES: ${DF_DISABLED_FEATURES:-}
 
-# Sign-in, mail, and billing: the web app's integrations, also given to the
-# ops shell (migrate) so scripts/preflight.ts can verify them live.
+# Sign-in, mail, billing and the public site's settings: the web app's
+# integrations, also given to the ops shell (migrate) so scripts/preflight.ts
+# can verify them live.
 x-integrations-env: &integrations-env
   APP_URL: ${APP_URL:?set APP_URL}
   AUTH_URL: ${APP_URL:?set APP_URL}
@@ -35,11 +36,40 @@ x-integrations-env: &integrations-env
   AUTH_MICROSOFT_ENTRA_ID_ISSUER: ${AUTH_MICROSOFT_ENTRA_ID_ISSUER:-}
   SMTP_URL: ${SMTP_URL:-}
   EMAIL_FROM: ${EMAIL_FROM:-}
+  # Required in production: the help address in the footer, on error pages and in every refusal.
   SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
   STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
   STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
   # Encrypts organizations' own Anthropic API keys (optional; the worker gets it too).
   DF_SECRETS_KEY: ${DF_SECRETS_KEY:-}
+  # Optional: the footer's Terms link, and the organization the landing page showcases
+  # (docs/deploy.md §2). Empty means no Terms link, and a list of public portraits instead.
+  TERMS_URL: ${TERMS_URL:-}
+  DF_SHOWCASE_ORG: ${DF_SHOWCASE_ORG:-}
+
+# The research key and the models it runs, for the worker that uses them and
+# for the ops shell (migrate), whose preflight looks each model up with the
+# key — one block, so the preflight checks exactly what the worker runs.
+x-research-env: &research-env
+  # The deployment's key: pays for every research session a plan funds. Without it, plan-funded
+  # research is refused before any spend and only organizations with their own key can build.
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-5}
+  # Model settings (docs/deploy.md "Models"). Compose's `${VAR:-default}` substitutes the default when VAR
+  # is unset OR empty in .env or the shell, so a pinned model can be replaced but never blanked.
+  # The page reader: Claude Code's WebFetch hands each fetched page to this model and returns its
+  # summary, for the researchers AND the verifier. Pinned to the CLI's current implicit default so an SDK
+  # update cannot swap it silently (later SDKs map the `haiku` alias to Haiku 5.5; docs/haiku-5-5.md
+  # §3.2). A blank must never get through: CLI 0.3.220 trims the value and treats '' as unset, so a blank
+  # would silently put the page reader back on that alias. The CLI sends a set id verbatim, so it must be
+  # a first-party API id; a Bedrock, Vertex, Foundry or LLM-gateway deployment sets its provider's own id.
+  ANTHROPIC_SMALL_FAST_MODEL: ${ANTHROPIC_SMALL_FAST_MODEL:-claude-haiku-4-5-20251001}
+  # One verifier session per indicator finding. research-apply.ts reads it with `??`, which would keep an
+  # empty string as the model id; the `:-` default keeps it set.
+  VERIFIER_MODEL: ${VERIFIER_MODEL:-claude-opus-5}
+  # source-scout subagents under each researcher session. Empty (the default) = scouts off: session.ts
+  # turns orchestration on only for a non-empty value.
+  RESEARCH_SUBAGENT_MODEL: ${RESEARCH_SUBAGENT_MODEL:-}
 
 services:
   db:
@@ -105,7 +135,8 @@ services:
 
   # Applies SQL migrations, then exits; web and worker wait for it. Also the
   # ops shell (docs/deploy.md §4): `docker compose run --rm migrate node
-  # --import tsx ../../scripts/<script>.ts`, so it carries the app's env.
+  # --import tsx ../../scripts/<script>.ts`, so it carries the app's env —
+  # and the research key, which only the preflight uses here.
   migrate:
     build:
       context: .
@@ -116,7 +147,7 @@ services:
     working_dir: /app/packages/db
     command: ['node', '--import', 'tsx', 'src/migrate.ts']
     environment:
-      <<: [*app-env, *integrations-env]
+      <<: [*app-env, *integrations-env, *research-env]
       MIGRATION_DATABASE_URL: postgres://${POSTGRES_USER:-deep_fryer}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-deep_fryer}
 
   web:
@@ -131,6 +162,10 @@ services:
         condition: service_completed_successfully
     environment:
       <<: [*app-env, *integrations-env]
+      # Whether the worker has a research key, without giving the web app the key: "true" when
+      # ANTHROPIC_API_KEY is set and non-empty, empty otherwise. Derived here, never set by hand;
+      # without it the web app refuses plan-funded research before any spend (lib/env.ts).
+      DF_RESEARCH_KEY_CONFIGURED: ${ANTHROPIC_API_KEY:+true}
     expose:
       - '3000'
 
@@ -145,35 +180,27 @@ services:
       storage-init:
         condition: service_completed_successfully
     environment:
-      <<: *app-env
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-5}
-      # Model settings (docs/deploy.md "Models"). Compose's `${VAR:-default}` substitutes the default when VAR
-      # is unset OR empty in .env or the shell, so a pinned model can be replaced but never blanked.
-      # The page reader: Claude Code's WebFetch hands each fetched page to this model and returns its
-      # summary, for the researchers AND the verifier. Pinned to the CLI's current implicit default so an SDK
-      # update cannot swap it silently (later SDKs map the `haiku` alias to Haiku 5.5; docs/haiku-5-5.md
-      # §3.2). A blank must never get through: CLI 0.3.220 trims the value and treats '' as unset, so a blank
-      # would silently put the page reader back on that alias. The CLI sends a set id verbatim, so it must be
-      # a first-party API id; a Bedrock, Vertex, Foundry or LLM-gateway deployment sets its provider's own id.
-      ANTHROPIC_SMALL_FAST_MODEL: ${ANTHROPIC_SMALL_FAST_MODEL:-claude-haiku-4-5-20251001}
-      # One verifier session per indicator finding. research-apply.ts reads it with `??`, which would keep an
-      # empty string as the model id; the `:-` default keeps it set.
-      VERIFIER_MODEL: ${VERIFIER_MODEL:-claude-opus-5}
-      # source-scout subagents under each researcher session. Empty (the default) = scouts off: session.ts
-      # turns orchestration on only for a non-empty value.
-      RESEARCH_SUBAGENT_MODEL: ${RESEARCH_SUBAGENT_MODEL:-}
+      <<: [*app-env, *research-env]
       # Dimension sessions one research run keeps going at once (a whole number >= 1). Run outside compose,
       # an empty value would mean 1 (Number('') is 0, floored to 1); here it means 3.
       RESEARCH_SESSION_CONCURRENCY: ${RESEARCH_SESSION_CONCURRENCY:-3}
       # Decrypts organizations' own Anthropic API keys for their sessions (same value as web).
       DF_SECRETS_KEY: ${DF_SECRETS_KEY:-}
       WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-1}
+      # The egress proxy (docs/deploy.md "Worker egress"): the research traffic — the sessions' model
+      # calls and page reads, Chromium's evidence captures, the worker's own source checks, PDF downloads
+      # and NWS feed — goes through it. The sessions' CLI and Chromium read HTTPS_PROXY themselves; Node's
+      # fetch honours it only with NODE_USE_ENV_PROXY=1, set here exactly when a proxy is (empty leaves it
+      # off). The database, SMTP and the bundled storage (plain http) stay direct.
       HTTPS_PROXY: ${WORKER_HTTPS_PROXY:-}
+      NODE_USE_ENV_PROXY: ${WORKER_HTTPS_PROXY:+1}
       # Run-complete / flagged-finding emails link back to the review queue.
       APP_URL: ${APP_URL:?set APP_URL}
       SMTP_URL: ${SMTP_URL:-}
       EMAIL_FROM: ${EMAIL_FROM:-}
+      # Named in a failed run's email as who to contact (notify.ts), and the contact the NWS asks for in
+      # the alerts feed's User-Agent (core nwsUserAgent; it falls back to EMAIL_FROM's address).
+      SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
 
   caddy:
     image: caddy:2.10

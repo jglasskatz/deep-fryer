@@ -86,7 +86,7 @@ function currentAdminHref(links: NavLink[], requestPath: string): string | undef
  */
 export async function SiteHeader({ variant, tenant, family, familyView, org }: SiteHeaderProps) {
   const auth = hasDatabase() || !authConfigured() ? await getAuth() : null;
-  const [{ m, href }, requestPath] = await Promise.all([
+  const [{ m, href, locale }, requestPath] = await Promise.all([
     variant === 'sign-in' ? loginI18n() : getI18n(),
     getRequestPath(),
   ]);
@@ -98,9 +98,13 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
 
   const links: NavLink[] = [];
   if (variant === 'landing' || variant === 'account' || variant === 'architecture') {
-    links.push({ href: '/pricing', label: 'Pricing' });
-    if (auth?.userId) links.push({ href: '/account', label: 'My portraits' });
-    links.push({ href: '/start', label: 'Start a portrait', primary: true });
+    // The product links are English (their pages exist only in English), but this header also tops pages in
+    // the reader's language — a 404 under /es/… — so they say which language they are in (WCAG 3.1.2).
+    const lang = locale === 'en' ? undefined : 'en';
+    links.push({ href: '/pricing', label: 'Pricing', lang });
+    if (auth?.userId) links.push({ href: '/account', label: 'My portraits', lang });
+    // Starting a portrait is the deployment's self_serve feature: without it /start is a 404, so no link.
+    if (deploymentFeatureOn('self_serve')) links.push({ href: '/start', label: 'Start a portrait', primary: true, lang });
   }
   // Feature links follow the portrait's features (SPEC-v7 §3.3); the lists
   // themselves are built, and tested, in nav-links.ts.
@@ -265,7 +269,7 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
         {adminRow ? null : (
           <nav aria-label={m.common.mainNav} className="ms-auto hidden items-center gap-1 text-sm md:flex">
             {links.map((l) => (
-              <Link key={l.href} href={l.href} className={linkClass(l)}>
+              <Link key={l.href} href={l.href} lang={l.lang} className={linkClass(l)}>
                 {l.label}
               </Link>
             ))}
@@ -305,6 +309,7 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
                   <Link
                     key={l.href}
                     href={l.href}
+                    lang={l.lang}
                     aria-current={l.href === activeHref ? 'page' : undefined}
                     className={`block rounded px-3 py-2.5 hover:bg-black/5 ${l.href === activeHref ? 'bg-black/5 font-medium' : ''}`}
                   >

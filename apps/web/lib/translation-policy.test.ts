@@ -27,7 +27,12 @@ describe.skipIf(!hasDb)('translation policy (Postgres)', () => {
     for (const fn of cleanup.reverse()) await fn();
   });
 
-  async function portrait(translation: boolean | null, organizationId?: string) {
+  /**
+   * A portrait with its `translation` feature as given (null: never set).
+   * Public unless `published` is false: marked as having published, in the
+   * system context, as the database's publish trigger does (migration 0015).
+   */
+  async function portrait(translation: boolean | null, organizationId?: string, { published = true } = {}) {
     const m = await import('@deep-fryer/db');
     const { and, eq } = await import('drizzle-orm');
     const db = m.getDb();
@@ -36,6 +41,7 @@ describe.skipIf(!hasDb)('translation policy (Postgres)', () => {
       await db.delete(m.tenants).where(eq(m.tenants.id, tenant.id));
       if (!organizationId) await db.delete(m.organizations).where(eq(m.organizations.id, tenant.organizationId));
     });
+    if (published) await db.update(m.tenants).set({ firstPublishedAt: new Date() }).where(eq(m.tenants.id, tenant.id));
     if (translation !== null) {
       await db
         .update(m.tenantConfig)
@@ -69,6 +75,24 @@ describe.skipIf(!hasDb)('translation policy (Postgres)', () => {
     const [org] = await m.getDb().select().from(m.organizations).where(eq(m.organizations.id, old.organizationId));
     expect(await translationOnFor(`/o/${org!.slug}/progress`)).toBe(false);
     expect(await translationOnFor(`/${old.slug}`)).toBe(false);
+  });
+
+  it('answers for a portrait that has not published yet as for an unknown one, whatever its feature says', async () => {
+    // Middleware cannot tell its members from anyone else, and a redirect or
+    // an hreflang list must not reveal that a private portrait exists.
+    clearTranslationPolicyCache();
+    const m = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const hidden = await portrait(true, undefined, { published: false });
+    const [org] = await m.getDb().select().from(m.organizations).where(eq(m.organizations.id, hidden.organizationId));
+    expect(await translationOnFor(`/${hidden.slug}`)).toBe(false);
+    expect(await translationOnFor(`/embed/${hidden.slug}`)).toBe(false);
+    expect(await translationOnFor(`/o/${org!.slug}`)).toBe(false);
+    // Once it is public it follows its feature (after the minute's cache).
+    await m.getDb().update(m.tenants).set({ firstPublishedAt: new Date() }).where(eq(m.tenants.id, hidden.id));
+    clearTranslationPolicyCache();
+    expect(await translationOnFor(`/${hidden.slug}`)).toBe(true);
+    expect(await translationOnFor(`/o/${org!.slug}`)).toBe(true);
   });
 
   it('keeps its cache bounded, and never spends a lookup or an entry on a segment that is not a slug', async () => {

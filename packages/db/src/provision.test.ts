@@ -62,3 +62,36 @@ describe.skipIf(!hasDb)('enableTenantFeatures', () => {
     }
   });
 });
+
+describe.skipIf(!hasDb)('provisionOrganization', () => {
+  it('creates the organization and its owner, and no subscription: setting up is free, research is not', async () => {
+    const m = await import('./index.js');
+    const { eq } = await import('drizzle-orm');
+    const db = m.getDb();
+    const [owner] = await db.insert(m.users).values({ email: `${uniq()}@owner.example.gov` }).returning();
+    // Whatever a caller passes, there is no way to ask for a trial any more.
+    const args: Parameters<typeof m.provisionOrganization>[1] & { startTrial?: boolean } = {
+      slug: uniq(),
+      name: 'Free Setup Town',
+      ownerUserId: owner!.id,
+      startTrial: true,
+    };
+    const org = await m.provisionOrganization(db, args);
+    try {
+      expect(await m.subscriptionFor(db, org.id)).toBeNull();
+      const [membership] = await db
+        .select()
+        .from(m.organizationMembers)
+        .where(eq(m.organizationMembers.organizationId, org.id));
+      expect(membership).toMatchObject({ userId: owner!.id, role: 'owner' });
+      // …so the research gate refuses the first session, whoever would pay for it.
+      for (const hasKey of [false, true]) {
+        const { check } = m.decideResearchSpend(null, 0, hasKey, 1);
+        expect(check).toMatchObject({ allowed: false, message: expect.stringMatching(/^Choose a plan to build your doughnut/) });
+      }
+    } finally {
+      await db.delete(m.organizations).where(eq(m.organizations.id, org.id));
+      await db.delete(m.users).where(eq(m.users.id, owner!.id));
+    }
+  });
+});

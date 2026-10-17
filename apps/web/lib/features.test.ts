@@ -94,3 +94,38 @@ describe.skipIf(!hasDb)('feature flags (web)', () => {
     expect(deploymentFeatureOn('deep_fry')).toBe(true);
   });
 });
+
+/**
+ * Deployment-wide features have no portrait to read, so these need no
+ * database: self-serve start (/start and the action behind its form) is on
+ * unless the operator turns it off, and off means gone.
+ */
+describe('deployment features: self-serve start', () => {
+  afterAll(async () => {
+    delete process.env.DF_DISABLED_FEATURES;
+    (await import('./features')).resetDeploymentDisabledForTests();
+  });
+
+  it('is on by default, and off means a 404 for the page and a refusal for the action', async () => {
+    const { assertDeploymentFeature, deploymentFeatureOn, requireDeploymentFeature, resetDeploymentDisabledForTests } =
+      await import('./features');
+    delete process.env.DF_DISABLED_FEATURES;
+    resetDeploymentDisabledForTests();
+    expect(deploymentFeatureOn('self_serve')).toBe(true);
+    expect(() => requireDeploymentFeature('self_serve')).not.toThrow();
+    expect(() => assertDeploymentFeature('self_serve')).not.toThrow();
+
+    process.env.DF_DISABLED_FEATURES = 'self_serve';
+    resetDeploymentDisabledForTests();
+    expect(deploymentFeatureOn('self_serve')).toBe(false);
+    expect(deploymentFeatureOn('deep_fry')).toBe(true);
+    let digest = '';
+    try {
+      requireDeploymentFeature('self_serve');
+    } catch (err) {
+      digest = (err as { digest?: string }).digest ?? '';
+    }
+    expect(digest).toContain('404');
+    expect(() => assertDeploymentFeature('self_serve')).toThrow('This is not available on this server.');
+  });
+});

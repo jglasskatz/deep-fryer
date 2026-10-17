@@ -13,16 +13,19 @@ import {
   microsoftConfigured,
   smtpConfigured,
 } from '@/lib/env';
+import { deploymentFeatureOn } from '@/lib/features';
 import { rich } from '@/lib/i18n/format';
 import { loginI18n } from './i18n';
 import {
   afterEmailSignIn,
   checkEmailHref,
   isPlausibleEmail,
+  isStartPath,
   loginErrorHref,
   loginErrorMessage,
   MAX_EMAIL_LENGTH,
   returnPath,
+  START_PATH,
 } from './sign-in';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -42,7 +45,10 @@ export async function generateMetadata(): Promise<Metadata> {
  *
  * `next` is where the person was; it survives errors and the check-email
  * page (./sign-in.ts), and lib/auth.ts safeNextPath validates it before any
- * redirect follows it.
+ * redirect follows it. When it is the self-serve start flow (/start), the
+ * person is city staff setting up a portrait, so the introduction speaks to
+ * them and asks for a work address, and the "start a portrait" pointer is
+ * left out (they are on their way there).
  */
 export default async function LoginPage({
   searchParams,
@@ -99,7 +105,9 @@ export default async function LoginPage({
       const authRedirect: unknown = await signIn('nodemailer', { email, redirectTo: next, redirect: false });
       destination = afterEmailSignIn(String(authRedirect), carried);
     } catch (err) {
-      // Sending failed (SMTP down, or the per-address link limit in auth.ts).
+      // Auth.js throws here when auth.ts callbacks.signIn failed (the sign-in
+      // limits could not be read). A limit that refuses, and a send that
+      // fails, come back as an error URL instead (afterEmailSignIn).
       if (err instanceof AuthError) redirect(loginErrorHref('EmailSignin', carried));
       throw err;
     }
@@ -112,6 +120,11 @@ export default async function LoginPage({
     email: emailSignInEnabled(),
   };
   const errorText = loginErrorMessage(error, t.errors);
+  const forStart = isStartPath(carried);
+  // The pointer to /start is a "build your city's doughnut" call to action:
+  // gone with the self_serve feature (the page is then a 404), and redundant
+  // for someone already headed there.
+  const offerStart = deploymentFeatureOn('self_serve') && !forStart;
   const providerButton =
     'w-full rounded border border-black/20 bg-white px-4 py-2.5 text-sm font-medium hover:bg-black/5';
 
@@ -120,7 +133,7 @@ export default async function LoginPage({
       <SiteHeader variant="sign-in" />
       <main id="main" lang={info.code} dir={info.dir} className="mx-auto max-w-md px-4 sm:px-6 py-16">
         <h1 className="text-2xl font-bold">{t.title}</h1>
-        <p className="mt-2 text-sm text-[color:var(--color-muted)]">{t.intro}</p>
+        <p className="mt-2 text-sm text-[color:var(--color-muted)]">{forStart ? t.startIntro : t.intro}</p>
 
         {errorText ? (
           <p role="alert" className="mt-6 rounded border border-red-700/30 bg-red-50 p-3 text-sm text-red-900">
@@ -175,15 +188,17 @@ export default async function LoginPage({
           <p className="mt-6 text-sm text-red-800">{t.noMethods}</p>
         ) : null}
 
-        <p className="mt-10 text-xs text-[color:var(--color-muted)]">
-          {rich(t.newHere, {
-            link: (
-              <Link className="underline" href="/start">
-                {t.startLink}
-              </Link>
-            ),
-          })}
-        </p>
+        {offerStart ? (
+          <p className="mt-10 text-xs text-[color:var(--color-muted)]">
+            {rich(t.newHere, {
+              link: (
+                <Link className="underline" href={START_PATH}>
+                  {t.startLink}
+                </Link>
+              ),
+            })}
+          </p>
+        ) : null}
       </main>
     </>
   );

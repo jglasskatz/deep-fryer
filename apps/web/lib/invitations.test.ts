@@ -10,6 +10,11 @@ import { afterAll, describe, expect, it, vi } from 'vitest';
  */
 
 vi.mock('@/auth', () => ({ auth: vi.fn(async () => null) }));
+// No invitation email is sent here: the link is what createInvitation returns either way.
+vi.mock('./email', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./email')>()),
+  emailDeliverable: () => false,
+}));
 
 const hasDb = Boolean(process.env.DATABASE_URL);
 const uniq = () => `inv-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
@@ -113,5 +118,29 @@ describe.skipIf(!hasDb)('acceptInvitation', () => {
         ),
       );
     expect(row?.role).toBe('owner');
+  });
+
+  it('lets an organization with no plan invite the people who set its portrait up, up to the free seats', async () => {
+    // Every organization /start creates has no subscription: setting up — inviting the team included — is free.
+    const { m, user, tenant } = await setup(null, 'owner');
+    const { FREE_SETUP_LIMITS } = await import('@deep-fryer/core');
+    expect(await m.subscriptionFor(m.getDb(), tenant.organizationId)).toBeNull();
+    const { createInvitation } = await import('./invitations');
+    const invite = (n: number) =>
+      createInvitation({
+        scope: { kind: 'tenant', tenantId: tenant.id, role: 'editor' },
+        email: `${uniq()}-${n}@colleague.example.gov`,
+        invitedBy: user.id,
+        inviterName: null,
+        targetName: 'Invite City',
+      });
+    // The owner holds one of the three seats: two colleagues fit…
+    expect(FREE_SETUP_LIMITS.seats).toBe(3);
+    await expect(invite(1)).resolves.toMatchObject({ url: expect.stringContaining('/invite/') });
+    await expect(invite(2)).resolves.toMatchObject({ url: expect.stringContaining('/invite/') });
+    // …and a third waits for a plan, saying so.
+    await expect(invite(3)).rejects.toThrow(
+      /^Without a plan an organization has 3 seats, and all are in use or reserved by pending invitations\..*choose a plan under Billing/,
+    );
   });
 });

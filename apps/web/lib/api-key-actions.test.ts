@@ -50,7 +50,7 @@ describe.skipIf(!hasDb)('saveApiKey and removeApiKey', () => {
     const m = await import('@deep-fryer/db');
     const { eq } = await import('drizzle-orm');
     const db = m.getDb();
-    const org = await m.provisionOrganization(db, { slug: uniq(), name: 'Keyholder City', startTrial: true });
+    const org = await m.provisionOrganization(db, { slug: uniq(), name: 'Keyholder City' });
     const { tenant: a } = await m.provisionTenant(db, { slug: uniq(), name: 'Keyholder City', organizationId: org.id });
     const { tenant: b } = await m.provisionTenant(db, { slug: uniq(), name: 'Keyholder North', organizationId: org.id });
     cleanup.push(async () => {
@@ -136,16 +136,19 @@ describe.skipIf(!hasDb)('saveApiKey and removeApiKey', () => {
     expect(await stored()).toBeNull();
   });
 
-  it('refuses before calling Anthropic when the server has no DF_SECRETS_KEY', async () => {
+  it('refuses before calling Anthropic when the server has no usable DF_SECRETS_KEY, naming no setting to the owner', async () => {
     const { saveApiKey } = await import('./api-key-actions');
     const { org, stored } = await organization();
     const list = anthropicAccepts();
     delete process.env.DF_SECRETS_KEY;
     try {
+      // The owner hears what they can do; the setting's name is for the operator, in the server log.
       const res = await saveApiKey(org.slug, API_KEY);
-      expect(res).toMatchObject({ ok: false, error: expect.stringMatching(/operator has not set DF_SECRETS_KEY/) });
+      expect(res).toMatchObject({ ok: false, error: expect.stringMatching(/^This server isn’t set up to store organization keys\. Contact /) });
+      expect(JSON.stringify(res)).not.toMatch(/DF_SECRETS_KEY|docs\//);
       process.env.DF_SECRETS_KEY = 'not-32-bytes';
-      expect(await saveApiKey(org.slug, API_KEY)).toMatchObject({ ok: false, error: expect.stringMatching(/not a valid 32-byte key/) });
+      const invalid = await saveApiKey(org.slug, API_KEY);
+      expect(invalid).toEqual(res);
     } finally {
       process.env.DF_SECRETS_KEY = secretsKey;
     }
@@ -243,7 +246,7 @@ describe.skipIf(!hasDb)('saveApiKey and removeApiKey as a signed-in owner', () =
     const { eq, inArray } = await import('drizzle-orm');
     const db = m.getDb();
     const [owner] = await db.insert(m.users).values({ email: `${uniq()}@owner.example.gov` }).returning();
-    const org = await m.provisionOrganization(db, { slug: uniq(), name: 'Signed-in City', startTrial: true, ownerUserId: owner!.id });
+    const org = await m.provisionOrganization(db, { slug: uniq(), name: 'Signed-in City', ownerUserId: owner!.id });
     const { tenant: a } = await m.provisionTenant(db, { slug: uniq(), name: 'Signed-in City', organizationId: org.id });
     const { tenant: b } = await m.provisionTenant(db, { slug: uniq(), name: 'Signed-in North', organizationId: org.id });
     cleanup.push(async () => {

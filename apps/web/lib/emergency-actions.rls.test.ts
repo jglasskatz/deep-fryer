@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { onOneConnection } from '../test/one-connection';
 import { setPortraitFeatures } from './test-features';
+import { markPortraitPublic } from './test-portraits';
 
 /**
  * The same actions for signed-in people (not dev mode): userDb runs as the
@@ -35,6 +36,8 @@ describe.skipIf(!hasDb)('emergency actions under row-level security', () => {
     const db = m.getDb();
     const { tenant } = await m.provisionTenant(db, { slug: uniq(), name: 'Policy City' });
     await setPortraitFeatures(tenant.id, { emergency: true });
+    // Public, as its first publish would make it (migration 0015): anonymous visitors only reach public portraits.
+    await markPortraitPublic(tenant.id);
     tenantSlug = tenant.slug;
     tenantId = tenant.id;
     cleanup.tenantId = tenant.id;

@@ -257,8 +257,10 @@ export function PortraitPanel({
                           <p className="mt-1 text-sm">
                             {/* A control on its own line, not a link in a sentence: 44 px tall. */}
                             <a className="inline-flex min-h-11 items-center font-medium underline" href={l.tel}>
-                              {/* Digits laid out left-to-right in every language. */}
-                              {rich(t.call, { phone: <span dir="ltr">{l.phone}</span> })}
+                              {/* One flex item: as separate items, "Call " and the number would each
+                                  lose their edge whitespace (CSS flex layout), reading "Call311".
+                                  Digits laid out left-to-right in every language. */}
+                              <span>{rich(t.call, { phone: <span dir="ltr">{l.phone}</span> })}</span>
                             </a>
                           </p>
                         ) : null}

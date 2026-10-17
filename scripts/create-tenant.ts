@@ -7,12 +7,13 @@
  *   tsx scripts/create-tenant.ts --slug ithaca --name "Ithaca" \
  *     --owner clerk@cityofithaca.org [--org-name "City of Ithaca"] \
  *     [--region "NY, USA"] [--population 32000] [--description "..."] \
- *     [--plan trial|community|city|metro|enterprise] [--contract-end 2027-06-30] \
+ *     [--plan community|city|metro|enterprise] [--contract-end 2027-06-30] \
  *     [--language-help "(607) 274-6570"]
  *
- * --plan trial starts a 30-day trial; any other plan records a staff
- * contract through --contract-end (default one year). Omit --plan to leave
- * the organization without a plan (it can buy one under Billing).
+ * --plan records a staff contract through --contract-end (default one
+ * year). Omit --plan to leave the organization without a plan: it can set
+ * up its portrait and invite its people for free, and buys a plan under
+ * Billing before any research. There is no trial: research is never free.
  */
 import { eq } from 'drizzle-orm';
 import { getDb, organizations, provisionOrganization, provisionTenant, subscriptions, tenantBySlug, users } from '@deep-fryer/db';
@@ -32,6 +33,10 @@ function parseArgs(argv: string[]) {
   }
   const plan = get('--plan');
   if (plan && !isPlanId(plan)) throw new Error(`unknown plan '${plan}'`);
+  // Kept as a plan id only for subscriptions that started one before trials were retired.
+  if (plan === 'trial') {
+    throw new Error("there are no trials any more (research is never free): pass a contract plan (community, city, metro, enterprise), or omit --plan");
+  }
   const population = get('--population');
   return {
     slug,
@@ -65,12 +70,11 @@ async function main() {
       name: args.orgName,
       ownerUserId: owner!.id,
       billingEmail: args.ownerEmail,
-      startTrial: args.plan === 'trial',
     });
     if (args.languageHelp) {
       await tx.update(organizations).set({ languageHelp: args.languageHelp.trim() }).where(eq(organizations.id, org.id));
     }
-    if (args.plan && args.plan !== 'trial') {
+    if (args.plan) {
       const end = args.contractEnd ? new Date(`${args.contractEnd}T23:59:59Z`) : new Date(Date.now() + 365 * 86_400_000);
       await tx.insert(subscriptions).values({
         organizationId: org.id,

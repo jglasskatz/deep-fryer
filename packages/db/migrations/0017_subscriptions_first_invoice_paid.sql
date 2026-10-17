@@ -1,0 +1,26 @@
+-- ---- Invoice subscriptions research only once paid ----
+-- A Stripe subscription collected by invoice (send_invoice, net 30) is
+-- `active` the moment it is created, before anything is paid, and stays in
+-- good standing through `past_due`. Self-serve "Request an annual invoice"
+-- therefore gave a brand-new organization its plan's whole research
+-- allowance with nothing paid. first_invoice_paid_at records when a paid
+-- invoice of the row's Stripe subscription was first seen (apps/web
+-- lib/stripe.ts syncSubscription asks Stripe for one while it is unset); an
+-- invoice-collected row has no standing until it is set (core standing:
+-- 'awaiting_payment'). Card and contract rows leave it null: Stripe charges a
+-- card before activating, and staff set contracts.
+--
+-- No backfill: an invoice subscription created before this migration
+-- researches again as soon as Stripe sends any event for it (or one is
+-- resent from the Stripe dashboard), when the sync finds its paid invoice.
+-- Until then it fails closed, which is the point.
+--
+-- The column is covered by the table's existing grants and its member-read
+-- policy (0003), like the rest of the row.
+ALTER TABLE "subscriptions" ADD COLUMN "first_invoice_paid_at" timestamp with time zone;--> statement-breakpoint
+-- ---- The sign-in ledger's sweep ----
+-- The worker deletes sign_in_requests rows once they leave the limit's
+-- one-hour window, every quarter hour (packages/db sign-in-requests.ts
+-- pruneExpiredSignInRecords), so the privacy notice's retention is true; the
+-- created_at index lets that sweep find them without reading the table.
+CREATE INDEX IF NOT EXISTS "sign_in_requests_created_idx" ON "sign_in_requests" USING btree ("created_at");

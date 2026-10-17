@@ -236,6 +236,7 @@ describe('scoreStrategy', () => {
   });
 
   it('withholds dollars per finding while a model is unpriced', () => {
+    // A model id core's price table does not know (it once used the page reader's, Haiku 4.5, which is priced now).
     const card = scoreStrategy([indicatorFinding({ verdict: 'pass' })], {
       indicatorsPlanned: 1,
       tokens: {
@@ -243,13 +244,30 @@ describe('scoreStrategy', () => {
         output_tokens: 0,
         by_model: {
           'claude-opus-5': { input_tokens: 1_000_000, output_tokens: 0, cache_read_tokens: 0, cache_write_tokens: 0, web_search_requests: 0 },
-          'claude-haiku-4-5-20251001': { input_tokens: 50_000, output_tokens: 2_000, cache_read_tokens: 0, cache_write_tokens: 0, web_search_requests: 0 },
+          'claude-test-0': { input_tokens: 50_000, output_tokens: 2_000, cache_read_tokens: 0, cache_write_tokens: 0, web_search_requests: 0 },
         },
       },
     });
     expect(card.dollars).toBeCloseTo(5, 10);
-    expect(card.unpriced).toEqual(['claude-haiku-4-5-20251001']);
+    expect(card.unpriced).toEqual(['claude-test-0']);
     expect(card.costPerVerifiedFindingUsd).toBeNull();
+  });
+
+  it('prices the page reader, Haiku 4.5, at $1 in and $5 out per million tokens', () => {
+    const card = scoreStrategy([indicatorFinding({ verdict: 'pass' })], {
+      indicatorsPlanned: 1,
+      tokens: {
+        input_tokens: 0,
+        output_tokens: 0,
+        by_model: {
+          'claude-haiku-4-5-20251001': { input_tokens: 50_000, output_tokens: 2_000, cache_read_tokens: 0, cache_write_tokens: 0, web_search_requests: 0 },
+        },
+      },
+    });
+    // 50k × $1/M + 2k × $5/M
+    expect(card.dollars).toBeCloseTo(0.06, 10);
+    expect(card.unpriced).toEqual([]);
+    expect(card.costPerVerifiedFindingUsd).toBeCloseTo(0.06, 10);
   });
 
   it('reports no cost per finding when nothing verified', () => {

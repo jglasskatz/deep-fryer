@@ -1,5 +1,6 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { setPortraitFeatures } from './test-features';
+import { markPortraitPublic } from './test-portraits';
 
 /**
  * Emergency curation actions in dev mode (no AUTH_SECRET: the local
@@ -45,6 +46,8 @@ describe.skipIf(!hasDb)('emergency actions (dev mode, Postgres)', () => {
     const m = await import('@deep-fryer/db');
     const { tenant } = await m.provisionTenant(m.getDb(), { slug: uniq(), name: 'Storm City' });
     await setPortraitFeatures(tenant.id, { emergency: true });
+    // Public, as its first publish would make it (migration 0015): anonymous visitors only reach public portraits.
+    await markPortraitPublic(tenant.id);
     created.push({ tenantId: tenant.id, organizationId: tenant.organizationId });
     return tenant;
   }

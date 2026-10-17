@@ -1,6 +1,6 @@
-import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { RESERVED_SLUGS, SLUG_RE, parseDisabledFeatures, resolvePortraitFeatures } from '@deep-fryer/core';
-import { getDb, organizations, tenantConfig, tenants } from '@deep-fryer/db';
+import { getDb, organizations, tenantConfig, tenantIsPublic, tenants } from '@deep-fryer/db';
 import { hasDatabase } from './env';
 import { TtlCache } from './ttl-cache';
 
@@ -14,9 +14,16 @@ import { TtlCache } from './ttl-cache';
  * - A portrait's pages (/{portrait}/…, /embed/{portrait}) follow the
  *   portrait's `translation` feature.
  * - An organization's pages (/o/{org}/…) are translated when any of its
- *   live portraits is — archived ones do not count, the same rule as
- *   lib/features.ts organizationFeatures, so an organization's pages and its
- *   live portraits agree.
+ *   public portraits is — the portraits lib/features.ts organizationFeatures
+ *   counts for a visitor (it reads under row-level security), so an
+ *   organization's pages and its public portraits agree.
+ * - Only public portraits count: live, and published at least once
+ *   (migration 0015). One that is archived or not public yet is answered
+ *   like an unknown one, in English: middleware answers before it knows who
+ *   is asking, the page is a 404 for everyone but the portrait's members, and
+ *   neither the redirects nor the hreflang list (app/layout.tsx) may tell a
+ *   private portrait from a made-up slug. Its members read it in English
+ *   until it publishes.
  * - Everything else (landing, pricing, sign-in) is not a portrait's page and
  *   stays multilingual.
  * - Without a database (the demo build) every feature is on, translation
@@ -44,25 +51,28 @@ export function translationScope(path: string): { kind: 'tenant' | 'org'; slug: 
 
 async function lookup(kind: 'tenant' | 'org', slug: string): Promise<boolean> {
   const db = getDb();
-  // Live portraits only: an archived portrait's pages are not public (its row
-  // is hidden from readers, migration 0005), and it must not keep its
-  // organization's pages translated after the live portraits turned it off.
+  // Public portraits only (tenantIsPublic — the system context bypasses
+  // row-level security, so the rule is applied here): an archived portrait's
+  // pages are not public (its row is hidden from readers, migration 0005),
+  // and it must not keep its organization's pages translated after the live
+  // portraits turned it off; nor may a portrait that has not published yet
+  // (migration 0015).
   const ids =
     kind === 'tenant'
       ? (
           await db
             .select({ id: tenants.id })
             .from(tenants)
-            .where(and(eq(tenants.slug, slug), isNull(tenants.archivedAt)))
+            .where(and(eq(tenants.slug, slug), tenantIsPublic()))
         ).map((r) => r.id)
       : (
           await db
             .select({ id: tenants.id })
             .from(tenants)
             .innerJoin(organizations, eq(organizations.id, tenants.organizationId))
-            .where(and(eq(organizations.slug, slug), isNull(tenants.archivedAt)))
+            .where(and(eq(organizations.slug, slug), tenantIsPublic()))
         ).map((r) => r.id);
-  // An unknown portrait is a 404 page in English anyway; nothing to translate.
+  // An unknown (or not yet public) portrait is a 404 page in English anyway; nothing to translate.
   if (ids.length === 0) return false;
   const rows = await db
     .select({ value: tenantConfig.value })

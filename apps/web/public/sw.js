@@ -12,7 +12,12 @@
  *                              the network fails — else an offline page this
  *                              worker renders itself (plain HTML, no scripts
  *                              to load, listing the pages saved on the device)
- *   images (evidence, icons)   stale-while-revalidate, bounded
+ *   images (evidence, icons)   stale-while-revalidate, bounded; stored
+ *                              only for a page shown signed out (never
+ *                              for a staff, account or billing page, nor
+ *                              while the server has recently answered
+ *                              `private`) — a staff page's images are a
+ *                              draft's evidence, on a shared computer
  *   admin, account, billing,
  *   auth, API, RSC payloads    network only — never cached
  *
@@ -48,7 +53,7 @@
  * Bump VERSION whenever this file's behavior changes; the page shows an
  * "update available" prompt and activation waits for the user.
  */
-const VERSION = 'v5';
+const VERSION = 'v6';
 const STATIC = `df-static-${VERSION}`;
 const PAGES = `df-pages-${VERSION}`;
 const IMAGES = `df-images-${VERSION}`;
@@ -398,12 +403,18 @@ async function cacheFirst(request) {
   return response;
 }
 
-async function staleWhileRevalidate(request) {
+/**
+ * Images are served stale-while-revalidate; `store` says whether a fresh
+ * copy may be kept. A copy already stored was stored from a page shown
+ * signed out, so serving it is never a leak; what must not happen is
+ * storing an image a signed-in page showed.
+ */
+async function staleWhileRevalidate(request, store) {
   const cache = await caches.open(IMAGES);
   const cached = await cache.match(request);
   const refresh = fetch(request)
     .then((response) => {
-      if (response.ok || response.type === 'opaque') {
+      if (store && (response.ok || response.type === 'opaque')) {
         cache.put(request, response.clone());
         trim(IMAGES, MAX_IMAGES);
       }
@@ -413,6 +424,36 @@ async function staleWhileRevalidate(request) {
   return cached ?? refresh;
 }
 
+/**
+ * Whether an image may be stored on the device: only one shown by a page
+ * the worker would store itself. Images on staff, account and billing pages
+ * (NEVER_CACHE) are refused — the review queue shows evidence of findings
+ * not yet published — and so is every image while the server has recently
+ * answered a page `private` (someone is signed in; recentlyPrivate), the
+ * same test CACHE_PAGE uses. The page is the document that asked for the
+ * image (its client); the request's referrer stands in when the browser
+ * gives no client (strict-origin-when-cross-origin sends the full address
+ * same-origin).
+ */
+async function imageStorable(event) {
+  let page = '';
+  try {
+    const client = event.clientId ? await self.clients.get(event.clientId) : null;
+    page = client?.url || event.request.referrer || '';
+  } catch {
+    page = event.request.referrer || '';
+  }
+  if (page) {
+    try {
+      const u = new URL(page);
+      if (u.origin === self.location.origin && NEVER_CACHE.some((re) => re.test(u.pathname))) return false;
+    } catch {
+      // An unreadable referrer says nothing either way; the privacy marker still decides.
+    }
+  }
+  return !(await recentlyPrivate());
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
@@ -420,7 +461,7 @@ self.addEventListener('fetch', (event) => {
   const sameOrigin = url.origin === self.location.origin;
 
   if (request.destination === 'image') {
-    event.respondWith(staleWhileRevalidate(request));
+    event.respondWith(imageStorable(event).then((store) => staleWhileRevalidate(request, store)));
     return;
   }
   if (!sameOrigin) return;

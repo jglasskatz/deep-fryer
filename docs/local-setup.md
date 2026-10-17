@@ -11,8 +11,13 @@
 
 ```bash
 pnpm install
-cp .env.example .env.local
+cp .env.example apps/web/.env.local
 ```
+
+Next.js reads `.env.local` from the web app's own folder. The worker and the
+scripts read only their shell environment, so export what they need there
+(or pass it inline, as below). The file's first half is the local
+configuration; its second half is what a deployment sets (docs/deploy.md).
 
 Everything degrades gracefully in development:
 
@@ -25,9 +30,15 @@ Everything degrades gracefully in development:
   Add Google / Microsoft credentials to test OAuth.
 - **+ `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET`** (test mode) — online
   billing; forward webhooks with `stripe listen --forward-to localhost:3000/api/billing/webhook`.
-- **+ `ANTHROPIC_API_KEY`** — the research worker can run sessions.
+- **+ `ANTHROPIC_API_KEY`** (the worker's environment) **and
+  `DF_RESEARCH_KEY_CONFIGURED=true`** (the web app's) — research the plan
+  pays for can run. The web app never sees the key, only this flag, which
+  docker compose derives from the key; without it the web app refuses
+  plan-funded research before anything starts. Building always needs a plan
+  or contract — there are no trials — so seed one (below).
 
-Production refuses to start without auth (see `apps/web/lib/env.ts`).
+Production (including a local `next start`) refuses to start without auth,
+a sign-in method and `SUPPORT_EMAIL` (`packages/core/src/deploy-env.ts`).
 
 ## Database
 
@@ -43,15 +54,17 @@ triggers, and the billing/accounts schema.
 ## Seed
 
 ```bash
-# A trial organization + portrait owned by you (sign in with that email):
-pnpm create-tenant --slug demo --name "Demo City" --owner you@example.org --plan trial
+# An organization + portrait owned by you, on a one-year staff contract
+# (sign in with that email; omit --plan to try the buy-a-plan flow instead):
+pnpm create-tenant --slug demo --name "Demo City" --owner you@example.org --plan city
 
 # The NYC family: organization `nyc`, six portraits, Metro contract:
 pnpm provision:nyc --owner you@example.org --plan metro
 tsx scripts/nyc-portrait-config.ts --apply
 
 # Synthetic history for exercising progress/compare views (local DBs only,
-# every value labeled SYNTHETIC):
+# every value labeled SYNTHETIC, every portrait marked as sample data so its
+# pages say "Sample data — not research"; never promote such a database):
 tsx scripts/seed-demo-data.ts --org nyc
 
 # The real Santa Cruz portrait with evidence, from a doughnut-santa-cruz clone:
@@ -68,7 +81,9 @@ pnpm --filter @deep-fryer/worker dev       # research worker (optional)
 Useful pages: `/nyc` (portrait), `/nyc/progress`, `/o/nyc` (organization),
 `/o/nyc/compare`, `/o/nyc/insights`, `/o/nyc/progress`, `/o/nyc/billing`,
 `/nyc/admin` (overview + getting-started checklist), `/nyc/admin/members`,
-`/start`, `/pricing`, `/account`, `/api/v1/portraits/nyc/progress.csv`.
+`/start` (a 404 with `DF_DISABLED_FEATURES=self_serve`), `/pricing`,
+`/account`, `/api/v1/portraits/nyc/progress.csv`. A portrait is public only
+once it has published; before that only its members and staff see it.
 
 The service worker registers only in production builds (`pnpm --filter
 @deep-fryer/web build && pnpm --filter @deep-fryer/web start`).

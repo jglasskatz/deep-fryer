@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { onOneConnection } from '../test/one-connection';
 import { setPortraitFeatures } from './test-features';
+import { markPortraitPublic } from './test-portraits';
 
 /**
  * Staff curation of getting involved (SPEC-v6 §4.3), against the dev
@@ -48,6 +49,8 @@ describe.skipIf(!hasDb)('involvement admin actions under row-level security', ()
     const db = m.getDb();
     const { tenant } = await m.provisionTenant(db, { slug: uniq(), name: 'Involved City' });
     await setPortraitFeatures(tenant.id, { involvement: true });
+    // Public, as its first publish would make it (migration 0015): anonymous visitors only reach public portraits.
+    await markPortraitPublic(tenant.id);
     tenantSlug = tenant.slug;
     tenantId = tenant.id;
     cleanup.tenantId = tenant.id;

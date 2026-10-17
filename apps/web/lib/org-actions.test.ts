@@ -3,8 +3,9 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 /**
  * Self-serve start from a city's name and state/country alone (SPEC-v7 §4),
  * against real Postgres as the dev-mode identity: everything else the old
- * form asked for is defaulted, the trial starts as before, and the person
- * lands on step two of /start ("Build my doughnut").
+ * form asked for is defaulted, no plan — and so no free research — comes
+ * with it ("No free trials for making donuts, but free to view"), and the
+ * person lands on step two of /start (how to pay, "Build my doughnut").
  */
 const hasDb = Boolean(process.env.DATABASE_URL);
 const uniq = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
@@ -24,7 +25,7 @@ async function redirectOf(promise: Promise<unknown>): Promise<string> {
   return destination;
 }
 
-describe.skipIf(!hasDb)('startTrial with only the city and its state/country', () => {
+describe.skipIf(!hasDb)('startPortrait with only the city and its state/country', () => {
   const savedSecret = process.env.AUTH_SECRET;
   const cleanup: (() => Promise<unknown>)[] = [];
   beforeAll(() => {
@@ -55,17 +56,18 @@ describe.skipIf(!hasDb)('startTrial with only the city and its state/country', (
     return { tenant, org, region: region?.value as { name: string; definition: string } | undefined, sub };
   }
 
-  it('creates the organization, its trial, and the portrait, then offers the build step', async () => {
-    const { startTrial } = await import('./org-actions');
+  it('creates the organization and the portrait with no plan, then offers the build step', async () => {
+    const { startPortrait } = await import('./org-actions');
     const name = `Testville ${uniq()}`;
-    const destination = await redirectOf(startTrial({ name, region: 'Texas, USA', slug: '', definition: '', population: undefined }));
+    const destination = await redirectOf(startPortrait({ name, region: 'Texas, USA', slug: '', definition: '', population: undefined }));
     expect(destination).toMatch(/^\/start\?portrait=testville-/);
     const slug = decodeURIComponent(destination.split('=')[1]!);
 
     const { tenant, org, region, sub } = await created(slug);
     expect(tenant).toMatchObject({ name, region: 'Texas, USA' });
     expect(org).toMatchObject({ name: `City of ${name}`, billingEmail: 'dev@localhost' });
-    expect(sub).toMatchObject({ plan: 'trial', status: 'trialing' });
+    // No trial, no subscription of any kind: research waits for a plan or a contract.
+    expect(sub).toBeNull();
     // The boundary defaults to the jurisdiction's own, and says what does not count.
     expect(region).toEqual({
       name,
@@ -74,10 +76,11 @@ describe.skipIf(!hasDb)('startTrial with only the city and its state/country', (
   });
 
   it('finds a free address when the name is taken, and keeps a name that already names a government', async () => {
-    const { startTrial } = await import('./org-actions');
+    const { startPortrait } = await import('./org-actions');
     const name = `Springfield County ${uniq()}`;
-    const first = await redirectOf(startTrial({ name, region: 'Illinois, USA' }));
-    const second = await redirectOf(startTrial({ name, region: 'Missouri, USA' }));
+    // The same person starting a second organization is fine: there is nothing free to hand out twice.
+    const first = await redirectOf(startPortrait({ name, region: 'Illinois, USA' }));
+    const second = await redirectOf(startPortrait({ name, region: 'Missouri, USA' }));
     const a = await created(decodeURIComponent(first.split('=')[1]!));
     const b = await created(decodeURIComponent(second.split('=')[1]!));
     expect(a.tenant!.slug).not.toBe(b.tenant!.slug);
@@ -86,15 +89,51 @@ describe.skipIf(!hasDb)('startTrial with only the city and its state/country', (
   });
 
   it('still requires the city and its state/country, and checks an address chosen by hand', async () => {
-    const { startTrial } = await import('./org-actions');
-    expect(await startTrial({ name: 'X', region: 'NY, USA' })).toMatchObject({ ok: false, error: 'name: Name the city.' });
-    expect(await startTrial({ name: 'Ithaca', region: '' })).toMatchObject({
+    const { startPortrait } = await import('./org-actions');
+    expect(await startPortrait({ name: 'X', region: 'NY, USA' })).toMatchObject({ ok: false, error: 'name: Name the city.' });
+    expect(await startPortrait({ name: 'Ithaca', region: '' })).toMatchObject({
       ok: false,
       error: expect.stringMatching(/state\/province and country/),
     });
-    expect(await startTrial({ name: 'Ithaca', region: 'NY, USA', slug: 'login' })).toMatchObject({
+    expect(await startPortrait({ name: 'Ithaca', region: 'NY, USA', slug: 'login' })).toMatchObject({
       ok: false,
       error: expect.stringMatching(/reserved/),
     });
+  });
+
+  it('lets an organization with no plan set up its one portrait, but not a second', async () => {
+    const { addPortrait, startPortrait } = await import('./org-actions');
+    const { givePlan } = await import('./test-plans');
+    const name = `Setup City ${uniq()}`;
+    const first = await created(decodeURIComponent((await redirectOf(startPortrait({ name, region: 'Ohio, USA' }))).split('=')[1]!));
+    expect(await addPortrait({ orgSlug: first.org!.slug, name: `${name} North`, region: 'Ohio, USA' })).toEqual({
+      ok: false,
+      error: 'Without a plan an organization holds 1 portrait. Choose a plan under Billing to add more.',
+    });
+    // A plan raises the limit to its own (City: three portraits).
+    await givePlan(first.org!.id, { plan: 'city' });
+    const added = await redirectOf(addPortrait({ orgSlug: first.org!.slug, name: `${name} North`, region: 'Ohio, USA' }));
+    const north = await created(added.split('/')[1]!);
+    expect(north.tenant).toMatchObject({ organizationId: first.org!.id, familyOrder: 1 });
+  });
+
+  it('does not exist when the deployment turns self-serve start off', async () => {
+    const { startPortrait } = await import('./org-actions');
+    const { resetDeploymentDisabledForTests } = await import('./features');
+    process.env.DF_DISABLED_FEATURES = 'self_serve';
+    resetDeploymentDisabledForTests();
+    try {
+      const name = `Closed Town ${uniq()}`;
+      expect(await startPortrait({ name, region: 'Vermont, USA' })).toEqual({
+        ok: false,
+        error: 'This is not available on this server.',
+      });
+      const { tenantBySlug, getDb } = await import('@deep-fryer/db');
+      const { slugify } = await import('@deep-fryer/core');
+      expect(await tenantBySlug(getDb(), slugify(name))).toBeNull();
+    } finally {
+      delete process.env.DF_DISABLED_FEATURES;
+      resetDeploymentDisabledForTests();
+    }
   });
 });

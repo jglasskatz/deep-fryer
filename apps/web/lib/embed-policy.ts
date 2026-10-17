@@ -1,6 +1,6 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { SLUG_RE } from '@deep-fryer/core';
-import { getDb, tenants } from '@deep-fryer/db';
+import { getDb, tenantIsPublic, tenants } from '@deep-fryer/db';
 import { isOrigin } from './csp';
 import { hasDatabase } from './env';
 import { TtlCache } from './ttl-cache';
@@ -9,7 +9,10 @@ import { TtlCache } from './ttl-cache';
  * The embed allowlist as CSP frame-ancestors input, cached briefly per slug
  * so an embed on a busy city homepage costs one query a minute, not one per
  * page view. An unknown tenant or empty allowlist yields [] (same-origin
- * framing only — the hosted site may still preview its own embed).
+ * framing only — the hosted site may still preview its own embed), and so
+ * does a portrait that is not public (archived, or not yet published —
+ * migration 0015): its embed is a 404 for the visitors of any other site,
+ * and the answer must not tell a made-up slug from a private portrait.
  */
 const TTL_MS = 60_000;
 /**
@@ -19,7 +22,8 @@ const TTL_MS = 60_000;
  */
 const MAX_ENTRIES = 1_000;
 // System context (getDb): runs in middleware for anonymous framing checks of
-// public data, before any user context exists.
+// public data, before any user context exists — so it applies the public
+// rule itself (tenantIsPublic), as row-level security would for a visitor.
 const cache = new TtlCache<string[]>(TTL_MS, MAX_ENTRIES);
 
 export async function embedOriginsFor(slug: string): Promise<string[]> {
@@ -31,7 +35,7 @@ export async function embedOriginsFor(slug: string): Promise<string[]> {
   const [row] = await getDb()
     .select({ embedOrigins: tenants.embedOrigins })
     .from(tenants)
-    .where(eq(tenants.slug, slug));
+    .where(and(eq(tenants.slug, slug), tenantIsPublic()));
   const origins = (row?.embedOrigins ?? []).filter(isOrigin);
   cache.set(slug, origins);
   return origins;

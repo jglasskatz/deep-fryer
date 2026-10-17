@@ -2,18 +2,16 @@
 
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { and, eq, sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { effectiveLimits, slugError, slugify, standing } from '@deep-fryer/core';
+import { limitsInEffect, slugError, slugify, standing } from '@deep-fryer/core';
 import {
   organizationBySlug,
-  organizationMembers,
   organizations,
   portraitCount,
   provisionOrganization,
   provisionTenant,
   subscriptionFor,
-  subscriptions,
   tenantBySlug,
   tenantConfig,
   type DbExecutor,
@@ -21,6 +19,7 @@ import {
 import { getAuth, requireOrgRole } from './auth';
 import { action, UserError } from './action-result';
 import { systemDb } from './db';
+import { assertDeploymentFeature } from './features';
 
 /** Empty optional fields arrive as '' from forms; they mean "not given". */
 const blankToUndefined = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? undefined : v);
@@ -123,14 +122,24 @@ async function writeRegion(db: DbExecutor, tenantId: string, p: PortraitInput, u
 
 /**
  * Self-serve start (SPEC-v4 §2, SPEC-v7 §4): a signed-in person creates an
- * organization and its first portrait on a 30-day trial, from the city's
- * name and state/country alone (portraitSchema has the defaults). One trial
- * per person — each trial carries real research spend — and the
- * organization and portrait are created in one transaction. Then /start
- * offers "Build my doughnut" for the new portrait.
+ * organization and its first portrait from the city's name and
+ * state/country alone (portraitSchema has the defaults), in one transaction.
+ *
+ * Setting up is free and building is not ("No free trials for making
+ * donuts, but free to view"): the organization starts with no subscription
+ * at all, so it may hold this portrait — private until its first publish —
+ * invite the people who set it up and review it, and change its settings
+ * (core FREE_SETUP_LIMITS), but every research session is refused until it
+ * has a paid plan or a contract. With nothing free to hand out, there is no
+ * one-per-person limit to enforce either. Then /start offers step two for
+ * the new portrait: how to pay, and "Build my doughnut".
+ *
+ * Behind the deployment's self_serve feature, like the page: a sales-led
+ * deployment creates organizations with scripts/create-tenant.ts instead.
  */
-export const startTrial = action(
+export const startPortrait = action(
   async (input: z.input<typeof portraitSchema> & { organizationName?: string; billingEmail?: string }) => {
+    assertDeploymentFeature('self_serve');
     const ctx = await getAuth();
     if (!ctx.userId) throw new UserError('Sign in to start a portrait.');
     const p = portraitSchema.parse(input);
@@ -149,33 +158,14 @@ export const startTrial = action(
       .parse(input.billingEmail);
     const db = systemDb();
 
-    if (!ctx.devMode) {
-      const [trials] = await db
-        .select({ n: sql<number>`count(*)::int` })
-        .from(organizationMembers)
-        .innerJoin(subscriptions, eq(subscriptions.organizationId, organizationMembers.organizationId))
-        .where(
-          and(
-            eq(organizationMembers.userId, ctx.userId),
-            eq(organizationMembers.role, 'owner'),
-            eq(subscriptions.plan, 'trial'),
-          ),
-        );
-      if ((trials?.n ?? 0) > 0) {
-        throw new UserError(
-          'You already have a trial organization. Choose a plan for it under Billing, or contact us for a second evaluation.',
-        );
-      }
-    }
-
     const slug = await portraitSlug(db, p);
     await db.transaction(async (tx) => {
+      // No subscription: research waits for a plan (provisionOrganization never creates one).
       const org = await provisionOrganization(tx, {
         slug,
         name: organizationName,
         billingEmail: billingEmail || ctx.email || undefined,
         ownerUserId: ctx.userId!,
-        startTrial: true,
       });
       const { tenant } = await provisionTenant(tx, {
         slug,
@@ -191,7 +181,13 @@ export const startTrial = action(
   },
 );
 
-/** Org owners add another portrait (a borough, a district) within the plan's limit. */
+/**
+ * Org owners add another portrait (a borough, a district) within the limit
+ * in effect: the plan's while it is in good standing, otherwise the free
+ * setup limit of one portrait (core limitsInEffect) — so an organization
+ * staff created without any portrait can still set up its first, and more
+ * than one needs a plan.
+ */
 export const addPortrait = action(
   async (input: z.input<typeof portraitSchema> & { orgSlug: string }) => {
     const db = systemDb();
@@ -201,12 +197,13 @@ export const addPortrait = action(
     const p = portraitSchema.parse(input);
 
     const sub = await subscriptionFor(db, org.id);
-    if (!standing(sub).active) {
-      throw new UserError('Adding portraits needs an active plan (see Billing).');
-    }
-    const limit = effectiveLimits(sub!).portraits;
+    const limit = limitsInEffect(sub).portraits;
     if ((await portraitCount(db, org.id)) >= limit) {
-      throw new UserError(`Your plan includes ${limit} portrait${limit === 1 ? '' : 's'}. Upgrade to add more.`);
+      throw new UserError(
+        standing(sub).active
+          ? `Your plan includes ${limit} portrait${limit === 1 ? '' : 's'}. Upgrade to add more.`
+          : `Without a plan an organization holds ${limit} portrait${limit === 1 ? '' : 's'}. Choose a plan under Billing to add more.`,
+      );
     }
     const slug = await portraitSlug(db, p);
     const ctx = await getAuth();

@@ -175,11 +175,38 @@ export function planOfStripeSubscription(sub: Stripe.Subscription): PlanId | nul
 }
 
 /**
+ * When an invoice of `sub` was paid, or null if none has been: the newest
+ * paid one Stripe lists (any paid invoice proves a payment; the first
+ * time we see one is what syncSubscription keeps). Asked of Stripe rather
+ * than read from an event, like everything the sync writes.
+ */
+export async function paidInvoiceAt(sub: Stripe.Subscription): Promise<Date | null> {
+  const paid = await stripe().invoices.list({ subscription: sub.id, status: 'paid', limit: 1 });
+  const invoice = paid.data[0];
+  if (!invoice) return null;
+  return new Date((invoice.status_transitions?.paid_at ?? invoice.created) * 1000);
+}
+
+/**
  * Write a Stripe subscription's facts into our row. Stripe-owned fields
  * only — contract overrides staff set (quotas, seats) survive. A stale event
  * for a superseded subscription is ignored.
+ *
+ * For a subscription collected by invoice it also records when its first
+ * invoice was paid (`firstInvoicePaidAt`): Stripe makes such a subscription
+ * active before anything is paid, and research waits for the payment (core
+ * standing 'awaiting_payment'). Once set it stays while the row follows the
+ * same Stripe subscription, so a later invoice running past due keeps the
+ * past-due grace; a different subscription replacing it starts unpaid again.
+ * While it is unset every sync asks Stripe for a paid invoice (`options`
+ * replaces that lookup in tests), so any event — invoice.paid, or an event
+ * resent from the Stripe dashboard — brings it up to date.
  */
-export async function syncSubscription(db: DbExecutor, sub: Stripe.Subscription): Promise<string | null> {
+export async function syncSubscription(
+  db: DbExecutor,
+  sub: Stripe.Subscription,
+  options: { paidInvoiceAt?: (sub: Stripe.Subscription) => Promise<Date | null> } = {},
+): Promise<string | null> {
   const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer.id;
   const orgId =
     sub.metadata?.organization_id ?? (await organizationByStripeCustomer(db, customerId))?.id;
@@ -199,10 +226,16 @@ export async function syncSubscription(db: DbExecutor, sub: Stripe.Subscription)
   }
 
   const status = (STATUSES as string[]).includes(sub.status) ? (sub.status as SubscriptionStatus) : 'incomplete';
+  const collection = sub.collection_method === 'send_invoice' ? ('invoice' as const) : ('card' as const);
+  let firstInvoicePaidAt = current?.stripeSubscriptionId === sub.id ? current.firstInvoicePaidAt : null;
+  if (collection === 'invoice' && !firstInvoicePaidAt) {
+    firstInvoicePaidAt = await (options.paidInvoiceAt ?? paidInvoiceAt)(sub);
+  }
   const values = {
     plan,
     status,
-    collection: sub.collection_method === 'send_invoice' ? ('invoice' as const) : ('card' as const),
+    collection,
+    firstInvoicePaidAt,
     stripeSubscriptionId: sub.id,
     stripePriceId: item.price.id,
     currentPeriodStart: new Date(item.current_period_start * 1000),

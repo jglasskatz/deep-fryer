@@ -31,7 +31,9 @@ import { userDb } from './db';
  * Admin-plane and methodology reads. Every function runs in userDb(): the
  * database itself limits results to what the signed-in person may see
  * (members see drafts and runs; the public sees published history and the
- * methodology config keys).
+ * methodology config keys — of public portraits only: a portrait that has
+ * not published yet is invisible to everyone but its members, migration
+ * 0015, so adminTenant is null for anyone else and its pages redirect).
  */
 
 const CONFIG_FALLBACK = defaultTenantConfig('', '');

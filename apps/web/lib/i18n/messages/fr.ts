@@ -133,7 +133,7 @@ export const fr: Messages = {
       'Seule la mesure de référence existe pour l’instant ; la prochaine mise à jour indiquera la tendance.',
   },
   portrait: {
-    metaDescription: '{name} : le portrait Doughnut Economics — plancher social et plafond écologique, avec la source de chaque chiffre.',
+    metaDescription: '{name} : le portrait Doughnut — plancher social et plafond écologique, avec la source de chaque chiffre.',
     population: 'population : {n}',
     clickHint: 'Sélectionnez un segment pour afficher les indicateurs, les preuves, les actions et la discussion.',
     demoHint:
@@ -364,6 +364,8 @@ export const fr: Messages = {
   login: {
     title: 'Se connecter',
     intro: 'Les résidents se connectent pour participer à la discussion d’un portrait. Le personnel municipal utilise son compte professionnel.',
+    /** Replaces `intro` when the person is on the way to setting up their city's portrait (/start): city staff, not residents. */
+    startIntro: 'Connectez-vous pour créer le donut de votre ville — utilisez votre adresse e-mail professionnelle.',
     microsoft: 'Continuer avec Microsoft (compte professionnel)',
     google: 'Continuer avec Google',
     emailLabel: 'Recevoir un lien de connexion par e-mail',
@@ -384,6 +386,12 @@ export const fr: Messages = {
       AccessDenied: 'La connexion a été refusée.',
       Configuration: 'La connexion est mal configurée sur ce serveur. Contactez l’administrateur du site.',
       EmailSignin: 'Nous n’avons pas pu envoyer l’e-mail de connexion. Vérifiez l’adresse et réessayez dans quelques minutes.',
+      /** Nothing was sent: this address already has three unused sign-in links from the last 15 minutes. */
+      TooManyLinks:
+        'Nous avons déjà envoyé plusieurs liens de connexion à cette adresse au cours des 15 dernières minutes. Utilisez le plus récent, ou réessayez dans 15 minutes.',
+      /** Nothing was sent: this network has asked for its hourly share of sign-in emails (shared Wi-Fi counts as one). */
+      TooManyEmails:
+        'Trop d’e-mails de connexion ont été demandés depuis ce réseau ; celui-ci n’a donc pas été envoyé. Veuillez réessayer dans une heure.',
       default: 'La connexion a échoué. Réessayez.',
     },
   },
@@ -588,6 +596,37 @@ export const fr: Messages = {
     signupNamed: 'S’inscrire à {name}',
     resourceHazards: 'Utile en cas de :',
     doughnutLegend: 'Couleurs du donut :',
+  },
+  /** The site footer, on every page but embeds (components/site-footer/SiteFooter.tsx). */
+  footer: {
+    /** The footer's navigation landmark. */
+    label: 'À propos de ce site',
+    /** {email} is the support address of whoever runs this site, as a link. */
+    contact: 'Contact : {email}',
+    accessibility: 'Accessibilité',
+    privacy: 'Confidentialité',
+    terms: 'Conditions d’utilisation',
+    /**
+     * The Doughnut's attribution (docs/OPEN-SOURCE.md §3.3), also under every
+     * embedded doughnut. {license} is the license's name as a link; {book}
+     * and {method} are the English titles of the book and the method guide.
+     * Keep all three, and keep the people's and the organization's names.
+     */
+    credit:
+      'Diagramme du donut : Kate Raworth et Christian Guthier, {license}, adapté avec des données locales (Raworth, {book}, 2017). Méthode des portraits de ville inspirée du guide {method} de Doughnut Economics Action Lab. Ce site n’est pas affilié à Doughnut Economics Action Lab et n’est pas approuvé par cet organisme.',
+  },
+  /**
+   * On a portrait seeded with synthetic values (scripts/seed-demo-data.ts):
+   * its page, its dimension pages, its embed, its organization's compare,
+   * insights and progress pages, so a screenshot cannot pass for research.
+   */
+  sampleData: {
+    title: 'Données de démonstration — pas des résultats de recherche',
+    /** A portrait's own pages and its embed; {name} is the portrait. */
+    body: 'Les chiffres présentés sur ce site pour {name} ont été générés pour faire la démonstration du logiciel. Ce ne sont pas des mesures et ils ne doivent pas être cités.',
+    /** An organization's pages, when any portrait shown there is seeded; {org} is the organization. */
+    bodyOrg:
+      'Certains chiffres présentés sur cette page pour {org}, voire tous, ont été générés pour faire la démonstration du logiciel. Ce ne sont pas des mesures et ils ne doivent pas être cités.',
   },
   /** Theme toggle and the fryer (SPEC-v5 §4). */
   theme: {

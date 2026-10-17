@@ -11,11 +11,21 @@
  * Three published versions per dimension — data years 2023, 2025 (the NYC
  * baseline), and 2026 — so every progress status is reachable. Values are
  * deterministic per (portrait, indicator) so reruns are stable.
+ *
+ * Every portrait it seeds is also marked with the `sample_data` config key
+ * (@deep-fryer/core SAMPLE_DATA_CONFIG_KEY): its public pages, embed and
+ * organization pages then say "Sample data — not research", and the
+ * open-data API carries `sample_data: true`, so a screenshot or an export of
+ * a demo stack cannot pass for a city's measurements. Seeding publishes, so
+ * a portrait that was private until its first publish becomes public here
+ * (migration 0015) — already labelled. Replacing the values with real
+ * research does not clear the mark: delete the row when that happens.
  */
 import { createHash } from 'node:crypto';
 import { and, eq, isNull } from 'drizzle-orm';
 import { frameworkDimension } from '@deep-fryer/contract';
 import {
+  SAMPLE_DATA_CONFIG_KEY,
   computeScoring,
   deriveVizLevel,
   resolveThreshold,
@@ -76,9 +86,22 @@ async function main() {
       .from(dimensions)
       .where(and(eq(dimensions.tenantId, tenant.id), isNull(dimensions.archivedAt)));
 
+    let marked = false;
     for (const dim of dims) {
       const base = await latestVersion(db, dim.id);
       if (!base) continue;
+      if (!marked) {
+        // The mark lands before the first synthetic value is published, so
+        // there is no moment at which the portrait shows them unlabelled.
+        await db
+          .insert(tenantConfig)
+          .values({ tenantId: tenant.id, key: SAMPLE_DATA_CONFIG_KEY, value: true, updatedAt: new Date() })
+          .onConflictDoUpdate({
+            target: [tenantConfig.tenantId, tenantConfig.key],
+            set: { value: true, updatedAt: new Date() },
+          });
+        marked = true;
+      }
       const fw = frameworkDimension(dim.slug, dim.canonicalSlug);
       for (const [step, year] of YEARS.entries()) {
         const indicators = base.data.indicators.map((ind) => {
@@ -131,7 +154,12 @@ async function main() {
         await db.update(dimensions).set({ publishedVersionId: version.id }).where(eq(dimensions.id, dim.id));
       }
     }
-    console.log(`seeded synthetic history for ${tenant.slug}`);
+    // A portrait with no dimension versions to vary got no synthetic values, so no mark either.
+    console.log(
+      marked
+        ? `seeded synthetic history for ${tenant.slug} (marked sample_data)`
+        : `nothing to seed for ${tenant.slug} (no dimension versions)`,
+    );
   }
 }
 

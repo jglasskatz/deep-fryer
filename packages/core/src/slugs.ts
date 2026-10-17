@@ -2,10 +2,14 @@
  * URL slugs for portraits (tenants) and organizations. Tenant slugs are the
  * first path segment of the public site (`/{tenant}`), so anything the app
  * routes at the top level is reserved — a city named "login" must not shadow
- * the sign-in page.
+ * the sign-in page. A static route wins over `/[tenant]`, so a portrait given
+ * the name of one would have its front page replaced by that route; every
+ * top-level route and public file that could be a slug is listed here
+ * (apps/web lib/reserved-slugs.test.ts checks the app's directories).
  */
 export const RESERVED_SLUGS = new Set([
   'about',
+  'accessibility',
   'account',
   'admin',
   'api',

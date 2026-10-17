@@ -117,7 +117,7 @@ export const zhHant: Messages = {
     baseline_only: '目前只有基線測量數據；下次更新時將顯示趨勢。',
   },
   portrait: {
-    metaDescription: '{name}的 Doughnut Economics 畫像：社會基礎與生態天花板，每個數字都附有資料來源。',
+    metaDescription: '{name}的甜甜圈畫像：社會基礎與生態天花板，每個數字都附有資料來源。',
     population: '人口：{n}',
     clickHint: '選擇一個扇形區域，即可查看指標、證據、行動和討論。',
     demoHint: '示範數據 — 請設定 DATABASE_URL 並發布版本，以顯示真實內容。',
@@ -334,6 +334,8 @@ export const zhHant: Messages = {
   login: {
     title: '登入',
     intro: '居民登入後即可參與畫像的討論。市政府工作人員請使用工作帳戶。',
+    /** Replaces `intro` on the way to /start: city staff, not residents. */
+    startIntro: '登入後即可為您所在的城市建立甜甜圈。請使用您的工作電郵。',
     microsoft: '使用 Microsoft 繼續（工作帳戶）',
     google: '使用 Google 繼續',
     emailLabel: '透過電郵接收登入連結',
@@ -355,6 +357,8 @@ export const zhHant: Messages = {
       AccessDenied: '登入被拒絕。',
       Configuration: '此伺服器的登入設定有誤。請聯絡網站管理員。',
       EmailSignin: '無法發送登入電郵。請檢查地址，幾分鐘後再試一次。',
+      TooManyLinks: '過去15分鐘內，我們已向此地址發送了多個登入連結。請使用最新的連結，或15分鐘後再試一次。',
+      TooManyEmails: '來自此網絡的登入電郵申請過多，因此這次的電郵沒有發出。請一小時後再試一次。',
       default: '登入失敗。請再試一次。',
     },
   },
@@ -541,6 +545,23 @@ export const zhHant: Messages = {
     signupNamed: '訂閱{name}',
     resourceHazards: '適用於：',
     doughnutLegend: '甜甜圈上的顏色：',
+  },
+  /** The site footer, on every page but embeds (components/site-footer/SiteFooter.tsx). */
+  footer: {
+    label: '關於本網站',
+    contact: '聯絡方式：{email}',
+    accessibility: '無障礙聲明',
+    privacy: '私隱聲明',
+    terms: '使用條款',
+    /** {license} is the license's name as a link; {book} and {method} are the English titles, filled in untranslated. */
+    credit:
+      '甜甜圈圖：Kate Raworth 和 Christian Guthier，{license}，並以本地數據改編（Raworth，《{book}》，2017年）。城市畫像方法參照 Doughnut Economics Action Lab 的《{method}》。本網站與 Doughnut Economics Action Lab 並無關連，亦未獲其認可。',
+  },
+  /** On a portrait seeded with synthetic values (scripts/seed-demo-data.ts). */
+  sampleData: {
+    title: '示範數據 — 並非研究結果',
+    body: '本網站上有關{name}的數字是為示範本軟件而生成的，並非實際測量結果，不得引用。',
+    bodyOrg: '本頁上有關{org}的部分或全部數字是為示範本軟件而生成的，並非實際測量結果，不得引用。',
   },
   /** Theme toggle and the fryer (SPEC-v5 §4). */
   theme: {

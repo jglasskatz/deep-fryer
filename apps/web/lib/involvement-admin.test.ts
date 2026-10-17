@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { markPortraitPublic } from './test-portraits';
 import { INVOLVEMENT_LIMITS, involvementListingInputSchema } from '@deep-fryer/core';
 import {
   asSubmissionStatus,
@@ -120,6 +121,8 @@ describe.skipIf(!hasDb)('involvement admin reads under row-level security', () =
     const m = await import('@deep-fryer/db');
     const db = m.getDb();
     ({ tenant } = await m.provisionTenant(db, { slug: uniq(), name: 'Queue City' }));
+    // Public, as its first publish would make it (migration 0015): anonymous visitors only reach public portraits.
+    await markPortraitPublic(tenant.id);
     cleanup.tenantId = tenant.id;
     cleanup.organizationId = tenant.organizationId;
     for (const role of ['editor', 'moderator', 'outsider'] as const) {

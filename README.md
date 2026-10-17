@@ -39,13 +39,13 @@ See [`docs/local-setup.md`](./docs/local-setup.md). Short version:
 pnpm install
 # Postgres: createdb deep_fryer_dev, then
 DATABASE_URL=... pnpm --filter @deep-fryer/db migrate
-DATABASE_URL=... pnpm create-tenant --slug demo --name "Demo City" --owner you@example.com --plan trial
+DATABASE_URL=... pnpm create-tenant --slug demo --name "Demo City" --owner you@example.com --plan city
 DATABASE_URL=... pnpm provision:nyc --plan metro                        # the NYC family
 DATABASE_URL=... pnpm dev                                               # web on :3000
 DATABASE_URL=... pnpm --filter @deep-fryer/worker dev                   # research worker
 ```
 
-Without `DATABASE_URL` the public app serves a bundled demo portrait; without `AUTH_SECRET` the app runs in labeled dev mode (never in production — it refuses to start). Research sessions additionally need `ANTHROPIC_API_KEY`.
+Without `DATABASE_URL` the public app serves a bundled demo portrait; without `AUTH_SECRET` the app runs in labeled dev mode (never in production — it refuses to start). Research sessions additionally need `ANTHROPIC_API_KEY` for the worker and `DF_RESEARCH_KEY_CONFIGURED=true` for the web app (docker compose derives it from the key), and an organization with a plan or contract: viewing is free, building is paid, and there are no trials. Production refuses to start without `SUPPORT_EMAIL`; [`docs/deploy.md`](./docs/deploy.md) covers a deployment end to end, including what to check before a public launch.
 
 ## Origins
 

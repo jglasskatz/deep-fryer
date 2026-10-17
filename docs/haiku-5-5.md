@@ -2,7 +2,7 @@
 
 Prepared on 2026-10-16 from a read-only review of the repository: every candidate was argued for and against, judged against the code, and the result checked by a separate critic. No model was called to produce the figures.
 
-None of the dollar figures below is measured. They are modelled from the assumptions in `docs/research-cost.md:45-59`, because no real research run exists in any local database. The dev DB holds only test fixtures. The compose DB has 3 runs, and all of them failed with "Not logged in".
+None of the dollar figures below is measured. They are modelled from the assumptions in `docs/research-cost.md` ("Assumed"), because no real research run exists in any local database. The dev DB holds only test fixtures. The compose DB has 3 runs, and all 6 of their sessions failed with "Not logged in". Run d02c4536 is nevertheless marked `complete`: it ran on 2026-10-14 on older code, which settled a run complete even when every session failed. Current code marks such a run `failed` (`apps/worker/src/tasks/run-status.ts`).
 
 ---
 
