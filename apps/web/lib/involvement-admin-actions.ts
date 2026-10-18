@@ -94,16 +94,16 @@ async function assertNameFree(db: DbExecutor, tenantId: string, name: string, ex
   if (clash) throw duplicateName(name);
 }
 
-function listingValues(data: Omit<InvolvementListingInput, 'published'>) {
+function listingValues(listing: Omit<InvolvementListingInput, 'published'>) {
   return {
-    name: data.name,
-    description: data.description,
-    url: data.url,
-    phone: data.phone,
-    kind: data.kind,
-    dimensionSlugs: data.dimension_slugs,
-    sourceUrl: data.source_url,
-    displayOrder: data.display_order,
+    name: listing.name,
+    description: listing.description,
+    url: listing.url,
+    phone: listing.phone,
+    kind: listing.kind,
+    dimensionSlugs: listing.dimension_slugs,
+    sourceUrl: listing.source_url,
+    displayOrder: listing.display_order,
   };
 }
 
@@ -120,15 +120,15 @@ export const saveListing = action(
     const auth = await getAuth();
 
     if (!input.id) {
-      const data = involvementListingInputSchema.parse(input.listing);
+      const listingInput = involvementListingInputSchema.parse(input.listing);
       const id = await userDb(async (db) => {
-        await assertNameFree(db, tenant.id, data.name);
+        await assertNameFree(db, tenant.id, listingInput.name);
         const [row] = await db
           .insert(involvementListings)
-          .values({ tenantId: tenant.id, ...listingValues(data), published: data.published, createdBy: auth.userId })
+          .values({ tenantId: tenant.id, ...listingValues(listingInput), published: listingInput.published, createdBy: auth.userId })
           .returning()
           .catch((err) => {
-            throw isUniqueViolation(err) ? duplicateName(data.name) : err;
+            throw isUniqueViolation(err) ? duplicateName(listingInput.name) : err;
           });
         await audit(tenant.id, 'involvement_listing', row!.id, 'create', null, row, db);
         return row!.id;
@@ -138,26 +138,26 @@ export const saveListing = action(
     }
 
     const id = idSchema.parse(input.id);
-    const data = listingUpdateSchema.parse(input.listing);
+    const listingInput = listingUpdateSchema.parse(input.listing);
     await userDb(async (db) => {
       const [before] = await db
         .select()
         .from(involvementListings)
         .where(and(eq(involvementListings.id, id), eq(involvementListings.tenantId, tenant.id)));
       if (!before) throw new UserError('Unknown listing.');
-      await assertNameFree(db, tenant.id, data.name, before.id);
-      const linkChanged = (data.url ?? null) !== (before.url ?? null);
+      await assertNameFree(db, tenant.id, listingInput.name, before.id);
+      const linkChanged = (listingInput.url ?? null) !== (before.url ?? null);
       const [after] = await db
         .update(involvementListings)
         .set({
-          ...listingValues(data),
+          ...listingValues(listingInput),
           ...(linkChanged ? { linkCheckedAt: null } : {}),
           updatedAt: new Date(),
         })
         .where(eq(involvementListings.id, before.id))
         .returning()
         .catch((err) => {
-          throw isUniqueViolation(err) ? duplicateName(data.name) : err;
+          throw isUniqueViolation(err) ? duplicateName(listingInput.name) : err;
         });
       await audit(tenant.id, 'involvement_listing', before.id, 'update', before, after, db);
     });
@@ -279,26 +279,26 @@ export const approveSubmission = action(
   async (input: { tenantSlug: string; submissionId: string; listing: InvolvementListingInputDraft }) => {
     const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'involvement');
     const submissionId = idSchema.parse(input.submissionId);
-    const data = involvementListingInputSchema.parse(input.listing);
+    const listingInput = involvementListingInputSchema.parse(input.listing);
     const auth = await getAuth();
     const listingId = await userDb(async (db) => {
       const submission = await lockSubmission(db, tenant.id, submissionId);
       if (submission.status !== 'new') {
         throw new UserError(`This submission was already ${STATUS_WORDS[submission.status]}.`);
       }
-      await assertNameFree(db, tenant.id, data.name);
+      await assertNameFree(db, tenant.id, listingInput.name);
       const [listing] = await db
         .insert(involvementListings)
         .values({
           tenantId: tenant.id,
-          ...listingValues(data),
-          published: data.published,
+          ...listingValues(listingInput),
+          published: listingInput.published,
           submissionId: submission.id,
           createdBy: auth.userId,
         })
         .returning()
         .catch((err) => {
-          throw isUniqueViolation(err) ? duplicateName(data.name) : err;
+          throw isUniqueViolation(err) ? duplicateName(listingInput.name) : err;
         });
       await db
         .update(involvementSubmissions)

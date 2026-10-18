@@ -121,17 +121,17 @@ export const saveEmergencyConfig = action(async (input: { tenantSlug: string; co
 
 // ---- Hazards (editors) ---------------------------------------------------------------
 
-function hazardValues(data: Omit<HazardInput, 'published'>) {
+function hazardValues(hazard: Omit<HazardInput, 'published'>) {
   return {
-    slug: data.slug,
-    name: data.name,
-    kind: data.kind,
-    description: data.description,
-    likelihood: data.likelihood,
-    severity: data.severity,
-    dimensions: data.dimensions,
-    nwsEvents: data.nws_events,
-    displayOrder: data.display_order,
+    slug: hazard.slug,
+    name: hazard.name,
+    kind: hazard.kind,
+    description: hazard.description,
+    likelihood: hazard.likelihood,
+    severity: hazard.severity,
+    dimensions: hazard.dimensions,
+    nwsEvents: hazard.nws_events,
+    displayOrder: hazard.display_order,
   };
 }
 
@@ -139,19 +139,19 @@ const duplicateSlug = (slug: string) => new UserError(`A hazard with the slug "$
 
 export const createHazard = action(async (input: { tenantSlug: string; hazard: HazardInputDraft }) => {
   const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'emergency');
-  const data = hazardInputSchema.parse(input.hazard);
+  const hazard = hazardInputSchema.parse(input.hazard);
   const id = await userDb(async (db) => {
     const [clash] = await db
       .select({ id: hazards.id })
       .from(hazards)
-      .where(and(eq(hazards.tenantId, tenant.id), eq(hazards.slug, data.slug)));
-    if (clash) throw duplicateSlug(data.slug);
+      .where(and(eq(hazards.tenantId, tenant.id), eq(hazards.slug, hazard.slug)));
+    if (clash) throw duplicateSlug(hazard.slug);
     const [row] = await db
       .insert(hazards)
-      .values({ tenantId: tenant.id, ...hazardValues(data), published: data.published })
+      .values({ tenantId: tenant.id, ...hazardValues(hazard), published: hazard.published })
       .returning()
       .catch((err) => {
-        throw isUniqueViolation(err) ? duplicateSlug(data.slug) : err;
+        throw isUniqueViolation(err) ? duplicateSlug(hazard.slug) : err;
       });
     await audit(tenant.id, 'hazard', row!.id, 'create', null, row, db);
     return row!.id;
@@ -164,26 +164,26 @@ export const updateHazard = action(
   async (input: { tenantSlug: string; id: string; hazard: Omit<HazardInputDraft, 'published'> }) => {
     const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'emergency');
     const id = idSchema.parse(input.id);
-    const data = hazardUpdateSchema.parse(input.hazard);
+    const hazard = hazardUpdateSchema.parse(input.hazard);
     await userDb(async (db) => {
       const [before] = await db.select().from(hazards).where(and(eq(hazards.id, id), eq(hazards.tenantId, tenant.id)));
       if (!before) throw new UserError('Unknown hazard.');
-      if (data.slug !== before.slug) {
+      if (hazard.slug !== before.slug) {
         const [clash] = await db
           .select({ id: hazards.id })
           .from(hazards)
-          .where(and(eq(hazards.tenantId, tenant.id), eq(hazards.slug, data.slug)));
-        if (clash) throw duplicateSlug(data.slug);
+          .where(and(eq(hazards.tenantId, tenant.id), eq(hazards.slug, hazard.slug)));
+        if (clash) throw duplicateSlug(hazard.slug);
       }
       const [after] = await db
         .update(hazards)
-        .set({ ...hazardValues(data), updatedAt: new Date() })
+        .set({ ...hazardValues(hazard), updatedAt: new Date() })
         .where(eq(hazards.id, before.id))
         .returning()
         .catch((err) => {
-          throw isUniqueViolation(err) ? duplicateSlug(data.slug) : err;
+          throw isUniqueViolation(err) ? duplicateSlug(hazard.slug) : err;
         });
-      if (data.slug !== before.slug) await rewriteHazardLinks(db, tenant.id, before.slug, data.slug);
+      if (hazard.slug !== before.slug) await rewriteHazardLinks(db, tenant.id, before.slug, hazard.slug);
       await audit(tenant.id, 'hazard', before.id, 'update', before, after, db);
     });
     revalidate(tenant);
@@ -207,28 +207,28 @@ export const deleteHazard = action(async (input: { tenantSlug: string; id: strin
 
 // ---- Plans (editors) ---------------------------------------------------------------------
 
-function planValues(data: Omit<EmergencyPlanInput, 'published'>) {
+function planValues(plan: Omit<EmergencyPlanInput, 'published'>) {
   return {
-    title: data.title,
-    agency: data.agency,
-    url: data.url,
-    adoptedYear: data.adopted_year,
-    summary: data.summary,
-    languages: data.languages,
-    hazardSlugs: data.hazard_slugs,
-    displayOrder: data.display_order,
+    title: plan.title,
+    agency: plan.agency,
+    url: plan.url,
+    adoptedYear: plan.adopted_year,
+    summary: plan.summary,
+    languages: plan.languages,
+    hazardSlugs: plan.hazard_slugs,
+    displayOrder: plan.display_order,
   };
 }
 
 export const createPlan = action(
   async (input: { tenantSlug: string; plan: EmergencyPlanInputDraft }) => {
     const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'emergency');
-    const data = emergencyPlanInputSchema.parse(input.plan);
+    const plan = emergencyPlanInputSchema.parse(input.plan);
     const id = await userDb(async (db) => {
-      await assertHazardSlugs(db, tenant.id, data.hazard_slugs);
+      await assertHazardSlugs(db, tenant.id, plan.hazard_slugs);
       const [row] = await db
         .insert(emergencyPlans)
-        .values({ tenantId: tenant.id, ...planValues(data), published: data.published })
+        .values({ tenantId: tenant.id, ...planValues(plan), published: plan.published })
         .returning();
       await audit(tenant.id, 'emergency_plan', row!.id, 'create', null, row, db);
       return row!.id;
@@ -242,17 +242,17 @@ export const updatePlan = action(
   async (input: { tenantSlug: string; id: string; plan: Omit<EmergencyPlanInputDraft, 'published'> }) => {
     const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'emergency');
     const id = idSchema.parse(input.id);
-    const data = planUpdateSchema.parse(input.plan);
+    const plan = planUpdateSchema.parse(input.plan);
     await userDb(async (db) => {
       const [before] = await db
         .select()
         .from(emergencyPlans)
         .where(and(eq(emergencyPlans.id, id), eq(emergencyPlans.tenantId, tenant.id)));
       if (!before) throw new UserError('Unknown plan.');
-      await assertHazardSlugs(db, tenant.id, data.hazard_slugs);
+      await assertHazardSlugs(db, tenant.id, plan.hazard_slugs);
       const [after] = await db
         .update(emergencyPlans)
-        .set({ ...planValues(data), updatedAt: new Date() })
+        .set({ ...planValues(plan), updatedAt: new Date() })
         .where(eq(emergencyPlans.id, before.id))
         .returning();
       await audit(tenant.id, 'emergency_plan', before.id, 'update', before, after, db);
@@ -277,27 +277,27 @@ export const deletePlan = action(async (input: { tenantSlug: string; id: string 
 
 // ---- Help and mutual-aid resources (editors) ------------------------------------------------
 
-function resourceValues(data: Omit<EmergencyResourceInput, 'published'>) {
+function resourceValues(resource: Omit<EmergencyResourceInput, 'published'>) {
   return {
-    name: data.name,
-    kind: data.kind,
-    description: data.description,
-    phone: data.phone,
-    url: data.url,
-    hazardSlugs: data.hazard_slugs,
-    displayOrder: data.display_order,
+    name: resource.name,
+    kind: resource.kind,
+    description: resource.description,
+    phone: resource.phone,
+    url: resource.url,
+    hazardSlugs: resource.hazard_slugs,
+    displayOrder: resource.display_order,
   };
 }
 
 export const createResource = action(
   async (input: { tenantSlug: string; resource: EmergencyResourceInputDraft }) => {
     const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'emergency');
-    const data = emergencyResourceInputSchema.parse(input.resource);
+    const resource = emergencyResourceInputSchema.parse(input.resource);
     const id = await userDb(async (db) => {
-      await assertHazardSlugs(db, tenant.id, data.hazard_slugs);
+      await assertHazardSlugs(db, tenant.id, resource.hazard_slugs);
       const [row] = await db
         .insert(emergencyResources)
-        .values({ tenantId: tenant.id, ...resourceValues(data), published: data.published })
+        .values({ tenantId: tenant.id, ...resourceValues(resource), published: resource.published })
         .returning();
       await audit(tenant.id, 'emergency_resource', row!.id, 'create', null, row, db);
       return row!.id;
@@ -311,17 +311,17 @@ export const updateResource = action(
   async (input: { tenantSlug: string; id: string; resource: Omit<EmergencyResourceInputDraft, 'published'> }) => {
     const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'emergency');
     const id = idSchema.parse(input.id);
-    const data = resourceUpdateSchema.parse(input.resource);
+    const resource = resourceUpdateSchema.parse(input.resource);
     await userDb(async (db) => {
       const [before] = await db
         .select()
         .from(emergencyResources)
         .where(and(eq(emergencyResources.id, id), eq(emergencyResources.tenantId, tenant.id)));
       if (!before) throw new UserError('Unknown resource.');
-      await assertHazardSlugs(db, tenant.id, data.hazard_slugs);
+      await assertHazardSlugs(db, tenant.id, resource.hazard_slugs);
       const [after] = await db
         .update(emergencyResources)
-        .set({ ...resourceValues(data), updatedAt: new Date() })
+        .set({ ...resourceValues(resource), updatedAt: new Date() })
         .where(eq(emergencyResources.id, before.id))
         .returning();
       await audit(tenant.id, 'emergency_resource', before.id, 'update', before, after, db);
