@@ -28,7 +28,30 @@ SOFTWARE.
 //   - constructor takes { canvas, onHover, onSelect } instead of DOM element
 //     ids; hover/select report through the callbacks
 //   - import() returns the error count instead of alert()
+//   - a level may carry a highlight colour (policy impacts, hazards), and
+//     setLevels() applies many levels with one redraw (animation frames)
+//   - a highlighted dimension's label is drawn on a pill of its colour, so
+//     the dimension stays marked when its wedge has no size (no shortfall or
+//     overshoot) and a highlight cannot be mistaken for the red of an
+//     ordinary shortfall/overshoot wedge
+//   - a pixelRatio option: the backing store is size × pixelRatio and the
+//     context is scaled to match, so the drawing stays crisp on dense
+//     screens while every drawing coordinate stays in `size` units
 // Drawing math is unchanged.
+
+// Black or white text, whichever contrasts more with a #rrggbb fill
+// (WCAG relative luminance).
+function _readableOn(hex) {
+    const m = /^#([0-9a-f]{6})$/i.exec(hex);
+    if (!m) return "white";
+    const n = parseInt(m[1], 16);
+    const lin = (c) => {
+        c /= 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    };
+    const L = 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+    return (L + 0.05) / 0.05 > 1.05 / (L + 0.05) ? "black" : "white";
+}
 
 class _DoughnutDimensions {
     constructor(type, maxVal) {
@@ -38,12 +61,12 @@ class _DoughnutDimensions {
         //  {name: "", levels: [{value: N, label: ""}, ...]}
         this.dimensions = [];
     }
-    add(name, value, label) {
+    add(name, value, label, colour) {
         if(name) {
             let val = parseInt(value);
             if (val > this._normalDonutLevelRadius) { val = this.maxVal; }
             if (val < this._minDonutLevelRadius) { val = "NaN"; }
-            let level = { value: val, label: label };
+            let level = { value: val, label: label, colour: colour || null };
             let index = this.find(name);
             if (index >= 0) {
                 let found = false;
@@ -52,6 +75,7 @@ class _DoughnutDimensions {
                     if (lvl.label == label || (!lvl.label && !label)) {
                         // Update existing level
                         lvl.value = val;
+                        lvl.colour = colour || null;
                         found = true;
                     }
                 }
@@ -148,11 +172,15 @@ export class DoughnutRenderer {
     //   canvas: HTMLCanvasElement to draw into (required)
     //   size: intrinsic size of the whole doughnut in px
     //   donutScale: scaling factor for the doughnut (between 0.5 and 1.5)
+    //   pixelRatio: backing-store pixels per `size` unit (the screen's
+    //     devicePixelRatio; default 1). Drawing and hit-testing stay in
+    //     `size` units; only the bitmap is denser.
     //   textSize: text size in px
     //   onHover: optional ({dim_type, dim_num, dim_info, lvl_num} | null) => void
     //   onSelect: optional ({dim_type, dim_num, dim_info, lvl_num} | null) => void
-    constructor({ canvas, size, donutScale = 1.0, textSize = 14, onHover, onSelect }) {
+    constructor({ canvas, size, pixelRatio = 1, donutScale = 1.0, textSize = 14, onHover, onSelect }) {
         this._donutSize = size;
+        this._pixelRatio = pixelRatio > 0 && Number.isFinite(pixelRatio) ? pixelRatio : 1;
         this._textSize = textSize;
         if (donutScale >= 0.5 && donutScale <= 1.5) {
             this._donutScale = donutScale;
@@ -194,10 +222,12 @@ export class DoughnutRenderer {
 
         this._canvas = canvas;
         this._ctx = this._canvas.getContext("2d");
-        // Set intrinsic size of canvas to the required doughnut size; display
-        // sizing is the wrapper's concern (hit-testing rescales below).
-        this._canvas.width = this._donutSize;
-        this._canvas.height = this._donutSize;
+        // Set intrinsic size of canvas to the required doughnut size at the
+        // screen's density; display sizing is the wrapper's concern
+        // (hit-testing rescales below). _setupCanvas scales the context by
+        // the same ratio before every draw (setting width resets it).
+        this._canvas.width = Math.round(this._donutSize * this._pixelRatio);
+        this._canvas.height = Math.round(this._donutSize * this._pixelRatio);
 
         this._grdGlobal = this._ctx.createRadialGradient(this._middleX, this._middleY, this._outOuter, this._middleX, this._middleY, this._extraDonut);
         this._grdGlobal.addColorStop(0, "rgb(211,63,54)");
@@ -239,11 +269,12 @@ export class DoughnutRenderer {
     }
 
     _checkMouse(e, click) {
-        // Canvas may be CSS-scaled (responsive layout) while its intrinsic resolution
-        // stays at _donutSize. Hit-testing runs in intrinsic coords, so rescale here.
+        // Canvas may be CSS-scaled (responsive layout) while its drawing stays in
+        // _donutSize units. Hit-testing runs in those units, so rescale here
+        // (not by canvas.width, which also carries the pixel ratio).
         const rect = this._canvas.getBoundingClientRect();
-        const x = (e.clientX - rect.left) * (this._canvas.width / rect.width);
-        const y = (e.clientY - rect.top) * (this._canvas.height / rect.height);
+        const x = (e.clientX - rect.left) * (this._donutSize / rect.width);
+        const y = (e.clientY - rect.top) * (this._donutSize / rect.height);
         let hoverDimInfo = this._checkMouseOver(x, y);
         if (hoverDimInfo) {
             this._canvas.style.cursor = "crosshair";
@@ -273,7 +304,9 @@ export class DoughnutRenderer {
         for (dim = 0; dim < dims.length(); dim++) {
             let subpaths = paths[dim];
             for (lvl = 0; lvl < subpaths.length; lvl++) {
-                if (this._ctx.isPointInPath(subpaths[lvl], x, y)) {
+                // isPointInPath takes backing-store pixels and applies the
+                // context's transform to the path, so scale the point to match.
+                if (this._ctx.isPointInPath(subpaths[lvl], x * this._pixelRatio, y * this._pixelRatio)) {
                     found = { dim_num: dim,
                               dim_type: dims.type,
                               dim_info: dims.get(dim),
@@ -319,13 +352,22 @@ export class DoughnutRenderer {
         return hoverDimInfo;
     }
 
-    addDimension(type, name, level, label) {
+    addDimension(type, name, level, label, colour) {
         if (type == "outer") {
-            this._outerDims.add(name, level, label);
+            this._outerDims.add(name, level, label, colour);
         } else if (type == "inner") {
-            this._innerDims.add(name, level, label);
+            this._innerDims.add(name, level, label, colour);
         }
         this._selectedDimInfo = null;
+        this.update();
+    }
+
+    // Many levels, one redraw: [{ type, name, level, label?, colour? }].
+    setLevels(entries) {
+        for (const e of entries) {
+            const dims = e.type == "outer" ? this._outerDims : this._innerDims;
+            dims.add(e.name, e.level, e.label, e.colour);
+        }
         this.update();
     }
 
@@ -483,8 +525,50 @@ export class DoughnutRenderer {
         let arcStart = 0;
         for (let arc = 0; arc < dimensions.length(); arc++) {
             let arcEnd = arcStart + arcDegrees;
-            this._writeDim(dimensions.get(arc).name, radius, arcStart + (arcDegrees / 2), colour);
+            const dim = dimensions.get(arc);
+            const angle = arcStart + (arcDegrees / 2);
+            const marked = dim.levels.find((l) => l.colour);
+            if (marked) {
+                this._writeMarkedDim(dim.name, radius, angle, marked.colour);
+            } else {
+                this._writeDim(dim.name, radius, angle, colour);
+            }
             arcStart = arcEnd;
+        }
+    }
+
+    // A rounded-rectangle path from arcTo, which every canvas supports;
+    // ctx.roundRect is missing on Safari before 16 and Firefox before 112,
+    // where calling it would throw and take the page down with it.
+    _roundedRect(x, y, w, h, r) {
+        r = Math.min(r, w / 2, h / 2);
+        const c = this._ctx;
+        c.beginPath();
+        c.moveTo(x + r, y);
+        c.arcTo(x + w, y, x + w, y + h, r);
+        c.arcTo(x + w, y + h, x, y + h, r);
+        c.arcTo(x, y + h, x, y, r);
+        c.arcTo(x, y, x + w, y, r);
+        c.closePath();
+    }
+
+    // A highlighted dimension's label: the text on a rounded pill of the
+    // highlight colour, in whichever of black/white reads better on it.
+    _writeMarkedDim(text, radius, angle, fill) {
+        const x = this._middleX + radius * Math.cos(angle);
+        let y = this._middleY + radius * Math.sin(angle);
+        const parts = this._splitText(text);
+        const width = Math.max(...parts.map((p) => this._ctx.measureText(p).width));
+        const pad = Math.max(3, Math.round(this._textSize * 0.3));
+        const top = y - this._textSize * 0.85 - pad;
+        const height = parts.length * this._textSize + pad * 2;
+        this._ctx.fillStyle = fill;
+        this._roundedRect(x - width / 2 - pad, top, width + pad * 2, height, pad + 2);
+        this._ctx.fill();
+        this._ctx.fillStyle = _readableOn(fill);
+        for (const part of parts) {
+            this._ctx.fillText(part, x, y);
+            y = y + this._textSize;
         }
     }
 
@@ -548,14 +632,23 @@ export class DoughnutRenderer {
             let intScale = ((this._outDonut - this._inDonut) / 2) / this._normalDonutLevelRadius;
             let type = null;
             let min = 0, max =0;
+            // min/max bound each dimension's hit area (the Path2D below), not
+            // what is drawn. deep-fryer change: the social and ecological hit
+            // areas meet at the green ring's OUTER edge (_outDonut), not its
+            // middle circle. The social names are drawn centred on that middle
+            // circle (_textInner == _midDonut), so with the split there a tap
+            // on the upper half of a top-half label such as "Housing" selected
+            // the ecological wedge beyond it. Nothing ecological is drawn inside
+            // _outDonut (_inOuter == _outDonut), so the whole ring belongs to
+            // the social dimension at that angle. doughnut-renderer.test.ts.
             if (extMax > this._outDonut) {
                 type = OUTER;
-                min = this._midDonut;
+                min = this._outDonut;
                 max = extMax;
             } else {
                 type = INNER;
                 min = extMin;
-                max = this._midDonut;
+                max = this._outDonut;
             }
             for (let dim = 0; dim < dims.length(); dim++) {
                 let levels = dims.get(dim).levels;
@@ -566,10 +659,11 @@ export class DoughnutRenderer {
                     let val = levels[lvl].value;
                     let outer = 0;
                     let inner = 0;
-                    let col = this._grd;
+                    const highlight = levels[lvl].colour;
+                    let col = highlight || this._grd;
                     if (this._isNotNumber(val)) {
                         val = this._normalDonutLevelRadius;
-                        col = "lightgray";
+                        col = highlight || "lightgray";
                     }
                     if (type == INNER) {
                         if (val < 0) {
@@ -579,7 +673,7 @@ export class DoughnutRenderer {
                             const bump = Math.min(Math.abs(val) * extScale * 0.25, ringW * 0.4);
                             outer = extMax;
                             inner = extMax - bump;
-                            col = this._donutFilling;
+                            col = highlight || this._donutFilling;
                         } else {
                             inner = extMin + ((this._normalDonutLevelRadius - val) * extScale);
                             outer = extMax;
@@ -592,7 +686,7 @@ export class DoughnutRenderer {
                             const bump = Math.min(Math.abs(val) * extScale * 0.25, ringW * 0.4);
                             inner = extMin;
                             outer = extMin + bump;
-                            col = this._donutFilling;
+                            col = highlight || this._donutFilling;
                         } else {
                             inner = extMin;
                             outer = extMin + (val * extScale);
@@ -652,6 +746,8 @@ export class DoughnutRenderer {
     }
 
     _setupCanvas() {
+        // Draw in _donutSize units onto the denser backing store.
+        this._ctx.setTransform(this._pixelRatio, 0, 0, this._pixelRatio, 0, 0);
         this._ctx.font = this._textSize + "px Arial";
         this._ctx.textAlign = "center";
         this._ctx.lineWidth = 1;

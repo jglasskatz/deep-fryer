@@ -1,0 +1,647 @@
+import type { Messages } from './en';
+
+/** French (fr) — draft for certified review (docs/language-access.md). */
+export const fr: Messages = {
+  common: {
+    updateAvailable: 'Une nouvelle version est disponible.',
+    reload: 'Recharger',
+    skipToContent: 'Aller au contenu',
+    breadcrumb: 'Fil d’Ariane',
+    mainNav: 'Navigation principale',
+    menu: 'Menu',
+    accountMenu: 'Menu du compte',
+    accountAndPortraits: 'Compte et portraits',
+    installApp: 'Installer l’application',
+    signOut: 'Se déconnecter',
+    signIn: 'Se connecter',
+    back: '← {name}',
+    noData: 'Aucune donnée',
+    updated: 'Mis à jour : {date}',
+    socialFoundation: 'Plancher social',
+    ecologicalCeiling: 'Plafond écologique',
+    admin: 'Administration',
+  },
+  nav: {
+    progress: 'Avancement',
+    methodology: 'Méthodologie',
+    getInvolved: 'Participer',
+    compare: 'Comparer',
+    insights: 'Analyses',
+    familyPortraits: 'Portraits : {org}',
+  },
+  language: {
+    label: 'Langue',
+    choose: 'Choisissez une langue',
+    contentNotice:
+      'Les titres et les explications de la page sont traduits. Les résultats de recherche, les sources et les commentaires des résidents sont publiés en anglais.',
+    help: 'Pour obtenir de l’aide gratuite dans votre langue, contactez : {contact}',
+  },
+  doughnut: {
+    chartLabel: 'Graphique en donut des dimensions du plancher social et du plafond écologique',
+    summary:
+      '{name} : {outside} sur {total} dimensions hors de l’espace sûr et juste. Vous trouverez ci-dessous une liste de liens vers chaque dimension.',
+    summaryWithGaps:
+      '{name} : {outside} sur {total} dimensions hors de l’espace sûr et juste ; {gaps} sans données. Vous trouverez ci-dessous une liste de liens vers chaque dimension.',
+    portrait: 'Portrait Doughnut',
+    dimensionsOf: 'Dimensions : {name}',
+    dataNeeded: 'Données requises',
+    year: 'Année : {year}',
+    source: 'Source : {source}',
+    fullPortrait: 'Portrait complet et discussion',
+    /** The hint under the doughnut's hover tooltip. */
+    clickForDetails: 'Cliquez pour voir le détail',
+    level: {
+      unknown: 'Inconnu',
+      noProblem: 'Aucun problème',
+      underControl: 'Maîtrisé',
+      onTrack: 'En bonne voie',
+      needsAttention: 'À surveiller',
+      critical: 'Critique',
+      severe: 'Très grave',
+    },
+  },
+  /** Doughnut Economics dimensions, by framework slug. */
+  dimensions: {
+    food: 'Alimentation',
+    health: 'Santé',
+    education: 'Éducation',
+    'income-work': 'Revenus et travail',
+    'water-sanitation': 'Eau et assainissement',
+    energy: 'Énergie',
+    networks: 'Réseaux',
+    housing: 'Logement',
+    'gender-equality': 'Égalité des genres',
+    'social-equity': 'Équité sociale',
+    'political-voice': 'Voix politique',
+    'peace-justice': 'Paix et justice',
+    'climate-change': 'Changement climatique',
+    'ocean-acidification': 'Acidification des océans',
+    'chemical-pollution': 'Pollution chimique',
+    'nitrogen-phosphorus-loading': 'Charge en azote et en phosphore',
+    'freshwater-withdrawals': 'Prélèvements d’eau douce',
+    'land-conversion': 'Conversion des terres',
+    'biodiversity-loss': 'Perte de biodiversité',
+    'air-pollution': 'Pollution de l’air',
+    'ozone-depletion': 'Appauvrissement de la couche d’ozone',
+  },
+  /**
+   * Geographic scale of a figure. Each label completes "à l’échelle …"
+   * (feminine "échelle": "données à l’échelle municipale", "à l’échelle du
+   * comté") and also reads on its own in a comma-separated list.
+   */
+  scales: {
+    city: 'municipale',
+    county: 'du comté',
+    regional: 'régionale',
+    state: 'de l’État',
+    national: 'nationale',
+    global: 'mondiale',
+  },
+  /**
+   * All nouns are masculine. "arrondissement" starts with a vowel, so
+   * sentences never put an eliding article ("le", "de", "du") directly
+   * before `{noun}`/`{nouns}`; "chaque", "par", "les", "des" and "tous les"
+   * are safe.
+   */
+  nouns: {
+    portrait: { singular: 'portrait', plural: 'portraits' },
+    borough: { singular: 'arrondissement', plural: 'arrondissements' },
+    district: { singular: 'district', plural: 'districts' },
+    ward: { singular: 'district électoral', plural: 'districts électoraux' },
+    neighborhood: { singular: 'quartier', plural: 'quartiers' },
+    county: { singular: 'comté', plural: 'comtés' },
+  },
+  status: {
+    met: 'Cible atteinte',
+    on_track: 'En bonne voie',
+    off_track: 'En retard',
+    improving: 'En amélioration',
+    worsening: 'En dégradation',
+    no_change: 'Sans changement',
+    baseline_only: 'Référence seule',
+    no_target: 'Sans cible',
+    no_data: 'Aucune donnée',
+  },
+  statusExplainer: {
+    met: 'La cible adoptée est atteinte ou dépassée.',
+    on_track:
+      'Progresse vers la cible au moins aussi vite qu’une trajectoire linéaire allant de la valeur de référence à l’échéance.',
+    off_track: 'S’améliore, mais plus lentement que le rythme exigé par l’échéance.',
+    improving: 'Plus proche de la cible que la valeur de référence (l’objectif n’a pas d’échéance).',
+    worsening: 'Plus éloigné de la cible que la valeur de référence.',
+    baseline_only:
+      'Seule la mesure de référence existe pour l’instant ; la prochaine mise à jour indiquera la tendance.',
+  },
+  portrait: {
+    metaDescription: '{name} : le portrait Doughnut — plancher social et plafond écologique, avec la source de chaque chiffre.',
+    population: 'population : {n}',
+    clickHint: 'Sélectionnez un segment pour afficher les indicateurs, les preuves, les actions et la discussion.',
+    demoHint:
+      'Données de démonstration — définissez DATABASE_URL et publiez des versions pour afficher du contenu réel.',
+    /** The visible list of dimensions under the doughnut (SPEC-v6 §2.1). */
+    exploreTitle: 'Explorer les dimensions',
+    exploreIntro: 'Chaque dimension présente ses données, ses sources, des façons de participer et une discussion.',
+    /** The list's intro when the portrait has no discussion (SPEC-v7 §3). */
+    exploreIntroCore: 'Chaque dimension présente ses données, ses sources et ce que vous pouvez faire.',
+    /** The detail panel beside the doughnut (SPEC-v7 §2) — the Santa Cruz core view. */
+    panelEmpty: 'Sélectionnez une dimension sur le donut ou dans la liste pour voir ses données, ses sources et ce que vous pouvez faire.',
+    panelClose: 'Fermer',
+    panelSelected: 'Affichage : {name}',
+    openFull: 'Ouvrir la page complète',
+    openFullDiscussion: 'Ouvrir la page complète et la discussion',
+    moreListings: {
+      one: 'Voir {n} autre façon de participer sur la page complète',
+      many: 'Voir {n} autres façons de participer sur la page complète',
+      other: 'Voir {n} autres façons de participer sur la page complète',
+    },
+    legendTitle: 'Comment lire le donut',
+    legendSafe: 'Anneau vert : l’espace sûr et juste',
+    legendShortfall: 'Rouge vers le centre : un déficit, en dessous du plancher social',
+    legendOvershoot: 'Rouge à l’extérieur de l’anneau : un dépassement du plafond écologique',
+    legendNoData: 'Gris : pas encore de données',
+  },
+  dimension: {
+    metaDescription: '{dimension} — {name} : les données, leurs sources et ce que vous pouvez faire.',
+    updated: 'mis à jour : {date}',
+    target: 'cible : {value}',
+    noTarget: 'aucune cible fixée',
+    scaleData: 'données à l’échelle {scale}',
+    source: 'Source : {source}',
+    snapshotAlt: 'Capture de la source pour {name}, réalisée le {date}',
+    snapshotCaptured: 'Capture de la source réalisée le {date}',
+    originalDocument: 'document original',
+    dataGap: 'Lacune de données',
+    searchedAt: 'Échelles consultées : {scales}',
+    whatYouCanDo: 'Ce que vous pouvez faire',
+    /** Short actions listed after the dimension's involvement listings. */
+    moreYouCanDo: 'Autres choses que vous pouvez faire',
+  },
+  discussion: {
+    title: 'Discussion',
+    sortTop: 'populaires',
+    sortNew: 'récents',
+    sortLabel: 'Trier les commentaires',
+    placeholder: 'Que devrait faire la ville à ce sujet ? Restez courtois et ne vous écartez pas du sujet.',
+    post: 'Publier',
+    pendingApproval: 'Publié — votre premier commentaire est en attente d’approbation par un modérateur.',
+    signInToJoin: '{link} pour participer à la discussion.',
+    empty: 'Aucun commentaire pour le moment.',
+    you: 'vous',
+    locked: 'verrouillé',
+    removed: 'supprimé',
+    removedBody: '[supprimé par les modérateurs]',
+    upvote: 'D’accord',
+    downvote: 'Pas d’accord',
+    score: 'Score : {n}',
+    reply: 'répondre',
+    replyLabel: 'Votre réponse',
+    replySubmit: 'Répondre',
+    restore: 'rétablir',
+    remove: 'supprimer',
+    lock: 'verrouiller',
+    removeReason: 'Motif de la suppression (consigné dans un journal visible par le personnel) :',
+    lockReason: 'Motif du verrouillage de cette discussion :',
+    /** A first comment held for a moderator (SPEC-v6 §3.1). Shown to its author and to moderators only. */
+    awaitingApproval: 'En attente d’approbation',
+    awaitingNote: 'Ce commentaire n’est visible que par vous et les modérateurs tant qu’il n’est pas approuvé.',
+    approve: 'approuver',
+    decline: 'refuser',
+    /** A held comment moderators did not approve; only its author and the moderators see it. */
+    declined: 'Non approuvé',
+    declinedNote: 'Les modérateurs n’ont pas approuvé ce commentaire. Il n’est visible que par vous et les modérateurs.',
+    /** Label beside a comment written by the portrait's team (SPEC-v6 §3.3). */
+    staff: 'Équipe',
+    staffTitle: 'Membre de l’équipe de ce portrait',
+  },
+  progress: {
+    metaTitle: 'Avancement · {name}',
+    metaDescription: 'Où en est {name} par rapport aux objectifs adoptés.',
+    title: 'Avancement : {name}',
+    baseline: 'Référence :',
+    intro:
+      'Les cibles sont les seuils publiés du portrait — des objectifs locaux adoptés, lorsqu’ils existent — et, lorsqu’un objectif a une échéance, l’avancement est évalué par rapport à une trajectoire linéaire allant de la valeur de référence à cette date.',
+    nothingPublished: 'Rien n’a encore été publié pour ce portrait.',
+    summary: 'Résumé',
+    tracked: 'indicateurs suivis',
+    withDueDate: {
+      one: '{n} avec échéance',
+      many: '{n} avec échéance',
+      other: '{n} avec échéance',
+    },
+    statusesMeaning: 'Signification des statuts',
+    gapsTitle: 'Ce que nous ne pouvons pas encore mesurer',
+    gapsIntro:
+      'Des lacunes reconnues en toute transparence : des données qu’aucun organisme ne publie à cette échelle géographique. Chacune est une demande — leur publication permettrait à ce portrait d’en assurer le suivi.',
+    openData: 'Données ouvertes',
+    openDataIntro:
+      'Les mêmes chiffres, dans un format lisible par machine, pour les portails de données ouvertes et les dossiers du conseil municipal : {files}.',
+    methodologyLink: 'Méthodologie : {link}.',
+    thresholdsAndRationales: 'seuils et justifications',
+    columns: {
+      indicator: 'Indicateur',
+      baseline: 'Référence',
+      latest: 'Dernière valeur',
+      target: 'Cible',
+      status: 'Statut',
+      trend: 'Tendance',
+    },
+    scaleFigure: 'chiffre à l’échelle {scale}',
+    earliest: '(première valeur disponible)',
+    sameAsBaseline: 'identique à la référence',
+    byYear: 'd’ici {year}',
+    needsPerYear: 'nécessite {change} par an',
+    trend: 'Tendance : {points}',
+    trendTarget: 'cible {value}',
+  },
+  methodology: {
+    metaDescription: '{name} : comment le portrait est établi — périmètre géographique, sources, et chaque cible avec sa justification.',
+    title: 'Méthodologie',
+    intro:
+      'Ce portrait suit l’approche de déclinaison locale de Doughnut Economics (l’économie du donut) : un plancher social (ne pas l’atteindre constitue un déficit, représenté vers le centre) et un plafond écologique (le franchir constitue un dépassement, représenté vers l’extérieur). Chaque indicateur a une cible explicite assortie d’une justification écrite, présentée ci-dessous. Lorsque ce portrait utilise une cible différente de la valeur par défaut du cadre, la justification locale est indiquée.',
+    geography: 'Périmètre géographique',
+    sourcePriority: 'Priorité des sources',
+    sourcePriorityIntro:
+      'Les données proviennent du niveau de priorité le plus élevé disponible ; un niveau inférieur n’est utilisé que lorsque tous les niveaux supérieurs ont été épuisés.',
+    recency: 'Actualité des données',
+    recencyText: {
+      one: 'Les données datant de plus de {n} an sont traitées comme une lacune de données plutôt que présentées comme actuelles.',
+      many: 'Les données datant de plus de {n} ans sont traitées comme une lacune de données plutôt que présentées comme actuelles.',
+      other:
+        'Les données datant de plus de {n} ans sont traitées comme une lacune de données plutôt que présentées comme actuelles.',
+    },
+    targets: 'Cibles et justifications',
+    target: 'cible {value}',
+    localTarget: 'Cible locale : {rationale}',
+    frameworkDefault: 'La cible par défaut du cadre était {target} : {rationale}',
+    lastRefreshed: 'Dernière mise à jour',
+    contentInEnglish: 'Les noms des indicateurs et les justifications sont publiés en anglais.',
+  },
+  outreach: {
+    metaDescription: '{name} : les façons de participer et les organisations qui travaillent sur ces données.',
+    title: 'Participer',
+    empty:
+      'Des organisations locales figureront ici à mesure que le portrait s’enrichira. En attendant, chaque page de dimension propose des actions concrètes.',
+    intro: 'Programmes, organisations et organismes publics où vous pouvez participer, classés par dimension. Le personnel vérifie chaque fiche avant de la publier ici.',
+    /** Organizations working on the portrait's data (research contacts), when any are published. */
+    partnersTitle: 'Organisations qui travaillent sur ces données',
+  },
+  /** Ways to get involved and the organization form (SPEC-v6 §4). */
+  involvement: {
+    title: 'Comment participer',
+    kind: {
+      volunteer: 'Faire du bénévolat',
+      services: 'Obtenir de l’aide ou s’inscrire',
+      civic: 'Donner son avis',
+      organize: 'Rejoindre un groupe',
+      other: 'Participer',
+    },
+    website: 'Site web',
+    call: 'Appeler le {phone}',
+    /** {date} is a formatted date. */
+    checked: 'Lien vérifié le {date}',
+    forEveryDimension: 'Pour toutes les dimensions',
+    filterLabel: 'Dimension',
+    filterAll: 'Toutes les dimensions',
+    none: 'Aucune fiche pour cette dimension pour le moment.',
+    noneAtAll: 'Aucune fiche pour le moment.',
+    contentInEnglish: 'Les fiches sont rédigées par le personnel et publiées en anglais.',
+    formTitle: 'Vous connaissez une façon de participer ?',
+    /** On a dimension page; {dimension} is the dimension's name. */
+    formIntro: 'Votre organisation offre-t-elle une bonne façon de participer dans le domaine {dimension} ? Ou avez-vous une suggestion ? Dites-le au personnel : il examine chaque proposition avant toute publication.',
+    formIntroGeneral: 'Votre organisation offre-t-elle une bonne façon de participer ? Ou avez-vous une suggestion ? Dites-le au personnel : il examine chaque proposition avant toute publication.',
+    open: 'Proposer une façon de participer',
+    kindLegend: 'Que souhaitez-vous partager ?',
+    kindListing: 'Mon organisation offre une façon de participer',
+    kindSuggestion: 'Une suggestion sur la façon dont les gens peuvent participer',
+    dimensionLabel: 'Dimension',
+    dimensionAny: 'Plusieurs, ou je ne sais pas',
+    orgName: 'Nom de l’organisation ou du groupe',
+    about: 'Qui êtes-vous ?',
+    aboutHint: 'Ce que fait votre organisation, et pour qui.',
+    pitchListing: 'Pourquoi est-ce une bonne façon de participer ?',
+    pitchListingHint: 'Que peuvent faire les gens avec vous : faire du bénévolat, devenir membre, assister à des activités, obtenir de l’aide ?',
+    pitchSuggestion: 'Votre suggestion',
+    pitchSuggestionHint: 'Comment les gens pourraient-ils y participer ?',
+    websiteLabel: 'Site web',
+    contactLegend: 'Comment le personnel peut vous joindre',
+    contactName: 'Votre nom',
+    email: 'Adresse e-mail',
+    phone: 'Téléphone',
+    optional: '(facultatif)',
+    privacy: 'Vos coordonnées sont transmises uniquement au personnel et ne sont jamais publiées.',
+    send: 'Envoyer au personnel',
+    sending: 'Envoi en cours…',
+    thanks: 'Merci. Le personnel examine chaque proposition. Si elle convient, elle apparaîtra sur cette page ; le personnel pourra d’abord vous contacter.',
+    sendAnother: 'Envoyer une autre proposition',
+    /** Above the form when fields need fixing; each field also shows its own message. */
+    invalid: 'Veuillez vérifier les champs signalés ci-dessous.',
+    websiteInvalid: 'Saisissez l’adresse web complète, commençant par https:// — par exemple https://example.org.',
+    phoneInvalid:
+      'Utilisez uniquement des chiffres et les séparateurs habituels, comme dans (212) 555-0100, sans numéro de poste ni autres mots.',
+    tooFast: 'C’était très rapide. Veuillez patienter un instant, puis renvoyer le formulaire.',
+    rateLimited: 'Aujourd’hui, trop de propositions ont été envoyées d’ici. Veuillez réessayer plus tard.',
+    expired: 'Ce formulaire a expiré. Rechargez la page, puis réessayez.',
+    failed: 'Nous n’avons pas pu l’envoyer. Veuillez réessayer.',
+  },
+  /**
+   * Asking for a portrait in another language while its translation is off
+   * (SPEC-v7 §3.5). Shown in the reader's preferred language even though the
+   * page itself is English. {language} is a language's own name (Español).
+   */
+  translationRequest: {
+    button: 'Demander une traduction',
+    intro: 'Ce portrait est publié en anglais. Indiquez au personnel la langue dont vous avez besoin : il voit combien de personnes demandent chaque langue.',
+    language: 'Langue',
+    send: 'Envoyer la demande',
+    sending: 'Envoi en cours…',
+    sent: 'Merci. Le personnel verra qu’une personne a demandé cette langue : {language}.',
+    limited:
+      'Trop de demandes ont été envoyées depuis ce réseau au cours de la dernière heure ; la vôtre n’a donc pas été enregistrée. Veuillez réessayer plus tard.',
+    notNeeded: 'Ce portrait vient d’être traduit. Rechargez la page pour choisir votre langue.',
+    failed: 'Nous n’avons pas pu envoyer la demande. Veuillez réessayer.',
+  },
+  /** The sign-in page (SPEC-v6 §2.2). */
+  login: {
+    title: 'Se connecter',
+    intro: 'Les résidents se connectent pour participer à la discussion d’un portrait. Le personnel municipal utilise son compte professionnel.',
+    /** Replaces `intro` when the person is on the way to setting up their city's portrait (/start): city staff, not residents. */
+    startIntro: 'Connectez-vous pour créer le donut de votre ville — utilisez votre adresse e-mail professionnelle.',
+    microsoft: 'Continuer avec Microsoft (compte professionnel)',
+    google: 'Continuer avec Google',
+    emailLabel: 'Recevoir un lien de connexion par e-mail',
+    emailPlaceholder: 'vous@example.org',
+    send: 'Envoyer le lien',
+    sending: 'Envoi en cours…',
+    noMethods: 'Aucune méthode de connexion n’est configurée sur ce serveur.',
+    /** {link} is the "start a portrait" link. */
+    newHere: 'Vous faites partie du personnel municipal ? Après la connexion, vous pourrez {link}.',
+    startLink: 'créer un portrait pour votre territoire',
+    checkTitle: 'Consultez vos e-mails',
+    checkBody: 'Nous avons envoyé un lien de connexion à l’adresse que vous avez saisie. Il ne fonctionne qu’une fois et expire dans 15 minutes.',
+    checkHelp: 'Vous ne l’avez pas reçu après quelques minutes ? Vérifiez votre dossier de courrier indésirable (spam) ou envoyez un autre lien.',
+    sendAnother: 'Envoyer un autre lien',
+    errors: {
+      OAuthAccountNotLinked: 'Cette adresse e-mail a déjà servi à se connecter d’une autre façon. Utilisez la même méthode que la dernière fois (ou un lien par e-mail), puis associez ce fournisseur depuis la page de votre compte.',
+      Verification: 'Ce lien de connexion a expiré ou a déjà été utilisé. Demandez-en un nouveau.',
+      AccessDenied: 'La connexion a été refusée.',
+      Configuration: 'La connexion est mal configurée sur ce serveur. Contactez l’administrateur du site.',
+      EmailSignin: 'Nous n’avons pas pu envoyer l’e-mail de connexion. Vérifiez l’adresse et réessayez dans quelques minutes.',
+      /** Nothing was sent: this address already has three unused sign-in links from the last 15 minutes. */
+      TooManyLinks:
+        'Nous avons déjà envoyé plusieurs liens de connexion à cette adresse au cours des 15 dernières minutes. Utilisez le plus récent, ou réessayez dans 15 minutes.',
+      /** Nothing was sent: this network has asked for its hourly share of sign-in emails (shared Wi-Fi counts as one). */
+      TooManyEmails:
+        'Trop d’e-mails de connexion ont été demandés depuis ce réseau ; celui-ci n’a donc pas été envoyé. Veuillez réessayer dans une heure.',
+      default: 'La connexion a échoué. Réessayez.',
+    },
+  },
+  org: {
+    portraitCount: { one: '{n} portrait', many: '{n} portraits', other: '{n} portraits' },
+    portraits: 'Portraits',
+    nothingPublished: 'Rien n’a encore été publié',
+    outsideSafeSpace: {
+      one: '{n} dimension sur {total} hors de l’espace sûr',
+      many: '{n} dimensions sur {total} hors de l’espace sûr',
+      other: '{n} dimensions sur {total} hors de l’espace sûr',
+    },
+    dataGaps: { one: '{n} lacune de données', many: '{n} lacunes de données', other: '{n} lacunes de données' },
+  },
+  compare: {
+    metaTitle: 'Comparer · {org}',
+    titleJurisdiction: '{n} donuts, un territoire : {org}',
+    titleFamily: '{n} donuts, une famille : {org}',
+    introJurisdiction:
+      'Le même plancher social et le même plafond écologique, mesurés {n} fois — le territoire dans son ensemble et chaque {noun} — selon des seuils identiques fondés sur des objectifs locaux adoptés. Les segments orientés vers l’extérieur dépassent le plafond ; ceux orientés vers l’intérieur n’atteignent pas le plancher ; le gris signale une lacune de données reconnue.',
+    introFamily:
+      'Le même plancher social et le même plafond écologique, mesurés {n} fois selon des seuils identiques fondés sur des objectifs locaux adoptés. Les segments orientés vers l’extérieur dépassent le plafond ; ceux orientés vers l’intérieur n’atteignent pas le plancher ; le gris signale une lacune de données reconnue.',
+    wedgesOutside: '{n}/{total} segments hors de la zone sûre',
+    divergeTitle: 'Les plus grands écarts entre {nouns}',
+    divergeIntro:
+      'Indicateurs publiés comparés entre {nouns}, classés selon l’écart entre le meilleur et le moins bon {noun}.',
+    wholeColumn:
+      'La colonne du territoire dans son ensemble correspond à un chiffre publié à part entière, et non à une moyenne.',
+    indicator: 'Indicateur',
+    spread: 'Écart',
+    legend:
+      'Pour chaque ligne : rouge = {noun} le plus éloigné de la cible, vert = le plus proche. Les indicateurs établis pour l’ensemble du territoire (identiques pour tous les {nouns}) sont, par construction, exclus de ce tableau.',
+  },
+  insights: {
+    metaTitle: 'Analyses · {org}',
+    title: 'Analyses par {noun} · {org}',
+    intro:
+      'Chaque dimension, chaque {noun}, une seule matrice — mesurés selon les mêmes seuils, fondés sur des objectifs locaux adoptés. Sélectionnez une dimension pour afficher la comparaison détaillée et les recherches qui sous-tendent chaque chiffre.',
+    biggestDivides: 'Les plus grands écarts',
+    insideSafeZone: 'à l’intérieur de la zone sûre',
+    beyondBoundary: 'à {n} points au-delà de la limite',
+    divide: '{worst} se situe {worstState}, tandis que {best} se situe {bestState}.',
+    matrix: 'La matrice',
+    matrixIntro:
+      'Vert = à l’intérieur de la zone sûre, rouge = déficit ou dépassement (plus la couleur est foncée, plus l’écart est grand), gris = lacune de données reconnue. Sélectionnez une ligne pour la déplier.',
+    dimension: 'Dimension',
+    noData: 'aucune donnée',
+    unrolled: '{name} — vue détaillée',
+    dataGap: 'lacune de données',
+    barsExplainer:
+      'Les barres mesurent la distance par rapport à la limite (la ligne verticale) : à gauche et en vert, à l’intérieur de la zone sûre ; à droite et en rouge, déficit ou dépassement, sur l’échelle −100…150 du donut.',
+    researchBehind: 'Les recherches sous-jacentes',
+    fullDrilldown: 'analyse détaillée →',
+    yearNA: 'année non disponible',
+    tier: 'niveau {n}',
+    confidence: 'confiance : {value}',
+    confidenceLevels: { high: 'élevée', medium: 'moyenne', low: 'faible' },
+    evidence: 'preuves',
+    workedMath: 'détail du calcul',
+    gapLabel: '{indicator} : lacune de données',
+    fullSearchTrail: '(historique complet des recherches)',
+    selectPrompt:
+      'Sélectionnez une dimension ci-dessus pour afficher la comparaison entre {nouns} et examiner les sources, les preuves et la notation.',
+  },
+  familyProgress: {
+    metaTitle: 'Avancement · {org}',
+    title: 'Avancement : {org}',
+    introOne: 'Chaque objectif adopté pour le portrait, mesuré à partir d’une référence commune : {baseline}.',
+    introMany: 'Chaque objectif adopté pour chaque {noun}, mesuré à partir d’une référence commune : {baseline}.',
+    summaryByPortrait: 'Résumé par portrait',
+    onCourse: { one: '{n} en bonne voie', many: '{n} en bonne voie', other: '{n} en bonne voie' },
+    slipping: { one: '{n} en retard', many: '{n} en retard', other: '{n} en retard' },
+    baselineOnly: {
+      one: '{n} avec référence seule',
+      many: '{n} avec référence seule',
+      other: '{n} avec référence seule',
+    },
+    matrixTitle: 'Objectifs par {noun}',
+    goal: 'Objectif',
+    target: 'cible {value}',
+    targetBy: 'cible {value} d’ici {year}',
+    nothingPublished: 'Rien n’a encore été publié.',
+  },
+  notFound: {
+    title: 'Page introuvable',
+    body: 'Aucun portrait ni aucune page ne se trouve à cette adresse. La page a peut-être été déplacée, ou le portrait n’est pas encore publié.',
+    home: 'Retour à l’accueil',
+  },
+  /** Emergency view (SPEC-v5 §3): official alerts, threats by risk, plans, help. */
+  emergency: {
+    navLabel: 'Urgences',
+    metaTitle: 'Urgences · {name}',
+    title: 'Urgences et catastrophes : {name}',
+    intro:
+      'Alertes officielles, menaces auxquelles cette zone est exposée, plans déjà en place et où obtenir de l’aide.',
+    empty: 'Ce portrait n’a pas encore publié d’informations sur les situations d’urgence.',
+    alertsTitle: 'Alertes en cours',
+    alertsNone: 'Aucune alerte météorologique en cours pour cette zone au {time}.',
+    alertsChecked: 'Dernière vérification : {time}.',
+    alertsStale:
+      'Nous n’avons pas pu accéder récemment au flux officiel d’alertes. Consultez directement le Service météorologique national.',
+    alertsSavedCopy:
+      'Ceci est une copie enregistrée de la page. Les alertes ont été vérifiées pour la dernière fois le {time} et ont pu changer depuis. Consultez directement le Service météorologique national.',
+    alertsNotConfigured: 'Les alertes officielles ne sont pas encore configurées pour ce portrait.',
+    alertsOriginal: 'Les alertes sont affichées telles qu’elles ont été émises, en anglais.',
+    alertSource: 'Émise par {source}',
+    alertWindow: 'Du {start} au {end}',
+    alertFrom: 'À partir du {start}',
+    alertInstructions: 'Que faire',
+    alertDetails: 'Texte intégral de l’alerte',
+    alertLink: 'Alerte officielle',
+    alertEnded: 'Terminée',
+    severity: {
+      Extreme: 'Extrême',
+      Severe: 'Grave',
+      Moderate: 'Modérée',
+      Minor: 'Mineure',
+      Unknown: 'Gravité inconnue',
+    },
+    getAlerts: 'Recevoir les alertes officielles',
+    emergencyCall: 'En cas d’urgence, appelez le {phone}.',
+    infoCall: 'Pour toute aide non urgente, appelez le {phone}.',
+    threatsTitle: 'Menaces par niveau de risque',
+    threatsIntro:
+      'La probabilité de chaque menace et la gravité de ses conséquences, selon l’évaluation du personnel municipal, ainsi que les parties du donut qu’elle met en danger.',
+    likelihood: 'Probabilité : {n} sur 5',
+    severityRating: 'Gravité : {n} sur 5',
+    risk: {
+      low: 'Risque faible',
+      moderate: 'Risque modéré',
+      high: 'Risque élevé',
+      very_high: 'Risque très élevé',
+    },
+    activeNow: 'Alerte en cours',
+    threatens: 'Dimensions menacées :',
+    dimensionImpact: '{dimension} ({impact})',
+    impactLevel: {
+      low: 'impact faible',
+      moderate: 'impact modéré',
+      high: 'impact élevé',
+    },
+    hazardKind: {
+      coastal_storm: 'Tempête côtière',
+      flooding: 'Inondations',
+      extreme_heat: 'Chaleur extrême',
+      winter_weather: 'Intempéries hivernales',
+      high_winds: 'Vents violents',
+      air_quality: 'Mauvaise qualité de l’air',
+      drought: 'Sécheresse',
+      wildfire: 'Feu de forêt',
+      earthquake: 'Tremblement de terre',
+      infectious_disease: 'Maladie infectieuse',
+      infrastructure_failure: 'Défaillance des infrastructures',
+      other: 'Autre menace',
+    },
+    showOnDoughnut: 'Afficher sur le donut',
+    doughnutNow: 'Aujourd’hui',
+    doughnutThreat: 'Menacé par : {hazard}',
+    doughnutLabel: 'Portrait Doughnut indiquant les dimensions mises en danger par {hazard}',
+    doughnutControls: 'Affichage du donut',
+    play: 'Lecture',
+    pause: 'Pause',
+    relatedPlans: 'Plans pour cette menace :',
+    plansTitle: 'Plans déjà en place',
+    plansIntro: 'Plans que la ville a adoptés face à ces menaces : ce qu’elle s’est engagée à faire.',
+    planBy: '{agency}, {year}',
+    planAgency: '{agency}',
+    planLanguages: 'Également publié en : {languages}',
+    readPlan: 'Lire le plan',
+    helpTitle: 'Aide et entraide',
+    helpIntro: 'Lieux et groupes qui apportent de l’aide en cas d’urgence.',
+    resourceKind: {
+      cooling_center: 'Centre de rafraîchissement',
+      shelter: 'Hébergement d’urgence',
+      hotline: 'Ligne d’assistance',
+      mutual_aid: 'Entraide',
+      food: 'Aide alimentaire',
+      medical: 'Soins médicaux',
+      other: 'Autre type d’aide',
+    },
+    call: 'Appeler le {phone}',
+    website: 'Site web',
+    offlineTitle: 'Conserver cette page pour la consulter hors connexion',
+    offlineBody:
+      'Enregistrez cette page pour qu’elle s’ouvre même sans connexion, au cas où le réseau tomberait en panne.',
+    offlineSave: 'Rendre disponible hors connexion',
+    offlineSaved:
+      'Page enregistrée. Elle s’ouvrira même sans connexion. Une copie enregistrée ne se met pas à jour d’elle-même : ses alertes datent de la dernière fois que vous l’avez ouverte en ligne.',
+    offlineUnavailable: 'Ce navigateur ne peut pas enregistrer de pages pour une consultation hors connexion.',
+    offlineSaving: 'Enregistrement…',
+    offlineFailed: 'Impossible d’enregistrer cette page. Réessayez lorsque vous disposez d’une connexion.',
+    offlineUpdate:
+      'Une mise à jour de cette application est en attente : les pages ne peuvent pas être enregistrées tant qu’elle n’est pas appliquée. Rechargez la page, puis réessayez.',
+    offlineSignedIn:
+      'Les pages ne sont enregistrées sur cet appareil que lorsqu’aucune session n’est ouverte, afin que votre compte reste privé sur les ordinateurs partagés.',
+    metaDescription: 'Alertes officielles, menaces, plans et aide pour {name}.',
+    contentInEnglish:
+      'Les menaces, les plans et les ressources d’aide sont rédigés par le personnel et publiés en anglais. Les alertes sont affichées telles que le Service météorologique national (National Weather Service) les a émises.',
+    alertArea: 'Zones : {areas}',
+    alertRelated: 'Menace associée : {hazard}',
+    signupLink: 'S’inscrire aux alertes officielles',
+    signupNamed: 'S’inscrire à {name}',
+    resourceHazards: 'Utile en cas de :',
+    doughnutLegend: 'Couleurs du donut :',
+  },
+  /** The site footer, on every page but embeds (components/site-footer/SiteFooter.tsx). */
+  footer: {
+    /** The footer's navigation landmark. */
+    label: 'À propos de ce site',
+    /** {email} is the support address of whoever runs this site, as a link. */
+    contact: 'Contact : {email}',
+    accessibility: 'Accessibilité',
+    privacy: 'Confidentialité',
+    terms: 'Conditions d’utilisation',
+    /**
+     * The Doughnut's attribution (docs/OPEN-SOURCE.md §3.3), also under every
+     * embedded doughnut. {license} is the license's name as a link; {book}
+     * and {method} are the English titles of the book and the method guide.
+     * Keep all three, and keep the people's and the organization's names.
+     */
+    credit:
+      'Diagramme du donut : Kate Raworth et Christian Guthier, {license}, adapté avec des données locales (Raworth, {book}, 2017). Méthode des portraits de ville inspirée du guide {method} de Doughnut Economics Action Lab. Ce site n’est pas affilié à Doughnut Economics Action Lab et n’est pas approuvé par cet organisme.',
+  },
+  /**
+   * On a portrait seeded with synthetic values (scripts/seed-demo-data.ts):
+   * its page, its dimension pages, its embed, its organization's compare,
+   * insights and progress pages, so a screenshot cannot pass for research.
+   */
+  sampleData: {
+    title: 'Données de démonstration — pas des résultats de recherche',
+    /** A portrait's own pages and its embed; {name} is the portrait. */
+    body: 'Les chiffres présentés sur ce site pour {name} ont été générés pour faire la démonstration du logiciel. Ce ne sont pas des mesures et ils ne doivent pas être cités.',
+    /** An organization's pages, when any portrait shown there is seeded; {org} is the organization. */
+    bodyOrg:
+      'Certains chiffres présentés sur cette page pour {org}, voire tous, ont été générés pour faire la démonstration du logiciel. Ce ne sont pas des mesures et ils ne doivent pas être cités.',
+  },
+  /** Theme toggle and the fryer (SPEC-v5 §4). */
+  theme: {
+    label: 'Thème',
+    /** The toggle's accessible name, and the status message after a flip. */
+    toggle: 'Thème : {mode}',
+    /** The toggle's description and hover title. {system} is the "Match device" item's label. */
+    hint: 'Bascule entre clair et sombre. Pour « {system} » et d’autres options, maintenez appuyé, faites un clic droit ou appuyez sur Maj+F10.',
+    light: 'Clair',
+    dark: 'Sombre',
+    system: 'Selon l’appareil',
+    menu: 'Options du thème',
+    deepFry: 'Faire frire cette page',
+    unfry: 'Défrire cette page',
+    fried: 'Page frite. Choisissez « Défrire cette page » pour annuler.',
+    unfried: 'Page restaurée.',
+  },
+};

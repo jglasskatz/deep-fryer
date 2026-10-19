@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getDb, tenantBySlug } from '@deep-fryer/db';
+import { tenantBySlug } from '@deep-fryer/db';
 import { getRole, roleAtLeast } from '@/lib/auth';
 import { applyRun } from '@/lib/research';
+import { systemDb } from '@/lib/db';
 
 const bodySchema = z.object({
   tenant: z.string(),
@@ -13,7 +14,7 @@ const bodySchema = z.object({
 export async function POST(request: Request) {
   try {
     const body = bodySchema.parse(await request.json());
-    const tenant = await tenantBySlug(getDb(), body.tenant);
+    const tenant = await tenantBySlug(systemDb(), body.tenant);
     if (!tenant) return NextResponse.json({ error: 'unknown tenant' }, { status: 404 });
 
     const role = await getRole(tenant.id);

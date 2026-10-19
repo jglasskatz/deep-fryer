@@ -1,0 +1,668 @@
+import type { Messages } from './en';
+
+/** Polish (pl) — draft for certified review (docs/language-access.md). */
+export const pl: Messages = {
+  common: {
+    updateAvailable: 'Dostępna jest nowa wersja.',
+    reload: 'Odśwież',
+    skipToContent: 'Przejdź do treści',
+    breadcrumb: 'Ścieżka nawigacji',
+    mainNav: 'Nawigacja główna',
+    menu: 'Menu',
+    accountMenu: 'Menu konta',
+    accountAndPortraits: 'Konto i portrety',
+    installApp: 'Zainstaluj aplikację',
+    signOut: 'Wyloguj się',
+    signIn: 'Zaloguj się',
+    back: '← {name}',
+    noData: 'Brak danych',
+    updated: 'Zaktualizowano: {date}',
+    socialFoundation: 'Fundament społeczny',
+    ecologicalCeiling: 'Pułap ekologiczny',
+    admin: 'Administracja',
+  },
+  nav: {
+    progress: 'Postępy',
+    methodology: 'Metodologia',
+    getInvolved: 'Jak się zaangażować',
+    compare: 'Porównanie',
+    insights: 'Analizy',
+    familyPortraits: '{org}: portrety',
+  },
+  language: {
+    label: 'Język',
+    choose: 'Wybór języka',
+    contentNotice:
+      'Nagłówki i objaśnienia na stronie zostały przetłumaczone. Wyniki badań, źródła i komentarze mieszkańców są publikowane w języku angielskim.',
+    help: 'Bezpłatna pomoc w Państwa języku — kontakt: {contact}',
+  },
+  doughnut: {
+    chartLabel: 'Wykres pierścieniowy (obwarzanek) z wymiarami fundamentu społecznego i pułapu ekologicznego',
+    summary:
+      '{name}: {outside} z {total} wymiarów poza bezpieczną i sprawiedliwą przestrzenią. Poniżej znajduje się lista linków do poszczególnych wymiarów.',
+    summaryWithGaps:
+      '{name}: {outside} z {total} wymiarów poza bezpieczną i sprawiedliwą przestrzenią, wymiary bez danych: {gaps}. Poniżej znajduje się lista linków do poszczególnych wymiarów.',
+    portrait: 'Portret w modelu obwarzanka',
+    dimensionsOf: 'Wymiary: {name}',
+    dataNeeded: 'Potrzebne dane',
+    year: 'Rok: {year}',
+    source: 'Źródło: {source}',
+    fullPortrait: 'Pełny portret i dyskusja',
+    /** The hint under the doughnut's hover tooltip. */
+    clickForDetails: 'Szczegóły po kliknięciu',
+    level: {
+      unknown: 'Stan nieznany',
+      noProblem: 'Brak problemów',
+      underControl: 'Pod kontrolą',
+      onTrack: 'Na dobrej drodze',
+      needsAttention: 'Wymaga uwagi',
+      critical: 'Stan krytyczny',
+      severe: 'Stan bardzo poważny',
+    },
+  },
+  dimensions: {
+    food: 'Żywność',
+    health: 'Zdrowie',
+    education: 'Edukacja',
+    'income-work': 'Dochód i praca',
+    'water-sanitation': 'Woda i warunki sanitarne',
+    energy: 'Energia',
+    networks: 'Sieci',
+    housing: 'Mieszkalnictwo',
+    'gender-equality': 'Równość płci',
+    'social-equity': 'Równość społeczna',
+    'political-voice': 'Głos polityczny',
+    'peace-justice': 'Pokój i sprawiedliwość',
+    'climate-change': 'Zmiana klimatu',
+    'ocean-acidification': 'Zakwaszenie oceanów',
+    'chemical-pollution': 'Zanieczyszczenie chemiczne',
+    'nitrogen-phosphorus-loading': 'Obciążenie azotem i fosforem',
+    'freshwater-withdrawals': 'Pobór wody słodkiej',
+    'land-conversion': 'Przekształcanie gruntów',
+    'biodiversity-loss': 'Utrata bioróżnorodności',
+    'air-pollution': 'Zanieczyszczenie powietrza',
+    'ozone-depletion': 'Zubożenie warstwy ozonowej',
+  },
+  scales: {
+    city: 'poziom miasta',
+    county: 'poziom hrabstwa',
+    regional: 'poziom regionu',
+    state: 'poziom stanu',
+    national: 'poziom kraju',
+    global: 'poziom globalny',
+  },
+  nouns: {
+    portrait: { singular: 'portret', plural: 'portrety' },
+    borough: { singular: 'dzielnica', plural: 'dzielnice' },
+    district: { singular: 'okręg', plural: 'okręgi' },
+    ward: { singular: 'okręg wyborczy', plural: 'okręgi wyborcze' },
+    neighborhood: { singular: 'osiedle', plural: 'osiedla' },
+    county: { singular: 'hrabstwo', plural: 'hrabstwa' },
+  },
+  status: {
+    met: 'Cel osiągnięty',
+    on_track: 'Zgodnie z planem',
+    off_track: 'Z opóźnieniem',
+    improving: 'Poprawa',
+    worsening: 'Pogorszenie',
+    no_change: 'Bez zmian',
+    baseline_only: 'Tylko wartość bazowa',
+    no_target: 'Brak celu',
+    no_data: 'Brak danych',
+  },
+  statusExplainer: {
+    met: 'Przyjęty cel został osiągnięty lub przekroczony.',
+    on_track:
+      'Postęp w kierunku celu jest co najmniej tak szybki jak na linii prostej od wartości bazowej do terminu realizacji.',
+    off_track: 'Sytuacja się poprawia, ale wolniej, niż wymaga tego termin realizacji.',
+    improving: 'Bliżej celu niż przy wartości bazowej (dla tego celu nie wyznaczono terminu realizacji).',
+    worsening: 'Dalej od celu niż przy wartości bazowej.',
+    baseline_only: 'Na razie istnieje tylko pomiar bazowy; tendencja będzie widoczna po następnej aktualizacji.',
+  },
+  portrait: {
+    metaDescription: '{name}: portret w modelu obwarzanka — fundament społeczny i pułap ekologiczny, ze źródłem każdej liczby.',
+    population: 'ludność: {n}',
+    clickHint: 'Po wybraniu segmentu wyświetlą się wskaźniki, dowody, działania i dyskusja.',
+    demoHint: 'Dane demonstracyjne — aby wyświetlić rzeczywiste treści, należy ustawić DATABASE_URL i opublikować wersje.',
+    /** The visible list of dimensions under the doughnut (SPEC-v6 §2.1). */
+    exploreTitle: 'Przegląd wymiarów',
+    exploreIntro: 'Każdy wymiar ma swoje dane, źródła, sposoby zaangażowania się i dyskusję.',
+    /** The list's intro when the portrait has no discussion (SPEC-v7 §3). */
+    exploreIntroCore: 'Każdy wymiar ma swoje dane, źródła i informacje o tym, co można zrobić.',
+    /** The detail panel beside the doughnut (SPEC-v7 §2) — the Santa Cruz core view. */
+    panelEmpty:
+      'Po wybraniu wymiaru na obwarzanku lub na liście wyświetlą się jego dane, źródła i informacje o tym, co można zrobić.',
+    panelClose: 'Zamknij',
+    panelSelected: 'Wyświetlany wymiar: {name}',
+    openFull: 'Otwórz pełną stronę',
+    openFullDiscussion: 'Otwórz pełną stronę i dyskusję',
+    moreListings: {
+      one: 'Zobacz jeszcze {n} sposób zaangażowania się na pełnej stronie',
+      few: 'Zobacz jeszcze {n} sposoby zaangażowania się na pełnej stronie',
+      many: 'Zobacz jeszcze {n} sposobów zaangażowania się na pełnej stronie',
+      other: 'Zobacz jeszcze {n} sposobu zaangażowania się na pełnej stronie',
+    },
+    legendTitle: 'Jak czytać obwarzanek',
+    legendSafe: 'Zielony pierścień — bezpieczna i sprawiedliwa przestrzeń',
+    legendShortfall: 'Kolor czerwony w stronę środka — niedobór, czyli poziom poniżej fundamentu społecznego',
+    legendOvershoot: 'Kolor czerwony poza pierścieniem — przekroczenie pułapu ekologicznego',
+    legendNoData: 'Kolor szary — na razie brak danych',
+  },
+  dimension: {
+    metaDescription: '{dimension} — {name}: dane, ich źródła i to, co można zrobić.',
+    updated: 'zaktualizowano: {date}',
+    target: 'cel: {value}',
+    noTarget: 'nie wyznaczono celu',
+    scaleData: 'dane: {scale}',
+    source: 'Źródło: {source}',
+    snapshotAlt: 'Zrzut źródła dla wskaźnika „{name}”, data wykonania: {date}',
+    snapshotCaptured: 'Data wykonania zrzutu źródła: {date}',
+    originalDocument: 'dokument źródłowy',
+    dataGap: 'Luka w danych',
+    searchedAt: 'Gdzie szukano: {scales}',
+    whatYouCanDo: 'Co można zrobić',
+    /** Short actions listed after the dimension's involvement listings. */
+    moreYouCanDo: 'Co jeszcze można zrobić',
+  },
+  discussion: {
+    title: 'Dyskusja',
+    sortTop: 'najlepsze',
+    sortNew: 'najnowsze',
+    sortLabel: 'Sortowanie komentarzy',
+    placeholder: 'Co Państwa zdaniem powinno zrobić miasto? Prosimy o kulturalny ton i trzymanie się tematu.',
+    post: 'Opublikuj',
+    pendingApproval: 'Opublikowano — Państwa pierwszy komentarz czeka na zatwierdzenie przez moderatora.',
+    signInToJoin: '{link}, aby wziąć udział w dyskusji.',
+    empty: 'Nie ma jeszcze komentarzy.',
+    you: 'Państwa komentarz',
+    locked: 'zablokowany',
+    removed: 'usunięty',
+    removedBody: '[usunięty przez moderatorów]',
+    upvote: 'Zgadzam się',
+    downvote: 'Nie zgadzam się',
+    score: 'Wynik: {n}',
+    reply: 'odpowiedz',
+    replyLabel: 'Państwa odpowiedź',
+    replySubmit: 'Odpowiedz',
+    restore: 'przywróć',
+    remove: 'usuń',
+    lock: 'zablokuj',
+    removeReason: 'Powód usunięcia (zostanie zapisany w dzienniku widocznym dla personelu):',
+    lockReason: 'Powód zablokowania tego wątku:',
+    /** A first comment held for a moderator (SPEC-v6 §3.1). Shown to its author and to moderators only. */
+    awaitingApproval: 'Czeka na zatwierdzenie',
+    awaitingNote: 'Do czasu zatwierdzenia ten komentarz widzą tylko Państwo i moderatorzy.',
+    approve: 'zatwierdź',
+    decline: 'odrzuć',
+    /** A held comment moderators did not approve; only its author and the moderators see it. */
+    declined: 'Niezatwierdzony',
+    declinedNote: 'Moderatorzy nie zatwierdzili tego komentarza. Widzą go tylko Państwo i moderatorzy.',
+    /** Label beside a comment written by the portrait's team (SPEC-v6 §3.3). */
+    staff: 'Zespół',
+    staffTitle: 'Osoba z zespołu, który prowadzi ten portret',
+  },
+  progress: {
+    metaTitle: 'Postępy · {name}',
+    metaDescription: 'Jak {name} realizuje przyjęte cele.',
+    title: 'Postępy: {name}',
+    baseline: 'Wartość bazowa:',
+    intro:
+      'Cele to opublikowane progi portretu — tam, gdzie istnieją, są to przyjęte cele lokalne. Jeśli cel ma termin realizacji, postęp ocenia się względem prostej ścieżki od wartości bazowej do tego terminu.',
+    nothingPublished: 'Dla tego portretu nic jeszcze nie opublikowano.',
+    summary: 'Podsumowanie',
+    tracked: 'monitorowane wskaźniki',
+    withDueDate: {
+      one: 'z terminem realizacji: {n}',
+      few: 'z terminem realizacji: {n}',
+      many: 'z terminem realizacji: {n}',
+      other: 'z terminem realizacji: {n}',
+    },
+    statusesMeaning: 'Co oznaczają statusy',
+    gapsTitle: 'Czego jeszcze nie możemy zmierzyć',
+    gapsIntro:
+      'Uczciwie o lukach: to dane, których żadna instytucja nie publikuje dla tego obszaru. Każda luka jest prośbą — opublikowanie tych danych pozwoliłoby śledzić je w tym portrecie.',
+    openData: 'Otwarte dane',
+    openDataIntro:
+      'Te same liczby w formacie do odczytu maszynowego — dla portali otwartych danych i materiałów na posiedzenia rady: {files}.',
+    methodologyLink: 'Metodologia: {link}.',
+    thresholdsAndRationales: 'progi i ich uzasadnienia',
+    columns: {
+      indicator: 'Wskaźnik',
+      baseline: 'Wartość bazowa',
+      latest: 'Najnowsza wartość',
+      target: 'Cel',
+      status: 'Status',
+      trend: 'Tendencja',
+    },
+    scaleFigure: 'wartość: {scale}',
+    earliest: '(najwcześniejsza)',
+    sameAsBaseline: 'równa wartości bazowej',
+    byYear: 'do {year} r.',
+    needsPerYear: 'potrzebna zmiana: {change} rocznie',
+    trend: 'Tendencja: {points}',
+    trendTarget: 'cel: {value}',
+  },
+  methodology: {
+    metaDescription: '{name}: jak powstaje portret — zasięg geograficzny, źródła oraz każdy cel wraz z uzasadnieniem.',
+    title: 'Metodologia',
+    intro:
+      'Ten portret stosuje metodę przeniesienia modelu Doughnut Economics (ekonomii obwarzanka) na poziom lokalny. Obejmuje ona fundament społeczny (gdy nie jest osiągnięty, mówimy o niedoborze, zaznaczanym w stronę środka) oraz pułap ekologiczny (gdy zostaje przekroczony, mówimy o przekroczeniu, zaznaczanym na zewnątrz). Każdy wskaźnik ma jednoznacznie określony cel z pisemnym uzasadnieniem — ich lista znajduje się poniżej. Jeśli ten portret stosuje cel inny niż domyślny w modelu, podano lokalne uzasadnienie.',
+    geography: 'Zasięg geograficzny',
+    sourcePriority: 'Priorytet źródeł',
+    sourcePriorityIntro:
+      'Dane pochodzą z najwyższej dostępnej kategorii źródeł; niższa kategoria jest używana tylko wtedy, gdy wszystkie wyższe zostały wyczerpane.',
+    recency: 'Aktualność',
+    recencyText: {
+      one: 'Dane starsze niż {n} rok są traktowane jako luka w danych, a nie podawane jako aktualne.',
+      few: 'Dane starsze niż {n} lata są traktowane jako luka w danych, a nie podawane jako aktualne.',
+      many: 'Dane starsze niż {n} lat są traktowane jako luka w danych, a nie podawane jako aktualne.',
+      other: 'Dane starsze niż {n} roku są traktowane jako luka w danych, a nie podawane jako aktualne.',
+    },
+    targets: 'Cele i uzasadnienia',
+    target: 'cel: {value}',
+    localTarget: 'Cel lokalny: {rationale}',
+    frameworkDefault: 'Wartość domyślna w modelu wynosiła {target}: {rationale}',
+    lastRefreshed: 'Ostatnia aktualizacja',
+    contentInEnglish: 'Nazwy wskaźników i uzasadnienia są publikowane w języku angielskim.',
+  },
+  outreach: {
+    metaDescription: '{name}: jak się zaangażować i które organizacje pracują z tymi danymi.',
+    title: 'Jak się zaangażować',
+    empty:
+      'W miarę rozwoju portretu pojawi się tu lista lokalnych organizacji. Tymczasem na stronie każdego wymiaru znajdują się konkretne działania.',
+    intro:
+      'Programy, organizacje i instytucje publiczne, w których działaniach można wziąć udział — według wymiarów. Pracownicy sprawdzają każdy wpis, zanim pojawi się on tutaj.',
+    /** Organizations working on the portrait's data (research contacts), when any are published. */
+    partnersTitle: 'Organizacje, które pracują z tymi danymi',
+  },
+  /** Ways to get involved and the organization form (SPEC-v6 §4). */
+  involvement: {
+    title: 'Jak się zaangażować',
+    kind: {
+      volunteer: 'Wolontariat',
+      services: 'Pomoc i zapisy',
+      civic: 'Wyrażanie opinii',
+      organize: 'Działanie w grupie',
+      other: 'Inne formy zaangażowania',
+    },
+    website: 'Strona internetowa',
+    call: 'Zadzwoń: {phone}',
+    /** {date} is a formatted date. */
+    checked: 'Link sprawdzony: {date}',
+    forEveryDimension: 'Dla wszystkich wymiarów',
+    filterLabel: 'Wymiar',
+    filterAll: 'Wszystkie wymiary',
+    none: 'Dla tego wymiaru nie ma jeszcze wpisów.',
+    noneAtAll: 'Nie ma jeszcze wpisów.',
+    contentInEnglish: 'Wpisy są przygotowywane przez pracowników i publikowane w języku angielskim.',
+    formTitle: 'Znają Państwo inny sposób na zaangażowanie?',
+    /** On a dimension page; {dimension} is the dimension's name. */
+    formIntro:
+      'Czy Państwa organizacja daje ludziom dobrą możliwość zaangażowania się w sprawy związane z wymiarem „{dimension}”? A może mają Państwo sugestię? Prosimy napisać do pracowników — sprawdzają oni każde zgłoszenie, zanim cokolwiek zostanie opublikowane.',
+    formIntroGeneral:
+      'Czy Państwa organizacja daje ludziom dobrą możliwość zaangażowania się? A może mają Państwo sugestię? Prosimy napisać do pracowników — sprawdzają oni każde zgłoszenie, zanim cokolwiek zostanie opublikowane.',
+    open: 'Zaproponuj sposób zaangażowania',
+    kindLegend: 'Czym chcą się Państwo podzielić?',
+    kindListing: 'Moja organizacja daje możliwość zaangażowania się',
+    kindSuggestion: 'Sugestia, jak ludzie mogą się zaangażować',
+    dimensionLabel: 'Wymiar',
+    dimensionAny: 'Kilka wymiarów lub nie wiem',
+    orgName: 'Nazwa organizacji lub grupy',
+    about: 'O Państwa organizacji',
+    aboutHint: 'Czym zajmuje się Państwa organizacja i komu pomaga.',
+    pitchListing: 'Dlaczego warto zaangażować się w działania Państwa organizacji?',
+    pitchListingHint:
+      'Co ludzie mogą robić razem z Państwem — działać jako wolontariusze, dołączyć do organizacji, przyjść na spotkanie, uzyskać pomoc?',
+    pitchSuggestion: 'Państwa sugestia',
+    pitchSuggestionHint: 'Jak ludzie mogliby się w to zaangażować?',
+    websiteLabel: 'Strona internetowa',
+    contactLegend: 'Jak pracownicy mogą się z Państwem skontaktować',
+    contactName: 'Imię',
+    email: 'Adres e-mail',
+    phone: 'Telefon',
+    optional: '(opcjonalnie)',
+    privacy: 'Państwa dane kontaktowe trafiają tylko do pracowników i nigdy nie są publikowane.',
+    send: 'Wyślij do pracowników',
+    sending: 'Wysyłanie…',
+    thanks:
+      'Dziękujemy. Pracownicy sprawdzają każde zgłoszenie. Jeśli będzie odpowiednie, pojawi się na tej stronie. Wcześniej pracownicy mogą się z Państwem skontaktować.',
+    sendAnother: 'Wyślij kolejne zgłoszenie',
+    /** Above the form when fields need fixing; each field also shows its own message. */
+    invalid: 'Prosimy sprawdzić pola zaznaczone poniżej.',
+    websiteInvalid: 'Prosimy wpisać pełny adres strony, zaczynający się od https:// — na przykład https://example.org.',
+    phoneInvalid:
+      'Prosimy wpisać tylko cyfry i zwykłe znaki rozdzielające, na przykład (212) 555-0100, bez numeru wewnętrznego i innych słów.',
+    tooFast: 'Formularz został wysłany bardzo szybko. Prosimy chwilę odczekać i wysłać go ponownie.',
+    rateLimited: 'Wysłano stąd dzisiaj zbyt wiele zgłoszeń. Prosimy spróbować ponownie później.',
+    expired: 'Ten formularz wygasł. Prosimy odświeżyć stronę i spróbować ponownie.',
+    failed: 'Nie udało się tego wysłać. Prosimy spróbować ponownie.',
+  },
+  /**
+   * Asking for a portrait in another language while its translation is off
+   * (SPEC-v7 §3.5). Shown in the reader's preferred language even though the
+   * page itself is English. {language} is a language's own name (Español).
+   */
+  translationRequest: {
+    button: 'Poproś o tłumaczenie',
+    intro:
+      'Ten portret jest opublikowany w języku angielskim. Prosimy przekazać pracownikom, jakiego języka Państwo potrzebują — widzą oni, ilu czytelników prosi o tłumaczenie na każdy język.',
+    language: 'Język',
+    send: 'Wyślij prośbę',
+    sending: 'Wysyłanie…',
+    sent: 'Dziękujemy. Pracownicy zobaczą, że czytelnik poprosił o tłumaczenie na język: {language}.',
+    limited:
+      'W ciągu ostatniej godziny z tej sieci wysłano zbyt wiele próśb, więc ta prośba nie została zapisana. Prosimy spróbować ponownie później.',
+    notNeeded: 'Ten portret został właśnie przetłumaczony. Prosimy odświeżyć stronę, aby wybrać swój język.',
+    failed: 'Nie udało się tego wysłać. Prosimy spróbować ponownie.',
+  },
+  /** The sign-in page (SPEC-v6 §2.2). */
+  login: {
+    title: 'Logowanie',
+    intro:
+      'Mieszkańcy logują się, aby wziąć udział w dyskusji o portrecie. Pracownicy miasta logują się przez konto służbowe.',
+    /** Replaces `intro` when the person is on the way to setting up their city's portrait (/start): city staff, not residents. */
+    startIntro: 'Aby utworzyć obwarzanek swojego miasta, prosimy zalogować się przy użyciu służbowego adresu e-mail.',
+    microsoft: 'Zaloguj się przez Microsoft (konto służbowe)',
+    google: 'Zaloguj się przez Google',
+    emailLabel: 'Logowanie przez link wysłany e-mailem',
+    emailPlaceholder: 'you@example.org',
+    send: 'Wyślij link',
+    sending: 'Wysyłanie…',
+    noMethods: 'Na tym serwerze nie skonfigurowano żadnej metody logowania.',
+    /** {link} is the "start a portrait" link. */
+    newHere: 'Dla pracowników miasta: po zalogowaniu można {link}.',
+    startLink: 'utworzyć portret dla swojej jurysdykcji',
+    checkTitle: 'Prosimy sprawdzić pocztę e-mail',
+    checkBody:
+      'Wysłaliśmy link do logowania na podany adres. Link działa tylko raz i wygasa po 15 minutach.',
+    checkHelp: 'Wiadomość nie dotarła po kilku minutach? Prosimy sprawdzić folder ze spamem lub wysłać kolejny link.',
+    sendAnother: 'Wyślij kolejny link',
+    errors: {
+      OAuthAccountNotLinked:
+        'Ten adres e-mail był już używany do logowania w inny sposób. Prosimy zalogować się tak jak poprzednio (lub przez link wysłany e-mailem), a następnie połączyć tę metodę logowania na stronie swojego konta.',
+      Verification: 'Ten link do logowania wygasł lub został już użyty. Należy poprosić o nowy link.',
+      AccessDenied: 'Logowanie zostało odrzucone.',
+      Configuration:
+        'Logowanie na tym serwerze jest nieprawidłowo skonfigurowane. Prosimy skontaktować się z administratorem strony.',
+      EmailSignin:
+        'Nie udało się wysłać wiadomości z linkiem do logowania. Prosimy sprawdzić adres i spróbować ponownie za kilka minut.',
+      /** Nothing was sent: this address already has three unused sign-in links from the last 15 minutes. */
+      TooManyLinks:
+        'W ciągu ostatnich 15 minut wysłaliśmy już na ten adres kilka linków do logowania. Prosimy użyć najnowszego z nich lub spróbować ponownie za 15 minut.',
+      /** Nothing was sent: this network has asked for its hourly share of sign-in emails (shared Wi-Fi counts as one). */
+      TooManyEmails:
+        'Z tej sieci poproszono o zbyt wiele wiadomości z linkiem do logowania, dlatego ta wiadomość nie została wysłana. Prosimy spróbować ponownie za godzinę.',
+      default: 'Logowanie nie powiodło się. Prosimy spróbować ponownie.',
+    },
+  },
+  org: {
+    portraitCount: {
+      one: '{n} portret',
+      few: '{n} portrety',
+      many: '{n} portretów',
+      other: '{n} portretu',
+    },
+    portraits: 'Portrety',
+    nothingPublished: 'Nic jeszcze nie opublikowano',
+    outsideSafeSpace: {
+      one: '{n} z {total} wymiarów poza bezpieczną przestrzenią',
+      few: '{n} z {total} wymiarów poza bezpieczną przestrzenią',
+      many: '{n} z {total} wymiarów poza bezpieczną przestrzenią',
+      other: '{n} z {total} wymiarów poza bezpieczną przestrzenią',
+    },
+    dataGaps: {
+      one: '{n} luka w danych',
+      few: '{n} luki w danych',
+      many: '{n} luk w danych',
+      other: '{n} luki w danych',
+    },
+  },
+  compare: {
+    metaTitle: 'Porównanie · {org}',
+    titleJurisdiction: 'Wszystkie obwarzanki jednej jurysdykcji ({n}): {org}',
+    titleFamily: 'Wszystkie obwarzanki jednej rodziny ({n}): {org}',
+    introJurisdiction:
+      'Liczba portretów: {n} — cała jurysdykcja i osobno każda jednostka (jednostką jest tu {noun}). Wszystkie mają ten sam fundament społeczny i pułap ekologiczny, mierzone według identycznych progów opartych na przyjętych celach lokalnych. Wycinki skierowane na zewnątrz oznaczają przekroczenie pułapu; wycinki skierowane do środka — niedobór względem fundamentu; kolor szary to uczciwie zaznaczona luka w danych.',
+    introFamily:
+      'Liczba portretów: {n}. Wszystkie mają ten sam fundament społeczny i pułap ekologiczny, mierzone według identycznych progów opartych na przyjętych celach lokalnych. Wycinki skierowane na zewnątrz oznaczają przekroczenie pułapu; wycinki skierowane do środka — niedobór względem fundamentu; kolor szary to uczciwie zaznaczona luka w danych.',
+    wedgesOutside: 'Wycinki poza bezpieczną strefą: {n}/{total}',
+    divergeTitle: 'Gdzie {nouns} różnią się najbardziej',
+    divergeIntro:
+      'Opublikowane wskaźniki w zestawieniu — {nouns} obok siebie — uszeregowane według rozpiętości między najlepiej i najgorzej wypadającą jednostką ({noun}).',
+    wholeColumn: 'Kolumna „cała jurysdykcja” to osobno publikowana wartość, a nie średnia.',
+    indicator: 'Wskaźnik',
+    spread: 'Rozpiętość',
+    legend:
+      'W każdym wierszu: czerwony = jednostka ({noun}) najdalej od celu, zielony = najbliżej celu. Wskaźniki dla całej jurysdykcji (gdzie {nouns} się nie różnią) z założenia nie trafiają do tej tabeli.',
+  },
+  insights: {
+    metaTitle: 'Analizy · {org}',
+    title: 'Analizy według jednostki: {noun} · {org}',
+    intro:
+      'Każdy wymiar, każda jednostka ({noun}), jedna macierz — wszystko mierzone według tych samych progów opartych na przyjętych celach lokalnych. Po wybraniu wymiaru wyświetli się rozwinięte porównanie i badania stojące za każdą liczbą.',
+    biggestDivides: 'Największe różnice',
+    insideSafeZone: 'w bezpiecznej strefie',
+    beyondBoundary: 'poza granicą o {n}',
+    divide: '{worst} jest {worstState}, a {best} — {bestState}.',
+    matrix: 'Macierz',
+    matrixIntro:
+      'Zielony = w bezpiecznej strefie, czerwony = niedobór lub przekroczenie (im ciemniejszy, tym dalej od granicy), szary = uczciwie zaznaczona luka w danych. Aby rozwinąć wiersz, wystarczy go wybrać.',
+    dimension: 'Wymiar',
+    noData: 'brak danych',
+    unrolled: '{name} — porównanie szczegółowe',
+    dataGap: 'luka w danych',
+    barsExplainer:
+      'Słupki pokazują odległość od granicy (pionowa linia): po lewej i na zielono — w bezpiecznej strefie, po prawej i na czerwono — niedobór lub przekroczenie; skala obwarzanka −100…150.',
+    researchBehind: 'Na czym opierają się dane',
+    fullDrilldown: 'pełne szczegóły →',
+    yearNA: 'rok nieznany',
+    tier: 'kategoria {n}',
+    confidence: 'wiarygodność: {value}',
+    confidenceLevels: { high: 'wysoka', medium: 'średnia', low: 'niska' },
+    evidence: 'dowody',
+    workedMath: 'obliczenia krok po kroku',
+    gapLabel: '{indicator}: luka w danych',
+    fullSearchTrail: '(pełny przebieg wyszukiwania)',
+    selectPrompt:
+      'Po wybraniu wymiaru powyżej rozwinie się porównanie ({nouns} obok siebie) wraz ze źródłami, dowodami i punktacją.',
+  },
+  familyProgress: {
+    metaTitle: 'Postępy · {org}',
+    title: 'Postępy: {org}',
+    introOne: 'Każdy przyjęty cel portretu, mierzony od wspólnej wartości bazowej: {baseline}.',
+    introMany: 'Każdy przyjęty cel dla każdej jednostki ({noun}), mierzony od wspólnej wartości bazowej: {baseline}.',
+    summaryByPortrait: 'Podsumowanie według portretów',
+    onCourse: {
+      one: 'na dobrej drodze: {n}',
+      few: 'na dobrej drodze: {n}',
+      many: 'na dobrej drodze: {n}',
+      other: 'na dobrej drodze: {n}',
+    },
+    slipping: {
+      one: 'zagrożone: {n}',
+      few: 'zagrożone: {n}',
+      many: 'zagrożone: {n}',
+      other: 'zagrożone: {n}',
+    },
+    baselineOnly: {
+      one: 'tylko wartość bazowa: {n}',
+      few: 'tylko wartość bazowa: {n}',
+      many: 'tylko wartość bazowa: {n}',
+      other: 'tylko wartość bazowa: {n}',
+    },
+    matrixTitle: 'Cele według jednostki: {noun}',
+    goal: 'Cel',
+    target: 'cel: {value}',
+    targetBy: 'cel: {value} do {year} r.',
+    nothingPublished: 'Nic jeszcze nie opublikowano.',
+  },
+  notFound: {
+    title: 'Nie znaleziono strony',
+    body: 'Pod tym adresem nie ma portretu ani strony. Mogła zostać przeniesiona albo portret nie został jeszcze opublikowany.',
+    home: 'Strona główna',
+  },
+  /** Emergency view (SPEC-v5 §3): official alerts, threats by risk, plans, help. */
+  emergency: {
+    navLabel: 'Sytuacje kryzysowe',
+    metaTitle: 'Sytuacje kryzysowe · {name}',
+    title: 'Sytuacje kryzysowe i katastrofy: {name}',
+    intro:
+      'Oficjalne ostrzeżenia, zagrożenia dla tego obszaru, obowiązujące już plany oraz informacje o tym, gdzie szukać pomocy.',
+    empty: 'Dla tego portretu nie opublikowano jeszcze informacji o sytuacjach kryzysowych.',
+    alertsTitle: 'Obowiązujące ostrzeżenia',
+    alertsNone: 'Stan na {time}: brak obowiązujących ostrzeżeń pogodowych dla tego obszaru.',
+    alertsChecked: 'Ostatnie sprawdzenie: {time}.',
+    alertsStale:
+      'Od pewnego czasu nie udaje się pobrać danych z oficjalnego źródła ostrzeżeń. Prosimy sprawdzić informacje bezpośrednio na stronie Narodowej Służby Meteorologicznej (National Weather Service).',
+    alertsSavedCopy:
+      'To jest zapisana kopia strony. Ostatnie sprawdzenie ostrzeżeń: {time}. Od tego czasu mogły się one zmienić. Prosimy sprawdzić informacje bezpośrednio na stronie Narodowej Służby Meteorologicznej (National Weather Service).',
+    alertsNotConfigured: 'Dla tego portretu nie skonfigurowano jeszcze oficjalnych ostrzeżeń.',
+    alertsOriginal: 'Ostrzeżenia są wyświetlane dokładnie w takiej postaci, w jakiej zostały wydane — w języku angielskim.',
+    alertSource: 'Wydane przez {source}',
+    alertWindow: 'Obowiązuje od {start} do {end}',
+    alertFrom: 'Obowiązuje od {start}',
+    alertInstructions: 'Co należy zrobić',
+    alertDetails: 'Pełna treść ostrzeżenia',
+    alertLink: 'Oficjalne ostrzeżenie',
+    alertEnded: 'Wygasło',
+    severity: {
+      Extreme: 'Ekstremalne zagrożenie',
+      Severe: 'Poważne zagrożenie',
+      Moderate: 'Umiarkowane zagrożenie',
+      Minor: 'Niewielkie zagrożenie',
+      Unknown: 'Nieznany stopień zagrożenia',
+    },
+    getAlerts: 'Jak otrzymywać oficjalne ostrzeżenia',
+    emergencyCall: 'W nagłych wypadkach należy dzwonić pod numer {phone}.',
+    infoCall: 'W sprawach niewymagających natychmiastowej pomocy należy dzwonić pod numer {phone}.',
+    threatsTitle: 'Zagrożenia według poziomu ryzyka',
+    threatsIntro:
+      'Jak prawdopodobne jest każde zagrożenie i jak poważne byłyby jego skutki (w ocenie pracowników miasta) oraz które części obwarzanka są przez nie zagrożone.',
+    likelihood: 'Prawdopodobieństwo: {n} z 5',
+    severityRating: 'Dotkliwość skutków: {n} z 5',
+    risk: {
+      low: 'Niskie ryzyko',
+      moderate: 'Umiarkowane ryzyko',
+      high: 'Wysokie ryzyko',
+      very_high: 'Bardzo wysokie ryzyko',
+    },
+    activeNow: 'Obowiązuje ostrzeżenie',
+    threatens: 'Co jest zagrożone:',
+    dimensionImpact: '{dimension} ({impact})',
+    impactLevel: {
+      low: 'niewielki wpływ',
+      moderate: 'umiarkowany wpływ',
+      high: 'duży wpływ',
+    },
+    hazardKind: {
+      coastal_storm: 'Sztorm przybrzeżny',
+      flooding: 'Powódź',
+      extreme_heat: 'Silny upał',
+      winter_weather: 'Trudne warunki zimowe',
+      high_winds: 'Silny wiatr',
+      air_quality: 'Zła jakość powietrza',
+      drought: 'Susza',
+      wildfire: 'Pożar lasu',
+      earthquake: 'Trzęsienie ziemi',
+      infectious_disease: 'Choroba zakaźna',
+      infrastructure_failure: 'Awaria infrastruktury',
+      other: 'Inne zagrożenie',
+    },
+    showOnDoughnut: 'Pokaż na obwarzanku',
+    doughnutNow: 'Dziś',
+    doughnutThreat: 'Zagrożenie: {hazard}',
+    doughnutLabel: 'Portret w modelu obwarzanka z zaznaczonymi wymiarami, które są zagrożone. Zagrożenie: {hazard}',
+    doughnutControls: 'Widok obwarzanka',
+    play: 'Odtwórz',
+    pause: 'Wstrzymaj',
+    relatedPlans: 'Plany dotyczące tego zagrożenia:',
+    plansTitle: 'Obowiązujące plany',
+    plansIntro: 'Plany przyjęte przez miasto na wypadek tych zagrożeń: działania, do których się zobowiązało.',
+    planBy: '{agency}, {year} r.',
+    planAgency: '{agency}',
+    planLanguages: 'Opublikowano także w językach: {languages}',
+    readPlan: 'Przeczytaj plan',
+    helpTitle: 'Wsparcie i pomoc wzajemna',
+    helpIntro: 'Miejsca i grupy, które pomagają w sytuacjach kryzysowych.',
+    resourceKind: {
+      cooling_center: 'Centrum chłodzenia',
+      shelter: 'Schronienie',
+      hotline: 'Infolinia',
+      mutual_aid: 'Pomoc wzajemna',
+      food: 'Pomoc żywnościowa',
+      medical: 'Opieka medyczna',
+      other: 'Inna pomoc',
+    },
+    call: 'Zadzwoń: {phone}',
+    website: 'Strona internetowa',
+    offlineTitle: 'Zapisywanie strony do użytku offline',
+    offlineBody:
+      'Warto zapisać tę stronę, aby otwierała się nawet bez połączenia z internetem — na wypadek awarii sieci.',
+    offlineSave: 'Zapisz do użytku offline',
+    offlineSaved:
+      'Zapisano. Ta strona będzie się otwierać bez połączenia z internetem. Zapisana kopia nie aktualizuje się sama: ostrzeżenia odpowiadają stanowi z chwili ostatniego otwarcia strony online.',
+    offlineUnavailable: 'Ta przeglądarka nie umożliwia zapisywania stron do użytku offline.',
+    offlineSaving: 'Zapisywanie…',
+    offlineFailed: 'Nie udało się zapisać tej strony. Prosimy spróbować ponownie, gdy będzie dostępne połączenie z internetem.',
+    offlineUpdate:
+      'Aplikacja ma oczekującą aktualizację i do czasu jej zainstalowania nie może zapisywać stron. Prosimy odświeżyć stronę i spróbować ponownie.',
+    offlineSignedIn:
+      'Strony są zapisywane na tym urządzeniu tylko po wylogowaniu — dzięki temu Państwa konto pozostaje prywatne na wspólnie używanych komputerach.',
+    metaDescription: 'Oficjalne ostrzeżenia, zagrożenia, plany i pomoc: {name}.',
+    contentInEnglish:
+      'Opisy zagrożeń, planów i form pomocy są przygotowywane przez pracowników i publikowane w języku angielskim. Ostrzeżenia są wyświetlane w takiej postaci, w jakiej wydała je Narodowa Służba Meteorologiczna (National Weather Service).',
+    alertArea: 'Obszary: {areas}',
+    alertRelated: 'Powiązane zagrożenie: {hazard}',
+    signupLink: 'Zapisz się na oficjalne ostrzeżenia',
+    signupNamed: 'Zapisz się do {name}',
+    resourceHazards: 'Pomaga w przypadku zagrożeń:',
+    doughnutLegend: 'Kolory na obwarzanku:',
+  },
+  /** The site footer, on every page but embeds (components/site-footer/SiteFooter.tsx). */
+  footer: {
+    /** The footer's navigation landmark. */
+    label: 'O tym serwisie',
+    /** {email} is the support address of whoever runs this site, as a link. */
+    contact: 'Kontakt: {email}',
+    accessibility: 'Dostępność',
+    privacy: 'Prywatność',
+    terms: 'Warunki korzystania',
+    /**
+     * The Doughnut's attribution (docs/OPEN-SOURCE.md §3.3), also under every
+     * embedded doughnut. {license} is the license's name as a link; {book}
+     * and {method} are the English titles of the book and the method guide.
+     * Keep all three, and keep the people's and the organization's names.
+     */
+    credit:
+      'Diagram obwarzanka: Kate Raworth i Christian Guthier, {license}, zaadaptowany z wykorzystaniem danych lokalnych (Raworth, {book}, 2017). Metoda tworzenia portretów miast oparta na przewodniku {method} organizacji Doughnut Economics Action Lab. Ten serwis nie jest powiązany z Doughnut Economics Action Lab ani nie jest przez tę organizację popierany.',
+  },
+  /**
+   * On a portrait seeded with synthetic values (scripts/seed-demo-data.ts):
+   * its page, its dimension pages, its embed, its organization's compare,
+   * insights and progress pages, so a screenshot cannot pass for research.
+   */
+  sampleData: {
+    title: 'Dane demonstracyjne — to nie są wyniki badań',
+    /** A portrait's own pages and its embed; {name} is the portrait. */
+    body: '{name}: liczby podane w tym serwisie zostały wygenerowane na potrzeby prezentacji oprogramowania. Nie są to wyniki pomiarów i nie należy ich cytować.',
+    /** An organization's pages, when any portrait shown there is seeded; {org} is the organization. */
+    bodyOrg:
+      '{org}: niektóre lub wszystkie liczby na tej stronie zostały wygenerowane na potrzeby prezentacji oprogramowania. Nie są to wyniki pomiarów i nie należy ich cytować.',
+  },
+  /** Theme toggle and the fryer (SPEC-v5 §4). */
+  theme: {
+    label: 'Motyw',
+    /** The toggle's accessible name, and the status message after a flip. */
+    toggle: 'Motyw: {mode}',
+    /** The toggle's description and hover title. {system} is the "Match device" item's label. */
+    hint: 'Przełącza między motywem jasnym a ciemnym. Aby wybrać opcję „{system}” lub inne, należy nacisnąć i przytrzymać, kliknąć prawym przyciskiem myszy albo nacisnąć Shift+F10.',
+    light: 'Jasny',
+    dark: 'Ciemny',
+    system: 'Jak w urządzeniu',
+    menu: 'Opcje motywu',
+    deepFry: 'Usmaż stronę',
+    unfry: 'Cofnij smażenie',
+    fried: 'Strona usmażona. Aby to cofnąć, wystarczy wybrać „Cofnij smażenie”.',
+    unfried: 'Przywrócono zwykły wygląd strony.',
+  },
+};

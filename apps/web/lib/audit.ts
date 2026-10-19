@@ -1,7 +1,20 @@
-import { auditLog, getDb } from '@deep-fryer/db';
+import 'server-only';
+import { auditLog, type DbExecutor } from '@deep-fryer/db';
 import { getAuth } from './auth';
+import { systemDb } from './db';
 
-/** Every mutation logs through this one path — actor resolution included. */
+/**
+ * Every mutation logs through this one path — actor resolution included.
+ * Pass the action's transaction (`db`) so the change and its audit record
+ * commit or roll back together; under the user role the audit_log insert
+ * policy additionally requires the actor to be a member of the tenant.
+ * Without `db` the entry is written in the system context.
+ *
+ * The transaction must be one userDb or systemTransaction opened (lib/db.ts):
+ * they hold the request's identity, so getAuth() below answers without a
+ * query. Inside a bare systemDb().transaction it would read the session on a
+ * second pooled connection while the transaction holds the first.
+ */
 export async function audit(
   tenantId: string,
   entity: string,
@@ -9,8 +22,8 @@ export async function audit(
   action: string,
   before?: unknown,
   after?: unknown,
+  db: DbExecutor = systemDb(),
 ): Promise<void> {
-  const db = getDb();
   const auth = await getAuth();
   await db.insert(auditLog).values({
     tenantId,

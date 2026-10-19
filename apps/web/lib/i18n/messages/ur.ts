@@ -1,0 +1,656 @@
+import type { Messages } from './en';
+
+/** Urdu (ur) — draft for certified review (docs/language-access.md). */
+export const ur: Messages = {
+  common: {
+    updateAvailable: 'نیا ورژن دستیاب ہے۔',
+    reload: 'دوبارہ لوڈ کریں',
+    skipToContent: 'مواد پر جائیں',
+    breadcrumb: 'صفحے کا راستہ',
+    mainNav: 'مرکزی نیویگیشن',
+    menu: 'مینیو',
+    accountMenu: 'اکاؤنٹ مینیو',
+    accountAndPortraits: 'اکاؤنٹ اور خاکے',
+    installApp: 'ایپ انسٹال کریں',
+    signOut: 'سائن آؤٹ کریں',
+    signIn: 'سائن ان کریں',
+    back: '→ {name}',
+    noData: 'کوئی ڈیٹا نہیں',
+    updated: 'آخری تازہ کاری: {date}',
+    socialFoundation: 'سماجی بنیاد',
+    ecologicalCeiling: 'ماحولیاتی بالائی حد',
+    admin: 'انتظامیہ',
+  },
+  nav: {
+    progress: 'پیش رفت',
+    methodology: 'طریقۂ کار',
+    getInvolved: 'حصہ لیں',
+    compare: 'موازنہ',
+    insights: 'تجزیہ',
+    familyPortraits: '{org} کے خاکے',
+  },
+  language: {
+    label: 'زبان',
+    choose: 'زبان منتخب کریں',
+    contentNotice:
+      'صفحات کے عنوانات اور وضاحتیں ترجمہ شدہ ہیں۔ تحقیقی نتائج، ذرائع اور رہائشیوں کے تبصرے انگریزی میں شائع کیے جاتے ہیں۔',
+    help: 'اپنی زبان میں مفت مدد کے لیے رابطہ کریں: {contact}',
+  },
+  doughnut: {
+    chartLabel: 'سماجی بنیاد اور ماحولیاتی بالائی حد کے پہلوؤں کا ڈونٹ چارٹ',
+    summary:
+      '{name}: {total} میں سے {outside} پہلو محفوظ اور منصفانہ دائرے سے باہر ہیں۔ اس کے بعد ہر پہلو کے لنکس کی فہرست ہے۔',
+    summaryWithGaps:
+      '{name}: {total} میں سے {outside} پہلو محفوظ اور منصفانہ دائرے سے باہر ہیں، اور {gaps} کا ڈیٹا دستیاب نہیں۔ اس کے بعد ہر پہلو کے لنکس کی فہرست ہے۔',
+    portrait: 'ڈونٹ خاکہ',
+    dimensionsOf: '{name} کے پہلو',
+    dataNeeded: 'ڈیٹا درکار ہے',
+    year: 'سال: {year}',
+    source: 'ماخذ: {source}',
+    fullPortrait: 'مکمل خاکہ اور بحث',
+    /** The hint under the doughnut's hover tooltip. */
+    clickForDetails: 'تفصیلات کے لیے کلک کریں',
+    level: {
+      unknown: 'نامعلوم',
+      noProblem: 'کوئی مسئلہ نہیں',
+      underControl: 'قابو میں',
+      onTrack: 'درست سمت میں',
+      needsAttention: 'توجہ درکار',
+      critical: 'نازک',
+      severe: 'شدید',
+    },
+  },
+  /** Doughnut Economics dimensions, by framework slug. */
+  dimensions: {
+    food: 'خوراک',
+    health: 'صحت',
+    education: 'تعلیم',
+    'income-work': 'آمدنی اور روزگار',
+    'water-sanitation': 'پانی اور صفائی ستھرائی',
+    energy: 'توانائی',
+    networks: 'نیٹ ورکس',
+    housing: 'رہائش',
+    'gender-equality': 'صنفی مساوات',
+    'social-equity': 'سماجی مساوات',
+    'political-voice': 'سیاسی آواز',
+    'peace-justice': 'امن اور انصاف',
+    'climate-change': 'موسمیاتی تبدیلی',
+    'ocean-acidification': 'سمندری تیزابیت',
+    'chemical-pollution': 'کیمیائی آلودگی',
+    'nitrogen-phosphorus-loading': 'نائٹروجن اور فاسفورس کا بوجھ',
+    'freshwater-withdrawals': 'میٹھے پانی کی نکاسی',
+    'land-conversion': 'زمین کے استعمال میں تبدیلی',
+    'biodiversity-loss': 'حیاتیاتی تنوع کا نقصان',
+    'air-pollution': 'فضائی آلودگی',
+    'ozone-depletion': 'اوزون کی تہہ میں کمی',
+  },
+  /**
+   * Geographic scale of a figure. Adjectival forms, because every use reads
+   * "{scale} سطح" ("… level") or a plain list.
+   */
+  scales: {
+    city: 'شہری',
+    county: 'کاؤنٹی',
+    regional: 'علاقائی',
+    state: 'ریاستی',
+    national: 'قومی',
+    global: 'عالمی',
+  },
+  /**
+   * Direct-case (nominative) forms. Sentences below never put a postposition
+   * after {noun}/{nouns} (which would need the oblique form): they use
+   * "{noun} وار", "ہر {noun}", or {nouns} as a subject or after a colon.
+   */
+  nouns: {
+    portrait: { singular: 'خاکہ', plural: 'خاکے' },
+    borough: { singular: 'بورو', plural: 'بوروز' },
+    district: { singular: 'ضلع', plural: 'اضلاع' },
+    ward: { singular: 'وارڈ', plural: 'وارڈز' },
+    neighborhood: { singular: 'محلہ', plural: 'محلے' },
+    county: { singular: 'کاؤنٹی', plural: 'کاؤنٹیاں' },
+  },
+  status: {
+    met: 'ہدف حاصل',
+    on_track: 'درست سمت میں',
+    off_track: 'ہدف سے پیچھے',
+    improving: 'بہتر ہو رہا ہے',
+    worsening: 'بدتر ہو رہا ہے',
+    no_change: 'کوئی تبدیلی نہیں',
+    baseline_only: 'صرف بنیادی سطح',
+    no_target: 'کوئی ہدف نہیں',
+    no_data: 'کوئی ڈیٹا نہیں',
+  },
+  statusExplainer: {
+    met: 'منظور شدہ ہدف حاصل ہو گیا ہے یا اس سے آگے نکل گیا ہے۔',
+    on_track:
+      'ہدف کی جانب کم از کم اتنی رفتار سے بڑھ رہا ہے جتنی بنیادی سطح سے مقررہ تاریخ تک کھینچی گئی سیدھی لکیر کی رفتار ہے۔',
+    off_track: 'بہتری آ رہی ہے، لیکن اس رفتار سے کم جو مقررہ تاریخ تک ہدف حاصل کرنے کے لیے ضروری ہے۔',
+    improving: 'بنیادی سطح کے مقابلے میں ہدف کے زیادہ قریب ہے (اس مقصد کی کوئی مقررہ تاریخ نہیں)۔',
+    worsening: 'بنیادی سطح کے مقابلے میں ہدف سے زیادہ دور ہے۔',
+    baseline_only: 'اب تک صرف بنیادی سطح کی پیمائش موجود ہے؛ اگلی تازہ کاری میں رجحان نظر آئے گا۔',
+  },
+  portrait: {
+    metaDescription: '{name} کا ڈونٹ خاکہ: سماجی بنیاد اور ماحولیاتی بالائی حد، ہر عدد کے ماخذ کے ساتھ۔',
+    population: 'آبادی: {n}',
+    clickHint: 'اشاریے، شواہد، اقدامات اور بحث دیکھنے کے لیے کوئی حصہ منتخب کریں۔',
+    demoHint: 'نمونہ ڈیٹا — اصل مواد دکھانے کے لیے DATABASE_URL سیٹ کریں اور ورژن شائع کریں۔',
+    /** The visible list of dimensions under the doughnut (SPEC-v6 §2.1). */
+    exploreTitle: 'پہلوؤں کا جائزہ لیں',
+    exploreIntro: 'ہر پہلو میں اس کا ڈیٹا، ذرائع، حصہ لینے کے طریقے اور بحث شامل ہیں۔',
+    /** The list's intro when the portrait has no discussion (SPEC-v7 §3). */
+    exploreIntroCore: 'ہر پہلو میں اس کا ڈیٹا اور ذرائع شامل ہیں، اور یہ بھی کہ آپ کیا کر سکتے ہیں۔',
+    /** The detail panel beside the doughnut (SPEC-v7 §2) — the Santa Cruz core view. */
+    panelEmpty:
+      'ڈونٹ پر یا فہرست میں کوئی پہلو منتخب کریں، تاکہ آپ اس کا ڈیٹا، اس کے ذرائع، اور یہ دیکھ سکیں کہ آپ کیا کر سکتے ہیں۔',
+    panelClose: 'بند کریں',
+    panelSelected: 'دکھایا جا رہا ہے: {name}',
+    openFull: 'مکمل صفحہ کھولیں',
+    openFullDiscussion: 'مکمل صفحہ اور بحث کھولیں',
+    moreListings: {
+      one: 'مکمل صفحے پر حصہ لینے کا ایک اور طریقہ',
+      other: 'مکمل صفحے پر حصہ لینے کے {n} مزید طریقے',
+    },
+    legendTitle: 'ڈونٹ کو کیسے پڑھیں',
+    legendSafe: 'سبز حلقہ: محفوظ اور منصفانہ دائرہ',
+    legendShortfall: 'مرکز کی جانب سرخ: سماجی بنیاد سے نیچے کمی',
+    legendOvershoot: 'حلقے سے باہر سرخ: ماحولیاتی بالائی حد سے تجاوز',
+    legendNoData: 'سرمئی: ابھی تک کوئی ڈیٹا نہیں',
+  },
+  dimension: {
+    metaDescription: '{name} میں {dimension}: ڈیٹا، اس کے ذرائع، اور آپ کیا کر سکتے ہیں۔',
+    updated: 'تازہ کاری {date}',
+    target: 'ہدف: {value}',
+    noTarget: 'کوئی ہدف مقرر نہیں',
+    scaleData: '{scale} سطح کا ڈیٹا',
+    source: 'ماخذ: {source}',
+    snapshotAlt: '{name} کے ماخذ کی محفوظ شدہ نقل، جو {date} کو لی گئی',
+    snapshotCaptured: 'ماخذ کی محفوظ شدہ نقل {date} کو لی گئی',
+    originalDocument: 'اصل دستاویز',
+    dataGap: 'ڈیٹا کا خلا',
+    searchedAt: 'تلاش کی گئی سطحیں: {scales}',
+    whatYouCanDo: 'آپ کیا کر سکتے ہیں',
+    /** Short actions listed after the dimension's involvement listings. */
+    moreYouCanDo: 'آپ اور کیا کر سکتے ہیں',
+  },
+  discussion: {
+    title: 'بحث',
+    sortTop: 'مقبول ترین',
+    sortNew: 'تازہ ترین',
+    sortLabel: 'تبصروں کی ترتیب',
+    placeholder: 'شہر کو اس بارے میں کیا کرنا چاہیے؟ براہ کرم شائستگی برقرار رکھیں اور موضوع پر رہیں۔',
+    post: 'شائع کریں',
+    pendingApproval: 'شائع ہو گیا — آپ کا پہلا تبصرہ ماڈریٹر کی منظوری کا منتظر ہے۔',
+    signInToJoin: 'بحث میں حصہ لینے کے لیے {link}۔',
+    empty: 'ابھی تک کوئی تبصرہ نہیں۔',
+    you: 'آپ',
+    locked: 'مقفل',
+    removed: 'ہٹا دیا گیا',
+    removedBody: '[ماڈریٹرز نے ہٹا دیا]',
+    upvote: 'متفق',
+    downvote: 'غیر متفق',
+    score: 'اسکور {n}',
+    reply: 'جواب دیں',
+    replyLabel: 'آپ کا جواب',
+    replySubmit: 'جواب بھیجیں',
+    restore: 'بحال کریں',
+    remove: 'ہٹائیں',
+    lock: 'مقفل کریں',
+    removeReason: 'ہٹانے کی وجہ (عملے کے عوامی ریکارڈ میں درج ہو گی):',
+    lockReason: 'اس بحث کو مقفل کرنے کی وجہ:',
+    /** A first comment held for a moderator (SPEC-v6 §3.1). Shown to its author and to moderators only. */
+    awaitingApproval: 'منظوری کا منتظر',
+    awaitingNote: 'منظوری تک اسے صرف آپ اور ماڈریٹرز دیکھ سکتے ہیں۔',
+    approve: 'منظور کریں',
+    decline: 'مسترد کریں',
+    /** A held comment moderators did not approve; only its author and the moderators see it. */
+    declined: 'منظور نہیں ہوا',
+    declinedNote: 'ماڈریٹرز نے اس تبصرے کو منظور نہیں کیا۔ اسے صرف آپ اور ماڈریٹرز دیکھ سکتے ہیں۔',
+    /** Label beside a comment written by the portrait's team (SPEC-v6 §3.3). */
+    staff: 'عملہ',
+    staffTitle: 'اس خاکے کی ٹیم کا رکن',
+  },
+  progress: {
+    metaTitle: 'پیش رفت · {name}',
+    metaDescription: 'منظور شدہ مقاصد کے مقابلے میں {name} کی پیش رفت۔',
+    title: 'پیش رفت: {name}',
+    baseline: 'بنیادی سطح:',
+    intro:
+      'اہداف اس خاکے کی شائع شدہ حدیں ہیں — جہاں منظور شدہ مقامی مقاصد موجود ہیں وہاں وہی — اور جس مقصد کی مقررہ تاریخ ہو، وہاں پیش رفت کو بنیادی سطح سے اس تاریخ تک سیدھے راستے کے مقابلے میں جانچا جاتا ہے۔',
+    nothingPublished: 'اس خاکے کے لیے ابھی تک کچھ شائع نہیں ہوا۔',
+    summary: 'خلاصہ',
+    tracked: 'زیرِ نگرانی اشاریے',
+    withDueDate: {
+      one: 'ان میں سے ایک کی مقررہ تاریخ ہے',
+      other: 'ان میں سے {n} کی مقررہ تاریخ ہے',
+    },
+    statusesMeaning: 'حیثیتوں کا مطلب',
+    gapsTitle: 'جو ہم ابھی ناپ نہیں سکتے',
+    gapsIntro:
+      'خلا جنہیں ہم کھل کر تسلیم کرتے ہیں: ایسا ڈیٹا جو کوئی ادارہ اس جغرافیائی سطح پر شائع نہیں کرتا۔ ہر ایک ایک درخواست ہے — اگر یہ شائع ہو تو یہ خاکہ اس کی نگرانی کر سکے گا۔',
+    openData: 'اوپن ڈیٹا',
+    openDataIntro:
+      'وہی اعداد، مشین سے پڑھے جانے کے قابل شکل میں، اوپن ڈیٹا پورٹلز اور کونسل کی دستاویزات کے لیے: {files}۔',
+    methodologyLink: 'طریقۂ کار: {link}۔',
+    thresholdsAndRationales: 'حدیں اور ان کا جواز',
+    columns: {
+      indicator: 'اشاریہ',
+      baseline: 'بنیادی سطح',
+      latest: 'تازہ ترین',
+      target: 'ہدف',
+      status: 'حیثیت',
+      trend: 'رجحان',
+    },
+    scaleFigure: '{scale} سطح کا عدد',
+    earliest: '(سب سے پرانا)',
+    sameAsBaseline: 'بنیادی سطح کے برابر',
+    byYear: '{year} تک',
+    needsPerYear: 'سالانہ {change} درکار',
+    trend: 'رجحان: {points}',
+    trendTarget: 'ہدف {value}',
+  },
+  methodology: {
+    metaDescription: '{name} کا خاکہ کیسے ماپا جاتا ہے: جغرافیہ، ذرائع، اور ہر ہدف اور اس کا جواز۔',
+    title: 'طریقۂ کار',
+    intro:
+      'یہ خاکہ Doughnut Economics (ڈونٹ معاشیات) کو مقامی سطح پر لاگو کرنے کے طریقے پر مبنی ہے: ایک سماجی بنیاد (اس سے نیچے رہنا کمی ہے، جو مرکز کی جانب دکھائی جاتی ہے) اور ایک ماحولیاتی بالائی حد (اس سے آگے بڑھنا حد سے تجاوز ہے، جو باہر کی جانب دکھایا جاتا ہے)۔ ہر اشاریے کا ایک واضح ہدف ہے جس کا تحریری جواز نیچے درج ہے۔ جہاں یہ خاکہ فریم ورک کے طے شدہ ہدف سے مختلف ہدف استعمال کرتا ہے، وہاں مقامی جواز دکھایا جاتا ہے۔',
+    geography: 'جغرافیہ',
+    sourcePriority: 'ماخذ کی ترجیح',
+    sourcePriorityIntro:
+      'ڈیٹا دستیاب سب سے اعلیٰ ترجیحی درجے سے لیا جاتا ہے؛ نچلا درجہ صرف اسی وقت استعمال ہوتا ہے جب تمام اعلیٰ درجے آزمائے جا چکے ہوں۔',
+    recency: 'ڈیٹا کی تازگی',
+    recencyText: {
+      one: 'ایک سال سے پرانا ڈیٹا موجودہ ڈیٹا کے طور پر پیش کرنے کے بجائے ڈیٹا کا خلا سمجھا جاتا ہے۔',
+      other: '{n} سال سے پرانا ڈیٹا موجودہ ڈیٹا کے طور پر پیش کرنے کے بجائے ڈیٹا کا خلا سمجھا جاتا ہے۔',
+    },
+    targets: 'اہداف اور ان کا جواز',
+    target: 'ہدف {value}',
+    localTarget: 'مقامی ہدف: {rationale}',
+    frameworkDefault: 'فریم ورک کا طے شدہ ہدف {target} تھا: {rationale}',
+    lastRefreshed: 'آخری تازہ کاری',
+    contentInEnglish: 'اشاریوں کے نام اور ان کا جواز انگریزی میں شائع کیے جاتے ہیں۔',
+  },
+  outreach: {
+    metaDescription: '{name} میں حصہ لینے کے طریقے، اور اس ڈیٹا پر کام کرنے والی تنظیمیں۔',
+    title: 'حصہ لیں',
+    empty:
+      'جیسے جیسے یہ خاکہ آگے بڑھے گا، مقامی تنظیمیں یہاں درج کی جائیں گی۔ اس دوران، ہر پہلو کے صفحے پر عملی اقدامات درج ہیں۔',
+    intro:
+      'پروگرام، تنظیمیں اور عوامی ادارے جہاں آپ حصہ لے سکتے ہیں، پہلو وار۔ عملہ فہرست میں شامل ہر چیز کو یہاں دکھانے سے پہلے جانچتا ہے۔',
+    /** Organizations working on the portrait's data (research contacts), when any are published. */
+    partnersTitle: 'اس ڈیٹا پر کام کرنے والی تنظیمیں',
+  },
+  /** Ways to get involved and the organization form (SPEC-v6 §4). */
+  involvement: {
+    title: 'حصہ لینے کے طریقے',
+    kind: {
+      volunteer: 'رضاکار بنیں',
+      services: 'مدد حاصل کریں یا اندراج کروائیں',
+      civic: 'اپنی رائے دیں',
+      organize: 'کسی گروپ میں شامل ہوں',
+      other: 'حصہ لیں',
+    },
+    website: 'ویب سائٹ',
+    call: '{phone} پر کال کریں',
+    /** {date} is a formatted date. */
+    checked: 'لنک کی جانچ: {date}',
+    forEveryDimension: 'ہر پہلو کے لیے',
+    filterLabel: 'پہلو',
+    filterAll: 'تمام پہلو',
+    none: 'اس پہلو کے لیے ابھی تک کچھ درج نہیں۔',
+    noneAtAll: 'ابھی تک کچھ درج نہیں۔',
+    contentInEnglish: 'یہ فہرستیں عملہ لکھتا ہے اور یہ انگریزی میں شائع کی جاتی ہیں۔',
+    formTitle: 'کیا آپ حصہ لینے کا کوئی طریقہ جانتے ہیں؟',
+    /** On a dimension page; {dimension} is the dimension's name. */
+    formIntro:
+      'کیا آپ کی تنظیم لوگوں کے لیے {dimension} کے شعبے میں حصہ لینے کا ایک اچھا ذریعہ ہے؟ یا آپ کے پاس کوئی تجویز ہے؟ عملے کو بتائیں — کچھ بھی شائع کرنے سے پہلے وہ بھیجی گئی ہر چیز کا جائزہ لیتے ہیں۔',
+    formIntroGeneral:
+      'کیا آپ کی تنظیم لوگوں کے لیے حصہ لینے کا ایک اچھا ذریعہ ہے؟ یا آپ کے پاس کوئی تجویز ہے؟ عملے کو بتائیں — کچھ بھی شائع کرنے سے پہلے وہ بھیجی گئی ہر چیز کا جائزہ لیتے ہیں۔',
+    open: 'حصہ لینے کا کوئی طریقہ تجویز کریں',
+    kindLegend: 'آپ کیا بتانا چاہتے ہیں؟',
+    kindListing: 'میری تنظیم حصہ لینے کا ایک ذریعہ ہے',
+    kindSuggestion: 'لوگ کیسے حصہ لے سکتے ہیں، اس بارے میں ایک تجویز',
+    dimensionLabel: 'پہلو',
+    dimensionAny: 'ایک سے زیادہ، یا یقین نہیں',
+    orgName: 'تنظیم یا گروپ کا نام',
+    about: 'آپ کون ہیں',
+    aboutHint: 'آپ کی تنظیم کیا کرتی ہے، اور کن لوگوں کی خدمت کرتی ہے۔',
+    pitchListing: 'یہ لوگوں کے لیے حصہ لینے کا اچھا ذریعہ کیوں ہے؟',
+    pitchListingHint: 'لوگ آپ کے ساتھ کیا کر سکتے ہیں — رضاکارانہ کام، رکنیت، پروگراموں میں شرکت، یا مدد حاصل کرنا؟',
+    pitchSuggestion: 'آپ کی تجویز',
+    pitchSuggestionHint: 'لوگ اس میں کیسے حصہ لے سکتے ہیں؟',
+    websiteLabel: 'ویب سائٹ',
+    contactLegend: 'عملہ آپ سے کیسے رابطہ کر سکتا ہے',
+    contactName: 'آپ کا نام',
+    email: 'ای میل',
+    phone: 'فون',
+    optional: '(اختیاری)',
+    privacy: 'آپ کی رابطے کی تفصیلات صرف عملے کو ملتی ہیں اور کبھی شائع نہیں کی جاتیں۔',
+    send: 'عملے کو بھیجیں',
+    sending: 'بھیجا جا رہا ہے…',
+    thanks:
+      'شکریہ۔ عملہ بھیجی گئی ہر چیز کا جائزہ لیتا ہے۔ اگر یہ مناسب ہوئی تو اس صفحے پر نظر آئے گی، اور ہو سکتا ہے عملہ پہلے آپ سے رابطہ کرے۔',
+    sendAnother: 'ایک اور بھیجیں',
+    /** Above the form when fields need fixing; each field also shows its own message. */
+    invalid: 'براہ کرم نیچے نشان زدہ خانے دیکھیں۔',
+    /**
+     * The bare "https://" here and the phone example below sit inside a
+     * left-to-right isolate (\u2066 … \u2069), as in the Arabic catalog: on
+     * this right-to-left page the browser otherwise shows them as "//:https"
+     * and "0100-555 (212)", the wrong way round for someone copying the format.
+     * The controls are escapes rather than literal characters so they stay
+     * visible in editors and diffs.
+     */
+    websiteInvalid: 'پورا ویب ایڈریس لکھیں جو \u2066https://\u2069 سے شروع ہو — مثلاً https://example.org۔',
+    phoneInvalid:
+      'صرف ہندسے اور عام علامات استعمال کریں، جیسے \u2066(212) 555-0100\u2069 — ایکسٹینشن یا کوئی اور لفظ نہ لکھیں۔',
+    tooFast: 'آپ نے بہت جلدی بھیج دیا۔ براہ کرم تھوڑا انتظار کریں، پھر دوبارہ بھیجیں۔',
+    rateLimited: 'آج یہاں سے بہت زیادہ بار بھیجا جا چکا ہے۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
+    expired: 'اس فارم کی میعاد ختم ہو گئی ہے۔ صفحہ دوبارہ لوڈ کریں اور پھر سے کوشش کریں۔',
+    failed: 'ہم اسے بھیج نہیں سکے۔ براہ کرم دوبارہ کوشش کریں۔',
+  },
+  /**
+   * Asking for a portrait in another language while its translation is off
+   * (SPEC-v7 §3.5). Shown in the reader's preferred language even though the
+   * page itself is English. {language} is a language's own name (Español).
+   */
+  translationRequest: {
+    button: 'ترجمے کی درخواست کریں',
+    intro:
+      'یہ خاکہ انگریزی میں شائع کیا گیا ہے۔ عملے کو بتائیں کہ آپ کو کون سی زبان چاہیے — عملہ دیکھتا ہے کہ ہر زبان کے لیے کتنے قارئین درخواست کرتے ہیں۔',
+    language: 'زبان',
+    send: 'درخواست بھیجیں',
+    sending: 'بھیجی جا رہی ہے…',
+    sent: 'شکریہ۔ عملہ دیکھ سکے گا کہ ایک قاری نے {language} میں ترجمے کی درخواست کی ہے۔',
+    limited:
+      'پچھلے ایک گھنٹے میں اس نیٹ ورک سے بہت زیادہ درخواستیں آئی ہیں، اس لیے یہ درخواست درج نہیں ہوئی۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
+    notNeeded: 'اس خاکے کا ابھی ابھی ترجمہ کیا گیا ہے۔ اپنی زبان منتخب کرنے کے لیے صفحہ دوبارہ لوڈ کریں۔',
+    failed: 'ہم اسے بھیج نہیں سکے۔ براہ کرم دوبارہ کوشش کریں۔',
+  },
+  /** The sign-in page (SPEC-v6 §2.2). */
+  login: {
+    title: 'سائن ان کریں',
+    intro: 'رہائشی کسی خاکے کی بحث میں حصہ لینے کے لیے سائن ان کرتے ہیں۔ شہر کا عملہ اپنے کام کا اکاؤنٹ استعمال کرتا ہے۔',
+    /** Replaces `intro` when the person is on the way to setting up their city's portrait (/start): city staff, not residents. */
+    startIntro: 'اپنے شہر کا ڈونٹ ترتیب دینے کے لیے سائن ان کریں — اپنے کام کی ای میل استعمال کریں۔',
+    microsoft: 'Microsoft کے ساتھ جاری رکھیں (کام کا اکاؤنٹ)',
+    google: 'Google کے ساتھ جاری رکھیں',
+    emailLabel: 'مجھے سائن ان کا لنک ای میل کریں',
+    emailPlaceholder: 'you@example.org',
+    send: 'لنک بھیجیں',
+    sending: 'بھیجا جا رہا ہے…',
+    noMethods: 'اس سرور پر سائن ان کا کوئی طریقہ ترتیب نہیں دیا گیا۔',
+    /** {link} is the "start a portrait" link. */
+    newHere: 'کیا آپ شہر کے عملے میں شامل ہیں؟ سائن ان کرنے کے بعد {link}۔',
+    startLink: 'اپنے دائرۂ اختیار کے لیے خاکہ شروع کریں',
+    checkTitle: 'اپنی ای میل دیکھیں',
+    checkBody:
+      'ہم نے آپ کے درج کردہ پتے پر سائن ان کا لنک بھیج دیا ہے۔ یہ صرف ایک بار کام کرتا ہے اور اس کی میعاد 15 منٹ میں ختم ہو جاتی ہے۔',
+    checkHelp: 'چند منٹ بعد بھی نہیں ملا؟ اپنا اسپام فولڈر دیکھیں، یا دوسرا لنک بھیجیں۔',
+    sendAnother: 'دوسرا لنک بھیجیں',
+    errors: {
+      OAuthAccountNotLinked:
+        'اس ای میل سے پہلے کسی اور طریقے سے سائن ان کیا جا چکا ہے۔ وہی طریقہ استعمال کریں جو آپ نے پہلے استعمال کیا تھا (یا ای میل لنک)، پھر اپنے اکاؤنٹ کے صفحے سے سائن ان کا یہ طریقہ منسلک کریں۔',
+      Verification: 'اس سائن ان لنک کی میعاد ختم ہو چکی ہے یا یہ پہلے ہی استعمال ہو چکا ہے۔ نیا لنک منگوائیں۔',
+      AccessDenied: 'سائن ان کی اجازت نہیں دی گئی۔',
+      Configuration: 'اس سرور پر سائن ان کی ترتیبات درست نہیں۔ سائٹ کے منتظم سے رابطہ کریں۔',
+      EmailSignin: 'ہم سائن ان کی ای میل نہیں بھیج سکے۔ ای میل کا پتہ جانچ لیں اور چند منٹ بعد دوبارہ کوشش کریں۔',
+      /** Nothing was sent: this address already has three unused sign-in links from the last 15 minutes. */
+      TooManyLinks:
+        'ہم پچھلے 15 منٹ میں اس پتے پر سائن ان کے کئی لنک پہلے ہی بھیج چکے ہیں۔ سب سے نیا لنک استعمال کریں، یا 15 منٹ بعد دوبارہ کوشش کریں۔',
+      /** Nothing was sent: this network has asked for its hourly share of sign-in emails (shared Wi-Fi counts as one). */
+      TooManyEmails:
+        'اس نیٹ ورک سے سائن ان کی بہت زیادہ ای میلز منگوائی جا چکی ہیں، اس لیے یہ ای میل نہیں بھیجی گئی۔ براہ کرم ایک گھنٹے بعد دوبارہ کوشش کریں۔',
+      default: 'سائن ان نہیں ہو سکا۔ دوبارہ کوشش کریں۔',
+    },
+  },
+  org: {
+    portraitCount: { one: 'ایک خاکہ', other: '{n} خاکے' },
+    portraits: 'خاکے',
+    nothingPublished: 'ابھی تک کچھ شائع نہیں ہوا',
+    outsideSafeSpace: {
+      one: '{total} میں سے ایک پہلو محفوظ دائرے سے باہر',
+      other: '{total} میں سے {n} پہلو محفوظ دائرے سے باہر',
+    },
+    dataGaps: { one: 'ڈیٹا کا ایک خلا', other: 'ڈیٹا کے {n} خلا' },
+  },
+  compare: {
+    metaTitle: 'موازنہ · {org}',
+    titleJurisdiction: '{n} ڈونٹ، ایک دائرۂ اختیار: {org}',
+    titleFamily: '{n} ڈونٹ، ایک گروپ: {org}',
+    introJurisdiction:
+      'وہی سماجی بنیاد اور ماحولیاتی بالائی حد، {n} بار ناپی گئیں — پورا دائرۂ اختیار اور ہر ایک {noun} — منظور شدہ مقامی مقاصد پر مبنی یکساں حدوں کے مقابلے میں۔ باہر کی طرف جانے والے حصے بالائی حد سے تجاوز کرتے ہیں؛ اندر کی طرف جانے والے حصے بنیاد سے کم رہ جاتے ہیں؛ سرمئی رنگ ڈیٹا کا وہ خلا ہے جسے ہم کھل کر تسلیم کرتے ہیں۔',
+    introFamily:
+      'وہی سماجی بنیاد اور ماحولیاتی بالائی حد، {n} بار ناپی گئیں، منظور شدہ مقامی مقاصد پر مبنی یکساں حدوں کے مقابلے میں۔ باہر کی طرف جانے والے حصے بالائی حد سے تجاوز کرتے ہیں؛ اندر کی طرف جانے والے حصے بنیاد سے کم رہ جاتے ہیں؛ سرمئی رنگ ڈیٹا کا وہ خلا ہے جسے ہم کھل کر تسلیم کرتے ہیں۔',
+    wedgesOutside: '{n}/{total} حصے محفوظ دائرے سے باہر',
+    divergeTitle: '{nouns} کہاں سب سے زیادہ مختلف ہیں',
+    divergeIntro:
+      'شائع شدہ اشاریوں کا موازنہ، جس میں تمام {nouns} شامل ہیں۔ ترتیب کی بنیاد: ہر اشاریے پر سب سے بہتر اور سب سے کمزور {noun} — دونوں کا فرق جتنا زیادہ، اشاریہ اتنا اوپر۔',
+    wholeColumn: 'پورے دائرۂ اختیار کا کالم اس کا اپنا شائع شدہ عدد ہے، اوسط نہیں۔',
+    indicator: 'اشاریہ',
+    spread: 'فرق',
+    legend:
+      'ہر قطار میں: سرخ = ہدف سے سب سے دور {noun}، سبز = سب سے قریب۔ پورے دائرۂ اختیار پر لاگو اشاریے (جن میں تمام {nouns} برابر ہیں) اس جدول میں شامل ہی نہیں ہوتے۔',
+  },
+  insights: {
+    metaTitle: 'تجزیہ · {org}',
+    title: '{noun} وار تجزیہ · {org}',
+    intro:
+      'ہر پہلو، ہر {noun}، ایک ہی جدول میں — یکساں حدوں کے مقابلے میں ناپا گیا، جو منظور شدہ مقامی مقاصد پر مبنی ہیں۔ تفصیلی موازنہ اور ہر عدد کے پیچھے کی تحقیق دیکھنے کے لیے کوئی پہلو منتخب کریں۔',
+    biggestDivides: 'سب سے بڑے فرق',
+    insideSafeZone: 'محفوظ دائرے کے اندر',
+    beyondBoundary: 'حد سے {n} باہر',
+    divide: '{worst} {worstState} ہے، جبکہ {best} {bestState} ہے۔',
+    matrix: 'جدول',
+    matrixIntro:
+      'سبز = محفوظ دائرے کے اندر، سرخ = کمی یا حد سے تجاوز (جتنا گہرا، اتنا زیادہ باہر)، سرمئی = ڈیٹا کا خلا۔ تفصیلی موازنہ دیکھنے کے لیے کوئی قطار منتخب کریں۔',
+    dimension: 'پہلو',
+    noData: 'کوئی ڈیٹا نہیں',
+    unrolled: '{name} — تفصیلی موازنہ',
+    dataGap: 'ڈیٹا کا خلا',
+    barsExplainer:
+      'پٹیاں حد (عمودی لکیر) سے فاصلہ دکھاتی ہیں: بائیں اور سبز کا مطلب محفوظ دائرے کے اندر، دائیں اور سرخ کا مطلب کمی یا حد سے تجاوز، ڈونٹ کے −100…150 پیمانے پر۔',
+    researchBehind: 'اس کے پیچھے کی تحقیق',
+    fullDrilldown: 'مکمل تفصیل ←',
+    yearNA: 'سال دستیاب نہیں',
+    tier: 'درجہ {n}',
+    confidence: 'اعتماد: {value}',
+    confidenceLevels: { high: 'زیادہ', medium: 'درمیانہ', low: 'کم' },
+    evidence: 'شواہد',
+    workedMath: 'حساب کی تفصیل',
+    gapLabel: '{indicator}: ڈیٹا کا خلا',
+    fullSearchTrail: '(تلاش کا مکمل ریکارڈ)',
+    selectPrompt:
+      'اوپر سے کوئی پہلو منتخب کریں تاکہ تمام {nouns} آمنے سامنے آ جائیں اور آپ ذرائع، شواہد اور اسکورنگ دیکھ سکیں۔',
+  },
+  familyProgress: {
+    metaTitle: 'پیش رفت · {org}',
+    title: '{org} بھر میں پیش رفت',
+    introOne: 'خاکے کا ہر منظور شدہ مقصد، ایک مشترکہ بنیادی سطح سے ناپا گیا: {baseline}۔',
+    introMany: 'ہر منظور شدہ مقصد، {noun} وار، ایک مشترکہ بنیادی سطح سے ناپا گیا: {baseline}۔',
+    summaryByPortrait: 'خاکہ وار خلاصہ',
+    onCourse: { one: 'ایک درست سمت میں', other: '{n} درست سمت میں' },
+    slipping: { one: 'ایک پیچھے رہ رہا ہے', other: '{n} پیچھے رہ رہے ہیں' },
+    baselineOnly: {
+      one: 'ایک کی صرف بنیادی سطح موجود',
+      other: '{n} کی صرف بنیادی سطح موجود',
+    },
+    matrixTitle: '{noun} وار مقاصد',
+    goal: 'مقصد',
+    target: 'ہدف {value}',
+    targetBy: '{year} تک ہدف {value}',
+    nothingPublished: 'ابھی تک کچھ شائع نہیں ہوا۔',
+  },
+  notFound: {
+    title: 'صفحہ نہیں ملا',
+    body: 'اس پتے پر کوئی خاکہ یا صفحہ موجود نہیں۔ ہو سکتا ہے یہ منتقل ہو گیا ہو، یا خاکہ ابھی شائع نہ ہوا ہو۔',
+    home: 'مرکزی صفحے پر جائیں',
+  },
+  /** Emergency view (SPEC-v5 §3): official alerts, threats by risk, plans, help. */
+  emergency: {
+    navLabel: 'ہنگامی حالات',
+    metaTitle: 'ہنگامی حالات · {name}',
+    title: 'ہنگامی حالات اور آفات: {name}',
+    intro:
+      'سرکاری الرٹس، اس علاقے کو درپیش خطرات، پہلے سے نافذ منصوبے، اور یہ کہ مدد کہاں سے حاصل کی جائے۔',
+    empty: 'اس خاکے میں ابھی تک ہنگامی حالات سے متعلق معلومات شائع نہیں کی گئیں۔',
+    alertsTitle: 'جاری الرٹس',
+    alertsNone: '{time} کو کی گئی آخری جانچ کے مطابق اس علاقے کے لیے موسم کا کوئی جاری الرٹ نہیں۔',
+    alertsChecked: 'آخری جانچ: {time}۔',
+    alertsStale:
+      'ہم حال ہی میں الرٹس کے سرکاری ماخذ تک رسائی حاصل نہیں کر سکے۔ تازہ معلومات کے لیے براہ راست نیشنل ویدر سروس سے رجوع کریں۔',
+    alertsSavedCopy:
+      'یہ اس صفحے کی محفوظ شدہ نقل ہے۔ الرٹس کی آخری جانچ {time} کو ہوئی تھی، اور ہو سکتا ہے اس کے بعد ان میں تبدیلی آ چکی ہو۔ تازہ معلومات کے لیے براہ راست نیشنل ویدر سروس سے رجوع کریں۔',
+    alertsNotConfigured: 'اس خاکے کے لیے سرکاری الرٹس ابھی ترتیب نہیں دیے گئے۔',
+    alertsOriginal: 'الرٹس انگریزی میں بالکل اسی طرح دکھائے جاتے ہیں جیسے جاری کیے گئے۔',
+    alertSource: 'جاری کنندہ: {source}',
+    alertWindow: '{start} سے {end} تک',
+    alertFrom: '{start} سے',
+    alertInstructions: 'کیا کریں',
+    alertDetails: 'الرٹ کا مکمل متن',
+    alertLink: 'سرکاری الرٹ',
+    alertEnded: 'ختم ہو گیا',
+    severity: {
+      Extreme: 'انتہائی شدید',
+      Severe: 'شدید',
+      Moderate: 'درمیانہ',
+      Minor: 'معمولی',
+      Unknown: 'شدت نامعلوم',
+    },
+    getAlerts: 'سرکاری الرٹس حاصل کریں',
+    emergencyCall: 'ہنگامی صورت میں {phone} پر کال کریں۔',
+    infoCall: 'غیر ہنگامی مدد کے لیے {phone} پر کال کریں۔',
+    threatsTitle: 'درجۂ خطر کے لحاظ سے خطرات',
+    threatsIntro:
+      'ہر خطرے کا کتنا امکان ہے اور وہ کتنا شدید ہو سکتا ہے — شہر کے عملے کی درجہ بندی کے مطابق — اور وہ ڈونٹ کے کن حصوں کو خطرے میں ڈالتا ہے۔',
+    likelihood: 'امکان: 5 میں سے {n}',
+    severityRating: 'شدت: 5 میں سے {n}',
+    risk: {
+      low: 'کم خطرہ',
+      moderate: 'درمیانہ خطرہ',
+      high: 'زیادہ خطرہ',
+      very_high: 'بہت زیادہ خطرہ',
+    },
+    activeNow: 'الرٹ ابھی جاری ہے',
+    threatens: 'خطرے کی زد میں پہلو:',
+    dimensionImpact: '{dimension} ({impact})',
+    impactLevel: {
+      low: 'کم اثر',
+      moderate: 'درمیانہ اثر',
+      high: 'زیادہ اثر',
+    },
+    hazardKind: {
+      coastal_storm: 'ساحلی طوفان',
+      flooding: 'سیلاب',
+      extreme_heat: 'شدید گرمی',
+      winter_weather: 'سردیوں کا سخت موسم',
+      high_winds: 'تیز ہوائیں',
+      air_quality: 'ہوا کا خراب معیار',
+      drought: 'خشک سالی',
+      wildfire: 'جنگل کی آگ',
+      earthquake: 'زلزلہ',
+      infectious_disease: 'متعدی بیماری',
+      infrastructure_failure: 'بنیادی ڈھانچے کی خرابی',
+      other: 'دیگر خطرہ',
+    },
+    showOnDoughnut: 'ڈونٹ پر دکھائیں',
+    doughnutNow: 'آج',
+    doughnutThreat: 'خطرے کا باعث: {hazard}',
+    doughnutLabel: 'ڈونٹ خاکہ، جس میں وہ پہلو نمایاں ہیں جنہیں {hazard} سے خطرہ ہے',
+    doughnutControls: 'ڈونٹ کا منظر',
+    play: 'چلائیں',
+    pause: 'روکیں',
+    relatedPlans: 'اس خطرے سے متعلق منصوبے:',
+    plansTitle: 'پہلے سے نافذ منصوبے',
+    plansIntro: 'وہ منصوبے جو شہر نے ان خطرات سے نمٹنے کے لیے منظور کیے ہیں: شہر نے کیا کرنے کا عہد کیا ہے۔',
+    planBy: '{agency}، {year}',
+    planAgency: '{agency}',
+    planLanguages: 'ان زبانوں میں بھی شائع شدہ: {languages}',
+    readPlan: 'منصوبہ پڑھیں',
+    helpTitle: 'مدد اور باہمی امداد',
+    helpIntro: 'وہ مقامات اور گروپ جو ہنگامی حالات میں مدد کرتے ہیں۔',
+    resourceKind: {
+      cooling_center: 'کولنگ سینٹر',
+      shelter: 'پناہ گاہ',
+      hotline: 'ہاٹ لائن',
+      mutual_aid: 'باہمی امداد',
+      food: 'خوراک',
+      medical: 'طبی امداد',
+      other: 'دیگر مدد',
+    },
+    call: '{phone} پر کال کریں',
+    website: 'ویب سائٹ',
+    offlineTitle: 'اس صفحے کو آف لائن استعمال کے لیے محفوظ رکھیں',
+    offlineBody:
+      'یہ صفحہ محفوظ کر لیں تاکہ نیٹ ورک بند ہونے کی صورت میں یہ انٹرنیٹ کنکشن کے بغیر بھی کھل سکے۔',
+    offlineSave: 'آف لائن کے لیے محفوظ کریں',
+    offlineSaved:
+      'محفوظ ہو گیا۔ یہ صفحہ کنکشن کے بغیر بھی کھل جائے گا۔ محفوظ شدہ نقل خود بخود اپ ڈیٹ نہیں ہوتی: اس میں الرٹس وہی ہیں جو آپ نے آخری بار اسے آن لائن کھولتے وقت دیکھے تھے۔',
+    offlineUnavailable: 'یہ براؤزر صفحات کو آف لائن استعمال کے لیے محفوظ نہیں کر سکتا۔',
+    offlineSaving: 'محفوظ ہو رہا ہے…',
+    offlineFailed: 'یہ صفحہ محفوظ نہیں ہو سکا۔ انٹرنیٹ کنکشن موجود ہونے پر دوبارہ کوشش کریں۔',
+    offlineUpdate:
+      'اس ایپ کی ایک اپ ڈیٹ انسٹال ہونے کی منتظر ہے، اور جب تک یہ انسٹال نہ ہو صفحات محفوظ نہیں ہو سکتے۔ صفحہ دوبارہ لوڈ کریں، پھر دوبارہ کوشش کریں۔',
+    offlineSignedIn:
+      'صفحات اس آلے پر صرف اسی وقت محفوظ ہوتے ہیں جب آپ سائن آؤٹ ہوں، تاکہ مشترکہ کمپیوٹرز پر آپ کا اکاؤنٹ نجی رہے۔',
+    metaDescription: '{name} کے لیے سرکاری الرٹس، خطرات، منصوبے اور مدد۔',
+    contentInEnglish:
+      'خطرات، منصوبوں اور مدد کی فہرستیں عملہ لکھتا ہے اور یہ انگریزی میں شائع کی جاتی ہیں۔ الرٹس بالکل اسی طرح دکھائے جاتے ہیں جیسے نیشنل ویدر سروس (National Weather Service) نے جاری کیے۔',
+    alertArea: 'علاقے: {areas}',
+    alertRelated: 'متعلقہ خطرہ: {hazard}',
+    signupLink: 'سرکاری الرٹس کے لیے سائن اپ کریں',
+    signupNamed: '{name} کے لیے سائن اپ کریں',
+    resourceHazards: 'ان خطرات میں مددگار:',
+    doughnutLegend: 'ڈونٹ پر رنگوں کا مطلب:',
+  },
+  /** The site footer, on every page but embeds (components/site-footer/SiteFooter.tsx). */
+  footer: {
+    /** The footer's navigation landmark. */
+    label: 'اس سائٹ کے بارے میں',
+    /** {email} is the support address of whoever runs this site, as a link (already marked dir="ltr", so no isolate here). */
+    contact: 'رابطہ: {email}',
+    accessibility: 'رسائی کی سہولت',
+    privacy: 'رازداری',
+    terms: 'استعمال کی شرائط',
+    /**
+     * The Doughnut's attribution (docs/OPEN-SOURCE.md §3.3), also under every
+     * embedded doughnut. {license} is the license's name as a link; {book}
+     * and {method} are the English titles of the book and the method guide.
+     * The names stay in Latin script. "Diagram" is ڈائیگرام, not خاکہ, which
+     * this catalog reserves for a portrait. The Urdu word لائسنس before
+     * {license} keeps the Latin license name from running into Christian
+     * Guthier's name as one left-to-right stretch on this right-to-left page.
+     */
+    credit:
+      'ڈونٹ ڈائیگرام: Kate Raworth اور Christian Guthier، لائسنس {license}، مقامی ڈیٹا کے ساتھ ڈھالا گیا (Raworth، {book}، 2017)۔ شہر کے خاکے کا طریقۂ کار Doughnut Economics Action Lab کے رہنما کتابچے {method} پر مبنی ہے۔ یہ سائٹ Doughnut Economics Action Lab سے وابستہ نہیں، اور نہ ہی اسے اس ادارے کی تائید حاصل ہے۔',
+  },
+  /**
+   * On a portrait seeded with synthetic values (scripts/seed-demo-data.ts):
+   * its page, its dimension pages, its embed, its organization's compare,
+   * insights and progress pages, so a screenshot cannot pass for research.
+   * "نمونہ ڈیٹا" as in portrait.demoHint.
+   */
+  sampleData: {
+    title: 'نمونہ ڈیٹا — تحقیقی نتائج نہیں',
+    /** A portrait's own pages and its embed; {name} is the portrait. */
+    body: 'اس سائٹ پر {name} کے اعداد و شمار سافٹ ویئر کا مظاہرہ کرنے کے لیے بنائے گئے ہیں۔ یہ پیمائشیں نہیں ہیں، اور ان کا حوالہ نہ دیا جائے۔',
+    /** An organization's pages, when any portrait shown there is seeded; {org} is the organization. */
+    bodyOrg:
+      'اس صفحے پر {org} کے کچھ یا تمام اعداد و شمار سافٹ ویئر کا مظاہرہ کرنے کے لیے بنائے گئے ہیں۔ یہ پیمائشیں نہیں ہیں، اور ان کا حوالہ نہ دیا جائے۔',
+  },
+  /** Theme toggle and the fryer (SPEC-v5 §4). */
+  theme: {
+    label: 'تھیم',
+    /** The toggle's accessible name, and the status message after a flip. */
+    toggle: 'تھیم: {mode}',
+    /** The toggle's description and hover title. {system} is the "Match device" item's label. */
+    hint: 'روشن اور تاریک کے درمیان تبدیل کرتا ہے۔ “{system}” اور مزید اختیارات کے لیے دبا کر رکھیں، رائٹ کلک کریں، یا Shift+F10 دبائیں۔',
+    light: 'روشن',
+    dark: 'تاریک',
+    system: 'آلے کے مطابق',
+    menu: 'تھیم کے اختیارات',
+    deepFry: 'یہ صفحہ تل دیں',
+    unfry: 'صفحہ دوبارہ کچا کریں',
+    fried: 'صفحہ تل دیا گیا۔ پہلے جیسا کرنے کے لیے “صفحہ دوبارہ کچا کریں” منتخب کریں۔',
+    unfried: 'صفحہ بحال ہو گیا۔',
+  },
+};

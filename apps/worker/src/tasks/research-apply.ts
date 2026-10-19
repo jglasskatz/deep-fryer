@@ -1,6 +1,14 @@
+import { gzipSync } from 'node:zlib';
 import type { Task } from 'graphile-worker';
-import { and, eq, inArray } from 'drizzle-orm';
-import type { ContentSupported, FindingPayload, RunTokenUsage } from '@deep-fryer/core';
+import { and, eq, inArray, isNotNull } from 'drizzle-orm';
+import {
+  emptyUsage,
+  type ContentSupported,
+  type FindingPayload,
+  type RunTokenUsage,
+  type SessionTokenUsage,
+} from '@deep-fryer/core';
+import { keyHint } from '@deep-fryer/core/secrets';
 import {
   dimensions,
   findings,
@@ -8,6 +16,8 @@ import {
   researchRuns,
   researchSessions,
   tenants,
+  type DbExecutor,
+  type ResearchRun,
 } from '@deep-fryer/db';
 import {
   deterministicChecks,
@@ -19,8 +29,24 @@ import {
   type ApplyJobPayload,
 } from '@deep-fryer/research';
 import { closeEvidenceBrowser } from '../evidence.js';
-import { extractJson, runSession, runSessionWithRetry } from '../session.js';
+import {
+  OrgKeyUnavailableError,
+  modelNamedIn,
+  modelNotFoundLog,
+  rejectedKeyError,
+  sessionApiKey,
+} from '../org-key.js';
+import {
+  extractJson,
+  mergeUsage,
+  runSession,
+  runSessionWithRetry,
+  SessionRunError,
+  type SessionResult,
+} from '../session.js';
 import { tenantStorage } from '../storage.js';
+import { notifyRunFinished } from '../notify.js';
+import { settledRunStatus } from './run-status.js';
 
 /**
  * Apply (SPEC.md §8): phase-0 region-context session first, its brief
@@ -28,24 +54,53 @@ import { tenantStorage } from '../storage.js';
  * checks plus an independent verifier session; failures surface as
  * red-flagged findings, never dropped. Failed runs stay failed — reruns are
  * user-directed from review, not automatic.
+ *
+ * Paying for it (SPEC-v7 §4): the research gate decided who pays when the
+ * run was applied and stored it on the run (`funding`, migration 0012); the
+ * worker follows that decision, not whatever key is on file now
+ * (org-key.ts sessionApiKey). A key-funded run runs every session — research
+ * and verifier alike — on the organization's own Anthropic API key; a
+ * plan-funded run runs on the deployment's ANTHROPIC_API_KEY, even if the
+ * organization has added a key since (the run was counted against the plan).
+ * The key is resolved once, before the first session, so a run never mixes
+ * the two. A key-funded run whose key was removed after it was queued, or
+ * cannot be decrypted, fails (OrgKeyUnavailableError) with the reason on
+ * every planned session, rather than quietly spending the deployment's key on
+ * a run the plan's allowance never covered. So does a run whose key Anthropic
+ * starts refusing part-way (revoked, out of credit, a model the key may not
+ * use; session.ts runSessionWithRetry): the session that met the refusal
+ * records the reason, no further session or verifier starts on the key, and
+ * every session that had not started is recorded as failed with that reason.
  */
 export const researchApply: Task = async (rawPayload, helpers) => {
-  const { runId } = rawPayload as ApplyJobPayload;
+  const { runId, unmetered } = rawPayload as ApplyJobPayload;
   const db = getDb();
 
-  // Atomic claim: only the transition planned → running executes the plan.
-  // A no-op claim means either a duplicate/stale job or a crash-interrupted
+  // Atomic claim: only the transition planned → running executes the plan,
+  // and only for a run the research gate applied (applied_at set). applied_at
+  // is what puts a run in a billing period (packages/db researchSessionsUsed),
+  // so a run without it would spend sessions no allowance counts. That
+  // happens when the web app's enqueue failed after the job was in fact
+  // written — the connection dropped before the reply — and applyRun cleared
+  // applied_at again: the job is stale, and running it would be research
+  // nobody was charged for. The run stays planned, to be applied again. The
+  // one exception is an operator's measurement run, unapplied on purpose and
+  // marked so on its job (ApplyJobPayload.unmetered).
+  // A no-op claim otherwise means a duplicate/stale job or a crash-interrupted
   // run redelivered by the queue — the latter is settled as failed below so
   // it can never sit in `running` forever.
-  const [run] = await db
-    .update(researchRuns)
-    .set({ status: 'running' })
-    .where(and(eq(researchRuns.id, runId), eq(researchRuns.status, 'planned')))
-    .returning();
+  const claimable = and(
+    eq(researchRuns.id, runId),
+    eq(researchRuns.status, 'planned'),
+    unmetered ? undefined : isNotNull(researchRuns.appliedAt),
+  );
+  const [run] = await db.update(researchRuns).set({ status: 'running' }).where(claimable).returning();
   if (!run) {
     const [existing] = await db.select().from(researchRuns).where(eq(researchRuns.id, runId));
     if (!existing) {
       helpers.logger.error(`run ${runId} not found`);
+    } else if (existing.status === 'planned') {
+      helpers.logger.warn(`run ${runId} is planned but not applied (its apply was undone); skipping`);
     } else if (existing.status === 'running') {
       helpers.logger.error(`run ${runId} was interrupted mid-run; marking failed`);
       await db
@@ -77,6 +132,33 @@ export const researchApply: Task = async (rawPayload, helpers) => {
   };
 
   try {
+    // First, before anything else can fail or spend: whose key this run uses,
+    // as the gate decided when the run was applied.
+    const apiKey = await sessionApiKey(db, run.tenantId, run.funding);
+    if (apiKey) {
+      // The hint (last four characters) is what the billing page shows; never more.
+      helpers.logger.info(`run ${runId}: running on the organization's own Anthropic API key (…${keyHint(apiKey)})`);
+    }
+    const keyOption = apiKey ? { apiKey } : {};
+
+    // A model id the API did not find (model_not_found) is logged for the
+    // operator, once per model per run: on the deployment's key it is always
+    // a model setting to fix, and on the organization's key it may be one
+    // (org-key.ts KEY_REJECTED_ERRORS). Staff read the reason on the run.
+    const modelsNotFound = new Set<string>();
+    const reportModelNotFound = (model: string | undefined) => {
+      const id = model ?? '(model not named)';
+      if (modelsNotFound.has(id)) return;
+      modelsNotFound.add(id);
+      helpers.logger.error(`run ${runId}: ${modelNotFoundLog(id, Boolean(apiKey))}`);
+    };
+    const noteFailure = (report: { apiError?: string; apiErrorText?: string; usage: SessionTokenUsage }) => {
+      if (report.apiError === 'model_not_found') reportModelNotFound(modelNamedIn(report.apiErrorText) ?? report.usage.model);
+    };
+    const noteKeyFailure = (err: OrgKeyUnavailableError) => {
+      if (err.rejection === 'model_not_found') reportModelNotFound(err.model);
+    };
+
     const [tenant] = await db.select().from(tenants).where(eq(tenants.id, run.tenantId));
     if (!tenant) throw new Error(`tenant ${run.tenantId} missing`);
 
@@ -99,10 +181,26 @@ export const researchApply: Task = async (rawPayload, helpers) => {
         .values({ runId, kind: 'region_context', status: 'running', startedAt: new Date() })
         .returning();
       if (!row) throw new Error('session insert failed');
-      const result = await runSessionWithRetry({
-        prompt: regionSpec.prompt,
-        allowedTools: regionSpec.tool_allowlist,
-      });
+      let result: SessionResult;
+      try {
+        result = await runSessionWithRetry({
+          prompt: regionSpec.prompt,
+          allowedTools: regionSpec.tool_allowlist,
+          // Never orchestrated: the region session has WebSearch, so with
+          // RESEARCH_SUBAGENT_MODEL set it would otherwise get scouts and a
+          // delegation note telling it to capture evidence — and it has no
+          // capture tool, and writes a brief, not findings.
+          orchestrate: false,
+          ...keyOption,
+        });
+      } catch (err) {
+        if (err instanceof OrgKeyUnavailableError) {
+          noteKeyFailure(err);
+          await recordKeyFailure(db, row.id, err, usage);
+        }
+        throw err;
+      }
+      if (!result.succeeded) noteFailure(result);
       usage[row.id] = result.usage;
       await db
         .update(researchSessions)
@@ -122,8 +220,18 @@ export const researchApply: Task = async (rawPayload, helpers) => {
     // and evidence captures run in isolated browser contexts), so they run
     // under a bounded pool. RESEARCH_SESSION_CONCURRENCY=1 restores the old
     // serial behavior; the practical ceiling is API throughput.
-    const sessionConcurrency = Math.max(1, Number(process.env.RESEARCH_SESSION_CONCURRENCY ?? 3));
+    const concurrency = sessionConcurrency(process.env.RESEARCH_SESSION_CONCURRENCY);
+    if (!concurrency.valid) {
+      helpers.logger.warn(
+        `RESEARCH_SESSION_CONCURRENCY=${JSON.stringify(process.env.RESEARCH_SESSION_CONCURRENCY)} is not a whole number of at least 1; running ${concurrency.value} sessions at a time`,
+      );
+    }
     const dimensionSpecs = plan.sessions.filter((s) => s.kind === 'dimension');
+
+    // Set once Anthropic refuses the organization's key (OrgKeyUnavailableError
+    // from a research or verifier session): from then on no session or
+    // verifier starts on it, and the run fails with this reason below.
+    let keyFailure: OrgKeyUnavailableError | null = null;
 
     const processDimension = async (spec: (typeof dimensionSpecs)[number]) => {
       const dimension = spec.dimension_slug ? dimBySlug.get(spec.dimension_slug) : undefined;
@@ -144,30 +252,73 @@ export const researchApply: Task = async (rawPayload, helpers) => {
       if (!row) throw new Error('session insert failed');
 
       const prompt = spec.prompt.split(REGION_BRIEF_PLACEHOLDER).join(regionBrief);
-      const result = await runSessionWithRetry({
-        prompt,
-        allowedTools: spec.tool_allowlist,
-        storage,
-      });
+      let result: SessionResult;
+      try {
+        result = await runSessionWithRetry({
+          prompt,
+          allowedTools: spec.tool_allowlist,
+          storage,
+          ...keyOption,
+        });
+      } catch (err) {
+        if (!(err instanceof OrgKeyUnavailableError)) throw err;
+        keyFailure ??= err;
+        noteKeyFailure(err);
+        await recordKeyFailure(db, row.id, err, usage);
+        return;
+      }
+      if (!result.succeeded) noteFailure(result);
       usage[row.id] = result.usage;
 
       let rawFindings: unknown[] = [];
       let parseOk = true;
+      // Salvaged: the output was malformed and only a fragment of it read
+      // (session.ts extractJson). The session is NOT failed for it — its
+      // findings go to review and it was paid for, and a failed session is
+      // free (packages/db billing counts only non-failed ones) — but every
+      // finding it did return is flagged partial_output, so staff know the
+      // session may have said more than was recorded.
+      let salvaged = false;
       try {
         const parsed = extractJson(result.resultText);
-        rawFindings = Array.isArray(parsed) ? parsed : [parsed];
+        rawFindings = Array.isArray(parsed.value) ? parsed.value : [parsed.value];
+        salvaged = parsed.salvaged;
+        if (salvaged) {
+          helpers.logger.warn(
+            `session ${row.id}: output was malformed JSON; ${rawFindings.length} finding(s) salvaged and flagged partial_output`,
+          );
+        }
       } catch {
         parseOk = false;
         helpers.logger.error(`session ${row.id}: output was not parseable JSON`);
       }
 
-      const verifierUsage = { input_tokens: 0, output_tokens: 0 };
+      // Every verifier session of this dimension, folded whole (cache tokens
+      // and per-model usage included) and filed under `verifier:<session id>`.
+      let verifierUsage = emptyUsage();
       for (const raw of rawFindings) {
         const { payload, checks } = await deterministicChecks(raw, config, dimension.slug);
 
         let verdict: { content_supported: ContentSupported; verifier_note?: string } | null;
         if (payload?.kind === 'indicator') {
-          verdict = await runVerifier(payload, config.region.name, verifierUsage);
+          if (keyFailure) {
+            // The key was refused (here or in a concurrent session): starting
+            // a verifier on it would only be refused again.
+            verdict = { content_supported: 'uncertain', verifier_note: `verifier did not run: ${keyFailure.message}` };
+          } else {
+            try {
+              const verified = await runVerifier(payload, config.region.name, apiKey);
+              verifierUsage = mergeUsage(verifierUsage, verified.usage);
+              verdict = verified.verdict;
+              if (verified.failure) noteFailure(verified.failure);
+            } catch (err) {
+              if (!(err instanceof OrgKeyUnavailableError)) throw err;
+              keyFailure ??= err;
+              noteKeyFailure(err);
+              if (err.usage) verifierUsage = mergeUsage(verifierUsage, err.usage);
+              verdict = { content_supported: 'uncertain', verifier_note: `verifier did not run: ${err.message}` };
+            }
+          }
         } else if (payload?.kind === 'gap') {
           verdict = {
             content_supported: 'uncertain',
@@ -191,7 +342,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
           dimensionId: dimension.id,
           indicatorSlug,
           payload: (payload ?? raw) as FindingPayload,
-          verification: mergeVerification(checks, verdict),
+          verification: mergeVerification(salvaged ? { ...checks, partial_output: true } : checks, verdict),
         });
       }
       usage[`verifier:${row.id}`] = verifierUsage;
@@ -206,21 +357,41 @@ export const researchApply: Task = async (rawPayload, helpers) => {
         .where(eq(researchSessions.id, row.id));
     };
 
-    // Bounded pool: next session starts as soon as a slot frees.
+    // Bounded pool: next session starts as soon as a slot frees. A refused
+    // key, or any other error, stops new sessions from starting; the ones
+    // already running finish (and record themselves) before the error is
+    // rethrown, so the run is never settled while a session still writes.
     let cursor = 0;
+    let poolError: { error: unknown } | null = null;
     await Promise.all(
-      Array.from({ length: Math.min(sessionConcurrency, dimensionSpecs.length) }, async () => {
-        while (cursor < dimensionSpecs.length) {
+      Array.from({ length: Math.min(concurrency.value, dimensionSpecs.length) }, async () => {
+        while (!keyFailure && !poolError && cursor < dimensionSpecs.length) {
           const spec = dimensionSpecs[cursor++]!;
-          await processDimension(spec);
+          try {
+            await processDimension(spec);
+          } catch (error) {
+            poolError ??= { error };
+          }
         }
       }),
     );
+    if (poolError) throw (poolError as { error: unknown }).error;
+    if (keyFailure) throw keyFailure;
 
-    await finish('complete');
-    helpers.logger.info(`run ${runId} complete`);
+    const settled = settledRunStatus(
+      (
+        await db
+          .select({ status: researchSessions.status })
+          .from(researchSessions)
+          .where(eq(researchSessions.runId, runId))
+      ).map((r) => r.status),
+    );
+    await finish(settled);
+    if (settled === 'complete') helpers.logger.info(`run ${runId} complete`);
+    else helpers.logger.error(`run ${runId} failed: no session succeeded`);
   } catch (err) {
     helpers.logger.error(`run ${runId} failed: ${err instanceof Error ? err.message : err}`);
+    if (err instanceof OrgKeyUnavailableError) await failPlannedSessions(db, run, err.message);
     await db
       .update(researchSessions)
       .set({ status: 'failed', completedAt: new Date() })
@@ -234,13 +405,134 @@ export const researchApply: Task = async (rawPayload, helpers) => {
   } finally {
     await closeEvidenceBrowser().catch(() => {});
   }
+  // Settled either way: tell the people who review it.
+  await notifyRunFinished(runId);
 };
 
+/** How many dimension sessions run at once when RESEARCH_SESSION_CONCURRENCY is unset or unusable. */
+export const DEFAULT_SESSION_CONCURRENCY = 3;
+
+/**
+ * Pure: RESEARCH_SESSION_CONCURRENCY read as the dimension pool's size. Only
+ * a whole number of at least 1 (surrounding spaces allowed) is taken; any
+ * other value — "three", "2.5", "0", an empty string — falls back to
+ * DEFAULT_SESSION_CONCURRENCY with `valid: false`, so the caller warns the
+ * operator. A bare Number() would turn "three" into NaN, which makes a pool
+ * of no workers: every dimension session silently skipped, and the run
+ * settled complete on the region session alone.
+ */
+export function sessionConcurrency(raw: string | undefined): { value: number; valid: boolean } {
+  if (raw === undefined) return { value: DEFAULT_SESSION_CONCURRENCY, valid: true };
+  const trimmed = raw.trim();
+  const value = /^\d+$/.test(trimmed) ? Number.parseInt(trimmed, 10) : NaN;
+  return Number.isSafeInteger(value) && value >= 1
+    ? { value, valid: true }
+    : { value: DEFAULT_SESSION_CONCURRENCY, valid: false };
+}
+
+/** A failed session's transcript that is just the reason, as session.ts runSessionWithRetry records a thrown session. */
+const sessionErrorTranscript = (message: string) => gzipSync(JSON.stringify({ type: 'session_error', message }));
+
+/**
+ * The session in row `rowId` stopped because Anthropic refused the
+ * organization's key: record what it spent before the refusal (the error's
+ * usage) and fail the row with the reason as its transcript, so staff read
+ * why — not the CLI's error frames.
+ */
+async function recordKeyFailure(
+  db: DbExecutor,
+  rowId: string,
+  err: OrgKeyUnavailableError,
+  usage: RunTokenUsage,
+): Promise<void> {
+  if (err.usage) usage[rowId] = err.usage;
+  await db
+    .update(researchSessions)
+    .set({ status: 'failed', transcript: sessionErrorTranscript(err.message), completedAt: new Date() })
+    .where(eq(researchSessions.id, rowId));
+}
+
+/**
+ * A key-funded run that could not start — the organization's key was removed
+ * after the run was queued, or is on file but unreadable — still tells staff
+ * why. Each planned session gets a failed row whose transcript is the reason,
+ * in the shape a session that errored records (session.ts
+ * runSessionWithRetry: `{"type":"session_error",…}`). So the run page lists
+ * every dimension as failed, the run-finished email counts them, owners who
+ * download a transcript read the message, and — failed sessions being free,
+ * and key-funded ones never counted — nothing is counted against the plan.
+ *
+ * A run whose key was refused part-way already has rows for the sessions
+ * that started: those keep their own record, any still open is failed with
+ * the reason, and only the planned sessions that never started get a new row.
+ */
+async function failPlannedSessions(db: DbExecutor, run: ResearchRun, message: string): Promise<void> {
+  const dims = await db
+    .select({ id: dimensions.id, slug: dimensions.slug })
+    .from(dimensions)
+    .where(eq(dimensions.tenantId, run.tenantId));
+  const idBySlug = new Map(dims.map((d) => [d.slug, d.id]));
+  const transcript = sessionErrorTranscript(message);
+  const now = new Date();
+  await db
+    .update(researchSessions)
+    .set({ status: 'failed', transcript, completedAt: now })
+    .where(and(eq(researchSessions.runId, run.id), inArray(researchSessions.status, ['queued', 'running'])));
+  const started = new Set(
+    (
+      await db
+        .select({ kind: researchSessions.kind, dimensionId: researchSessions.dimensionId })
+        .from(researchSessions)
+        .where(eq(researchSessions.runId, run.id))
+    ).map((r) => `${r.kind}:${r.dimensionId ?? ''}`),
+  );
+  const rows = run.plan.sessions.flatMap((spec) => {
+    const dimensionId = spec.dimension_slug ? idBySlug.get(spec.dimension_slug) : undefined;
+    if (spec.kind === 'dimension' && !dimensionId) return [];
+    if (started.has(`${spec.kind}:${dimensionId ?? ''}`)) return [];
+    return [
+      {
+        runId: run.id,
+        kind: spec.kind,
+        dimensionId: dimensionId ?? null,
+        status: 'failed' as const,
+        transcript,
+        startedAt: now,
+        completedAt: now,
+      },
+    ];
+  });
+  if (rows.length) await db.insert(researchSessions).values(rows);
+}
+
+/** A verifier's answer, as merged into a finding's verification. */
+type Verdict = { content_supported: ContentSupported; verifier_note?: string };
+
+/**
+ * One verifier session on one indicator finding: the verdict (null when the
+ * session failed or answered outside its contract) and what the session
+ * used, folded by the caller into the dimension's `verifier:<id>` record.
+ * `failure` is the failed session's error report, for the caller's operator
+ * log (a model_not_found on the deployment's key is a VERIFIER_MODEL to fix).
+ *
+ * Throws OrgKeyUnavailableError, carrying the usage, when Anthropic refused
+ * the organization's key (org-key.ts keyRejection): every remaining
+ * verifier would be refused the same way, so the run stops instead.
+ *
+ * A verdict the CLI obtained from another model after the judge refused
+ * (the SDK's model_refusal_fallback; the bundled CLI arms one for
+ * claude-opus-5) says so in its note, so staff see that this finding was
+ * judged by a different model than every other.
+ */
 async function runVerifier(
   payload: Extract<FindingPayload, { kind: 'indicator' }>,
   regionName: string,
-  acc: { input_tokens: number; output_tokens: number },
-): Promise<{ content_supported: ContentSupported; verifier_note?: string } | null> {
+  apiKey: string | null,
+): Promise<{
+  verdict: Verdict | null;
+  usage: SessionTokenUsage;
+  failure?: { apiError?: string; apiErrorText?: string; usage: SessionTokenUsage };
+}> {
   const prompt = renderVerifierPrompt({
     indicator_name: payload.name,
     claimed_value: String(payload.value),
@@ -250,19 +542,35 @@ async function runVerifier(
     source_name: payload.source,
     source_url: payload.source_url,
   });
+  // The adversarial reviewer runs on the strongest model regardless of the
+  // researcher's model — a constant, maximally-skeptical judge, so strategy
+  // comparisons measure the researcher, never the leniency of its grader.
+  const model = process.env.VERIFIER_MODEL ?? 'claude-opus-5';
+  let result: SessionResult;
   try {
-    const result = await runSession({
+    result = await runSession({
       prompt,
       allowedTools: VERIFIER_TOOLS,
       maxTurns: VERIFIER_MAX_TURNS,
-      // The adversarial reviewer runs on the strongest model regardless of the
-      // researcher's model — a constant, maximally-skeptical judge, so strategy
-      // comparisons measure the researcher, never the leniency of its grader.
-      model: process.env.VERIFIER_MODEL ?? 'claude-opus-5',
+      model,
+      // Verifiers are part of the run's spend: the same key as its researchers,
+      // which is the run's stored funding (the deployment's key when apiKey is null).
+      ...(apiKey ? { apiKey } : {}),
     });
-    acc.input_tokens += result.usage.input_tokens;
-    acc.output_tokens += result.usage.output_tokens;
-    const parsed = extractJson(result.resultText) as {
+  } catch (err) {
+    // A thrown session still spent what it streamed (SessionRunError).
+    if (!(err instanceof SessionRunError)) return { verdict: null, usage: emptyUsage() };
+    const refused = apiKey ? rejectedKeyError(err, model, err.usage) : null;
+    if (refused) throw refused;
+    return { verdict: null, usage: err.usage, failure: err };
+  }
+  if (!result.succeeded) {
+    const refused = apiKey ? rejectedKeyError(result, model, result.usage) : null;
+    if (refused) throw refused;
+    return { verdict: null, usage: result.usage, failure: result };
+  }
+  try {
+    const parsed = extractJson(result.resultText).value as {
       content_supported?: string;
       verifier_note?: string;
     };
@@ -271,13 +579,21 @@ async function runVerifier(
       parsed.content_supported === 'fail' ||
       parsed.content_supported === 'uncertain'
     ) {
+      const fallbacks = result.usage.refusal_fallbacks ?? [];
+      const judges = fallbacks.map((f) => f.fallback_model).join(', ');
+      const judgedBy = fallbacks.length
+        ? ` [Verdict given by ${judges} after ${fallbacks[0]!.original_model} refused (refusal fallback).]`
+        : '';
       return {
-        content_supported: parsed.content_supported,
-        verifier_note: parsed.verifier_note,
+        verdict: {
+          content_supported: parsed.content_supported,
+          verifier_note: judgedBy ? `${parsed.verifier_note ?? ''}${judgedBy}`.trim() : parsed.verifier_note,
+        },
+        usage: result.usage,
       };
     }
-    return null;
+    return { verdict: null, usage: result.usage };
   } catch {
-    return null;
+    return { verdict: null, usage: result.usage };
   }
 }

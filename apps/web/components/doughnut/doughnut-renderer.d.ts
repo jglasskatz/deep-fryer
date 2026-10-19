@@ -19,6 +19,8 @@ export interface RendererHit {
 export interface DoughnutRendererOptions {
   canvas: HTMLCanvasElement;
   size: number;
+  /** Backing-store pixels per `size` unit (the screen's devicePixelRatio); default 1. */
+  pixelRatio?: number;
   donutScale?: number;
   textSize?: number;
   onHover?: (hit: RendererHit | null, event: MouseEvent) => void;
@@ -32,6 +34,11 @@ export class DoughnutRenderer {
     name: string,
     level: number | string,
     label?: string,
+    colour?: string,
+  ): void;
+  /** Apply many levels with one redraw (animation frames). */
+  setLevels(
+    entries: { type: 'inner' | 'outer'; name: string; level: number | string; label?: string; colour?: string | null }[],
   ): void;
   clearDoughnut(): void;
   isEmptyDoughnut(): boolean;

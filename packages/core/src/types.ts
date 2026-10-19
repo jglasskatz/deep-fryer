@@ -1,3 +1,4 @@
+import type { ProgressConfig } from './progress.js';
 import type {
   GeographicScale,
   MappingFunctionName,
@@ -99,10 +100,20 @@ export interface RetentionConfig {
   transcript_days: number;
 }
 
-/** Per-tenant feature flags (SPEC §6 behavior layer). */
+/**
+ * Per-tenant feature flags (SPEC §6 behavior layer; SPEC-v7 §3). Every key is
+ * optional: an unset key means the registry default (features.ts), so a
+ * portrait's stored config never needs rewriting when a feature is added.
+ */
 export interface FeaturesConfig {
+  emergency?: boolean;
+  policy_analysis?: boolean;
+  involvement?: boolean;
+  discussion?: boolean;
+  translation?: boolean;
+  family_compare?: boolean;
   /** Editors may request additional research runs from the public insights surface. */
-  request_research: boolean;
+  request_research?: boolean;
 }
 
 export interface NotificationConfig {
@@ -121,6 +132,7 @@ export interface TenantConfigMap {
   retention: RetentionConfig;
   notifications: NotificationConfig;
   features: FeaturesConfig;
+  progress: ProgressConfig;
 }
 
 export type TenantConfigKey = keyof TenantConfigMap;
@@ -134,6 +146,16 @@ export interface FindingVerification {
   scale_ok: boolean;
   content_supported: ContentSupported;
   verifier_note?: string;
+  /**
+   * True when the session's output was malformed JSON and this finding was
+   * salvaged from inside it (apps/worker session.ts extractJson): the
+   * session may have returned more findings that could not be read, so
+   * this one is flagged for review (core isFlagged) rather than passing as
+   * if the session had answered cleanly. The session itself is not marked
+   * failed — its findings are in review and it was paid for. Absent on
+   * findings recorded before the check existed, which reads as false.
+   */
+  partial_output?: boolean;
 }
 
 export interface IndicatorFindingPayload {
@@ -183,11 +205,65 @@ export interface ResearchPlan {
   plugin_version: string;
 }
 
+/**
+ * One model's share of a session's usage, from the Agent SDK result's
+ * `modelUsage` (apps/worker session.ts). It covers every API call made on
+ * that model — the main loop, subagents, and the CLI's own side calls (the
+ * small model that reads each fetched page, the WebSearch side query) —
+ * which the session's top-level fields do not. Priced by model-pricing.ts.
+ */
+export interface ModelTokenUsage {
+  input_tokens: number;
+  output_tokens: number;
+  cache_read_tokens: number;
+  cache_write_tokens: number;
+  web_search_requests: number;
+  /** Tokens from API calls whose prompt (input + cache read + cache write) exceeded 100,000. */
+  long_prompt?: { input_tokens: number; output_tokens: number; cache_read_tokens: number; cache_write_tokens: number };
+}
+
+/**
+ * A refusal the CLI answered by retrying the turn on another model (the
+ * Agent SDK's `model_refusal_fallback` notice). Recorded so that a verdict
+ * or a finding produced by a different model than the one configured is
+ * visible afterwards — the verifier's judge in particular is meant to be
+ * one constant model.
+ */
+export interface RefusalFallbackEvent {
+  original_model: string;
+  fallback_model: string;
+  /** The refusal category the API reported ('cyber', …), or null when none was given. */
+  category: string | null;
+}
+
+/**
+ * What one session (or a fold of several, see mergeUsage) used. The four
+ * token fields are the main loop's own, as recorded since the first run;
+ * everything else is optional so rows written before it existed still read
+ * — and the admin pages, which sum `input_tokens + output_tokens` over a
+ * run's records, never meet a record without them.
+ */
 export interface SessionTokenUsage {
   input_tokens: number;
   output_tokens: number;
   cache_read_tokens?: number;
   cache_write_tokens?: number;
+  /** The session's main model, from the SDK's system init message. */
+  model?: string;
+  /** Per-model usage, the basis for pricing (model-pricing.ts priceSessionUsage). */
+  by_model?: Record<string, ModelTokenUsage>;
+  num_turns?: number;
+  /** The SDK result's subtype ('success', 'error_max_turns', …). */
+  result_subtype?: string;
+  /** Why the CLI's loop ended ('completed', 'max_turns', 'model_error', …). */
+  terminal_reason?: string;
+  stop_reason?: string | null;
+  /** API requests that ended in a refusal, whether or not the CLI retried them on another model. */
+  refusals?: number;
+  /** Refusals the CLI retried on a fallback model, in the order they happened. */
+  refusal_fallbacks?: RefusalFallbackEvent[];
+  /** The attempt threw before its result: these are streamed totals, and side-call spend is lost. */
+  partial?: boolean;
 }
 
 export type RunTokenUsage = Record<string, SessionTokenUsage>;

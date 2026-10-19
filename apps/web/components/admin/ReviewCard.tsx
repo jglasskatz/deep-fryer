@@ -6,12 +6,27 @@ import Link from 'next/link';
 import { isFlagged, type FindingPayload, type FindingVerification } from '@deep-fryer/core';
 import { approveFindings, flagGap, reResearchDimension } from '@/lib/review-actions';
 import { useAction } from '@/lib/use-action';
+import { unwrap } from '@/lib/action-result';
+import { safeHref } from '@/lib/safe-url';
 
 export interface ReviewFinding {
   id: string;
   indicatorSlug: string;
   payload: FindingPayload;
   verification: FindingVerification | null;
+}
+
+/**
+ * Shown on every finding salvaged from a session's malformed output
+ * (FindingVerification.partial_output): the session may have returned more
+ * findings than were recorded, so the dimension may be missing some. The
+ * finding itself is flagged (core isFlagged) and judged like any other.
+ */
+const PARTIAL_OUTPUT_NOTE =
+  'Partial output: the research session returned malformed JSON and only part of it could be read, so this dimension may be missing findings. Consider re-research.';
+
+function PartialOutputNote() {
+  return <p className="mt-2 rounded bg-red-50 p-2 text-xs text-red-900">{PARTIAL_OUTPUT_NOTE}</p>;
 }
 
 function Badge({ ok, label, title }: { ok: boolean; label: string; title?: string }) {
@@ -62,7 +77,10 @@ export function ReviewCard({
   ).length;
 
   return (
-    <div className="rounded-lg border border-black/15 p-4">
+    // The id is the draft doughnut's link target (admin/draft: a wedge or row
+    // opens its dimension's card, `?run=<run>#review-<dimension id>`); the
+    // scroll margin keeps the card's heading clear of the sticky header.
+    <div id={`review-${dimensionId}`} className="scroll-mt-24 rounded-lg border border-black/15 p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-base font-semibold">
           {dimensionName}
@@ -124,7 +142,7 @@ export function ReviewCard({
           </summary>
           <div className="mt-2 w-80">
             <textarea
-              className="w-full rounded border border-black/20 px-2 py-1"
+              className="w-full rounded border border-field-border px-2 py-1"
               rows={3}
               placeholder="Reviewer notes — injected verbatim into the new session"
               value={notes}
@@ -135,11 +153,13 @@ export function ReviewCard({
               disabled={pending || !notes.trim()}
               onClick={() =>
                 act(async () => {
-                  const { runId: newRun } = await reResearchDimension({
-                    tenantSlug,
-                    dimensionId,
-                    notes,
-                  });
+                  const { runId: newRun } = unwrap(
+                    await reResearchDimension({
+                      tenantSlug,
+                      dimensionId,
+                      notes,
+                    }),
+                  );
                   router.push(`/${tenantSlug}/admin/research/${newRun}`);
                 })
               }
@@ -155,7 +175,7 @@ export function ReviewCard({
           </summary>
           <div className="mt-2 w-80">
             <textarea
-              className="w-full rounded border border-black/20 px-2 py-1"
+              className="w-full rounded border border-field-border px-2 py-1"
               rows={2}
               placeholder="Why no acceptable data exists — published on the gray wedge"
               value={gapReason}
@@ -200,6 +220,7 @@ function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; evidenc
           {payload.tiers_tried?.length ? ` · tiers ${payload.tiers_tried.join(', ')}` : ''}
           {payload.nearest_data ? ` · nearest: ${payload.nearest_data}` : ''}
         </p>
+        {v?.partial_output ? <PartialOutputNote /> : null}
       </div>
     );
   }
@@ -228,6 +249,7 @@ function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; evidenc
                 label={`source ${v.content_supported}`}
                 title={v.verifier_note}
               />
+              {v.partial_output ? <Badge ok={false} label="partial output" title={PARTIAL_OUTPUT_NOTE} /> : null}
             </>
           ) : null}
         </div>
@@ -243,15 +265,22 @@ function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; evidenc
         {payload.scoring.worked_math}
       </p>
       <p className="mt-1 text-xs">
-        <a className="underline" href={payload.source_url} target="_blank" rel="noreferrer">
-          {payload.source}
-        </a>
+        {safeHref(payload.source_url) ? (
+          <a className="underline" href={safeHref(payload.source_url)} target="_blank" rel="noreferrer">
+            {payload.source}
+          </a>
+        ) : (
+          <span title="Source URL is not http(s) and is not linked">
+            {payload.source} <span className="text-red-700">(unlinkable URL)</span>
+          </span>
+        )}
       </p>
       {v?.verifier_note && v.content_supported !== 'pass' ? (
         <p className="mt-2 rounded bg-red-50 p-2 text-xs text-red-900">
           Verifier: {v.verifier_note}
         </p>
       ) : null}
+      {v?.partial_output ? <PartialOutputNote /> : null}
       {payload.notes ? (
         <p className="mt-1 text-xs text-[color:var(--color-muted)]">Session notes: {payload.notes}</p>
       ) : null}

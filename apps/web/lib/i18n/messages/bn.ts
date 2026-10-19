@@ -1,0 +1,641 @@
+import type { Messages } from './en';
+
+/** Bengali (bn) — draft for certified review (docs/language-access.md). */
+export const bn: Messages = {
+  common: {
+    updateAvailable: 'একটি নতুন সংস্করণ পাওয়া যাচ্ছে।',
+    reload: 'আবার লোড করুন',
+    skipToContent: 'মূল বিষয়বস্তুতে যান',
+    breadcrumb: 'পৃষ্ঠার পথ',
+    mainNav: 'প্রধান নেভিগেশন',
+    menu: 'মেনু',
+    accountMenu: 'অ্যাকাউন্ট মেনু',
+    accountAndPortraits: 'অ্যাকাউন্ট ও চিত্র',
+    installApp: 'অ্যাপ ইনস্টল করুন',
+    signOut: 'সাইন আউট করুন',
+    signIn: 'সাইন ইন করুন',
+    back: '← {name}',
+    noData: 'কোনো তথ্য নেই',
+    updated: 'হালনাগাদ: {date}',
+    socialFoundation: 'সামাজিক ভিত্তি',
+    ecologicalCeiling: 'পরিবেশগত ঊর্ধ্বসীমা',
+    admin: 'প্রশাসক',
+  },
+  nav: {
+    progress: 'অগ্রগতি',
+    methodology: 'পদ্ধতি',
+    getInvolved: 'যুক্ত হোন',
+    compare: 'তুলনা',
+    insights: 'বিশ্লেষণ',
+    familyPortraits: '{org}-এর চিত্রসমূহ',
+  },
+  language: {
+    label: 'ভাষা',
+    choose: 'একটি ভাষা বেছে নিন',
+    contentNotice:
+      'পৃষ্ঠার শিরোনাম ও ব্যাখ্যা অনুবাদ করা হয়েছে। গবেষণার ফলাফল, তথ্যসূত্র এবং বাসিন্দাদের মন্তব্য ইংরেজিতে প্রকাশ করা হয়।',
+    help: 'আপনার ভাষায় বিনামূল্যে সহায়তার জন্য যোগাযোগ করুন: {contact}',
+  },
+  doughnut: {
+    chartLabel: 'সামাজিক ভিত্তি ও পরিবেশগত ঊর্ধ্বসীমার ক্ষেত্রগুলোর ডোনাট চার্ট',
+    summary:
+      '{name}: {total}টি ক্ষেত্রের মধ্যে {outside}টি নিরাপদ ও ন্যায্য পরিসরের বাইরে। এরপর প্রতিটি ক্ষেত্রের লিংকের একটি তালিকা রয়েছে।',
+    summaryWithGaps:
+      '{name}: {total}টি ক্ষেত্রের মধ্যে {outside}টি নিরাপদ ও ন্যায্য পরিসরের বাইরে, {gaps}টির তথ্য নেই। এরপর প্রতিটি ক্ষেত্রের লিংকের একটি তালিকা রয়েছে।',
+    portrait: 'ডোনাট চিত্র',
+    dimensionsOf: '{name}-এর ক্ষেত্রসমূহ',
+    dataNeeded: 'তথ্য প্রয়োজন',
+    year: 'বছর: {year}',
+    source: 'সূত্র: {source}',
+    fullPortrait: 'পূর্ণ চিত্র ও আলোচনা',
+    /** The hint under the doughnut's hover tooltip. */
+    clickForDetails: 'বিস্তারিত দেখতে ক্লিক করুন',
+    level: {
+      unknown: 'অজানা',
+      noProblem: 'কোনো সমস্যা নেই',
+      underControl: 'নিয়ন্ত্রণে',
+      onTrack: 'সঠিক পথে',
+      needsAttention: 'মনোযোগ প্রয়োজন',
+      critical: 'সংকটপূর্ণ',
+      severe: 'গুরুতর',
+    },
+  },
+  /** Doughnut Economics dimensions, by framework slug. */
+  dimensions: {
+    food: 'খাদ্য',
+    health: 'স্বাস্থ্য',
+    education: 'শিক্ষা',
+    'income-work': 'আয় ও কাজ',
+    'water-sanitation': 'পানি ও স্যানিটেশন',
+    energy: 'জ্বালানি',
+    networks: 'নেটওয়ার্ক',
+    housing: 'আবাসন',
+    'gender-equality': 'লিঙ্গ সমতা',
+    'social-equity': 'সামাজিক ন্যায্যতা',
+    'political-voice': 'রাজনৈতিক কণ্ঠস্বর',
+    'peace-justice': 'শান্তি ও ন্যায়বিচার',
+    'climate-change': 'জলবায়ু পরিবর্তন',
+    'ocean-acidification': 'সমুদ্রের অম্লীকরণ',
+    'chemical-pollution': 'রাসায়নিক দূষণ',
+    'nitrogen-phosphorus-loading': 'নাইট্রোজেন ও ফসফরাসের ভার',
+    'freshwater-withdrawals': 'মিঠা পানি উত্তোলন',
+    'land-conversion': 'ভূমি রূপান্তর',
+    'biodiversity-loss': 'জীববৈচিত্র্য হ্রাস',
+    'air-pollution': 'বায়ু দূষণ',
+    'ozone-depletion': 'ওজোন স্তরের ক্ষয়',
+  },
+  /**
+   * Geographic scale of a figure. Every use reads "{scale} পর্যায়"
+   * ("… level") or a plain list.
+   */
+  scales: {
+    city: 'শহর',
+    county: 'কাউন্টি',
+    regional: 'আঞ্চলিক',
+    state: 'অঙ্গরাজ্য',
+    national: 'জাতীয়',
+    global: 'বৈশ্বিক',
+  },
+  /**
+   * Nominative forms. Sentences below never attach a case ending to
+   * {noun}/{nouns}: they use "প্রতিটি {noun}", "{noun} অনুযায়ী",
+   * "{nouns} জুড়ে", or {nouns} as a subject.
+   */
+  nouns: {
+    portrait: { singular: 'চিত্র', plural: 'চিত্রগুলো' },
+    borough: { singular: 'বরো', plural: 'বরোগুলো' },
+    district: { singular: 'জেলা', plural: 'জেলাগুলো' },
+    ward: { singular: 'ওয়ার্ড', plural: 'ওয়ার্ডগুলো' },
+    neighborhood: { singular: 'পাড়া', plural: 'পাড়াগুলো' },
+    county: { singular: 'কাউন্টি', plural: 'কাউন্টিগুলো' },
+  },
+  status: {
+    met: 'অর্জিত',
+    on_track: 'সঠিক পথে',
+    off_track: 'পিছিয়ে আছে',
+    improving: 'উন্নতি হচ্ছে',
+    worsening: 'অবনতি হচ্ছে',
+    no_change: 'কোনো পরিবর্তন নেই',
+    baseline_only: 'শুধু ভিত্তিরেখা',
+    no_target: 'লক্ষ্যমাত্রা নেই',
+    no_data: 'কোনো তথ্য নেই',
+  },
+  statusExplainer: {
+    met: 'গৃহীত লক্ষ্যমাত্রায় পৌঁছেছে বা তা ছাড়িয়ে গেছে।',
+    on_track:
+      'ভিত্তিরেখা থেকে নির্ধারিত সময়সীমা পর্যন্ত টানা একটি সরলরেখার গতির সমান বা তার চেয়ে দ্রুত লক্ষ্যমাত্রার দিকে এগোচ্ছে।',
+    off_track: 'উন্নতি হচ্ছে, তবে নির্ধারিত সময়সীমা পূরণে যে গতি প্রয়োজন তার চেয়ে ধীরে।',
+    improving: 'ভিত্তিরেখার তুলনায় লক্ষ্যমাত্রার আরও কাছে (এই লক্ষ্যের কোনো নির্ধারিত সময়সীমা নেই)।',
+    worsening: 'ভিত্তিরেখার তুলনায় লক্ষ্যমাত্রা থেকে আরও দূরে।',
+    baseline_only: 'এখন পর্যন্ত শুধু ভিত্তিরেখার পরিমাপ আছে; পরবর্তী হালনাগাদে প্রবণতা দেখা যাবে।',
+  },
+  portrait: {
+    metaDescription: '{name}-এর ডোনাট চিত্র: সামাজিক ভিত্তি ও পরিবেশগত ঊর্ধ্বসীমা, প্রতিটি সংখ্যার তথ্যসূত্রসহ।',
+    population: 'জনসংখ্যা: {n}',
+    clickHint: 'সূচক, প্রমাণ, করণীয় ও আলোচনা দেখতে একটি অংশ বেছে নিন।',
+    demoHint: 'নমুনা তথ্য — প্রকৃত বিষয়বস্তুর জন্য DATABASE_URL সেট করুন এবং সংস্করণ প্রকাশ করুন।',
+    /** The visible list of dimensions under the doughnut (SPEC-v6 §2.1). */
+    exploreTitle: 'ক্ষেত্রগুলো ঘুরে দেখুন',
+    exploreIntro: 'প্রতিটি ক্ষেত্রে আছে তার তথ্য, তথ্যসূত্র, যুক্ত হওয়ার উপায় এবং আলোচনা।',
+    /** The list's intro when the portrait has no discussion (SPEC-v7 §3). */
+    exploreIntroCore: 'প্রতিটি ক্ষেত্রে আছে তার তথ্য, তথ্যসূত্র এবং আপনি কী করতে পারেন তা।',
+    /** The detail panel beside the doughnut (SPEC-v7 §2) — the Santa Cruz core view. */
+    panelEmpty:
+      'ডোনাটে বা তালিকা থেকে একটি ক্ষেত্র বেছে নিন — তার তথ্য, তথ্যসূত্র এবং আপনি কী করতে পারেন তা দেখতে পাবেন।',
+    panelClose: 'বন্ধ করুন',
+    panelSelected: '{name} দেখানো হচ্ছে',
+    openFull: 'পূর্ণ পৃষ্ঠা খুলুন',
+    openFullDiscussion: 'পূর্ণ পৃষ্ঠা ও আলোচনা খুলুন',
+    moreListings: {
+      one: 'পূর্ণ পৃষ্ঠায় যুক্ত হওয়ার আরও {n}টি উপায়',
+      other: 'পূর্ণ পৃষ্ঠায় যুক্ত হওয়ার আরও {n}টি উপায়',
+    },
+    legendTitle: 'ডোনাটটি কীভাবে পড়বেন',
+    legendSafe: 'সবুজ বলয়: নিরাপদ ও ন্যায্য পরিসর',
+    legendShortfall: 'কেন্দ্রের দিকে লাল: সামাজিক ভিত্তির নিচে ঘাটতি',
+    legendOvershoot: 'বলয়ের বাইরে লাল: পরিবেশগত ঊর্ধ্বসীমা অতিক্রম',
+    legendNoData: 'ধূসর: এখনো কোনো তথ্য নেই',
+  },
+  dimension: {
+    metaDescription: '{name}-এ {dimension}: তথ্য, তথ্যসূত্র এবং আপনি কী করতে পারেন।',
+    updated: 'হালনাগাদ {date}',
+    target: 'লক্ষ্যমাত্রা: {value}',
+    noTarget: 'কোনো লক্ষ্যমাত্রা নির্ধারিত নেই',
+    scaleData: '{scale} পর্যায়ের তথ্য',
+    source: 'সূত্র: {source}',
+    snapshotAlt: '{name}-এর তথ্যসূত্রের সংরক্ষিত কপি, {date} তারিখে নেওয়া',
+    snapshotCaptured: 'তথ্যসূত্রের সংরক্ষিত কপি, {date} তারিখে নেওয়া',
+    originalDocument: 'মূল নথি',
+    dataGap: 'তথ্যের অভাব',
+    searchedAt: 'যে পর্যায়ে খোঁজা হয়েছে: {scales}',
+    whatYouCanDo: 'আপনি যা করতে পারেন',
+    /** Short actions listed after the dimension's involvement listings. */
+    moreYouCanDo: 'আপনি আরও যা করতে পারেন',
+  },
+  discussion: {
+    title: 'আলোচনা',
+    sortTop: 'শীর্ষ',
+    sortNew: 'নতুন',
+    sortLabel: 'মন্তব্য সাজান',
+    placeholder: 'এ বিষয়ে শহরের কী করা উচিত? অনুগ্রহ করে ভদ্রতা বজায় রাখুন এবং বিষয়ের মধ্যে থাকুন।',
+    post: 'পোস্ট করুন',
+    pendingApproval: 'পোস্ট হয়েছে — আপনার প্রথম মন্তব্যটি মডারেটরের অনুমোদনের অপেক্ষায় আছে।',
+    signInToJoin: 'আলোচনায় যোগ দিতে {link}।',
+    empty: 'এখনো কোনো মন্তব্য নেই।',
+    you: 'আপনি',
+    locked: 'লক করা',
+    removed: 'সরানো হয়েছে',
+    removedBody: '[মডারেটররা সরিয়ে দিয়েছেন]',
+    upvote: 'একমত',
+    downvote: 'দ্বিমত',
+    score: 'স্কোর {n}',
+    reply: 'উত্তর দিন',
+    replyLabel: 'আপনার উত্তর',
+    replySubmit: 'উত্তর পাঠান',
+    restore: 'ফিরিয়ে আনুন',
+    remove: 'সরান',
+    lock: 'লক করুন',
+    removeReason: 'সরানোর কারণ (কর্মীদের জন্য প্রকাশ্য লগে লেখা থাকবে):',
+    lockReason: 'এই আলোচনা লক করার কারণ:',
+    /** A first comment held for a moderator (SPEC-v6 §3.1). Shown to its author and to moderators only. */
+    awaitingApproval: 'অনুমোদনের অপেক্ষায়',
+    awaitingNote: 'অনুমোদন না হওয়া পর্যন্ত শুধু আপনি এবং মডারেটররা এটি দেখতে পাবেন।',
+    approve: 'অনুমোদন করুন',
+    decline: 'প্রত্যাখ্যান করুন',
+    /** A held comment moderators did not approve; only its author and the moderators see it. */
+    declined: 'অনুমোদিত হয়নি',
+    declinedNote: 'মডারেটররা এই মন্তব্যটি অনুমোদন করেননি। শুধু আপনি এবং মডারেটররা এটি দেখতে পাবেন।',
+    /** Label beside a comment written by the portrait's team (SPEC-v6 §3.3). */
+    staff: 'কর্মী',
+    staffTitle: 'এই চিত্রের দলের সদস্য',
+  },
+  progress: {
+    metaTitle: 'অগ্রগতি · {name}',
+    metaDescription: 'গৃহীত লক্ষ্যগুলোর বিপরীতে {name}-এর অগ্রগতি।',
+    title: 'অগ্রগতি: {name}',
+    baseline: 'ভিত্তিরেখা:',
+    intro:
+      'লক্ষ্যমাত্রাগুলো হলো এই চিত্রের প্রকাশিত মানদণ্ড — যেখানে গৃহীত স্থানীয় লক্ষ্য আছে সেখানে সেটিই — আর যে লক্ষ্যের নির্ধারিত সময়সীমা আছে, সেখানে ভিত্তিরেখা থেকে ওই তারিখ পর্যন্ত একটি সরল পথের সঙ্গে তুলনা করে অগ্রগতি বিচার করা হয়।',
+    nothingPublished: 'এই চিত্রের জন্য এখনো কিছু প্রকাশিত হয়নি।',
+    summary: 'সারসংক্ষেপ',
+    tracked: 'পর্যবেক্ষণাধীন সূচক',
+    withDueDate: {
+      one: 'এর মধ্যে {n}টির নির্ধারিত সময়সীমা আছে',
+      other: 'এর মধ্যে {n}টির নির্ধারিত সময়সীমা আছে',
+    },
+    statusesMeaning: 'অবস্থাগুলোর অর্থ',
+    gapsTitle: 'যা আমরা এখনো পরিমাপ করতে পারি না',
+    gapsIntro:
+      'তথ্যের অভাব, যা আমরা খোলাখুলি স্বীকার করি: এমন তথ্য যা কোনো সংস্থা এই ভৌগোলিক পর্যায়ে প্রকাশ করে না। প্রতিটি একটি অনুরোধ — তা প্রকাশিত হলে এই চিত্রে সেটি পর্যবেক্ষণ করা যাবে।',
+    openData: 'উন্মুক্ত তথ্য',
+    openDataIntro:
+      'একই সংখ্যাগুলো, যন্ত্রে পাঠযোগ্য আকারে, উন্মুক্ত তথ্য পোর্টাল ও কাউন্সিলের নথির জন্য: {files}।',
+    methodologyLink: 'পদ্ধতি: {link}।',
+    thresholdsAndRationales: 'মানদণ্ড ও তার যৌক্তিকতা',
+    columns: {
+      indicator: 'সূচক',
+      baseline: 'ভিত্তিরেখা',
+      latest: 'সর্বশেষ',
+      target: 'লক্ষ্যমাত্রা',
+      status: 'অবস্থা',
+      trend: 'প্রবণতা',
+    },
+    scaleFigure: '{scale} পর্যায়ের সংখ্যা',
+    earliest: '(সবচেয়ে পুরোনো)',
+    sameAsBaseline: 'ভিত্তিরেখার সমান',
+    byYear: '{year} সালের মধ্যে',
+    needsPerYear: 'বছরে {change} প্রয়োজন',
+    trend: 'প্রবণতা: {points}',
+    trendTarget: 'লক্ষ্যমাত্রা {value}',
+  },
+  methodology: {
+    metaDescription: '{name}-এর চিত্র কীভাবে মাপা হয়: ভৌগোলিক এলাকা, তথ্যসূত্র এবং প্রতিটি লক্ষ্যমাত্রা ও তার যৌক্তিকতা।',
+    title: 'পদ্ধতি',
+    intro:
+      'এই চিত্রটি স্থানীয় পর্যায়ে Doughnut Economics (ডোনাট অর্থনীতি) প্রয়োগের পদ্ধতি অনুসরণ করে: একটি সামাজিক ভিত্তি (এর নিচে থাকা মানে ঘাটতি, যা কেন্দ্রের দিকে আঁকা হয়) এবং একটি পরিবেশগত ঊর্ধ্বসীমা (এটি ছাড়িয়ে যাওয়া মানে সীমা অতিক্রম, যা বাইরের দিকে আঁকা হয়)। প্রতিটি সূচকের একটি সুস্পষ্ট লক্ষ্যমাত্রা ও তার লিখিত যৌক্তিকতা আছে, যা নিচে তালিকাভুক্ত। যেখানে এই চিত্র কাঠামোর নিজস্ব লক্ষ্যমাত্রা থেকে ভিন্ন লক্ষ্যমাত্রা ব্যবহার করে, সেখানে স্থানীয় যৌক্তিকতা দেখানো হয়েছে।',
+    geography: 'ভৌগোলিক এলাকা',
+    sourcePriority: 'তথ্যসূত্রের অগ্রাধিকার',
+    sourcePriorityIntro:
+      'সর্বোচ্চ অগ্রাধিকারের যে স্তর পাওয়া যায় সেখান থেকে তথ্য নেওয়া হয়; উচ্চতর সব স্তর শেষ হলেই কেবল নিম্নতর স্তর ব্যবহার করা হয়।',
+    recency: 'সাম্প্রতিকতা',
+    recencyText: {
+      one: '{n} বছরের বেশি পুরোনো তথ্যকে বর্তমান হিসেবে দেখানোর পরিবর্তে তথ্যের অভাব হিসেবে গণ্য করা হয়।',
+      other: '{n} বছরের বেশি পুরোনো তথ্যকে বর্তমান হিসেবে দেখানোর পরিবর্তে তথ্যের অভাব হিসেবে গণ্য করা হয়।',
+    },
+    targets: 'লক্ষ্যমাত্রা ও যৌক্তিকতা',
+    target: 'লক্ষ্যমাত্রা {value}',
+    localTarget: 'স্থানীয় লক্ষ্যমাত্রা: {rationale}',
+    frameworkDefault: 'কাঠামোর নিজস্ব লক্ষ্যমাত্রা ছিল {target}: {rationale}',
+    lastRefreshed: 'সর্বশেষ হালনাগাদ',
+    contentInEnglish: 'সূচকের নাম ও যৌক্তিকতা ইংরেজিতে প্রকাশ করা হয়।',
+  },
+  outreach: {
+    metaDescription: '{name}-এ যুক্ত হওয়ার উপায় এবং এই তথ্য নিয়ে কাজ করছে যেসব সংগঠন।',
+    title: 'যুক্ত হোন',
+    empty:
+      'চিত্রটি সমৃদ্ধ হওয়ার সঙ্গে সঙ্গে স্থানীয় সংগঠনগুলোর নাম এখানে তালিকাভুক্ত হবে। ইতিমধ্যে, প্রতিটি ক্ষেত্রের পৃষ্ঠায় সুনির্দিষ্ট করণীয় দেওয়া আছে।',
+    intro:
+      'যেসব কর্মসূচি, সংগঠন ও সরকারি প্রতিষ্ঠানে আপনি অংশ নিতে পারেন, সেগুলো ক্ষেত্র অনুযায়ী সাজানো আছে। কোনো কিছু এখানে দেখানোর আগে কর্মীরা তা যাচাই করে নেন।',
+    /** Organizations working on the portrait's data (research contacts), when any are published. */
+    partnersTitle: 'এই তথ্য নিয়ে কাজ করছে যেসব সংগঠন',
+  },
+  /** Ways to get involved and the organization form (SPEC-v6 §4). */
+  involvement: {
+    title: 'কীভাবে যুক্ত হবেন',
+    kind: {
+      volunteer: 'স্বেচ্ছাসেবক হোন',
+      services: 'সহায়তা নিন বা নিবন্ধন করুন',
+      civic: 'আপনার মতামত দিন',
+      organize: 'একটি দলে যোগ দিন',
+      other: 'যুক্ত হোন',
+    },
+    website: 'ওয়েবসাইট',
+    call: '{phone} নম্বরে কল করুন',
+    /** {date} is a formatted date. */
+    checked: 'লিংক যাচাই করা হয়েছে: {date}',
+    forEveryDimension: 'সব ক্ষেত্রের জন্য',
+    filterLabel: 'ক্ষেত্র',
+    filterAll: 'সব ক্ষেত্র',
+    none: 'এই ক্ষেত্রের জন্য এখনো কিছু তালিকাভুক্ত হয়নি।',
+    noneAtAll: 'এখনো কিছু তালিকাভুক্ত হয়নি।',
+    contentInEnglish: 'এই তালিকা কর্মীরা লেখেন এবং তা ইংরেজিতে প্রকাশ করা হয়।',
+    formTitle: 'যুক্ত হওয়ার কোনো উপায় জানেন?',
+    /** On a dimension page; {dimension} is the dimension's name. */
+    formIntro:
+      'আপনার সংগঠন কি মানুষের জন্য {dimension} বিষয়ে যুক্ত হওয়ার একটি ভালো উপায়? নাকি আপনার কোনো পরামর্শ আছে? কর্মীদের জানান — কিছু প্রকাশ করার আগে তাঁরা জমা পড়া সবকিছু যাচাই করেন।',
+    formIntroGeneral:
+      'আপনার সংগঠন কি মানুষের জন্য যুক্ত হওয়ার একটি ভালো উপায়? নাকি আপনার কোনো পরামর্শ আছে? কর্মীদের জানান — কিছু প্রকাশ করার আগে তাঁরা জমা পড়া সবকিছু যাচাই করেন।',
+    open: 'যুক্ত হওয়ার একটি উপায়ের প্রস্তাব দিন',
+    kindLegend: 'আপনি কী জানাতে চান?',
+    kindListing: 'আমার সংগঠন যুক্ত হওয়ার একটি উপায়',
+    kindSuggestion: 'মানুষ কীভাবে যুক্ত হতে পারে, সে বিষয়ে একটি পরামর্শ',
+    dimensionLabel: 'ক্ষেত্র',
+    dimensionAny: 'একাধিক, অথবা নিশ্চিত নই',
+    orgName: 'সংগঠন বা দলের নাম',
+    about: 'আপনার পরিচয়',
+    aboutHint: 'আপনার সংগঠন কী করে এবং কাদের সেবা দেয়।',
+    pitchListing: 'এটি কেন মানুষের যুক্ত হওয়ার একটি ভালো উপায়?',
+    pitchListingHint: 'মানুষ আপনাদের সঙ্গে কী করতে পারে — স্বেচ্ছাসেবা, সদস্য হওয়া, অনুষ্ঠানে অংশ নেওয়া, সহায়তা নেওয়া?',
+    pitchSuggestion: 'আপনার পরামর্শ',
+    pitchSuggestionHint: 'মানুষ কীভাবে এতে যুক্ত হতে পারে?',
+    websiteLabel: 'ওয়েবসাইট',
+    contactLegend: 'কর্মীরা কীভাবে আপনার সঙ্গে যোগাযোগ করবেন',
+    contactName: 'আপনার নাম',
+    email: 'ইমেইল',
+    phone: 'ফোন',
+    optional: '(ঐচ্ছিক)',
+    privacy: 'আপনার যোগাযোগের তথ্য শুধু কর্মীদের কাছে যায় এবং কখনো প্রকাশ করা হয় না।',
+    send: 'কর্মীদের কাছে পাঠান',
+    sending: 'পাঠানো হচ্ছে…',
+    thanks:
+      'ধন্যবাদ। কর্মীরা জমা পড়া সবকিছু যাচাই করেন। উপযুক্ত হলে এটি এই পৃষ্ঠায় দেখা যাবে, এবং তাঁরা হয়তো আগে আপনার সঙ্গে যোগাযোগ করবেন।',
+    sendAnother: 'আরেকটি পাঠান',
+    /** Above the form when fields need fixing; each field also shows its own message. */
+    invalid: 'অনুগ্রহ করে নিচে চিহ্নিত ঘরগুলো দেখুন।',
+    websiteInvalid: 'https:// দিয়ে শুরু করে সম্পূর্ণ ওয়েব ঠিকানা লিখুন — যেমন https://example.org।',
+    phoneInvalid:
+      'শুধু সংখ্যা ও প্রচলিত বিভাজক চিহ্ন ব্যবহার করুন, যেমন (212) 555-0100 — কোনো এক্সটেনশন বা অন্য শব্দ ছাড়া।',
+    tooFast: 'খুব তাড়াতাড়ি পাঠানো হয়েছে। অনুগ্রহ করে একটু অপেক্ষা করে আবার পাঠান।',
+    rateLimited: 'আজ এখান থেকে অনেক বেশিবার পাঠানো হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।',
+    expired: 'এই ফর্মের মেয়াদ শেষ হয়ে গেছে। পৃষ্ঠাটি আবার লোড করে আবার চেষ্টা করুন।',
+    failed: 'আমরা এটি পাঠাতে পারিনি। অনুগ্রহ করে আবার চেষ্টা করুন।',
+  },
+  /**
+   * Asking for a portrait in another language while its translation is off
+   * (SPEC-v7 §3.5). Shown in the reader's preferred language even though the
+   * page itself is English. {language} is a language's own name (Español).
+   */
+  translationRequest: {
+    button: 'অনুবাদের অনুরোধ করুন',
+    intro:
+      'এই চিত্রটি ইংরেজিতে প্রকাশিত। আপনার কোন ভাষা প্রয়োজন তা কর্মীদের জানান — প্রতিটি ভাষার জন্য কতজন পাঠক অনুরোধ করছেন, তা তাঁরা দেখতে পান।',
+    language: 'ভাষা',
+    send: 'অনুরোধ পাঠান',
+    sending: 'পাঠানো হচ্ছে…',
+    sent: 'ধন্যবাদ। কর্মীরা দেখতে পাবেন যে একজন পাঠক {language} ভাষায় অনুবাদ চেয়েছেন।',
+    limited:
+      'গত এক ঘণ্টায় এই নেটওয়ার্ক থেকে অনেক বেশি অনুরোধ এসেছে, তাই এই অনুরোধটি নথিভুক্ত হয়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।',
+    notNeeded: 'এই চিত্রটি এইমাত্র অনুবাদ করা হয়েছে। আপনার ভাষা বেছে নিতে পৃষ্ঠাটি আবার লোড করুন।',
+    failed: 'আমরা এটি পাঠাতে পারিনি। অনুগ্রহ করে আবার চেষ্টা করুন।',
+  },
+  /** The sign-in page (SPEC-v6 §2.2). */
+  login: {
+    title: 'সাইন ইন করুন',
+    intro: 'বাসিন্দারা কোনো চিত্রের আলোচনায় যোগ দিতে সাইন ইন করেন। শহরের কর্মীরা তাঁদের অফিসের অ্যাকাউন্ট ব্যবহার করেন।',
+    /** Replaces `intro` when the person is on the way to setting up their city's portrait (/start): city staff, not residents. */
+    startIntro: 'আপনার শহরের ডোনাট তৈরি করতে সাইন ইন করুন — আপনার অফিসের ইমেইল ব্যবহার করুন।',
+    microsoft: 'Microsoft দিয়ে চালিয়ে যান (অফিসের অ্যাকাউন্ট)',
+    google: 'Google দিয়ে চালিয়ে যান',
+    emailLabel: 'আমাকে ইমেইলে একটি সাইন ইন লিংক পাঠান',
+    emailPlaceholder: 'you@example.org',
+    send: 'লিংক পাঠান',
+    sending: 'পাঠানো হচ্ছে…',
+    noMethods: 'এই সার্ভারে সাইন ইন করার কোনো পদ্ধতি চালু করা নেই।',
+    /** {link} is the "start a portrait" link. */
+    newHere: 'আপনি কি শহরের কর্মী? সাইন ইন করার পর {link}।',
+    startLink: 'আপনার প্রশাসনিক এলাকার জন্য একটি চিত্র শুরু করুন',
+    checkTitle: 'আপনার ইমেইল দেখুন',
+    checkBody:
+      'আপনার দেওয়া ঠিকানায় আমরা একটি সাইন ইন লিংক পাঠিয়েছি। এটি একবারই কাজ করবে এবং 15 মিনিট পর এর মেয়াদ শেষ হয়ে যাবে।',
+    checkHelp: 'কয়েক মিনিট পরও পাননি? আপনার স্প্যাম ফোল্ডার দেখুন, অথবা আরেকটি লিংক পাঠান।',
+    sendAnother: 'আরেকটি লিংক পাঠান',
+    errors: {
+      OAuthAccountNotLinked:
+        'এই ইমেইল দিয়ে আগে অন্য উপায়ে সাইন ইন করা হয়েছে। আগে যে পদ্ধতি ব্যবহার করেছিলেন সেটি (অথবা ইমেইল লিংক) ব্যবহার করুন, তারপর আপনার অ্যাকাউন্টের পৃষ্ঠা থেকে সাইন ইনের এই পদ্ধতিটি যুক্ত করুন।',
+      Verification: 'এই সাইন ইন লিংকের মেয়াদ শেষ হয়ে গেছে অথবা এটি আগেই ব্যবহার করা হয়েছে। নতুন একটি লিংক চেয়ে নিন।',
+      AccessDenied: 'সাইন ইন করার অনুমতি দেওয়া হয়নি।',
+      Configuration: 'এই সার্ভারে সাইন ইনের সেটিংসে সমস্যা আছে। সাইটের প্রশাসকের সঙ্গে যোগাযোগ করুন।',
+      EmailSignin: 'আমরা সাইন ইন ইমেইল পাঠাতে পারিনি। ঠিকানাটি যাচাই করে কয়েক মিনিট পর আবার চেষ্টা করুন।',
+      /** Nothing was sent: this address already has three unused sign-in links from the last 15 minutes. */
+      TooManyLinks:
+        'গত 15 মিনিটে আমরা এই ঠিকানায় ইতিমধ্যে কয়েকটি সাইন ইন লিংক পাঠিয়েছি। সবচেয়ে নতুন লিংকটি ব্যবহার করুন, অথবা 15 মিনিট পর আবার চেষ্টা করুন।',
+      /** Nothing was sent: this network has asked for its hourly share of sign-in emails (shared Wi-Fi counts as one). */
+      TooManyEmails:
+        'এই নেটওয়ার্ক থেকে অনেক বেশি সাইন ইন ইমেইলের অনুরোধ করা হয়েছে, তাই এটি পাঠানো হয়নি। অনুগ্রহ করে এক ঘণ্টা পর আবার চেষ্টা করুন।',
+      default: 'সাইন ইন করা যায়নি। আবার চেষ্টা করুন।',
+    },
+  },
+  org: {
+    portraitCount: { one: '{n}টি চিত্র', other: '{n}টি চিত্র' },
+    portraits: 'চিত্রসমূহ',
+    nothingPublished: 'এখনো কিছু প্রকাশিত হয়নি',
+    outsideSafeSpace: {
+      one: '{total}টি ক্ষেত্রের মধ্যে {n}টি নিরাপদ পরিসরের বাইরে',
+      other: '{total}টি ক্ষেত্রের মধ্যে {n}টি নিরাপদ পরিসরের বাইরে',
+    },
+    dataGaps: { one: '{n}টি ক্ষেত্রে তথ্যের অভাব', other: '{n}টি ক্ষেত্রে তথ্যের অভাব' },
+  },
+  compare: {
+    metaTitle: 'তুলনা · {org}',
+    titleJurisdiction: '{n}টি ডোনাট, একটি প্রশাসনিক এলাকা: {org}',
+    titleFamily: '{n}টি ডোনাট, একটি গোষ্ঠী: {org}',
+    introJurisdiction:
+      'একই সামাজিক ভিত্তি ও পরিবেশগত ঊর্ধ্বসীমা, {n} বার পরিমাপ করা হয়েছে — পুরো প্রশাসনিক এলাকা এবং প্রতিটি {noun} — গৃহীত স্থানীয় লক্ষ্যের ভিত্তিতে নির্ধারিত অভিন্ন মানদণ্ডে। বাইরের দিকে যাওয়া অংশগুলো ঊর্ধ্বসীমা অতিক্রম করে; ভেতরের দিকে যাওয়া অংশগুলো ভিত্তির চেয়ে পিছিয়ে থাকে; ধূসর রং মানে তথ্যের অভাব, যা আমরা খোলাখুলি দেখাই।',
+    introFamily:
+      'একই সামাজিক ভিত্তি ও পরিবেশগত ঊর্ধ্বসীমা, গৃহীত স্থানীয় লক্ষ্যের ভিত্তিতে নির্ধারিত অভিন্ন মানদণ্ডে {n} বার পরিমাপ করা হয়েছে। বাইরের দিকে যাওয়া অংশগুলো ঊর্ধ্বসীমা অতিক্রম করে; ভেতরের দিকে যাওয়া অংশগুলো ভিত্তির চেয়ে পিছিয়ে থাকে; ধূসর রং মানে তথ্যের অভাব, যা আমরা খোলাখুলি দেখাই।',
+    wedgesOutside: '{n}/{total}টি অংশ নিরাপদ পরিসরের বাইরে',
+    divergeTitle: '{nouns} কোথায় সবচেয়ে বেশি আলাদা',
+    divergeIntro:
+      '{nouns} জুড়ে প্রকাশিত সূচকগুলোর তুলনা; সবচেয়ে ভালো ও সবচেয়ে খারাপ অবস্থানে থাকা {noun} — এই দুইয়ের ব্যবধান অনুযায়ী সাজানো।',
+    wholeColumn: 'পুরো প্রশাসনিক এলাকার কলামটি নিজস্ব প্রকাশিত সংখ্যা, কোনো গড় নয়।',
+    indicator: 'সূচক',
+    spread: 'ব্যবধান',
+    legend:
+      'প্রতিটি সারিতে: লাল = লক্ষ্যমাত্রা থেকে সবচেয়ে দূরের {noun}, সবুজ = সবচেয়ে কাছের। পুরো প্রশাসনিক এলাকার জন্য একক সূচকগুলো ({nouns} জুড়ে অভিন্ন) স্বাভাবিকভাবেই এই সারণিতে আসে না।',
+  },
+  insights: {
+    metaTitle: 'বিশ্লেষণ · {org}',
+    title: '{noun} অনুযায়ী বিশ্লেষণ · {org}',
+    intro:
+      'প্রতিটি ক্ষেত্র, প্রতিটি {noun}, একটি সারণিতে — একই মানদণ্ডে পরিমাপ করা, যা গৃহীত স্থানীয় লক্ষ্যের ভিত্তিতে নির্ধারিত। বিস্তারিত তুলনা এবং প্রতিটি সংখ্যার পেছনের গবেষণা দেখতে একটি ক্ষেত্র বেছে নিন।',
+    biggestDivides: 'সবচেয়ে বড় ব্যবধান',
+    insideSafeZone: 'নিরাপদ পরিসরের ভেতরে',
+    beyondBoundary: 'সীমার {n} বাইরে',
+    divide: '{worst} {worstState}, অথচ {best} {bestState}।',
+    matrix: 'সারণি',
+    matrixIntro:
+      'সবুজ = নিরাপদ পরিসরের ভেতরে, লাল = ঘাটতি বা সীমা অতিক্রম (যত গাঢ়, তত বাইরে), ধূসর = তথ্যের অভাব। বিস্তারিত তুলনা দেখতে একটি সারি বেছে নিন।',
+    dimension: 'ক্ষেত্র',
+    noData: 'কোনো তথ্য নেই',
+    unrolled: '{name} — বিস্তারিত তুলনা',
+    dataGap: 'তথ্যের অভাব',
+    barsExplainer:
+      'বারগুলো সীমা (খাড়া রেখা) থেকে দূরত্ব দেখায়: বাঁয়ে ও সবুজ মানে নিরাপদ পরিসরের ভেতরে, ডানে ও লাল মানে ঘাটতি বা সীমা অতিক্রম, ডোনাটের −100…150 স্কেলে।',
+    researchBehind: 'এর পেছনের গবেষণা',
+    fullDrilldown: 'সম্পূর্ণ বিস্তারিত →',
+    yearNA: 'বছর জানা নেই',
+    tier: 'স্তর {n}',
+    confidence: 'আস্থা: {value}',
+    confidenceLevels: { high: 'উচ্চ', medium: 'মাঝারি', low: 'নিম্ন' },
+    evidence: 'প্রমাণ',
+    workedMath: 'হিসাবের বিস্তারিত',
+    gapLabel: '{indicator}: তথ্যের অভাব',
+    fullSearchTrail: '(সম্পূর্ণ অনুসন্ধানের বিবরণ)',
+    selectPrompt:
+      '{nouns} জুড়ে বিস্তারিত তুলনা দেখতে এবং তথ্যসূত্র, প্রমাণ ও স্কোরিং যাচাই করতে ওপরের একটি ক্ষেত্র বেছে নিন।',
+  },
+  familyProgress: {
+    metaTitle: 'অগ্রগতি · {org}',
+    title: '{org} জুড়ে অগ্রগতি',
+    introOne: 'চিত্রটির প্রতিটি গৃহীত লক্ষ্য, একটি অভিন্ন ভিত্তিরেখা থেকে পরিমাপ করা: {baseline}।',
+    introMany: 'প্রতিটি গৃহীত লক্ষ্য, {noun} অনুযায়ী, একটি অভিন্ন ভিত্তিরেখা থেকে পরিমাপ করা: {baseline}।',
+    summaryByPortrait: 'চিত্র অনুযায়ী সারসংক্ষেপ',
+    onCourse: { one: '{n}টি সঠিক পথে', other: '{n}টি সঠিক পথে' },
+    slipping: { one: '{n}টি পিছিয়ে পড়ছে', other: '{n}টি পিছিয়ে পড়ছে' },
+    baselineOnly: { one: '{n}টির শুধু ভিত্তিরেখা আছে', other: '{n}টির শুধু ভিত্তিরেখা আছে' },
+    matrixTitle: '{noun} অনুযায়ী লক্ষ্য',
+    goal: 'লক্ষ্য',
+    target: 'লক্ষ্যমাত্রা {value}',
+    targetBy: '{year} সালের মধ্যে লক্ষ্যমাত্রা {value}',
+    nothingPublished: 'এখনো কিছু প্রকাশিত হয়নি।',
+  },
+  notFound: {
+    title: 'পৃষ্ঠাটি পাওয়া যায়নি',
+    body: 'এই ঠিকানায় কোনো চিত্র বা পৃষ্ঠা নেই। এটি হয়তো সরানো হয়েছে, অথবা চিত্রটি এখনো প্রকাশিত হয়নি।',
+    home: 'মূল পাতায় যান',
+  },
+  /** Emergency view (SPEC-v5 §3): official alerts, threats by risk, plans, help. */
+  emergency: {
+    navLabel: 'জরুরি পরিস্থিতি',
+    metaTitle: 'জরুরি পরিস্থিতি · {name}',
+    title: 'জরুরি পরিস্থিতি ও দুর্যোগ: {name}',
+    intro:
+      'সরকারি সতর্কবার্তা, এই এলাকা যেসব হুমকির মুখে আছে, ইতিমধ্যে গৃহীত পরিকল্পনা, এবং কোথায় সহায়তা পাবেন।',
+    empty: 'এই চিত্রে এখনো জরুরি পরিস্থিতি-সংক্রান্ত তথ্য প্রকাশ করা হয়নি।',
+    alertsTitle: 'চলমান সতর্কবার্তা',
+    alertsNone: 'সর্বশেষ যাচাই ({time}) অনুযায়ী এই এলাকার জন্য আবহাওয়ার কোনো চলমান সতর্কবার্তা নেই।',
+    alertsChecked: 'সর্বশেষ যাচাই: {time}।',
+    alertsStale:
+      'সম্প্রতি আমরা সতর্কবার্তার সরকারি উৎসের সঙ্গে সংযোগ করতে পারিনি। সরাসরি ন্যাশনাল ওয়েদার সার্ভিস দেখুন।',
+    alertsSavedCopy:
+      'এটি পৃষ্ঠাটির একটি সংরক্ষিত কপি। সতর্কবার্তা সর্বশেষ যাচাই করা হয়েছিল: {time}; এরপর এগুলো বদলে থাকতে পারে। সরাসরি ন্যাশনাল ওয়েদার সার্ভিস দেখুন।',
+    alertsNotConfigured: 'এই চিত্রের জন্য সরকারি সতর্কবার্তা এখনো চালু করা হয়নি।',
+    alertsOriginal: 'সতর্কবার্তাগুলো ঠিক যেভাবে জারি করা হয়েছে, সেভাবেই ইংরেজিতে দেখানো হয়।',
+    alertSource: 'জারি করেছে: {source}',
+    alertWindow: '{start} থেকে {end} পর্যন্ত',
+    alertFrom: '{start} থেকে',
+    alertInstructions: 'করণীয়',
+    alertDetails: 'সতর্কবার্তার পূর্ণ বিবরণ',
+    alertLink: 'সরকারি সতর্কবার্তা',
+    alertEnded: 'শেষ হয়েছে',
+    severity: {
+      Extreme: 'অতি তীব্র',
+      Severe: 'তীব্র',
+      Moderate: 'মাঝারি',
+      Minor: 'মৃদু',
+      Unknown: 'তীব্রতা অজানা',
+    },
+    getAlerts: 'সরকারি সতর্কবার্তা পান',
+    emergencyCall: 'জরুরি প্রয়োজনে {phone} নম্বরে কল করুন।',
+    infoCall: 'জরুরি নয় এমন সহায়তার জন্য {phone} নম্বরে কল করুন।',
+    threatsTitle: 'ঝুঁকি অনুযায়ী হুমকি',
+    threatsIntro:
+      'প্রতিটি হুমকির সম্ভাবনা কতটা এবং তা কতটা গুরুতর হতে পারে — শহরের কর্মীদের মূল্যায়ন অনুযায়ী — এবং এটি ডোনাটের কোন কোন ক্ষেত্রকে ঝুঁকিতে ফেলে।',
+    likelihood: 'সম্ভাবনা: 5-এর মধ্যে {n}',
+    severityRating: 'তীব্রতা: 5-এর মধ্যে {n}',
+    risk: {
+      low: 'কম ঝুঁকি',
+      moderate: 'মাঝারি ঝুঁকি',
+      high: 'উচ্চ ঝুঁকি',
+      very_high: 'অতি উচ্চ ঝুঁকি',
+    },
+    activeNow: 'সতর্কবার্তা এখন চলমান',
+    threatens: 'ঝুঁকিতে থাকা ক্ষেত্র:',
+    dimensionImpact: '{dimension} ({impact})',
+    impactLevel: {
+      low: 'কম প্রভাব',
+      moderate: 'মাঝারি প্রভাব',
+      high: 'বেশি প্রভাব',
+    },
+    hazardKind: {
+      coastal_storm: 'উপকূলীয় ঝড়',
+      flooding: 'বন্যা',
+      extreme_heat: 'চরম তাপ',
+      winter_weather: 'শীতকালীন বৈরী আবহাওয়া',
+      high_winds: 'প্রবল বাতাস',
+      air_quality: 'খারাপ বায়ুমান',
+      drought: 'খরা',
+      wildfire: 'দাবানল',
+      earthquake: 'ভূমিকম্প',
+      infectious_disease: 'সংক্রামক রোগ',
+      infrastructure_failure: 'অবকাঠামোগত বিপর্যয়',
+      other: 'অন্যান্য হুমকি',
+    },
+    showOnDoughnut: 'ডোনাটে দেখান',
+    doughnutNow: 'আজ',
+    doughnutThreat: 'ঝুঁকির কারণ: {hazard}',
+    doughnutLabel: 'ঝুঁকিতে থাকা ক্ষেত্রগুলো চিহ্নিত করা ডোনাট চিত্র — ঝুঁকির কারণ: {hazard}',
+    doughnutControls: 'ডোনাট প্রদর্শন',
+    play: 'চালান',
+    pause: 'থামান',
+    relatedPlans: 'এই হুমকির জন্য পরিকল্পনা:',
+    plansTitle: 'ইতিমধ্যে গৃহীত পরিকল্পনা',
+    plansIntro: 'এই হুমকিগুলো মোকাবিলায় শহর যেসব পরিকল্পনা গ্রহণ করেছে: শহর কী কী করার অঙ্গীকার করেছে।',
+    planBy: '{agency}, {year}',
+    planAgency: '{agency}',
+    planLanguages: 'আরও যেসব ভাষায় প্রকাশিত: {languages}',
+    readPlan: 'পরিকল্পনাটি পড়ুন',
+    helpTitle: 'সাহায্য ও পারস্পরিক সহায়তা',
+    helpIntro: 'জরুরি পরিস্থিতিতে সাহায্য করে এমন স্থান ও সংগঠন।',
+    resourceKind: {
+      cooling_center: 'কুলিং সেন্টার',
+      shelter: 'আশ্রয়কেন্দ্র',
+      hotline: 'হটলাইন',
+      mutual_aid: 'পারস্পরিক সহায়তা',
+      food: 'খাদ্য সহায়তা',
+      medical: 'চিকিৎসাসেবা',
+      other: 'অন্যান্য সহায়তা',
+    },
+    call: '{phone} নম্বরে কল করুন',
+    website: 'ওয়েবসাইট',
+    offlineTitle: 'অফলাইনে ব্যবহারের জন্য পৃষ্ঠাটি রেখে দিন',
+    offlineBody:
+      'নেটওয়ার্ক বন্ধ হয়ে গেলেও যাতে পৃষ্ঠাটি সংযোগ ছাড়াই খোলে, সেজন্য এটি সংরক্ষণ করুন।',
+    offlineSave: 'অফলাইনের জন্য সংরক্ষণ করুন',
+    offlineSaved:
+      'সংরক্ষিত হয়েছে। এই পৃষ্ঠাটি সংযোগ ছাড়াই খুলবে। সংরক্ষিত কপি নিজে থেকে হালনাগাদ হয় না: এতে থাকা সতর্কবার্তা সেই সময়ের, যখন আপনি সর্বশেষ অনলাইনে পৃষ্ঠাটি খুলেছিলেন।',
+    offlineUnavailable: 'এই ব্রাউজার অফলাইনে ব্যবহারের জন্য পৃষ্ঠা সংরক্ষণ করতে পারে না।',
+    offlineSaving: 'সংরক্ষণ করা হচ্ছে…',
+    offlineFailed: 'পৃষ্ঠাটি সংরক্ষণ করা যায়নি। ইন্টারনেট সংযোগ থাকা অবস্থায় আবার চেষ্টা করুন।',
+    offlineUpdate:
+      'এই অ্যাপের একটি হালনাগাদ অপেক্ষমাণ আছে; সেটি চালু না হওয়া পর্যন্ত পৃষ্ঠা সংরক্ষণ করা যাবে না। পৃষ্ঠাটি আবার লোড করুন, তারপর আবার চেষ্টা করুন।',
+    offlineSignedIn:
+      'আপনি সাইন আউট থাকলেই কেবল এই ডিভাইসে পৃষ্ঠা সংরক্ষণ করা হয়, যাতে একাধিক জনের ব্যবহৃত কম্পিউটারে আপনার অ্যাকাউন্ট গোপন থাকে।',
+    metaDescription: '{name}-এর জন্য সরকারি সতর্কবার্তা, হুমকি, পরিকল্পনা ও সহায়তা।',
+    contentInEnglish:
+      'হুমকি, পরিকল্পনা ও সহায়তার তালিকা কর্মীরা লেখেন এবং তা ইংরেজিতে প্রকাশ করা হয়। সতর্কবার্তাগুলো ন্যাশনাল ওয়েদার সার্ভিস (National Weather Service) যেভাবে জারি করেছে, সেভাবেই দেখানো হয়।',
+    alertArea: 'এলাকা: {areas}',
+    alertRelated: 'সংশ্লিষ্ট হুমকি: {hazard}',
+    signupLink: 'সরকারি সতর্কবার্তার জন্য নিবন্ধন করুন',
+    signupNamed: '{name} সেবায় নিবন্ধন করুন',
+    resourceHazards: 'যেসব হুমকিতে সহায়ক:',
+    doughnutLegend: 'ডোনাটের রংগুলোর অর্থ:',
+  },
+  /** The site footer, on every page but embeds (components/site-footer/SiteFooter.tsx). */
+  footer: {
+    /** The footer's navigation landmark. */
+    label: 'এই সাইট সম্পর্কে',
+    /** {email} is the support address of whoever runs this site, as a link. */
+    contact: 'যোগাযোগ: {email}',
+    accessibility: 'প্রবেশগম্যতা',
+    privacy: 'গোপনীয়তা',
+    terms: 'ব্যবহারের শর্তাবলি',
+    /**
+     * The Doughnut's attribution (docs/OPEN-SOURCE.md §3.3), also under every
+     * embedded doughnut. {license} is the license's name as a link; {book}
+     * and {method} are the English titles of the book and the method guide.
+     * Keep all three, and keep the people's and the organization's names.
+     */
+    credit:
+      'ডোনাট ডায়াগ্রাম: Kate Raworth ও Christian Guthier, {license}, স্থানীয় তথ্য দিয়ে অভিযোজিত (Raworth, {book}, 2017)। শহর-চিত্রের পদ্ধতি Doughnut Economics Action Lab-এর {method} অনুসারে। এই সাইটটি Doughnut Economics Action Lab-এর সঙ্গে যুক্ত নয় এবং তাদের দ্বারা সমর্থিতও নয়।',
+  },
+  /**
+   * On a portrait seeded with synthetic values (scripts/seed-demo-data.ts):
+   * its page, its dimension pages, its embed, its organization's compare,
+   * insights and progress pages, so a screenshot cannot pass for research.
+   */
+  sampleData: {
+    title: 'নমুনা তথ্য — গবেষণার ফল নয়',
+    /** A portrait's own pages and its embed; {name} is the portrait. */
+    body: 'এই সাইটে {name}-এর সংখ্যাগুলো সফটওয়্যারটি প্রদর্শনের জন্য তৈরি করা হয়েছে। এগুলো কোনো পরিমাপ নয় এবং এগুলো উদ্ধৃত করা যাবে না।',
+    /** An organization's pages, when any portrait shown there is seeded; {org} is the organization. */
+    bodyOrg:
+      'এই পৃষ্ঠায় {org}-এর কিছু বা সব সংখ্যা সফটওয়্যারটি প্রদর্শনের জন্য তৈরি করা হয়েছে। এগুলো কোনো পরিমাপ নয় এবং এগুলো উদ্ধৃত করা যাবে না।',
+  },
+  /** Theme toggle and the fryer (SPEC-v5 §4). */
+  theme: {
+    label: 'থিম',
+    /** The toggle's accessible name, and the status message after a flip. */
+    toggle: 'থিম: {mode}',
+    /** The toggle's description and hover title. {system} is the "Match device" item's label. */
+    hint: 'হালকা ও গাঢ় থিমের মধ্যে বদল করে। “{system}” ও আরও বিকল্পের জন্য চেপে ধরে রাখুন, রাইট-ক্লিক করুন, অথবা Shift+F10 চাপুন।',
+    light: 'হালকা',
+    dark: 'গাঢ়',
+    system: 'ডিভাইস অনুযায়ী',
+    menu: 'থিমের বিকল্প',
+    deepFry: 'পৃষ্ঠাটি ডুবো তেলে ভাজুন',
+    unfry: 'পৃষ্ঠাটি আবার কাঁচা করুন',
+    fried: 'পৃষ্ঠাটি ডুবো তেলে ভাজা হয়েছে। আগের অবস্থায় ফেরাতে “পৃষ্ঠাটি আবার কাঁচা করুন” বেছে নিন।',
+    unfried: 'পৃষ্ঠাটি আগের অবস্থায় ফিরেছে।',
+  },
+};

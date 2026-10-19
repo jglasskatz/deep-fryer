@@ -1,0 +1,700 @@
+import type { Messages } from './en';
+
+/** Arabic (ar) — draft for certified review (docs/language-access.md). */
+export const ar: Messages = {
+  common: {
+    updateAvailable: 'يتوفر إصدار جديد.',
+    reload: 'إعادة التحميل',
+    skipToContent: 'الانتقال إلى المحتوى',
+    breadcrumb: 'مسار التنقل',
+    mainNav: 'التنقل الرئيسي',
+    menu: 'القائمة',
+    accountMenu: 'قائمة الحساب',
+    accountAndPortraits: 'الحساب والصور',
+    installApp: 'تثبيت التطبيق',
+    signOut: 'تسجيل الخروج',
+    signIn: 'تسجيل الدخول',
+    back: '→ {name}',
+    noData: 'لا توجد بيانات',
+    updated: 'آخر تحديث: {date}',
+    socialFoundation: 'الأساس الاجتماعي',
+    ecologicalCeiling: 'السقف البيئي',
+    admin: 'الإدارة',
+  },
+  nav: {
+    progress: 'التقدم',
+    methodology: 'المنهجية',
+    getInvolved: 'شاركوا',
+    compare: 'المقارنة',
+    insights: 'رؤى',
+    familyPortraits: 'صور {org}',
+  },
+  language: {
+    label: 'اللغة',
+    choose: 'اختيار اللغة',
+    contentNotice:
+      'عناوين الصفحات والشروح مترجمة. أما نتائج الأبحاث والمصادر وتعليقات السكان فتُنشر باللغة الإنجليزية.',
+    help: 'للحصول على مساعدة مجانية بلغتكم، يُرجى التواصل مع: {contact}',
+  },
+  doughnut: {
+    chartLabel: 'مخطط دونات لأبعاد الأساس الاجتماعي والسقف البيئي',
+    summary:
+      '{name}: عدد الأبعاد الواقعة خارج المساحة الآمنة والعادلة {outside} من أصل {total}. تليها قائمة بروابط إلى كل بُعد.',
+    summaryWithGaps:
+      '{name}: عدد الأبعاد الواقعة خارج المساحة الآمنة والعادلة {outside} من أصل {total}، ولا تتوفر بيانات عن {gaps} منها. تليها قائمة بروابط إلى كل بُعد.',
+    portrait: 'صورة الدونات',
+    dimensionsOf: 'أبعاد {name}',
+    dataNeeded: 'البيانات مطلوبة',
+    year: 'السنة: {year}',
+    source: 'المصدر: {source}',
+    fullPortrait: 'الصورة الكاملة والنقاش',
+    /** The hint under the doughnut's hover tooltip. */
+    clickForDetails: 'انقروا لعرض التفاصيل',
+    level: {
+      unknown: 'غير معروف',
+      noProblem: 'لا توجد مشكلة',
+      underControl: 'تحت السيطرة',
+      onTrack: 'على المسار الصحيح',
+      needsAttention: 'يحتاج إلى اهتمام',
+      critical: 'حرج',
+      severe: 'شديد',
+    },
+  },
+  /** Doughnut Economics dimensions, by framework slug. */
+  dimensions: {
+    food: 'الغذاء',
+    health: 'الصحة',
+    education: 'التعليم',
+    'income-work': 'الدخل والعمل',
+    'water-sanitation': 'المياه والصرف الصحي',
+    energy: 'الطاقة',
+    networks: 'الشبكات',
+    housing: 'السكن',
+    'gender-equality': 'المساواة بين الجنسين',
+    'social-equity': 'الإنصاف الاجتماعي',
+    'political-voice': 'الصوت السياسي',
+    'peace-justice': 'السلام والعدالة',
+    'climate-change': 'تغيّر المناخ',
+    'ocean-acidification': 'تحمّض المحيطات',
+    'chemical-pollution': 'التلوث الكيميائي',
+    'nitrogen-phosphorus-loading': 'أحمال النيتروجين والفوسفور',
+    'freshwater-withdrawals': 'سحب المياه العذبة',
+    'land-conversion': 'تحويل الأراضي',
+    'biodiversity-loss': 'فقدان التنوع البيولوجي',
+    'air-pollution': 'تلوث الهواء',
+    'ozone-depletion': 'استنفاد طبقة الأوزون',
+  },
+  /**
+   * Geographic scale of a figure. Written as definite nouns because every
+   * use reads "على مستوى {scale}" ("at the … level") or a plain list.
+   */
+  scales: {
+    city: 'المدينة',
+    county: 'المقاطعة',
+    regional: 'الإقليم',
+    state: 'الولاية',
+    national: 'البلاد',
+    global: 'العالم',
+  },
+  /**
+   * Definite nominative forms (with the article): every Arabic sentence that
+   * uses {noun}/{nouns} needs the definite form ("حسب المنطقة", "بين المناطق",
+   * "على مستوى المنطقة"), and none of these plurals shows a case ending in
+   * writing.
+   */
+  nouns: {
+    portrait: { singular: 'الصورة', plural: 'الصور' },
+    borough: { singular: 'المنطقة', plural: 'المناطق' },
+    district: { singular: 'الدائرة', plural: 'الدوائر' },
+    ward: { singular: 'القسم الإداري', plural: 'الأقسام الإدارية' },
+    neighborhood: { singular: 'الحي', plural: 'الأحياء' },
+    county: { singular: 'المقاطعة', plural: 'المقاطعات' },
+  },
+  status: {
+    met: 'تحقّق',
+    on_track: 'على المسار الصحيح',
+    off_track: 'متأخر عن المسار',
+    improving: 'في تحسّن',
+    worsening: 'في تراجع',
+    no_change: 'دون تغيير',
+    baseline_only: 'خط الأساس فقط',
+    no_target: 'لا يوجد مستهدف',
+    no_data: 'لا توجد بيانات',
+  },
+  statusExplainer: {
+    met: 'بلغ القيمة المستهدفة المعتمدة أو تجاوزها.',
+    on_track:
+      'يتقدّم نحو القيمة المستهدفة بوتيرة لا تقل عن وتيرة خط مستقيم يمتد من خط الأساس إلى الموعد النهائي.',
+    off_track: 'يتحسّن، ولكن بوتيرة أبطأ مما يتطلبه الموعد النهائي.',
+    improving: 'أقرب إلى القيمة المستهدفة مما كان عليه عند خط الأساس (لا يوجد موعد نهائي لهذا الهدف).',
+    worsening: 'أبعد عن القيمة المستهدفة مما كان عليه عند خط الأساس.',
+    baseline_only: 'لا يتوفر حتى الآن سوى قياس خط الأساس؛ وسيُظهر التحديث القادم الاتجاه.',
+  },
+  portrait: {
+    metaDescription: 'صورة الدونات لـ {name}: الأساس الاجتماعي والسقف البيئي، مع مصدر كل رقم.',
+    population: 'عدد السكان: {n}',
+    clickHint: 'يمكنكم تحديد أي شريحة لعرض المؤشرات والأدلة والإجراءات والنقاش.',
+    demoHint: 'بيانات تجريبية — لعرض محتوى حقيقي، يلزم ضبط DATABASE_URL ونشر الإصدارات.',
+    /** The visible list of dimensions under the doughnut (SPEC-v6 §2.1). */
+    exploreTitle: 'استكشفوا الأبعاد',
+    exploreIntro: 'لكل بُعد بياناته ومصادره وطرق المشاركة فيه ونقاش خاص به.',
+    /** The list's intro when the portrait has no discussion (SPEC-v7 §3). */
+    exploreIntroCore: 'لكل بُعد بياناته ومصادره وما يمكنكم فعله.',
+    /** The detail panel beside the doughnut (SPEC-v7 §2) — the Santa Cruz core view. */
+    panelEmpty: 'حدّدوا بُعدًا على الدونات أو في القائمة لعرض بياناته ومصادره وما يمكنكم فعله.',
+    panelClose: 'إغلاق',
+    panelSelected: 'يُعرض الآن: {name}',
+    openFull: 'فتح الصفحة الكاملة',
+    openFullDiscussion: 'فتح الصفحة الكاملة والنقاش',
+    moreListings: {
+      zero: 'لا توجد طرق أخرى للمشاركة في الصفحة الكاملة',
+      one: 'طريقة أخرى للمشاركة تجدونها في الصفحة الكاملة',
+      two: 'طريقتان أخريان للمشاركة تجدونهما في الصفحة الكاملة',
+      few: '{n} طرق أخرى للمشاركة تجدونها في الصفحة الكاملة',
+      many: '{n} طريقة أخرى للمشاركة تجدونها في الصفحة الكاملة',
+      other: '{n} طريقة أخرى للمشاركة تجدونها في الصفحة الكاملة',
+    },
+    legendTitle: 'كيفية قراءة الدونات',
+    legendSafe: 'الحلقة الخضراء: المساحة الآمنة والعادلة',
+    legendShortfall: 'الأحمر باتجاه المركز: عجز دون الأساس الاجتماعي',
+    legendOvershoot: 'الأحمر خارج الحلقة: تجاوز للسقف البيئي',
+    legendNoData: 'الرمادي: لا توجد بيانات بعد',
+  },
+  dimension: {
+    metaDescription: '{dimension} في {name}: البيانات ومصادرها وما يمكنكم فعله.',
+    updated: 'حُدِّث في {date}',
+    target: 'المستهدف: {value}',
+    noTarget: 'لم يُحدَّد مستهدف',
+    scaleData: 'بيانات على مستوى {scale}',
+    source: 'المصدر: {source}',
+    snapshotAlt: 'لقطة من مصدر بيانات {name}، التُقطت بتاريخ {date}',
+    snapshotCaptured: 'لقطة من المصدر التُقطت بتاريخ {date}',
+    originalDocument: 'المستند الأصلي',
+    dataGap: 'فجوة في البيانات',
+    searchedAt: 'تم البحث على مستوى: {scales}',
+    whatYouCanDo: 'ما يمكنكم فعله',
+    /** Short actions listed after the dimension's involvement listings. */
+    moreYouCanDo: 'أمور أخرى يمكنكم فعلها',
+  },
+  discussion: {
+    title: 'النقاش',
+    sortTop: 'الأبرز',
+    sortNew: 'الأحدث',
+    sortLabel: 'ترتيب التعليقات',
+    placeholder: 'ما الذي ينبغي أن تفعله المدينة بشأن هذا؟ يُرجى الالتزام باللياقة وعدم الخروج عن الموضوع.',
+    post: 'نشر',
+    pendingApproval: 'تم النشر — تعليقكم الأول بانتظار موافقة المشرفين.',
+    signInToJoin: 'يُرجى {link} للمشاركة في النقاش.',
+    empty: 'لا توجد تعليقات بعد.',
+    you: 'أنت',
+    locked: 'مُغلق',
+    removed: 'محذوف',
+    removedBody: '[حذفه المشرفون]',
+    upvote: 'أوافق',
+    downvote: 'لا أوافق',
+    score: 'النقاط: {n}',
+    reply: 'رد',
+    replyLabel: 'ردّكم',
+    replySubmit: 'إرسال الرد',
+    restore: 'استعادة',
+    remove: 'حذف',
+    lock: 'إغلاق',
+    removeReason: 'سبب الحذف (يُسجَّل في سجل متاح لجميع الموظفين):',
+    lockReason: 'سبب إغلاق هذا النقاش:',
+    /** A first comment held for a moderator (SPEC-v6 §3.1). Shown to its author and to moderators only. */
+    awaitingApproval: 'بانتظار الموافقة',
+    awaitingNote: 'لا يراه إلا أنتم والمشرفون حتى تتم الموافقة عليه.',
+    approve: 'موافقة',
+    decline: 'رفض',
+    /** A held comment moderators did not approve; only its author and the moderators see it. */
+    declined: 'لم تتم الموافقة عليه',
+    declinedNote: 'لم يوافق المشرفون على هذا التعليق. لا يراه إلا أنتم والمشرفون.',
+    /** Label beside a comment written by the portrait's team (SPEC-v6 §3.3). */
+    staff: 'فريق العمل',
+    staffTitle: 'عضو في فريق هذه الصورة',
+  },
+  progress: {
+    metaTitle: 'التقدم · {name}',
+    metaDescription: 'مدى تقدّم {name} نحو الأهداف المعتمدة.',
+    title: 'التقدم: {name}',
+    baseline: 'خط الأساس:',
+    intro:
+      'القيم المستهدفة هي العتبات المنشورة في هذه الصورة — وهي الأهداف المحلية المعتمدة حيثما وُجدت — وإذا كان للهدف موعد نهائي، يُقاس التقدم مقارنةً بمسار مستقيم من خط الأساس حتى ذلك الموعد.',
+    nothingPublished: 'لم يُنشر أي شيء لهذه الصورة بعد.',
+    summary: 'الملخص',
+    tracked: 'مؤشرات قيد المتابعة',
+    withDueDate: {
+      zero: 'لا يوجد مؤشر له موعد نهائي',
+      one: 'مؤشر واحد له موعد نهائي',
+      two: 'مؤشران لهما موعد نهائي',
+      few: '{n} مؤشرات لها موعد نهائي',
+      many: '{n} مؤشرًا لها موعد نهائي',
+      other: '{n} مؤشر لها موعد نهائي',
+    },
+    statusesMeaning: 'معنى الحالات',
+    gapsTitle: 'ما لا يمكننا قياسه بعد',
+    gapsIntro:
+      'فجوات نعرضها بشفافية: بيانات لا تنشرها أي جهة على هذا المستوى الجغرافي. وكل منها بمثابة طلب — فنشرها سيتيح لهذه الصورة متابعتها.',
+    openData: 'البيانات المفتوحة',
+    openDataIntro:
+      'الأرقام نفسها بصيغة قابلة للقراءة آليًا، لبوابات البيانات المفتوحة وملفات اجتماعات المجلس: {files}.',
+    methodologyLink: 'المنهجية: {link}.',
+    thresholdsAndRationales: 'العتبات ومبرراتها',
+    columns: {
+      indicator: 'المؤشر',
+      baseline: 'خط الأساس',
+      latest: 'الأحدث',
+      target: 'المستهدف',
+      status: 'الحالة',
+      trend: 'الاتجاه',
+    },
+    scaleFigure: 'رقم على مستوى {scale}',
+    earliest: '(الأقدم)',
+    sameAsBaseline: 'مطابق لخط الأساس',
+    byYear: 'بحلول {year}',
+    needsPerYear: 'يتطلب {change} سنويًا',
+    trend: 'الاتجاه: {points}',
+    trendTarget: 'المستهدف {value}',
+  },
+  methodology: {
+    metaDescription: 'كيف تُقاس صورة {name}: النطاق الجغرافي والمصادر وكل قيمة مستهدفة ومبررها.',
+    title: 'المنهجية',
+    intro:
+      'تتبع هذه الصورة منهج Doughnut Economics (اقتصاد الدونات) في التطبيق على المستوى المحلي: أساس اجتماعي (والقصور عنه يُعدّ عجزًا، ويُرسم باتجاه المركز) وسقف بيئي (وتخطّيه يُعدّ تجاوزًا، ويُرسم نحو الخارج). لكل مؤشر قيمة مستهدفة صريحة مع مبرر مكتوب، مدرجة أدناه. وحيثما تستخدم هذه الصورة قيمة مستهدفة تختلف عن القيمة الافتراضية للإطار، يُعرض المبرر المحلي.',
+    geography: 'النطاق الجغرافي',
+    sourcePriority: 'أولوية المصادر',
+    sourcePriorityIntro:
+      'تُقبل البيانات من أعلى مستوى أولوية متاح؛ ولا يُستخدم مستوى أدنى إلا بعد استنفاد جميع المستويات الأعلى.',
+    recency: 'حداثة البيانات',
+    recencyText: {
+      zero: 'البيانات التي يزيد عمرها على {n} سنة تُعامَل على أنها فجوة في البيانات بدلًا من عرضها على أنها بيانات حالية.',
+      one: 'البيانات التي يزيد عمرها على سنة واحدة تُعامَل على أنها فجوة في البيانات بدلًا من عرضها على أنها بيانات حالية.',
+      two: 'البيانات التي يزيد عمرها على سنتين تُعامَل على أنها فجوة في البيانات بدلًا من عرضها على أنها بيانات حالية.',
+      few: 'البيانات التي يزيد عمرها على {n} سنوات تُعامَل على أنها فجوة في البيانات بدلًا من عرضها على أنها بيانات حالية.',
+      many: 'البيانات التي يزيد عمرها على {n} سنة تُعامَل على أنها فجوة في البيانات بدلًا من عرضها على أنها بيانات حالية.',
+      other: 'البيانات التي يزيد عمرها على {n} سنة تُعامَل على أنها فجوة في البيانات بدلًا من عرضها على أنها بيانات حالية.',
+    },
+    targets: 'القيم المستهدفة ومبرراتها',
+    target: 'المستهدف {value}',
+    localTarget: 'المستهدف المحلي: {rationale}',
+    frameworkDefault: 'كانت القيمة الافتراضية للإطار {target}: {rationale}',
+    lastRefreshed: 'آخر تحديث',
+    contentInEnglish: 'تُنشر أسماء المؤشرات ومبرراتها باللغة الإنجليزية.',
+  },
+  outreach: {
+    metaDescription: 'طرق المشاركة في {name}، والمنظمات التي تعمل على بياناتها.',
+    title: 'شاركوا',
+    empty:
+      'ستُدرج المنظمات المحلية هنا مع توسّع هذه الصورة. وفي الأثناء، تتضمن صفحة كل بُعد إجراءات عملية يمكن اتخاذها.',
+    intro:
+      'برامج ومنظمات وهيئات عامة يمكنكم المشاركة فيها، مرتّبة حسب البُعد. يتحقق الموظفون من كل ما يُدرج قبل ظهوره هنا.',
+    /** Organizations working on the portrait's data (research contacts), when any are published. */
+    partnersTitle: 'منظمات تعمل على هذه البيانات',
+  },
+  /** Ways to get involved and the organization form (SPEC-v6 §4). */
+  involvement: {
+    title: 'كيف يمكنكم المشاركة',
+    kind: {
+      volunteer: 'تطوّعوا',
+      services: 'احصلوا على المساعدة أو سجّلوا',
+      civic: 'أبدوا رأيكم',
+      organize: 'انضموا إلى مجموعة',
+      other: 'شاركوا',
+    },
+    website: 'الموقع الإلكتروني',
+    call: 'الاتصال بالرقم {phone}',
+    /** {date} is a formatted date. */
+    checked: 'تم التحقق من الرابط في {date}',
+    forEveryDimension: 'لجميع الأبعاد',
+    filterLabel: 'البُعد',
+    filterAll: 'جميع الأبعاد',
+    none: 'لم يُدرج شيء لهذا البُعد بعد.',
+    noneAtAll: 'لم يُدرج شيء بعد.',
+    contentInEnglish: 'يكتب الموظفون هذه القوائم، وتُنشر باللغة الإنجليزية.',
+    formTitle: 'هل تعرفون طريقة للمشاركة؟',
+    /** On a dimension page; {dimension} is the dimension's name. */
+    formIntro:
+      'هل تتيح منظمتكم للناس فرصة جيدة للمشاركة في مجال {dimension}؟ أو هل لديكم اقتراح؟ أخبروا الموظفين — فهم يراجعون كل ما يصلهم قبل نشر أي شيء.',
+    formIntroGeneral:
+      'هل تتيح منظمتكم للناس فرصة جيدة للمشاركة؟ أو هل لديكم اقتراح؟ أخبروا الموظفين — فهم يراجعون كل ما يصلهم قبل نشر أي شيء.',
+    open: 'اقتراح طريقة للمشاركة',
+    kindLegend: 'ما الذي تودّون إرساله؟',
+    kindListing: 'منظمتي تتيح للناس فرصة للمشاركة',
+    kindSuggestion: 'اقتراح لطريقة يمكن أن يشارك بها الناس',
+    dimensionLabel: 'البُعد',
+    dimensionAny: 'أكثر من بُعد، أو لا أعرف',
+    orgName: 'اسم المنظمة أو المجموعة',
+    about: 'من أنتم',
+    aboutHint: 'ماذا تفعل منظمتكم، ومن تخدم.',
+    pitchListing: 'لماذا تُعدّ فرصة جيدة لمشاركة الناس؟',
+    pitchListingHint: 'ماذا يمكن للناس أن يفعلوا معكم — التطوع، أو الانضمام، أو الحضور، أو الحصول على المساعدة؟',
+    pitchSuggestion: 'اقتراحكم',
+    pitchSuggestionHint: 'كيف يمكن للناس المشاركة في ذلك؟',
+    websiteLabel: 'الموقع الإلكتروني',
+    contactLegend: 'كيف يمكن للموظفين التواصل معكم',
+    contactName: 'اسمكم',
+    email: 'البريد الإلكتروني',
+    phone: 'الهاتف',
+    optional: '(اختياري)',
+    privacy: 'لا تصل بيانات الاتصال الخاصة بكم إلا إلى الموظفين، ولا تُنشر أبدًا.',
+    send: 'الإرسال إلى الموظفين',
+    sending: 'جارٍ الإرسال…',
+    thanks:
+      'شكرًا لكم. يراجع الموظفون كل ما يصلهم. وإذا كان مناسبًا فسيظهر في هذه الصفحة، وقد يتواصلون معكم أولًا.',
+    sendAnother: 'إرسال المزيد',
+    /** Above the form when fields need fixing; each field also shows its own message. */
+    invalid: 'يُرجى مراجعة الحقول المشار إليها أدناه.',
+    /**
+     * The bare "https://" here and the phone example below sit inside a
+     * left-to-right isolate (\u2066 … \u2069): on this right-to-left page the
+     * browser otherwise shows them as "//:https" and "0100-555 (212)", the
+     * wrong way round for someone copying the format.
+     */
+    websiteInvalid: 'أدخلوا عنوان الموقع الإلكتروني كاملًا، على أن يبدأ بـ \u2066https://\u2069، مثل https://example.org.',
+    phoneInvalid:
+      'استخدموا الأرقام والفواصل المعتادة فقط، مثل \u2066(212) 555-0100\u2069، من دون رقم داخلي أو أي كلمات أخرى.',
+    tooFast: 'كان ذلك سريعًا جدًا. يُرجى الانتظار قليلًا، ثم الإرسال مرة أخرى.',
+    rateLimited: 'وصلتنا اليوم طلبات كثيرة جدًا من هنا. يُرجى المحاولة مرة أخرى لاحقًا.',
+    expired: 'انتهت صلاحية هذا النموذج. أعيدوا تحميل الصفحة وحاولوا مرة أخرى.',
+    failed: 'تعذّر علينا إرسال ذلك. يُرجى المحاولة مرة أخرى.',
+  },
+  /**
+   * Asking for a portrait in another language while its translation is off
+   * (SPEC-v7 §3.5). Shown in the reader's preferred language even though the
+   * page itself is English. {language} is a language's own name (Español).
+   */
+  translationRequest: {
+    button: 'طلب ترجمة',
+    intro:
+      'هذه الصورة منشورة باللغة الإنجليزية. أخبروا الموظفين باللغة التي تحتاجونها، فهم يرون عدد القراء الذين يطلبون كل لغة.',
+    language: 'اللغة',
+    send: 'إرسال الطلب',
+    sending: 'جارٍ الإرسال…',
+    sent: 'شكرًا لكم. سيرى الموظفون أن أحد القراء طلب الترجمة إلى {language}.',
+    limited:
+      'وصل عدد كبير جدًا من الطلبات من هذه الشبكة خلال الساعة الماضية، لذلك لم يُسجَّل هذا الطلب. يُرجى المحاولة مرة أخرى لاحقًا.',
+    notNeeded: 'تُرجمت هذه الصورة للتو. أعيدوا تحميل الصفحة لاختيار لغتكم.',
+    failed: 'تعذّر علينا إرسال ذلك. يُرجى المحاولة مرة أخرى.',
+  },
+  /** The sign-in page (SPEC-v6 §2.2). */
+  login: {
+    title: 'تسجيل الدخول',
+    intro: 'يسجّل السكان الدخول للمشاركة في نقاش الصورة. أما موظفو المدينة فيستخدمون حساب العمل.',
+    /** Replaces `intro` when the person is on the way to setting up their city's portrait (/start): city staff, not residents. */
+    startIntro: 'سجّلوا الدخول لإعداد دونات مدينتكم — استخدموا بريد العمل الإلكتروني.',
+    microsoft: 'المتابعة باستخدام Microsoft (حساب العمل)',
+    google: 'المتابعة باستخدام Google',
+    emailLabel: 'إرسال رابط تسجيل الدخول إلى بريدي الإلكتروني',
+    emailPlaceholder: 'you@example.org',
+    send: 'إرسال الرابط',
+    sending: 'جارٍ الإرسال…',
+    noMethods: 'لم تُضبط أي طريقة لتسجيل الدخول على هذا الخادم.',
+    /** {link} is the "start a portrait" link. */
+    newHere: 'هل أنتم من موظفي المدينة؟ بعد تسجيل الدخول، يمكنكم {link}.',
+    startLink: 'إنشاء صورة لنطاقكم الإداري',
+    checkTitle: 'تحقّقوا من بريدكم الإلكتروني',
+    checkBody:
+      'أرسلنا رابط تسجيل الدخول إلى العنوان الذي أدخلتموه. يمكن استخدامه مرة واحدة فقط، وتنتهي صلاحيته بعد 15 دقيقة.',
+    checkHelp: 'لم يصلكم بعد بضع دقائق؟ تحقّقوا من مجلد الرسائل غير المرغوب فيها، أو أرسلوا رابطًا آخر.',
+    sendAnother: 'إرسال رابط آخر',
+    errors: {
+      OAuthAccountNotLinked:
+        'سبق أن سُجّل الدخول بهذا البريد الإلكتروني بطريقة أخرى. استخدموا الطريقة التي استخدمتموها من قبل (أو رابطًا عبر البريد الإلكتروني)، ثم اربطوا طريقة تسجيل الدخول هذه من صفحة حسابكم.',
+      Verification: 'انتهت صلاحية رابط تسجيل الدخول هذا أو سبق استخدامه. اطلبوا رابطًا جديدًا.',
+      AccessDenied: 'رُفض تسجيل الدخول.',
+      Configuration: 'إعدادات تسجيل الدخول على هذا الخادم غير صحيحة. يُرجى التواصل مع مسؤول الموقع.',
+      EmailSignin: 'تعذّر علينا إرسال رسالة تسجيل الدخول. تحقّقوا من العنوان وحاولوا مرة أخرى بعد بضع دقائق.',
+      /** Nothing was sent: this address already has three unused sign-in links from the last 15 minutes. */
+      TooManyLinks:
+        'أرسلنا بالفعل عدة روابط لتسجيل الدخول إلى هذا العنوان خلال آخر 15 دقيقة. استخدموا أحدثها، أو حاولوا مرة أخرى بعد 15 دقيقة.',
+      /** Nothing was sent: this network has asked for its hourly share of sign-in emails (shared Wi-Fi counts as one). */
+      TooManyEmails:
+        'طُلب عدد كبير جدًا من رسائل تسجيل الدخول من هذه الشبكة، لذلك لم تُرسَل هذه الرسالة. يُرجى المحاولة مرة أخرى بعد ساعة.',
+      default: 'تعذّر تسجيل الدخول. يُرجى المحاولة مرة أخرى.',
+    },
+  },
+  org: {
+    portraitCount: {
+      zero: 'لا توجد صور',
+      one: 'صورة واحدة',
+      two: 'صورتان',
+      few: '{n} صور',
+      many: '{n} صورة',
+      other: '{n} صورة',
+    },
+    portraits: 'الصور',
+    nothingPublished: 'لم يُنشر شيء بعد',
+    outsideSafeSpace: {
+      zero: 'لا يوجد بُعد خارج المساحة الآمنة من أصل {total}',
+      one: 'بُعد واحد من أصل {total} خارج المساحة الآمنة',
+      two: 'بُعدان من أصل {total} خارج المساحة الآمنة',
+      few: '{n} أبعاد من أصل {total} خارج المساحة الآمنة',
+      many: '{n} بُعدًا من أصل {total} خارج المساحة الآمنة',
+      other: '{n} بُعد من أصل {total} خارج المساحة الآمنة',
+    },
+    dataGaps: {
+      zero: 'لا توجد فجوات في البيانات',
+      one: 'فجوة واحدة في البيانات',
+      two: 'فجوتان في البيانات',
+      few: '{n} فجوات في البيانات',
+      many: '{n} فجوة في البيانات',
+      other: '{n} فجوة في البيانات',
+    },
+  },
+  compare: {
+    metaTitle: 'المقارنة · {org}',
+    titleJurisdiction: '{n} دونات، نطاق إداري واحد: {org}',
+    titleFamily: '{n} دونات، مجموعة واحدة: {org}',
+    introJurisdiction:
+      'الأساس الاجتماعي والسقف البيئي ذاتهما، يُقاسان للنطاق الإداري بأكمله وعلى مستوى {noun} (عدد القياسات: {n})، مقارنةً بعتبات متطابقة مستندة إلى الأهداف المحلية المعتمدة. الشرائح المتجهة إلى الخارج تتجاوز السقف؛ والشرائح المتجهة إلى الداخل تقصر عن الأساس؛ واللون الرمادي فجوة في البيانات نعرضها بشفافية.',
+    introFamily:
+      'الأساس الاجتماعي والسقف البيئي ذاتهما، يُقاسان (عدد القياسات: {n}) مقارنةً بعتبات متطابقة مستندة إلى الأهداف المحلية المعتمدة. الشرائح المتجهة إلى الخارج تتجاوز السقف؛ والشرائح المتجهة إلى الداخل تقصر عن الأساس؛ واللون الرمادي فجوة في البيانات نعرضها بشفافية.',
+    wedgesOutside: '{n}/{total} من الشرائح خارج المساحة الآمنة',
+    divergeTitle: 'أين تتباين {nouns} أكثر',
+    divergeIntro:
+      'مقارنة للمؤشرات المنشورة بين {nouns}، مرتّبةً حسب الفارق بين {noun} الأفضل موقعًا و{noun} الأسوأ موقعًا.',
+    wholeColumn: 'عمود النطاق الإداري بأكمله رقمٌ منشور مستقل، وليس متوسطًا.',
+    indicator: 'المؤشر',
+    spread: 'الفارق',
+    legend:
+      'في كل صف: الأحمر = {noun} الأبعد عن المستهدف، والأخضر = الأقرب إليه. المؤشرات على مستوى النطاق الإداري بأكمله (المتطابقة في جميع {nouns}) لا تظهر في هذا الجدول بحكم طريقة إعداده.',
+  },
+  insights: {
+    metaTitle: 'رؤى · {org}',
+    title: 'رؤى حسب {noun} · {org}',
+    intro:
+      'جميع الأبعاد، على مستوى {noun}، في مصفوفة واحدة — مقيسة وفق العتبات نفسها المستندة إلى الأهداف المحلية المعتمدة. حدّدوا بُعدًا لعرض المقارنة التفصيلية والأبحاث التي يستند إليها كل رقم.',
+    biggestDivides: 'أكبر الفوارق',
+    insideSafeZone: 'داخل المساحة الآمنة',
+    beyondBoundary: 'خارج الحد بمقدار {n}',
+    divide: '{worst} {worstState}، بينما {best} {bestState}.',
+    matrix: 'المصفوفة',
+    matrixIntro:
+      'الأخضر = داخل المساحة الآمنة، والأحمر = عجز أو تجاوز (كلما كان أغمق كان أبعد)، والرمادي = فجوة في البيانات نعرضها بشفافية. حدّدوا صفًا لعرض تفاصيله.',
+    dimension: 'البُعد',
+    noData: 'لا توجد بيانات',
+    unrolled: '{name} — مقارنة تفصيلية',
+    dataGap: 'فجوة في البيانات',
+    barsExplainer:
+      'تقيس الأشرطة المسافة عن الحد (الخط العمودي): إلى اليسار وباللون الأخضر يعني داخل المساحة الآمنة، وإلى اليمين وباللون الأحمر يعني عجزًا أو تجاوزًا، على مقياس الدونات −100…150.',
+    researchBehind: 'الأبحاث التي يستند إليها',
+    fullDrilldown: 'التفاصيل الكاملة ←',
+    yearNA: 'السنة غير متاحة',
+    tier: 'المستوى {n}',
+    confidence: 'درجة الثقة: {value}',
+    confidenceLevels: { high: 'عالية', medium: 'متوسطة', low: 'منخفضة' },
+    evidence: 'الأدلة',
+    workedMath: 'تفاصيل الحساب',
+    gapLabel: '{indicator}: فجوة في البيانات',
+    fullSearchTrail: '(سجل البحث الكامل)',
+    selectPrompt:
+      'حدّدوا بُعدًا أعلاه لعرض المقارنة التفصيلية بين {nouns} والاطلاع على المصادر والأدلة وطريقة التقييم.',
+  },
+  familyProgress: {
+    metaTitle: 'التقدم · {org}',
+    title: 'التقدم على مستوى {org}',
+    introOne: 'كل هدف معتمد لهذه الصورة، مقيسًا من خط أساس مشترك: {baseline}.',
+    introMany: 'كل هدف معتمد على مستوى {noun}، مقيسًا من خط أساس مشترك: {baseline}.',
+    summaryByPortrait: 'ملخص حسب الصورة',
+    onCourse: {
+      zero: 'لا يوجد هدف على المسار الصحيح',
+      one: 'هدف واحد على المسار الصحيح',
+      two: 'هدفان على المسار الصحيح',
+      few: '{n} أهداف على المسار الصحيح',
+      many: '{n} هدفًا على المسار الصحيح',
+      other: '{n} هدف على المسار الصحيح',
+    },
+    slipping: {
+      zero: 'لا يوجد هدف متعثر',
+      one: 'هدف واحد متعثر',
+      two: 'هدفان متعثران',
+      few: '{n} أهداف متعثرة',
+      many: '{n} هدفًا متعثرًا',
+      other: '{n} هدف متعثر',
+    },
+    baselineOnly: {
+      zero: 'لا يوجد هدف بقياس خط الأساس فقط',
+      one: 'هدف واحد بقياس خط الأساس فقط',
+      two: 'هدفان بقياس خط الأساس فقط',
+      few: '{n} أهداف بقياس خط الأساس فقط',
+      many: '{n} هدفًا بقياس خط الأساس فقط',
+      other: '{n} هدف بقياس خط الأساس فقط',
+    },
+    matrixTitle: 'الأهداف حسب {noun}',
+    goal: 'الهدف',
+    target: 'المستهدف {value}',
+    targetBy: 'المستهدف {value} بحلول {year}',
+    nothingPublished: 'لم يُنشر شيء بعد.',
+  },
+  notFound: {
+    title: 'الصفحة غير موجودة',
+    body: 'لا توجد صورة أو صفحة على هذا العنوان. ربما نُقلت، أو ربما لم تُنشر الصورة بعد.',
+    home: 'العودة إلى الصفحة الرئيسية',
+  },
+  /** Emergency view (SPEC-v5 §3): official alerts, threats by risk, plans, help. */
+  emergency: {
+    navLabel: 'الطوارئ',
+    metaTitle: 'الطوارئ · {name}',
+    title: 'حالات الطوارئ والكوارث: {name}',
+    intro:
+      'التنبيهات الرسمية، والتهديدات التي تواجهها هذه المنطقة، والخطط المعمول بها، وأماكن الحصول على المساعدة.',
+    empty: 'لم تُنشر بعد معلومات عن الطوارئ في هذه الصورة.',
+    alertsTitle: 'التنبيهات السارية',
+    alertsNone: 'لا توجد تنبيهات جوية سارية لهذه المنطقة وفقًا لآخر تحقق في {time}.',
+    alertsChecked: 'آخر تحقق: {time}.',
+    alertsStale:
+      'تعذّر علينا مؤخرًا الوصول إلى مصدر التنبيهات الرسمي. يُرجى مراجعة هيئة الأرصاد الجوية الوطنية مباشرةً.',
+    alertsSavedCopy:
+      'هذه نسخة محفوظة من الصفحة. جرى آخر تحقق من التنبيهات في {time}، وربما تغيّرت منذ ذلك الحين. يُرجى مراجعة هيئة الأرصاد الجوية الوطنية مباشرةً.',
+    alertsNotConfigured: 'لم يُفعَّل عرض التنبيهات الرسمية لهذه الصورة بعد.',
+    alertsOriginal: 'تُعرض التنبيهات كما صدرت تمامًا، باللغة الإنجليزية.',
+    alertSource: 'صادر عن {source}',
+    alertWindow: 'من {start} حتى {end}',
+    alertFrom: 'اعتبارًا من {start}',
+    alertInstructions: 'ما يجب فعله',
+    alertDetails: 'النص الكامل للتنبيه',
+    alertLink: 'التنبيه الرسمي',
+    alertEnded: 'انتهى',
+    severity: {
+      Extreme: 'بالغ الشدة',
+      Severe: 'شديد',
+      Moderate: 'متوسط',
+      Minor: 'طفيف',
+      Unknown: 'الشدة غير معروفة',
+    },
+    getAlerts: 'احصلوا على التنبيهات الرسمية',
+    emergencyCall: 'في حالات الطوارئ، اتصلوا بالرقم {phone}.',
+    infoCall: 'للحصول على المساعدة في غير حالات الطوارئ، اتصلوا بالرقم {phone}.',
+    threatsTitle: 'التهديدات حسب مستوى الخطر',
+    threatsIntro:
+      'مدى احتمال وقوع كل تهديد ومدى شدّته إن وقع، وفق تقييم موظفي المدينة، وأجزاء الدونات التي يعرّضها للخطر.',
+    likelihood: 'الاحتمال: {n} من 5',
+    severityRating: 'الشدة: {n} من 5',
+    risk: {
+      low: 'خطر منخفض',
+      moderate: 'خطر متوسط',
+      high: 'خطر مرتفع',
+      very_high: 'خطر مرتفع جدًا',
+    },
+    activeNow: 'تنبيه سارٍ الآن',
+    threatens: 'الأبعاد المعرّضة للخطر:',
+    dimensionImpact: '{dimension} ({impact})',
+    impactLevel: {
+      low: 'أثر منخفض',
+      moderate: 'أثر متوسط',
+      high: 'أثر مرتفع',
+    },
+    hazardKind: {
+      coastal_storm: 'عاصفة ساحلية',
+      flooding: 'فيضانات',
+      extreme_heat: 'حرّ شديد',
+      winter_weather: 'طقس شتوي قاسٍ',
+      high_winds: 'رياح شديدة',
+      air_quality: 'سوء جودة الهواء',
+      drought: 'جفاف',
+      wildfire: 'حرائق غابات',
+      earthquake: 'زلزال',
+      infectious_disease: 'أمراض معدية',
+      infrastructure_failure: 'تعطّل البنية التحتية',
+      other: 'تهديد آخر',
+    },
+    showOnDoughnut: 'العرض على الدونات',
+    doughnutNow: 'اليوم',
+    doughnutThreat: 'مصدر الخطر: {hazard}',
+    doughnutLabel: 'صورة الدونات مع تمييز الأبعاد التي يعرّضها {hazard} للخطر',
+    doughnutControls: 'عرض الدونات',
+    play: 'تشغيل',
+    pause: 'إيقاف مؤقت',
+    relatedPlans: 'الخطط الخاصة بهذا التهديد:',
+    plansTitle: 'الخطط المعمول بها',
+    plansIntro: 'الخطط التي اعتمدتها المدينة لمواجهة هذه التهديدات: ما التزمت بفعله.',
+    planBy: '{agency}، {year}',
+    planAgency: '{agency}',
+    planLanguages: 'منشورة أيضًا باللغات التالية: {languages}',
+    readPlan: 'قراءة الخطة',
+    helpTitle: 'المساعدة والعون المتبادل',
+    helpIntro: 'أماكن ومجموعات تقدّم المساعدة أثناء حالات الطوارئ.',
+    resourceKind: {
+      cooling_center: 'مركز تبريد',
+      shelter: 'مأوى',
+      hotline: 'خط ساخن',
+      mutual_aid: 'عون متبادل',
+      food: 'مساعدات غذائية',
+      medical: 'رعاية طبية',
+      other: 'مساعدة أخرى',
+    },
+    call: 'الاتصال بالرقم {phone}',
+    website: 'الموقع الإلكتروني',
+    offlineTitle: 'الاحتفاظ بهذه الصفحة لاستخدامها دون اتصال',
+    offlineBody:
+      'احفظوا هذه الصفحة لتُفتح حتى دون اتصال بالإنترنت، تحسّبًا لانقطاع الشبكة.',
+    offlineSave: 'الحفظ للاستخدام دون اتصال',
+    offlineSaved:
+      'تم الحفظ. ستُفتح هذه الصفحة دون اتصال بالإنترنت. لا تُحدَّث النسخة المحفوظة تلقائيًا: فتنبيهاتها تعود إلى آخر مرة فتحتم فيها الصفحة وأنتم متصلون بالإنترنت.',
+    offlineUnavailable: 'لا يمكن لهذا المتصفح حفظ الصفحات لاستخدامها دون اتصال.',
+    offlineSaving: 'جارٍ الحفظ…',
+    offlineFailed: 'تعذّر حفظ هذه الصفحة. يُرجى المحاولة مرة أخرى أثناء اتصالكم بالإنترنت.',
+    offlineUpdate:
+      'يوجد تحديث لهذا التطبيق في انتظار التثبيت، ولا يمكن حفظ الصفحات قبل تثبيته. يُرجى إعادة تحميل الصفحة ثم المحاولة مرة أخرى.',
+    offlineSignedIn:
+      'لا تُحفظ الصفحات على هذا الجهاز إلا عندما تكونون قد سجّلتم الخروج، حفاظًا على خصوصية حسابكم على أجهزة الكمبيوتر المشتركة.',
+    metaDescription: 'التنبيهات الرسمية والتهديدات والخطط وسبل المساعدة في {name}.',
+    contentInEnglish:
+      'يكتب الموظفون معلومات التهديدات والخطط وقوائم المساعدة، وتُنشر باللغة الإنجليزية. وتُعرض التنبيهات كما أصدرتها هيئة الأرصاد الجوية الوطنية (National Weather Service).',
+    alertArea: 'المناطق: {areas}',
+    alertRelated: 'التهديد المرتبط: {hazard}',
+    signupLink: 'الاشتراك في التنبيهات الرسمية',
+    signupNamed: 'الاشتراك في {name}',
+    resourceHazards: 'للمساعدة في حالات:',
+    doughnutLegend: 'ألوان الدونات:',
+  },
+  /** The site footer, on every page but embeds (components/site-footer/SiteFooter.tsx). */
+  footer: {
+    /** The footer's navigation landmark. */
+    label: 'عن هذا الموقع',
+    /** {email} is the support address of whoever runs this site, as a link (already marked dir="ltr", so no isolate here). */
+    contact: 'للتواصل: {email}',
+    accessibility: 'إمكانية الوصول',
+    privacy: 'الخصوصية',
+    terms: 'شروط الاستخدام',
+    /**
+     * The Doughnut's attribution (docs/OPEN-SOURCE.md §3.3), also under every
+     * embedded doughnut. {license} is the license's name as a link; {book}
+     * and {method} are the English titles of the book and the method guide.
+     * The names stay in Latin script; "منظمة" before the Lab's name lets the
+     * Arabic prepositions attach to an Arabic word rather than to Latin text.
+     */
+    credit:
+      'مخطط الدونات: Kate Raworth و Christian Guthier، {license}، مُكيَّف باستخدام بيانات محلية (Raworth، {book}، 2017). يستند منهج صور المدن إلى دليل {method} الصادر عن منظمة Doughnut Economics Action Lab. هذا الموقع غير تابع لمنظمة Doughnut Economics Action Lab ولا يحظى بتأييدها.',
+  },
+  /**
+   * On a portrait seeded with synthetic values (scripts/seed-demo-data.ts):
+   * its page, its dimension pages, its embed, its organization's compare,
+   * insights and progress pages, so a screenshot cannot pass for research.
+   * "توضيحية" (illustrative), not "تجريبية", which also reads as "empirical".
+   */
+  sampleData: {
+    title: 'بيانات توضيحية — ليست نتائج أبحاث',
+    /** A portrait's own pages and its embed; {name} is the portrait. */
+    body: 'وُلِّدت الأرقام الخاصة بـ {name} على هذا الموقع لعرض طريقة عمل البرنامج. وهي ليست قياسات، ولا يجوز الاستشهاد بها.',
+    /** An organization's pages, when any portrait shown there is seeded; {org} is the organization. */
+    bodyOrg:
+      'وُلِّد بعض الأرقام الخاصة بـ {org} في هذه الصفحة أو جميعها لعرض طريقة عمل البرنامج. وهي ليست قياسات، ولا يجوز الاستشهاد بها.',
+  },
+  /** Theme toggle and the fryer (SPEC-v5 §4). */
+  theme: {
+    label: 'المظهر',
+    /** The toggle's accessible name, and the status message after a flip. */
+    toggle: 'المظهر: {mode}',
+    /** The toggle's description and hover title. {system} is the "Match device" item's label. */
+    hint: 'للتبديل بين المظهر الفاتح والداكن. وللوصول إلى «{system}» وخيارات أخرى، اضغطوا مطوّلًا، أو انقروا بزر الماوس الأيمن، أو اضغطوا Shift+F10.',
+    light: 'فاتح',
+    dark: 'داكن',
+    system: 'حسب إعداد الجهاز',
+    menu: 'خيارات المظهر',
+    deepFry: 'قلي هذه الصفحة',
+    unfry: 'إلغاء قلي هذه الصفحة',
+    fried: 'تم قلي الصفحة. اختاروا «إلغاء قلي هذه الصفحة» للتراجع.',
+    unfried: 'تمت استعادة الصفحة.',
+  },
+};

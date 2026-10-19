@@ -1,10 +1,21 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { SettingsForms } from '@/components/admin/SettingsForms';
 import { tenantConfigMap } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
+import { adminPageMetadata } from '@/lib/page-meta';
+import { EmbedSettings } from '@/components/admin/EmbedSettings';
+import { appUrl } from '@/lib/env';
+import { deploymentDisabled } from '@/lib/features';
+import { TRANSLATION_REQUEST_WINDOW_DAYS, translationRequestCounts } from '@/lib/translation-requests';
 
 export const dynamic = 'force-dynamic';
+
+/** Settings · Admin · <portrait> (WCAG 2.4.2): the generic site title named none of the staff pages. */
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  return adminPageMetadata((await params).tenant, 'Settings');
+}
 
 export default async function SettingsPage({
   params,
@@ -13,12 +24,15 @@ export default async function SettingsPage({
 }) {
   const { tenant } = await params;
   const ctx = await requireAdminPage(tenant, 'owner');
-  const config = await tenantConfigMap(ctx.tenant.id);
+  const [config, requests] = await Promise.all([
+    tenantConfigMap(ctx.tenant.id),
+    translationRequestCounts(ctx.tenant.id),
+  ]);
 
   return (
     <>
       <SiteHeader variant="admin" tenant={{ slug: ctx.tenant.slug, name: ctx.tenant.name }} />
-      <main className="mx-auto max-w-3xl px-6 py-10">
+      <main id="main" className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         <p className="text-sm">
           <Link className="underline" href={`/${tenant}/admin`}>
             ← Admin
@@ -40,6 +54,18 @@ export default async function SettingsPage({
             reviewPolicy={config.review_policy ?? null}
             retention={config.retention ?? null}
             notifications={config.notifications ?? null}
+            progress={config.progress ?? null}
+            features={config.features ?? null}
+            deploymentDisabled={[...deploymentDisabled()]}
+            translationRequests={requests}
+            translationRequestDays={TRANSLATION_REQUEST_WINDOW_DAYS}
+          />
+        </div>
+        <div className="mt-6">
+          <EmbedSettings
+            tenantSlug={ctx.tenant.slug}
+            origins={ctx.tenant.embedOrigins ?? []}
+            appUrl={appUrl()}
           />
         </div>
       </main>

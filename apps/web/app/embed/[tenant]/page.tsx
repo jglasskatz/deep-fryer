@@ -1,13 +1,42 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { EmbedFrame } from '@/components/embed/EmbedFrame';
-import { getPortrait, tenantEmbedOrigins } from '@/lib/data';
+import { SampleDataNotice } from '@/components/sample-data/SampleDataNotice';
+import { getPortrait } from '@/lib/data';
+import { embedOriginsFor } from '@/lib/embed-policy';
+import { appUrl } from '@/lib/env';
+import { localizeDimensions } from '@/lib/i18n/content';
+import { doughnutLabels } from '@/lib/i18n/doughnut';
+import { getI18n } from '@/lib/i18n/server';
+import { pageTitle } from '@/lib/page-meta';
+import { portraitSampleData } from '@/lib/sample-data';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * Embed view (SPEC.md §10): iframe target for the loader script. The parent
- * origin (passed by the loader) is checked against the tenant's
- * embed_origins allowlist; disallowed origins get a notice, not the data.
+ * "Doughnut portrait · New York City": what a screen reader announces inside
+ * the city's iframe. Never indexed, and canonical to the portrait itself in
+ * the embed's language: an embed is a framed copy of that page, so search
+ * engines are sent to the portrait (app/robots.ts also keeps them out).
+ * Replaces the layout's alternates — an embed lists no language versions.
+ */
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  const { tenant } = await params;
+  const [portrait, { m, href }] = await Promise.all([getPortrait(tenant), getI18n()]);
+  if (!portrait) return { title: m.notFound.title };
+  return {
+    title: pageTitle(m.doughnut.portrait, portrait.tenant.name),
+    robots: { index: false, follow: true },
+    alternates: { canonical: `${appUrl()}${href(`/${portrait.tenant.slug}`)}` },
+  };
+}
+
+/**
+ * Embed view (SPEC.md §10): iframe target for the loader script. Who may
+ * frame it is enforced by the browser through the CSP frame-ancestors the
+ * middleware derives from the tenant's embed_origins — not by anything this
+ * page can be told. The loader's `?origin=` is used only to address resize
+ * messages, and only when it is on the allowlist.
  */
 export default async function EmbedPage({
   params,
@@ -19,35 +48,27 @@ export default async function EmbedPage({
   const { tenant } = await params;
   const { origin } = await searchParams;
 
-  const [portrait, allowedOrigins] = await Promise.all([
+  const [portrait, allowedOrigins, { m, href }, sample] = await Promise.all([
     getPortrait(tenant),
-    tenantEmbedOrigins(tenant),
+    embedOriginsFor(tenant),
+    getI18n(),
+    portraitSampleData(tenant),
   ]);
   if (!portrait) notFound();
 
-  const parentOrigin = origin ?? null;
-  const originAllowed =
-    !parentOrigin ||
-    allowedOrigins.length === 0 ||
-    allowedOrigins.includes(parentOrigin);
-
-  if (!originAllowed) {
-    return (
-      <main className="p-6 text-center text-sm text-black/60">
-        This site is not authorized to embed the {portrait.tenant.name} portrait.
-      </main>
-    );
-  }
-
-  const hostBase = process.env.NEXT_PUBLIC_APP_URL ?? '';
+  const parentOrigin = origin && allowedOrigins.includes(origin) ? origin : null;
 
   return (
-    <main>
+    <main id="main">
       <EmbedFrame
         tenantSlug={tenant}
-        dimensions={portrait.dimensions}
+        tenantName={portrait.tenant.name}
+        dimensions={localizeDimensions(m, portrait.dimensions)}
         parentOrigin={parentOrigin}
-        hostBase={hostBase}
+        portraitUrl={`${appUrl()}${href(`/${tenant}`)}`}
+        labels={doughnutLabels(m)}
+        credit={m.footer.credit}
+        notice={sample ? <SampleDataNotice labels={m.sampleData} name={portrait.tenant.name} compact /> : undefined}
       />
     </main>
   );

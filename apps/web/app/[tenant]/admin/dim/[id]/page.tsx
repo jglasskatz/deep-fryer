@@ -1,12 +1,34 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { DimensionEditor } from '@/components/admin/DimensionEditor';
 import { dimensionById, versionTimeline } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
+import { hasDatabase } from '@/lib/env';
+import { en } from '@/lib/i18n/messages/en';
+import { adminPageMetadata } from '@/lib/page-meta';
 import { publishVersion } from '@/lib/actions';
+import { ActionButton } from '@/components/admin/ActionButton';
 
 export const dynamic = 'force-dynamic';
+
+/**
+ * "Housing · Admin · <portrait>" (WCAG 2.4.2), so a staff member editing
+ * several dimensions can tell their tabs apart. The framework name from the
+ * slug (the admin pages are English); a portrait's own dimension shows its
+ * slug. dimensionById is a primary-key read under the reader's row security.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ tenant: string; id: string }>;
+}): Promise<Metadata> {
+  const { tenant, id } = await params;
+  const dimension = hasDatabase() ? await dimensionById(id) : null;
+  const name = dimension ? (en.dimensions[dimension.slug as keyof typeof en.dimensions] ?? dimension.slug) : 'Dimension';
+  return adminPageMetadata(tenant, name);
+}
 
 export default async function DimensionAdminPage({
   params,
@@ -25,7 +47,7 @@ export default async function DimensionAdminPage({
   return (
     <>
       <SiteHeader variant="admin" tenant={{ slug: ctx.tenant.slug, name: ctx.tenant.name }} />
-      <main className="mx-auto max-w-6xl px-6 py-10">
+      <main id="main" className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
         <p className="text-sm">
           <Link className="underline" href={`/${tenant}/admin`}>
             ← Admin
@@ -77,20 +99,18 @@ export default async function DimensionAdminPage({
                     </p>
                     {v.changeNote ? <p className="mt-1 text-xs italic">“{v.changeNote}”</p> : null}
                     {!isPublished ? (
-                      <form
-                        action={async () => {
-                          'use server';
-                          await publishVersion({
+                      <div className="mt-2">
+                        <ActionButton
+                          action={publishVersion.bind(null, {
                             tenantSlug: tenant,
                             versionId: v.id,
                             revert: v.status === 'archived',
-                          });
-                        }}
-                      >
-                        <button className="mt-2 rounded border px-2 py-1 text-xs hover:bg-black/5">
+                          })}
+                          pendingLabel="Publishing…"
+                        >
                           {v.status === 'archived' ? 'Revert to this version' : 'Publish'}
-                        </button>
-                      </form>
+                        </ActionButton>
+                      </div>
                     ) : null}
                   </li>
                 );

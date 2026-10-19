@@ -8,6 +8,7 @@ import {
   type FindingPayload,
   type FindingVerification,
 } from '@deep-fryer/core';
+import { guardedFetch } from './egress.js';
 
 export { isFlagged };
 
@@ -53,18 +54,24 @@ export async function deterministicChecks(
   };
 }
 
+/**
+ * Does the cited URL resolve? Goes through the egress guard: a citation
+ * pointing at an internal address fails the check (url_ok: false) and is
+ * red-flagged for review instead of being fetched.
+ */
 async function defaultUrlCheck(url: string): Promise<boolean> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15_000);
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 15_000);
-    let res = await fetch(url, { method: 'HEAD', redirect: 'follow', signal: controller.signal });
+    let res = await guardedFetch(url, { method: 'HEAD', signal: controller.signal });
     if (res.status === 405 || res.status === 501 || res.status === 403) {
-      res = await fetch(url, { method: 'GET', redirect: 'follow', signal: controller.signal });
+      res = await guardedFetch(url, { method: 'GET', signal: controller.signal });
     }
-    clearTimeout(timer);
     return res.ok;
   } catch {
     return false;
+  } finally {
+    clearTimeout(timer);
   }
 }
 

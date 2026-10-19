@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { planResearchAction } from '@/lib/research-actions';
 import { useAction } from '@/lib/use-action';
+import { unwrap } from '@/lib/action-result';
 
 export interface RunnableDimension {
   id: string;
@@ -33,10 +34,12 @@ export function NewRunForm({
 
   const plan = () =>
     run(async () => {
-      const { runId } = await planResearchAction({
-        tenantSlug,
-        dimensionIds: [...selected],
-      });
+      const { runId } = unwrap(
+        await planResearchAction({
+          tenantSlug,
+          dimensionIds: [...selected],
+        }),
+      );
       router.push(`/${tenantSlug}/admin/research/${runId}`);
     });
 
@@ -48,7 +51,7 @@ export function NewRunForm({
         before applying. Session count: {selected.size + 1} (region context + {selected.size}{' '}
         dimensions).
       </p>
-      <div className="mt-3 grid grid-cols-3 gap-1 text-sm">
+      <div className="mt-3 grid grid-cols-1 gap-1 text-sm sm:grid-cols-2 md:grid-cols-3">
         {dimensions.map((d) => (
           <label key={d.id} className="flex items-center gap-2">
             <input type="checkbox" checked={selected.has(d.id)} onChange={() => toggle(d.id)} />

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import {
@@ -9,24 +10,91 @@ import {
   tenantRuns,
 } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
+import { roleAtLeast } from '@/lib/auth';
+import { adminPageMetadata } from '@/lib/page-meta';
+import { billingSummary, WARNING_COPY } from '@/lib/billing';
+import { countHeldComments } from '@/lib/discussion';
+import { portraitFeaturesById } from '@/lib/features';
+import { countNewSubmissions } from '@/lib/involvement-admin';
+import { tenantMembersList } from '@/lib/member-data';
+import { organizationMembersList } from '@/lib/member-data';
 
 export const dynamic = 'force-dynamic';
 
+/** Admin · <portrait> (WCAG 2.4.2): the generic site title named none of the staff pages. */
+export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
+  return adminPageMetadata((await params).tenant);
+}
+
 export default async function TenantAdminPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ tenant: string }>;
+  searchParams: Promise<{ welcome?: string }>;
 }) {
   const { tenant } = await params;
+  const { welcome } = await searchParams;
   const ctx = await requireAdminPage(tenant, 'viewer');
 
-  const [dims, config, runs, audit, discussed] = await Promise.all([
-    tenantDimensions(ctx.tenant.id),
-    tenantConfigMap(ctx.tenant.id),
-    tenantRuns(ctx.tenant.id),
-    recentAudit(ctx.tenant.id, 10),
-    commentCounts(ctx.tenant.id),
-  ]);
+  const features = await portraitFeaturesById(ctx.tenant.id);
+  const [dims, config, runs, audit, discussed, billing, members, orgMembers, heldComments, newSubmissions] =
+    await Promise.all([
+      tenantDimensions(ctx.tenant.id),
+      tenantConfigMap(ctx.tenant.id),
+      tenantRuns(ctx.tenant.id),
+      recentAudit(ctx.tenant.id, 10),
+      commentCounts(ctx.tenant.id),
+      billingSummary(ctx.tenant.organizationId),
+      tenantMembersList(ctx.tenant.id),
+      organizationMembersList(ctx.tenant.organizationId),
+      // The queues (SPEC-v6 §3.2, §4.3), counted only for features that are
+      // on (SPEC-v7 §3). Under row-level security: submissions count 0 for
+      // anyone below editor, who cannot open that queue anyway.
+      features.discussion ? countHeldComments(ctx.tenant.id) : 0,
+      features.involvement ? countNewSubmissions(ctx.tenant.id) : 0,
+    ]);
+  const waiting = [
+    heldComments > 0 && {
+      href: `/${tenant}/admin/discussion`,
+      label: `${heldComments} comment${heldComments === 1 ? '' : 's'} awaiting approval`,
+    },
+    newSubmissions > 0 && {
+      href: `/${tenant}/admin/involvement#submissions`,
+      label: `${newSubmissions} new organization submission${newSubmissions === 1 ? '' : 's'} for Get involved`,
+    },
+  ].filter((w): w is { href: string; label: string } => Boolean(w));
+
+  // Getting-started checklist (SPEC-v4 §2): derived from real state, so it
+  // disappears on its own once the portrait is live.
+  const checklist = [
+    {
+      done: Boolean(config.region?.definition && config.region.context_notes),
+      label: 'Describe the boundary and local data portals',
+      href: `/${tenant}/admin/settings`,
+    },
+    {
+      done: members.length + orgMembers.length > 1,
+      label: 'Invite your team',
+      href: `/${tenant}/admin/members`,
+    },
+    {
+      done: runs.some((r) => r.appliedAt !== null),
+      label: 'Run the first research pass',
+      href: `/${tenant}/admin/research`,
+    },
+    {
+      done: dims.some((d) => d.published !== null),
+      label: 'Review findings and publish',
+      href: `/${tenant}/admin/review`,
+    },
+    {
+      done: (ctx.tenant.embedOrigins ?? []).length > 0,
+      label: 'Embed the doughnut on your website',
+      href: `/${tenant}/admin/settings#embedding`,
+    },
+  ];
+  const showChecklist = welcome === '1' || checklist.some((c) => !c.done);
   const staleness = stalenessOverview(dims, config.recency);
   const staleBySlug = new Map(staleness.map((s) => [s.slug, s]));
   const activeRuns = runs.filter((r) => r.status === 'planned' || r.status === 'running');
@@ -34,13 +102,19 @@ export default async function TenantAdminPage({
   return (
     <>
       <SiteHeader variant="admin" tenant={{ slug: ctx.tenant.slug, name: ctx.tenant.name }} />
-      <main className="mx-auto max-w-6xl px-6 py-10">
-        <div className="flex items-center justify-between">
+      <main id="main" className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-3xl font-bold">Admin</h1>
-          <nav className="flex gap-3 text-sm">
+          <nav aria-label="Admin sections" className="flex flex-wrap gap-2 text-sm">
             <Link className="rounded border px-3 py-1.5 hover:bg-black/5" href={`/${tenant}/admin/review`}>
               Review queue{activeRuns.length ? ` (${activeRuns.length} active)` : ''}
             </Link>
+            {/* Editors and up only, like the page itself (it shows unpublished research). */}
+            {roleAtLeast(ctx.role, 'editor') ? (
+              <Link className="rounded border px-3 py-1.5 hover:bg-black/5" href={`/${tenant}/admin/draft`}>
+                Draft doughnut
+              </Link>
+            ) : null}
             <Link className="rounded border px-3 py-1.5 hover:bg-black/5" href={`/${tenant}/admin/research`}>
               Research runs
             </Link>
@@ -50,15 +124,67 @@ export default async function TenantAdminPage({
           </nav>
         </div>
 
+        {billing.blockedMessage ? (
+          <p role="alert" className="mt-4 rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900">
+            {billing.blockedMessage}
+          </p>
+        ) : billing.standing.warning ? (
+          <p className="mt-4 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            {WARNING_COPY[billing.standing.warning]}
+          </p>
+        ) : null}
+
+        {waiting.length > 0 ? (
+          <section
+            className="mt-4 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+            aria-labelledby="waiting"
+          >
+            <h2 id="waiting" className="font-semibold">
+              Waiting for you
+            </h2>
+            <ul className="mt-1 space-y-0.5">
+              {waiting.map((w) => (
+                <li key={w.href}>
+                  <Link className="underline" href={w.href}>
+                    {w.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        {showChecklist ? (
+          <section className="mt-6 rounded-lg border border-black/10 bg-white/60 p-4" aria-labelledby="getting-started">
+            <h2 id="getting-started" className="text-base font-semibold">
+              {welcome === '1' ? `Welcome — ${ctx.tenant.name} is ready.` : 'Getting started'}
+            </h2>
+            <ol className="mt-2 space-y-1 text-sm">
+              {checklist.map((c) => (
+                <li key={c.label} className="flex items-center gap-2">
+                  <span aria-hidden className={c.done ? 'text-green-700' : 'text-[color:var(--color-muted)]'}>
+                    {c.done ? '✓' : '○'}
+                  </span>
+                  <a href={c.href} className={c.done ? 'text-[color:var(--color-muted)] line-through' : 'underline'}>
+                    {c.label}
+                  </a>
+                  <span className="sr-only">{c.done ? '(done)' : '(to do)'}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ) : null}
+
         {ctx.devMode ? (
           <p className="mt-4 rounded border border-amber-400 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            Dev mode: Supabase auth is not configured — acting as owner.
+            Dev mode: AUTH_SECRET is not set — every request acts as owner. Never deploy this way (production refuses to start).
           </p>
         ) : null}
 
         <section className="mt-8">
           <h2 className="text-lg font-semibold">Dimensions</h2>
-          <table className="mt-3 w-full border-collapse text-sm">
+          <div className="mt-3 overflow-x-auto">
+<table className="w-full min-w-[720px] border-collapse text-sm">
             <thead>
               <tr className="border-b text-left text-[color:var(--color-muted)]">
                 <th className="py-2 pr-4">Dimension</th>
@@ -66,7 +192,7 @@ export default async function TenantAdminPage({
                 <th className="py-2 pr-4">Published</th>
                 <th className="py-2 pr-4">Latest</th>
                 <th className="py-2 pr-4">Data year</th>
-                <th className="py-2 pr-4">Discussion</th>
+                {features.discussion ? <th className="py-2 pr-4">Discussion</th> : null}
                 <th className="py-2 pr-4"></th>
               </tr>
             </thead>
@@ -108,7 +234,9 @@ export default async function TenantAdminPage({
                         </span>
                       ) : null}
                     </td>
-                    <td className="py-2 pr-4">{count > 0 ? `${count} comments` : '—'}</td>
+                    {features.discussion ? (
+                      <td className="py-2 pr-4">{count > 0 ? `${count} comment${count === 1 ? '' : 's'}` : '—'}</td>
+                    ) : null}
                     <td className="py-2 pr-4">
                       <Link className="underline" href={`/${tenant}/admin/dim/${dimension.id}`}>
                         Edit
@@ -119,6 +247,7 @@ export default async function TenantAdminPage({
               })}
             </tbody>
           </table>
+</div>
         </section>
 
         <section className="mt-10">
@@ -128,11 +257,14 @@ export default async function TenantAdminPage({
               <li className="text-[color:var(--color-muted)]">No audit entries yet.</li>
             ) : (
               audit.map((entry) => (
-                <li key={String(entry.id)} className="flex gap-3">
-                  <span className="w-40 shrink-0 text-[color:var(--color-muted)]">
+                // The row wraps, and the entity may break anywhere: names such as
+                // involvement_submission are one unbreakable word that, beside a fixed
+                // timestamp column, pushed a 320 px page sideways (WCAG 1.4.10).
+                <li key={String(entry.id)} className="flex flex-wrap gap-x-3">
+                  <span className="shrink-0 text-[color:var(--color-muted)] sm:w-40">
                     {entry.ts.toISOString().slice(0, 16).replace('T', ' ')}
                   </span>
-                  <span>
+                  <span className="min-w-0 wrap-anywhere">
                     <code>{entry.action}</code> on {entry.entity}
                   </span>
                 </li>

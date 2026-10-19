@@ -1,0 +1,10 @@
+{
+  "_comment": "PLACEHOLDER AMOUNTS — the owner sets real prices. Whole US dollars per billing interval. Copy to prices.json, edit, then: pnpm stripe:setup --prices docs/billing/prices.json",
+  "currency": "usd",
+  "prices": {
+    "deep_fryer_community_monthly": 0,
+    "deep_fryer_community_annual": 0,
+    "deep_fryer_city_annual": 0,
+    "deep_fryer_metro_annual": 0
+  }
+}

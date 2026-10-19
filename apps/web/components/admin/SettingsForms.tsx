@@ -1,11 +1,17 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useId, useState, useTransition } from 'react';
 import {
+  FEATURE_REGISTRY,
+  PORTRAIT_FEATURES,
+  resolvePortraitFeatures,
+  defaultProgressConfig,
   defaultNotifications,
   defaultRetention,
   defaultReviewPolicy,
+  type FeaturesConfig,
   type NotificationConfig,
+  type ProgressConfig,
   type PortraitConfig,
   type RetentionConfig,
   type ReviewPolicyConfig,
@@ -13,22 +19,33 @@ import {
 } from '@deep-fryer/core';
 import { updateConfig } from '@/lib/actions';
 
-const field = 'w-full rounded border border-black/20 bg-white px-2 py-1 text-sm';
+const field = 'w-full rounded border border-field-border bg-white px-2 py-1 text-sm';
 
+/**
+ * A settings section. `ids` lets a lone field inside take the heading as its
+ * label and the description as its description (JsonEditor), where a
+ * visible <label> would only repeat the heading.
+ */
 function Section({
   title,
   description,
+  ids,
   children,
 }: {
   title: string;
   description?: string;
+  ids?: { heading: string; description: string };
   children: React.ReactNode;
 }) {
   return (
     <section className="rounded border border-black/15 p-4">
-      <h2 className="text-base font-semibold">{title}</h2>
+      <h2 id={ids?.heading} className="text-base font-semibold">
+        {title}
+      </h2>
       {description ? (
-        <p className="mt-1 text-xs text-[color:var(--color-muted)]">{description}</p>
+        <p id={ids?.description} className="mt-1 text-xs text-[color:var(--color-muted)]">
+          {description}
+        </p>
       ) : null}
       <div className="mt-3">{children}</div>
     </section>
@@ -47,20 +64,33 @@ function SaveButton({ pending }: { pending: boolean }) {
   );
 }
 
+/**
+ * One save path for every section, with pending tracked per config key so
+ * saving one form never disables (or mislabels) the others.
+ */
 function useSave(tenantSlug: string) {
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
+  const [pendingKeys, setPendingKeys] = useState<Set<string>>(new Set());
   const [status, setStatus] = useState<Record<string, string>>({});
   const save = (key: TenantConfigKey, value: unknown) => {
+    setPendingKeys((p) => new Set(p).add(key));
     startTransition(async () => {
       try {
-        await updateConfig({ tenantSlug, key, value });
-        setStatus((s) => ({ ...s, [key]: 'Saved.' }));
+        const result = await updateConfig({ tenantSlug, key, value });
+        setStatus((s) => ({ ...s, [key]: result.ok ? 'Saved.' : result.error }));
       } catch (e) {
         setStatus((s) => ({ ...s, [key]: e instanceof Error ? e.message : String(e) }));
+      } finally {
+        setPendingKeys((p) => {
+          const next = new Set(p);
+          next.delete(key);
+          return next;
+        });
       }
     });
   };
-  return { pending, status, save };
+  const isPending = (key: TenantConfigKey) => pendingKeys.has(key);
+  return { isPending, status, save };
 }
 
 function JsonEditor({
@@ -82,8 +112,14 @@ function JsonEditor({
 }) {
   const [text, setText] = useState(JSON.stringify(initial ?? {}, null, 2));
   const [parseError, setParseError] = useState<string | null>(null);
+  // The textarea is named by the section heading and described by its text
+  // (and by the parse error while one shows); without these a screen reader
+  // announces only the raw JSON, with no field name (WCAG 1.3.1 / 4.1.2).
+  const id = useId();
+  const ids = { heading: `${id}-heading`, description: `${id}-description` };
+  const errorId = `${id}-error`;
   return (
-    <Section title={label} description={description}>
+    <Section title={label} description={description} ids={ids}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -101,8 +137,15 @@ function JsonEditor({
           rows={12}
           value={text}
           onChange={(e) => setText(e.target.value)}
+          aria-labelledby={ids.heading}
+          aria-describedby={parseError ? `${ids.description} ${errorId}` : ids.description}
+          aria-invalid={parseError ? true : undefined}
         />
-        {parseError ? <p className="mt-1 text-xs text-red-700">{parseError}</p> : null}
+        {parseError ? (
+          <p id={errorId} className="mt-1 text-xs text-red-700">
+            {parseError}
+          </p>
+        ) : null}
         {status ? <p className="mt-1 text-xs">{status}</p> : null}
         <SaveButton pending={pending} />
       </form>
@@ -120,6 +163,11 @@ export function SettingsForms({
   reviewPolicy,
   retention,
   notifications,
+  progress,
+  features,
+  deploymentDisabled = [],
+  translationRequests = [],
+  translationRequestDays,
 }: {
   tenantSlug: string;
   region: PortraitConfig['region'] | null;
@@ -130,8 +178,16 @@ export function SettingsForms({
   reviewPolicy: ReviewPolicyConfig | null;
   retention: RetentionConfig | null;
   notifications: NotificationConfig | null;
+  progress: ProgressConfig | null;
+  features: FeaturesConfig | null;
+  /** Features the deployment's operator switched off everywhere (DF_DISABLED_FEATURES). */
+  deploymentDisabled?: string[];
+  /** Readers' translation requests while translation is off, per language (SPEC-v7 §3.5). */
+  translationRequests?: { language: string; count: number }[];
+  /** The window those counts cover (lib/translation-requests.ts). */
+  translationRequestDays: number;
 }) {
-  const { pending, status, save } = useSave(tenantSlug);
+  const { isPending, status, save } = useSave(tenantSlug);
 
   const [regionState, setRegionState] = useState(
     region ?? { name: '', definition: '', context_notes: '' },
@@ -142,6 +198,10 @@ export function SettingsForms({
     retention?.transcript_days ?? defaultRetention.transcript_days,
   );
   const [notif, setNotif] = useState<NotificationConfig>(notifications ?? defaultNotifications);
+  const [prog, setProg] = useState<ProgressConfig>(progress ?? defaultProgressConfig);
+  // Every feature shown with the value in effect: stored, or the registry
+  // default for one this portrait never set.
+  const [feat, setFeat] = useState<FeaturesConfig>(() => resolvePortraitFeatures(features));
 
   return (
     <div className="space-y-6">
@@ -184,7 +244,7 @@ export function SettingsForms({
             />
           </label>
           {status.region ? <p className="text-xs">{status.region}</p> : null}
-          <SaveButton pending={pending} />
+          <SaveButton pending={isPending('region')} />
         </form>
       </Section>
 
@@ -212,7 +272,7 @@ export function SettingsForms({
             />
           </label>
           {status.recency ? <p className="mt-1 text-xs">{status.recency}</p> : null}
-          <SaveButton pending={pending} />
+          <SaveButton pending={isPending('recency')} />
         </form>
       </Section>
 
@@ -253,7 +313,7 @@ export function SettingsForms({
             First discussion post from a new account requires approval
           </label>
           {status.review_policy ? <p className="text-xs">{status.review_policy}</p> : null}
-          <SaveButton pending={pending} />
+          <SaveButton pending={isPending('review_policy')} />
         </form>
       </Section>
 
@@ -278,7 +338,7 @@ export function SettingsForms({
             />
           </label>
           {status.retention ? <p className="mt-1 text-xs">{status.retention}</p> : null}
-          <SaveButton pending={pending} />
+          <SaveButton pending={isPending('retention')} />
         </form>
       </Section>
 
@@ -307,7 +367,97 @@ export function SettingsForms({
             Email when the verifier flags a finding
           </label>
           {status.notifications ? <p className="text-xs">{status.notifications}</p> : null}
-          <SaveButton pending={pending} />
+          <SaveButton pending={isPending('notifications')} />
+        </form>
+      </Section>
+
+      <Section
+        title="Progress tracking"
+        description="The baseline every indicator's movement is measured from, shown on the public progress page. Targets with a due year (threshold overrides → target_year) get an on-track/off-track glidepath from this baseline."
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            save('progress', prog);
+          }}
+          className="space-y-2"
+        >
+          <label className="block text-sm">
+            <span className="font-medium">Baseline data year</span>
+            <input
+              className={field}
+              type="number"
+              min={1900}
+              max={2200}
+              placeholder="Earliest published measurement"
+              value={prog.baseline_year ?? ''}
+              onChange={(e) =>
+                setProg({
+                  ...prog,
+                  baseline_year: e.target.value === '' ? null : Number(e.target.value),
+                })
+              }
+            />
+            <span className="mt-1 block text-xs text-[color:var(--color-muted)]">
+              The latest data year that counts as the starting point — e.g. 2025 for conditions
+              inherited in January 2026. Leave empty to use each indicator&apos;s first
+              published value.
+            </span>
+          </label>
+          <label className="block text-sm">
+            <span className="font-medium">Baseline label (public)</span>
+            <input
+              className={field}
+              value={prog.baseline_label}
+              maxLength={120}
+              onChange={(e) => setProg({ ...prog, baseline_label: e.target.value })}
+            />
+          </label>
+          {status.progress ? <p className="text-xs">{status.progress}</p> : null}
+          <SaveButton pending={isPending('progress')} />
+        </form>
+      </Section>
+
+      <Section
+        title="Features"
+        description="The core portrait — the doughnut, dimension pages with their evidence, progress, and publishing — is always on. Everything else is a feature: off until you turn it on here. Changes reach public pages within a minute."
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            save('features', feat);
+          }}
+          className="space-y-3 text-sm"
+        >
+          {PORTRAIT_FEATURES.map((f) => {
+            const blocked = deploymentDisabled.includes(f);
+            return (
+              <label key={f} className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={Boolean(feat[f]) && !blocked}
+                  disabled={blocked}
+                  onChange={(e) => setFeat({ ...feat, [f]: e.target.checked })}
+                />
+                <span>
+                  <span className="font-medium">{FEATURE_REGISTRY[f].label}</span>
+                  <span className="block text-xs text-[color:var(--color-muted)]">
+                    {FEATURE_REGISTRY[f].description}
+                    {blocked ? ' Turned off for this whole deployment by its operator (DF_DISABLED_FEATURES).' : ''}
+                  </span>
+                  {f === 'translation' && translationRequests.length ? (
+                    <span className="mt-1 block text-xs">
+                      Readers asked for (last {translationRequestDays} days):{' '}
+                      {translationRequests.map((r) => `${r.language} (${r.count.toLocaleString('en-US')})`).join(', ')}
+                    </span>
+                  ) : null}
+                </span>
+              </label>
+            );
+          })}
+          {status.features ? <p className="text-xs">{status.features}</p> : null}
+          <SaveButton pending={isPending('features')} />
         </form>
       </Section>
 
@@ -317,7 +467,7 @@ export function SettingsForms({
         configKey="source_priority"
         initial={sourcePriority}
         onSave={save}
-        pending={pending}
+        pending={isPending('source_priority')}
         status={status.source_priority}
       />
 
@@ -327,17 +477,17 @@ export function SettingsForms({
         configKey="scale_policy"
         initial={scalePolicy}
         onSave={save}
-        pending={pending}
+        pending={isPending('scale_policy')}
         status={status.scale_policy}
       />
 
       <JsonEditor
         label="Threshold overrides"
-        description="threshold_ref → { target, rationale }. A rationale is required and is rendered verbatim on the public methodology page."
+        description="threshold_ref → { target, rationale, target_year? }. A rationale is required and is rendered verbatim on the public methodology page; target_year (when the goal is due) drives the progress glidepath."
         configKey="threshold_overrides"
         initial={thresholdOverrides}
         onSave={save}
-        pending={pending}
+        pending={isPending('threshold_overrides')}
         status={status.threshold_overrides}
       />
     </div>

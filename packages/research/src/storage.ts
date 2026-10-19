@@ -3,38 +3,83 @@ import path from 'node:path';
 import { tenantBucketName } from '@deep-fryer/core';
 
 export interface TenantStorage {
-  /** Store bytes at a tenant-relative path; returns the stored path. */
+  /**
+   * Store bytes at a tenant-relative path; returns the stored path. Never
+   * overwrites: evidence is an audit record (SPEC-v3 §2.3), so writing to an
+   * existing path is an error, not an update.
+   */
   put(storagePath: string, body: Buffer, contentType: string): Promise<string>;
   describe(): string;
 }
 
 /**
- * One bucket per tenant (SPEC.md §4). Supabase Storage in real deployments;
- * without Supabase env, files land under `localFallbackDir` (dev serves them
- * from the web app's public/ directory).
+ * S3-compatible object storage settings (SPEC-v3 §2.1: SeaweedFS on the
+ * droplet, DigitalOcean Spaces, or AWS S3). One bucket, one prefix per
+ * tenant (`tenant-<slug>/`) — the S3 form of v2's bucket-per-tenant.
+ */
+export interface S3Settings {
+  bucket: string;
+  region: string;
+  endpoint?: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  /** Self-hosted stores need path-style addressing; Spaces and AWS use virtual hosts. */
+  forcePathStyle: boolean;
+}
+
+export function s3SettingsFromEnv(env: NodeJS.ProcessEnv = process.env): S3Settings | null {
+  const { S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY } = env;
+  if (!S3_BUCKET || !S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY) return null;
+  return {
+    bucket: S3_BUCKET,
+    region: env.S3_REGION || 'us-east-1',
+    endpoint: env.S3_ENDPOINT || undefined,
+    accessKeyId: S3_ACCESS_KEY_ID,
+    secretAccessKey: S3_SECRET_ACCESS_KEY,
+    forcePathStyle: env.S3_FORCE_PATH_STYLE === 'true',
+  };
+}
+
+/**
+ * Evidence storage for one tenant: S3-compatible when configured, otherwise
+ * local disk under `localFallbackDir` (dev serves it from the web app's
+ * public/). The web app reads the same layout through core's
+ * evidencePublicBase.
  */
 export async function tenantStorage(
   tenantSlug: string,
   opts: { localFallbackDir: string },
 ): Promise<TenantStorage> {
-  const url = process.env.SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (url && serviceKey) {
-    const { createClient } = await import('@supabase/supabase-js');
-    const client = createClient(url, serviceKey, { auth: { persistSession: false } });
-    const bucket = tenantBucketName(tenantSlug);
-    const { data: buckets } = await client.storage.listBuckets();
-    if (!buckets?.some((b) => b.name === bucket)) {
-      await client.storage.createBucket(bucket, { public: true });
-    }
+  const s3 = s3SettingsFromEnv();
+  if (s3) {
+    const { S3Client, PutObjectCommand, HeadObjectCommand } = await import('@aws-sdk/client-s3');
+    const client = new S3Client({
+      region: s3.region,
+      endpoint: s3.endpoint,
+      forcePathStyle: s3.forcePathStyle,
+      credentials: { accessKeyId: s3.accessKeyId, secretAccessKey: s3.secretAccessKey },
+    });
+    const prefix = tenantBucketName(tenantSlug);
     return {
-      describe: () => `supabase:${bucket}`,
+      describe: () => `s3:${s3.bucket}/${prefix}`,
       async put(storagePath, body, contentType) {
-        const { error } = await client.storage
-          .from(bucket)
-          .upload(storagePath, body, { upsert: true, contentType });
-        if (error) throw new Error(`storage upload failed: ${error.message}`);
+        const Key = `${prefix}/${storagePath}`;
+        // Keys embed the capture timestamp, so a collision means a bug or a
+        // replay; refuse rather than overwrite the audit record.
+        const exists = await client
+          .send(new HeadObjectCommand({ Bucket: s3.bucket, Key }))
+          .then(() => true)
+          .catch(() => false);
+        if (exists) throw new Error(`evidence object already exists: ${Key}`);
+        await client.send(
+          new PutObjectCommand({
+            Bucket: s3.bucket,
+            Key,
+            Body: body,
+            ContentType: contentType,
+            CacheControl: 'public, max-age=31536000, immutable',
+          }),
+        );
         return storagePath;
       },
     };
@@ -46,7 +91,7 @@ export async function tenantStorage(
     async put(storagePath, body) {
       const full = path.join(baseDir, storagePath);
       await mkdir(path.dirname(full), { recursive: true });
-      await writeFile(full, body);
+      await writeFile(full, body, { flag: 'wx' });
       return storagePath;
     },
   };

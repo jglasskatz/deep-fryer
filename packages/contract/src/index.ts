@@ -42,6 +42,12 @@ export interface Threshold {
   low?: number;
   high?: number;
   rationale: string;
+  /**
+   * Year an adopted goal is due (e.g. LL148's 30% canopy by 2040). Framework
+   * defaults are boundaries, not deadlines, so only overrides set it; progress
+   * monitoring draws its glidepath to this year.
+   */
+  target_year?: number;
 }
 
 export interface Thresholds {

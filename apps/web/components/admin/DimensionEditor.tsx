@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import type { Confidence, DimensionData, GeographicScale, Indicator } from '@deep-fryer/core';
 import { saveDimensionEdit } from '@/lib/actions';
+import { unwrap } from '@/lib/action-result';
 import { useAction } from '@/lib/use-action';
 
 const CONFIDENCES: Confidence[] = ['high', 'medium', 'low'];
 const SCALES: GeographicScale[] = ['city', 'county', 'regional', 'state', 'national', 'global'];
 
 const field =
-  'w-full rounded border border-black/20 bg-white px-2 py-1 text-sm';
+  'w-full rounded border border-field-border bg-white px-2 py-1 text-sm';
 
 /** Form input → indicator value: empty is null, numeric strings are numbers. */
 const parseValueInput = (raw: string): number | string | null =>
@@ -37,13 +38,13 @@ export function DimensionEditor({
 
   const save = () =>
     run(async () => {
-      await saveDimensionEdit({ tenantSlug, dimensionId, data, changeNote });
+      unwrap(await saveDimensionEdit({ tenantSlug, dimensionId, data, changeNote }));
       setChangeNote('');
     });
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="font-medium">Name</span>
           <input
@@ -91,7 +92,7 @@ export function DimensionEditor({
         <div className="mt-3 space-y-4">
           {data.indicators.map((ind, i) => (
             <div key={i} className="rounded border border-black/15 p-3">
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <label className="col-span-2 block text-xs">
                   <span className="font-medium">Indicator</span>
                   <input
@@ -152,7 +153,7 @@ export function DimensionEditor({
                   {ind.scoring.worked_math}
                 </p>
               ) : null}
-              <div className="mt-2 grid grid-cols-2 gap-3">
+              <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <label className="block text-xs">
                   <span className="font-medium">Source</span>
                   <input
@@ -170,7 +171,7 @@ export function DimensionEditor({
                   />
                 </label>
               </div>
-              <div className="mt-2 grid grid-cols-3 gap-3">
+              <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <label className="block text-xs">
                   <span className="font-medium">Supporting source (for this edit)</span>
                   <input

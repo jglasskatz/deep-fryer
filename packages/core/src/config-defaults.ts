@@ -1,4 +1,5 @@
 import { defaultPortraitConfig } from '@deep-fryer/contract';
+import { defaultProgressConfig } from './progress.js';
 import type {
   FeaturesConfig,
   NotificationConfig,
@@ -18,7 +19,14 @@ export const defaultRetention: RetentionConfig = {
   transcript_days: 365 * 7,
 };
 
+/** Everything beyond core starts off (SPEC-v7 §3); owners turn features on in settings. */
 export const defaultFeatures: FeaturesConfig = {
+  emergency: false,
+  policy_analysis: false,
+  involvement: false,
+  discussion: false,
+  translation: false,
+  family_compare: false,
   request_research: false,
 };
 
@@ -44,5 +52,6 @@ export function defaultTenantConfig(regionName: string, regionDefinition: string
     retention: defaultRetention,
     notifications: defaultNotifications,
     features: defaultFeatures,
+    progress: defaultProgressConfig,
   };
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useAction } from '@/lib/use-action';
 import { requestResearch } from '@/lib/insight-actions';
+import { unwrap } from '@/lib/action-result';
 
 /**
  * Editor affordance on the insights page (gated by the tenant's
@@ -38,13 +39,13 @@ export function RequestResearchForm({
         onChange={(e) => setNote(e.target.value)}
         placeholder={`Note for the researcher (optional) — what should the ${tenantName} session look for or fix?`}
         rows={2}
-        className="w-full rounded border border-black/15 p-2 text-xs"
+        className="w-full rounded border border-field-border p-2 text-xs"
       />
       <div className="mt-1 flex items-center gap-2">
         <button
           onClick={() =>
             run(async () => {
-              const res = await requestResearch({ tenantSlug, dimensionSlug, note });
+              const res = unwrap(await requestResearch({ tenantSlug, dimensionSlug, note }));
               setRequested(res.runId);
             })
           }

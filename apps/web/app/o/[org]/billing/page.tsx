@@ -1,0 +1,404 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound, redirect } from 'next/navigation';
+import type Stripe from 'stripe';
+import { FREE_SETUP_LIMITS, PLANS, PURCHASABLE_PLANS, sellsInterval } from '@deep-fryer/core';
+import { organizationBySlug } from '@deep-fryer/db';
+import { SiteHeader } from '@/components/site-header/SiteHeader';
+import { UsageMeter } from '@/components/billing/UsageMeter';
+import { PlanPicker, type PickerPlan } from '@/components/billing/PlanPicker';
+import { PortalButton } from '@/components/billing/PortalButton';
+import { ContractForm } from '@/components/billing/ContractForm';
+import { ApiKeyForm } from '@/components/billing/ApiKeyForm';
+import { ResearchCostEstimate } from '@/components/billing/ResearchCostEstimate';
+import { ContactText } from '@/components/billing/ContactText';
+import { getAuth, getOrgRole, getRole, roleAtLeast } from '@/lib/auth';
+import {
+  apiKeyUnavailableNotice,
+  billingSummary,
+  firstUnbuiltPortrait,
+  keyFundedSessionsNote,
+  WARNING_COPY,
+} from '@/lib/billing';
+import { bringYourOwnKeyAvailable, hasDatabase, stripeConfigured, supportEmail } from '@/lib/env';
+import { deploymentFeatureOn } from '@/lib/features';
+import { catalogPrices, formatPrice, stripe } from '@/lib/stripe';
+import { systemDb } from '@/lib/db';
+
+export const metadata: Metadata = { title: 'Billing', robots: { index: false } };
+
+const COLLECTION_LABEL = {
+  card: 'Card (Stripe)',
+  invoice: 'Invoice, net 30 (Stripe)',
+  contract: 'Contract (invoiced directly)',
+} as const;
+
+/**
+ * Billing (SPEC-v4 §3): organization owners, billing contacts, and staff.
+ * Shows standing and usage against the plan, the invoice history, and the
+ * ways to buy — card checkout, annual invoice with PO, or (staff) a
+ * negotiated contract — and the organization's own Anthropic API key
+ * (SPEC-v7 §4), which owners add or remove here. The page only ever has the
+ * key's hint and dates (BillingSummary.apiKey); the key itself is never
+ * read back.
+ *
+ * Most people arrive from /start's build step, sent here to choose a plan or
+ * add a key for a portrait that has not been built yet. While the
+ * organization has such a portrait and this person may build it, the page
+ * links back to that step, and a completed Stripe Checkout (which returns
+ * here, `?checkout=success`) forwards straight to it — paying was the step
+ * before "Build my doughnut".
+ */
+export default async function BillingPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ org: string }>;
+  searchParams: Promise<{ checkout?: string }>;
+}) {
+  if (!hasDatabase()) redirect('/');
+  const { org: orgSlug } = await params;
+  const { checkout } = await searchParams;
+  const org = await organizationBySlug(systemDb(), orgSlug);
+  if (!org) notFound();
+  const auth = await getAuth();
+  if (!auth.userId) redirect(`/login?next=${encodeURIComponent(`/o/${orgSlug}/billing`)}`);
+  const role = await getOrgRole(org.id);
+  if (!role && !auth.isStaff) redirect(`/o/${orgSlug}`);
+
+  // The build step this person can go back to: /start for the organization's first portrait not built yet,
+  // while self-serve start exists on this deployment and they may start research on that portrait.
+  const unbuilt = deploymentFeatureOn('self_serve') ? await firstUnbuiltPortrait(org.id) : null;
+  const buildStep =
+    unbuilt && roleAtLeast(await getRole(unbuilt.id), 'editor')
+      ? { href: `/start?portrait=${encodeURIComponent(unbuilt.slug)}`, name: unbuilt.name }
+      : null;
+  // Paid by card: on to the build step, which says the payment arrived and waits for the plan to land.
+  // `at` lets the build step stop waiting for the webhook after a while (start/page.tsx CHECKOUT_CONFIRM_MS).
+  if (checkout === 'success' && buildStep) redirect(`${buildStep.href}&checkout=success&at=${Date.now()}`);
+
+  const [summary, prices] = await Promise.all([billingSummary(org.id), catalogPrices()]);
+  const sub = summary.subscription;
+  const contact = supportEmail();
+  // Set when this server cannot store or read organization keys; its words depend on whether one is on file.
+  const keyNotice = apiKeyUnavailableNotice(summary.apiKey !== null);
+
+  let invoices: Stripe.Invoice[] = [];
+  if (stripeConfigured() && org.stripeCustomerId) {
+    try {
+      invoices = (await stripe().invoices.list({ customer: org.stripeCustomerId, limit: 12 })).data;
+    } catch (err) {
+      console.error('[billing] invoice list failed', err);
+    }
+  }
+
+  const pickerPlans: PickerPlan[] = PURCHASABLE_PLANS.map((id) => {
+    const p = PLANS[id];
+    // Only the intervals the plan is sold by (core sellsInterval; startCheckout refuses the others).
+    const price = (interval: 'month' | 'year') => {
+      if (!sellsInterval(p, interval)) return undefined;
+      const key = p.stripeLookupKeys[interval];
+      const found = key ? prices.get(key) : undefined;
+      return found ? formatPrice(found) : undefined;
+    };
+    return {
+      id,
+      name: p.name,
+      audience: p.audience,
+      highlights: p.highlights,
+      limits: {
+        portraits: p.portraits,
+        seats: p.seats,
+        researchSessionsPerYear: p.researchSessionsPerYear,
+      },
+      selfServe: p.selfServe,
+      prices: { month: price('month'), year: price('year') },
+    };
+  });
+  const stripeManaged = Boolean(
+    sub?.stripeSubscriptionId && !['canceled', 'incomplete_expired'].includes(sub.status),
+  );
+  // Just back from a paid checkout whose webhook has not written the plan yet: offering the plans again
+  // would invite paying twice, so the picker waits (startCheckout refuses a second subscription anyway).
+  const awaitingCheckout = checkout === 'success' && !stripeManaged;
+  // The meter counts plan-funded sessions only; sessions the research gate put
+  // on the organization's own key this period are named beside it, worded as on
+  // the org hub and the research and policy pages (lib/billing.ts).
+  const keyNote = keyFundedSessionsNote(summary);
+
+  return (
+    <>
+      <SiteHeader variant="org" org={{ slug: org.slug, name: org.name }} />
+      <main id="main" className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+        <p className="text-sm">
+          <Link className="underline" href={`/o/${org.slug}`}>
+            ← {org.name}
+          </Link>
+        </p>
+        <h1 className="mt-2 text-3xl font-bold">Billing</h1>
+        {buildStep ? (
+          <p className="mt-3 rounded bg-black/[0.03] p-3 text-sm">
+            <Link className="font-medium underline" href={buildStep.href}>
+              ← Back to building your doughnut
+            </Link>{' '}
+            <span className="text-[color:var(--color-muted)]">
+              ({buildStep.name}: choose a plan or add your key here, then build it there)
+            </span>
+          </p>
+        ) : null}
+
+        {checkout === 'success' ? (
+          <p role="status" className="mt-4 rounded bg-green-50 p-3 text-sm text-green-900">
+            Payment received — thank you. Your plan updates here within a few seconds.
+            {awaitingCheckout ? (
+              <>
+                {' '}
+                <Link className="underline" href={`/o/${org.slug}/billing`}>
+                  Reload this page
+                </Link>{' '}
+                to see it.
+              </>
+            ) : null}
+          </p>
+        ) : checkout === 'canceled' ? (
+          <p className="mt-4 rounded bg-black/5 p-3 text-sm">Checkout canceled; nothing was charged.</p>
+        ) : null}
+
+        <section className="mt-6 rounded-lg border border-black/10 p-4" aria-labelledby="current">
+          <h2 id="current" className="text-lg font-semibold">
+            {summary.plan ? `${summary.plan.name} plan` : 'No plan yet'}
+          </h2>
+          {sub ? (
+            <dl className="mt-2 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
+              <div>
+                <dt className="inline text-[color:var(--color-muted)]">Status: </dt>
+                <dd className="inline">{sub.status}{sub.cancelAtPeriodEnd ? ' (ends at period close)' : ''}</dd>
+              </div>
+              <div>
+                <dt className="inline text-[color:var(--color-muted)]">Billing: </dt>
+                <dd className="inline">{COLLECTION_LABEL[sub.collection]}</dd>
+              </div>
+              <div>
+                <dt className="inline text-[color:var(--color-muted)]">Current period: </dt>
+                <dd className="inline">
+                  {sub.currentPeriodStart.toISOString().slice(0, 10)} → {sub.currentPeriodEnd.toISOString().slice(0, 10)}
+                </dd>
+              </div>
+              {sub.poNumber ? (
+                <div>
+                  <dt className="inline text-[color:var(--color-muted)]">PO: </dt>
+                  <dd className="inline">{sub.poNumber}</dd>
+                </div>
+              ) : null}
+              {sub.trialEndsAt ? (
+                <div>
+                  <dt className="inline text-[color:var(--color-muted)]">Trial ends: </dt>
+                  <dd className="inline">{sub.trialEndsAt.toISOString().slice(0, 10)}</dd>
+                </div>
+              ) : null}
+            </dl>
+          ) : null}
+          {!sub ? (
+            // In place of the standing message, which sends people to this page: here, say what is free and where to go.
+            <p className="mt-2 text-sm">
+              Without a plan this organization can hold {FREE_SETUP_LIMITS.portraits} portrait, private until it
+              is published, and up to {FREE_SETUP_LIMITS.seats} people to set it up and review it — free. Building
+              it, the research, needs a plan or a contract:{' '}
+              <a className="underline" href="#choose">
+                choose a plan below
+              </a>
+              . Reading published portraits is always free.
+            </p>
+          ) : null}
+          {summary.blockedMessage && sub ? (
+            <p role="alert" className="mt-3 rounded bg-red-50 p-2 text-sm text-red-900">
+              <ContactText text={summary.blockedMessage} contact={contact} />
+            </p>
+          ) : summary.standing.warning ? (
+            <p className="mt-3 rounded bg-amber-50 p-2 text-sm text-amber-900">
+              {WARNING_COPY[summary.standing.warning]}
+            </p>
+          ) : null}
+          {summary.limits ? (
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <UsageMeter label="Research sessions this period" used={summary.usage.researchSessions} limit={summary.limits.researchSessions} />
+              <UsageMeter label="Portraits" used={summary.usage.portraits} limit={summary.limits.portraits} />
+              <UsageMeter label="Seats" used={summary.usage.seats} limit={summary.limits.seats} />
+            </div>
+          ) : null}
+          <p className="mt-3 text-xs text-[color:var(--color-muted)]">
+            Allowances are hard caps — there is never an overage charge. Published portraits stay
+            online whatever the billing status.
+            {keyNote ? ` ${keyNote}` : ''}
+          </p>
+          {stripeConfigured() && org.stripeCustomerId ? (
+            <div className="mt-4">
+              <PortalButton orgSlug={org.slug} />
+            </div>
+          ) : null}
+        </section>
+
+        <section id="api-key" className="mt-8 rounded-lg border border-black/10 p-4" aria-labelledby="api-key-heading">
+          <h2 id="api-key-heading" className="text-lg font-semibold">
+            Your Anthropic API key
+          </h2>
+          {keyNotice && !summary.apiKey ? null : (
+            <>
+              <p className="mt-1 text-sm">
+                {summary.apiKey && !keyNotice
+                  ? 'Research and policy sessions for this organization run on your key and are not counted against your plan.'
+                  : 'With your own Anthropic API key on file, research and policy sessions for this organization run on your key and are not counted against your plan.'}{' '}
+                A plan is still needed: your key pays for the model usage, the plan for hosting, review, and support.
+              </p>
+              <div className="mt-3">
+                <ResearchCostEstimate onKey showSingleSession />
+              </div>
+            </>
+          )}
+          <div className="mt-4">
+            {keyNotice ? (
+              // For everyone who sees the section: with a key on file, research is refused until this is resolved;
+              // without one, this is the whole story — the server cannot take a key, so nothing here is offered.
+              <p className="mb-3 rounded bg-black/5 p-2 text-sm">
+                <ContactText text={keyNotice} contact={contact} />
+              </p>
+            ) : null}
+            {role === 'owner' ? (
+              <ApiKeyForm
+                orgSlug={org.slug}
+                canSave={bringYourOwnKeyAvailable()}
+                onFile={
+                  summary.apiKey
+                    ? {
+                        keyHint: summary.apiKey.keyHint,
+                        createdAt: summary.apiKey.createdAt.toISOString(),
+                        validatedAt: summary.apiKey.validatedAt?.toISOString() ?? null,
+                      }
+                    : null
+                }
+              />
+            ) : summary.apiKey ? (
+              <p className="text-sm">
+                {keyNotice ? 'The organization’s own key is on file' : 'Research runs on the organization’s own key'} (
+                <span className="font-mono">sk-ant-…{summary.apiKey.keyHint}</span>
+                , added {summary.apiKey.createdAt.toISOString().slice(0, 10)}). Only an organization owner can replace or
+                remove it.
+              </p>
+            ) : keyNotice ? null : (
+              <p className="text-sm text-[color:var(--color-muted)]">
+                No key on file. An organization owner can add one here.
+              </p>
+            )}
+          </div>
+        </section>
+
+        {invoices.length > 0 ? (
+          <section className="mt-8" aria-labelledby="invoices">
+            <h2 id="invoices" className="text-lg font-semibold">
+              Invoices
+            </h2>
+            <div className="mt-2 overflow-x-auto">
+              <table className="w-full min-w-[520px] text-sm">
+                <thead>
+                  <tr className="border-b text-left text-[color:var(--color-muted)]">
+                    <th className="py-2 pr-4 font-medium">Number</th>
+                    <th className="py-2 pr-4 font-medium">Date</th>
+                    <th className="py-2 pr-4 font-medium">Amount</th>
+                    <th className="py-2 pr-4 font-medium">Status</th>
+                    <th className="py-2 pr-4" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {invoices.map((inv) => (
+                    <tr key={inv.id} className="border-b">
+                      <td className="py-2 pr-4">{inv.number ?? '—'}</td>
+                      <td className="py-2 pr-4">{new Date(inv.created * 1000).toISOString().slice(0, 10)}</td>
+                      <td className="py-2 pr-4 tabular-nums">
+                        {(inv.amount_due / 100).toLocaleString('en-US', { style: 'currency', currency: inv.currency.toUpperCase() })}
+                      </td>
+                      <td className="py-2 pr-4">{inv.status}</td>
+                      <td className="py-2 pr-4 text-right">
+                        {inv.hosted_invoice_url ? (
+                          <a className="underline" href={inv.hosted_invoice_url} target="_blank" rel="noreferrer">
+                            View / pay
+                          </a>
+                        ) : null}
+                        {inv.invoice_pdf ? (
+                          <a className="ml-3 underline" href={inv.invoice_pdf} target="_blank" rel="noreferrer">
+                            PDF
+                          </a>
+                        ) : null}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        ) : null}
+
+        {!stripeManaged && !awaitingCheckout ? (
+          <section className="mt-10" aria-labelledby="choose">
+            <h2 id="choose" className="text-lg font-semibold">
+              {sub && sub.plan !== 'trial' && summary.standing.active ? 'Move to online billing' : 'Choose a plan'}
+            </h2>
+            {stripeConfigured() ? (
+              <div className="mt-4">
+                <PlanPicker
+                  orgSlug={org.slug}
+                  plans={pickerPlans}
+                  defaultBillingEmail={org.billingEmail ?? auth.email ?? ''}
+                  defaultTaxExempt={org.taxExempt}
+                  currentPlan={sub?.plan ?? null}
+                />
+              </div>
+            ) : (
+              <p className="mt-2 text-sm text-[color:var(--color-muted)]">
+                Online billing is not enabled on this server.{' '}
+                {contact ? (
+                  <>
+                    Email <a className="underline" href={`mailto:${contact}`}>{contact}</a> to arrange a contract or invoice.
+                  </>
+                ) : (
+                  'Contact the operator to arrange a contract or invoice.'
+                )}
+              </p>
+            )}
+            <p className="mt-4 text-xs text-[color:var(--color-muted)]">
+              Need a quote for procurement, a W-9, or a security questionnaire?{' '}
+              {contact ? <a className="underline" href={`mailto:${contact}`}>{contact}</a> : 'Contact us'}
+              . See also <Link className="underline" href="/pricing">pricing</Link>.
+            </p>
+          </section>
+        ) : null}
+
+        {auth.isStaff ? (
+          <section className="mt-10 rounded-lg border border-dashed border-black/30 p-4" aria-labelledby="staff">
+            <h2 id="staff" className="text-lg font-semibold">
+              Staff: contract terms
+            </h2>
+            <p className="mt-1 text-xs text-[color:var(--color-muted)]">
+              For agreements invoiced outside Stripe (e.g. the NYC pilot). Blank limits use the
+              plan&apos;s catalog values.
+            </p>
+            <div className="mt-3">
+              <ContractForm
+                orgSlug={org.slug}
+                initial={{
+                  // A retired trial is moved onto a real plan, never renewed (ContractForm offers no trial).
+                  plan: sub && sub.plan !== 'trial' ? sub.plan : 'metro',
+                  periodStart: (sub?.collection === 'contract' ? sub.currentPeriodStart : new Date()).toISOString().slice(0, 10),
+                  periodEnd: (sub?.currentPeriodEnd ?? new Date(Date.now() + 365 * 86_400_000)).toISOString().slice(0, 10),
+                  poNumber: sub?.poNumber ?? '',
+                  researchSessionsOverride: sub?.researchSessionsOverride ?? null,
+                  portraitsOverride: sub?.portraitsOverride ?? null,
+                  seatsOverride: sub?.seatsOverride ?? null,
+                }}
+              />
+            </div>
+          </section>
+        ) : null}
+      </main>
+    </>
+  );
+}
