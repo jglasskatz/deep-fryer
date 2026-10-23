@@ -1,0 +1,560 @@
+[
+  {
+    "query": "site:ci.carmel.ca.us Carmel-by-the-Sea city limits GIS boundary general plan housing element climate action plan",
+    "url": "https://ci.carmel.ca.us/post/general-plan",
+    "decision": "Used City General Plan, Local Coastal Program, GIS and planning pages.",
+    "reason": "Primary local sources for jurisdiction, planning documents and parcel/GIS tools."
+  },
+  {
+    "query": "site:ci.carmel.ca.us Carmel-by-the-Sea city departments annual reports water wastewater school district Monterey Peninsula",
+    "url": "https://ci.carmel.ca.us/budget",
+    "decision": "Used City utility, budget, planning and GIS pages.",
+    "reason": "Primary city sources for data portals and service providers."
+  },
+  {
+    "query": "Carmel-by-the-Sea California Census place ACS geography Monterey County city official",
+    "url": "https://tigerweb.geo.census.gov/tigerwebmain/Files/acs26/tigerweb_acs26_incplace_2025_acs25_ca.html",
+    "decision": "Used Census TIGERweb place table and Boundary and Annexation Survey map.",
+    "reason": "Official statistical identity and boundary representation; the Census map states its legal-boundary limitation."
+  },
+  {
+    "query": "Carmel-by-the-Sea utilities water provider school district hospital institutions official",
+    "url": "https://ci.carmel.ca.us/post/utilities",
+    "decision": "Used City utilities and Police & Fire pages, CalAm and CUSD pages.",
+    "reason": "Primary local and provider sources; regional coverage is identified explicitly."
+  },
+  {
+    "query": "site:ci.carmel.ca.us GIS Mapping Carmel-by-the-Sea city limits open data",
+    "url": "https://ci.carmel.ca.us/post/gis-mapping-tool",
+    "decision": "Used City GIS page; did not treat it as an authoritative downloadable boundary polygon.",
+    "reason": "It provides parcel and historic permit information; jurisdiction decisions should use city/LAFCO boundary material."
+  },
+  {
+    "query": "Monterey County official open data GIS portal annual reports climate water resources Carmel",
+    "url": "https://www.countyofmonterey.gov/business/developing-here/gis-mapping-data",
+    "decision": "Search result identified the county GIS portal; direct open returned HTTP 403, so no substantive claims rely on it.",
+    "reason": "Potential county source, inaccessible to this research session."
+  },
+  {
+    "query": "Carmel Area Wastewater District official service area reports annual report Carmel city",
+    "url": "https://www.cawd.org/service-area",
+    "decision": "Used CAWD service-area and transparency pages; also noted discharge-monitoring reports portal.",
+    "reason": "Primary district documents establish that CAWD geography extends beyond city limits."
+  },
+  {
+    "query": "Carmel Unified School District official schools Carmel-by-the-Sea service area boundaries",
+    "url": "https://www.carmelunified.org/departments/student-services/enrollment-residency",
+    "decision": "Used CUSD Enrollment & Residency page.",
+    "reason": "The district explicitly lists Carmel-by-the-Sea among its broader service geography."
+  },
+  {
+    "query": "site:amwater.com/caaw Carmel-by-the-Sea California American Water Monterey service area water quality report",
+    "url": "https://www.amwater.com/caaw/Customer-Service-Billing/Rates/Monterey-District",
+    "decision": "Used CalAm Monterey service-area page; searched results also surfaced a Monterey-area water report, left for indicator research.",
+    "reason": "Service-area context only; no water-quality findings researched in this phase."
+  },
+  {
+    "query": "site:mbard.org Carmel-by-the-Sea Monterey Bay Air Resources District air quality reports",
+    "url": "https://www.mbard.org/air-quality-and-planning",
+    "decision": "Used MBARD Air Quality and Planning page.",
+    "reason": "Official monitoring agency and its tri-county scope are relevant regional context."
+  },
+  {
+    "query": "Monterey County Transportation Agency official Metropolitan Planning Organization Carmel city region",
+    "url": "https://www.ambag.org/about-us",
+    "decision": "Used AMBAG official About and Planning pages.",
+    "reason": "AMBAG establishes the regional transportation-planning geography."
+  },
+  {
+    "query": "Monterey County Health Department Carmel hospital Community Hospital Monterey Peninsula official",
+    "url": "https://ci.carmel.ca.us/police-fire",
+    "decision": "Used City Police & Fire page for its CHOMP local contact reference; did not use county hospitals search result because page open failed.",
+    "reason": "Avoided basing brief claims on inaccessible county page."
+  },
+  {
+    "query": "site:ambag.org member jurisdictions Carmel-by-the-Sea regional planning MPO",
+    "url": "https://www.ambag.org/about-us",
+    "decision": "Used AMBAG About Us page; board page identified city representation but was not needed for the brief.",
+    "reason": "Primary regional-governance source."
+  },
+  {
+    "query": "site:montagehealth.org Community Hospital of the Monterey Peninsula location official",
+    "url": null,
+    "decision": "Not used; City Police & Fire page sufficed for a scoped institution reference.",
+    "reason": "No need to expand the brief into hospital service-area findings."
+  },
+  {
+    "query": "site:mpc.edu Monterey Peninsula College district serves Carmel-by-the-Sea official",
+    "url": "https://mpc.edu/about/index.html",
+    "decision": "Used MPC About page.",
+    "reason": "Primary college source states the broader set of communities served."
+  },
+  {
+    "query": "site:ci.carmel.ca.us police fire public works departments Carmel-by-the-Sea annual report",
+    "url": "https://ci.carmel.ca.us/police-fire",
+    "decision": "Used City Police & Fire page; budget and annual material point to recurring city reporting.",
+    "reason": "Primary source for city public-safety roles and reporting portal."
+  },
+  {
+    "query": "site:census.gov PUMA minimum population 100,000 Public Use Microdata Areas 2020 ACS geography",
+    "url": "https://www.census.gov/programs-surveys/geography/guidance/geo-areas/pumas.html",
+    "decision": "Used Census PUMA overview.",
+    "reason": "Official minimum population supports the PUMA scale-mismatch note."
+  },
+  {
+    "query": "ACS geography place incorporated place Carmel-by-the-Sea county subdivision Census 2024 ACS 5-year",
+    "url": "https://tigerweb.geo.census.gov/tigerwebmain/Files/acs26/tigerweb_acs26_incplace_2025_acs25_ca.html",
+    "decision": "Used Census incorporated-place table; did not assert a specific county-subdivision correspondence.",
+    "reason": "Place geography is clear, while subdivision identity was not needed to define the portrait."
+  },
+  {
+    "query": "Carmel-by-the-Sea Sphere of Influence Monterey County LAFCO city boundaries city general plan map",
+    "url": "https://maps.co.monterey.ca.us/server/rest/services/LAFCO/Incorporated_Cities_2/FeatureServer/2",
+    "decision": "Used City General Plan and opened Monterey County LAFCO incorporated-city GIS layer; County studies/maps page returned 403.",
+    "reason": "Separate the city boundary from sphere-of-influence geography and record access limitation."
+  },
+  {
+    "query": "Monterey County GIS mapping data official water resources agency LAFCO open data",
+    "url": "https://www.countyofmonterey.gov/business/developing-here/gis-mapping-data",
+    "decision": "County GIS and LAFCO web pages returned 403 when opened; excluded their page content from factual claims.",
+    "reason": "Recorded the inaccessible candidate portals for later retry if needed."
+  },
+  {
+    "query": "https://ci.carmel.ca.us/post/general-plan",
+    "url": "https://ci.carmel.ca.us/post/general-plan",
+    "decision": "Opened and used.",
+    "reason": "City plan coverage, plan elements and Housing Element status."
+  },
+  {
+    "query": "https://ci.carmel.ca.us/post/utilities",
+    "url": "https://ci.carmel.ca.us/post/utilities",
+    "decision": "Opened and used.",
+    "reason": "City-listed utility providers."
+  },
+  {
+    "query": "https://ci.carmel.ca.us/budget",
+    "url": "https://ci.carmel.ca.us/budget",
+    "decision": "Opened and used.",
+    "reason": "Annual budgets, ACFRs, quarterly sales-tax reports and fee schedules."
+  },
+  {
+    "query": "https://ci.carmel.ca.us/planning",
+    "url": "https://ci.carmel.ca.us/planning",
+    "decision": "Opened and used.",
+    "reason": "Planning Division role and plan implementation."
+  },
+  {
+    "query": "https://maps.co.monterey.ca.us/server/rest/services/LAFCO/Incorporated_Cities_2/FeatureServer/2",
+    "url": "https://maps.co.monterey.ca.us/server/rest/services/LAFCO/Incorporated_Cities_2/FeatureServer/2",
+    "decision": "Opened and used.",
+    "reason": "Official Monterey County LAFCO map layer labels Carmel-by-the-Sea."
+  },
+  {
+    "query": "https://ci.carmel.ca.us/post/local-coastal-program",
+    "url": "https://ci.carmel.ca.us/post/local-coastal-program",
+    "decision": "Opened and used.",
+    "reason": "City states coastal-zone coverage and LCP structure."
+  },
+  {
+    "query": "https://tigerweb.geo.census.gov/tigerwebmain/Files/acs26/tigerweb_acs26_incplace_2025_acs25_ca.html",
+    "url": "https://tigerweb.geo.census.gov/tigerwebmain/Files/acs26/tigerweb_acs26_incplace_2025_acs25_ca.html",
+    "decision": "Opened and used.",
+    "reason": "Census place label and GEOID."
+  },
+  {
+    "query": "https://www2.census.gov/geo/pvs/bas/bas24maps/st06_ca/incplace/p0611250_carmel-by-the-sea/BAS24P10600011250.pdf",
+    "url": "https://www2.census.gov/geo/pvs/bas/bas24maps/st06_ca/incplace/p0611250_carmel-by-the-sea/BAS24P10600011250.pdf",
+    "decision": "Opened and used.",
+    "reason": "Census map, county context and boundary disclaimer."
+  },
+  {
+    "query": "https://www.cawd.org/service-area",
+    "url": "https://www.cawd.org/service-area",
+    "decision": "Opened and used.",
+    "reason": "CAWD geography extends beyond city limits."
+  },
+  {
+    "query": "https://www.cawd.org/district-transparency",
+    "url": "https://www.cawd.org/district-transparency",
+    "decision": "Opened and used.",
+    "reason": "Budgets, audits, board records and other recurring publications."
+  },
+  {
+    "query": "https://www.carmelunified.org/departments/student-services/enrollment-residency",
+    "url": "https://www.carmelunified.org/departments/student-services/enrollment-residency",
+    "decision": "Opened and used.",
+    "reason": "CUSD service geography spans Carmel-by-the-Sea and other communities."
+  },
+  {
+    "query": "https://www.amwater.com/caaw/Customer-Service-Billing/Rates/Monterey-District",
+    "url": "https://www.amwater.com/caaw/Customer-Service-Billing/Rates/Monterey-District",
+    "decision": "Opened and used.",
+    "reason": "CalAm Monterey tariff area scope and rate/service map links."
+  },
+  {
+    "query": "https://www.mbard.org/air-quality-and-planning",
+    "url": "https://www.mbard.org/air-quality-and-planning",
+    "decision": "Opened and used.",
+    "reason": "Tri-county air monitoring and planning agency scope."
+  },
+  {
+    "query": "https://www.ambag.org/about-us",
+    "url": "https://www.ambag.org/about-us",
+    "decision": "Opened and used.",
+    "reason": "Regional MPO/COG role and regional forecast responsibilities."
+  },
+  {
+    "query": "https://ci.carmel.ca.us/police-fire",
+    "url": "https://ci.carmel.ca.us/police-fire",
+    "decision": "Opened and used.",
+    "reason": "City police jurisdiction, fire staffing arrangement and CHOMP listing."
+  },
+  {
+    "query": "https://mpc.edu/about/index.html",
+    "url": "https://mpc.edu/about/index.html",
+    "decision": "Opened and used.",
+    "reason": "MPC communities served and multi-campus footprint."
+  },
+  {
+    "query": "https://ci.carmel.ca.us/post/gis-mapping-tool",
+    "url": "https://ci.carmel.ca.us/post/gis-mapping-tool",
+    "decision": "Opened and used.",
+    "reason": "City parcel, historic permit and GIS access."
+  },
+  {
+    "query": "https://www.census.gov/programs-surveys/geography/guidance/geo-areas/pumas.html",
+    "url": "https://www.census.gov/programs-surveys/geography/guidance/geo-areas/pumas.html",
+    "decision": "Opened and used.",
+    "reason": "PUMA 100,000-person minimum and ACS use."
+  },
+  {
+    "query": "https://ci.carmel.ca.us/post/long-range-planning-initiatives",
+    "url": "https://ci.carmel.ca.us/post/long-range-planning-initiatives",
+    "decision": "Opened and used.",
+    "reason": "City Housing Element and adopted climate-plan links."
+  },
+  {
+    "query": "https://www.countyofmonterey.gov/business/developing-here/gis-mapping-data",
+    "url": "https://www.countyofmonterey.gov/business/developing-here/gis-mapping-data",
+    "decision": "Direct open returned HTTP 403; excluded page content from the brief.",
+    "reason": "Candidate county GIS/open-data portal could not be inspected."
+  },
+  {
+    "query": "https://www.countyofmonterey.gov/government/government-links/lafco/studies-maps",
+    "url": "https://www.countyofmonterey.gov/government/government-links/lafco/studies-maps",
+    "decision": "Direct open returned HTTP 403; excluded page content from the brief.",
+    "reason": "Candidate LAFCO studies/map index could not be inspected."
+  },
+  {
+    "query": "site:sos.ca.gov Carmel-by-the-Sea voter turnout 2024 registered voters election results",
+    "url": "https://www.sos.ca.gov/elections/county-city-school-district-ballot-measure-election-results",
+    "decision": "Explored",
+    "reason": "Used official local-election archive; no turnout denominator."
+  },
+  {
+    "query": "site:montereycountyelections.us Carmel-by-the-Sea 2024 turnout registered voters",
+    "url": "https://www.montereycountyelections.us",
+    "decision": "Explored",
+    "reason": "Search result did not yield city turnout denominator."
+  },
+  {
+    "query": "site:openjustice.doj.ca.gov Carmel-by-the-Sea 2024 violent crime rate",
+    "url": "https://openjustice.doj.ca.gov",
+    "decision": "Explored",
+    "reason": "No directly opened current city rate."
+  },
+  {
+    "query": "site:ucr.fbi.gov Carmel-by-the-Sea 2024 violent crime data",
+    "url": "https://www.fbi.gov/how-we-can-help-you/more-fbi-services-and-information/ucr",
+    "decision": "Explored",
+    "reason": "No directly opened current city rate."
+  },
+  {
+    "query": "Monterey County annual PM2.5 2024 EPA AirData annual summary",
+    "url": "https://aqs.epa.gov/aqsweb/airdata/download_files.html?monitor=25-025-1004",
+    "decision": "Explored",
+    "reason": "Official EPA annual monitor and county files identified; no county annual mean extracted."
+  },
+  {
+    "query": "site:epa.gov Monterey County PM2.5 annual average 2023 air quality",
+    "url": "https://www.epa.gov/outdoor-air-quality-data/air-quality-statistics-report",
+    "decision": "Explored",
+    "reason": "EPA county tool opened; no exact value retrieved."
+  },
+  {
+    "query": "site:arb.ca.gov Monterey County PM2.5 2024 annual average",
+    "url": "https://ww2.arb.ca.gov/sites/default/files/2024-12/Staff_Report_PM2.5_Area_Designation_Recommendations_2024_Annual_PM2.5_NAAQS.pdf",
+    "decision": "Rejected or gap",
+    "reason": "Nearest 2023 annual design value is a 3-year metric, rejected."
+  },
+  {
+    "query": "Carmel-by-the-Sea PM2.5 annual mean 2023 EPA",
+    "url": "https://www.epa.gov/air-trends/air-quality-cities-and-counties",
+    "decision": "Explored",
+    "reason": "EPA source confirms city definition as CBSA and county datasets; no city-limit annual mean."
+  },
+  {
+    "query": "site:data.census.gov/table/ACSST5Y2024.S2701 Carmel-by-the-Sea uninsured",
+    "url": "https://data.census.gov/profile/Carmel-by-the-Sea_city%2C_California?g=160XX00US0611250",
+    "decision": "Explored",
+    "reason": "2024 profile candidate 0.5% without coverage; table not opened."
+  },
+  {
+    "query": "site:data.census.gov/table/ACSST5Y2024.S1701 Carmel-by-the-Sea poverty",
+    "url": "https://data.census.gov/table/ACSST5Y2024.S1701",
+    "decision": "Explored",
+    "reason": "Official table exists; city value not directly retrieved."
+  },
+  {
+    "query": "site:data.census.gov/table/ACSST5Y2024.S2301 Carmel-by-the-Sea unemployment",
+    "url": "https://data.census.gov/table/ACSDT5Y2024.S2301",
+    "decision": "Explored",
+    "reason": "City unemployment value not directly retrieved."
+  },
+  {
+    "query": "site:data.census.gov/table/ACSST5Y2024.S2503 Carmel-by-the-Sea cost burden",
+    "url": "https://data.census.gov/table/ACSST5Y2024.S2503",
+    "decision": "Rejected or gap",
+    "reason": "City table not opened; older City Housing Element estimate rejected."
+  },
+  {
+    "query": "site:data.census.gov/table/ACSST5Y2024.S1903 Gini Carmel-by-the-Sea",
+    "url": "https://data.census.gov/table/ACSST5Y2024.S1903",
+    "decision": "Explored",
+    "reason": "No city result."
+  },
+  {
+    "query": "site:data.census.gov/table/ACSST5Y2024.S2001 Carmel-by-the-Sea median earnings female male",
+    "url": "https://data.census.gov/table/ACSST5Y2024.S2001",
+    "decision": "Explored",
+    "reason": "Official table searched; city estimate not directly retrieved."
+  },
+  {
+    "query": "site:data.census.gov/table/ACSST5Y2024.S2801 Carmel-by-the-Sea broadband subscription",
+    "url": "https://data.census.gov/table/ACSST5Y2024.S2801",
+    "decision": "Explored",
+    "reason": "Search results exposed unrelated geographies; city table not retrieved."
+  },
+  {
+    "query": "2024 ACS S2503 Carmel-by-the-Sea city renter cost burden",
+    "url": "https://data.census.gov/table/ACSST5Y2024.S2503",
+    "decision": "Explored",
+    "reason": "No official city value directly retrieved."
+  },
+  {
+    "query": "2024 ACS S1903 Carmel-by-the-Sea Gini index",
+    "url": "https://data.census.gov/table/ACSST5Y2024.S1903",
+    "decision": "Explored",
+    "reason": "No official city value directly retrieved."
+  },
+  {
+    "query": "2024 ACS S2701 Carmel-by-the-Sea uninsured city",
+    "url": "https://data.census.gov/table/ACSST5Y2024.S2701",
+    "decision": "Explored",
+    "reason": "Official profile candidate only; table inaccessible."
+  },
+  {
+    "query": "2024 ACS S1701 Carmel-by-the-Sea city poverty rate",
+    "url": "https://data.census.gov/table/ACSST5Y2024.S1701",
+    "decision": "Explored",
+    "reason": "Official table source identified; secondary profile candidate not accepted."
+  },
+  {
+    "query": "site:epa.gov TRI Carmel-by-the-Sea California 2024 facility releases",
+    "url": "https://www.epa.gov/enviro/tri-search-user-guide",
+    "decision": "Explored",
+    "reason": "Search guide supports city query but no city result retrieved."
+  },
+  {
+    "query": "EPA TRI 2024 Carmel-by-the-Sea city CA toxic releases Monterey county facilities",
+    "url": "https://edap.epa.gov/public/extensions/TRIToxicsTracker_embedded/TRIToxicsTracker_embedded.html",
+    "decision": "Explored",
+    "reason": "2024 reporting-year tracker opened; city facility aggregate unresolved."
+  },
+  {
+    "query": "site:ci.carmel.ca.us Carmel-by-the-Sea drinking water annual water quality report 2024",
+    "url": "https://ci.carmel.ca.us/post/utilities",
+    "decision": "Explored",
+    "reason": "No 2024 city-specific quality metric retrieved; water supply regional."
+  },
+  {
+    "query": "Carmel-by-the-Sea water use gallons per capita day 2023 CalAm",
+    "url": "https://www.amwater.com/caaw/Customer-Service-Billing/Rates/Monterey-District",
+    "decision": "Explored",
+    "reason": "Regional service-area use cannot substitute for city value."
+  },
+  {
+    "query": "site:unep.org 2022 ozone depleting substances phaseout compliance 99% Montreal Protocol",
+    "url": "https://ozone.unep.org/facts-and-figures-ozone-protection",
+    "decision": "Used for context only",
+    "reason": "Global 99% phaseout context, not local compliance."
+  },
+  {
+    "query": "site:wmo.int 2022 ozone depletion substances phaseout 99 percent Montreal Protocol",
+    "url": "https://ozone.unep.org/sites/default/files/2023-05/Final_20Qs%202022%20full%20document_26April2023_digital%20version.pdf",
+    "decision": "Explored",
+    "reason": "PDF too large to open; used opened Secretariat summary instead."
+  },
+  {
+    "query": "site:unep.org ozone-depleting substances phase out 2023 99%",
+    "url": "https://ozone.unep.org/facts-and-figures-ozone-protection",
+    "decision": "Used for context only",
+    "reason": "Global context only."
+  },
+  {
+    "query": "global compliance ozone depleting substances phase-out status 2024 UN Montreal Protocol",
+    "url": "https://ozone.unep.org/facts-and-figures-ozone-protection",
+    "decision": "Explored",
+    "reason": "Status page distinguishes global phaseout from locality contribution."
+  },
+  {
+    "query": "Monterey Bay aragonite saturation Ωarag 2021 2022 ocean acidification monitoring MBARI",
+    "url": "https://www.ecowatch.noaa.gov/regions/california-current",
+    "decision": "Explored",
+    "reason": "NOAA regional dataset/page found; numeric value not extracted."
+  },
+  {
+    "query": "Monterey Bay ocean acidification 2024 pH aragonite saturation monitoring data",
+    "url": "https://www.mbari.org/data/wave-glider-sparky-real-time-data-plots/",
+    "decision": "Explored",
+    "reason": "MBARI real-time data page is preliminary and not a verified numeric finding."
+  },
+  {
+    "query": "site:mbari.org Monterey Bay aragonite saturation state 2023",
+    "url": "https://www.mbari.org/data/wave-glider-sparky-real-time-data-plots/",
+    "decision": "Explored",
+    "reason": "Monitoring location is near Monterey Bay; page does not display numeric value in text."
+  },
+  {
+    "query": "site:calcofi.org Monterey Bay acidification aragonite saturation 2022",
+    "url": "https://oceanacidification.noaa.gov/ocean-acidification-data/",
+    "decision": "Explored",
+    "reason": "No city or Monterey Bay 2022 numeric value retrieved."
+  },
+  {
+    "query": "NOAA NaMES Monterey Bay aragonite saturation state value 2022",
+    "url": "https://www.ecowatch.noaa.gov/regions/california-current",
+    "decision": "Explored",
+    "reason": "California Current LME regional trend available; numeric value not extracted."
+  },
+  {
+    "query": "Monterey Bay aragonite saturation state 2022 Omega",
+    "url": "https://www.waterboards.ca.gov/water_issues/programs/tmdl/2025_2026state_ir_reports_final/apx-b-factsheets/04505.shtml",
+    "decision": "Rejected or gap",
+    "reason": "Water Board source references 2011 cruise, rejected as stale."
+  },
+  {
+    "query": "Monterey Bay Ωar 2022 aragonite saturation state data",
+    "url": "https://www.ncei.noaa.gov/data/oceans/ncei/ocads/metadata/0287551.html",
+    "decision": "Explored",
+    "reason": "2025 archive metadata opened, but no time series value extracted."
+  },
+  {
+    "query": "NOAA Large Marine Ecosystem Monterey Bay aragonite saturation 2022 California Current",
+    "url": "https://www.ncei.noaa.gov/data/oceans/ncei/ocads/metadata/0287551.html",
+    "decision": "Explored",
+    "reason": "Underlying model data exists; value extraction pending."
+  },
+  {
+    "query": "Opened official California SOS election archive page",
+    "url": "https://www.sos.ca.gov/elections/county-city-school-district-ballot-measure-election-results",
+    "decision": "Opened page",
+    "reason": "Used to locate the 2024 city-results PDF."
+  },
+  {
+    "query": "Opened SOS 2024 statement of vote page",
+    "url": "https://www.sos.ca.gov/elections/prior-elections/statewide-election-results/general-election-nov-5-2024/statement-vote",
+    "decision": "Opened page",
+    "reason": "County participation statistics are not city-specific."
+  },
+  {
+    "query": "Opened SOS voter registration report page",
+    "url": "https://www.sos.ca.gov/elections/report-registration/15day-gen-2024",
+    "decision": "Opened page",
+    "reason": "Provides registration by subdivision links; direct file was inaccessible."
+  },
+  {
+    "query": "Opened 2024 CEDA city offices PDF",
+    "url": "https://elections.cdn.sos.ca.gov/county-city-school-district-election-results/2024/city.pdf",
+    "decision": "Opened page",
+    "reason": "Carmel-by-the-Sea mayor contest: 2,136 votes; not turnout denominator."
+  },
+  {
+    "query": "Opened SOS county voter participation PDF",
+    "url": "https://elections.cdn.sos.ca.gov/sov/2024-general/sov/03-voter-participation-stats-by-county.pdf",
+    "decision": "Opened page",
+    "reason": "County-only participation."
+  },
+  {
+    "query": "Opened EPA AirData download files",
+    "url": "https://aqs.epa.gov/aqsweb/airdata/download_files.html?monitor=25-025-1004",
+    "decision": "Opened page",
+    "reason": "Annual monitor and county resources; no aggregate value extracted."
+  },
+  {
+    "query": "Opened EPA city/county trends page",
+    "url": "https://www.epa.gov/air-trends/air-quality-cities-and-counties",
+    "decision": "Opened page",
+    "reason": "Explains city as CBSA and identifies county datasets."
+  },
+  {
+    "query": "Opened EPA Air Quality Statistics Report page",
+    "url": "https://www.epa.gov/outdoor-air-quality-data/air-quality-statistics-report",
+    "decision": "Opened page",
+    "reason": "Interactive report provides city/CBSA or county selections."
+  },
+  {
+    "query": "Opened UNEP Ozone Secretariat facts and figures",
+    "url": "https://ozone.unep.org/facts-and-figures-ozone-protection",
+    "decision": "Opened page",
+    "reason": "Global 99% phaseout is not local compliance."
+  },
+  {
+    "query": "Opened NOAA California Current EcoWatch",
+    "url": "https://www.ecowatch.noaa.gov/regions/california-current",
+    "decision": "Opened page",
+    "reason": "2019–2024 regional aragonite trend; no numeric displayed."
+  },
+  {
+    "query": "Opened NOAA PMEL CCE1 page",
+    "url": "https://www.pmel.noaa.gov/co2/story/CCE%2B1",
+    "decision": "Opened page",
+    "reason": "Offshore buoy is not city-limit geography."
+  },
+  {
+    "query": "Opened MBARI Wave Glider data page",
+    "url": "https://www.mbari.org/data/wave-glider-sparky-real-time-data-plots/",
+    "decision": "Opened page",
+    "reason": "Page warns measurements are preliminary and not quality-controlled."
+  },
+  {
+    "query": "Opened NCEI accession 0287551 metadata",
+    "url": "https://www.ncei.noaa.gov/data/oceans/ncei/ocads/metadata/0287551.html",
+    "decision": "Opened page",
+    "reason": "Modeled regional monthly dataset described; numeric extraction not completed."
+  },
+  {
+    "query": "Direct source review: Census Reporter Carmel-by-the-Sea profile; ACS 2024 5-year education and poverty",
+    "url": "https://censusreporter.org/profiles/16000US0611250-carmel-by-the-sea-ca/",
+    "decision": "use for city hs attainment and poverty candidates",
+    "reason": "Directly opened place-specific profile identifies 2024 ACS 5-year, city GEOID 0611250, high-school graduate or higher 94% (2,863) and poverty 6.2% (195); official Census page/API inaccessible. Secondary tier-3 interface; evidence captured."
+  },
+  {
+    "query": "Direct source review: UNEP Ozone Secretariat ODS phaseout share and dated status",
+    "url": "https://ozone.unep.org/facts-and-figures-ozone-protection",
+    "decision": "retain as gap context; not numeric",
+    "reason": "Page allows global context and states 99% global phaseout, but does not give data/reference year for this statistic; separate amendment status date is 2024-10-14, not the measurement vintage."
+  },
+  {
+    "query": "UNEP Ozone Secretariat dated global ODS production phaseout page, direct open",
+    "url": "https://ozone.unep.org/refrigeration-cool-technology-heating-planet?q=node%2F16288",
+    "decision": "retain as gap context; reject as indicator value",
+    "reason": "Dated 2025-06-25 but feature article provides no underlying dataset/report, measurement year, or denominator; 99% production phrasing is insufficient to establish the prompt’s tracked ODS phaseout measure."
+  },
+  {
+    "query": "County Health Rankings 2025 county-layer API row for Monterey County FIPS 06053, fields v139 food insecurity and v147 life expectancy including metadata years",
+    "url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv139_rawvalue%2Cv139_numerator%2Cv147_rawvalue&returnGeometry=false&f=pjson",
+    "decision": "use both as explicitly county-scale proxies",
+    "reason": "Archived CHR API response includes exact Monterey row, field definitions, source attributions, food insecurity year 2022 and life expectancy period 2020–2022. The same narrow exhibit was independently captured and reviewed; direct web-reader open failed, but evidence helper archived the actual JSON response in the Carmel evidence tenant. City-tier searches had not found compliant city-limit measures."
+  }
+]

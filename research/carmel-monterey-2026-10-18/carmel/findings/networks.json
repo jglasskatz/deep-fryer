@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "broadband-access",
+    "name": "Households with a broadband subscription",
+    "value": 93.8,
+    "unit": "% of households",
+    "year": 2024,
+    "target": 95,
+    "level_pct": 1.3,
+    "scoring": {
+      "threshold_ref": "networks.broadband-access",
+      "function": "higher_is_better",
+      "inputs": {
+        "value": 93.8,
+        "target": 95,
+        "scale": 95
+      },
+      "worked_math": "level_pct = (95 − 93.8) ⁄ 95 × 100 = +1.3"
+    },
+    "source": "U.S. Census Bureau QuickFacts, Monterey County, California; 2020–2024 ACS period",
+    "source_url": "https://www.census.gov/quickfacts/fact/table/montereycountycalifornia/SBO040223",
+    "source_tier": 2,
+    "evidence": {
+      "snapshot_path": "",
+      "captured_at": "2026-10-19T03:43:33Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "QuickFacts reports 93.8% of households with a broadband subscription for 2020–2024. Census QuickFacts was opened directly; evidence capture was attempted in the sandbox and with the approved capture helper, but Census returned HTTP 403 and no snapshot was saved. Local tier-1 searches did not expose a newer countywide value. The ACS period begins in 2020, so it is not a single-year observation. This is a Monterey County proxy permitted by portrait scale policy; it is not a measurement for Carmel-by-the-Sea city limits. Tier 1 local searches found no city/county local series; Tier 2 QuickFacts was directly opened, but the evidence capture was blocked by Census HTTP 403; archive remains empty."
+  }
+]

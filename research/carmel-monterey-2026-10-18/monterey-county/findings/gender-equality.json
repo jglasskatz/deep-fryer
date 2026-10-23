@@ -1,0 +1,11 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "gender-pay-ratio",
+    "reason": "The 2024 ACS includes the required women-to-men earnings ratio concept, but this pass did not retrieve Monterey County's county estimate. No value was reconstructed from separate median earnings because source-specific universes and rounding could alter the ratio.",
+    "scales_tried": ["county"],
+    "tiers_tried": [1, 2],
+    "searched_at": "2026-10-19T03:47:05Z",
+    "nearest_data": "Opened Census API metadata for ACS 2024 table S2002: https://api.census.gov/data/2024/acs/acs5/subject/groups/S2002.html. It defines the women's earnings percentage of men's earnings measure and its worker universes; the metadata page contains no county estimate."
+  }
+]

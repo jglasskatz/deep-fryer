@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "hs-attainment",
+    "content_supported": "pass",
+    "verifier_note": "Independent Census QuickFacts read shows county 73.3% for adults 25+ in 2020\u20132024;2024 is the ACS period endpoint, not a single-year observation. Target 95 and 22.8 scoring reproduce. No archive exists, so exhibit remains unchecked and import must stay flagged.",
+    "reviewed_at": "2026-10-19T06:28:25.901663+00:00",
+    "source_url": "https://www.census.gov/quickfacts/fact/table/montereycountycalifornia/SBO040223",
+    "exhibit_checked": false
+  }
+]

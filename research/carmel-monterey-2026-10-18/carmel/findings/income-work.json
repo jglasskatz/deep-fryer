@@ -1,0 +1,62 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "poverty-rate",
+    "name": "Residents below the poverty line",
+    "value": 6.2,
+    "unit": "% of residents",
+    "year": 2024,
+    "target": 8,
+    "level_pct": -22.5,
+    "scoring": {
+      "threshold_ref": "income-work.poverty-rate",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 6.2,
+        "target": 8,
+        "scale": 8
+      },
+      "worked_math": "level_pct = (6.2 − 8) ÷ 8 × 100 = −22.5"
+    },
+    "source": "Census Reporter city profile, reproducing U.S. Census Bureau 2024 ACS 5-year poverty estimate for Carmel-by-the-Sea",
+    "source_url": "https://censusreporter.org/profiles/16000US0611250-carmel-by-the-sea-ca/",
+    "source_tier": 3,
+    "evidence": {
+      "snapshot_path": "evidence/76924e6aa1c7d312.png",
+      "captured_at": "2026-10-19T06:43:15.654Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "city",
+    "notes": "The directly opened profile identifies ACS 2024 5-year and reports 6.2% ±3.6 percentage points (195 ±113 people) below poverty for Carmel-by-the-Sea, GEOID 0611250. Tier 1 local searches found no adopted city poverty measure; Tier 2 official Census S1701 table/API was attempted but inaccessible. Census Reporter is a tier-3 secondary interface to Census data; large uncertainty should be considered."
+  },
+  {
+    "kind": "indicator",
+    "indicator_slug": "unemployment-rate",
+    "name": "Unemployment rate",
+    "value": 7.9,
+    "unit": "% of labor force",
+    "year": 2025,
+    "target": 4,
+    "level_pct": 97.5,
+    "scoring": {
+      "threshold_ref": "income-work.unemployment-rate",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 7.9,
+        "target": 4,
+        "scale": 4
+      },
+      "worked_math": "level_pct = (7.9 − 4) ⁄ 4 × 100 = +97.5"
+    },
+    "source": "U.S. Bureau of Labor Statistics Local Area Unemployment Statistics, retrieved through FRED: Unemployment Rate in Monterey County, CA (annual, not seasonally adjusted)",
+    "source_url": "https://fred.stlouisfed.org/series/LAUCN060530000000003A",
+    "source_tier": 2,
+    "evidence": {
+      "snapshot_path": "",
+      "captured_at": "2026-10-19T06:32:18Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "The directly opened series reports 7.9% for calendar year 2025, updated May 19, 2026. The series notes identify BLS as source, annual frequency, civilian labor force denominator, and the unemployment rate definition. Local tier-1 County 2025–26 Legislative Platform (opened at https://www.countyofmonterey.gov/home/showpublisheddocument/138247/638736919326900000) gives a 2024 annual average rate of 5.2% based on an EDD report; the 2025 BLS series is the newer annual observation. Capture was attempted twice using the approved helper but FRED timed out; snapshot_path is empty and no evidence file was saved. Earlier indexed 2024 candidates of 7.3–7.4% were not used. This is a Monterey County proxy permitted by portrait scale policy; it is not a city-limit rate. Tier 1 County/local searches found a 2024 annual 5.2% candidate; Tier 2 BLS annual series was directly opened and provides the newer 2025 figure. Evidence capture timed out, so the archive is empty."
+  }
+]

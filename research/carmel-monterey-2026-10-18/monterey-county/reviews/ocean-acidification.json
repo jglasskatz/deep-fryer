@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "aragonite-saturation",
+    "content_supported": "uncertain",
+    "verifier_note": "Independent NOAA ecosystem page contains regional/global marine indicators; no Monterey numeric observation verified. Config expressly permits regional/global, so county-only reasoning cannot establish gap. Exhaust tier 3 MBARI/coastal carbonate datasets and explicitly identify depth, season and aggregation before rejecting regional evidence. No exhibit.",
+    "reviewed_at": "2026-10-19T06:28:25.901663+00:00",
+    "source_url": "https://www.ecowatch.noaa.gov/thematic/ocean-acidification",
+    "exhibit_checked": false
+  }
+]

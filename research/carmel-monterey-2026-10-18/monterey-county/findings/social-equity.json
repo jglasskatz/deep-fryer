@@ -1,0 +1,11 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "gini-index",
+    "reason": "No current county value was directly retrieved from an accessible primary table or local dashboard. The county DataShare indicator page was found but returns 403; the previously indexed observation was 2014–2018 and is too old for this portrait.",
+    "scales_tried": ["county"],
+    "tiers_tried": [1, 2],
+    "searched_at": "2026-10-19T03:47:05Z",
+    "nearest_data": "County DataShare income inequality indicator page: https://www.datasharemontereycounty.org/indicators/index/view?indicatorId=288&localeFilterId=7&localeId=264 (opened; 403). Its search-index record described a 2014–2018 observation, which is outside the five-year recency window. Census 2024 ACS Gini research did not yield a directly readable county row."
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "pm25-annual",
+    "content_supported": "uncertain",
+    "verifier_note": "Provisional retrieval/construct gap. Independent MBARD 2024 report has monitor observations, not a county annual mean; rejecting three-year design value is sound. Add exact EPA/CARB URLs and annual-series locators. County modeled exposure alternatives have not been exhausted.",
+    "reviewed_at": "2026-10-19T06:43:06.063363+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

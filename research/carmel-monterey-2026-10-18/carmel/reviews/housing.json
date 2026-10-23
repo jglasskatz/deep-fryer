@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_slug": "cost-burdened-renters",
+    "content_supported": "uncertain",
+    "verifier_note": "2016\u20132020 estimate properly rejected as stale. Current city/table retrieval remains incomplete; search DP 04 counts or B 25070, and permitted county fallback with exclusions explicit. Independent FRED overall owner+renter burden is not compatible. Add exact source URLs.",
+    "reviewed_at": "2026-10-19T06:43:06.063363+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  },
+  {
+    "indicator_slug": "homelessness-rate",
+    "content_supported": "pass",
+    "verifier_note": "Independent PIT PDF p 12 supports county 2436 persons inJan 2024 and County 2025\u201326 Legislative Platform p 6 supports DOF 2024 population 437614; rate 55.6655 rounds 55.7 and score 457.0. County scale is accepted, and notes now explicitly label the Carmel county proxy; this is not city rate (PIT city Carmel row is 2). Claimed archive is empty; publication/import remains uncertain.",
+    "reviewed_at": "2026-10-19T06:46:06.804767+00:00",
+    "source_url": "https://chsp.org/wp-content/uploads/2025/12/2024-Monterey-County-PIT-Count-Report_Final.pdf",
+    "exhibit_checked": false
+  }
+]

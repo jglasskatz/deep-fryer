@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "voter-turnout",
+    "content_supported": "pass",
+    "verifier_note": "Independent SOS PDF p 1 and archived PDF/snapshot both show Monterey 148916 total voters/214883 registered=69.30%,November 5,2024. This uses registered rather than eligible voters; denominator excludes registrations after the 15-day close per footnote. Target 70 gives 1.0. Tier 2 fallback should also document local elections search.",
+    "reviewed_at": "2026-10-19T06:28:25.901663+00:00",
+    "source_url": "https://elections.cdn.sos.ca.gov/sov/2024-general/sov/03-voter-participation-stats-by-county.pdf",
+    "exhibit_checked": true
+  }
+]

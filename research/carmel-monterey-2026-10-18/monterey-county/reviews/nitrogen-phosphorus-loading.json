@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "nitrate-groundwater",
+    "content_supported": "uncertain",
+    "verifier_note": "Revised gap correctly identifies and rejects unrelated Yolo County Nelson's Grove post-treatment sample. No county groundwater statistic is verified; remaining Monterey GAMA/GEMS/SVBGSA searches need explicit sampling method, geographic coverage and NO3-N unit handling. This is a provisional retrieval/statistical-method gap, not evidence no data exists. No exhibit.",
+    "reviewed_at": "2026-10-19T06:46:52.807565+00:00",
+    "source_url": "https://sdwis.waterboards.ca.gov/PDWW/JSP/WSamplingResultsByStoret.jsp?Analyte=&ChemicalName=&FacilityID=008&SamplingPointID=008&SamplingPointName=NITRATE+POST+TREATMENT+LOCATION&SystemName=NELSON%27S+GROVE&SystemNumber=5700802&WSFNumber=67516&begin_date=&end_date=&mDWW=&tinwsys_is_number=8220",
+    "exhibit_checked": false
+  }
+]

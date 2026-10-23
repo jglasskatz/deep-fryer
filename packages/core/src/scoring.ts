@@ -1,6 +1,8 @@
 import type { Threshold } from '@deep-fryer/contract';
 import { getThreshold } from '@deep-fryer/contract';
 import type { DimensionData, IndicatorScoring } from './types.js';
+import { pctToVizLevel } from './viz-level.js';
+export { pctToVizLevel } from './viz-level.js';
 
 /**
  * The thresholds engine (SPEC.md §8 "Scoring").
@@ -124,12 +126,4 @@ export function deriveVizLevel(
       : pcts.reduce((a, b) => a + b, 0) / pcts.length;
 
   return pctToVizLevel(agg);
-}
-
-/** -100..150 display range: 0..50% maps to 0..100, 50..100% to 100..150, capped. */
-export function pctToVizLevel(pct: number): number {
-  if (pct <= 0) return Math.max(-100, pct * 2);
-  if (pct <= 50) return (pct / 50) * 100;
-  if (pct <= 100) return 100 + ((pct - 50) / 50) * 50;
-  return 150;
 }

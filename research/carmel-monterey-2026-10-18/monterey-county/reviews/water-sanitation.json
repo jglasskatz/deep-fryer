@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "safe-drinking-water",
+    "content_supported": "uncertain",
+    "verifier_note": "Independent State eAR overview describes system reports, not the required county population share. Rejection of system counts as population coverage is correct. Rerun SDWIS health-based violations linked to served population and cross-county service territories; do not interpret no recorded violations as complete safe coverage. No exhibit.",
+    "reviewed_at": "2026-10-19T06:28:25.901663+00:00",
+    "source_url": "https://waterboards.ca.gov/drinking_water/certlic/drinkingwater/ear.html",
+    "exhibit_checked": false
+  }
+]

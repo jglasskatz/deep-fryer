@@ -1,0 +1,17 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "safe-drinking-water",
+    "reason": "City water-supply information points to CalAm’s broader Monterey District, but a 2021+ drinking-water compliance value specific to Carmel-by-the-Sea was not directly verified. A district/county result does not establish city-limit water quality without distribution-zone match.",
+    "scales_tried": [
+      "city",
+      "county"
+    ],
+    "tiers_tried": [
+      1,
+      2
+    ],
+    "searched_at": "2026-10-19T06:37:34Z",
+    "nearest_data": "Regional CalAm materials are nearest; city distribution zone and exact compliance percentage not established."
+  }
+]

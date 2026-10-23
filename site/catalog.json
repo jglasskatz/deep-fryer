@@ -1,0 +1,15 @@
+{
+  "portraits": [
+    { "slug": "santa-cruz", "status": "legacy-source", "jurisdiction": "city_santa_cruz" },
+    { "slug": "santa-cruz-county", "status": "legacy-source", "jurisdiction": "santa_cruz_county" },
+    { "slug": "watsonville", "status": "legacy-source", "jurisdiction": "watsonville" },
+    { "slug": "nyc", "status": "published" },
+    { "slug": "manhattan", "status": "published" },
+    { "slug": "brooklyn", "status": "published" },
+    { "slug": "queens", "status": "published" },
+    { "slug": "bronx", "status": "published" },
+    { "slug": "staten-island", "status": "published" },
+    { "slug": "carmel", "status": "research-preview" },
+    { "slug": "monterey-county", "status": "research-preview" }
+  ]
+}

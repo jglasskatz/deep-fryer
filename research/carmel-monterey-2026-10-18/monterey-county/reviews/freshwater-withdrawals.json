@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "residential-gpcd",
+    "content_supported": "uncertain",
+    "verifier_note": "Independent County extraction-summary fetch inaccessible. Rejection of utility subsets and acre-feet/connection as a county per-capita residential rate is sound. Search trail lists only tier 1; State Water Board urban supplier conservation/usage datasets remain a rerun. No county numerator, population or exhibit verified.",
+    "reviewed_at": "2026-10-19T06:28:25.901663+00:00",
+    "source_url": "https://www.countyofmonterey.gov/home/showpublisheddocument/142365/638926748365700000",
+    "exhibit_checked": false
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "violent-crime-rate",
+    "content_supported": "uncertain",
+    "verifier_note": "Provisional extraction gap. Independent DOJ portal supports city/county agency downloads. Verify Carmel-by-the-Sea agency identity, violent-offense categories, reporting completeness and matched population; county fallback remains allowed. Add exact candidate URLs, not unnamed secondary result.",
+    "reviewed_at": "2026-10-19T06:43:06.063363+00:00",
+    "source_url": "https://www.oag.ca.gov/crime",
+    "exhibit_checked": false
+  }
+]

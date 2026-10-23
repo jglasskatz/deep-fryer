@@ -1,0 +1,15 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "protected-land-share",
+    "reason": "Initial city GIS and planning review did not yield a 2021+ city or county inventory of land under durable conservation protection with a defined jurisdiction denominator. Parks/open-space area alone does not establish durable conservation status.",
+    "scales_tried": [
+      "city"
+    ],
+    "tiers_tried": [
+      1
+    ],
+    "searched_at": "2026-10-19T06:37:34Z",
+    "nearest_data": "City GIS/planning and regional conservation records were considered, but no qualifying numerator/area calculation was directly retrieved."
+  }
+]

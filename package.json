@@ -18,7 +18,11 @@
     "test": "pnpm -r --if-present test",
     "export:nyc": "tsx scripts/export-nyc.ts",
     "stripe:setup": "tsx scripts/stripe-setup.ts",
-    "provision:nyc": "tsx scripts/provision-nyc.ts"
+    "provision:nyc": "tsx scripts/provision-nyc.ts",
+    "pages:snapshot": "node --env-file=.env.local --import tsx scripts/snapshot-pages.ts",
+    "pages:build": "node scripts/build-pages.mjs",
+    "pages:test": "node --test scripts/pages-contract.test.mjs",
+    "pages:check": "node scripts/check-pages.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1151.0",

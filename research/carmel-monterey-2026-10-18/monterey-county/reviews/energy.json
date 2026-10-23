@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "energy-burden",
+    "content_supported": "uncertain",
+    "verifier_note": "Independent DOE LEAD page describes county-capable data, so record extraction/construct gap, not missing county geography. Rerun direct downloads if available; LEAD often reports average burden, which cannot silently verify the framework low-income median. No estimate or exhibit checked.",
+    "reviewed_at": "2026-10-19T06:28:25.901663+00:00",
+    "source_url": "https://www.energy.gov/cmei/scep/low-income-energy-affordability-data-lead-tool",
+    "exhibit_checked": false
+  }
+]

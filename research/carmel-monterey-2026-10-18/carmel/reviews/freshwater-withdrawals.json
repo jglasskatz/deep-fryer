@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "residential-gpcd",
+    "content_supported": "uncertain",
+    "verifier_note": "Provisional geography/construct gap. Regional CalAm cannot be labeled city, but county is permitted and needs an actual search. Add State urban supplier usage source URLs and same-year served-population mapping.2011 plan is correctly rejected as stale.",
+    "reviewed_at": "2026-10-19T06:43:06.063363+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "gender-pay-ratio",
+    "content_supported": "uncertain",
+    "verifier_note": "Table retrieval gap. Framework reference uses S 2002; independent Census metadata defines full-time year-round workers 16+. Search correct S 2002 city or permitted county table and preserve universe if deriving ratio of medians. No exact URLs or county estimate established in this file.",
+    "reviewed_at": "2026-10-19T06:43:06.063363+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

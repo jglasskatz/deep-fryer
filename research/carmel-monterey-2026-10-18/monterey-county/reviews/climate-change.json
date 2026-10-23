@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "ghg-per-capita",
+    "content_supported": "uncertain",
+    "verifier_note": "Revised gap now correctly identifies the County Board source as an unincorporated-area inventory, consistent with independent source read. Full-county recent numerator remains unverified; accepted regional inventories and tier3 sources remain unexhausted. No exhibit.",
+    "reviewed_at": "2026-10-19T06:46:52.807565+00:00",
+    "source_url": "https://monterey.legistar.com/View.ashx?GUID=A054CB68-D930-4298-916C-7F0301B607AA&ID=13601690&M=F",
+    "exhibit_checked": false
+  }
+]

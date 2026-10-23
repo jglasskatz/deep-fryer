@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "tri-releases-per-capita",
+    "content_supported": "uncertain",
+    "verifier_note": "Provisional extraction gap; independent EPA TRI portal supports annual facility/geography queries but no Carmel result was verified. County fallback is allowed. Do not infer zero from missing facilities/search failure; verify on-site releases, reporting coverage and matched denominator. Supply exact source URLs.",
+    "reviewed_at": "2026-10-19T06:43:06.063363+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

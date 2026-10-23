@@ -1,0 +1,17 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "gender-pay-ratio",
+    "reason": "No 2021+ city-specific gender pay ratio was directly retrieved. Census 2024 ACS S2001 was searched, but the city table was not available; median earnings for all earners may differ from a full-time/year-round wage ratio.",
+    "scales_tried": [
+      "city",
+      "county"
+    ],
+    "tiers_tried": [
+      1,
+      2
+    ],
+    "searched_at": "2026-10-19T06:37:34Z",
+    "nearest_data": "Census 2024 ACS S2001 is the nearest candidate table but city estimates were not directly retrieved or archived."
+  }
+]

@@ -1,0 +1,34 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "uninsured-rate",
+    "reason": "The directly opened QuickFacts page reports 9.3% uninsured among residents under 65 but does not display the observation year. Census's QuickFacts locator documentation says county estimates for this measure come from SAHIE, while QuickFacts' current SAHIE dataset catalog reaches 2024; however, the exact Monterey County SAHIE row could not be retrieved from the interactive or API reader, so the displayed value's vintage cannot be verified directly. Keep as a dated-source gap rather than assign an inferred year.",
+    "scales_tried": ["county"],
+    "tiers_tried": [1, 2],
+    "searched_at": "2026-10-19T06:31:48Z",
+    "nearest_data": "QuickFacts opened: https://www.census.gov/quickfacts/fact/table/montereycountycalifornia/SBO040223 (9.3%, under age 65, no row year shown). Census's QuickFacts locator, opened at https://www2.census.gov/data/api-documentation/locating-quickfacts-data-points-in-data-census-gov-and-census-gov.pdf, says county uninsured estimates come from SAHIE; its procedure points to a 2023 SAHIE file in that 2025 documentation. Census SAHIE API documentation now states county single-year coverage through 2024 at https://www.census.gov/programs-surveys/sahie/data/api.html, but the direct County API query https://api.census.gov/data/timeseries/healthins/sahie?get=NAME,NUI_PT&for=county:053&in=state:06&AGECAT=0&SEXCAT=0&IPRCAT=0&time=2024 was inaccessible in the web reader. QuickFacts capture returned HTTP 403."
+  },
+  {
+    "kind": "indicator",
+    "indicator_slug": "life-expectancy",
+    "name": "Life expectancy at birth",
+    "value": 80.8471266197383,
+    "unit": "years",
+    "year": 2022,
+    "target": 80,
+    "level_pct": -1.1,
+    "scoring": {
+      "threshold_ref": "health.life-expectancy",
+      "function": "higher_is_better",
+      "inputs": {"value": 80.8471266197383, "target": 80, "scale": 80},
+      "worked_math": "level_pct = (target − value) ⁄ scale × 100 = (80 − 80.8471266197383) ⁄ 80 × 100 = -1.1"
+    },
+    "source": "County Health Rankings & Roadmaps 2025 County Health Release, Monterey County, California",
+    "source_url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv139_rawvalue%2Cv139_numerator%2Cv147_rawvalue&returnGeometry=false&f=pjson",
+    "source_tier": 3,
+    "evidence": {"snapshot_path": "evidence/7340038b7e846424.png", "captured_at": "2026-10-19T06:49:17.949Z"},
+    "confidence": "high",
+    "geographic_scale": "county",
+    "notes": "The archived CHR 2025 county-layer row for FIPS 06053 reports v147_rawvalue = 80.8471266197383 years. The field description identifies the source as NCHS Natality and Mortality Files plus Census Population Estimates Program and explicitly dates this Monterey value to 2020–2022; year is recorded as the period endpoint 2022. CHR defines the measure as average expected years of life from birth and counts deaths by county of residence: https://www.countyhealthrankings.org/health-data/population-health-and-well-being/length-of-life/life-span/life-expectancy. The exact query and field descriptions appear in the archived source text at apps/web/public/evidence/monterey-county/evidence/7340038b7e846424.txt; raw row JSON is also preserved at apps/web/public/evidence/monterey-county/evidence/37056c673ae97ec8.bin (SHA-256 e03064c1cee2c9e9500b5906f518569999a41a9bbf1a15a116adf1751c7c3136). Readable extract: research/carmel-monterey-2026-10-18/monterey-county/exhibits/chr-2025-monterey-row.csv."
+  }
+]

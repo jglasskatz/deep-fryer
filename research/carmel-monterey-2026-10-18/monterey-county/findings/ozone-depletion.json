@@ -1,0 +1,11 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "ods-phaseout-compliance",
+    "reason": "No locality-specific percentage of tracked ozone-depleting substances phased out is published for Monterey County. The indicator is governed by national controls and the configured scale policy permits global context, but the opened EPA source describes U.S. phaseout requirements rather than a measured County compliance percentage.",
+    "scales_tried": ["county", "national", "global"],
+    "tiers_tried": [1, 2],
+    "searched_at": "2026-10-19T03:47:05Z",
+    "nearest_data": "EPA Ozone-Depleting Substances Phaseout page, opened: https://www.epa.gov/ods-phaseout. It states U.S. Class I substances such as CFCs and halons have been phased out, with limited exceptions, and explains regulation of Class I and II substances. This supports national compliance context but does not provide a Monterey County percentage, so a numeric local finding is not warranted."
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "residential-gpcd",
+    "reason": "City review found regional water-supply service and a City water-conservation plan approved in 2011, but no current city-limits residential gallons-per-capita-day value. A wider CalAm district rate is not a city measurement.",
+    "scales_tried": [
+      "city",
+      "county"
+    ],
+    "tiers_tried": [
+      1,
+      2
+    ],
+    "searched_at": "2026-10-19T06:37:34Z",
+    "nearest_data": "City water-service information and a 2011 plan are nearest; the plan is stale and regional CalAm rates cannot be labeled city values."
+  }
+]

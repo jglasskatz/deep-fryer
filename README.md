@@ -4,6 +4,12 @@ A multi-tenant SaaS for building and hosting Doughnut Economics portraits for mu
 
 Status: **v4 — shippable product.** [`SPEC.md`](./SPEC.md) (v2) is the base design, amended by [`docs/SPEC-v3.md`](./docs/SPEC-v3.md) and [`docs/SPEC-v4.md`](./docs/SPEC-v4.md): accounts (Auth.js: Microsoft 365, Google, email links), organizations that own portrait families, billing that fits how governments buy (hard research quotas, card or annual invoice with PO, contracts), progress monitoring against adopted goals with open-data exports, and an installable PWA. Fully self-hosted — see [`docs/deploy.md`](./docs/deploy.md).
 
+## Public portraits on GitHub Pages
+
+The [portrait collection](https://jglasskatz.github.io/deep-fryer/) includes Santa Cruz, NYC and its boroughs, and explicitly labeled Carmel/Monterey research previews. It is a static public snapshot; accounts, billing, research execution and review remain in the server application.
+
+CI checks the existing app, migrations, billing integration, Keel principles, snapshot contracts, evidence hashes and browser behavior. Only a passing `main` build deploys. See [the Pages release guide](docs/pages.md) for updating data, previews, verification and rollback.
+
 ## What's a doughnut portrait?
 
 A visual framework from Kate Raworth's *Doughnut Economics* showing two concentric rings:

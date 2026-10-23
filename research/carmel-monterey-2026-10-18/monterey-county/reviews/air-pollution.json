@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "pm25-annual",
+    "content_supported": "uncertain",
+    "verifier_note": "Gap is defensible for this pass: independently opened MBARD 2024 report reports station-specific PM 2.5, not a county annual mean. Do not average monitors or use a multi-year regulatory design value as this construct; county modeled exposure sources were not exhausted. No gap exhibit archived.",
+    "reviewed_at": "2026-10-19T06:28:25.901663+00:00",
+    "source_url": "https://www.mbard.org/files/5db547d5d/23%2BAir%2BMonitoring%2BDivision%2BAnnual%2BReport%2B2024.pdf",
+    "exhibit_checked": false
+  }
+]

@@ -1,0 +1,262 @@
+{
+  "reviewer_role": "independent adversarial reviewer",
+  "model_requested_by_user": "Sol 6.1",
+  "actual_token_usage": null,
+  "actual_usd_cost": null,
+  "metering_note": "Actual session token counts and USD cost are not exposed to this reviewer.",
+  "web_calls": 20,
+  "search_queries": 14,
+  "open_operations": 55,
+  "click_operations": 3,
+  "capture_attempts": 3,
+  "capture_successes": 1,
+  "updated_at": "2026-10-18",
+  "calls": [
+    {
+      "call": 1,
+      "opens": [
+        "https://www.census.gov/quickfacts/fact/table/montereycountycalifornia/SBO040223",
+        "https://chsp.org/wp-content/uploads/2025/12/2024-Monterey-County-PIT-Count-Report_Final.pdf"
+      ],
+      "result": "Both sources directly readable. County QuickFacts numeric rows and periods inspected; PIT county and incorporated Carmel rows inspected."
+    },
+    {
+      "call": 2,
+      "queries": [
+        "site.data.census.gov Carmel-by-the-Sea 2024 S1501 94.0 high school"
+      ],
+      "opens": [
+        "https://www.census.gov/quickfacts/fact/note/montereycountycalifornia/IPE120224",
+        "https://www.census.gov/quickfacts/fact/note/montereycountycalifornia/HEA775224"
+      ],
+      "click": "County QuickFacts CSV link 4",
+      "result": "Metadata and CSV fetches failed. Search found Census city and larger CCD profiles and third-party HS snippet; none verifies primary city HS row."
+    },
+    {
+      "call": 3,
+      "opens": [
+        "https://data.census.gov/table/ACSST5Y2024.S1501?g=160XX00US0611250",
+        "https://www.census.gov/quickfacts/fact/csv/montereycountycalifornia",
+        "https://www.census.gov/quickfacts/fact/note/US/IPE120224",
+        "https://www.census.gov/quickfacts/fact/note/US/HEA775224"
+      ],
+      "result": "All inaccessible or cache miss; no values accepted from these attempts."
+    },
+    {
+      "call": 4,
+      "queries": [
+        "site:census.gov/quickfacts/montereycountycalifornia \"13.7\" \"2024\"",
+        "site:census.gov/quickfacts/montereycountycalifornia \"9.3\" \"2024\"",
+        "site:countyofmonterey.gov 2024 population 437614",
+        "site:data.census.gov \"Carmel-by-the-Sea\" \"S1501\" \"94.0%\""
+      ],
+      "result": "QuickFacts indexed rows reconfirmed, but not enough metadata to attribute health/poverty year. No primary city HS or denominator verification."
+    },
+    {
+      "call": 5,
+      "opens": [
+        "https://data.census.gov/table/ACSST5Y2024.S1501?g=160XX00US0611250&moe=false",
+        "https://www.census.gov/quickfacts/fact/table/montereycountycalifornia/HEA775224",
+        "https://www.census.gov/quickfacts/fact/table/montereycountycalifornia/IPE120224"
+      ],
+      "result": "City HS table inaccessible. QuickFacts health/poverty numeric values directly visible, but row years not shown."
+    },
+    {
+      "call": 6,
+      "opens": [
+        "https://fred.stlouisfed.org/series/DP04ACS006053",
+        "https://fred.stlouisfed.org/series/GINI06053"
+      ],
+      "queries": [
+        "Monterey County food insecurity 2023 Feeding America 2025 13.1",
+        "Monterey County 2021 2022 food insecurity 40.8 CHNA"
+      ],
+      "result": "FRED burdened-household series directly opened; guessed Gini series inaccessible. Search identified 2025 CHNA food estimate and adult universe for possible gap audit; indexed PDF is not a verified exhibit."
+    },
+    {
+      "call": 7,
+      "opens": [
+        "https://www.datasharemontereycounty.org/content/sites/monterey/CHIP/CHNA/2025_Monterey_County_CHNA.pdf",
+        "https://fred.stlouisfed.org/series/DP04ACS006053"
+      ],
+      "result": "CHNA direct PDF returned403. FRED source notes explicitly establish housing-burden series combines owner and renter households and cannot substitute for renter-only framework indicator."
+    },
+    {
+      "call": 8,
+      "opens": [
+        "https://elections.cdn.sos.ca.gov/sov/2024-general/sov/03-voter-participation-stats-by-county.pdf",
+        "https://www.census.gov/quickfacts/fact/note/US/HEA775225",
+        "https://www.census.gov/quickfacts/fact/note/US/IPE120225",
+        "https://www.census.gov/quickfacts/metadata/HEA775224.htm",
+        "https://www.census.gov/quickfacts/metadata/IPE120224.htm",
+        "https://fred.stlouisfed.org/series/LAUCN060530000000003A"
+      ],
+      "result": "Turnout source and alternative unemployment source investigated; QuickFacts metadata fetch results recorded in review notes."
+    },
+    {
+      "call": 9,
+      "opens": [
+        "https://www.mbard.org/files/5db547d5d/23%2BAir%2BMonitoring%2BDivision%2BAnnual%2BReport%2B2024.pdf",
+        "https://www.montereycountyrcis.org/static/MontereyCountyRCIS_Final_Jun2021.pdf",
+        "https://www.epa.gov/enviro/tri-ez-search",
+        "https://monterey.legistar.com/View.ashx?GUID=A054CB68-D930-4298-916C-7F0301B607AA&ID=13601690&M=F",
+        "https://www.energy.gov/cmei/scep/low-income-energy-affordability-data-lead-tool",
+        "https://www.ecowatch.noaa.gov/thematic/ocean-acidification"
+      ],
+      "result": "Independent audit of nearest air, conservation, TRI, climate, energy and marine sources."
+    },
+    {
+      "call": 10,
+      "opens": [
+        "https://api.census.gov/data/2024/acs/acs5/subject/groups/S2002.html",
+        "https://www.conservation.ca.gov/dlrp/fmmp/Pages/Monterey.aspx",
+        "https://www.epa.gov/ods-phaseout",
+        "https://www.oag.ca.gov/crime",
+        "https://waterboards.ca.gov/drinking_water/certlic/drinkingwater/ear.html",
+        "https://www.countyhealthrankings.org/health-data/california/data-and-resources"
+      ],
+      "result": "Independent audit of earnings metadata, land change, ODS, crime, drinking water and county health download sources."
+    },
+    {
+      "call": 11,
+      "opens": [
+        "https://www.countyofmonterey.gov/home/showpublisheddocument/142365/638926748365700000",
+        "https://www.datasharemontereycounty.org/indicators/index/view?indicatorId=288&localeFilterId=7&localeId=264",
+        "https://www.datasharemontereycounty.org/indicators/index/view?indicatorId=393&localeTypeId=3&periodId=6201",
+        "https://files.monterey.gov/Document-Center/Departments/Community-Development/Housing/Plans-and-Reports/Action-Plans/FY25-29-Con-Plan-Annual-FY25-26-Action-Plan.pdf?t=202603231838460"
+      ],
+      "queries": [
+        "\"NELSON'S GROVE\" \"5700802\" county",
+        "site:census.gov/quickfacts \"health insurance\" \"Small Area Health\" QuickFacts",
+        "site:census.gov/quickfacts \"Persons in poverty\" \"Small Area Income\""
+      ],
+      "result": "Audit additional gap inputs, denominator source and QuickFacts statistical family."
+    },
+    {
+      "call": 12,
+      "opens": [
+        "https://www.census.gov/quickfacts/note/HEA775224",
+        "https://www.census.gov/quickfacts/note/IPE120225",
+        "https://www2.census.gov/data/api-documentation/locating-quickfacts-data-points-in-data-census-gov-and-census-gov.pdf"
+      ],
+      "finds": 3,
+      "result": "QuickFacts underlying statistical families confirmed as SAHIE and SAIPE for counties; examined denominator, climate year and county-health download locators."
+    },
+    {
+      "call": 13,
+      "clicks": [
+        {
+          "url": "https://www.countyhealthrankings.org/health-data/california/data-and-resources",
+          "link": 6
+        }
+      ],
+      "result": "2025 California county health workbook download attempted."
+    },
+    {
+      "call": 14,
+      "opens": [
+        "https://fred.stlouisfed.org/series/PPAACA06053A156NCEN",
+        "https://www.countyofmonterey.gov/home/showpublisheddocument/138247/638736919326900000"
+      ],
+      "result": "Focused independent recheck of county poverty statistical year and homelessness population denominator."
+    },
+    {
+      "call": 15,
+      "opens": [
+        "https://censusreporter.org/profiles/16000US0611250-carmel-by-the-sea-ca/",
+        "https://data.census.gov/profile/Carmel-by-the-Sea_city%2C_California?g=160XX00US0611250",
+        "https://ozone.unep.org/",
+        "https://ci.carmel.ca.us/post/climate-action-plan"
+      ],
+      "result": "Independent Carmel profile, official Census, global ozone and local climate sources investigated."
+    },
+    {
+      "call": 16,
+      "clicks": [
+        {
+          "url": "https://ozone.unep.org/",
+          "link": 12
+        }
+      ],
+      "queries": [
+        "site:unep.org 2025 \"99 per cent\" \"ozone\" phased",
+        "site:ozone.unep.org 2024 \"99%\""
+      ],
+      "result": "Investigated dated global ODS phaseout context and exact production/consumption construct."
+    },
+    {
+      "call": 17,
+      "opens": [
+        "https://ozone.unep.org/refrigeration-cool-technology-heating-planet?q=node%2F16288",
+        "https://ozone.unep.org/ozone-action-conversation-meg-seki",
+        "https://ozone.unep.org/facts-and-figures-ozone-protection"
+      ],
+      "result": "Directly inspected dated ODS context: 2025 article explicitly states 99% of production phased out, while 2026 statement is more-than99%; date/construct and exactness caveats forwarded."
+    },
+    {
+      "call": 18,
+      "opens": [
+        "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=*&returnGeometry=false&f=pjson",
+        "https://www.countyhealthrankings.org/health-data/community-conditions/health-infrastructure/health-promotion-and-harm-reduction/food-insecurity",
+        "https://www.countyhealthrankings.org/health-data/population-health-and-well-being/length-of-life/life-span/life-expectancy",
+        "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer?f=pjson"
+      ],
+      "result": "Independent CHR county data and methodological metadata recheck, especially release-year versus measurement-period conflict and food2022 denominator."
+    },
+    {
+      "call": 19,
+      "queries": [
+        "\"HRPe58bUyBqyyiCt\" \"County_Health_Rankings_2025\"",
+        "\"County Health Rankings 2025\" ArcGIS owner"
+      ],
+      "result": "Audit ArcGIS layer provenance and authoritative-source linkage."
+    },
+    {
+      "call": 20,
+      "opens": [
+        "https://www.arcgis.com/home/item.html?id=227b2537c79e42f69a31d83e8e0d9322&sublayer=2",
+        "https://www.arcgis.com/sharing/rest/content/items/227b2537c79e42f69a31d83e8e0d9322?f=pjson"
+      ],
+      "result": "ArcGIS item page direct open returned no readable lines and JSON metadata web fetch blocked; search-indexed item description attributes preparation/formatting to CHR team, with replacement link. Exact service-publisher provenance requested from researcher."
+    }
+  ],
+  "capture_failures": [
+    {
+      "url": "https://www.census.gov/quickfacts/fact/table/montereycountycalifornia/SBO040223",
+      "attempt": "sandbox",
+      "result": "curl proxy returned HTTP 403 before archive created"
+    },
+    {
+      "url": "https://www.census.gov/quickfacts/fact/table/montereycountycalifornia/SBO040223",
+      "attempt": "approved escalation prefix",
+      "result": "curl proxy returned HTTP 403 before archive created"
+    }
+  ],
+  "find_operations": 3,
+  "review_outputs": {
+    "monterey-county": {
+      "files": 21,
+      "indicator_rows": 24,
+      "content_pass": 8,
+      "content_uncertain": 16,
+      "archived_exhibits_checked": 3,
+      "numeric_missing_archive": 5
+    },
+    "carmel": {
+      "files": 21,
+      "indicator_rows": 24,
+      "content_pass": 8,
+      "content_uncertain": 16,
+      "archived_exhibits_checked": 5,
+      "note": "Two city values; six clearly labeled county proxies. Five numeric claims have checked exhibits; three remain publication-uncertain because snapshots are absent.",
+      "numeric_missing_archive": 3
+    }
+  },
+  "capture_successes_detail": [
+    {
+      "url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv139_rawvalue%2Cv139_numerator%2Cv147_rawvalue&returnGeometry=false&f=pjson",
+      "snapshot_path": "apps/web/public/evidence/monterey-county/evidence/7340038b7e846424.png",
+      "result": "Independent API query/capture corroborates values and field description years. Visually inspected."
+    }
+  ]
+}

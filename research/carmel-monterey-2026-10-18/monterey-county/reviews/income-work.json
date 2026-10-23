@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_slug": "poverty-rate",
+    "content_supported": "pass",
+    "verifier_note": "Independent FRED/Census SAIPE series PPAACA06053A156NCEN directly shows 2024 county poverty 13.7%, annual, and identifies Census/model-based SAIPE methodology. This resolves original mistaken ACS attribution; revised finding now cites that exact series with visible year. Target 8 gives repository-rounded 71.2. No archived exhibit exists.",
+    "reviewed_at": "2026-10-19T06:37:20.672353+00:00",
+    "source_url": "https://fred.stlouisfed.org/series/PPAACA06053A156NCEN",
+    "exhibit_checked": false
+  },
+  {
+    "indicator_slug": "unemployment-rate",
+    "content_supported": "pass",
+    "verifier_note": "Independent direct BLS/FRED annual series LAUCN060530000000003A shows 2025 county unemployment 7.9% and civilian labor-force definition. Target 4 gives 97.5. County platform earlier 5.2% is explicitly from a November 2024 report and should not be treated as final full-year 2024 estimate. No archived exhibit exists.",
+    "reviewed_at": "2026-10-19T06:37:20.672353+00:00",
+    "source_url": "https://fred.stlouisfed.org/series/LAUCN060530000000003A",
+    "exhibit_checked": false
+  }
+]

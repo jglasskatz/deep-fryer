@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_slug": "poverty-rate",
+    "content_supported": "pass",
+    "verifier_note": "Independent live profile and captured screenshot/text/HTML support city 6.2% for ACS 2024 five-year. Archived B 17001 metadata specifies population for whom poverty status is determined, raw 6.18 rounding 6.2 and uncertainty 3.58 pp. Target 8 gives\u221222.5. This is 2020\u20132024 period estimate; tier 3 fallback is documented.",
+    "reviewed_at": "2026-10-19T06:46:06.804767+00:00",
+    "source_url": "https://censusreporter.org/profiles/16000US0611250-carmel-by-the-sea-ca/",
+    "exhibit_checked": true
+  },
+  {
+    "indicator_slug": "unemployment-rate",
+    "content_supported": "pass",
+    "verifier_note": "Independent BLS/FRED annual county series directly supports 2025 unemployment 7.9%, target 4 gives 97.5. Finding explicitly labels Monterey County proxy permitted by config; it cannot establish Carmel city unemployment. Claimed snapshot path is empty: archive missing, so publication/import must remain uncertain even though source content passes.",
+    "reviewed_at": "2026-10-19T06:46:06.804767+00:00",
+    "source_url": "https://fred.stlouisfed.org/series/LAUCN060530000000003A",
+    "exhibit_checked": false
+  }
+]

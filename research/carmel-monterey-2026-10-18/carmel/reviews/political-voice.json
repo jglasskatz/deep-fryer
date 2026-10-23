@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "voter-turnout",
+    "content_supported": "pass",
+    "verifier_note": "Independent SOS live PDF and Carmel archived PDF/snapshot show county 148916/214883=69.30% registered turnout,November 2024; target 70 gives 1.0. County proxy is explicitly labeled and allowed. Archive provenance hash matches independent County exhibit; denominator footnote uses 15-day registration close, so it does not establish city turnout.",
+    "reviewed_at": "2026-10-19T06:46:06.804767+00:00",
+    "source_url": "https://elections.cdn.sos.ca.gov/sov/2024-general/sov/03-voter-participation-stats-by-county.pdf",
+    "exhibit_checked": true
+  }
+]

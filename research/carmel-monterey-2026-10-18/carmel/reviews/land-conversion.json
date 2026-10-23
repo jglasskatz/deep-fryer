@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "natural-land-conversion",
+    "content_supported": "uncertain",
+    "verifier_note": "Premature gap: only city tier 1 searched though county fallback is allowed. Add state/federal land-cover series and County FMMP; farmland conversion alone is not natural-to-developed share per decade. Explicitly describe unperformed calculation and remaining source tiers.",
+    "reviewed_at": "2026-10-19T06:43:06.063363+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

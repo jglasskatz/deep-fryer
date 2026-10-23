@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "energy-burden",
+    "content_supported": "uncertain",
+    "verifier_note": "Premature gap: only city tier 1 review; independent DOE LEAD overview supports county geographies. Try direct county low-income data and document median versus mean construct. Regional utility service does not establish city burden, but permitted county contextual fallback remains untested.",
+    "reviewed_at": "2026-10-19T06:43:06.063363+00:00",
+    "source_url": "https://www.energy.gov/cmei/scep/low-income-energy-affordability-data-lead-tool",
+    "exhibit_checked": false
+  }
+]

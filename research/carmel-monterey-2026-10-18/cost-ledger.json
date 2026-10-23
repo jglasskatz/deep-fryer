@@ -1,0 +1,407 @@
+{
+  "generated_at": "2026-10-19T14:07:22.473Z",
+  "budget_usd": null,
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "pricing_checked_date": "2026-10-19",
+  "rates": {
+    "gpt-6-luna": {
+      "input_per_million": 0.1,
+      "output_per_million": 0.5,
+      "source": "https://developers.openai.com/api/docs/models/gpt-6-luna"
+    },
+    "gpt-6.1-sol": {
+      "input_per_million": 2,
+      "output_per_million": 10,
+      "source": "https://developers.openai.com/api/docs/models/gpt-6.1-sol"
+    }
+  },
+  "assumptions": {
+    "low": {
+      "input_per_role_per_portrait": 500000,
+      "output_per_role_per_portrait": 30000
+    },
+    "base": {
+      "input_per_role_per_portrait": 2000000,
+      "output_per_role_per_portrait": 80000
+    },
+    "high": {
+      "input_per_role_per_portrait": 10000000,
+      "output_per_role_per_portrait": 250000
+    }
+  },
+  "portraits": [
+    {
+      "slug": "carmel",
+      "recorded_activity": {
+        "model": "gpt-6-luna",
+        "start_timestamp_utc": null,
+        "start_timestamp_note": "The web tool did not expose a turn-start timestamp; no start time is estimated.",
+        "end_timestamp_utc": "2026-10-19T06:51:03Z",
+        "web_tool_calls": 46,
+        "search_queries": 108,
+        "unique_successfully_opened_urls": 35,
+        "urls_opened": [
+          "https://ci.carmel.ca.us/post/general-plan",
+          "https://ci.carmel.ca.us/post/utilities",
+          "https://ci.carmel.ca.us/budget",
+          "https://ci.carmel.ca.us/planning",
+          "https://maps.co.monterey.ca.us/server/rest/services/LAFCO/Incorporated_Cities_2/FeatureServer/2",
+          "https://ci.carmel.ca.us/post/local-coastal-program",
+          "https://tigerweb.geo.census.gov/tigerwebmain/Files/acs26/tigerweb_acs26_incplace_2025_acs25_ca.html",
+          "https://www2.census.gov/geo/pvs/bas/bas24maps/st06_ca/incplace/p0611250_carmel-by-the-sea/BAS24P10600011250.pdf",
+          "https://www.cawd.org/service-area",
+          "https://www.cawd.org/district-transparency",
+          "https://www.carmelunified.org/departments/student-services/enrollment-residency",
+          "https://www.amwater.com/caaw/Customer-Service-Billing/Rates/Monterey-District",
+          "https://www.mbard.org/air-quality-and-planning",
+          "https://www.ambag.org/about-us",
+          "https://ci.carmel.ca.us/police-fire",
+          "https://mpc.edu/about/index.html",
+          "https://ci.carmel.ca.us/post/gis-mapping-tool",
+          "https://www.census.gov/programs-surveys/geography/guidance/geo-areas/pumas.html",
+          "https://ci.carmel.ca.us/post/long-range-planning-initiatives",
+          "https://www.sos.ca.gov/elections/county-city-school-district-ballot-measure-election-results",
+          "https://www.sos.ca.gov/elections/prior-elections/statewide-election-results/general-election-nov-5-2024/statement-vote",
+          "https://www.sos.ca.gov/elections/report-registration/15day-gen-2024",
+          "https://elections.cdn.sos.ca.gov/county-city-school-district-election-results/2024/city.pdf",
+          "https://elections.cdn.sos.ca.gov/sov/2024-general/sov/03-voter-participation-stats-by-county.pdf",
+          "https://aqs.epa.gov/aqsweb/airdata/download_files.html?monitor=25-025-1004",
+          "https://www.epa.gov/air-trends/air-quality-cities-and-counties",
+          "https://www.epa.gov/outdoor-air-quality-data/air-quality-statistics-report",
+          "https://ozone.unep.org/facts-and-figures-ozone-protection",
+          "https://www.ecowatch.noaa.gov/regions/california-current",
+          "https://www.pmel.noaa.gov/co2/story/CCE%2B1",
+          "https://www.mbari.org/data/wave-glider-sparky-real-time-data-plots/",
+          "https://www.ncei.noaa.gov/data/oceans/ncei/ocads/metadata/0287551.html",
+          "https://censusreporter.org/profiles/16000US0611250-carmel-by-the-sea-ca/",
+          "https://ozone.unep.org/refrigeration-cool-technology-heating-planet?q=node%2F16288",
+          "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv139_rawvalue%2Cv139_numerator%2Cv147_rawvalue&returnGeometry=false&f=pjson"
+        ],
+        "failed_open_urls": [
+          {
+            "url": "https://www.countyofmonterey.gov/business/developing-here/gis-mapping-data",
+            "result": "HTTP 403"
+          },
+          {
+            "url": "https://www.countyofmonterey.gov/government/government-links/lafco/studies-maps",
+            "result": "HTTP 403"
+          },
+          {
+            "url": "https://data.census.gov/all?q=Carmel-by-the-Sea+city%2C+California",
+            "result": "Open redirected without page content"
+          },
+          {
+            "url": "https://www.countyofmonterey.gov/visitors/hospitals",
+            "result": "Open failed"
+          },
+          {
+            "url": "https://ci.carmel.ca.us/pod/november-5-2024-municipal-election-results",
+            "result": "web open HTTP 403"
+          },
+          {
+            "url": "https://www.countyofmonterey.gov/home/showpublisheddocument/137108/638768525468870000",
+            "result": "web open HTTP 403"
+          },
+          {
+            "url": "https://api.census.gov/data/2024/acs/acs5/subject?get=NAME%2CS1701_C03_001E%2CS1701_C03_001M&for=place%3A11250&in=state%3A06",
+            "result": "web open URL inaccessible"
+          },
+          {
+            "url": "https://api.census.gov/data/2024/acs/acs5/subject?get=NAME%2CS2801_C01_012E%2CS2801_C02_012E%2CS2801_C02_016E&for=place%3A11250&in=state%3A06",
+            "result": "web open URL inaccessible"
+          },
+          {
+            "url": "https://api.census.gov/data/2024/acs/acs5/subject?get=NAME%2CS2503_C03_001E&for=place%3A11250&in=state%3A06",
+            "result": "web open URL inaccessible"
+          },
+          {
+            "url": "https://data.census.gov/table/ACSST5Y2024.S2503?g=160XX00US0611250",
+            "result": "web open URL inaccessible"
+          },
+          {
+            "url": "https://data.census.gov/table/ACSST5Y2024.S2801?g=160XX00US0611250",
+            "result": "web open URL inaccessible"
+          },
+          {
+            "url": "https://data.census.gov/table/ACSST5Y2024.S1903?g=160XX00US0611250",
+            "result": "web open URL inaccessible"
+          },
+          {
+            "url": "https://ozone.unep.org/sites/default/files/2023-05/Final_20Qs%202022%20full%20document_26April2023_digital%20version.pdf",
+            "result": "web open content length too large"
+          },
+          {
+            "url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv139_rawvalue%2Cv139_numerator%2Cv147_rawvalue&returnGeometry=false&f=pjson",
+            "result": "web reader reported URL inaccessible; exact API response was archived successfully by approved evidence capture helper, including field descriptions and Monterey FIPS 06053 row"
+          }
+        ],
+        "actual_token_usage": null,
+        "actual_usd": null,
+        "failed_evidence_capture_attempts": [
+          {
+            "url": "https://data.census.gov/table/ACSST5Y2024.S1501?g=160XX00US0611250",
+            "attempted_at_utc": null,
+            "result": "capture helper failed before navigation: pinned Playwright chromium_headless_shell executable missing; no evidence path generated"
+          },
+          {
+            "url": "https://data.census.gov/table/ACSST5Y2024.S1501?g=160XX00US0611250",
+            "attempted_at_utc": null,
+            "result": "retry failed with same missing pinned Playwright browser; no evidence path generated"
+          }
+        ],
+        "failed_evidence_capture_attempts_note": "The helper tool output did not expose per-attempt timestamps; actual times are not estimated."
+      },
+      "reviewer_web_calls_allocated": 10,
+      "scenarios": [
+        {
+          "scenario": "low",
+          "tier": "standard",
+          "research_usd": 0.065,
+          "review_usd": 1.3,
+          "search_proxy_usd": 0.56,
+          "total_usd": 1.925
+        },
+        {
+          "scenario": "low",
+          "tier": "fast",
+          "research_usd": 0.13,
+          "review_usd": 2.6,
+          "search_proxy_usd": 0.56,
+          "total_usd": 3.29
+        },
+        {
+          "scenario": "base",
+          "tier": "standard",
+          "research_usd": 0.24,
+          "review_usd": 4.8,
+          "search_proxy_usd": 0.56,
+          "total_usd": 5.6
+        },
+        {
+          "scenario": "base",
+          "tier": "fast",
+          "research_usd": 0.48,
+          "review_usd": 9.6,
+          "search_proxy_usd": 0.56,
+          "total_usd": 10.64
+        },
+        {
+          "scenario": "high",
+          "tier": "standard",
+          "research_usd": 1.125,
+          "review_usd": 22.5,
+          "search_proxy_usd": 0.56,
+          "total_usd": 24.185
+        },
+        {
+          "scenario": "high",
+          "tier": "fast",
+          "research_usd": 2.25,
+          "review_usd": 45,
+          "search_proxy_usd": 0.56,
+          "total_usd": 47.81
+        }
+      ]
+    },
+    {
+      "slug": "monterey-county",
+      "recorded_activity": {
+        "model": "gpt-6-luna",
+        "started_at": null,
+        "started_at_note": "Not available from the tool runtime; tracking was formalized after the first research calls. No start time has been estimated.",
+        "ended_at": "2026-10-19 13:55:20 UTC",
+        "web_tool_calls": 74,
+        "search_queries": 124,
+        "url_open_attempts": 133,
+        "urls_opened": [
+          "https://www.countyofmonterey.gov/government/departments-a-h/elections/resources/county-and-cities",
+          "https://www.countyofmonterey.gov/business/developing-here/gis-mapping-data",
+          "https://www.tamcmonterey.org/regional-transportation-plan",
+          "https://maps.co.monterey.ca.us/server/rest/services/LAFCO/City_Limits/MapServer/info/iteminfo",
+          "https://tigerweb.geo.census.gov/tigerwebmain/TIGERweb_restmapservice.html",
+          "https://www.countyofmonterey.gov/government/departments-a-h/housing-community-development/planning-services/advance-planning/ordinances-plans-under-development/general-plan-elements-update-housing-element-6th-cycle-update-2023-2031-ref220020-lrpwp-task-no-21-02",
+          "https://www.census.gov/programs-surveys/geography/guidance/geo-areas/pumas.html",
+          "https://www.countyofmonterey.gov/home/showpublisheddocument/140363/638829815888900000",
+          "https://www.countyofmonterey.gov/home/showpublisheddocument/140886/639051225950030000",
+          "https://www.countyofmonterey.gov/home/showpublisheddocument/139935/638810170251170000",
+          "https://www.countyofmonterey.gov/government/departments-a-h/clerk-of-the-board/board-of-supervisors",
+          "https://www.countyofmonterey.gov/government/government-links/water-resources-agency/programs/groundwater-extractions-gems",
+          "https://www.countyofmonterey.gov/government/government-links/water-resources-agency/programs/groundwater-monitoring-program",
+          "https://www.natividad.com/",
+          "https://www.mbard.org/air-quality-and-planning",
+          "https://www.hartnell.edu/about/index.html",
+          "https://hcai.ca.gov/wp-content/uploads/2025/11/OHCA-Investigative-Study-of-Hospital-Market-Competition-in-Monterey-County.pdf",
+          "https://www.countyofmonterey.gov/home/showpublisheddocument/45906/639117785515670000",
+          "https://www.countyofmonterey.gov/Home/Components/ServiceDirectory/ServiceDirectory/1913/1334",
+          "https://maps.co.monterey.ca.us/portal/home/",
+          "https://www2.census.gov/geo/maps/DC2020/PUMA/st06_ca/DC20PUMA_0605301.pdf",
+          "https://gcc.sco.ca.gov/Reports/Cities/CitiesByCounty.aspx?county=Monterey&year=2023",
+          "https://api.census.gov/data/2024/acs/acs5/profile/geography.html",
+          "https://data.census.gov/profile/Monterey_County,_California?g=050XX00US06053",
+          "https://svbgsa.org/monterey-subbasin/",
+          "https://svbgsa.org/gmp/",
+          "https://svbgsa.org/resources/information-library/",
+          "https://www.mpwmd.net/resources/annual-reports/",
+          "https://www.mpwmd.net/asd/board/boardpacket/2025/04212025/08/Item-8.htm",
+          "https://map.mpwmd.net/",
+          "https://www.montereyonewater.org/31/About",
+          "https://www.montereyonewater.org/Archive/ViewFile/Item/65",
+          "https://www.tamcmonterey.org/tamc-annual-report",
+          "https://www.ambag.org/plans/regional-growth-forecast",
+          "https://monterey.legistar.com/LegislationDetail.aspx?FullText=1&GUID=F6F00ECF-57EF-4163-B7E1-81DC2FAD2479&ID=8013107",
+          "https://www.countyofmonterey.gov/government/departments-a-h/housing-community-development/planning-services/current-planning/general-info/2010-monterey-county-general-plan-adopted-october-26-2010",
+          "https://www.countyofmonterey.gov/government/publications-plans-reports",
+          "https://www2.census.gov/geo/maps/DC2020/PUMA/st06_ca/Catalog_PUMAmaps_st06.pdf",
+          "https://www.ambag.org/about-us",
+          "https://www.countyofmonterey.gov/government/departments-a-h/elections/resources/condado-y-ciudades",
+          "https://api.census.gov/data/2024/acs/acs5/profile?get=NAME,DP03_0128PE&for=county:053&in=state:06",
+          "https://api.census.gov/data/2024/acs/acs5/profile?get=NAME,DP02_0153PE&for=county:053&in=state:06",
+          "https://data.census.gov/profile/Monterey_County%2C_California?g=050XX00US06053",
+          "https://www.census.gov/quickfacts/fact/table/montereycountycalifornia/SBO040223",
+          "https://www.datasharemontereycounty.org/indicators/index/view?indicatorId=288&localeFilterId=7&localeId=264",
+          "https://www.countyofmonterey.gov/home/showpublisheddocument/144777/639098562932070000",
+          "https://wonder.cdc.gov/wonder/outside/leep.html",
+          "https://map.feedingamerica.org/county/2024/overall/california/county/monterey",
+          "https://map.feedingamerica.org/county/2024/overall/california",
+          "https://map.feedingamerica.org/county/2023/overall/california/county/monterey",
+          "https://www.feedingamerica.org/en-espanol/node/5357",
+          "https://map.feedingamerica.org/county/2020/overall/california",
+          "https://www.feedingamerica.org/about-us/press-room/Map-the-Meal-Gap-2026",
+          "https://www.feedingamerica.org/research/map-the-meal-gap/by-county",
+          "https://www.feedingamerica.org/en-espanol/node/5365",
+          "https://labormarketinfo.edd.ca.gov/data/unemployment-and-labor-force.html",
+          "https://publish.data.ca.gov/dataset/local-area-unemployment-statistics-laus-annual-average",
+          "https://www.countyofmonterey.gov/government/departments-a-h/administrative-office/economic-development/at-a-glance-county-facts/economy-and-workforce",
+          "https://labormarketinfo.edd.ca.gov/file/Maps/County_UR2024_BM24.pdf",
+          "https://www.countyofmonterey.gov/home/showpublisheddocument/144921/639087567249870000",
+          "https://monterey.legistar.com/View.ashx?GUID=E7CE9622-DBC2-40C4-BB1D-12EFAED489D9&ID=1398213&M=PA",
+          "https://www.mbard.org/files/5db547d5d/23%2BAir%2BMonitoring%2BDivision%2BAnnual%2BReport%2B2024.pdf",
+          "https://ww2.arb.ca.gov/sites/default/files/2024-12/Staff_Report_PM2.5_Area_Designation_Recommendations_2024_Annual_PM2.5_NAAQS.pdf",
+          "https://www.epa.gov/air-trends/air-quality-design-values",
+          "https://api.census.gov/data/2024/acs/acs5/subject/groups/S1701.html",
+          "https://data.census.gov/chart/ACSST5Y2024.S1701?g=050XX00US06053",
+          "https://data.census.gov/table/ACSDP1Y2024.DP05?g=050XX00US06053",
+          "https://www.census.gov/quickfacts/fact/csv/montereycountycalifornia/IPE120225",
+          "https://www.countyofmonterey.gov/home/showpublisheddocument/137108/638768525468870000",
+          "https://elections.cdn.sos.ca.gov/sov/2024-primary/sov/03-voter-participation-stats-by-county.pdf",
+          "https://www.datasharemontereycounty.org/indicators/index/view?indicatorId=288&localeFilterId=7&localeId=264",
+          "https://www.conservation.ca.gov/dlrp/fmmp/Pages/Monterey.aspx",
+          "https://www.countyofmonterey.gov/home/showpublisheddocument/142365/638926748365700000",
+          "https://www.mcwd.org/docs/gsa/3-004.10_WY_2024.pdf",
+          "https://elections.cdn.sos.ca.gov/sov/2024-general/sov/03-voter-participation-stats-by-county.pdf",
+          "https://www.energy.gov/cmei/scep/low-income-energy-affordability-data-lead-tool",
+          "https://waterboards.ca.gov/drinking_water/certlic/drinkingwater/ear.html",
+          "https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/docs/2024/2024%20ACR%20Final%206-25-2025.pdf",
+          "https://api.census.gov/data/2024/acs/acs5/subject/groups/S2002.html",
+          "https://www.epa.gov/ods-phaseout",
+          "https://www.epa.gov/enviro/tri-ez-search",
+          "https://www.ecowatch.noaa.gov/thematic/ocean-acidification",
+          "https://oceanacidification.noaa.gov/oa-indicators-explained/",
+          "https://www.oag.ca.gov/crime",
+          "https://openjustice.doj.ca.gov/exploration/crime-statistics",
+          "https://sdwis.waterboards.ca.gov/PDWW/JSP/WSamplingResultsByStoret.jsp?Analyte=&ChemicalName=&FacilityID=008&SamplingPointID=008&SamplingPointName=NITRATE+POST+TREATMENT+LOCATION&SystemName=NELSON%27S+GROVE&SystemNumber=5700802&WSFNumber=67516&begin_date=&end_date=&mDWW=&tinwsys_is_number=8220",
+          "https://fred.stlouisfed.org/series/LAUCN060530000000003A",
+          "https://www.census.gov/quickfacts/fact/table/montereycountycalifornia/SBO040223",
+          "https://chsp.org/wp-content/uploads/2025/12/2024-Monterey-County-PIT-Count_Report_Final.pdf",
+          "https://api.census.gov/data/2024/acs/acs5/profile?get=NAME,DP03_0128PE,DP03_0099PE&for=county:053&in=state:06",
+          "https://api.census.gov/data/2024/acs/acs5/profile?get=NAME,DP03_0128PE&for=county:053&in=state:06",
+          "https://api.census.gov/data/2024/acs/acs5/profile?get=NAME,DP03_0099PE&for=county:053&in=state:06",
+          "https://dof.ca.gov/forecasting/demographics/estimates-e1/",
+          "https://dof.ca.gov/wp-content/uploads/sites/352/2024/04/PriceandPopulation2024.pdf",
+          "https://www.census.gov/data-tools/demo/saipe/",
+          "https://www2.census.gov/data/api-documentation/locating-quickfacts-data-points-in-data-census-gov-and-census-gov.pdf",
+          "https://www.census.gov/data/datasets/2024/demo/saipe/2024-state-and-county.html",
+          "https://fred.stlouisfed.org/series/PPAACA06053A156NCEN",
+          "https://www.census.gov/programs-surveys/sahie/data/api.html",
+          "https://www.census.gov/data-tools/demo/sahie/",
+          "https://api.census.gov/data/timeseries/healthins/sahie?get=NAME,NUI_PT,AGECAT,SEXCAT,IPRCAT,YEAR&for=county:053&in=state:06&AGECAT=0&SEXCAT=0&IPRCAT=0&time=2024",
+          "https://api.census.gov/data/timeseries/healthins/sahie?get=NAME,NUI_PT&for=county:053&in=state:06&AGECAT=0&SEXCAT=0&IPRCAT=0&time=2024",
+          "https://www.countyofmonterey.gov/home/showpublisheddocument/138247/638736919326900000",
+          "https://gcc.sco.ca.gov/Reports/Counties/County.aspx?entityid=27&rpt=6&year=2024",
+          "https://www.census.gov/quickfacts/fact/csv/montereycountycalifornia/IPE120225",
+          "https://www.countyhealthrankings.org/sites/default/files/media/document/2025%20County%20Health%20Rankings%20California%20Data%20-%20v3.xlsx",
+          "https://www.countyhealthrankings.org/sites/default/files/media/document/analytic_data2025.csv",
+          "https://www.arcgis.com/home/item.html?id=227b2537c79e42f69a31d83e8e0d9322&sublayer=2",
+          "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2?f=pjson",
+          "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27%26outFields%3D*%26returnGeometry%3Dfalse%26f%3Dpjson",
+          "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=*&returnGeometry=false&f=pjson",
+          "https://www.countyhealthrankings.org/health-data/population-health-and-well-being/length-of-life/life-span/life-expectancy",
+          "https://www.countyhealthrankings.org/health-data/community-conditions/health-infrastructure/health-promotion-and-harm-reduction/food-insecurity",
+          "https://www.countyhealthrankings.org/health-data/california/data-and-resources",
+          "https://www.countyhealthrankings.org/health-data/methodology-and-sources/data-documentation",
+          "https://www.arcgis.com/sharing/rest/content/items/227b2537c79e42f69a31d83e8e0d9322?f=pjson",
+          "https://api.census.gov/data/timeseries/healthins/sahie?get=NAME%2CNUI_PT%2CAGECAT%2CSEXCAT%2CIPRCAT%2CYEAR&for=county%3A053&in=state%3A06&AGECAT=0&SEXCAT=0&IPRCAT=0&time=2024"
+        ],
+        "actual_tokens": null,
+        "actual_usd": null,
+        "notes": "Tokens and USD are not exposed by the available tools; values remain null. Search trail includes query decisions and page use/rejection reasons. This focused follow-up added official CHR 2025 source searches and directly archived ArcGIS layer metadata plus the Monterey row as original JSON; the linked XLSX download returned HTTP 403. The independent reviewer capture later resolved the life-expectancy period to 2020–2022 and supplied a screenshot exhibit; both CHR findings are numeric. Independent gpt-6.1-sol reviewer supplied a narrow-field CHR capture with a real screenshot and source text, which independently resolves the observation-period metadata; those reviewer tool calls are not attributed to Luna counts. An ArcGIS item-metadata provenance fetch was attempted but timed out/was inaccessible and is not used as a factual source. A Census SAHIE county query was attempted through the approved helper but returned the API Missing Key page; no uninsured estimate was inferred. Numeric-source exhibit retries after browser-fallback update: QuickFacts returned browser HTTP 403; both FRED series timed out on curl and browser navigation; PIT PDF timed out on curl; County platform returned browser HTTP 403. Existing finding evidence paths remain blank for these five unresolved numeric sources; prior CHR and turnout captures remain valid.",
+        "screenshot_attempts": 3,
+        "evidence_capture_attempts": 22,
+        "evidence_capture_failures": 18,
+        "evidence_capture_successes": 4
+      },
+      "reviewer_web_calls_allocated": 10,
+      "scenarios": [
+        {
+          "scenario": "low",
+          "tier": "standard",
+          "research_usd": 0.065,
+          "review_usd": 1.3,
+          "search_proxy_usd": 0.84,
+          "total_usd": 2.205
+        },
+        {
+          "scenario": "low",
+          "tier": "fast",
+          "research_usd": 0.13,
+          "review_usd": 2.6,
+          "search_proxy_usd": 0.84,
+          "total_usd": 3.57
+        },
+        {
+          "scenario": "base",
+          "tier": "standard",
+          "research_usd": 0.24,
+          "review_usd": 4.8,
+          "search_proxy_usd": 0.84,
+          "total_usd": 5.88
+        },
+        {
+          "scenario": "base",
+          "tier": "fast",
+          "research_usd": 0.48,
+          "review_usd": 9.6,
+          "search_proxy_usd": 0.84,
+          "total_usd": 10.92
+        },
+        {
+          "scenario": "high",
+          "tier": "standard",
+          "research_usd": 1.125,
+          "review_usd": 22.5,
+          "search_proxy_usd": 0.84,
+          "total_usd": 24.465
+        },
+        {
+          "scenario": "high",
+          "tier": "fast",
+          "research_usd": 2.25,
+          "review_usd": 45,
+          "search_proxy_usd": 0.84,
+          "total_usd": 48.09
+        }
+      ]
+    }
+  ],
+  "web_search_price_per_1000_calls": 10,
+  "web_search_pricing_source": "https://developers.openai.com/api/docs/pricing",
+  "limitations": [
+    "These are illustrative sensitivity scenarios, not confidence intervals or observed token totals. Actual cost can fall outside the range.",
+    "Input includes assumed cumulative prompt and source text across every model turn. Output includes assumed reasoning and generated output. No cache discount is assumed.",
+    "Each request is assumed below 272k input tokens. Larger requests, cache writes, regional premiums and different tool billing can change costs.",
+    "Session web-tool calls are not equivalent to billed Responses API search calls. The proxy allocates half the shared reviewer calls to each portrait.",
+    "Research and adversarial review only. App engineering, orchestration, hosting, storage and other tool costs are excluded. Actual session tokens and billing are not exposed.",
+    "Research uses gpt-6-luna; independent review uses gpt-6.1-sol. Fast is shown at 2x model rates; Standard is included for comparison."
+  ]
+}

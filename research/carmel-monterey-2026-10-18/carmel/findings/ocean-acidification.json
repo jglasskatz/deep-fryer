@@ -1,0 +1,18 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "aragonite-saturation",
+    "reason": "NOAA EcoWatch has a 2019–2024 California Current LME aragonite indicator and NCEI describes the underlying gridded model dataset, but no numeric region-year value was extracted. Monterey Bay-specific Water Board entries use 2011/2016 cruise samples, outside the recency window.",
+    "scales_tried": [
+      "city",
+      "county",
+      "regional"
+    ],
+    "tiers_tried": [
+      1,
+      2
+    ],
+    "searched_at": "2026-10-19T06:37:34Z",
+    "nearest_data": "NOAA regional trend page is qualitative; underlying NCEI archive needs extraction. Water Board 2011/2016 samples rejected as stale."
+  }
+]
