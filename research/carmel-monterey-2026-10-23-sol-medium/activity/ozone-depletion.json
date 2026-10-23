@@ -1,0 +1,24 @@
+{
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "dimension": "ozone-depletion",
+  "portraits_researched": [
+    "carmel",
+    "monterey-county"
+  ],
+  "started_at": null,
+  "first_recorded_capture_at": "2026-10-23T06:57:50.364Z",
+  "completed_at": "2026-10-23T07:00:17.010114Z",
+  "timestamp_notes": "Research preceded the first evidence timestamp; tool interface did not expose exact first-call time, so started_at is null rather than invented.",
+  "web_tool_calls": 10,
+  "search_queries": 15,
+  "url_open_attempts": 19,
+  "evidence_capture_attempts": 3,
+  "evidence_capture_successes": 3,
+  "evidence_capture_failures": 0,
+  "evidence_reuse_copies": 3,
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "result": "Both indicators remain gaps; dated global/national context strengthened without substituting a different quantity.",
+  "validation": "Manual canonical gap schema field/enum checks passed; all evidence paths exist and copied source bundles match byte-for-byte. Python jsonschema unavailable; no full automated schema validation claimed."
+}

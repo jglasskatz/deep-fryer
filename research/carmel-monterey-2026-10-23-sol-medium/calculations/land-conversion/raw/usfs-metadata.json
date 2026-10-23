@@ -1,0 +1,306 @@
+{
+ "extent": {
+  "ymin": 2488123.621100001,
+  "xmin": -14391085.4222,
+  "ymax": 6967723.621100001,
+  "xmax": -7026295.4221999999,
+  "spatialReference": {
+   "latestWkid": 3857,
+   "wkid": 102100
+  }
+ },
+ "blockWidth": 2048,
+ "mosaicOperator": "First",
+ "serviceSourceType": "esriImageServiceSourceTypeMosaicDataset",
+ "hasMultidimensions": false,
+ "maxImageWidth": 100000,
+ "maxRecordCount": 1000,
+ "meanValues": [57.401165747106909],
+ "hasColormap": false,
+ "compressionType": "None",
+ "defaultCompressionQuality": 75,
+ "maxValues": [95],
+ "hasHistograms": true,
+ "datasetFormat": "AMD",
+ "maxImageHeight": 100000,
+ "sortField": "",
+ "bandNames": ["Band_1"],
+ "spatialReference": {
+  "latestWkid": 3857,
+  "wkid": 102100
+ },
+ "fullExtent": {
+  "ymin": 2488123.621100001,
+  "xmin": -14391085.4222,
+  "ymax": 6967723.621100001,
+  "xmax": -7026295.4221999999,
+  "spatialReference": {
+   "latestWkid": 3857,
+   "wkid": 102100
+  }
+ },
+ "bandCount": 1,
+ "rasterFunctionInfos": [
+  {
+   "help": "",
+   "name": "NLCDLC_AttTbl1",
+   "description": "Attribute tbl function from FGDB table"
+  },
+  {
+   "help": "",
+   "name": "None",
+   "description": "Make a Raster or Raster Dataset into a Function Raster Dataset."
+  }
+ ],
+ "supportsStatistics": true,
+ "sortableFields": "minps,maxps,lowps,highps,centerx,centery,zorder,beginyear,endyear,resolution",
+ "minValues": [11],
+ "allowRasterFunction": true,
+ "allowComputeTiePoints": false,
+ "serviceDataType": "esriImageServiceDataTypeGeneric",
+ "supportsAdvancedQueries": true,
+ "maxDownloadSizeLimit": 2048,
+ "currentVersion": 12,
+ "sortValue": null,
+ "timeInfo": {
+  "startTimeField": "beginyear",
+  "endTimeField": "endyear",
+  "timeExtent": [
+   473385600000,
+   1704067200000
+  ],
+  "timeReference": null
+ },
+ "objectIdField": "objectid",
+ "blockHeight": 256,
+ "initialExtent": {
+  "ymin": 2488123.621100001,
+  "xmin": -14391085.4222,
+  "ymax": 6967723.621100001,
+  "xmax": -7026295.4221999999,
+  "spatialReference": {
+   "latestWkid": 3857,
+   "wkid": 102100
+  }
+ },
+ "pixelSizeX": 30,
+ "pixelSizeY": 30,
+ "defaultMosaicMethod": "Northwest",
+ "name": "Vegetation/USFS_EDW_NLCD_Landcover_CONUS",
+ "allowedMosaicMethods": "NorthWest,Center,LockRaster,ByAttribute,Nadir,Viewpoint,Seamline,None",
+ "maxDownloadImageCount": 20,
+ "fields": [
+  {
+   "domain": null,
+   "name": "objectid",
+   "alias": "objectid",
+   "type": "esriFieldTypeOID"
+  },
+  {
+   "domain": null,
+   "name": "name",
+   "length": 200,
+   "alias": "name",
+   "type": "esriFieldTypeString"
+  },
+  {
+   "domain": null,
+   "name": "minps",
+   "alias": "minps",
+   "type": "esriFieldTypeDouble"
+  },
+  {
+   "domain": null,
+   "name": "maxps",
+   "alias": "maxps",
+   "type": "esriFieldTypeDouble"
+  },
+  {
+   "domain": null,
+   "name": "lowps",
+   "alias": "lowps",
+   "type": "esriFieldTypeDouble"
+  },
+  {
+   "domain": null,
+   "name": "highps",
+   "alias": "highps",
+   "type": "esriFieldTypeDouble"
+  },
+  {
+   "domain": {
+    "splitPolicy": "esriSPTDefaultValue",
+    "name": "MosaicCatalogItemCategoryDomain",
+    "description": "Catalog item categories.",
+    "type": "codedValue",
+    "codedValues": [
+     {
+      "code": 0,
+      "name": "Unknown"
+     },
+     {
+      "code": 1,
+      "name": "Primary"
+     },
+     {
+      "code": 2,
+      "name": "Overview"
+     },
+     {
+      "code": 3,
+      "name": "Unprocessed Overview"
+     },
+     {
+      "code": 4,
+      "name": "Partial Overview"
+     },
+     {
+      "code": 5,
+      "name": "Inactive"
+     },
+     {
+      "code": 253,
+      "name": "Uploaded"
+     },
+     {
+      "code": 254,
+      "name": "Incomplete"
+     },
+     {
+      "code": 255,
+      "name": "Custom"
+     }
+    ],
+    "mergePolicy": "esriMPTDefaultValue"
+   },
+   "name": "category",
+   "alias": "category",
+   "type": "esriFieldTypeInteger"
+  },
+  {
+   "domain": null,
+   "name": "tag",
+   "length": 100,
+   "alias": "tag",
+   "type": "esriFieldTypeString"
+  },
+  {
+   "domain": null,
+   "name": "groupname",
+   "length": 100,
+   "alias": "groupname",
+   "type": "esriFieldTypeString"
+  },
+  {
+   "domain": null,
+   "name": "productname",
+   "length": 100,
+   "alias": "productname",
+   "type": "esriFieldTypeString"
+  },
+  {
+   "domain": null,
+   "name": "centerx",
+   "alias": "centerx",
+   "type": "esriFieldTypeDouble"
+  },
+  {
+   "domain": null,
+   "name": "centery",
+   "alias": "centery",
+   "type": "esriFieldTypeDouble"
+  },
+  {
+   "domain": null,
+   "name": "zorder",
+   "alias": "zorder",
+   "type": "esriFieldTypeInteger"
+  },
+  {
+   "domain": null,
+   "name": "shape",
+   "alias": "shape",
+   "type": "esriFieldTypeGeometry"
+  },
+  {
+   "domain": null,
+   "name": "beginyear",
+   "alias": "beginyear",
+   "type": "esriFieldTypeSmallInteger"
+  },
+  {
+   "domain": null,
+   "name": "endyear",
+   "alias": "endyear",
+   "type": "esriFieldTypeSmallInteger"
+  },
+  {
+   "domain": null,
+   "name": "dataset_name",
+   "length": 100,
+   "alias": "dataset_name",
+   "type": "esriFieldTypeString"
+  },
+  {
+   "domain": null,
+   "name": "public",
+   "length": 3,
+   "alias": "public",
+   "type": "esriFieldTypeString"
+  },
+  {
+   "domain": null,
+   "name": "resolution",
+   "alias": "resolution",
+   "type": "esriFieldTypeDouble"
+  },
+  {
+   "domain": null,
+   "name": "metadata",
+   "length": 255,
+   "alias": "metadata",
+   "type": "esriFieldTypeString"
+  }
+ ],
+ "allowAnalysis": true,
+ "hasRasterAttributeTable": false,
+ "useStandardizedQueries": true,
+ "description": "<div style='text-align:Left;'><div><div><p><span>The USGS Land Cover program has combined the tried-and-true methodologies from premier land cover projects, National Land Cover Database (NLCD) and Land Change Monitoring, Assessment, and Projection (LCMAP), together with modern innovations in geospatial deep learning technologies to create the next generation of land cover and land change information. The product suite is called, \u201cAnnual NLCD\u201d and includes six annual products that represent land cover and surface change characteristics of the U.S.:      1) Land Cover,    2) Land Cover Change,    3) Land Cover Confidence,    4) Fractional Impervious Surface,    5) Impervious Descriptor, and    6) Spectral Change Day of Year.    These land cover science product algorithms harness the remotely sensed Landsat data record to provide state-of-the-art land surface change information needed by scientists, resource managers, and decision-makers. Annual NLCD uses a modernized, integrated approach to map, monitor, synthesize, and understand the complexities of land use, cover, and condition change. With this second release, Annual NLCD, Collection 1.1, the six products are available for the Conterminous U.S. for 1985\u20132024.             Questions about the Annual NLCD product suite can be directed to the Annual NLCD mapping team at USGS EROS, Sioux Falls, SD (605) 594-6151 or custserv@usgs.gov. See included spatial metadata for more details.<\/span><\/p><\/div><\/div><\/div>",
+ "pixelType": "U8",
+ "meanPixelSize": 30,
+ "exportTilesAllowed": false,
+ "editFieldsInfo": null,
+ "rasterTypeInfos": [{
+  "help": "",
+  "name": "Raster Dataset",
+  "description": "Supports all ArcGIS Raster Datasets"
+ }],
+ "defaultResamplingMethod": "Nearest",
+ "itemAccess": false,
+ "minScale": 0,
+ "serviceProperties": "<ImageServer><ImageServiceProperties><MosaicMethod>NorthWest<\/MosaicMethod><MosaicOperator>First<\/MosaicOperator><SortAscending>true<\/SortAscending><LockImageID><\/LockImageID><TileOrderField>name<\/TileOrderField><TileOrderBase>0<\/TileOrderBase><AvgImageSpacingX>600.000000<\/AvgImageSpacingX><AvgImageSpacingY>300.000000<\/AvgImageSpacingY><ViewPointX>0.0<\/ViewPointX><ViewPointY>0.0<\/ViewPointY><ViewPointDefShiftX>0.0<\/ViewPointDefShiftX><ViewPointDefShiftY>0.0<\/ViewPointDefShiftY><CompressionMethod>None<\/CompressionMethod><CompressionQuality>75<\/CompressionQuality><CompressionTolerance>0.010000<\/CompressionTolerance><SamplingMethod>Nearest<\/SamplingMethod><\/ImageServiceProperties><\/ImageServer>",
+ "advancedQueryCapabilities": {
+  "supportsStatistics": true,
+  "supportsSqlExpression": true,
+  "supportsOrderBy": true,
+  "useStandardizedQueries": true,
+  "supportsPagination": true,
+  "supportsDistinct": true
+ },
+ "serviceItemId": "732538c6bc6a4d99906425b39f35a97b",
+ "capabilities": "Image,Metadata,Catalog,Mensuration",
+ "maxScale": 0,
+ "stdvValues": [22.091927121205615],
+ "allowedFields": "name,minps,maxps,lowps,highps,tag,groupname,productname,centerx,centery,zorder,beginyear,endyear,dataset_name,public,metadata,resolution",
+ "minPixelSize": 0,
+ "sortAscending": true,
+ "maxMosaicImageCount": 20,
+ "inspectionCapabilities": "",
+ "maxPixelSize": 0,
+ "uncompressedSize": 36657014760,
+ "serviceDescription": "<DIV STYLE=\"text-align:Left;\"><DIV><DIV><P><SPAN>The USGS Land Cover program has combined the tried-and-true methodologies from premier land cover projects, National Land Cover Database (NLCD) and Land Change Monitoring, Assessment, and Projection (LCMAP), together with modern innovations in geospatial deep learning technologies to create the next generation of land cover and land change information. The product suite is called, \u201cAnnual NLCD\u201d and includes six annual products that represent land cover and surface change characteristics of the U.S.:      1) Land Cover,    2) Land Cover Change,    3) Land Cover Confidence,    4) Fractional Impervious Surface,    5) Impervious Descriptor, and    6) Spectral Change Day of Year.    These land cover science product algorithms harness the remotely sensed Landsat data record to provide state-of-the-art land surface change information needed by scientists, resource managers, and decision-makers. Annual NLCD uses a modernized, integrated approach to map, monitor, synthesize, and understand the complexities of land use, cover, and condition change. With this second release, Annual NLCD, Collection 1.1, the six products are available for the Conterminous U.S. for 1985\u20132024.             Questions about the Annual NLCD product suite can be directed to the Annual NLCD mapping team at USGS EROS, Sioux Falls, SD (605) 594-6151 or custserv@usgs.gov. See included spatial metadata for more details.<\/SPAN><\/P><\/DIV><\/DIV><\/DIV>",
+ "allowCopy": true,
+ "copyrightText": "These products were created by the Annual NLCD team at USGS EROS, Sioux Falls, SD. Refer to the contact information throughout the metadata to contact the team.",
+ "mensurationCapabilities": "Basic",
+ "ownershipBasedAccessControlForRasters": null
+}

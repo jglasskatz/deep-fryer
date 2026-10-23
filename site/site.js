@@ -41,9 +41,9 @@ function selectPortrait(slug, restoreDimension = true) {
     tooltip.replaceChildren();
     const add = (tag, text) => { const node = document.createElement(tag); node.textContent = text; tooltip.append(node); };
     add('strong', d.name);
-    add('p', `${d.ring === 'social' ? 'Social foundation' : 'Ecological ceiling'}${d.level === null ? ' · Score unknown' : ''}`);
+    add('p', `${d.ring === 'social' ? 'Social foundation' : 'Ecological ceiling'}${d.level === null ? (d.indicators.some(i => i.kind === 'observation') ? ' · Unscored observation' : ' · Score unknown') : ''}`);
     for (const indicator of d.indicators) {
-      add('p', `${indicator.name}: ${indicator.value === null ? 'Data needed' : `${indicator.value} ${indicator.unit || ''}`} ${indicator.year ? `(${indicator.year})` : ''}`);
+      add('p', `${indicator.name}: ${indicator.value === null ? 'Data needed' : `${indicator.kind === 'observation' ? Number(indicator.value.toFixed(1)) : indicator.value} ${indicator.unit || ''}`} ${indicator.year ? `(${indicator.year})` : ''}`);
       add('small', `${collection.statuses[indicator.status]} · ${indicator.geography || 'See source context'}`);
       if (indicator.quality_flags?.length) add('small', indicator.quality_flags.join(' · '));
       if (indicator.source) add('small', `Source: ${indicator.source}`);

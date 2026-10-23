@@ -1,0 +1,7 @@
+[
+  {
+    "indicator_slug": "natural-land-conversion",
+    "content_supported": "pass",
+    "verifier_note": "Independently refetched official 2014/2024 Annual NLCD TIFFs and both native-grid records: byte-identical to archives; live catalog IDs 30/40 confirm the two C1V1 years. Offline calculate.py rerun in a temporary copy reproduces 15,431,398.708466765 / 7,109,372,039.741001 \u00d7 100 = 0.21705712715843378% per decade and canonical round1 score -56.6. Same 30 m equal-area grid, exact fractional county-boundary weights, perennial-water mask, observed-class denominator and 0.562371922 m\u00b2 unobserved sliver treatment were checked. Wisconsin EPA crosswalk and MRLC legend support the declared vegetation classes but do not establish all coastal natural land: including ambiguous barren class 31 gives 0.21987428971596729%, and pixel-center weighting gives 0.21719657042855467%. Final display explicitly labels this mapped gross-conversion proxy with medium confidence, no native-only or net-restoration claim; classification/mixed-pixel/local-accuracy limitations remain. The calculation covers all incorporated and unincorporated county resident land on the fixed current footprint. Final labelled derived exhibit visually inspected; pass applies to this operational mapped proxy, not field-verified complete habitat loss."
+  }
+]

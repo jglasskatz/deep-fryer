@@ -1,0 +1,25 @@
+{
+  "dimension": "extreme-heat",
+  "indicator_slug": "extreme-heat-days",
+  "name": "Extreme heat exposure",
+  "definition": "Resident-population-weighted mean of tract-specific annual mean extreme-heat days (2018\u20132022), maximum temperature exceeding the historical 95th percentile for each tract.",
+  "unit": "population-weighted mean days/year",
+  "observation_period": "2018\u20132022",
+  "year": 2022,
+  "source_release_year": 2024,
+  "geographic_scale": "county",
+  "coverage": "All 103 Monterey County tracts included in CDC EJI 2024; Census 2020 lists 104 county tracts, with water-only zero-population tract 06053990000 absent from EJI. The remaining 103 cover the county resident land geography. No residents are removed by this water-tract omission. This is an observed membership difference; CDC documentation does not state a removal policy. Carmel uses explicitly labeled county context.",
+  "target": null,
+  "level_pct": null,
+  "scoring": null,
+  "unscored_reason": "No adopted or scientifically defensible safe annual number of locally extreme-temperature days was established. The 95th-percentile rule defines an exposure event; it is not a safe annual-day target. Historical climatological averages, forecast HeatRisk categories, occupational exposure limits and zero days are not adopted annual targets for this measure.",
+  "source_url": "https://eji.cdc.gov/Documents/Data/2024/2024_CSV/EJI_2024_California_CSV.zip",
+  "method_url": "https://atsdr.cdc.gov/place-health/media/pdfs/2024/10/EJI_2024_Technical_Documentation.pdf",
+  "rationale": "Recent retrospective official source with explicit event definition and portable county aggregation. Preserves observations independently of boundary scoring.",
+  "limitations": [
+    "2018\u20132022 five-year average; not a single 2022 count.",
+    "County context does not measure Carmel-by-the-Sea city limits.",
+    "Baseline years and seasonal window are unspecified in the EJI heat entry.",
+    "Locally relative thresholds mean tract counts are not comparable absolute-temperature exceedances."
+  ]
+}

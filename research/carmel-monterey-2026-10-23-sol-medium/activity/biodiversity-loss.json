@@ -1,0 +1,30 @@
+{
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "dimension": "biodiversity-loss",
+  "portraits_researched": [
+    "carmel",
+    "monterey-county"
+  ],
+  "started_at": "2026-10-23T06:38:00Z",
+  "started_at_precision": "approximate; session tool transcript is authoritative",
+  "completed_at": "2026-10-23T07:03:52.778818Z",
+  "web_tool_calls": 6,
+  "search_queries": 12,
+  "url_open_attempts": 5,
+  "evidence_capture_attempts": 11,
+  "evidence_capture_successes": 10,
+  "evidence_capture_failures": 1,
+  "evidence_capture_failure_note": "StoryMaps initial title-only screenshot failed content review; HTTP/PNG succeeded but content was inadequate. Replaced by successful publisher API screenshot and faithful extract. Four derived/extract PNGs separately rendered and visually checked.",
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "result": "Both gaps replaced by medium-confidence 2024 mapped-inventory GIS derivations; newer 2026 mixed-status geometry rejected",
+  "raw_network_queries": "Exact per-input request URLs are in calculations/biodiversity-loss/raw-manifest.json and raw/download-provenance.json; web counters exclude shell acquisitions.",
+  "validation": [
+    "Offline calculation rerun",
+    "Canonical findingPayloadSchema validation passed for both findings",
+    "Every evidence path exists in each tenant",
+    "Stored and original SHA-256 hashes verified for every manifest entry",
+    "Both final derived PNGs and faithful guide extract visually inspected"
+  ]
+}

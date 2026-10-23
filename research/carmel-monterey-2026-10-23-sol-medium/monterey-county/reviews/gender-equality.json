@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "gender-pay-ratio",
+    "content_supported": "pass",
+    "verifier_note": "Inspected dd6e71fc936cda74.png and raw B20017: county ACS 2024 one-year male full-time/year-round median $57,171 and female $54,686, both 2024 dollars, with matching work-experience universes. 54,686/57,171×100 = 95.6525 → 95.7%; score −0.7. Individual MOEs $4,095/$5,577 are not a propagated ratio MOE. Reviewer API refetch failed; archived response supports the components. Source support is not human approval.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B19083%2CB25070%2CB20017%2CB27001&geo_ids=05000US06053",
+    "exhibit_checked": true
+  }
+]

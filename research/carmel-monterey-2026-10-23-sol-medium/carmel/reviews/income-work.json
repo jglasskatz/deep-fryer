@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_slug": "poverty-rate",
+    "content_supported": "pass",
+    "verifier_note": "Refreshed screenshot d8edc5b46036f291.png inspected; independent live profile confirms ACS 2020–2024 city poverty 6.2% ±3.6 percentage points (195 ±113 people). The relevant B17001 universe is persons for whom poverty status is determined, not literally every resident. Score (6.2−8)/8×100=−22.5. Keep five-year period, survey uncertainty and city boundary explicit; not comparable without qualification to single-year county SAIPE.",
+    "reviewed_at": "2026-10-23T03:18:52.050896+00:00",
+    "source_url": "https://censusreporter.org/profiles/16000US0611250-carmel-by-the-sea-ca/",
+    "exhibit_checked": true
+  },
+  {
+    "indicator_slug": "unemployment-rate",
+    "content_supported": "pass",
+    "verifier_note": "Inspected screenshot 136808188e5cea7f.png and raw B23025 response: city GEOID 16000US0611250, ACS 2020–2024. B23025005 unemployed 56 / B23025003 civilian labor force 1780×100=3.1461→3.1; conditional rounded-value score−22.5. Correct denominator excludes people outside labor force and armed forces. MOEs 51/411 are disclosed; this is a five-year ACS estimate, not annual BLS unemployment or a 2024 point observation. Direct reviewer API refetch failed; exact support is archived publisher response. Retain low-confidence and period labels.",
+    "reviewed_at": "2026-10-23T03:10:15.064927+00:00",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B23025&geo_ids=16000US0611250",
+    "exhibit_checked": true
+  }
+]

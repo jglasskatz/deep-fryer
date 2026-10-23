@@ -1,0 +1,201 @@
+{
+  "carmel": {
+    "baseline_year": 2014,
+    "end_year": 2024,
+    "period_years": 10,
+    "natural_class_codes": [
+      41,
+      42,
+      43,
+      52,
+      71,
+      90,
+      95
+    ],
+    "developed_class_codes": [
+      21,
+      22,
+      23,
+      24
+    ],
+    "boundary_area_m2": 2747428.2653409634,
+    "raster_weighted_boundary_area_m2": 2747428.265340907,
+    "nodata_inside_m2": 0.0,
+    "baseline_natural_m2": 44133.00373854232,
+    "converted_natural_to_developed_m2": 0.0,
+    "baseline_natural_ha": 4.4133003738542325,
+    "converted_ha": 0.0,
+    "value_pct_per_decade": 0.0,
+    "baseline_natural_effective_pixels": 49.03667082060258,
+    "converted_effective_pixels": 0.0,
+    "baseline_natural_center_pixels": 48,
+    "converted_center_pixels": 0,
+    "pixel_center_rate_sensitivity_pct": 0.0,
+    "including_barren_31_and_snow_12_sensitivity": {
+      "baseline_m2": 121187.06580295468,
+      "converted_m2": 900.0,
+      "rate_pct": 0.7426535117727531
+    },
+    "baseline_class_area_m2": {
+      "11": 1.658427323238264,
+      "21": 892225.140509947,
+      "22": 1347531.0926961452,
+      "23": 379283.30790453707,
+      "24": 7200.0,
+      "31": 77054.06206441236,
+      "42": 33324.299182640825,
+      "90": 900.0,
+      "95": 9908.704555901491
+    },
+    "gross_conversion_by_baseline_class_m2": {
+      "41": 0.0,
+      "42": 0.0,
+      "43": 0.0,
+      "52": 0.0,
+      "71": 0.0,
+      "90": 0.0,
+      "95": 0.0
+    },
+    "gross_conversion_by_developed_end_class_m2": {
+      "21": 0.0,
+      "22": 0.0,
+      "23": 0.0,
+      "24": 0.0
+    }
+  },
+  "monterey-county": {
+    "baseline_year": 2014,
+    "end_year": 2024,
+    "period_years": 10,
+    "natural_class_codes": [
+      41,
+      42,
+      43,
+      52,
+      71,
+      90,
+      95
+    ],
+    "developed_class_codes": [
+      21,
+      22,
+      23,
+      24
+    ],
+    "boundary_area_m2": 8499610994.628198,
+    "raster_weighted_boundary_area_m2": 8499610988.994906,
+    "nodata_inside_m2": 0.5623719223487662,
+    "baseline_natural_m2": 7109372039.741001,
+    "converted_natural_to_developed_m2": 15431398.708466765,
+    "baseline_natural_ha": 710937.2039741001,
+    "converted_ha": 1543.1398708466766,
+    "value_pct_per_decade": 0.21705712715843378,
+    "baseline_natural_effective_pixels": 7899302.26637889,
+    "converted_effective_pixels": 17145.998564963073,
+    "baseline_natural_center_pixels": 7899296,
+    "converted_center_pixels": 17157,
+    "pixel_center_rate_sensitivity_pct": 0.21719657042855467,
+    "including_barren_31_and_snow_12_sensitivity": {
+      "baseline_m2": 7118722800.2298,
+      "converted_m2": 15652241.193853892,
+      "rate_pct": 0.21987428971596729
+    },
+    "baseline_class_area_m2": {
+      "0": 0.5623719223487663,
+      "11": 6117679.5170963835,
+      "21": 176061442.9946621,
+      "22": 131577881.29589535,
+      "23": 84318894.45773885,
+      "24": 14829531.539456967,
+      "31": 9350760.488798732,
+      "41": 3396128.1229460393,
+      "42": 661396307.22313,
+      "43": 526085613.3792749,
+      "52": 3369784599.9234476,
+      "71": 2456709175.8688903,
+      "81": 3541990.448573335,
+      "82": 964440767.9493124,
+      "90": 47680749.803208865,
+      "95": 44319465.420103505
+    },
+    "gross_conversion_by_baseline_class_m2": {
+      "41": 2700.0,
+      "42": 782353.7309167125,
+      "43": 173937.21581198892,
+      "52": 4413564.934636335,
+      "71": 9866526.079136966,
+      "90": 104929.86464084583,
+      "95": 87386.8833239133
+    },
+    "gross_conversion_by_developed_end_class_m2": {
+      "21": 12702527.901772643,
+      "22": 2124581.7524170214,
+      "23": 576389.0542771011,
+      "24": 27900.0
+    }
+  },
+  "carmel-census-crosscheck": {
+    "baseline_year": 2014,
+    "end_year": 2024,
+    "period_years": 10,
+    "natural_class_codes": [
+      41,
+      42,
+      43,
+      52,
+      71,
+      90,
+      95
+    ],
+    "developed_class_codes": [
+      21,
+      22,
+      23,
+      24
+    ],
+    "boundary_area_m2": 2748714.1247203248,
+    "raster_weighted_boundary_area_m2": 2748714.1247203145,
+    "nodata_inside_m2": 0.0,
+    "baseline_natural_m2": 48069.08950919961,
+    "converted_natural_to_developed_m2": 0.0,
+    "baseline_natural_ha": 4.806908950919961,
+    "converted_ha": 0.0,
+    "value_pct_per_decade": 0.0,
+    "baseline_natural_effective_pixels": 53.41009945466624,
+    "converted_effective_pixels": 0.0,
+    "baseline_natural_center_pixels": 53,
+    "converted_center_pixels": 0,
+    "pixel_center_rate_sensitivity_pct": 0.0,
+    "including_barren_31_and_snow_12_sensitivity": {
+      "baseline_m2": 126906.57505987988,
+      "converted_m2": 900.0,
+      "rate_pct": 0.7091831133062586
+    },
+    "baseline_class_area_m2": {
+      "11": 12.396049774860533,
+      "21": 888497.5536573214,
+      "22": 1346936.1722469563,
+      "23": 379161.427706382,
+      "24": 7200.0,
+      "31": 78837.48555068026,
+      "42": 33264.53821581809,
+      "90": 900.0,
+      "95": 13904.551293381515
+    },
+    "gross_conversion_by_baseline_class_m2": {
+      "41": 0.0,
+      "42": 0.0,
+      "43": 0.0,
+      "52": 0.0,
+      "71": 0.0,
+      "90": 0.0,
+      "95": 0.0
+    },
+    "gross_conversion_by_developed_end_class_m2": {
+      "21": 0.0,
+      "22": 0.0,
+      "23": 0.0,
+      "24": 0.0
+    }
+  }
+}

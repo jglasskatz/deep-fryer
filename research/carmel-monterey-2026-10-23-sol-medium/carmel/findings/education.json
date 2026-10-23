@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "hs-attainment",
+    "name": "Adults with a high-school credential",
+    "value": 94.0,
+    "unit": "% of residents 25+",
+    "year": 2024,
+    "target": 95,
+    "level_pct": 1.1,
+    "scoring": {
+      "threshold_ref": "education.hs-attainment",
+      "function": "higher_is_better",
+      "inputs": {
+        "value": 94.0,
+        "target": 95,
+        "scale": 95
+      },
+      "worked_math": "level_pct = (95 − 94.0) ÷ 95 × 100 = +1.1"
+    },
+    "source": "Census Reporter city profile, reproducing U.S. Census Bureau 2024 ACS 5-year educational-attainment estimate for Carmel-by-the-Sea",
+    "source_url": "https://censusreporter.org/profiles/16000US0611250-carmel-by-the-sea-ca/",
+    "source_tier": 3,
+    "evidence": {
+      "snapshot_path": "evidence/d8edc5b46036f291.png",
+      "captured_at": "2026-10-23T02:57:11.289Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "city",
+    "notes": "The directly opened profile identifies the place as Carmel-by-the-Sea (Census place GEOID 0611250), states ACS 2024 5-year (2020–2024), and reports 94% (2,863 ±425.4) high-school graduate or higher. The captured profile data identifies Census ACS table B15002 with universe population age 25 and over. Tier 1 City searches found no adopted attainment series; Tier 2 official data.census.gov and Census API were attempted but were inaccessible/rendered without extractable cells. Census Reporter is a tier-3 secondary interface to Census data; its margin of error is large (±13.6 percentage points), so interpret cautiously."
+  }
+]

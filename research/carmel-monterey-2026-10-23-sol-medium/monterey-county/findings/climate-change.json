@@ -1,0 +1,19 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "ghg-per-capita",
+    "reason": "No 2021-or-newer whole-county or permitted regional community GHG inventory was verified in this pass. The adopted June 2026 AMBAG 2050 MTP/SCS Final EIR identifies 2019/2020 as its most-current regional inventory. Its nominal 2022 baseline interpolates every non-road source between 2020 and forecast 2025, so its recent label cannot establish a recent observed community inventory. County CCAAP inventories cover unincorporated areas and cannot stand for all Monterey County.",
+    "scales_tried": [
+      "county",
+      "regional"
+    ],
+    "tiers_tried": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "searched_at": "2026-10-23T07:08:37.043655Z",
+    "nearest_data": "New evidence: AMBAG May 2026 Final EIR, adopted June 10, 2026: https://www.ambag.org/sites/default/files/2026-05/AMBAG_2050%20MTPSCS_FEIR_Combined%20May%202026_Acc.pdf. Table 4.8-1 (PDF pp348\u2013349) reports a 2019/2020 tri-county inventory; methodology at printed 4.8-21 and Table 4.8-2 footnote 1 (PDF p368, printed 4.8-23) explains that 2022 non-road emissions are interpolated from the 2045 MTP/SCS forecast using 2020 and 2025. Regional boundary is Monterey, San Benito and Santa Cruz counties; do not attribute its mean to Monterey County. AMBAG FY2022\u201323 audited report documents 2020 community inventories for 3CE jurisdictions: https://www.ambag.org/sites/default/files/2024-02/Official%20-%20FINAL%2022_23%20ACFR_1_25_24_0.pdf (p17). 3CE membership omits King City, and 2020 is outside the recency window. Updated County CCAAP still uses 2019 unincorporated emissions: https://monterey.legistar.com/LegislationDetail.aspx?FullText=1&GUID=F6F00ECF-57EF-4163-B7E1-81DC2FAD2479&ID=8013107. CARB current inventory is statewide (https://ww2.arb.ca.gov/ghg-inventory-data); EPA PCAP inventory directory has no Salinas/Monterey entry (https://www.epa.gov/inflation-reduction-act/ghg-inventories-searchable-table). Climate TRACE has recent territorial source emissions, but this pass did not establish a matching community accounting boundary including imported electricity and community waste; its sum was not substituted for community inventory (https://climatetrace.org/data; https://climatetrace.org/news/clearing-the-path-to-easier-more-accurate-scope-3-emissions). No denominator or extrapolated value was fabricated."
+  }
+]

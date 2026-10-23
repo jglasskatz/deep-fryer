@@ -1,0 +1,21 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "ods-phaseout-compliance",
+    "reason": "Research did not establish a recent measured percentage of tracked ODS phased out for all of Monterey County or a defensible equivalent at any permitted fallback scale. Tier 1 search examined Monterey County climate planning pages; the opened CCAAP project page explicitly covers unincorporated areas and cannot represent the full county. Regional MBARD rules 1100 and 1101 establish controls, without a measured phaseout percentage. Tier 2 California CARB and U.S. EPA searches found HFC substitutes, offset projects, legal schedules and national HCFC net-consumption data, but no matching tracked-ODS numerator/denominator. State, national and global scales are expressly permitted: the retained gap concerns indicator definition and observation-year support, not a prohibition on those scales. Official UNEP/EEA global context was pursued after local/state/federal sources; it does not establish the exact configured measure. No assumption of zero noncompliance or full phaseout was made.",
+    "scales_tried": [
+      "county",
+      "regional",
+      "state",
+      "national",
+      "global"
+    ],
+    "tiers_tried": [
+      1,
+      2,
+      3
+    ],
+    "searched_at": "2026-10-23T07:00:17.010114Z",
+    "nearest_data": "National dated context: EPA FY 2024 Annual Performance Report, pp. 48\u201349 (https://www.epa.gov/system/files/documents/2025-01/fy24-annual-performance-report.pdf), reports calendar-2023 U.S. net HCFC consumption of -18.9 ODP-weighted metric tons; the negative sign means exports and destruction exceeded production and imports. This measures one ODS group and national net flows, not a percentage of tracked ODS phased out. Global context: UNEP Ozone Secretariat Facts and Figures (https://ozone.unep.org/facts-and-figures-ozone-protection) states 99% phased out, approximately 1.8 million ODP tonnes, but gives no observation year or reproducible baseline for that statement; a separate ratification date does not date the phaseout value. Dated nearest global statement: EEA World Ozone Day release (https://www.eea.europa.eu/en/newsroom/news/world-ozone-day) reports about 99% lower worldwide consumption from 1986 to 2023. This is consumption reduction, not a share of tracked substances or a measured local compliance rate, and the opened underlying EEA indicator/report pages did not substantiate a global phaseout denominator. Kept as context only; no numeric score assigned."
+  }
+]

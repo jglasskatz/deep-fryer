@@ -1,0 +1,25 @@
+{
+  "extreme-heat-days": [
+    {
+      "label": "CDC EJI 2024 heat methodology, page 94",
+      "source_url": "https://atsdr.cdc.gov/place-health/media/pdfs/2024/10/EJI_2024_Technical_Documentation.pdf",
+      "snapshot_path": "evidence/0c6e9697af31408a.png",
+      "pdf_path": "evidence/0c6e9697af31408a.pdf"
+    },
+    {
+      "label": "CDC raw county tract inputs (103 records)",
+      "source_url": "https://onemap.cdc.gov/onemapservices/rest/services/EJI/EJI_2024_Data_Service/MapServer/0/query?where=STATEFP%3D%2706%27%20AND%20COUNTYFP%3D%27053%27&outFields=GEOID%2CCOUNTY%2CE_TOTPOP%2CE_NEHD%2CEPL_NEHD&returnGeometry=false&f=pjson",
+      "snapshot_path": "evidence/241a3264f78355ea.png"
+    },
+    {
+      "label": "Census 2020 Monterey County tract geography list (104 tracts)",
+      "source_url": "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/6/query?f=json&where=STATE%3D%2706%27+AND+COUNTY%3D%27053%27&outFields=GEOID%2CNAME%2CAREALAND%2CAREAWATER&returnGeometry=false",
+      "snapshot_path": "evidence/8adea5279072d303.png"
+    },
+    {
+      "label": "Census 2020 water-only tract 06053990000: zero population, housing, and land",
+      "source_url": "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/6/query?f=json&where=GEOID%3D%2706053990000%27&outFields=%2A&returnGeometry=false",
+      "snapshot_path": "evidence/514871a622bec50e.png"
+    }
+  ]
+}

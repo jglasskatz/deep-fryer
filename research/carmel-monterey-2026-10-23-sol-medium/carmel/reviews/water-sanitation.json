@@ -1,0 +1,7 @@
+[
+  {
+    "indicator_slug": "safe-drinking-water",
+    "content_supported": "pass",
+    "verifier_note": "Independently opened the 2025 ACR and EPA field definitions and refetched the ACR workbook (SHA256 4c43ed7afe1421abcba2ab1b803549c49d3c230bf5c55073bcc8d1f65f756fa2), byte-identical to the archive; rerunning extract.py confirms 107 Monterey violation rows for 54 systems and the archived ECHO counts of 684/311. EPA explicitly warns service-area fields are incomplete/not quality assured and defines population as estimated average daily system population; neither this violations-only table nor mixed current system counts establishes the configured county annual served-population percentage. The independently opened 2025 CalAm CCR reports system compliance, but supplies no Carmel-only population allocation. Pass applies to a documented provisional extraction/denominator gap, not proof that no usable city or county data exist."
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "food-insecurity-rate",
+    "content_supported": "pass",
+    "verifier_note": "Independent narrow-field API refetch and real captured screenshot/HTML/TXT show Monterey FIPS 06053 v 139_rawvalue 13 and numerator 56940; field descriptions explicitly identify Map the Meal Gap 2022. Independent CHR method page confirms all-population denominator and modeled construct. Corrected tier 3 and target 5 score 160. Genuine exhibit checked; newer 2023/2024 data may exist, so 2022 is accepted recent fallback, not claimed latest.",
+    "reviewed_at": "2026-10-19T06:51:21.778695+00:00",
+    "source_url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv139_rawvalue%2Cv139_numerator%2Cv147_rawvalue&returnGeometry=false&f=pjson",
+    "exhibit_checked": true
+  }
+]

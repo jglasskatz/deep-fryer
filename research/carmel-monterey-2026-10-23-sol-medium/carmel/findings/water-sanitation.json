@@ -1,0 +1,18 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "safe-drinking-water",
+    "reason": "No Carmel-by-the-Sea city-limits served-population denominator or complete city-to-water-system allocation was established. The city utilities page identifies California American Water, and the 2025 Monterey system CCR reports compliance, but its multi-community coverage is not a city-only percentage. A system-wide compliant sample table cannot by itself prove the indicator for every city water-system customer. The accepted county fallback also remains unresolved. The 2025 California Annual Compliance Report and full XLSX were retrieved, replacing the earlier inaccessible-report lead. The workbook is violations-only: its 107 Monterey-coded rows represent 54 distinct systems, not all systems or a served-population denominator. EPA ECHO returned 684 Monterey-coded records, 311 active, but its geography fields are not quality-assured service-area allocations and population is estimated average daily system population; summing all system types can duplicate people. No current, boundary-aligned all-system annual denominator was established. CDC Tracking describes water-use and contaminant-specific measures; these do not establish an all-health-based-violations percentage. Tracking California points to contaminant maps and 2022 ACR context; its explorer required JavaScript and embedded viewer was unavailable through the reader. County public-water-system page was blocked (403); the county health-assessment lead is explicitly 2013, outside recency.",
+    "scales_tried": [
+      "city",
+      "county"
+    ],
+    "tiers_tried": [
+      1,
+      2,
+      3
+    ],
+    "searched_at": "2026-10-23T06:50:33.582656Z",
+    "nearest_data": "New 2025 Monterey system CA2710004 CCR at https://ear.waterboards.ca.gov/Home/ViewCCR?PwsID=CA2710004&Year=2025&isCert=false, PDF p.2, states water met state and federal drinking-water requirements in 2025. The web reader opens the report, but evidence capture returned 404; provider https://www.amwater.com/ccr/Monterey.pdf redirects to https://amwater.com/_resources/ccr/CA2710004/2025/monterey_2025.pdf and direct download returned 403. The city utility listing is https://ci.carmel.ca.us/post/utilities. State 2025 ACR dataset https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/docs/2026/acr-2025-dataset.xlsx lists a WW record for CA2710004, not a demonstrated MCL/MRDL/TT record, and population 92,450; current EPA system population is 128,928. Neither is a Carmel-only population. The 2025 ACR and extraction files, plus CDC/California Tracking checks, document progress beyond the previous 2024-only gap; they do not supply a valid city or county percentage."
+  }
+]

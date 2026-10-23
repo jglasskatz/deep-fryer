@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "violent-crime-rate",
+    "name": "Violent crime rate",
+    "value": 0.9630818619582664,
+    "unit": "per 1,000 residents",
+    "year": 2025,
+    "target": 4,
+    "level_pct": -75.9,
+    "scoring": {
+      "threshold_ref": "peace-justice.violent-crime-rate",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 0.9630818619582664,
+        "target": 4,
+        "scale": 4
+      },
+      "worked_math": "level_pct = (value − target) ⁄ scale × 100 = (0.9630818619582664 − 4) ⁄ 4 × 100 = -75.9"
+    },
+    "source": "California DOJ OpenJustice, Crimes and Clearances (including Arson), 1985–2025 annual CSV; California Department of Finance E-1, May 2026",
+    "source_url": "https://data-openjustice.doj.ca.gov/sites/default/files/dataset/2026-07/Crimes_and_Clearances_with_Arson-1985-2025.csv",
+    "source_tier": 2,
+    "evidence": {
+      "snapshot_path": "evidence/peace-justice-2025-doj-extract.png",
+      "captured_at": "2026-10-23T06:48:38.191Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "city",
+    "notes": "Tier 1 searched: City Police & Fire page and 2023–24 budget describe policing responsibilities but provide no current complete violent-crime rate. Tier 2 accepted: official DOJ annual crimes CSV, revised June 2026 README and California Department of Finance E-1 May 2026 revised January 1, 2025 population. The DOJ Carmel agency is matched to Carmel-by-the-Sea using the City Police & Fire statement that the department is responsible for law enforcement within City limits; Carmel Valley is excluded. The numerator is 0 homicides + 0 rapes + 0 robberies + 3 aggravated assaults. Population is the year-matched January 1 resident estimate, not an annual average or visitor population; this researcher-derived rate can differ from DOJ/FBI published rates using another population vintage or reference date. The DOJ README page 14 lists 2025 agency reporting limitations and names none in Monterey County. DOJ combines SRS and converted incident-based reporting; counts are reported offenses/victims under UCR hierarchy rules, not all experienced crime. Small counts make Carmel annual rates volatile. The main exhibit is a visually reviewed faithful extract generated from the archived raw CSV, clearly labeled as a researcher extract. Raw archive and derivation are in calculations/peace-justice/derive.py and the tenant evidence source records. Raw CSV: evidence/295fbce0118a5a2c.csv."
+  }
+]

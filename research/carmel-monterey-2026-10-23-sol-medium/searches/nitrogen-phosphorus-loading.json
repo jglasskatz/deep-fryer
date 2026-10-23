@@ -1,0 +1,189 @@
+{
+  "dimension": "nitrogen-phosphorus-loading",
+  "searched_at": "2026-10-23T07:22:13.189181Z",
+  "queries": [
+    "site.countyofmonterey.gov groundwater nitrate 2024 GEMS water quality",
+    "site.ci.carmel.ca.us groundwater nitrate water quality 2024",
+    "site.waterboards.ca.gov central coast 2024 nitrate groundwater Monterey agricultural monitoring report",
+    "site.countyofmonterey.gov \"nitrate\" \"2024\" groundwater quality",
+    "site.svbgsa.org \"2024\" \"nitrate\" annual report",
+    "site.mpwmd.net \"2024\" \"nitrate\" groundwater",
+    "site.ccwqp.org \"groundwater\" \"2024\" nitrate report",
+    "Salinas Valley GSA 2025 annual report groundwater nitrate concentration 2024",
+    "Monterey County groundwater quality nitrate monitoring 2023 health department",
+    "Carmel River groundwater nitrate 2024 annual report MPWMD",
+    "site.countyofmonterey.gov \"Drinking Water\" \"Nitrate\" groundwater data",
+    "site.ci.carmel.ca.us \"water quality\" nitrate",
+    "site.ccwqp.org \"annual\" \"groundwater\" report 2024",
+    "\"Monterey\" \"Subbasin\" \"2025\" \"Nitrate\" groundwater annual report",
+    "\"Monterey\" \"Subbasin\" \"2024\" \"Nitrate\" groundwater annual report",
+    "site.countyofmonterey.gov \"nitrate\" \"data\" \"2025\""
+  ],
+  "urls": [
+    {
+      "url": "https://www.countyofmonterey.gov/government/departments-a-h/health/environmental-health/drinking-water-protection-services",
+      "status": "failed",
+      "reason": "web inaccessible"
+    },
+    {
+      "url": "https://www.waterboards.ca.gov/centralcoast/water_issues/programs/ilp/groundwater_quality_monitoring_and_reporting.html",
+      "status": "opened",
+      "reason": "Monitoring requirements, on-farm scope; followed memo link"
+    },
+    {
+      "url": "https://www.waterboards.ca.gov/centralcoast/water_issues/programs/gap/",
+      "status": "opened",
+      "reason": "Regional program; as-served small-system concentrations explicitly not areal groundwater contamination"
+    },
+    {
+      "url": "https://gispublic.waterboards.ca.gov/portalserver/rest/services/Hosted/Water_Quality_Risk_2024_ARM/FeatureServer/5",
+      "status": "opened",
+      "reason": "20-year index and risk classes, not recent jurisdiction concentration"
+    },
+    {
+      "url": "https://svbgsa.org/monterey-subbasin/",
+      "status": "opened",
+      "reason": "subbasin geography; WY2025 and WY2024 report links failed via web click; urllib DNS blocked and escalated curl 403"
+    },
+    {
+      "url": "https://ccwqp.org/groundwater/",
+      "status": "failed",
+      "reason": "web inaccessible"
+    },
+    {
+      "url": "https://www.mpwmd.net/wp-content/uploads/MPWMD-MitigationReport-finalRY2024.pdf",
+      "status": "opened_and_captured",
+      "reason": "Carmel Valley / Seaside monitoring, not city or whole county"
+    },
+    {
+      "url": "https://www.waterboards.ca.gov/centralcoast/board_info/agendas/2024/dec/item12_stfrpt.pdf",
+      "status": "opened_and_captured",
+      "reason": "Cumulative exceedance counts do not satisfy concentration indicator"
+    },
+    {
+      "url": "https://www.countyofmonterey.gov/government/government-links/water-resources-agency/programs/groundwater-monitoring-program",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "url": "https://www.waterboards.ca.gov/centralcoast/water_issues/programs/ilp/docs/2025/gw-quality-tech-memo.pdf",
+      "status": "opened_and_captured",
+      "reason": "2024 subbasin domestic-well distributions not city/county mean"
+    },
+    {
+      "url": "https://www.countyofmonterey.gov/home/showpublisheddocument/135929/638648527079730000",
+      "status": "failed",
+      "reason": "web 403; capture sandbox EPERM; escalated capture curl/browser 403"
+    },
+    {
+      "url": "https://ucanr.edu/sites/uccemontereycounty/files/381225.pdf",
+      "status": "opened",
+      "reason": "2023 CCWQP presentation contains 2022 sample map, not city/county representative statistic; search date misleading, actual cover inspected"
+    },
+    {
+      "url": "https://www.mcwd.org/docs/gsa/3-004.10_WY_2025.pdf",
+      "status": "captured_after_web_failure",
+      "reason": "web rejected 32,496,177-byte PDF as too large; helper succeeded; selected coastal-well concentrations not jurisdiction representative"
+    },
+    {
+      "url": "https://svbgsa.org/wp-content/uploads/2025/04/Eastside_AnnualReport2024_Final-Cond.pdf",
+      "status": "failed",
+      "reason": "web rejected 12,616,275-byte PDF as too large; no value accepted"
+    }
+  ],
+  "capture_attempts": [
+    {
+      "tenant": "carmel",
+      "url": "https://www.waterboards.ca.gov/centralcoast/water_issues/programs/ilp/docs/2025/gw-quality-tech-memo.pdf",
+      "status": "failed",
+      "reason": "sandbox tsx IPC listen EPERM"
+    },
+    {
+      "tenant": "monterey-county",
+      "url": "https://www.countyofmonterey.gov/home/showpublisheddocument/135929/638648527079730000",
+      "status": "failed",
+      "reason": "sandbox tsx IPC listen EPERM"
+    },
+    {
+      "tenant": "carmel",
+      "url": "https://www.waterboards.ca.gov/centralcoast/water_issues/programs/ilp/docs/2025/gw-quality-tech-memo.pdf",
+      "status": "success",
+      "snapshot_path": "evidence/6193d48705c8a913.png"
+    },
+    {
+      "tenant": "monterey-county",
+      "url": "https://www.countyofmonterey.gov/home/showpublisheddocument/135929/638648527079730000",
+      "status": "failed",
+      "reason": "escalated curl and browser HTTP 403"
+    },
+    {
+      "tenant": "monterey-county",
+      "url": "https://www.waterboards.ca.gov/centralcoast/water_issues/programs/ilp/docs/2025/gw-quality-tech-memo.pdf",
+      "status": "success",
+      "snapshot_path": "evidence/a30e4b302db8c7e3.png"
+    },
+    {
+      "tenant": "monterey-county",
+      "url": "https://www.waterboards.ca.gov/centralcoast/board_info/agendas/2024/dec/item12_stfrpt.pdf",
+      "status": "success",
+      "snapshot_path": "evidence/d30d2ee8c45163fc.png"
+    },
+    {
+      "tenant": "carmel",
+      "url": "https://www.mpwmd.net/wp-content/uploads/MPWMD-MitigationReport-finalRY2024.pdf",
+      "status": "success",
+      "snapshot_path": "evidence/a1ffc5723130ab61.png"
+    },
+    {
+      "tenant": "monterey-county",
+      "url": "https://www.mcwd.org/docs/gsa/3-004.10_WY_2025.pdf",
+      "status": "success",
+      "snapshot_path": "evidence/d5bbef696c56fbb2.png"
+    }
+  ],
+  "extra_attempts": [
+    {
+      "kind": "web_screenshot",
+      "url": "https://www.waterboards.ca.gov/centralcoast/water_issues/programs/ilp/docs/2025/gw-quality-tech-memo.pdf",
+      "page": 3,
+      "status": "failed",
+      "reason": "cache miss"
+    },
+    {
+      "kind": "web_screenshot",
+      "url": "https://www.waterboards.ca.gov/centralcoast/board_info/agendas/2024/dec/item12_stfrpt.pdf",
+      "page": 9,
+      "status": "failed",
+      "reason": "cache miss"
+    },
+    {
+      "kind": "web_click",
+      "url": "https://svbgsa.org/monterey-subbasin/",
+      "link_id": 62,
+      "status": "failed",
+      "reason": "Internal Error"
+    },
+    {
+      "kind": "web_click",
+      "url": "https://svbgsa.org/monterey-subbasin/",
+      "link_id": 63,
+      "status": "failed",
+      "reason": "Internal Error"
+    },
+    {
+      "kind": "web_click",
+      "url": "https://www.waterboards.ca.gov/centralcoast/water_issues/programs/gap/",
+      "link_id": 90,
+      "status": "failed",
+      "reason": "Internal Error"
+    }
+  ],
+  "portable_derivation": {
+    "kind": "faithful PDF render, no numeric indicator derivation",
+    "source_pdf": "apps/web/public/evidence/monterey-county/evidence/d5bbef696c56fbb2.pdf",
+    "output_png": "apps/web/public/evidence/monterey-county/evidence/d5bbef696c56fbb2-p95.png",
+    "command": "pdftoppm -f 95 -l 95 -scale-to 1800 -singlefile -png apps/web/public/evidence/monterey-county/evidence/d5bbef696c56fbb2.pdf apps/web/public/evidence/monterey-county/evidence/d5bbef696c56fbb2-p95",
+    "reviewed": true
+  },
+  "result": "Both remain gaps; canonical target 5 and (value-5)/5*100 retained, no unsupported score computed."
+}

@@ -1,0 +1,22 @@
+{
+  "nitrate-groundwater": [
+    {
+      "label": "Rejected county proxy: cumulative voluntary well-testing counts, Tables 2\u20133, PDF p.9",
+      "source_url": "https://www.waterboards.ca.gov/centralcoast/board_info/agendas/2024/dec/item12_stfrpt.pdf",
+      "snapshot_path": "evidence/d30d2ee8c45163fc.png",
+      "pdf_path": "evidence/d30d2ee8c45163fc.pdf"
+    },
+    {
+      "label": "Rejected subbasin proxy: Water Board Figure 2, 2024 on-farm domestic-well nitrate distribution, PDF p.3",
+      "source_url": "https://www.waterboards.ca.gov/centralcoast/water_issues/programs/ilp/docs/2025/gw-quality-tech-memo.pdf",
+      "snapshot_path": "evidence/a30e4b302db8c7e3.png",
+      "pdf_path": "evidence/a30e4b302db8c7e3.pdf"
+    },
+    {
+      "label": "Rejected selected-well proxy: Monterey Subbasin WY2025, section 4.4.3.2, printed p.87 / PDF p.95",
+      "source_url": "https://www.mcwd.org/docs/gsa/3-004.10_WY_2025.pdf",
+      "snapshot_path": "evidence/d5bbef696c56fbb2-p95.png",
+      "pdf_path": "evidence/d5bbef696c56fbb2.pdf"
+    }
+  ]
+}

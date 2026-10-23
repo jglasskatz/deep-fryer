@@ -1,0 +1,62 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "uninsured-rate",
+    "name": "Residents without health insurance under age 65",
+    "value": 1.13,
+    "unit": "% of civilian noninstitutionalized residents under 65",
+    "year": 2024,
+    "target": 5,
+    "level_pct": -77.4,
+    "scoring": {
+      "threshold_ref": "health.uninsured-rate",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 1.13,
+        "target": 5,
+        "scale": 5
+      },
+      "worked_math": "level_pct = (1.13 − 5) ÷ 5 × 100 = -77.4"
+    },
+    "source": "Census Reporter API, republishing U.S. Census Bureau ACS 2024 5-year table B27001",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B27001&geo_ids=16000US0611250",
+    "source_tier": 3,
+    "evidence": {
+      "snapshot_path": "evidence/23be1f6ba5432e07.png",
+      "captured_at": "2026-10-23T02:42:07.856Z"
+    },
+    "confidence": "low",
+    "geographic_scale": "city",
+    "notes": "Captured API response identifies ACS 2020–2024 5-year, Carmel-by-the-Sea place 16000US0611250, and B27001 universe civilian noninstitutionalized population. Under age 65: estimate 1,329. Uninsured under-65 estimates sum across 14 age-sex cells to 15; the only nonzero estimate is 15 for males age 45–54, whose individual cell MOE is ±25. The other 13 cell estimates are zero, each with its own ±14 MOE. The ±25 figure is not the aggregate uninsured-count MOE; no aggregate numerator or rate MOE was computed. Rate=15/1,329×100=1.13%. Sampling uncertainty is substantial; do not interpret 1.13% as a precise rate. The table denominator excludes the institutionalized population; low confidence. Census Reporter republishes ACS as a long-running nonprofit data service (tier 3); official Census API endpoint returned HTTP 503."
+  },
+  {
+    "kind": "indicator",
+    "indicator_slug": "life-expectancy",
+    "name": "Life expectancy at birth",
+    "value": 80.8471266197383,
+    "unit": "years",
+    "year": 2022,
+    "target": 80,
+    "level_pct": -1.1,
+    "scoring": {
+      "threshold_ref": "health.life-expectancy",
+      "function": "higher_is_better",
+      "inputs": {
+        "value": 80.8471266197383,
+        "target": 80,
+        "scale": 80
+      },
+      "worked_math": "level_pct = (80 − 80.8471266197383) ÷ 80 × 100 = −1.1"
+    },
+    "source": "County Health Rankings & Roadmaps 2025 County Health Release, Monterey County",
+    "source_url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv139_rawvalue%2Cv139_numerator%2Cv147_rawvalue&returnGeometry=false&f=pjson",
+    "source_tier": 3,
+    "evidence": {
+      "snapshot_path": "evidence/bf05ecd029d2c018.png",
+      "captured_at": "2026-10-19T06:51:03.319Z"
+    },
+    "confidence": "high",
+    "geographic_scale": "county",
+    "notes": "This is a Monterey County proxy permitted by portrait scale policy, not a Carmel-by-the-Sea city-limit measurement. The captured CHR 2025 county-layer record for FIPS 06053 reports 80.8471266197383 years; field metadata identifies NCHS Natality and Mortality Files plus Census Population Estimates Program and explicitly dates this estimate to 2020–2022 (year is period endpoint 2022). CHR defines this as average expected years of life from birth and attributes deaths by county of residence. Tier 1 City/local searches and Tier 2 state/federal searches did not yield a city-limit life-expectancy series; the CHR county series is a tier-3 research-institution source."
+  }
+]

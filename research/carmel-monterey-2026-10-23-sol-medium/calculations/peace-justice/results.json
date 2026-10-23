@@ -1,0 +1,18 @@
+{
+  "carmel": {
+    "year": 2025,
+    "violent_crimes": 3,
+    "population_january_1_2025": 3115,
+    "rate_per_1000": 0.9630818619582664,
+    "target": 4,
+    "level_pct": -75.92295345104334
+  },
+  "monterey-county": {
+    "year": 2025,
+    "violent_crimes": 1846,
+    "population_january_1_2025": 437465,
+    "rate_per_1000": 4.219766152720789,
+    "target": 4,
+    "level_pct": 5.49415381801972
+  }
+}

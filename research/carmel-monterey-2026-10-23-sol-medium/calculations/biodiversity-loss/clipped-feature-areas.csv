@@ -1,0 +1,523 @@
+jurisdiction,objectid,gap,name,clipped_m2
+carmel,57925,2,Carmel Way,144.62236373829663
+carmel,49347,2,Mission Trail Nature Preserve,139215.87673402802
+carmel,58790,2,Mission Trail,1024.4735362137671
+monterey-county,46870,2,Fort Ord Natural Reserve,2596512.528855034
+monterey-county,46970,2,Frog Pond Wetland Preserve,124847.28351957089
+monterey-county,56036,2,Elkhorn Slough Ecological Reserve,6701794.490995221
+monterey-county,58792,2,Arroyo Seco Ranch,381156.83395418525
+monterey-county,59456,2,Unknown,1774646.653043597
+monterey-county,63398,2,Unknown,40110.13318675952
+monterey-county,64964,2,Unknown,1754422.284212549
+monterey-county,65576,2,Unknown,81191.23462148076
+monterey-county,66286,2,Unknown,811806.8011453855
+monterey-county,70646,2,Unknown,2231560.968521348
+monterey-county,72283,2,Unknown,211597.733976991
+monterey-county,73477,2,Unknown,990797.6587383562
+monterey-county,105656,1,Los Padres National Forest,396817.29676618543
+monterey-county,105719,1,Unknown,322.83656324145517
+monterey-county,105725,1,Unknown,2613.947611931076
+monterey-county,106037,1,Landels-Hill Big Creek Reserve,55539.00447794646
+monterey-county,106378,1,Los Padres National Forest,23092171.95382018
+monterey-county,108642,1,Limekiln State Park,63392.77882714607
+monterey-county,108828,1,Fort Ord Dunes State Park,3713527.776100274
+monterey-county,110889,1,Limekiln State Park,6577.591546052436
+monterey-county,114201,2,Cholame Ranch Preserve,2752.6522771781447
+monterey-county,43026,1,Zmudowski State Beach,14781.108599902875
+monterey-county,43487,2,Salinas River National Wildlife Refuge,1116717.4596538395
+monterey-county,43581,1,Pfeiffer Big Sur State Park,122040.88051068425
+monterey-county,46535,2,Elkhorn Slough / Elkhorn Highlands,8682612.682772795
+monterey-county,46538,2,Elkhorn Slough / Porter Preserve - ESF,423009.234235492
+monterey-county,57925,2,Carmel Way,7804.086484870528
+monterey-county,60607,2,Unknown,1326547.1549454199
+monterey-county,63043,2,Unknown,571318.444801692
+monterey-county,63335,2,Unknown,364466.50257351133
+monterey-county,64878,2,Unknown,959140.0259176876
+monterey-county,65911,2,Unknown,646500.7488465165
+monterey-county,67534,2,Unknown,262639.3135718291
+monterey-county,67669,2,Unknown,1651734.1652617895
+monterey-county,73030,2,Unknown,1118080.8143457277
+monterey-county,73740,2,Unknown,1150679.041836062
+monterey-county,96989,2,BLM,901096.1963466462
+monterey-county,97026,2,Unknown,48311.50207542082
+monterey-county,105645,1,Los Padres National Forest,1305579.4689357136
+monterey-county,105659,1,Los Padres National Forest,3758594.2538966932
+monterey-county,108656,1,Los Padres National Forest,10856285.987741256
+monterey-county,109143,1,Monterey State Beach,187848.5521928723
+monterey-county,109146,1,Point Lobos Ranch,924685.3410068913
+monterey-county,110671,1,Asilomar State Beach,104050.85566559495
+monterey-county,110720,1,Zmudowski State Beach,17266.45529137272
+monterey-county,110763,1,Point Lobos State Natural Reserve,12218.161002079602
+monterey-county,112143,2,Carmel Point,1901.0022933281755
+monterey-county,119156,1,Los Padres National Forest,16164.099322224545
+monterey-county,49000,2,Marks Ranch,451612.34871618316
+monterey-county,49023,2,Martin Dunes,518625.82849319774
+monterey-county,53548,2,SFB Morse Botanical Reserve,333317.61792639864
+monterey-county,59528,2,Unknown,1024602.2131495236
+monterey-county,61048,2,Unknown,4022.4848965476776
+monterey-county,61065,2,Unknown,296335.0241243765
+monterey-county,61071,2,Unknown,960778.8546135343
+monterey-county,62130,2,Unknown,179020.09635954452
+monterey-county,64955,2,Unknown,2581365.5546065024
+monterey-county,65310,2,Unknown,1292171.2026974605
+monterey-county,66212,2,Unknown,19948991.391442813
+monterey-county,66429,2,Unknown,155174.421254427
+monterey-county,67325,2,Unknown,2208243.774497425
+monterey-county,71075,2,Unknown,160792.6911208488
+monterey-county,71685,2,Unknown,639405.2311078273
+monterey-county,73614,2,Unknown,37694.23672796309
+monterey-county,75034,2,Elkhorn Slough Ecological Reserve,119836.247538987
+monterey-county,97126,1,BLM,17150.643912285184
+monterey-county,105657,1,Los Padres National Forest,486.42913433039956
+monterey-county,105726,1,Unknown,3289.4439385344767
+monterey-county,108831,1,Fremont Peak State Park,154447.5214541875
+monterey-county,110577,1,Pfeiffer Big Sur State Park,1838.696315472709
+monterey-county,110637,1,Limekiln State Park,2783.6164159280725
+monterey-county,110769,1,Point Lobos State Natural Reserve,2031.6219895076185
+monterey-county,110892,1,Marina State Beach,3649.9756804453073
+monterey-county,114189,2,Cholame Ranch Preserve,13.976093349216777
+monterey-county,114198,2,Cholame Ranch Preserve,6479.159245768595
+monterey-county,118031,1,Hodson,2607.0042905246396
+monterey-county,119104,1,Julia Pfeiffer Burns State Park,29659.227547219143
+monterey-county,42914,1,Carmel River State Beach,375.40372563326537
+monterey-county,42966,1,Julia Pfeiffer Burns State Park,166368.18500806368
+monterey-county,57353,2,Rocks Ranch,1681056.5733180041
+monterey-county,58793,2,Patriarch Ridge,282888.3391184121
+monterey-county,59534,2,Unknown,1183.755096661425
+monterey-county,62187,2,Unknown,641695.5527957325
+monterey-county,62247,2,Unknown,1295202.8059680806
+monterey-county,62831,2,Unknown,153580.6942721069
+monterey-county,63610,2,Unknown,19809.663162272096
+monterey-county,67895,2,Unknown,4233.99782041276
+monterey-county,68682,2,Unknown,279853.8155819703
+monterey-county,69658,2,Unknown,7630.214797052452
+monterey-county,70557,2,Unknown,99875.20067342618
+monterey-county,75032,2,Elkhorn Slough / Elkhorn Highlands,25598.772351094667
+monterey-county,76906,2,Rana Creek Ranch,1884359.1951092302
+monterey-county,109215,1,Point Lobos State Natural Reserve,220971.90029574998
+monterey-county,109415,1,Julia Pfeiffer Burns State Park,5730.148395786976
+monterey-county,110575,1,Limekiln State Park,14581.597837846548
+monterey-county,46539,2,Elkhorn Slough / Sandholdt - ESF,23173.121038305486
+monterey-county,46993,2,Gabilan Creek Wilderness Sanctuary,60981.95747961401
+monterey-county,48356,2,Landels-Hill Big Creek Reserve,16579516.233453475
+monterey-county,54785,2,Moss Landing Wildlife Area,1851171.0290582362
+monterey-county,57923,2,Hermann Property,18835.939658772357
+monterey-county,63396,2,Unknown,39947.900215302616
+monterey-county,63401,2,Unknown,636603.856071081
+monterey-county,63850,2,Unknown,163467.14066462152
+monterey-county,68190,2,Unknown,3667252.4089279985
+monterey-county,68284,2,Unknown,194349.5610711085
+monterey-county,69687,2,Unknown,133895.0130918906
+monterey-county,73102,2,Unknown,7521.654553038612
+monterey-county,73929,2,Unknown,21031.172559788116
+monterey-county,74593,2,Salinas River National Wildlife Refuge,3694.3136007781977
+monterey-county,97012,2,Arroyo Seco Ranch,9692.515415911872
+monterey-county,106011,1,BLM,101718.30795421761
+monterey-county,109217,1,Point Lobos State Natural Reserve,5533.963929529469
+monterey-county,111221,1,Garrapata State Park,621.2048383230332
+monterey-county,111929,1,Los Padres National Forest,7664777.73511598
+monterey-county,119105,1,California Coastal National Monument,129.92270472255052
+monterey-county,119125,1,California Coastal National Monument,163.95207352776984
+monterey-county,119568,1,Julia Pfeiffer Burns State Park,140.74753638073202
+monterey-county,47062,2,Gelbart,35419.58813368346
+monterey-county,58784,2,Huckleberry Hill Nature Preserve - Presidio/City,370409.72308054665
+monterey-county,59459,2,Unknown,2348879.2512730556
+monterey-county,61145,2,Unknown,214662.87090988088
+monterey-county,61964,2,Unknown,3604.2773144465327
+monterey-county,62499,2,Unknown,318700.50202326797
+monterey-county,63246,2,Unknown,39553.99149966935
+monterey-county,63756,2,Unknown,639660.6182188411
+monterey-county,69146,2,Unknown,1484701.184790487
+monterey-county,71871,2,Unknown,7615.875670345718
+monterey-county,73615,2,Unknown,2087.339132557607
+monterey-county,95855,2,California Coastal National Monument,11413.82222825129
+monterey-county,105723,1,Unknown,29125.552454383494
+monterey-county,106083,1,Unknown,15674.265782806937
+monterey-county,109094,1,Pfeiffer Big Sur State Park,5294690.5485087205
+monterey-county,109392,1,Fremont Peak State Park,227.74371599282864
+monterey-county,110574,1,Julia Pfeiffer Burns State Park,11278.504674398177
+monterey-county,110638,1,Pfeiffer Big Sur State Park,2475.156224228943
+monterey-county,110766,1,Point Lobos State Natural Reserve,302771.299111404
+monterey-county,110852,1,Limekiln State Park,72821.80654817223
+monterey-county,110895,1,Moss Landing State Beach,973.7431857256308
+monterey-county,111109,1,Los Padres National Forest,303.1725154055753
+monterey-county,111928,1,Los Padres National Forest,4881725.474308361
+monterey-county,112034,2,BLM,38433.38266507537
+monterey-county,46530,2,Elkhorn Slough,20847.33852163403
+monterey-county,46536,2,Elkhorn Slough / Long Valley - ESF,1732213.4923900506
+monterey-county,50036,2,Owings,141866.0736155586
+monterey-county,54711,2,Big Sandy Wildlife Area,1033420.5251607297
+monterey-county,57156,2,Carr Lake,292967.1317802842
+monterey-county,60831,2,Unknown,599179.8949186484
+monterey-county,61140,2,Unknown,161564.5155225897
+monterey-county,62059,2,Unknown,2316342.811118211
+monterey-county,62537,2,Unknown,2554940.6159155653
+monterey-county,62869,2,Unknown,956669.8504256085
+monterey-county,62954,2,Unknown,759585.3818207266
+monterey-county,63410,2,Unknown,502688.0543240759
+monterey-county,64074,2,Unknown,717484.9275446337
+monterey-county,69470,2,Unknown,6754.586373276366
+monterey-county,70148,2,Unknown,281387.1499412171
+monterey-county,71808,2,Unknown,160110.4537142486
+monterey-county,73397,2,Unknown,151423.25972162726
+monterey-county,73774,2,Unknown,1571639.1398329453
+monterey-county,74107,1,Fremont Peak State Park,1183.9808626607662
+monterey-county,74817,2,BLM,57034.75785538156
+monterey-county,95787,1,Garrapata State Park,449.37556443464746
+monterey-county,95987,2,Fort Ord National Monument,29086538.576751582
+monterey-county,97021,2,Unknown,22319.711706418562
+monterey-county,105863,1,Los Padres National Forest,10796993.889425442
+monterey-county,106066,1,Unknown,30501.700938926377
+monterey-county,106069,1,Unknown,33391.11920373424
+monterey-county,106461,1,Los Padres National Forest,384917.53680646064
+monterey-county,110714,1,Salinas River State Beach,9369.154435228584
+monterey-county,110752,1,Point Lobos Ranch,21627.244330246995
+monterey-county,110764,1,Point Lobos State Natural Reserve,18250.490423875788
+monterey-county,110938,1,Monterey State Beach,4938.700319381165
+monterey-county,111101,1,Julia Pfeiffer Burns State Park,2387.150576665825
+monterey-county,114295,2,Sherman,34341.229549594784
+monterey-county,118933,1,Los Padres National Forest,245998.23886780272
+monterey-county,119116,1,California Coastal National Monument,143.78578694357554
+monterey-county,49347,2,Mission Trail Nature Preserve,139260.72852338466
+monterey-county,53343,2,Eolian Dunes Preserve,118920.08409068809
+monterey-county,53535,2,Pescadero Point and Hill Preserve,25856.83739592349
+monterey-county,53540,2,Crocker Grove,50669.780563284585
+monterey-county,56037,2,Elkhorn Slough Ecological Reserve,26766.859024334364
+monterey-county,58791,2,Arroyo Seco Ranch,35299.16368994251
+monterey-county,59457,2,Unknown,28611.136871893807
+monterey-county,61249,2,Unknown,2074669.9425249659
+monterey-county,63218,2,Unknown,425875.95769130986
+monterey-county,65425,2,Unknown,7631.066367847585
+monterey-county,66408,2,Unknown,483830.29735889426
+monterey-county,68448,1,Unknown,1072.8928781447655
+monterey-county,68795,2,Unknown,80212.97733806891
+monterey-county,69488,2,Unknown,162211.77314128765
+monterey-county,70675,2,Unknown,534330.7379437315
+monterey-county,72524,2,Unknown,0.1910036252432764
+monterey-county,72862,2,Unknown,163997.8223025692
+monterey-county,73105,2,Unknown,1484397.2002471648
+monterey-county,73140,2,Unknown,2423003.0604403242
+monterey-county,97167,1,Pinnacles National Park,71530.68171126398
+monterey-county,105860,1,Los Padres National Forest,11822926.233651444
+monterey-county,108906,1,Moss Landing State Beach,215350.1602284147
+monterey-county,110721,1,Zmudowski State Beach,16971.936804313686
+monterey-county,110750,1,Point Lobos Ranch,2242159.5460423394
+monterey-county,110884,1,Garrapata State Park,27742.63099873496
+monterey-county,112358,2,Tor House,232.38581048962487
+monterey-county,114204,2,Cholame Ranch Preserve,640.8659920433788
+monterey-county,49481,2,Moro Cojo Ecological Reserve,84100.8190288909
+monterey-county,57355,2,Rocks Ranch,5775.2859869518725
+monterey-county,60081,2,Unknown,1140623.171020523
+monterey-county,62408,2,Unknown,2941.751114914986
+monterey-county,63047,2,Unknown,329687.371136051
+monterey-county,63996,2,Unknown,717029.6546689612
+monterey-county,67289,2,Unknown,89134.3549472116
+monterey-county,69469,2,Unknown,24827.150464469047
+monterey-county,69688,2,Unknown,199667.47335633182
+monterey-county,71084,2,Unknown,34558.607529500725
+monterey-county,72652,2,Unknown,370363.62035390636
+monterey-county,73103,2,Unknown,1969739.0647458022
+monterey-county,73483,2,Unknown,1497.6073397132438
+monterey-county,73671,2,Unknown,567504.9653778612
+monterey-county,75472,2,Mitteldorf Preserve,13404.627410207826
+monterey-county,97032,2,Arroyo Seco Ranch,10925.78701676103
+monterey-county,105718,1,Unknown,20025.626216595167
+monterey-county,105766,1,Limekiln State Park,9199.556387881
+monterey-county,105858,1,Los Padres National Forest,131792489.74936622
+monterey-county,105864,1,Los Padres National Forest,19728.085351289334
+monterey-county,105880,1,Los Padres National Forest,67603229.04484482
+monterey-county,108934,2,Point Sur State Historic Park,7585.72227250327
+monterey-county,110641,1,Julia Pfeiffer Burns State Park,135.9850795842723
+monterey-county,43728,2,Pinnacles National Park,7598674.98934354
+monterey-county,46533,2,Elkhorn Slough,209705.98399240806
+monterey-county,46537,2,Elkhorn Slough / Porter Preserve,286316.46194631764
+monterey-county,49275,2,Mill Creek Redwood Preserve,5617394.522571683
+monterey-county,59458,2,Unknown,945138.9781331933
+monterey-county,63161,2,Unknown,162717.0556025947
+monterey-county,63849,2,Unknown,2084540.6089615312
+monterey-county,65852,2,Unknown,1276731.6151191448
+monterey-county,67761,2,Unknown,22436.841271722496
+monterey-county,69690,2,Unknown,496829.653769593
+monterey-county,70566,2,Unknown,2520591.5761318845
+monterey-county,95793,2,Los Padres National Forest,2103.5184447718475
+monterey-county,95862,2,California Coastal National Monument,4866.382212136584
+monterey-county,96246,1,BLM,1481.5532440452816
+monterey-county,105737,1,Unknown,1049.0374083147383
+monterey-county,110753,1,Point Lobos Ranch,72694.60312042701
+monterey-county,110755,1,Point Lobos Ranch,594577.4617463807
+monterey-county,110767,1,Point Lobos State Natural Reserve,627476.2982261837
+monterey-county,112035,2,BLM,111280.55423044303
+monterey-county,114199,2,Cholame Ranch Preserve,12.369460862778784
+monterey-county,114205,2,Cholame Ranch Preserve,475045.4312406219
+monterey-county,119117,1,California Coastal National Monument,366.53660747721136
+monterey-county,42936,1,Fort Ord Dunes State Park,353172.74431263685
+monterey-county,46531,2,Elkhorn Slough,139710.85878600544
+monterey-county,47117,2,Glen Deven Ranch,3211365.528208465
+monterey-county,47429,2,Hastings Natural History Reserve,9290707.893442798
+monterey-county,58790,2,Mission Trail,1024.4735362137671
+monterey-county,63365,2,Unknown,341855.86465850373
+monterey-county,63703,2,Unknown,7697.134207262643
+monterey-county,64438,2,Unknown,1280431.6443374543
+monterey-county,64741,2,Unknown,2654.8938553289463
+monterey-county,67349,2,Unknown,185233.7237047661
+monterey-county,72705,2,Unknown,146933.8324884121
+monterey-county,72928,2,Unknown,1699.9451626205678
+monterey-county,74067,2,Unknown,7613038.268002381
+monterey-county,96331,2,Landels-Hill Big Creek Reserve,602085.8860894248
+monterey-county,97022,2,Unknown,21692.286986381492
+monterey-county,97168,1,Pinnacles National Park,3156.7768142075083
+monterey-county,105658,1,Los Padres National Forest,204140.6631508359
+monterey-county,105746,1,Los Padres National Forest,3142.676398848626
+monterey-county,108734,1,Andrew Molera State Park,7049.150379036157
+monterey-county,108880,1,Limekiln State Park,2750259.6848558118
+monterey-county,109421,2,Point Sur State Historic Park,31754.629267993212
+monterey-county,110701,1,Julia Pfeiffer Burns State Park,30.077943830126745
+monterey-county,110749,1,Point Lobos Ranch,116807.76505674938
+monterey-county,42913,1,Carmel River State Beach,33524.50982299382
+monterey-county,43004,1,Salinas River State Beach,173177.06752359637
+monterey-county,57354,2,Rocks Ranch,9851.527963553384
+monterey-county,59523,2,Unknown,325235.87774787884
+monterey-county,59529,2,Unknown,3061.9412477783535
+monterey-county,61939,2,Unknown,294186.02974879043
+monterey-county,63373,2,Unknown,661756.7240497711
+monterey-county,66278,2,Unknown,25310.097726576485
+monterey-county,67762,2,Unknown,12398.781708711296
+monterey-county,72905,2,Unknown,648574.682502643
+monterey-county,73106,2,Unknown,16384.058993638846
+monterey-county,73108,2,Unknown,10070.692811658608
+monterey-county,73941,2,Unknown,1124664.523910377
+monterey-county,75473,2,Mitteldorf Preserve,140879.4745849242
+monterey-county,97016,2,Unknown,40754.08894252783
+monterey-county,105715,1,Arroyo Seco Ranch,81095.56442642752
+monterey-county,105717,1,Carmel Valley,3235.0746512969113
+monterey-county,105861,1,Los Padres National Forest,360180223.6479014
+monterey-county,108935,2,Point Sur State Historic Park,151880.3213048864
+monterey-county,108949,1,Salinas River State Beach,684192.0791264551
+monterey-county,109216,1,Point Lobos State Natural Reserve,1730822.5233846947
+monterey-county,110713,1,Salinas River State Beach,172261.4158783646
+monterey-county,119157,1,Los Padres National Forest,39291.29597944397
+monterey-county,43488,2,Salinas River National Wildlife Refuge,3632.5687129042635
+monterey-county,48010,2,Joshua Creek Canyon Ecological Reserve,23958759.884050608
+monterey-county,54786,2,Moss Landing Wildlife Area,21052.613892871286
+monterey-county,56454,2,McClusky Slough,113771.8600388135
+monterey-county,59537,2,Unknown,4204.022249003168
+monterey-county,61790,2,Unknown,162715.44366286654
+monterey-county,63805,2,Unknown,163230.62621870745
+monterey-county,65345,2,Unknown,632792.4245416377
+monterey-county,73145,2,Unknown,379987.48004056024
+monterey-county,97247,1,Pinnacles National Park,17.797669587263716
+monterey-county,105646,1,Los Padres National Forest,184447.1322745119
+monterey-county,105724,1,Unknown,3828.505543777827
+monterey-county,105734,1,Unknown,16532.985269613644
+monterey-county,106379,1,Los Padres National Forest,18802.556902826895
+monterey-county,110815,2,Julia Pfeiffer Burns State Park,5218.346240687332
+monterey-county,114202,2,Cholame Ranch Preserve,21554.02661970277
+monterey-county,119114,1,California Coastal National Monument,250.9992528666001
+monterey-county,46532,2,Elkhorn Slough,25845.231960238198
+monterey-county,49776,2,Notley's Landing,29346.29085422388
+monterey-county,54976,1,Point Lobos State Natural Reserve,31468.996097892566
+monterey-county,55478,2,Odello East Property,337805.70925627084
+monterey-county,59524,2,Unknown,469364.47736732126
+monterey-county,59536,2,Unknown,13852.320349086267
+monterey-county,60304,2,Unknown,1662346.4062667359
+monterey-county,63374,2,Unknown,330954.98465015105
+monterey-county,64719,2,Unknown,620139.8785313274
+monterey-county,65271,2,Unknown,1950519.3252664893
+monterey-county,66093,2,Unknown,577787.4050485386
+monterey-county,66204,2,Unknown,21163.266992735546
+monterey-county,66277,2,Unknown,527.572618373245
+monterey-county,67323,2,Unknown,651318.4298797868
+monterey-county,71173,2,Unknown,39632.12189217908
+monterey-county,72330,2,Unknown,87529.70073821335
+monterey-county,72398,2,Unknown,160916.6852196234
+monterey-county,73107,2,Unknown,5814.14639074815
+monterey-county,95816,2,Fort Ord National Monument,29921788.56031741
+monterey-county,96245,1,BLM,2621568.1595395487
+monterey-county,105716,1,Arroyo Seco Ranch,108826.88326971383
+monterey-county,105862,1,Los Padres National Forest,251429599.50849193
+monterey-county,106436,1,Los Padres National Forest,2033.8317113268765
+monterey-county,108873,1,Julia Pfeiffer Burns State Park,8765417.737541959
+monterey-county,108950,1,Salinas River State Beach,603.8499541081075
+monterey-county,109284,2,Unknown,2881.922062365397
+monterey-county,49562,2,Murphy,102177.99535823683
+monterey-county,65699,2,Unknown,258.86409183137124
+monterey-county,69686,2,Unknown,908914.618798246
+monterey-county,69898,2,Unknown,33393.625806953736
+monterey-county,70974,2,Unknown,39947.930189255436
+monterey-county,73101,2,Unknown,2044543.6458563358
+monterey-county,74044,2,Unknown,478577.7499530552
+monterey-county,96973,2,BLM,1235719.832533446
+monterey-county,97013,2,Arroyo Seco Ranch,39060.66239265594
+monterey-county,97246,1,Pinnacles National Park,3676546.78203812
+monterey-county,105609,1,Limekiln State Park,1313.451659679862
+monterey-county,105655,1,Los Padres National Forest,1180538.9212661313
+monterey-county,106073,1,Unknown,948.9689813907368
+monterey-county,109391,1,Fremont Peak State Park,53898.571400245055
+monterey-county,110573,1,Andrew Molera State Park,5555.785233337978
+monterey-county,110585,1,Andrew Molera State Park,123.58460617666451
+monterey-county,110645,1,Limekiln State Park,11304.154025692704
+monterey-county,110765,1,Point Lobos State Natural Reserve,62527.5818292811
+monterey-county,111186,1,Garrapata State Park,247.03399429691473
+monterey-county,119129,1,Julia Pfeiffer Burns State Park,17692.992201589466
+monterey-county,46004,2,Curtis,80838.315112223
+monterey-county,59221,2,Carmel Valley,1046316.6265131127
+monterey-county,59927,2,Unknown,1105676.8930504303
+monterey-county,60801,2,Unknown,578.6791103222567
+monterey-county,61047,2,Unknown,14812.618248389754
+monterey-county,63400,2,Unknown,372346.8622125882
+monterey-county,63440,2,Unknown,1174159.2177202262
+monterey-county,63763,2,Unknown,516999.33195285086
+monterey-county,70115,2,Unknown,832088.467481265
+monterey-county,71829,2,Unknown,477653.42244016804
+monterey-county,74106,1,Fremont Peak State Park,27119.740888147713
+monterey-county,74783,2,BLM,3463.925129753513
+monterey-county,75033,2,Elkhorn Slough / Porter Preserve - ESF,374339.8969492404
+monterey-county,105696,1,BLM,198331.52027818456
+monterey-county,105727,1,Unknown,45637.55336347222
+monterey-county,105859,1,Los Padres National Forest,139264450.10549575
+monterey-county,110716,1,Sunset State Beach,0.0016823416700501304
+monterey-county,110751,1,Point Lobos Ranch,86369.09933525739
+monterey-county,111328,2,Los Padres National Forest,71.03887107160293
+monterey-county,114197,2,Cholame Ranch Preserve,17.800919978737298
+monterey-county,114203,2,Cholame Ranch Preserve,1636027.445745877
+monterey-county,118030,1,Hodson,3584.7383550358554
+monterey-county,118932,1,Los Padres National Forest,184131.3235918408
+monterey-county,53539,2,S.F.B. Morse Memorial Lot,5049.915358651675
+monterey-county,57921,2,Indian Village,83749.60617470456
+monterey-county,59533,2,Unknown,794510.6619979612
+monterey-county,61579,2,Unknown,654178.3870398904
+monterey-county,61716,2,Unknown,721993.5242582157
+monterey-county,61965,2,Unknown,171665.62114734476
+monterey-county,62407,2,Unknown,12776.07488055519
+monterey-county,63403,2,Unknown,2579745.1140209488
+monterey-county,70107,2,Unknown,721771.2645658329
+monterey-county,72207,2,Unknown,1529601.989370469
+monterey-county,73104,2,Unknown,20180.279600514423
+monterey-county,95848,2,California Coastal National Monument,50.35877891464082
+monterey-county,95960,2,Laguna Seca Recreation Area & Campgrounds,267890.1895189713
+monterey-county,106065,1,Unknown,97002.40596930664
+monterey-county,106084,1,Unknown,14162.024612916286
+monterey-county,108752,1,Asilomar State Beach,278351.4394081029
+monterey-county,109130,2,Del Monte Dunes Ecological Reserve,39657.09551139732
+monterey-county,110547,1,Asilomar State Beach,38.327273480368284
+monterey-county,110636,1,Julia Pfeiffer Burns State Park,9683.097793369772
+monterey-county,110642,1,Limekiln State Park,16170.731681963101
+monterey-county,111189,1,Moss Landing State Beach,724.2424365747521
+monterey-county,119472,1,Norman,608.5465151520231
+monterey-county,42939,1,Fremont Peak State Park,9267.017888004842
+monterey-county,54975,2,Joyce Stevens Monterey Pine Forest Preserve,3341737.3016315885
+monterey-county,57352,2,Rocks Ranch,3920382.845996484
+monterey-county,57924,2,Pescadero Canyon,284029.88609781576
+monterey-county,61164,2,Unknown,650343.3866440025
+monterey-county,63342,2,Unknown,39868.31340185649
+monterey-county,67190,2,Unknown,36344.9895319957
+monterey-county,67779,2,Unknown,482404.4309679901
+monterey-county,68612,2,Unknown,2557371.412934563
+monterey-county,69689,2,Unknown,377476.3429839594
+monterey-county,70790,2,Unknown,2462569.6566014243
+monterey-county,71600,2,Unknown,161548.47695437918
+monterey-county,72093,2,Unknown,165227.008655891
+monterey-county,72929,2,Unknown,7887.706728634301
+monterey-county,105879,1,Los Padres National Forest,58209046.70788115
+monterey-county,106377,1,Los Padres National Forest,1267.7617522632456
+monterey-county,108709,1,Los Padres National Forest,411.93410668230314
+monterey-county,108789,1,Carmel River State Beach,998833.5490160494
+monterey-county,108832,1,Fremont Peak State Park,1122.3550313332746
+monterey-county,108833,1,Garrapata State Park,11035251.690963041
+monterey-county,108933,2,Point Sur State Historic Park,195300.88818841823
+monterey-county,110584,1,Andrew Molera State Park,114.82116962655293
+monterey-county,110768,1,Point Lobos State Natural Reserve,54396.87575178328
+monterey-county,110853,1,Limekiln State Park,34794.360600013795
+monterey-county,114206,2,Cholame Ranch Preserve,223524.82236358125
+monterey-county,119552,1,Julia Pfeiffer Burns State Park,1934.0379595074287
+monterey-county,119553,1,Julia Pfeiffer Burns State Park,1008.7993896642377
+monterey-county,49482,2,Moro Cojo Ecological Reserve,1511856.8257768697
+monterey-county,59220,2,Big Creek Reserve,162179.9686682658
+monterey-county,60800,2,Unknown,1209162.2081966125
+monterey-county,65065,2,Unknown,24693.622735310182
+monterey-county,65649,2,Unknown,652199.1575594461
+monterey-county,65698,2,Unknown,110.38577651573118
+monterey-county,67556,2,Unknown,6293496.5904901195
+monterey-county,67856,2,Unknown,626724.1444413497
+monterey-county,67896,2,Unknown,1836090.6828354376
+monterey-county,69634,2,Unknown,422317.83332960645
+monterey-county,69897,2,Unknown,11851.618535444934
+monterey-county,71237,2,Unknown,24153.84418132659
+monterey-county,71400,2,Unknown,1231521.9083915898
+monterey-county,76824,2,Arroyo Seco Ranch,14660.477347253973
+monterey-county,96990,2,BLM,13423789.079731613
+monterey-county,97033,2,Arroyo Seco Ranch,182194.7626560133
+monterey-county,105695,1,BLM,207096.18481546539
+monterey-county,108790,1,Carmel River State Beach,244.1515762447185
+monterey-county,108872,2,John Little State Reserve,84909.55394507213
+monterey-county,108892,1,Marina State Beach,690049.7035577397
+monterey-county,108901,1,Monterey State Beach,244368.07357324602
+monterey-county,109482,1,Norman,75718.323661512
+monterey-county,110644,1,Limekiln State Park,2735.8584470025635
+monterey-county,110770,1,Point Lobos State Natural Reserve,4992.826807070522
+monterey-county,112036,2,BLM,436073.0698264484
+monterey-county,114200,2,Cholame Ranch Preserve,1297.345146416307
+monterey-county,43005,1,Salinas River State Beach,493.81826432717054
+monterey-county,45229,2,Carmel River Songbird Preserve,39971.268281791155
+monterey-county,51343,2,Santa Lucia Preserve,13004514.234593466
+monterey-county,59825,2,Unknown,1604343.5933929558
+monterey-county,60967,2,Unknown,120966.40607861931
+monterey-county,63105,2,Unknown,159078.97972404613
+monterey-county,63691,2,Unknown,662809.6999244993
+monterey-county,65690,2,Unknown,660214.8856520668
+monterey-county,66022,2,Unknown,664508.6719579265
+monterey-county,67187,2,Unknown,487748.94896625244
+monterey-county,68770,2,Unknown,127227.6656457788
+monterey-county,69812,2,Unknown,20056.159540997694
+monterey-county,71077,2,Unknown,130697.77950464938
+monterey-county,71366,2,Unknown,638677.0628827616
+monterey-county,72228,2,Unknown,822284.9406822815
+monterey-county,75660,2,Santa Lucia Preserve,29921448.46598758
+monterey-county,76825,2,Arroyo Seco Ranch,6030152.135541001
+monterey-county,105661,1,Los Padres National Forest,350632.60524287185
+monterey-county,105753,1,Los Padres National Forest,160.96655452585102
+monterey-county,106417,1,Los Padres National Forest,5132.679947732253
+monterey-county,108733,1,Andrew Molera State Park,18915951.846841782
+monterey-county,109002,1,Zmudowski State Beach,455412.72373043344
+monterey-county,110831,1,Limekiln State Park,16767.677864125715
+monterey-county,117941,1,Norman,4459.166516734502
+monterey-county,119198,1,South Monterey Dunes,290.01928336409895
+monterey-county,42994,2,Point Sur State Historic Park,25465.779716986275
+monterey-county,43729,2,Pinnacles National Park,27816.573426015453
+monterey-county,47588,2,Highlands Inn turnout,354.40413355410476
+monterey-county,49360,2,Mitteldorf Preserve,4067774.7837216607
+monterey-county,58308,2,Sperling,3677.052549595688
+monterey-county,60698,2,Unknown,331020.62455337
+monterey-county,62450,2,Unknown,1010712.0589122379
+monterey-county,63417,2,Unknown,160268.44231164237
+monterey-county,63443,2,Unknown,492117.3361198703
+monterey-county,64219,2,Unknown,679066.5130081921
+monterey-county,64565,2,Unknown,1587530.3515113927
+monterey-county,65501,2,Unknown,165495.87258069275
+monterey-county,66211,2,Unknown,25391.615818296377
+monterey-county,66718,2,Unknown,1234611.480194614
+monterey-county,69148,2,Unknown,715863.979647251
+monterey-county,69228,2,Unknown,198998.48328596546
+monterey-county,70399,2,Unknown,1362774.401780044
+monterey-county,71083,2,Unknown,3132.2632946366743
+monterey-county,71836,2,Unknown,1207.511298307868
+monterey-county,72162,2,Unknown,1837911.8094274704
+monterey-county,75385,2,Joshua Creek Canyon Ecological Reserve,51769.79190875754
+monterey-county,76187,2,Odello East Property,164221.3550009882
+monterey-county,96181,2,Pinnacles National Park,40256.9262461511
+monterey-county,96885,2,Marine Gardens Park,429.16269996263213
+monterey-county,105704,1,Landels-Hill Big Creek Reserve,166827.38475659158
+monterey-county,107485,1,Los Padres National Forest,492.2130419757067
+monterey-county,110719,1,Zmudowski State Beach,56591.81400811898
+monterey-county,110762,1,Point Lobos State Natural Reserve,2484.5393243166222
+monterey-county,123254,1,Garrapata State Park,353.362527198059
+monterey-county,48298,2,Laidlaw-Apte Pine Forest Reserve,19280.573532357925
+monterey-county,62215,2,Unknown,139255.26693130189
+monterey-county,64628,2,Unknown,322256.0177251012
+monterey-county,72537,2,Unknown,1277477.0362319436
+monterey-county,73668,2,Unknown,954855.8062195233
+monterey-county,73968,2,Unknown,422442.20201729104
+monterey-county,107499,1,BLM,88540.71506132584
+monterey-county,110754,1,Point Lobos Ranch,981033.2944464568
+carmel-census-crosscheck,49347,2,Mission Trail Nature Preserve,138946.7444954165
+carmel-census-crosscheck,58790,2,Mission Trail,1024.4735362137671

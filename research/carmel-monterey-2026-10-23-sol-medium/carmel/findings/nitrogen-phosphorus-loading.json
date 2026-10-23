@@ -1,0 +1,19 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "nitrate-groundwater",
+    "reason": "No city-limits or defensible Monterey County fallback nitrate-groundwater concentration in mg/L NO3-N from the last five years was established in this pass. Recent nearby and agricultural monitoring exists, but the inspected sources do not supply a representative statistic for either accepted jurisdiction. A service-area drinking-water value, subbasin distribution, cumulative exceedance count, or risk index would change the configured indicator or geography.",
+    "scales_tried": [
+      "city",
+      "county",
+      "regional"
+    ],
+    "tiers_tried": [
+      1,
+      2,
+      3
+    ],
+    "searched_at": "2026-10-23T07:22:13.189181Z",
+    "nearest_data": "City government searches did not retrieve an in-boundary groundwater concentration. MPWMD 2023\u20132024 Mitigation Program Report, section IV-B, printed pp.IV-2\u2013IV-4 (PDF pp.43\u201345), monitors the Carmel Valley alluvial aquifer and coastal Seaside Basin; five lower-Carmel-Valley wells were sampled in November 2024, and its published summary emphasizes conductivity/chloride. These networks are not the incorporated city (https://www.mpwmd.net/wp-content/uploads/MPWMD-MitigationReport-finalRY2024.pdf). For the accepted county fallback, Current local-government monitoring was examined before state sources. Monterey Subbasin WY2025 report, section 4.4.3.2 (printed p.87 / PDF p.95), reports selected coastal-well nitrate results from non-detect to approximately 6 mg/L as N, including approximately 5 mg/L in MCWD-30; these are selected wells, not a county statistic (https://www.mcwd.org/docs/gsa/3-004.10_WY_2025.pdf). The Water Board 2025 agricultural memo Figure 2 has 2024 NO3-N distributions and sample counts by subbasin, including East Side, Forebay, Upper Valley and 180/400 Foot; these on-farm domestic wells do not cover all county groundwater (https://www.waterboards.ca.gov/centralcoast/water_issues/programs/ilp/docs/2025/gw-quality-tech-memo.pdf). The 2024 GAP report Tables 2\u20133 reports 253 Monterey wells tested and 141 nitrate-MCL exceedances over October 2018\u2013July 2024; this voluntary cumulative sample is neither a recent concentration nor representative county coverage (https://www.waterboards.ca.gov/centralcoast/board_info/agendas/2024/dec/item12_stfrpt.pdf). The 2024 Aquifer Risk Map layer uses depth-filtered/de-clustered well data but exposes a 20-year comparison-concentration index, recent exceedance counts and risk classes, not a recent county concentration (https://gispublic.waterboards.ca.gov/portalserver/rest/services/Hosted/Water_Quality_Risk_2024_ARM/FeatureServer/5). County monitoring manual access failed with HTTP 403 in web and evidence capture (https://www.countyofmonterey.gov/home/showpublisheddocument/135929/638648527079730000)."
+  }
+]

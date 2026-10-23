@@ -1,0 +1,100 @@
+{
+  "dimension": "energy",
+  "searched_at": "2026-10-23T07:15:03.951538Z",
+  "queries": [
+    "site.ci.carmel.ca.us \"energy burden\"",
+    "site.countyofmonterey.gov \"energy burden\"",
+    "\"Monterey\" \"median energy burden\"",
+    "\"LEAD\" \"energy burden\" \"weighted average\"",
+    "\"Salinas\" \"energy burden\" median",
+    "\"Monterey\" \"low-income\" \"energy burden\"",
+    "ACEEE 2024 energy burden Salinas metropolitan median",
+    "\"Carmel-by-the-Sea\" \"energy\" \"burden\"",
+    "site.energy.ca.gov \"Monterey\" \"energy burden\"",
+    "site.cpuc.ca.gov \"Monterey\" \"energy burden\"",
+    "site.ci.carmel.ca.us \"energy\" \"low-income\" climate",
+    "site.countyofmonterey.gov \"energy burden\" median households",
+    "site.countyofmonterey.gov climate action plan energy burden households",
+    "\"Monterey County\" \"median\" \"energy\" burden -site:reddit.com -site:arxiv.org",
+    "\"Salinas\" \"energy burden\" ACEEE -site:reddit.com",
+    "\"Carmel\" \"median energy\"",
+    "site.aceee.org \"energy burden\" \"Monterey\"",
+    "site.census.gov PUMS geographic areas county place PUMA 100000",
+    "site.countyofmonterey.gov \"energy burden\" \"low\" \"median\"",
+    "\"Monterey\" \"median energy burden\" households study"
+  ],
+  "sources": [
+    {
+      "url": "https://www.energy.gov/sites/default/files/2024-12/lead-methodology_122024.pdf",
+      "status": "read and archived",
+      "result": "PDF p.14 section 2.3 uses cohort weighted-average income and costs. No household median; rejected for score."
+    },
+    {
+      "url": "https://www.energy.gov/cmei/scep/slsc/low-income-energy-affordability-data-lead-tool-frequently-asked-questions",
+      "status": "read",
+      "result": "Average cost / average income; county weighted averaging; rejects mean-to-median substitution."
+    },
+    {
+      "url": "https://www.aceee.org/sites/default/files/pdfs/data_update_-_city_energy_burdens_0.pdf",
+      "status": "read and archived",
+      "result": "Actual median table using 2021 AHS (2019 starred rows); no Salinas/Monterey/Carmel row. Nearby San Jose 8.5% and San Francisco 7.6% rejected for geographic mismatch."
+    },
+    {
+      "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/news-and-outreach/reports/cab/changes/changes-evaluation-report_final.pdf",
+      "status": "read and archived",
+      "result": "Table 4-18 Monterey 2.2% average; IOU/LEP analysis. Wrong statistic and low-income universe not established."
+    },
+    {
+      "url": "https://ci.carmel.ca.us/post/housing",
+      "status": "read in web tool; direct urllib failed DNS under sandbox",
+      "result": "Read city Housing page, followed Appendix G link; no numeric median found."
+    },
+    {
+      "url": "https://ci.carmel.ca.us/post/housing",
+      "action": "click Appendix G link 34",
+      "status": "web internal error",
+      "result": "Appendix G not read; no claim of its contents."
+    },
+    {
+      "url": "https://ci.carmel.ca.us/sites/main/files/carmel_6th_cycle_housing_element_adopted_040824_sm.pdf",
+      "status": "search result then direct web open failed",
+      "result": "Older adopted Housing Element inaccessible; not treated as read."
+    },
+    {
+      "url": "https://www.countyofmonterey.gov/home/showpublisheddocument/144673/639074370252270000",
+      "status": "search result; direct open 403",
+      "result": "Community Action program outcomes, not accepted as evidence of required median."
+    },
+    {
+      "url": "https://www2.census.gov/geo/maps/DC2020/PUMA/st06_ca/Catalog_PUMAmaps_st06.pdf",
+      "status": "read and archived",
+      "result": "PUMA 0605303 explicitly combines southern/eastern Monterey and San Benito. Cannot derive exact full county median by unioning PUMAs."
+    },
+    {
+      "url": "https://www.census.gov/programs-surveys/geography/guidance/geo-areas/pumas.html",
+      "status": "read",
+      "result": "PUMAs minimum population 100,000; no Carmel-specific PUMA."
+    }
+  ],
+  "search_only_candidates": [
+    {
+      "url": "https://www.countyofmonterey.gov/government/departments-a-h/administrative-office/intergovernmental-and-legislative-affairs/sustainability",
+      "result": "Local climate/sustainability policies; no compliant median exposed in search results."
+    },
+    {
+      "url": "https://www.energy.ca.gov/publications/2026/low-income-residential-energy-bill-impact-analysis-modeling-impact",
+      "result": "Modeled retrofit bill impacts, wrong indicator."
+    },
+    {
+      "url": "https://img1.wsimg.com/blobby/go/a6057700-6e9b-44ca-8884-605e2996de3a/2024CommunityImpactReport_CCES.pdf",
+      "result": "10.16% provider assistance-program burden for seven-county footprint; wrong geographic/population/statistic scope. Not opened or accepted."
+    }
+  ],
+  "capture_failures": [
+    {
+      "command": "pnpm exec tsx scripts/capture-evidence.ts carmel https://www.energy.gov/sites/default/files/2024-12/lead-methodology_122024.pdf 14",
+      "error": "tsx IPC socket EPERM in sandbox; authorized escalated retry succeeded"
+    }
+  ],
+  "capture_note": "Five capture helper invocations succeeded (DOE in both tenants, ACEEE, CPUC, Census). Shared ACEEE/CPUC/Census source archives copied byte-for-byte into other tenant; source metadata retained. Four distinct PDF exhibits visually reviewed."
+}

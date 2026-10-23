@@ -1,0 +1,411 @@
+{
+ "currentVersion": 11.4,
+ "serviceDescription": "null",
+ "name": "USA_NLCD_Annual_LandCover",
+ "description": "null",
+ "extent": {
+  "xmin": -2415585,
+  "ymin": 164805,
+  "xmax": 2384415,
+  "ymax": 3314805,
+  "spatialReference": {
+   "wkt2": "PROJCRS[\"AEA_WGS84\",BASEGEOGCRS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",ELLIPSOID[\"WGS_1984\",6378137.0,298.257223563,LENGTHUNIT[\"Meter\",1.0]]],PRIMEM[\"Greenwich\",0.0,ANGLEUNIT[\"Degree\",0.0174532925199433]],CS[ellipsoidal,2],AXIS[\"Latitude (lat)\",north,ORDER[1]],AXIS[\"Longitude (lon)\",east,ORDER[2]],ANGLEUNIT[\"Degree\",0.0174532925199433]],CONVERSION[\"Albers\",METHOD[\"Albers\"],PARAMETER[\"False_Easting\",0.0,LENGTHUNIT[\"Meter\",1.0]],PARAMETER[\"False_Northing\",0.0,LENGTHUNIT[\"Meter\",1.0]],PARAMETER[\"Central_Meridian\",-96.0,ANGLEUNIT[\"Degree\",0.0174532925199433]],PARAMETER[\"Standard_Parallel_1\",29.5,ANGLEUNIT[\"Degree\",0.0174532925199433]],PARAMETER[\"Standard_Parallel_2\",45.5,ANGLEUNIT[\"Degree\",0.0174532925199433]],PARAMETER[\"Latitude_Of_Origin\",23.0,ANGLEUNIT[\"Degree\",0.0174532925199433]]],CS[Cartesian,2],AXIS[\"Easting (X)\",east,ORDER[1]],AXIS[\"Northing (Y)\",north,ORDER[2]],LENGTHUNIT[\"Meter\",1.0]]",
+   "wkt": "PROJCS[\"AEA_WGS84\",GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Albers\"],PARAMETER[\"False_Easting\",0.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\",-96.0],PARAMETER[\"Standard_Parallel_1\",29.5],PARAMETER[\"Standard_Parallel_2\",45.5],PARAMETER[\"Latitude_Of_Origin\",23.0],UNIT[\"Meter\",1.0]]"
+  }
+ },
+ "initialExtent": {
+  "xmin": -2415585,
+  "ymin": 164805,
+  "xmax": 2384415,
+  "ymax": 3314805,
+  "spatialReference": {
+   "wkt2": "PROJCRS[\"AEA_WGS84\",BASEGEOGCRS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",ELLIPSOID[\"WGS_1984\",6378137.0,298.257223563,LENGTHUNIT[\"Meter\",1.0]]],PRIMEM[\"Greenwich\",0.0,ANGLEUNIT[\"Degree\",0.0174532925199433]],CS[ellipsoidal,2],AXIS[\"Latitude (lat)\",north,ORDER[1]],AXIS[\"Longitude (lon)\",east,ORDER[2]],ANGLEUNIT[\"Degree\",0.0174532925199433]],CONVERSION[\"Albers\",METHOD[\"Albers\"],PARAMETER[\"False_Easting\",0.0,LENGTHUNIT[\"Meter\",1.0]],PARAMETER[\"False_Northing\",0.0,LENGTHUNIT[\"Meter\",1.0]],PARAMETER[\"Central_Meridian\",-96.0,ANGLEUNIT[\"Degree\",0.0174532925199433]],PARAMETER[\"Standard_Parallel_1\",29.5,ANGLEUNIT[\"Degree\",0.0174532925199433]],PARAMETER[\"Standard_Parallel_2\",45.5,ANGLEUNIT[\"Degree\",0.0174532925199433]],PARAMETER[\"Latitude_Of_Origin\",23.0,ANGLEUNIT[\"Degree\",0.0174532925199433]]],CS[Cartesian,2],AXIS[\"Easting (X)\",east,ORDER[1]],AXIS[\"Northing (Y)\",north,ORDER[2]],LENGTHUNIT[\"Meter\",1.0]]",
+   "wkt": "PROJCS[\"AEA_WGS84\",GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Albers\"],PARAMETER[\"False_Easting\",0.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\",-96.0],PARAMETER[\"Standard_Parallel_1\",29.5],PARAMETER[\"Standard_Parallel_2\",45.5],PARAMETER[\"Latitude_Of_Origin\",23.0],UNIT[\"Meter\",1.0]]"
+  }
+ },
+ "fullExtent": {
+  "xmin": -2415585,
+  "ymin": 164805,
+  "xmax": 2384415,
+  "ymax": 3314805,
+  "spatialReference": {
+   "wkt2": "PROJCRS[\"AEA_WGS84\",BASEGEOGCRS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",ELLIPSOID[\"WGS_1984\",6378137.0,298.257223563,LENGTHUNIT[\"Meter\",1.0]]],PRIMEM[\"Greenwich\",0.0,ANGLEUNIT[\"Degree\",0.0174532925199433]],CS[ellipsoidal,2],AXIS[\"Latitude (lat)\",north,ORDER[1]],AXIS[\"Longitude (lon)\",east,ORDER[2]],ANGLEUNIT[\"Degree\",0.0174532925199433]],CONVERSION[\"Albers\",METHOD[\"Albers\"],PARAMETER[\"False_Easting\",0.0,LENGTHUNIT[\"Meter\",1.0]],PARAMETER[\"False_Northing\",0.0,LENGTHUNIT[\"Meter\",1.0]],PARAMETER[\"Central_Meridian\",-96.0,ANGLEUNIT[\"Degree\",0.0174532925199433]],PARAMETER[\"Standard_Parallel_1\",29.5,ANGLEUNIT[\"Degree\",0.0174532925199433]],PARAMETER[\"Standard_Parallel_2\",45.5,ANGLEUNIT[\"Degree\",0.0174532925199433]],PARAMETER[\"Latitude_Of_Origin\",23.0,ANGLEUNIT[\"Degree\",0.0174532925199433]]],CS[Cartesian,2],AXIS[\"Easting (X)\",east,ORDER[1]],AXIS[\"Northing (Y)\",north,ORDER[2]],LENGTHUNIT[\"Meter\",1.0]]",
+   "wkt": "PROJCS[\"AEA_WGS84\",GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Albers\"],PARAMETER[\"False_Easting\",0.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\",-96.0],PARAMETER[\"Standard_Parallel_1\",29.5],PARAMETER[\"Standard_Parallel_2\",45.5],PARAMETER[\"Latitude_Of_Origin\",23.0],UNIT[\"Meter\",1.0]]"
+  }
+ },
+ "sortableFields": "",
+ "bandCount": 1,
+ "pixelType": "U8",
+ "minValues": [],
+ "maxValues": [],
+ "meanValues": [],
+ "stdvValues": [],
+ "hasMultidimensions": false,
+ "timeInfo": {
+  "startTimeField": "Year",
+  "endTimeField": "Year",
+  "timeExtent": [
+   473385600000,
+   1704067200000
+  ],
+  "timeReference": null
+ },
+ "pixelSizeX": 30,
+ "pixelSizeY": 30,
+ "meanPixelSize": 30,
+ "datasetFormat": "AMD",
+ "uncompressedSize": 16800000000,
+ "blockWidth": 2048,
+ "blockHeight": 256,
+ "compressionType": "None",
+ "bandNames": [
+  "Band_1"
+ ],
+ "allowCopy": true,
+ "allowAnalysis": true,
+ "itemAccess": false,
+ "inspectionCapabilities": "",
+ "minPixelSize": 0,
+ "maxPixelSize": 0,
+ "copyrightText": "null",
+ "serviceDataType": "esriImageServiceDataTypeThematic",
+ "serviceSourceType": "esriImageServiceSourceTypeMosaicDataset",
+ "objectIdField": "OBJECTID",
+ "fields": [
+  {
+   "name": "OBJECTID",
+   "type": "esriFieldTypeOID",
+   "alias": "OBJECTID",
+   "domain": null
+  },
+  {
+   "name": "Shape",
+   "type": "esriFieldTypeGeometry",
+   "alias": "Shape",
+   "domain": null
+  },
+  {
+   "name": "Name",
+   "type": "esriFieldTypeString",
+   "alias": "Name",
+   "domain": null,
+   "length": 200
+  },
+  {
+   "name": "MinPS",
+   "type": "esriFieldTypeDouble",
+   "alias": "MinPS",
+   "domain": null
+  },
+  {
+   "name": "MaxPS",
+   "type": "esriFieldTypeDouble",
+   "alias": "MaxPS",
+   "domain": null
+  },
+  {
+   "name": "LowPS",
+   "type": "esriFieldTypeDouble",
+   "alias": "LowPS",
+   "domain": null
+  },
+  {
+   "name": "HighPS",
+   "type": "esriFieldTypeDouble",
+   "alias": "HighPS",
+   "domain": null
+  },
+  {
+   "name": "Category",
+   "type": "esriFieldTypeInteger",
+   "alias": "Category",
+   "domain": {
+    "type": "codedValue",
+    "name": "MosaicCatalogItemCategoryDomain",
+    "description": "Catalog item categories.",
+    "codedValues": [
+     {
+      "name": "Unknown",
+      "code": 0
+     },
+     {
+      "name": "Primary",
+      "code": 1
+     },
+     {
+      "name": "Overview",
+      "code": 2
+     },
+     {
+      "name": "Unprocessed Overview",
+      "code": 3
+     },
+     {
+      "name": "Partial Overview",
+      "code": 4
+     },
+     {
+      "name": "Inactive",
+      "code": 5
+     },
+     {
+      "name": "Uploaded",
+      "code": 253
+     },
+     {
+      "name": "Incomplete",
+      "code": 254
+     },
+     {
+      "name": "Custom",
+      "code": 255
+     }
+    ],
+    "mergePolicy": "esriMPTDefaultValue",
+    "splitPolicy": "esriSPTDefaultValue"
+   }
+  },
+  {
+   "name": "Tag",
+   "type": "esriFieldTypeString",
+   "alias": "Tag",
+   "domain": null,
+   "length": 100
+  },
+  {
+   "name": "GroupName",
+   "type": "esriFieldTypeString",
+   "alias": "GroupName",
+   "domain": null,
+   "length": 100
+  },
+  {
+   "name": "ProductName",
+   "type": "esriFieldTypeString",
+   "alias": "ProductName",
+   "domain": null,
+   "length": 100
+  },
+  {
+   "name": "CenterX",
+   "type": "esriFieldTypeDouble",
+   "alias": "CenterX",
+   "domain": null
+  },
+  {
+   "name": "CenterY",
+   "type": "esriFieldTypeDouble",
+   "alias": "CenterY",
+   "domain": null
+  },
+  {
+   "name": "ZOrder",
+   "type": "esriFieldTypeInteger",
+   "alias": "ZOrder",
+   "domain": null
+  },
+  {
+   "name": "Year",
+   "type": "esriFieldTypeSmallInteger",
+   "alias": "Year",
+   "domain": null
+  },
+  {
+   "name": "Version",
+   "type": "esriFieldTypeString",
+   "alias": "Version",
+   "domain": null,
+   "length": 100
+  },
+  {
+   "name": "start_date",
+   "type": "esriFieldTypeDate",
+   "alias": "start_date",
+   "domain": null,
+   "length": 8
+  },
+  {
+   "name": "end_date",
+   "type": "esriFieldTypeDate",
+   "alias": "end_date",
+   "domain": null,
+   "length": 8
+  },
+  {
+   "name": "Shape_Length",
+   "type": "esriFieldTypeDouble",
+   "alias": "Shape_Length",
+   "domain": null
+  },
+  {
+   "name": "Shape_Area",
+   "type": "esriFieldTypeDouble",
+   "alias": "Shape_Area",
+   "domain": null
+  }
+ ],
+ "capabilities": "Image,Metadata,Catalog,Mensuration",
+ "defaultMosaicMethod": "ByAttribute",
+ "allowedMosaicMethods": "ByAttribute,NorthWest,Center,LockRaster,Nadir,Viewpoint,Seamline,None",
+ "sortField": "Year",
+ "sortValue": "2050",
+ "sortAscending": true,
+ "mosaicOperator": "First",
+ "maxDownloadSizeLimit": 2048,
+ "defaultCompressionQuality": 75,
+ "defaultResamplingMethod": "Nearest",
+ "maxImageHeight": 20000,
+ "maxImageWidth": 20000,
+ "maxRecordCount": 1000,
+ "maxDownloadImageCount": 0,
+ "maxMosaicImageCount": 20,
+ "allowRasterFunction": true,
+ "rasterFunctionInfos": [
+  {
+   "name": "Saturated Cartographic Renderer for Visualization and Analysis",
+   "description": "Saturated colors designed to be used over relief or a basemap, with transparency and/or blend modes applied.",
+   "help": ""
+  },
+  {
+   "name": "MRLC Cartographic Renderer for Visualization and Analysis",
+   "description": "MRLC land cover symbols for the National Land Cover Dataset.",
+   "help": ""
+  },
+  {
+   "name": "Esri Cartographic Renderer for Visualization and Analysis",
+   "description": "Esri land cover symbols for the National Land Cover Dataset. Designed to display with the USA Cropland layer if extra detail within agricultural areas is desired.",
+   "help": ""
+  },
+  {
+   "name": "Simplified Renderer for Visualization and Analysis",
+   "description": "Nine simplified classes, reduced from 20 by combining Developed classes, combining Forest classes, combining Scrub classes, combining Cropland and Pasture, combining Grassland with other Herbaceous classes, and combining Wetland classes.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Forested Areas for Visualization and Analysis",
+   "description": "Only Deciduous Forest, Mixed Forest, and Evergreen Forest classes are displayed.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Developed Areas for Visualization and Analysis",
+   "description": "Developed Open Space, Developed Low Intensity, Developed Medium Intensity and Developed High Intensity classes only.",
+   "help": ""
+  },
+  {
+   "name": "None",
+   "description": "Make a Raster or Raster Dataset into a Function Raster Dataset.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Open Water Areas for Visualization and Analysis",
+   "description": "Only open water areas are displayed/available for analysis.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Perennial Ice and Snow Areas for Visualization and Analysis",
+   "description": "Only perennial ice and snow areas are displayed/available for analysis.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Developed Open Space Areas for Visualization and Analysis",
+   "description": "Only developed, open space areas are displayed/available for analysis.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Developed Low Intensity Areas for Visualization and Analysis",
+   "description": "Only developed, low intensity areas are displayed/available for analysis.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Developed Medium Intensity Areas for Visualization and Analysis",
+   "description": "Only developed, medium intensity areas are displayed/available for analysis.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Developed High Intensity Areas for Visualization and Analysis",
+   "description": "Only developed, high intensity areas are displayed/available for analysis.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Barren Land Areas for Visualization and Analysis",
+   "description": "Only barren land areas are displayed/available for analysis.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Deciduous Forest Areas for Visualization and Analysis",
+   "description": "Only deciduous forest areas are displayed/available for analysis.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Evergreen Forest Areas for Visualization and Analysis",
+   "description": "Only evergreen forest areas are displayed/available for analysis.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Mixed Forest Areas for Visualization and Analysis",
+   "description": "Only mixed forest areas are displayed/available for analysis.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Shrub or Scrub Areas for Visualization and Analysis",
+   "description": "Only shrub/scrub areas are displayed/available for analysis.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Grassland or Herbaceous Areas for Visualization and Analysis",
+   "description": "Only grassland/herbaceous areas are displayed/available for analysis.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Pasture or Hay Areas for Visualization and Analysis",
+   "description": "Only pasture/hay areas are displayed/available for analysis.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Cultivated Crops Areas for Visualization and Analysis",
+   "description": "Only areas of cultivated crops are displayed/available for analysis.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Woody Wetlands Areas for Visualization and Analysis",
+   "description": "Only woody wetlands areas are displayed/available for analysis.",
+   "help": ""
+  },
+  {
+   "name": "Isolate Emergent Herbaceous Wetlands Areas for Visualization and Analysis",
+   "description": "Only emergent herbaceous wetlands areas are displayed/available for analysis.",
+   "help": ""
+  }
+ ],
+ "rasterTypeInfos": [
+  {
+   "name": "Raster Dataset",
+   "description": "Supports all ArcGIS Raster Datasets",
+   "help": ""
+  }
+ ],
+ "mensurationCapabilities": "Basic",
+ "hasHistograms": false,
+ "hasColormap": false,
+ "hasRasterAttributeTable": false,
+ "minScale": 0,
+ "maxScale": 0,
+ "exportTilesAllowed": false,
+ "supportsStatistics": true,
+ "supportsAdvancedQueries": true,
+ "editFieldsInfo": null,
+ "ownershipBasedAccessControlForRasters": null,
+ "allowComputeTiePoints": false,
+ "useStandardizedQueries": true,
+ "advancedQueryCapabilities": {
+  "useStandardizedQueries": true,
+  "supportsStatistics": true,
+  "supportsOrderBy": true,
+  "supportsDistinct": true,
+  "supportsPagination": true
+ },
+ "spatialReference": {
+  "wkt2": "PROJCRS[\"AEA_WGS84\",BASEGEOGCRS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",ELLIPSOID[\"WGS_1984\",6378137.0,298.257223563,LENGTHUNIT[\"Meter\",1.0]]],PRIMEM[\"Greenwich\",0.0,ANGLEUNIT[\"Degree\",0.0174532925199433]],CS[ellipsoidal,2],AXIS[\"Latitude (lat)\",north,ORDER[1]],AXIS[\"Longitude (lon)\",east,ORDER[2]],ANGLEUNIT[\"Degree\",0.0174532925199433]],CONVERSION[\"Albers\",METHOD[\"Albers\"],PARAMETER[\"False_Easting\",0.0,LENGTHUNIT[\"Meter\",1.0]],PARAMETER[\"False_Northing\",0.0,LENGTHUNIT[\"Meter\",1.0]],PARAMETER[\"Central_Meridian\",-96.0,ANGLEUNIT[\"Degree\",0.0174532925199433]],PARAMETER[\"Standard_Parallel_1\",29.5,ANGLEUNIT[\"Degree\",0.0174532925199433]],PARAMETER[\"Standard_Parallel_2\",45.5,ANGLEUNIT[\"Degree\",0.0174532925199433]],PARAMETER[\"Latitude_Of_Origin\",23.0,ANGLEUNIT[\"Degree\",0.0174532925199433]]],CS[Cartesian,2],AXIS[\"Easting (X)\",east,ORDER[1]],AXIS[\"Northing (Y)\",north,ORDER[2]],LENGTHUNIT[\"Meter\",1.0]]",
+  "wkt": "PROJCS[\"AEA_WGS84\",GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Albers\"],PARAMETER[\"False_Easting\",0.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\",-96.0],PARAMETER[\"Standard_Parallel_1\",29.5],PARAMETER[\"Standard_Parallel_2\",45.5],PARAMETER[\"Latitude_Of_Origin\",23.0],UNIT[\"Meter\",1.0]]"
+ }
+}

@@ -1,0 +1,271 @@
+{
+  "frozen_at": "2026-10-23T07:49:39.206461+00:00",
+  "scope": "Assigned land-conversion findings, prompts, sidecars, portable calculations and generated exhibits; independent reviews excluded",
+  "files": [
+    {
+      "file": "apps/web/public/evidence/carmel/evidence/land-conversion-derived-2014-2024.html",
+      "sha256": "cda75570c0a80fb4ff98b25a137112f078612e2b9584efc5751e4070d3e344f8",
+      "bytes": 3712
+    },
+    {
+      "file": "apps/web/public/evidence/carmel/evidence/land-conversion-derived-2014-2024.png",
+      "sha256": "8d0f9e4f29d364460fdedfd4dfb568797199075086e8ff00832cba989767ee5f",
+      "bytes": 287339
+    },
+    {
+      "file": "apps/web/public/evidence/carmel/evidence/land-conversion-derived-2014-2024.source.json",
+      "sha256": "ce5063ba6c3a114c6e331bda88eb952f1714edfe48f359ec7ef90d0a5ff11cf3",
+      "bytes": 497
+    },
+    {
+      "file": "apps/web/public/evidence/carmel/evidence/land-conversion-source-metadata.html",
+      "sha256": "0bae245ba42deaf3206d1298426ebd75f1ac5692bf47092c5b9b6a2115108c33",
+      "bytes": 5098
+    },
+    {
+      "file": "apps/web/public/evidence/carmel/evidence/land-conversion-source-metadata.json",
+      "sha256": "20f8e98a7c3c082f4aecd92b0c0eb8b65aba24a7cc42756416bf8c01854f5f85",
+      "bytes": 3843
+    },
+    {
+      "file": "apps/web/public/evidence/carmel/evidence/land-conversion-source-metadata.png",
+      "sha256": "3d16db5b3d9b3c026b110182e87b08d1caa84629791ab6d1ef21d98952a533e1",
+      "bytes": 459446
+    },
+    {
+      "file": "apps/web/public/evidence/monterey-county/evidence/land-conversion-derived-2014-2024.html",
+      "sha256": "8d00be1dbf01c3cecf4d3a8c75a1e5fd034f34b78ba1b27a493c44cadf87215f",
+      "bytes": 3260
+    },
+    {
+      "file": "apps/web/public/evidence/monterey-county/evidence/land-conversion-derived-2014-2024.png",
+      "sha256": "da429de27ab6263fdfd75a69466858c35a83e6620ebc84e1eb69803cde511bfe",
+      "bytes": 238298
+    },
+    {
+      "file": "apps/web/public/evidence/monterey-county/evidence/land-conversion-derived-2014-2024.source.json",
+      "sha256": "ce5063ba6c3a114c6e331bda88eb952f1714edfe48f359ec7ef90d0a5ff11cf3",
+      "bytes": 497
+    },
+    {
+      "file": "apps/web/public/evidence/monterey-county/evidence/land-conversion-source-metadata.html",
+      "sha256": "0bae245ba42deaf3206d1298426ebd75f1ac5692bf47092c5b9b6a2115108c33",
+      "bytes": 5098
+    },
+    {
+      "file": "apps/web/public/evidence/monterey-county/evidence/land-conversion-source-metadata.json",
+      "sha256": "20f8e98a7c3c082f4aecd92b0c0eb8b65aba24a7cc42756416bf8c01854f5f85",
+      "bytes": 3843
+    },
+    {
+      "file": "apps/web/public/evidence/monterey-county/evidence/land-conversion-source-metadata.png",
+      "sha256": "3d16db5b3d9b3c026b110182e87b08d1caa84629791ab6d1ef21d98952a533e1",
+      "bytes": 459446
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/activity/land-conversion.json",
+      "sha256": "3a397a6e14a0b09ce799079e7516b55800353026ab619558c8cee9671cf0e172",
+      "bytes": 2273
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/boundary-provenance.json",
+      "sha256": "2dc687dd119eb08084ffa8485c61e9fcfc5261827022b6560133db32892e7d57",
+      "bytes": 1965
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/calculate.py",
+      "sha256": "effc17fbbec2c219ed40ce6665633bd162a8351ca40f0de5e6e55993b5960004",
+      "bytes": 4624
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/carmel-boundary-weights.npz",
+      "sha256": "8f5e750eec3ff51845bca03bc1d7e874e5e3dbe10c27aad7b3a71f7d470ead8d",
+      "bytes": 212100
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/carmel-census-crosscheck-boundary-weights.npz",
+      "sha256": "5f04647217daf5ddff203b83968411a6d6661aaee6e93f1d2b9b6f36b5003b1c",
+      "bytes": 212214
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/carmel-conversion-mask.tif",
+      "sha256": "c90aea9bf18e937f50514f89501b0d97485519107487608ad2d24c679ebb7256",
+      "bytes": 329207
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/download-manifest.json",
+      "sha256": "d83a00e9a06eaeb8a3bbe44a7ba227ac20ee38918afe2d914b31753ba52375c1",
+      "bytes": 5690
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/download.py",
+      "sha256": "42b0b5b727daa66a62877437933ba42403ba08848df5a8579e022c1424deda09",
+      "bytes": 3478
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/grid.json",
+      "sha256": "4fb2a6c5515dae022bd5f59ae63965ac7dc5e25bda53463d51324adcd4027dda",
+      "bytes": 590
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/input-hashes.json",
+      "sha256": "b5cb3c33f2045394e78c9dd74c967f6ba3b0e0f4fbbcea37e5a72808960f8305",
+      "bytes": 2134
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/method.json",
+      "sha256": "a01b48aa03b3d7b3829b5439c43b9541afff3d9547023c42f3f0d2476300e8ce",
+      "bytes": 8252
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/monterey-county-boundary-weights.npz",
+      "sha256": "e34b2c6524c26bcc6cf93acc8a3b9259de72387a100a8cec28e784f05947f3ba",
+      "bytes": 1111952
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/monterey-county-conversion-mask.tif",
+      "sha256": "fe80d236d84b8eb9fa468ad98bb0b05ca7bc353a22d19ebb31531e0821df5bf5",
+      "bytes": 402572
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/publish.mjs",
+      "sha256": "4773097b7c0352e72a5ac7f833b71be73bbe870ea80ecb80b0052a89ce40f76c",
+      "bytes": 14520
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/published-exhibits.json",
+      "sha256": "50770d57d5b1bee774a7dec0285794279ba6bca3470b85923169e538b4422538",
+      "bytes": 511
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/raw/carmel-census-boundary.json",
+      "sha256": "dbca6bec0565e79eca85b081a69b60686e38fbeb68072ab03f8218f831ff0228",
+      "bytes": 10904
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/raw/carmel-lafco-boundary.json",
+      "sha256": "4b35c38498f882daf9437a1f7104a9859e2391e28b99361e48e4621f28d4e352",
+      "bytes": 22205
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/raw/esri-metadata.json",
+      "sha256": "e32c47c2fe7298f17dad0036db9f2a05a33e3a7ba9cbae927cc101adc2d64b75",
+      "bytes": 16006
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/raw/export-2014.json",
+      "sha256": "be8390a6cd7469559aba052daf2f759f34b6a62637a740185558878b8b315335",
+      "bytes": 724
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/raw/export-2024.json",
+      "sha256": "37c87bf02e3020477329f42f3173853be125244cf49e199bfd7e08b7df6ce619",
+      "bytes": 724
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/raw/landcover-2014.tif",
+      "sha256": "6490dbf32d4aca37dbbf8d56586386b923c494d2286254b1246e0aa031464d36",
+      "bytes": 21964662
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/raw/landcover-2024.tif",
+      "sha256": "805202f08e2fae3d92b1eca8d7047347bbf181b3ad8f5809c18f4c20dc94359a",
+      "bytes": 21964662
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/raw/monterey-census-boundary.json",
+      "sha256": "2e4a54b32d2889ce4d052b79377f730b429f3e696fa021bab3e9b068908333d0",
+      "bytes": 337032
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/raw/raster30-native-info.json",
+      "sha256": "7b0c1c31cbcb34ce7f56b8e4f53f21651110fbc0744bbcbc618e4ec5b100a521",
+      "bytes": 1788
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/raw/raster40-native-info.json",
+      "sha256": "933f923f98798bcf7e281d203d97829ec0ff46d3262abc71d9d1698b4593c48d",
+      "bytes": 1789
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/raw/tl_2026_06053_faces.zip",
+      "sha256": "d1bc50c16b909933b33733c22f367f3d93561ee4f65306e8ac18c4f613c9f31a",
+      "bytes": 5730338
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/raw/usfs-catalog-2014-2024.json",
+      "sha256": "3a0603d719546239a36abff032484e72f14f55069c7fe236256cf3574bdae1bb",
+      "bytes": 16174
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/raw/usfs-metadata.json",
+      "sha256": "96c0131f0a4cd2ee08ae15cc3d8f0bbeac8dbbafcc315d00b3a9136446b69242",
+      "bytes": 10476
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/raw/usfs-raster30-info.json",
+      "sha256": "7b0c1c31cbcb34ce7f56b8e4f53f21651110fbc0744bbcbc618e4ec5b100a521",
+      "bytes": 1788
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/raw-web-results.json",
+      "sha256": "aab2021e079f5cecbb47bacca27f14977b5ba3a9c8cf0ce4fd6da9449548b718",
+      "bytes": 250860
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/requirements.txt",
+      "sha256": "4deda458776790b936963dcb0a6770230e72f8a766314235f618763c388f1252",
+      "bytes": 86
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/results.json",
+      "sha256": "4ede16f42acdd0902c9179eb275bebabedffbba67279cc56bdfa8c2edb93ca0a",
+      "bytes": 5270
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/runtime-versions.json",
+      "sha256": "b3ae41c65792d37ad8fb9920f72d2fc6d0a604c815133d7e997603642dca49d7",
+      "bytes": 248
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/calculations/land-conversion/transitions.csv",
+      "sha256": "7d22560ac55b15da2741d11d8e1ecc79fb6f6bbb0812fc8e5a70a414c2e82ba5",
+      "bytes": 2527
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/carmel/evidence-additions/land-conversion.json",
+      "sha256": "22f91f869e4076fdf87934ff740d576d6ab35882a9dd16004132365c5b24476e",
+      "bytes": 1692
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/carmel/findings/land-conversion.json",
+      "sha256": "7a4f37c7fd457dbaa982b2e2ded7f97fafb0efdc18cd0971d6ee242aa5ca04a7",
+      "bytes": 4944
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/carmel/prompts/land-conversion.md",
+      "sha256": "09cf728ea7fc2eeacfe71bb1188c29bbd11a4b7678537a73d71afd8d26e1ec85",
+      "bytes": 13877
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/monterey-county/evidence-additions/land-conversion.json",
+      "sha256": "13614bcd0ce47b184d318714c6ad5c72b61d8d22a56461391cd12ed37e5384e6",
+      "bytes": 1557
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/monterey-county/findings/land-conversion.json",
+      "sha256": "4fc7e6aa986683f07cd62bb919c2f434dffcc264c2b629bd15ed11781f0b2009",
+      "bytes": 4327
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/monterey-county/prompts/land-conversion.md",
+      "sha256": "2cceefeed4e4c3d88f381e25fc50e9af2ae75af6158271cbae2d488819c41fc3",
+      "bytes": 13868
+    },
+    {
+      "file": "research/carmel-monterey-2026-10-23-sol-medium/searches/land-conversion.json",
+      "sha256": "52c68943afd9ee146268e222d42fa1323ef30a02b44de26d40c06b5fce635d52",
+      "bytes": 16386
+    }
+  ]
+}

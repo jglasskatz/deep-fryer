@@ -1,0 +1,432 @@
+{
+  "reviewer": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "reviewed_at": "2026-10-23T07:51:35.868297+00:00",
+  "approved": false,
+  "portraits": {
+    "carmel": {
+      "air-pollution": {
+        "findings_sha256": "7bf74b8f8aa1819d3d669fc36f48577af1847ee5f75e9c2c60071bf444ecb812",
+        "reviews_sha256": "375749d9cf370be6ec21dddefc1fb45a75dd3ae9d7ddd8e7c298b17e6b9a3837"
+      },
+      "biodiversity-loss": {
+        "findings_sha256": "95910d7783fe3953757e55bc5d5ff5e28987b0f77b8a38a16eb48cbeaf941963",
+        "reviews_sha256": "bfa8fd261677de30db9e9b4105e1d9a60ade99a96430ed4a27ef0130fe029b6e"
+      },
+      "chemical-pollution": {
+        "findings_sha256": "d2015b118980eb071f0a7385311375b1d7b8b1cc2660412ea81ff3537789f9e5",
+        "reviews_sha256": "2b7ee9c433d59dd1eb7b0649af4e44096fc059f8d8d8ac8caf033f97eba87eea"
+      },
+      "climate-change": {
+        "findings_sha256": "76833f8e71c51116dee10b3bf80ecdebb845618080a158d780759599fe1ba1a0",
+        "reviews_sha256": "8e25382de19183048d7242139d37bd8a4520a45acc36688f9a4c5bdcf644937c"
+      },
+      "education": {
+        "findings_sha256": "3c2d10ffd651a017c3505c0d6258b4dbbf258e4b24c5319bb17e63e528eed234",
+        "reviews_sha256": "14c1b7fe15d768784b7ee16885e4510e4df4060c491dbab2d13189919771180d"
+      },
+      "energy": {
+        "findings_sha256": "c78f23e0524815980650b57eb57ad438b7ec9f04936ce98ac866ae822d267ca2",
+        "reviews_sha256": "631423b7baa5454eb27aa54d6e6f18b0d0f823a3418e77c15ce0755173c45197"
+      },
+      "extreme-heat": {
+        "findings_sha256": "241add2ea0237b960cfa3be5eee0a04d5cbc31eebe2026698c279caece9bf0b7",
+        "reviews_sha256": "b4fd343324880758ec2ea8f1b076a026158d0ba576ebdc3a57489d56ea47f70f"
+      },
+      "food": {
+        "findings_sha256": "9273692c65227053ae9303bebed6dacaeb315bcdaa0087f6210b0804ec846bbb",
+        "reviews_sha256": "349c088c9b98638add9e094a996ffeea942165e18ee43f186d3258f6ad0cef47"
+      },
+      "freshwater-withdrawals": {
+        "findings_sha256": "e212e077ae5dc7ab4a8c27376293ea725c1bee11fe5d3491359c807dd4b25b55",
+        "reviews_sha256": "bd2c102f83f526bfa96743befc3f3493ac92952ff60835c73ecbc68f1a562d7c"
+      },
+      "gender-equality": {
+        "findings_sha256": "e294144a909e3db2f38eadf54c79f4ffe8e48b91344ef0c606ff039a2dd9b022",
+        "reviews_sha256": "1c057fc070b9d1434729a2c354587226bf30b0940473efcfe2b561334a57f0be"
+      },
+      "health": {
+        "findings_sha256": "ab0dd08738dc0c456b7d9aa0cd02744a76f9c91e56bdd962ec7b39d4ccfe51c6",
+        "reviews_sha256": "fc85573bb80718f10ca0af18c94b3000a2bb487664bb86b3df308def5e9902ff"
+      },
+      "housing": {
+        "findings_sha256": "5a56acedcfd61d286a69b6a1e309861cec66ba973008d8aec62c2fbf9b9456ed",
+        "reviews_sha256": "4dae8e97566cfb912a6c8d672546067246c0f263d3998bb218b4bf2b0181511b"
+      },
+      "income-work": {
+        "findings_sha256": "1be992ef8a1bf1687630e6669401bfe49a81c11bac16236cdeb3b67e8f939ec2",
+        "reviews_sha256": "f94f653c5b4e1b762f8c5b07169f9193f31db277613902d21f00db17582ed872"
+      },
+      "land-conversion": {
+        "findings_sha256": "7a4f37c7fd457dbaa982b2e2ded7f97fafb0efdc18cd0971d6ee242aa5ca04a7",
+        "reviews_sha256": "8bd5d90c43402f82a2b7e9b1278952e60d064e7404491329527c35ae50328524"
+      },
+      "networks": {
+        "findings_sha256": "5d1be35150b9904c429d55491911c1e21f992abea4a75f306dbbf974a1f8802c",
+        "reviews_sha256": "f5a61c3cade25c89120cb21f92e23744df8df5933b683bf5e36c087a5fe80266"
+      },
+      "nitrogen-phosphorus-loading": {
+        "findings_sha256": "d02dc38e969cd488f4e5f4b4ba939e1e64f90db9202e8605f0efce6c2794cb1f",
+        "reviews_sha256": "4e063c6ca0bb93e22021566ab63b865a8de172f9f9cd7a8b87660a4db5f5b9e0"
+      },
+      "ocean-acidification": {
+        "findings_sha256": "9a8030c8758d80de75b4abc3225d0350af4be96462fbfb9e4566899e1a2f41c6",
+        "reviews_sha256": "1709c6c4b55a939e6179234a57df900bd9420fd51e960e7a07fe03d03f33e040"
+      },
+      "peace-justice": {
+        "findings_sha256": "a1c6643540cf11fd7a5a3c7508285c5839dda3e284f250466df847010d947837",
+        "reviews_sha256": "63cd16d662fc13f2e0877c23f0311432941874caab91f7cae8d2fc93a4905302"
+      },
+      "political-voice": {
+        "findings_sha256": "c781f794af1b8426a5fd6a5218e3dda922b9acd9632752789100de3d916076fe",
+        "reviews_sha256": "3e3f17c066df59aefa4f88dfe141b70e21dbe95bed030774fc6efe9be79eff9b"
+      },
+      "social-equity": {
+        "findings_sha256": "51620aaf2e2d9c40b70ec11f07b5aa5807bf059b0c1959b6cc3468334738bd16",
+        "reviews_sha256": "3b6e96c56d1562289c6460c39023252a2431f35a3345e6f7b5087c0c60e86e64"
+      },
+      "water-sanitation": {
+        "findings_sha256": "8242dab34b237f25ecd788cfb537e18ea96437099ba0aad0bd49f898e45464ca",
+        "reviews_sha256": "191ebd0b75755b3fbfa5f83ce18994b1e21471e5a1426c06933d97d6d1ff4a66"
+      }
+    },
+    "monterey-county": {
+      "air-pollution": {
+        "findings_sha256": "d900486181999f3caeee556fb9ac0549a905ced10d49f52ad91747261e81a483",
+        "reviews_sha256": "4afd105cc50f9f1dc6ce5c106e967cc39e994b7ee7bff5df2c5eabd6338f6425"
+      },
+      "biodiversity-loss": {
+        "findings_sha256": "cee6647e03463384e2331d1e25fda592655d44c1e3d3d022dba6fcb8d3e47f40",
+        "reviews_sha256": "96d618cb9b36a7ad772b74b724d9101c8dd42b803489bef362e24cbec7d7d0fc"
+      },
+      "chemical-pollution": {
+        "findings_sha256": "b6385e83e0e7d517b2fa675aa91b26a8f1e5f44e00771fb471abbd7ab424f226",
+        "reviews_sha256": "e707c0f24c7f3fab53e0e139b813e597791ee4df9a78d0e809d5e48f211791d2"
+      },
+      "climate-change": {
+        "findings_sha256": "eae84352982be36c9ecdd991b47d75bf3b9c49941bfd40230221d4a912fc215a",
+        "reviews_sha256": "174afc6e998b6aee3fc7e90b2b05e7e30d766ab5cb718fa47b5051b223312fdc"
+      },
+      "education": {
+        "findings_sha256": "d2f669aeac9227707c4c12ae71fddcbd1a0869187631fb6207848061a2b55146",
+        "reviews_sha256": "c9b0ae79505ad7e39241ea4d6e4942c18c2d29ef98d650b501456d33faf4c325"
+      },
+      "energy": {
+        "findings_sha256": "b1c041d2d8af3ebe183d1f1abc9dd8bf32fd2a9857bed9e3c6dfe8ec60c64c43",
+        "reviews_sha256": "631423b7baa5454eb27aa54d6e6f18b0d0f823a3418e77c15ce0755173c45197"
+      },
+      "extreme-heat": {
+        "findings_sha256": "833e863da1af1c300e699ae887c08eae64a8913f81b21dc8889a5d2337fccf25",
+        "reviews_sha256": "bbe19c207da6017f58c061cc140eb7986140aab1d6fd417568e1a09bf23e2322"
+      },
+      "food": {
+        "findings_sha256": "e7f49d8ef6099c1096ffdce1d8037bd6c8de2249771814f5ea78bcb0215d152f",
+        "reviews_sha256": "b7a7096774050bc4c41f72e9a3e70a009cdecac0cef2cd372e63dcbbc780df44"
+      },
+      "freshwater-withdrawals": {
+        "findings_sha256": "e2d8a79fbf214771cdedc2ee57494ab62487be7e316571061657cb5a50fc5a86",
+        "reviews_sha256": "bd2c102f83f526bfa96743befc3f3493ac92952ff60835c73ecbc68f1a562d7c"
+      },
+      "gender-equality": {
+        "findings_sha256": "8938cc4fef968ceaa3cdb3e842806506b518bcea5a63f81ace833a7d558c015b",
+        "reviews_sha256": "58c8e08002cc3a6df7712ffddf352e26236452fc26c4f529988e7322da17aa0f"
+      },
+      "health": {
+        "findings_sha256": "cd2a3d0aa748636862a8a823ad25a52b799c171b940ac57f38ab28ea8e7844cb",
+        "reviews_sha256": "d5fbeb41ad11fc45ed5a79f15d2c0521a9463a331404202619ab5c7e7b674d63"
+      },
+      "housing": {
+        "findings_sha256": "99d0e5e0b56567473c75a81c533fc257aef1b9963e1c3ca21925e05a33c4765d",
+        "reviews_sha256": "0427ea5ec79382182bc5a1c94d6fa8356ac8f81c332e5aa84e9921423ffae24c"
+      },
+      "income-work": {
+        "findings_sha256": "78e82cedee8daebce22ca1e285be748109fbfcb527ecf140a64fb98d2138c742",
+        "reviews_sha256": "914f529b4362db829a720f4417127fb17b940fac0f6c800ec6855329b863886c"
+      },
+      "land-conversion": {
+        "findings_sha256": "4fc7e6aa986683f07cd62bb919c2f434dffcc264c2b629bd15ed11781f0b2009",
+        "reviews_sha256": "0b39974d76295f69988295708ffc673002833d4c96aea6c131f1e57e336ff40c"
+      },
+      "networks": {
+        "findings_sha256": "5ad2ccf0074e23838af7900da845d9f7adafe93cd1fef836dc4907ffbd049ba3",
+        "reviews_sha256": "b2dbadf90c860e21eb61ebf01a566b45fd1252be2e0c1b867367879d951d2685"
+      },
+      "nitrogen-phosphorus-loading": {
+        "findings_sha256": "a2a506aa3398c03bc13260d05bb8b0674cfb4fbb0c0b0d96c31f9b3bb443243a",
+        "reviews_sha256": "4e063c6ca0bb93e22021566ab63b865a8de172f9f9cd7a8b87660a4db5f5b9e0"
+      },
+      "ocean-acidification": {
+        "findings_sha256": "b1344fef5673a7dc2de5beace67fbe34170800b9c119cddf4383ca3995720fac",
+        "reviews_sha256": "1709c6c4b55a939e6179234a57df900bd9420fd51e960e7a07fe03d03f33e040"
+      },
+      "peace-justice": {
+        "findings_sha256": "64370ab20510e6fd6e011305d44cf950e62f1e300455c44352a6ca2ed04c6dfa",
+        "reviews_sha256": "ca786b11dd36ca8a6cf395c97d5d5807ea3fc0c8d6b4300ebdc6743918a1aedd"
+      },
+      "political-voice": {
+        "findings_sha256": "2d444e17dce597344f55309b6b8cfce4b0e715b06679518daf5e7e9597598e4c",
+        "reviews_sha256": "8845a3d37d090fff9566cef464f4962aa4ffa1a73cbbb696df0aef524b2dd8c5"
+      },
+      "social-equity": {
+        "findings_sha256": "475737f7aae0130a3cd6fc5feebffa1b20ffbebdce691d85cef9453f3966c2f4",
+        "reviews_sha256": "355ec21c5fc81e7e9902b658e5bd4bef6dac8a6a734276368a4772ed8e7e9562"
+      },
+      "water-sanitation": {
+        "findings_sha256": "207294f606e062db99aacb3694f4908c7783340a390ab875b8ca3be47365ebae",
+        "reviews_sha256": "d77b473f3f207ed7c450ac1f61bec0fa106d878e02727137041dc84272ee4726"
+      }
+    }
+  },
+  "supporting_evidence_sha256": {
+    "carmel": "5410333ffae2c7532287e24c165f90147e61471f87def0a35778822a5389713c",
+    "monterey-county": "3427cc347966ea991e44f54b91235ff16add12f969d1e6cd7180126975fe0764"
+  },
+  "framework_profiles": {
+    "carmel": {
+      "id": "local-extreme-heat-v1",
+      "sha256": "dc91220b8cdf0b64f783102322895d70e0914bea80151a269f690b2b74062acd"
+    },
+    "monterey-county": {
+      "id": "local-extreme-heat-v1",
+      "sha256": "dc91220b8cdf0b64f783102322895d70e0914bea80151a269f690b2b74062acd"
+    }
+  },
+  "evidence_sha256": {
+    "carmel": {
+      "evidence/021dd883fedd3c42.pdf": "30e7bc765efe3c9e13fdaf3e7e4b3796e1fa579b1b981325c0e343c7f970c1e3",
+      "evidence/021dd883fedd3c42.png": "281c3032c92dd5c60fd9d616ea4e02426a8df7f0ea73c809849de55a10f92e6b",
+      "evidence/04318341d08802bd.pdf": "62bed499c12ba7f64643281f7f4d2adbeabe80fe2c850ac3175e44cc102795c4",
+      "evidence/04318341d08802bd.png": "6cc3ad7660b984d091f802971647b8281fef523184b45c17efa5cf5019697420",
+      "evidence/043791659b944553.png": "6c1aac1cb7424ecf3bf404615bd9d5a63d381e5d0c1cfe9e5e6c1f27c3e68501",
+      "evidence/04546e42323ac53c.png": "0183d78e797899b14d23cdab8dbdd8ebb3ad102db1ffd5061dfc41f6f9401852",
+      "evidence/0c6e9697af31408a.pdf": "a08ff5509a338c4f6142457b2d7fad1751b04facb58ec940bba6f8eef858214b",
+      "evidence/0c6e9697af31408a.png": "1f29f63ae6ec384b68b3b42cad9497bf0ef83678189e00c9716d626cd15497cf",
+      "evidence/105fdc16a2146d5f.pdf": "284bcdbaa42ec27f71e8f8e3dada377cd46b80f14c73784dc9da2e308740c84c",
+      "evidence/105fdc16a2146d5f.png": "ade28ecaf407e1a8eecdbbdea776987951f8f1c22d83cf988a4e666120866da6",
+      "evidence/136808188e5cea7f.png": "53ef682dcd828a54c824e92bcd53ce7e36a42ee5b411c83a480abc51745a76a5",
+      "evidence/149d725c14fb10ca.png": "bf08def29b62b59ce166f2919c76465c146a8f2571fd77899be9c096ee024bb9",
+      "evidence/1aef9d6e15f16845.png": "0a871c44c37d847ed729b94900c1029d4bf9d0d0f63bbef90a73e11956b91291",
+      "evidence/23be1f6ba5432e07.png": "54865b69d1c13676a92ff275eb79c5895f95424bab142b5be1d15768eeb13093",
+      "evidence/241a3264f78355ea.png": "53b0308f36315dad6f335f71faf4f19cf9f41132b74c2117ac64653dfed3b4ae",
+      "evidence/2578aa595a5cc5e7.png": "682f650d2a69869420514ce2e61599bf0639141fd7a2e9a6be4c40f124456479",
+      "evidence/2a630dacb33cc47b.pdf": "33c451a31ade99bf812f73914c5afe0b86fbf1ea8a5bde516d87dbf76dfe827f",
+      "evidence/2a630dacb33cc47b.png": "2625e3c432e077253710852853f5568dd17a3c5eb1b5b3c124ae6f312104621b",
+      "evidence/2e13eb6e89fc071a.png": "5d745286636e196bd953912905212e6daaf2805b503ea0a09e4e8e9def4fbaee",
+      "evidence/4482a1372d1295ee.pdf": "054c6c67d07ce47cee6a01faf7678ab6ac0d54358351b64e02d2cd366347a0b9",
+      "evidence/4482a1372d1295ee.png": "e1aba8b024f6f0c52056ac382d556bc949f337057288bff02f79eefefbdb0bf4",
+      "evidence/514871a622bec50e.png": "1218e68dbc06563e9aa802b1fdb99982e589c560ed110b6a82f03e2ae55d13e2",
+      "evidence/51e1435a1070f051.pdf": "e88175e6db3a07266dfe9c29291de5a3d102406566840ddc977d56805989ac5c",
+      "evidence/51e1435a1070f051.png": "36c31cbeef8fe9dd0f7818e765273606de5d61ba40fd10f91de390559d3ebfc1",
+      "evidence/6193d48705c8a913.pdf": "c3e316c9ba5e7192bd4d41d9c763bb9d971c5765c6022b2d908fdf330fbab15e",
+      "evidence/6193d48705c8a913.png": "de61ddd052d533d9f47b486a6827a2eefc243f64f45c8ed627ee9d93054289d9",
+      "evidence/6793f4ac6347ad3f.pdf": "1a4e8925955feb80e8ea032408a58b5b88df877f774898a87769e7252de66cd1",
+      "evidence/6793f4ac6347ad3f.png": "565ce35e49ba555fa39bac9c05c699576cece4136059cab85c88ca4776ebc256",
+      "evidence/690635fab9c08915.png": "1d388a06d65a78e8be06354657e1f92df03d15f863399c6c214214f383bf517a",
+      "evidence/6a31c20e434b0e3a.pdf": "35b146a31e54eb7e9388d51c50e60138a5242df10fcba1ff4cccb250d98c4e42",
+      "evidence/6a31c20e434b0e3a.png": "626b8a080e1b904622665891f5a8d6355f62ab60e9b4b61098b05fb300b69ba5",
+      "evidence/6d274518b88b4d23.png": "e05cb39bc968782eabc50cff8589e28729b9b9c42ab657f1581d4d290f16b09f",
+      "evidence/7774d8e37920ee62.pdf": "e1555ba1e3846b96307d3f6dc2084fe947d00e6ab642982db2ee2cf762658a76",
+      "evidence/7774d8e37920ee62.png": "6d6f879f48bfa40cc35f344178aa594c2bcd3e360680d19bd347e144428c2895",
+      "evidence/779b6edfe372929b.pdf": "c08645288b92a24e5679d2cfe36fc79562e46385b7b253b63ee0e1dfb62e987d",
+      "evidence/779b6edfe372929b.png": "9d3a5b2e2e6511ad00d81bf218e39b1dc76810461d9e567724c3c706140176f9",
+      "evidence/7f5db5f803341064.png": "a4b156ff73bfa425f4de044c6b3c1029219ea3ba06880cf2f2f33db606ef3a13",
+      "evidence/8904539393279f91.png": "3b8415356279fbb05a8f4e8641e9284651ec328d37e34923b96e6857e45d2425",
+      "evidence/8adea5279072d303.png": "8e99650aa086fef46f07f443af6aa80e6569b99130824d28f816288a514e0c15",
+      "evidence/8c5979ffe834bc15.pdf": "4bc4a66cfc03f2b2402c22566b9bff6d87ca257c23e1408f0a14732fb728805c",
+      "evidence/8c5979ffe834bc15.png": "fb478ad9a321703a10b62b8035ecbaa563a0c0cce218e759f32276cc4c7b7e7f",
+      "evidence/961ba4433f35a3cc.png": "d6ee82e8b5f4395206bc7c79d88ff3a11d516bfe2a61b721a45eb6644bfdbb22",
+      "evidence/997630a86925824b.png": "3752beeb075faf1c8fe938efc98222bb9a2a94a456ea0017fc02132d5fde2932",
+      "evidence/9a4bf34c3cfcdd4a.pdf": "236e15f908cff63fa640f002d9a43fec52395bf1e89575a715a8e9ba43f959bf",
+      "evidence/9a4bf34c3cfcdd4a.png": "7dcfd46d46e45de18a0547112d54272ea96f94a87926f7ea1a79a38aee5e2492",
+      "evidence/9beac4b69e7897ba.png": "768f6754789ece37cb537ac4c4aadc7f4dc18179a32b2458601d449bdee500a3",
+      "evidence/9d3bf8944d1a92a6.png": "b0e491dc36ac12b5d9cdc1cf4f2804eedaed7c228918b305c384f684c3b4c2dc",
+      "evidence/a1ffc5723130ab61.pdf": "e586b039771446caa92b066e9cfb282199eab8168e78e91d95de2e9559ae0b53",
+      "evidence/a1ffc5723130ab61.png": "60c5109cc47fd92bf12e2dfd5f359d035fc6fdb3eafdde42d058408ad4e1c33a",
+      "evidence/a813f5b3406143fa.png": "142fd650ffb99080362dd0e0aaf990a3e3d3a288ff396dad8292f3ccbfe24ec4",
+      "evidence/af803de02884f336.pdf": "6afc7d8e652edf316cf523fac788f16e6d141f8b3289e6c2ca4c02a4382ef227",
+      "evidence/af803de02884f336.png": "4c9c594746d8392cf657d382800c260558cbf0383eb279ef3c55871b44e730e6",
+      "evidence/b8037a0667716d04.pdf": "bf3f62e76cc5a8aefe6ba7f937da6e5026d3167e957217577f4c88681f6767a2",
+      "evidence/b8037a0667716d04.png": "ce66ae072178a85b776ff7d8441afed8fc4cd2a4518bfdd6c7e15de1b8e4abb9",
+      "evidence/bf05ecd029d2c018.png": "c5c46c3aaeee80b94b6c3b4b69cad33fbbbb9ac3ad082310dc99dfbe50300841",
+      "evidence/biodiversity-loss-derived-2024.png": "a8b5eb37082e2a644a71196fab3c25d9badc3cc7b10d93e632aaabe058d1f032",
+      "evidence/biodiversity-loss-guide-extract.png": "e9725bca868b87fdf58423c34b1c37c14b29f35c0d763965732f8ba9960f949c",
+      "evidence/c4ebae4510bb63ff.pdf": "986d10d65948b2b6ac0afc3805a3b7ee08da2f0fb30f046cc69707f22a97a0ed",
+      "evidence/c4ebae4510bb63ff.png": "abdf443cbe42814b63a656e5faa5e5b877f3ca63dd94b457729bc7f586539e95",
+      "evidence/cf1f69907c716406.png": "35fde700b02a957b64e707e6c06b3805c5b70cfaea3a8ca430091c0a65d6f513",
+      "evidence/chemical-pollution-2024-tri-extract.png": "bf43016990016dbcf0a370af895949588fab6002c2722e2d5e353d4a78513761",
+      "evidence/d0d1610e6d986325.png": "f16a6c125a1388b807dbab53be78ad380725b00c4287a2552c98c57e0e9240c0",
+      "evidence/d0f4d763a4c71ce5.png": "45e4ea7f3e9f8060fff5def4b858408528e2ceeca35a91f5e95abffde9554c10",
+      "evidence/d8edc5b46036f291.png": "eb630512907cc673f8ea2416137b68fafdbcf384c63f205d45d692bf89439a18",
+      "evidence/e11936579caa6970.pdf": "05aed97b1c4dbcc8a5925d210e9704b9a7cb9ffa229676f12a0d4fe06adff138",
+      "evidence/e11936579caa6970.png": "3e451a04f2e1f36b4413bd05666eec1c7a8d6ecc0806c95c46d5994c57050e2e",
+      "evidence/e4718327ed7bd95b.png": "3752beeb075faf1c8fe938efc98222bb9a2a94a456ea0017fc02132d5fde2932",
+      "evidence/eca9ce0b3898bf27.pdf": "2cf47e9bc13cea54f80d20c8a4f3d7fc39b90110a47d0d3f9ecae4eab5b3b6f3",
+      "evidence/eca9ce0b3898bf27.png": "6afb84752239c6d20553e7d244d7f68aff314e1523bd0f4914e768e987ef5bd8",
+      "evidence/extreme-heat-derived.png": "94aadf65d75b4ccc23f0f25b5ea8a7070487bfc9c8c18ef2202983bca65efa3c",
+      "evidence/f81081b48e2af104.pdf": "6c9e705ea40bbf52efea9b258c58d2ffffda8b60632d24d5a0d81efabaa145e4",
+      "evidence/f81081b48e2af104.png": "6f9f18bce9302cf62d2a7dbb6a7bcd5d343af908f784e61d1e5757ddaf8c7c53",
+      "evidence/land-conversion-derived-2014-2024.png": "8d0f9e4f29d364460fdedfd4dfb568797199075086e8ff00832cba989767ee5f",
+      "evidence/land-conversion-source-metadata.png": "3d16db5b3d9b3c026b110182e87b08d1caa84629791ab6d1ef21d98952a533e1",
+      "evidence/peace-justice-2025-doj-extract.png": "64252b3d114cff1abb58065b0d363487e532454e3a34fa92c7a2714d650882bf"
+    },
+    "monterey-county": {
+      "evidence/07643c1128cc5a49.pdf": "e88175e6db3a07266dfe9c29291de5a3d102406566840ddc977d56805989ac5c",
+      "evidence/07643c1128cc5a49.png": "36c31cbeef8fe9dd0f7818e765273606de5d61ba40fd10f91de390559d3ebfc1",
+      "evidence/322f3a0634603679.png": "6c1aac1cb7424ecf3bf404615bd9d5a63d381e5d0c1cfe9e5e6c1f27c3e68501",
+      "evidence/4427331eb788024b.pdf": "236e15f908cff63fa640f002d9a43fec52395bf1e89575a715a8e9ba43f959bf",
+      "evidence/4427331eb788024b.png": "7dcfd46d46e45de18a0547112d54272ea96f94a87926f7ea1a79a38aee5e2492",
+      "evidence/4482a1372d1295ee.pdf": "054c6c67d07ce47cee6a01faf7678ab6ac0d54358351b64e02d2cd366347a0b9",
+      "evidence/4482a1372d1295ee.png": "e1aba8b024f6f0c52056ac382d556bc949f337057288bff02f79eefefbdb0bf4",
+      "evidence/4f84e84eea2f9518.png": "fd2879575decb69946451b3ae2cd97cb09b09ee5b44dd1c5dd8a5e3733f6edb3",
+      "evidence/518caa9396c6e5db.png": "35fde700b02a957b64e707e6c06b3805c5b70cfaea3a8ca430091c0a65d6f513",
+      "evidence/587d7b75785ad97a.png": "f702a2891ad58ad56c10ac002e9c344c190c4adc9913b9479df2bfb8f587345f",
+      "evidence/594f2d25668baf0b.pdf": "f7be33ee64a3bc09ff3464f804a04cbac7cabc43844e887a766d20f22172e567",
+      "evidence/594f2d25668baf0b.png": "45e7d7fca7149ba3917ac1a06d5c55e161f7c673ec8949413deeb6f944ed4712",
+      "evidence/5dd81ec0f8877931.png": "682f650d2a69869420514ce2e61599bf0639141fd7a2e9a6be4c40f124456479",
+      "evidence/624f314fa1e17937.png": "f0cb8e782dbccf4c8204030f9acc3a89e25d4e724abb1e8e92ed58adb96214dd",
+      "evidence/6701b636a56920d1.png": "1218e68dbc06563e9aa802b1fdb99982e589c560ed110b6a82f03e2ae55d13e2",
+      "evidence/676178839871c8b9.pdf": "33c451a31ade99bf812f73914c5afe0b86fbf1ea8a5bde516d87dbf76dfe827f",
+      "evidence/676178839871c8b9.png": "2625e3c432e077253710852853f5568dd17a3c5eb1b5b3c124ae6f312104621b",
+      "evidence/6793f4ac6347ad3f.pdf": "1a4e8925955feb80e8ea032408a58b5b88df877f774898a87769e7252de66cd1",
+      "evidence/6793f4ac6347ad3f.png": "565ce35e49ba555fa39bac9c05c699576cece4136059cab85c88ca4776ebc256",
+      "evidence/690635fab9c08915.png": "1d388a06d65a78e8be06354657e1f92df03d15f863399c6c214214f383bf517a",
+      "evidence/6d274518b88b4d23.png": "e05cb39bc968782eabc50cff8589e28729b9b9c42ab657f1581d4d290f16b09f",
+      "evidence/7340038b7e846424.png": "c5c46c3aaeee80b94b6c3b4b69cad33fbbbb9ac3ad082310dc99dfbe50300841",
+      "evidence/74f93355d80838f8.pdf": "6c9e705ea40bbf52efea9b258c58d2ffffda8b60632d24d5a0d81efabaa145e4",
+      "evidence/74f93355d80838f8.png": "6f9f18bce9302cf62d2a7dbb6a7bcd5d343af908f784e61d1e5757ddaf8c7c53",
+      "evidence/76c4056a32c81bd7.png": "9a1cf075750b408f70ae5211e856ad8d599d0795eaef886af0ed6315a375d61b",
+      "evidence/8621148a6da4e1f6.png": "b94eb38c4e8266c5b073af43a0219047327b4f7bec4cc6b2a8eb017f6c5804d6",
+      "evidence/961ba4433f35a3cc.png": "d6ee82e8b5f4395206bc7c79d88ff3a11d516bfe2a61b721a45eb6644bfdbb22",
+      "evidence/987a36fe7167ad12.pdf": "284bcdbaa42ec27f71e8f8e3dada377cd46b80f14c73784dc9da2e308740c84c",
+      "evidence/987a36fe7167ad12.png": "ade28ecaf407e1a8eecdbbdea776987951f8f1c22d83cf988a4e666120866da6",
+      "evidence/9bbea11678423972.png": "85bbe6427bb9bf02047793112ab5274e6d6dfd44f64b0f1e30a5d085606504ff",
+      "evidence/9ee7cb18950c6e78.pdf": "a08ff5509a338c4f6142457b2d7fad1751b04facb58ec940bba6f8eef858214b",
+      "evidence/9ee7cb18950c6e78.png": "1f29f63ae6ec384b68b3b42cad9497bf0ef83678189e00c9716d626cd15497cf",
+      "evidence/a30e4b302db8c7e3.pdf": "c3e316c9ba5e7192bd4d41d9c763bb9d971c5765c6022b2d908fdf330fbab15e",
+      "evidence/a30e4b302db8c7e3.png": "de61ddd052d533d9f47b486a6827a2eefc243f64f45c8ed627ee9d93054289d9",
+      "evidence/a813f5b3406143fa.png": "142fd650ffb99080362dd0e0aaf990a3e3d3a288ff396dad8292f3ccbfe24ec4",
+      "evidence/aedfb4c26867b848.pdf": "05aed97b1c4dbcc8a5925d210e9704b9a7cb9ffa229676f12a0d4fe06adff138",
+      "evidence/aedfb4c26867b848.png": "3e451a04f2e1f36b4413bd05666eec1c7a8d6ecc0806c95c46d5994c57050e2e",
+      "evidence/af6fdaa55e891a47.pdf": "35b146a31e54eb7e9388d51c50e60138a5242df10fcba1ff4cccb250d98c4e42",
+      "evidence/af6fdaa55e891a47.png": "626b8a080e1b904622665891f5a8d6355f62ab60e9b4b61098b05fb300b69ba5",
+      "evidence/af803de02884f336.pdf": "6afc7d8e652edf316cf523fac788f16e6d141f8b3289e6c2ca4c02a4382ef227",
+      "evidence/af803de02884f336.png": "4c9c594746d8392cf657d382800c260558cbf0383eb279ef3c55871b44e730e6",
+      "evidence/b40c23b60c4debc3.png": "0a871c44c37d847ed729b94900c1029d4bf9d0d0f63bbef90a73e11956b91291",
+      "evidence/b8037a0667716d04.pdf": "bf3f62e76cc5a8aefe6ba7f937da6e5026d3167e957217577f4c88681f6767a2",
+      "evidence/b8037a0667716d04.png": "ce66ae072178a85b776ff7d8441afed8fc4cd2a4518bfdd6c7e15de1b8e4abb9",
+      "evidence/biodiversity-loss-derived-2024.png": "0877ecc67854b8cdd1cfe6c95ed8df190d930ae9f816a446635eab418b9c6873",
+      "evidence/biodiversity-loss-guide-extract.png": "e9725bca868b87fdf58423c34b1c37c14b29f35c0d763965732f8ba9960f949c",
+      "evidence/c1316f778afcf383.png": "8e99650aa086fef46f07f443af6aa80e6569b99130824d28f816288a514e0c15",
+      "evidence/chemical-pollution-2024-tri-extract.png": "bf43016990016dbcf0a370af895949588fab6002c2722e2d5e353d4a78513761",
+      "evidence/d0f4d763a4c71ce5.png": "45e4ea7f3e9f8060fff5def4b858408528e2ceeca35a91f5e95abffde9554c10",
+      "evidence/d30d2ee8c45163fc.pdf": "e07f8528d6b027a433c1f0533f855f295cf2e546027bce2e1893de4e552c8318",
+      "evidence/d30d2ee8c45163fc.png": "7ed7c05d8d4a6e2e5757adf814d1b1c2406fe121979b35de79c32cec40b7921e",
+      "evidence/d5bbef696c56fbb2-p95.png": "d23fddf28026b2dd0213c5fc785b0de5893d95bc896e67d10e8969eb7d5e53d3",
+      "evidence/d5bbef696c56fbb2.pdf": "0c0b28d225ceac82d906664ccca7411ae2a0a5e8d7cdd2e65f209996d18c0dff",
+      "evidence/da85342b32e116d5.pdf": "c08645288b92a24e5679d2cfe36fc79562e46385b7b253b63ee0e1dfb62e987d",
+      "evidence/da85342b32e116d5.png": "9d3a5b2e2e6511ad00d81bf218e39b1dc76810461d9e567724c3c706140176f9",
+      "evidence/dd6e71fc936cda74.png": "a991342705531285b3c5fd53073d019f042a293355defae4a5d92431e5b7e35b",
+      "evidence/eca9ce0b3898bf27.pdf": "2cf47e9bc13cea54f80d20c8a4f3d7fc39b90110a47d0d3f9ecae4eab5b3b6f3",
+      "evidence/eca9ce0b3898bf27.png": "6afb84752239c6d20553e7d244d7f68aff314e1523bd0f4914e768e987ef5bd8",
+      "evidence/ed91f705894c2435.pdf": "986d10d65948b2b6ac0afc3805a3b7ee08da2f0fb30f046cc69707f22a97a0ed",
+      "evidence/ed91f705894c2435.png": "abdf443cbe42814b63a656e5faa5e5b877f3ca63dd94b457729bc7f586539e95",
+      "evidence/extreme-heat-derived.png": "94aadf65d75b4ccc23f0f25b5ea8a7070487bfc9c8c18ef2202983bca65efa3c",
+      "evidence/f18d4933e4cd5041.pdf": "62bed499c12ba7f64643281f7f4d2adbeabe80fe2c850ac3175e44cc102795c4",
+      "evidence/f18d4933e4cd5041.png": "6cc3ad7660b984d091f802971647b8281fef523184b45c17efa5cf5019697420",
+      "evidence/f4637d0fd262116d.png": "8f24cef0d51f6f79c5c3189aff8eeb69e54797a36f8d9c411df9f411e01dc3ce",
+      "evidence/land-conversion-derived-2014-2024.png": "da429de27ab6263fdfd75a69466858c35a83e6620ebc84e1eb69803cde511bfe",
+      "evidence/land-conversion-source-metadata.png": "3d16db5b3d9b3c026b110182e87b08d1caa84629791ab6d1ef21d98952a533e1",
+      "evidence/peace-justice-2025-doj-extract.png": "64252b3d114cff1abb58065b0d363487e532454e3a34fa92c7a2714d650882bf"
+    }
+  },
+  "baseline_inheritance": {
+    "campaign": "research/carmel-monterey-2026-10-23-expansion",
+    "method": "Finding and review bytes must both exactly match the independently reviewed baseline; changed findings independently reviewed in this campaign.",
+    "pairs": [
+      {
+        "portrait": "carmel",
+        "dimension": "air-pollution"
+      },
+      {
+        "portrait": "carmel",
+        "dimension": "climate-change"
+      },
+      {
+        "portrait": "carmel",
+        "dimension": "education"
+      },
+      {
+        "portrait": "carmel",
+        "dimension": "food"
+      },
+      {
+        "portrait": "carmel",
+        "dimension": "gender-equality"
+      },
+      {
+        "portrait": "carmel",
+        "dimension": "health"
+      },
+      {
+        "portrait": "carmel",
+        "dimension": "housing"
+      },
+      {
+        "portrait": "carmel",
+        "dimension": "income-work"
+      },
+      {
+        "portrait": "carmel",
+        "dimension": "networks"
+      },
+      {
+        "portrait": "carmel",
+        "dimension": "political-voice"
+      },
+      {
+        "portrait": "carmel",
+        "dimension": "social-equity"
+      },
+      {
+        "portrait": "monterey-county",
+        "dimension": "air-pollution"
+      },
+      {
+        "portrait": "monterey-county",
+        "dimension": "education"
+      },
+      {
+        "portrait": "monterey-county",
+        "dimension": "food"
+      },
+      {
+        "portrait": "monterey-county",
+        "dimension": "gender-equality"
+      },
+      {
+        "portrait": "monterey-county",
+        "dimension": "health"
+      },
+      {
+        "portrait": "monterey-county",
+        "dimension": "housing"
+      },
+      {
+        "portrait": "monterey-county",
+        "dimension": "income-work"
+      },
+      {
+        "portrait": "monterey-county",
+        "dimension": "networks"
+      },
+      {
+        "portrait": "monterey-county",
+        "dimension": "political-voice"
+      },
+      {
+        "portrait": "monterey-county",
+        "dimension": "social-equity"
+      }
+    ]
+  }
+}

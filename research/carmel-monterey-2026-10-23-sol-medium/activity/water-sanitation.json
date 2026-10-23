@@ -1,0 +1,23 @@
+{
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "dimension": "water-sanitation",
+  "portraits_researched": [
+    "carmel",
+    "monterey-county"
+  ],
+  "started_at": null,
+  "first_retained_timestamp": "2026-10-23T06:45:47.055Z",
+  "finished_at": "2026-10-23T06:50:33.582656Z",
+  "timestamp_note": "Exact initial start time was not retained; first_retained_timestamp is first evidence metadata time, not research start. Counts cover this pass only.",
+  "web_tool_calls": 13,
+  "search_queries": 19,
+  "url_open_attempts": 29,
+  "evidence_capture_attempts": 4,
+  "evidence_capture_successes": 3,
+  "evidence_capture_failures": 1,
+  "capture_success_note": "Two PDF exhibits plus one raw workbook download; raw download is not a screenshot exhibit.",
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "result": "Both gaps updated with new official 2025 workbook, reproducible extraction, EPA inventory/definitions, CDC/Tracking California leads and precise denominator limitations."
+}

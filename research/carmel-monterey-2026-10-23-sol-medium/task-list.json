@@ -1,0 +1,146 @@
+[
+  {
+    "dimension": "peace-justice",
+    "portraits": [
+      "carmel",
+      "monterey-county"
+    ],
+    "research_model": "gpt-6.1-sol",
+    "reasoning_effort": "medium",
+    "status": "reviewed",
+    "agent": "sol_crime",
+    "reviewer": "sol_gap_review"
+  },
+  {
+    "dimension": "water-sanitation",
+    "portraits": [
+      "carmel",
+      "monterey-county"
+    ],
+    "research_model": "gpt-6.1-sol",
+    "reasoning_effort": "medium",
+    "status": "reviewed",
+    "agent": "sol_drinking_water",
+    "reviewer": "sol_gap_review"
+  },
+  {
+    "dimension": "biodiversity-loss",
+    "portraits": [
+      "carmel",
+      "monterey-county"
+    ],
+    "research_model": "gpt-6.1-sol",
+    "reasoning_effort": "medium",
+    "status": "reviewed",
+    "agent": "sol_conservation",
+    "reviewer": "sol_gap_review"
+  },
+  {
+    "dimension": "chemical-pollution",
+    "portraits": [
+      "carmel",
+      "monterey-county"
+    ],
+    "research_model": "gpt-6.1-sol",
+    "reasoning_effort": "medium",
+    "status": "reviewed",
+    "agent": "sol_chemical",
+    "reviewer": "sol_gap_review"
+  },
+  {
+    "dimension": "energy",
+    "portraits": [
+      "carmel",
+      "monterey-county"
+    ],
+    "research_model": "gpt-6.1-sol",
+    "reasoning_effort": "medium",
+    "status": "reviewed",
+    "agent": "sol_energy",
+    "reviewer": "sol_gap_review"
+  },
+  {
+    "dimension": "freshwater-withdrawals",
+    "portraits": [
+      "carmel",
+      "monterey-county"
+    ],
+    "research_model": "gpt-6.1-sol",
+    "reasoning_effort": "medium",
+    "status": "reviewed",
+    "agent": "sol_freshwater",
+    "reviewer": "sol_gap_review"
+  },
+  {
+    "dimension": "nitrogen-phosphorus-loading",
+    "portraits": [
+      "carmel",
+      "monterey-county"
+    ],
+    "research_model": "gpt-6.1-sol",
+    "reasoning_effort": "medium",
+    "status": "reviewed",
+    "agent": "sol_nutrients",
+    "reviewer": "sol_gap_review"
+  },
+  {
+    "dimension": "land-conversion",
+    "portraits": [
+      "carmel",
+      "monterey-county"
+    ],
+    "research_model": "gpt-6.1-sol",
+    "reasoning_effort": "medium",
+    "status": "reviewed",
+    "agent": "sol_land",
+    "reviewer": "sol_gap_review"
+  },
+  {
+    "dimension": "ocean-acidification",
+    "portraits": [
+      "carmel",
+      "monterey-county"
+    ],
+    "research_model": "gpt-6.1-sol",
+    "reasoning_effort": "medium",
+    "status": "reviewed",
+    "agent": "sol_ocean",
+    "reviewer": "sol_gap_review"
+  },
+  {
+    "dimension": "ozone-depletion",
+    "portraits": [
+      "carmel",
+      "monterey-county"
+    ],
+    "research_model": "gpt-6.1-sol",
+    "reasoning_effort": "medium",
+    "status": "superseded-by-user",
+    "agent": "sol_ozone",
+    "reviewer": "sol_gap_review",
+    "replacement": "extreme-heat"
+  },
+  {
+    "dimension": "climate-change",
+    "portraits": [
+      "monterey-county"
+    ],
+    "research_model": "gpt-6.1-sol",
+    "reasoning_effort": "medium",
+    "status": "reviewed",
+    "agent": "sol_climate",
+    "reviewer": "sol_gap_review"
+  },
+  {
+    "dimension": "extreme-heat",
+    "portraits": [
+      "carmel",
+      "monterey-county"
+    ],
+    "research_model": "gpt-6.1-sol",
+    "reasoning_effort": "medium",
+    "status": "reviewed",
+    "agent": "sol_extreme_heat",
+    "reviewer": "sol_gap_review"
+  }
+]

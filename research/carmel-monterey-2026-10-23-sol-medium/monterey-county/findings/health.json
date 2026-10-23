@@ -1,0 +1,48 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "uninsured-rate",
+    "name": "Residents without health insurance",
+    "value": 8.9,
+    "unit": "% of residents under 65",
+    "year": 2024,
+    "target": 5,
+    "level_pct": 78.0,
+    "scoring": {
+      "threshold_ref": "health.uninsured-rate",
+      "function": "lower_is_better",
+      "inputs": {"value": 8.9, "target": 5, "scale": 5},
+      "worked_math": "level_pct = (value − target) ⁄ scale × 100 = (8.9 − 5) ⁄ 5 × 100 = +78.0"
+    },
+    "source": "Census Reporter API, ACS 2024 1-year table B27001, Monterey County row; underlying estimates are U.S. Census Bureau ACS",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B19083%2CB25070%2CB20017%2CB27001&geo_ids=05000US06053",
+    "source_tier": 3,
+    "evidence": {"snapshot_path": "evidence/dd6e71fc936cda74.png", "captured_at": "2026-10-23T03:03:09.136Z"},
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "ACS table B27001 universe is the civilian noninstitutionalized population. Summing the 14 age-by-sex cells for ages under 65 gives 31,347 people without health insurance out of 353,959 people under 65: 31,347 ÷ 353,959 × 100 = 8.856%, rounded to 8.9%. The denominator and numerator are derived from B27001 cells; the table provides margins of error for each component, but a combined ratio MOE was not calculated, so uncertainty is not propagated for this derived share. This is a 2024 ACS 1-year estimate for GEOID 05000US06053. A separate Census SAHIE 2024 model-based under-65 estimate is 9.3% (MOE 0.8 percentage points), with NUI 32,903 and denominator NIPR 352,397. It uses a different model/population-estimation procedure; comparability of the exact universes has not been established, so it is corroborative context rather than a like-for-like cross-check. SAHIE's original ZIP and extracted row are archived at apps/web/public/evidence/monterey-county/evidence/bcc5435579e66578.bin (SHA-256 5ec0a0cc5cb2e4e17cf046d9f68508decfdb4d9bbb982781d94bbf56ce50347a), but its visual rendering attempt failed in the sandbox. Census Reporter reproduces ACS estimates and is therefore tier 3; the original Census API attempt returned 503."
+  },
+  {
+    "kind": "indicator",
+    "indicator_slug": "life-expectancy",
+    "name": "Life expectancy at birth",
+    "value": 80.8471266197383,
+    "unit": "years",
+    "year": 2022,
+    "target": 80,
+    "level_pct": -1.1,
+    "scoring": {
+      "threshold_ref": "health.life-expectancy",
+      "function": "higher_is_better",
+      "inputs": {"value": 80.8471266197383, "target": 80, "scale": 80},
+      "worked_math": "level_pct = (target − value) ⁄ scale × 100 = (80 − 80.8471266197383) ⁄ 80 × 100 = -1.1"
+    },
+    "source": "County Health Rankings & Roadmaps 2025 County Health Release, Monterey County, California",
+    "source_url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv139_rawvalue%2Cv139_numerator%2Cv147_rawvalue&returnGeometry=false&f=pjson",
+    "source_tier": 3,
+    "evidence": {"snapshot_path": "evidence/7340038b7e846424.png", "captured_at": "2026-10-19T06:49:17.949Z"},
+    "confidence": "high",
+    "geographic_scale": "county",
+    "notes": "The archived CHR 2025 county-layer row for FIPS 06053 reports v147_rawvalue = 80.8471266197383 years. The field description identifies the source as NCHS Natality and Mortality Files plus Census Population Estimates Program and explicitly dates this Monterey value to 2020–2022; year is recorded as the period endpoint 2022. CHR defines the measure as average expected years of life from birth and counts deaths by county of residence: https://www.countyhealthrankings.org/health-data/population-health-and-well-being/length-of-life/life-span/life-expectancy. The exact query and field descriptions appear in the archived source text at apps/web/public/evidence/monterey-county/evidence/7340038b7e846424.txt; raw row JSON is also preserved at apps/web/public/evidence/monterey-county/evidence/37056c673ae97ec8.bin (SHA-256 e03064c1cee2c9e9500b5906f518569999a41a9bbf1a15a116adf1751c7c3136). Readable extract: research/carmel-monterey-2026-10-18/monterey-county/exhibits/chr-2025-monterey-row.csv."
+  }
+]

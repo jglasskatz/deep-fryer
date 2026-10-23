@@ -1,0 +1,1 @@
+{"apiToken":null,"batchId":"606ad97b-001d-4b3a-a00d-5f6444e2dc79","code":429,"errorTypeId":8,"helpURL":"http://ephtracking.cdc.gov/apihelp","message":"Server has serviced too many non-token requests","status":"Too Many Requests","timeStamp":"2026/10/23 03:08:05","url":"https://ephtracking.cdc.gov/apigateway/api/v1/temporalItems/423/2/2/6053"}

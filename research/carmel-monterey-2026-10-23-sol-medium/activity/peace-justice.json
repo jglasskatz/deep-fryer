@@ -1,0 +1,21 @@
+{
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "dimension": "peace-justice",
+  "portraits_researched": [
+    "carmel",
+    "monterey-county"
+  ],
+  "started_at": "2026-10-23T06:40:30Z",
+  "completed_at": "2026-10-23T06:50:22.973970+00:00",
+  "web_tool_calls": 5,
+  "search_queries": 7,
+  "url_open_attempts": 5,
+  "evidence_capture_attempts": 10,
+  "evidence_capture_successes": 9,
+  "evidence_capture_failures": 1,
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "count_notes": "web_tool_calls and url_open_attempts count web.run calls and explicit web.open attempts only; search queries count exact queries above. Additional curl retrievals of official datasets, metadata and public JS assets are described in search log. Evidence capture counts: seven successful capture-evidence helper calls, two successful custom faithful CSV screenshot renders, one failed custom render initialization (bad relative import), fixed before final evidence. No usage/billing metadata exposed.",
+  "validation": "Both findings validated against canonical JSON schema via installed Ajv2020 and formats. All evidence paths exist; raw CSV SHA-256 matches both helper archives. Python jsonschema unavailable; validation used installed JS Ajv instead."
+}

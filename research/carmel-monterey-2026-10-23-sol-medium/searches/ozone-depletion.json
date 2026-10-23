@@ -1,0 +1,150 @@
+{
+  "dimension": "ozone-depletion",
+  "searched_at": "2026-10-23T07:00:17.010114Z",
+  "queries": [
+    "site.ozone.unep.org 2024 \"99\" \"consumption\" phased out",
+    "site.epa.gov ozone \"2023\" \"99\" phaseout",
+    "site.ci.carmel.ca.us \"ozone\" \"phaseout\"",
+    "site.countyofmonterey.gov \"ozone-depleting\" phaseout",
+    "site.epa.gov \"ozone-depleting\" \"consumption\" \"2024\" data",
+    "site.eea.europa.eu \"2023\" \"1986\" \"99\" ozone",
+    "site.arb.ca.gov ozone depleting substances phaseout compliance percentage",
+    "site.mbard.org \"ozone-depleting\"",
+    "site.eea.europa.eu \"consumption-of-ozone-depleting-substances\" \"2023\" \"99%\"",
+    "site.ozone.unep.org \"2023\" \"phase-out\" \"99 per cent\" consumption",
+    "site.ci.carmel.ca.us refrigerant ozone climate action",
+    "site.countyofmonterey.gov \"ozone-depleting substances\"",
+    "Monterey County climate action plan refrigerant ozone depleting substances phaseout",
+    "site.mbard.org refrigerant \"ozone\"",
+    "site.ozone.unep.org \"2023\" \"99%\" \"production and consumption\""
+  ],
+  "opened_urls": [
+    "https://www.epa.gov/system/files/documents/2025-01/fy24-annual-performance-report.pdf",
+    "https://ozone.unep.org/facts-and-figures-ozone-protection",
+    "https://www.eea.europa.eu/en/newsroom/news/world-ozone-day",
+    "https://ozone.unep.org/countries/data-table",
+    "https://ozone.unep.org/20-questions-and-answers",
+    "https://www.epa.gov/ods-phaseout",
+    "https://www.eea.europa.eu/en/analysis/indicators/consumption-of-ozone-depleting-substances",
+    "https://www.eea.europa.eu/en/topics/in-depth/climate-change-mitigation-reducing-emissions/ozone-depleting-substances-2024",
+    "https://ci.carmel.ca.us/environmental-programs",
+    "https://ci.carmel.ca.us/sites/main/files/file-attachments/climate_adaptation_plan_appendixa_climate_action_plan_prefinal_042822_0.pdf?1677096044=",
+    "https://www.mbard.org/current-rules",
+    "https://www.countyofmonterey.gov/government/departments-a-h/housing-community-development/planning-services/advance-planning/ordinances-plans-under-development/community-climate-action-plan-greenhouse-gas-reduction-plan-ref120045-lrpwp-task-no-14",
+    "https://ozone.unep.org/system/files/documents/MOP-36-6-Add-1_IMPCOM-73-2-Add-1E.pdf",
+    "https://ozone.unep.org/system/files/documents/MOP-36-6_IMPCOM-73-2E.pdf",
+    "https://www.mbard.org/files/e8cd9cb1c/Rule216.pdf",
+    "https://www.mbard.org/files/2583015d8/Rule1100.pdf",
+    "https://www.mbard.org/files/8b3035373/Rule1101.pdf"
+  ],
+  "outcomes": [
+    {
+      "source": "https://www.epa.gov/system/files/documents/2025-01/fy24-annual-performance-report.pdf",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    },
+    {
+      "source": "https://ozone.unep.org/facts-and-figures-ozone-protection",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    },
+    {
+      "source": "https://www.eea.europa.eu/en/newsroom/news/world-ozone-day",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    },
+    {
+      "source": "https://ozone.unep.org/countries/data-table",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    },
+    {
+      "source": "https://ozone.unep.org/20-questions-and-answers",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    },
+    {
+      "source": "https://www.epa.gov/ods-phaseout",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    },
+    {
+      "source": "https://www.eea.europa.eu/en/analysis/indicators/consumption-of-ozone-depleting-substances",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    },
+    {
+      "source": "https://www.eea.europa.eu/en/topics/in-depth/climate-change-mitigation-reducing-emissions/ozone-depleting-substances-2024",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    },
+    {
+      "source": "https://ci.carmel.ca.us/environmental-programs",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    },
+    {
+      "source": "https://ci.carmel.ca.us/sites/main/files/file-attachments/climate_adaptation_plan_appendixa_climate_action_plan_prefinal_042822_0.pdf?1677096044=",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    },
+    {
+      "source": "https://www.mbard.org/current-rules",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    },
+    {
+      "source": "https://www.countyofmonterey.gov/government/departments-a-h/housing-community-development/planning-services/advance-planning/ordinances-plans-under-development/community-climate-action-plan-greenhouse-gas-reduction-plan-ref120045-lrpwp-task-no-14",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    },
+    {
+      "source": "https://ozone.unep.org/system/files/documents/MOP-36-6-Add-1_IMPCOM-73-2-Add-1E.pdf",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    },
+    {
+      "source": "https://ozone.unep.org/system/files/documents/MOP-36-6_IMPCOM-73-2E.pdf",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    },
+    {
+      "source": "https://www.mbard.org/files/e8cd9cb1c/Rule216.pdf",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    },
+    {
+      "source": "https://www.mbard.org/files/2583015d8/Rule1100.pdf",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    },
+    {
+      "source": "https://www.mbard.org/files/8b3035373/Rule1101.pdf",
+      "result": "Opened successfully; evaluated for exact indicator, dated data and geography."
+    }
+  ],
+  "decisions": [
+    {
+      "source": "https://www.epa.gov/system/files/documents/2025-01/fy24-annual-performance-report.pdf",
+      "result": "Captured as nearest data, rejected as numeric score: HCFC-only ODP-weighted net consumption, not tracked ODS share."
+    },
+    {
+      "source": "https://ozone.unep.org/facts-and-figures-ozone-protection",
+      "result": "Captured as global context; no observation year for 99% statement."
+    },
+    {
+      "source": "https://www.eea.europa.eu/en/newsroom/news/world-ozone-day",
+      "result": "Captured dated nearest context; press release consumption decline, global underlying denominator not established."
+    },
+    {
+      "source": "https://www.eea.europa.eu/en/analysis/indicators/consumption-of-ozone-depleting-substances",
+      "result": "Current EEA page describes EU consumption; not U.S./global tracked-substance phaseout."
+    },
+    {
+      "source": "https://www.eea.europa.eu/en/topics/in-depth/climate-change-mitigation-reducing-emissions/ozone-depleting-substances-2024",
+      "result": "Requested 2024 report URL opened but returned current 191-line content; no 1986 global baseline found in opened page."
+    },
+    {
+      "source": "https://www.mbard.org/files/e8cd9cb1c/Rule216.pdf",
+      "result": "Accidental click to unrelated Rule216; discarded."
+    },
+    {
+      "source": "https://ozone.unep.org/system/files/documents/MOP-36-6-Add-1_IMPCOM-73-2-Add-1E.pdf",
+      "result": "2023 Article7 addendum differentiates reporting compliance, allowed uses, production/consumption and group baselines; not a local phaseout percentage."
+    },
+    {
+      "source": "https://ozone.unep.org/system/files/documents/MOP-36-6_IMPCOM-73-2E.pdf",
+      "result": "2024 report explicitly gives dated 2022 national group net flow changes; negative values/rounded -100% changes cannot safely become tracked-ODS shares."
+    }
+  ],
+  "search_order": "Local city/county, regional MBARD, state CARB, federal EPA, then official global UNEP/EEA. Global accepted by scale policy but exact definition and observation-year rules remain binding.",
+  "capture_reuse": "Three captures made for carmel, all source files copied byte-for-byte into monterey-county; reuse is not counted as extra captures.",
+  "failures": [
+    "No query returned an eligible local/state tracked-ODS percentage.",
+    "EEA 2024 requested report did not expose the historical global data in the opened response."
+  ]
+}

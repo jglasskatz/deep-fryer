@@ -1,0 +1,16 @@
+{
+  "violent-crime-rate": [
+    {
+      "label": "DOF E-1 revised January 1, 2025 resident population, PDF page 8",
+      "source_url": "https://dof.ca.gov/media/docs/forecasting/Demographics/estimates/E-1_2026_Press_Release.pdf",
+      "snapshot_path": "evidence/987a36fe7167ad12.png",
+      "pdf_path": "evidence/987a36fe7167ad12.pdf"
+    },
+    {
+      "label": "DOJ June 2026 README: 2025 reporting limitations, PDF page 14",
+      "source_url": "https://data-openjustice.doj.ca.gov/sites/default/files/dataset/2026-07/Crimes-Clear-Arson%20Context_06222026.pdf",
+      "snapshot_path": "evidence/da85342b32e116d5.png",
+      "pdf_path": "evidence/da85342b32e116d5.pdf"
+    }
+  ]
+}

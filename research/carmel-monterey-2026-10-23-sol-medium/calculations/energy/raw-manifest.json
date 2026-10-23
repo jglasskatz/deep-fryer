@@ -1,0 +1,69 @@
+[
+  {
+    "file": "raw/doe-methodology.pdf",
+    "source_url": "https://www.energy.gov/sites/default/files/2024-12/lead-methodology_122024.pdf",
+    "sha256": "6afc7d8e652edf316cf523fac788f16e6d141f8b3289e6c2ca4c02a4382ef227",
+    "required_text": [
+      "weighted average",
+      "household income and expenditures"
+    ],
+    "captured_source_metadata": {
+      "url": "https://www.energy.gov/sites/default/files/2024-12/lead-methodology_122024.pdf",
+      "snapshot_path": "evidence/af803de02884f336.png",
+      "pdf_path": "evidence/af803de02884f336.pdf",
+      "captured_at": "2026-10-23T07:11:47.818Z",
+      "sha256": "6afc7d8e652edf316cf523fac788f16e6d141f8b3289e6c2ca4c02a4382ef227",
+      "hashed_content": "pdf"
+    }
+  },
+  {
+    "file": "raw/aceee-medians.pdf",
+    "source_url": "https://www.aceee.org/sites/default/files/pdfs/data_update_-_city_energy_burdens_0.pdf",
+    "sha256": "2cf47e9bc13cea54f80d20c8a4f3d7fc39b90110a47d0d3f9ecae4eab5b3b6f3",
+    "required_text": [
+      "APPENDIX B: MEDIAN ENERGY BURDEN RATES",
+      "San Jose"
+    ],
+    "captured_source_metadata": {
+      "url": "https://www.aceee.org/sites/default/files/pdfs/data_update_-_city_energy_burdens_0.pdf",
+      "snapshot_path": "evidence/eca9ce0b3898bf27.png",
+      "pdf_path": "evidence/eca9ce0b3898bf27.pdf",
+      "captured_at": "2026-10-23T07:12:05.732Z",
+      "sha256": "2cf47e9bc13cea54f80d20c8a4f3d7fc39b90110a47d0d3f9ecae4eab5b3b6f3",
+      "hashed_content": "pdf"
+    }
+  },
+  {
+    "file": "raw/cpuc-context.pdf",
+    "source_url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/news-and-outreach/reports/cab/changes/changes-evaluation-report_final.pdf",
+    "sha256": "1a4e8925955feb80e8ea032408a58b5b88df877f774898a87769e7252de66cd1",
+    "required_text": [
+      "Average Energy Burden",
+      "Monterey"
+    ],
+    "captured_source_metadata": {
+      "url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/news-and-outreach/reports/cab/changes/changes-evaluation-report_final.pdf",
+      "snapshot_path": "evidence/6793f4ac6347ad3f.png",
+      "pdf_path": "evidence/6793f4ac6347ad3f.pdf",
+      "captured_at": "2026-10-23T07:12:08.083Z",
+      "sha256": "1a4e8925955feb80e8ea032408a58b5b88df877f774898a87769e7252de66cd1",
+      "hashed_content": "pdf"
+    }
+  },
+  {
+    "file": "raw/puma-geography.pdf",
+    "source_url": "https://www2.census.gov/geo/maps/DC2020/PUMA/st06_ca/Catalog_PUMAmaps_st06.pdf",
+    "sha256": "bf3f62e76cc5a8aefe6ba7f937da6e5026d3167e957217577f4c88681f6767a2",
+    "required_text": [
+      "Monterey (South & East) & San Benito Counties"
+    ],
+    "captured_source_metadata": {
+      "url": "https://www2.census.gov/geo/maps/DC2020/PUMA/st06_ca/Catalog_PUMAmaps_st06.pdf",
+      "snapshot_path": "evidence/b8037a0667716d04.png",
+      "pdf_path": "evidence/b8037a0667716d04.pdf",
+      "captured_at": "2026-10-23T07:12:50.450Z",
+      "sha256": "bf3f62e76cc5a8aefe6ba7f937da6e5026d3167e957217577f4c88681f6767a2",
+      "hashed_content": "pdf"
+    }
+  }
+]

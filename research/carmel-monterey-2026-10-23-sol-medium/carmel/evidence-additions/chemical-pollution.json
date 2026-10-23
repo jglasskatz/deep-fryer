@@ -1,0 +1,25 @@
+{
+  "tri-releases-per-capita": [
+    {
+      "label": "EPA TRI Basic complete files, coverage, year and units",
+      "source_url": "https://www.epa.gov/toxics-release-inventory-tri-program/tri-basic-data-files-calendar-years-1987-present",
+      "snapshot_path": "evidence/cf1f69907c716406.png"
+    },
+    {
+      "label": "EPA Basic file documentation: zero placeholders and Form A annual reportable amount (page 4)",
+      "source_url": "https://www.epa.gov/system/files/documents/2025-09/basic_data_files_documentation_august_2024.pdf",
+      "snapshot_path": "evidence/9a4bf34c3cfcdd4a.png",
+      "pdf_path": "evidence/9a4bf34c3cfcdd4a.pdf"
+    },
+    {
+      "label": "Census Vintage 2025 July 2024 resident population, faithful extracted source row",
+      "source_url": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/cities/totals/sub-est2025.csv",
+      "snapshot_path": "evidence/chemical-pollution-2024-tri-extract.png"
+    },
+    {
+      "label": "Monterey County LAFCO incorporated-city boundary layer",
+      "source_url": "https://maps.co.monterey.ca.us/server/rest/services/LAFCO/Incorporated_Cities_2/FeatureServer/2",
+      "snapshot_path": "evidence/997630a86925824b.png"
+    }
+  ]
+}

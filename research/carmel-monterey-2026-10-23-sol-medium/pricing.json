@@ -1,0 +1,18 @@
+{
+  "pricing_checked_date": "2026-10-23",
+  "rates": {
+    "gpt-6.1-sol": {
+      "input_per_million": 2,
+      "output_per_million": 10,
+      "source": "https://developers.openai.com/api/docs/models/gpt-6.1-sol"
+    }
+  },
+  "web_search_price_per_1000_calls": 10,
+  "web_search_pricing_source": "https://developers.openai.com/api/docs/pricing",
+  "fast_multiplier": 2,
+  "notes": [
+    "Uncached short-context Standard text-token rates. Fast scenario uses 2x token rates.",
+    "Medium effort is a recorded setting, not a fixed token count or discount. Actual tokens and billed dollars are unavailable.",
+    "Recorded web tool calls are only a proxy for billable API search calls. No actual API invoice is inferred."
+  ]
+}

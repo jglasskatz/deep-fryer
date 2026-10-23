@@ -1,0 +1,94 @@
+{
+  "source_path": "raw/urban-supplier-monthly.csv",
+  "sha256": "a06d8cb289c297c2336143c7243ec92c10fe09bd4e32a5389add9280ae100430",
+  "filter": "COUNTY contains MONTEREY, case insensitive",
+  "county_report_count": 878,
+  "supplier_count": 6,
+  "suppliers": [
+    {
+      "number_of_reports": 147,
+      "latest_report": {
+        "SUPPLIER_NAME": "Alco Water Service",
+        "WATER_SYSTEM_ID": "CA2710001",
+        "COUNTY": "MONTEREY",
+        "REPORT_PERIOD_START_DATE": "2026-08-01",
+        "REPORT_PERIOD_END_DATE": "2026-08-31",
+        "POP_REPORT_PERIOD": "56253",
+        "POTABLE_DEMAND_RES_GAL": "96477762.544",
+        "R-GPCD": "55.324798473257054",
+        "RES_FLAG": "Flagged"
+      }
+    },
+    {
+      "number_of_reports": 147,
+      "latest_report": {
+        "SUPPLIER_NAME": "California American Water Company - Monterey District",
+        "WATER_SYSTEM_ID": "CA2701202,CA2701257,CA2702004,CA2710004,CA2710006,CA2710021,CA2710022",
+        "COUNTY": "MONTEREY",
+        "REPORT_PERIOD_START_DATE": "2026-08-01",
+        "REPORT_PERIOD_END_DATE": "2026-08-31",
+        "POP_REPORT_PERIOD": "96866",
+        "POTABLE_DEMAND_RES_GAL": "202196000.0",
+        "R-GPCD": "67.334788397407",
+        "RES_FLAG": ""
+      }
+    },
+    {
+      "number_of_reports": 147,
+      "latest_report": {
+        "SUPPLIER_NAME": "California Water Service Company Salinas District",
+        "WATER_SYSTEM_ID": "CA2701929,CA2710010,CA2710012,CA2710013,CA2710019",
+        "COUNTY": "MONTEREY",
+        "REPORT_PERIOD_START_DATE": "2026-08-01",
+        "REPORT_PERIOD_END_DATE": "2026-08-31",
+        "POP_REPORT_PERIOD": "134217",
+        "POTABLE_DEMAND_RES_GAL": "260917545.39200002",
+        "R-GPCD": "62.70960468975735",
+        "RES_FLAG": ""
+      }
+    },
+    {
+      "number_of_reports": 143,
+      "latest_report": {
+        "SUPPLIER_NAME": "City of Greenfield",
+        "WATER_SYSTEM_ID": "CA2710008",
+        "COUNTY": "MONTEREY",
+        "REPORT_PERIOD_START_DATE": "2026-08-01",
+        "REPORT_PERIOD_END_DATE": "2026-08-31",
+        "POP_REPORT_PERIOD": "18967",
+        "POTABLE_DEMAND_RES_GAL": "44826696.0",
+        "R-GPCD": "76.23885968328693",
+        "RES_FLAG": ""
+      }
+    },
+    {
+      "number_of_reports": 147,
+      "latest_report": {
+        "SUPPLIER_NAME": "City of Soledad",
+        "WATER_SYSTEM_ID": "CA2710011",
+        "COUNTY": "MONTEREY",
+        "REPORT_PERIOD_START_DATE": "2026-08-01",
+        "REPORT_PERIOD_END_DATE": "2026-08-31",
+        "POP_REPORT_PERIOD": "19455",
+        "POTABLE_DEMAND_RES_GAL": "49406148.0",
+        "R-GPCD": "81.91964583281518",
+        "RES_FLAG": ""
+      }
+    },
+    {
+      "number_of_reports": 147,
+      "latest_report": {
+        "SUPPLIER_NAME": "Marina Coast Water District",
+        "WATER_SYSTEM_ID": "CA2710017",
+        "COUNTY": "MONTEREY",
+        "REPORT_PERIOD_START_DATE": "2026-08-01",
+        "REPORT_PERIOD_END_DATE": "2026-08-31",
+        "POP_REPORT_PERIOD": "38377",
+        "POTABLE_DEMAND_RES_GAL": "68671825.86",
+        "R-GPCD": "57.72259918785361",
+        "RES_FLAG": ""
+      }
+    }
+  ],
+  "interpretation": "Supplier service areas are the reporting units. COUNTY is a label, not a complete county resident denominator. Six urban suppliers do not establish coverage of small systems and self-supplied residents. CalAm Monterey District cannot be disaggregated to Carmel city limits from these columns. No indicator or score derived."
+}

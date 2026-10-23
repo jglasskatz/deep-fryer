@@ -1,0 +1,18 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "residential-gpcd",
+    "reason": "No defensible 2021-or-newer residential gallons per capita per day observation for Carmel-by-the-Sea city limits, or complete Monterey County fallback, was established in the sources inspected. New MPWMD political-jurisdiction consumption tables are closer than the previous search, but report mixed selected-year averages including 2018-2020 or an unspecified five-year average, with customer accounts rather than a matching resident denominator. Wider utility R-GPCD cannot be assigned to the city. The configured 55 GPCD target is unchanged; no score calculated.",
+    "scales_tried": [
+      "city",
+      "county",
+      "regional"
+    ],
+    "tiers_tried": [
+      1,
+      2
+    ],
+    "searched_at": "2026-10-23T07:22:31.613731Z",
+    "nearest_data": "MPWMD December 4, 2025 Water Demand Committee packet, PDF pages 10-12: Carmel residential consumption 390 AF in the selected-year average (2024, 2021, 2020, 2019, 2018), 2,993 residential customers; a second table gives 390 AF and 3,019 customers for an unspecified five-year average. These tables do not establish a current annual city R-GPCD. https://www.mpwmd.net/wp-content/uploads/Dec-4-2025-WDC-Mtg-Agenda.pdf. City conservation page still links 2011 plan/2012 update (https://ci.carmel.ca.us/post/water-conservation), stale for this indicator. State Water Board per-supplier monthly CSV, directly downloaded and inspected, contains six suppliers labeled Monterey County (878 reports) through August 2026; CalAm Monterey District August 2026 R-GPCD is 67.334788397407 for a reported service population of 96,866. This is a district observation, not a Carmel city or whole-county observation. No verified complete county coverage/crosswalk including small suppliers and self-supplied households was established, so supplier rates were not averaged or divided by total county population. Raw CSV and reproducible coverage extraction: calculations/freshwater-withdrawals/inspect.py and coverage-inspection.json. Dataset URL: https://publish.data.ca.gov/dataset/c69ac02b-adfb-459a-bc58-bf69a8b572d2/resource/f4d50112-5fb5-4066-b45c-44696b10a49e/download/monthly_combined_dataset.csv. USGS current guide (https://www.usgs.gov/mission-areas/water-resources/science/accessing-water-use-data/) identifies latest modeled public-supply estimates through 2020 and historic county compilations through 2015, outside the five-year rule; public supply also includes nonresidential demand."
+  }
+]

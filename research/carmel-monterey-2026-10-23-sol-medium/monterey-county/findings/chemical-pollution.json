@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "tri-releases-per-capita",
+    "name": "Quantified TRI Form R on-site releases per capita",
+    "value": 0.05649004376544307,
+    "unit": "lbs per resident per year",
+    "year": 2024,
+    "target": 1,
+    "level_pct": -94.4,
+    "scoring": {
+      "threshold_ref": "chemical-pollution.tri-releases-per-capita",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 0.05649004376544307,
+        "target": 1,
+        "scale": 1
+      },
+      "worked_math": "level_pct = (value − target) ⁄ scale × 100 = (0.05649004376544307 − 1) ⁄ 1 × 100 = -94.4"
+    },
+    "source": "EPA 2024 TRI Basic California full reporting file; Census Population Estimates Program Vintage 2025 July 2024 population; official LAFCO/Census boundary crosschecks",
+    "source_url": "https://data.epa.gov/efservice/downloads/tri/mv_tri_basic_download/2024_CA/csv",
+    "source_tier": 2,
+    "evidence": {
+      "snapshot_path": "evidence/chemical-pollution-2024-tri-extract.png",
+      "captured_at": "2026-10-23T06:57:46.144Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "Tier 1 exhausted via City General Plan/Environmental Safety Element and city/county TRI-specific searches; city material is policy-oriented (adopted 2009), county CUPA materials concern hazardous-material storage/emergency response rather than annual TRI releases, and the county CUPA page returned 403. Tier 2 accepted EPA complete 2024 California TRI Basic file (forms processed as of November 5, 2025), including federal/tribal facilities, and Census Population Estimates Program Vintage 2025 POPESTIMATE2024 for July 1, 2024. On-site releases are field 65, comprising air, surface water, underground injection and land disposal; off-site releases/transfers, treatment, recycling, energy recovery and total waste managed are excluded. All selected rows are Pounds, not kg; no dioxin grams occur in the selected county data. TRI covers certain industries and federal facilities meeting employee/chemical thresholds; this is reported chemical mass, not all pollution, toxicity-weighted risk or exposure. Reproducible raw files, hashes, row extracts and standard-library Python scripts are under calculations/chemical-pollution/. Primary exhibit is a visually reviewed researcher-generated faithful extract; the official EPA source and Census bytes are separately archived. All-county result: eight forms at six facilities; county-name MONTEREY selection exactly matches the statewide coordinates inside the complete county polygon, covering incorporated and unincorporated areas. Numerator 24,485.44 lb sums seven quantified Form R rows only. DOLE FRESH VEGETABLES INC chlorine uses Form A; its Basic-file zero is an unquantified placeholder, not a measured zero. Any release associated with that Form A is omitted from the quantified sum. Form A certifies total annual reportable amount at most 500 lb, so the corresponding unquantified on-site contribution could be 0–500 lb; an upper bound would yield (24,485.44+500)/433,447 = 0.05764358733593726 lb/resident/year, not an observed estimate. Population 433,447 is July 1, 2024 Census Vintage 2025 county 06053, not ACS multiyear population. Raw tenant EPA archive: evidence/fc66838bfea76dde.bin; population archive: evidence/42e26c4dc9583da8.csv."
+  }
+]

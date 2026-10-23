@@ -1,0 +1,7 @@
+[
+  {
+    "indicator_slug": "protected-land-share",
+    "content_supported": "pass",
+    "verifier_note": "Independently refetched all 22 official feature pages, inventory metadata, guide, 2024 category query and Census faces: source bytes match archives; live ID ordering differs but the complete 2,125-ID set matches exactly. Verified unique archived IDs, excluded 809 year-2023 records, and reran calculate.py offline in a temporary copy: 5.109686524192514% and unrounded score 82.96771158602495 reproduce exactly. Publisher metadata supports generalized >80% GAP assignment, and GAP1/2 default selection and permanent biodiversity protection; the envelope contains the county, perennial-water subtraction uses 1,485 faces, and union removes overlap. Pass is for the explicitly disclosed 2024 mapped inventory against current boundaries/2026 land mask, not exact parcel legal status; medium confidence and mixed-vintage/generalization caveats are warranted. The labelled derived exhibit was inspected. Reviewed revised scoring against core computeScoring round1: canonical level_pct=83; source value/target are unchanged."
+  }
+]

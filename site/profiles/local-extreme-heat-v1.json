@@ -1,0 +1,18 @@
+{
+  "id": "local-extreme-heat-v1",
+  "replaces": "ozone-depletion",
+  "rationale": "User-requested local heat exposure dimension. No adopted safe annual-day target has been verified; observations must remain unscored.",
+  "dimension": {
+    "slug": "extreme-heat",
+    "name": "Extreme Heat",
+    "ring": "ecological",
+    "indicators": [
+      {
+        "slug": "extreme-heat-days",
+        "name": "Extreme heat exposure",
+        "threshold_ref": null,
+        "scoring": "unscored"
+      }
+    ]
+  }
+}

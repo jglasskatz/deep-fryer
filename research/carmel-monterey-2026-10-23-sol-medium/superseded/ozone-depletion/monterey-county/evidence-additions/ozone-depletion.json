@@ -1,0 +1,20 @@
+{
+  "ods-phaseout-compliance": [
+    {
+      "label": "Rejected numeric substitute: U.S. HCFC consumption, calendar 2023, EPA APR pp. 48\u201349",
+      "source_url": "https://www.epa.gov/system/files/documents/2025-01/fy24-annual-performance-report.pdf",
+      "snapshot_path": "evidence/a5231abfba9c7e0a.png",
+      "pdf_path": "evidence/a5231abfba9c7e0a.pdf"
+    },
+    {
+      "label": "Global phaseout context only: UNEP 99% statement lacks its observation year",
+      "source_url": "https://ozone.unep.org/facts-and-figures-ozone-protection",
+      "snapshot_path": "evidence/4fa9fbb566078cd0.png"
+    },
+    {
+      "label": "Rejected numeric substitute: global consumption reduction 1986\u20132023, EEA release",
+      "source_url": "https://www.eea.europa.eu/en/newsroom/news/world-ozone-day",
+      "snapshot_path": "evidence/ca03fd310d10702c.png"
+    }
+  ]
+}

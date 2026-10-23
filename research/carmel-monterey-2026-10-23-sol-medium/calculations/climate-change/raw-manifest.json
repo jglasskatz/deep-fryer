@@ -1,0 +1,28 @@
+[
+  {
+    "file": "ambag-2050-draft-eir.pdf",
+    "sha256": "ecdfb8a1b8713e582c8147505fa804af56f9bfa403d62ff9ec24c4e579286581",
+    "bytes": 26751673
+  },
+  {
+    "file": "ambag-2050-draft-eir.txt.gz",
+    "sha256": "359dad31c847534374daf270ff3cddfb69c2bf7cee821ea690755a8aef25dcd6",
+    "bytes": 639188,
+    "uncompressed_file": "ambag-2050-draft-eir.txt",
+    "uncompressed_sha256": "f0afbc8ff67b2eff6cbe30ed77c102975a92e4268c2c4088321e7673cd1f02ba",
+    "uncompressed_bytes": 2490936
+  },
+  {
+    "file": "ambag-2050-final-eir.pdf",
+    "sha256": "f7be33ee64a3bc09ff3464f804a04cbac7cabc43844e887a766d20f22172e567",
+    "bytes": 70478795
+  },
+  {
+    "file": "ambag-2050-final-eir.txt.gz",
+    "sha256": "ed01e8e6e1ff8742aa5daf8ffb1d1b2e82a63b5cd82040da0ca85810e3664c55",
+    "bytes": 659621,
+    "uncompressed_file": "ambag-2050-final-eir.txt",
+    "uncompressed_sha256": "62ea891c859af458eb731e84072f8b1bf53c4c46fece3cb450749361fd2e6b81",
+    "uncompressed_bytes": 2610577
+  }
+]

@@ -1,0 +1,23 @@
+<!doctype html><meta charset="utf-8"><title>2024 EPA TRI reported on-site releases — researcher extract</title><style>body{font:18px system-ui;max-width:1250px;margin:40px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:10px;text-align:left}small{font-size:15px}h1{font-size:28px}</style><h1>2024 EPA TRI reported on-site releases</h1><p>Researcher-generated faithful extract and calculation, not an EPA publication. Raw files, row filters, spatial checks and SHA-256 hashes accompany derive.py.</p>
+<p>EPA full California file: 3,361 forms; 1075 reporting facilities; no missing coordinates. Federal and tribal reporters included. Field 65 ON-SITE RELEASE TOTAL: air, water, underground injection and land releases. Excludes off-site transfers, off-site releases, treatment, recycling and total waste managed.</p>
+<table><tr><th>Jurisdiction</th><th>2024 inventory</th><th>Quantified Form R releases (lb)</th><th>July 2024 population</th><th>lb / resident / year</th></tr>
+<tr><td>carmel</td><td>0 facilities; 0 Form R; 0 Form A</td><td>0</td><td>3,118</td><td>0.0000000000</td></tr>
+<tr><td>monterey-county</td><td>6 facilities; 7 Form R; 1 Form A</td><td>24485.440</td><td>433,447</td><td>0.0564900438</td></tr>
+</table><h2>Monterey County source rows</h2><table><tr><th>Facility</th><th>Chemical</th><th>Form</th><th>Unit</th><th>On-site release</th></tr>
+<tr><td>FUJIFILM ELECTRONIC MATERIALS USA INC.</td><td>N-Methyl-2-pyrrolidone</td><td>R</td><td>Pounds</td><td>53.000</td></tr>
+<tr><td>DOLE FRESH VEGETABLES INC</td><td>Chlorine</td><td>A</td><td>Pounds</td><td>0.000</td></tr>
+<tr><td>GRANITE ROCK CO MONTEREY BRANCH BR341</td><td>Lead</td><td>R</td><td>Pounds</td><td>0.122</td></tr>
+<tr><td>U.S. ARMY GARRISON FORT HUNTER LIGGETT RANGES</td><td>Lead</td><td>R</td><td>Pounds</td><td>6903.000</td></tr>
+<tr><td>LHOIST NORTH AMERICA NATIVADAD PLANT</td><td>Lead compounds</td><td>R</td><td>Pounds</td><td>1082.276</td></tr>
+<tr><td>GRANITE ROCK CO SALINAS CONCRETE</td><td>Lead</td><td>R</td><td>Pounds</td><td>0.042</td></tr>
+<tr><td>U.S. ARMY GARRISON FORT HUNTER LIGGETT RANGES</td><td>Copper</td><td>R</td><td>Pounds</td><td>16445.000</td></tr>
+<tr><td>FUJIFILM ELECTRONIC MATERIALS USA INC.</td><td>Ethylene glycol</td><td>R</td><td>Pounds</td><td>2.000</td></tr>
+</table><p><strong>Form A caveat:</strong> DOLE FRESH VEGETABLES reports an unquantified Form A. Its basic-file zero is an EPA placeholder, not measured zero. The 24,485.44 lb is the sum of seven quantified Form R rows; it omits any release associated with that Form A. A qualifying Form A certifies total annual reportable amount at most 500 lb, so its unquantified on-site contribution is bounded by 500 lb (not added as an observation).</p>
+<p><strong>Carmel coverage:</strong> Every California reporting facility coordinate was tested against LAFCO incorporated-city polygon, crosschecked with Census city polygon. Neither contains a reporting facility. Nearest reporter is GRANITE ROCK CO MONTEREY BRANCH BR341 (8.33 km outside). This is zero in the reported TRI inventory; it is not a measured zero of all chemical releases or proof every legally obligated facility complied.</p>
+<p>County filter MONTEREY matches statewide point-in-county selection exactly, covering incorporated and unincorporated county. All selected quantity units are Pounds; no dioxin grams are mixed into the sum. In general grams would require /453.59237 to convert to pounds.</p>
+<h2>Source URLs and archived raw inputs</h2>
+<p><small>https://data.epa.gov/efservice/downloads/tri/mv_tri_basic_download/2024_CA/csv</small></p>
+<p><small>https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/counties/totals/co-est2025-alldata.csv</small></p>
+<p><small>https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/cities/totals/sub-est2025.csv</small></p>
+<p><small>https://maps.co.monterey.ca.us/server/rest/services/LAFCO/Incorporated_Cities_2/FeatureServer/2</small></p>
+<p>Population: Census Population Estimates Program Vintage 2025, POPESTIMATE2024, county 06053 and incorporated place 0611250. EPA landing page states reporting forms processed through November 5, 2025. TRI applies to covered industries/federal facilities subject to employee and chemical thresholds; it excludes much household, mobile-source and below-threshold pollution and is neither toxicity-weighted nor an exposure/risk measure.</p>

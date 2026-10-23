@@ -1,0 +1,302 @@
+{
+ "currentVersion": 10.91,
+ "folders": [],
+ "services": [
+  {
+   "name": "EJI/CBM_ExtremeEvents_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/CBM_ExtremeEvents_CoastalFloodFrequency_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/CBM_ExtremeEvents_DroughtFrequency_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/CBM_ExtremeEvents_HurricaneFrequency_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/CBM_ExtremeEvents_RiverineFloodFrequency_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/CBM_ExtremeEvents_StrongWindFrequency_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/CBM_ExtremeEvents_TornadoFrequency_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/CBM_Heat_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/CBM_Heat_ExtremeHeatDays_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/CBM_Wildfire_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/CBM_Wildfire_WildfireProximity_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/CBM_Wildfire_WildfireSmoke_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/ClimateBurdenModule_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_AirPollution_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_AirPollution_AirToxicsCancerRisk_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_AirPollution_DieselParticulateMatter_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_AirPollution_Ozone_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_AirPollution_PM25_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_BuiltEnvironment_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_BuiltEnvironment_HousesBuiltPre1980_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_BuiltEnvironment_LackofRecreationalParks_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_BuiltEnvironment_LackofWalkability_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_PotentiallyHazardousandToxicSites_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_PotentiallyHazardousandToxicSites_CoalMines_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_PotentiallyHazardousandToxicSites_LeadMines_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_PotentiallyHazardousandToxicSites_NationalPriorityListSites_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_PotentiallyHazardousandToxicSites_RiskManagementPlanSites_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_PotentiallyHazardousandToxicSites_ToxicReleaseInventorySites_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_PotentiallyHazardousandToxicSites_TreatmentStorageandDisposalSites_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_TransportationInfrastructure_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_TransportationInfrastructure_Airports_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_TransportationInfrastructure_HighVolumeRoads_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_TransportationInfrastructure_Railways_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_WaterPollution_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EBM_WaterPollution_ImpairedSurfaceWater_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EJI_2024_Data_Service",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EJI_Cache_577k",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EJI_Data_Update_For_Webmap",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/Environmental_Justice_Index_2022_preCache_L8L12",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/Environmental_Justice_Index_2022",
+   "type": "FeatureServer"
+  },
+  {
+   "name": "EJI/Environmental_Justice_Index_2022",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/EnvironmentalBurdenModule_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/HealthVulnerabilityModule_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/HVM_PreexistingChronicDiseaseBurden_Asthma_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/HVM_PreexistingChronicDiseaseBurden_Cancer_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/HVM_PreexistingChronicDiseaseBurden_Diabetes_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/HVM_PreexistingChronicDiseaseBurden_HeartDisease_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/HVM_PreexistingChronicDiseaseBurden_PoorMentalHealth_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/OverallEnvironmentalJusticeIndex_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/OverallEnvironmentalJusticeIndexAndClimate_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/San_Joaquin_Valley",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SanJoaquinValley",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SDE_EJI_Final_Ranks_spatial_noData",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SDE_EJI_Final_Ranks_spatial_upload",
+   "type": "FeatureServer"
+  },
+  {
+   "name": "EJI/SDE_EJI_Final_Ranks_spatial_upload",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SocialVulnerabilityModule_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_HouseholdCharacteristics_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_HouseholdCharacteristics_Age17andYounger_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_HouseholdCharacteristics_Age65andOlder_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_HouseholdCharacteristics_CivilianwithaDisability_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_HouseholdCharacteristics_EnglishLanguageProficiency_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_HousingType_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_HousingType_GroupQuarters_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_HousingType_MobileHomes_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_RacialEthnicMinorityStatus_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_RacialEthnicMinorityStatus_MinorityStatus_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_SocioeconomicStatus_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_SocioeconomicStatus_HousingCostBurden_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_SocioeconomicStatus_LackofHealthInsurance_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_SocioeconomicStatus_LackofInternetAccess_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_SocioeconomicStatus_NoHighSchoolDiploma_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_SocioeconomicStatus_Poverty_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_SocioeconomicStatus_Renters_2024",
+   "type": "MapServer"
+  },
+  {
+   "name": "EJI/SVM_SocioeconomicStatus_Unemployment_2024",
+   "type": "MapServer"
+  }
+ ]
+}

@@ -1,0 +1,86 @@
+{
+  "dimension": "peace-justice",
+  "searched_at": "2026-10-23T06:50:22.973970+00:00",
+  "queries": [
+    "site.ci.carmel.ca.us police 2024 annual report crime statistics",
+    "site.countyofmonterey.gov violent crime rate 2023 2024",
+    "California DOJ crimes clearances 2024 csv OpenJustice",
+    "site.ci.carmel.ca.us \"crime\" \"2024\"",
+    "site.countyofmonterey.gov \"violent crime\" rate 2023",
+    "site.data-openjustice.doj.ca.gov \"Crimes_and_Clearances\"",
+    "site.dof.ca.gov 2025 E-1 population Carmel Monterey 2025 2026"
+  ],
+  "accepted": [
+    {
+      "url": "https://data-openjustice.doj.ca.gov/sites/default/files/dataset/2026-07/Crimes_and_Clearances_with_Arson-1985-2025.csv",
+      "result": "Downloaded annual raw CSV; 18 Monterey County rows in 2025, 1,846 violent crimes; Carmel row 3; zero blanks; component sums checked."
+    },
+    {
+      "url": "https://data-openjustice.doj.ca.gov/sites/default/files/dataset/2026-07/Crimes-Clear-Arson%20Context_06222026.pdf",
+      "result": "Downloaded; 2025 limitations page 14 has no Monterey agencies; pages 1\u20134 describe definitions and SRS/IBR conversion."
+    },
+    {
+      "url": "https://dof.ca.gov/media/docs/forecasting/Demographics/estimates/E-1_2026_Press_Release.pdf",
+      "result": "Downloaded; page 8 is population, 3,115 city and 437,465 county for January 1, 2025. Rejected page 15 housing units as denominator."
+    },
+    {
+      "url": "https://ci.carmel.ca.us/police-fire",
+      "result": "Opened and captured city jurisdiction statement."
+    }
+  ],
+  "rejected": [
+    {
+      "url": "https://www.countyofmonterey.gov/home/showpublisheddocument/116036/638460282919170000",
+      "reason": "2022 report crime data year 2014\u20132016 fails recency."
+    },
+    {
+      "url": "https://www.countyofmonterey.gov/government/departments-a-h/health/public-health/stryve",
+      "reason": "Salinas focus, not all county."
+    },
+    {
+      "url": "https://www.countyofmonterey.gov/government/departments-i-z/sheriff-coroner/about/enforcement-operations-bureau/investigations-division",
+      "reason": "No annual countywide crime rate; Sheriff alone is incomplete county scope."
+    },
+    {
+      "url": "https://americanfactbook.org/crime/county/monterey-county-ca",
+      "reason": "Secondary sheriff-only rate rejected for county; not used."
+    },
+    {
+      "url": "https://plaincrime.com/city/carmel-ca",
+      "reason": "Secondary candidate replaced with official raw data."
+    },
+    {
+      "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/061923_fy_23_24_adopted_budget_book.pdf",
+      "reason": "Search extract describes policing duties; no usable current annual rate."
+    }
+  ],
+  "failed_urls": [
+    {
+      "url": "https://data-openjustice.doj.ca.gov/data",
+      "reason": "web open inaccessible"
+    },
+    {
+      "url": "https://data-openjustice.doj.ca.gov/dataset/crimes-and-clearances",
+      "reason": "web open inaccessible"
+    },
+    {
+      "url": "https://data-openjustice.doj.ca.gov/filter-queries/get-cjsc-data.php",
+      "reason": "Agency-list POST succeeds. Five crime-table requests (county string Monterey then Monterey County, complete form, GET alternative and Carmel agency POST) returned HTTP 500. Parameters q=get-crimes-clearances, stats_years[]=2024, crimes-clearances=Crimes, county[]=Monterey County or ncic[]=Carmel."
+    },
+    {
+      "url": "https://data-openjustice.doj.ca.gov/sites/default/files/2025-07/Crime%20In%20CA%202024%20final.pdf",
+      "reason": "First sandbox curl DNS failure; elevated download succeeded. 2024 report superseded by 2025 data."
+    },
+    {
+      "url": "https://openjustice.doj.ca.gov/static/js/0.0.js",
+      "reason": "Guessed chunk URL failed, correct hashed public assets subsequently succeeded."
+    }
+  ],
+  "metadata_discovery_urls": [
+    "https://data-openjustice.doj.ca.gov/jsonapi/node/dataset?include=field_source",
+    "https://data-openjustice.doj.ca.gov/jsonapi/node/stats?include=field_source",
+    "https://data-openjustice.doj.ca.gov/exploration/crime-statistics/crimes-clearances?_format=json",
+    "https://openjustice.doj.ca.gov/exploration/crime-statistics/crimes-clearances"
+  ],
+  "evidence_review": "Reviewed PNG CSV exhibit and population PDF page visually; all relevant counts and denominators legible. Script imports first failed due to one excess relative parent segment; fixed and both extracts rendered successfully."
+}

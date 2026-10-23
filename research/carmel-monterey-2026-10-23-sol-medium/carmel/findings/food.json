@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "food-insecurity-rate",
+    "name": "Food insecurity rate",
+    "value": 13,
+    "unit": "% of residents",
+    "year": 2022,
+    "target": 5,
+    "level_pct": 160,
+    "scoring": {
+      "threshold_ref": "food.food-insecurity-rate",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 13,
+        "target": 5,
+        "scale": 5
+      },
+      "worked_math": "level_pct = (13 − 5) ÷ 5 × 100 = +160"
+    },
+    "source": "County Health Rankings & Roadmaps 2025 County Health Release, Monterey County (Map the Meal Gap measure)",
+    "source_url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv139_rawvalue%2Cv139_numerator%2Cv147_rawvalue&returnGeometry=false&f=pjson",
+    "source_tier": 3,
+    "evidence": {
+      "snapshot_path": "evidence/bf05ecd029d2c018.png",
+      "captured_at": "2026-10-19T06:51:03.319Z"
+    },
+    "confidence": "high",
+    "geographic_scale": "county",
+    "notes": "This is a Monterey County proxy permitted by portrait scale policy, not a Carmel-by-the-Sea city-limit measurement. The captured CHR 2025 county-layer record for FIPS 06053 reports v139_rawvalue = 13% and numerator = 56,940; the field metadata identifies Map the Meal Gap and explicitly dates the estimate to 2022. CHR defines the denominator as the total county population. Tier 1 City/local searches and Tier 2 state/federal searches did not yield this modeled city-limit measure; the CHR county series is a tier-3 research-institution source. The modeled all-population measure is distinct from self-reported household food stress."
+  }
+]

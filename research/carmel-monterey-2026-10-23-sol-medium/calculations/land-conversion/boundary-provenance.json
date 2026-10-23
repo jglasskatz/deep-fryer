@@ -1,0 +1,34 @@
+[
+  {
+    "file": "raw/carmel-census-boundary.json",
+    "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Places_CouSub_ConCity_SubMCD/MapServer/4/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&where=GEOID+%3D+%270611250%27",
+    "retrieved_at": "2026-10-23T06:45:35.954548+00:00",
+    "sha256_stored": "dbca6bec0565e79eca85b081a69b60686e38fbeb68072ab03f8218f831ff0228",
+    "sha256_original": "dbca6bec0565e79eca85b081a69b60686e38fbeb68072ab03f8218f831ff0228",
+    "bytes_stored": 10904
+  },
+  {
+    "file": "raw/carmel-lafco-boundary.json",
+    "url": "https://maps.co.monterey.ca.us/server/rest/services/LAFCO/Incorporated_Cities_2/FeatureServer/2/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&where=CITY+%3D+%27CARMEL+BY-THE-SEA%27",
+    "retrieved_at": "2026-10-23T06:45:29.095847+00:00",
+    "sha256_stored": "4b35c38498f882daf9437a1f7104a9859e2391e28b99361e48e4621f28d4e352",
+    "sha256_original": "4b35c38498f882daf9437a1f7104a9859e2391e28b99361e48e4621f28d4e352",
+    "bytes_stored": 22205
+  },
+  {
+    "file": "raw/monterey-census-boundary.json",
+    "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/1/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&where=GEOID+%3D+%2706053%27",
+    "retrieved_at": "2026-10-23T06:45:34.829439+00:00",
+    "sha256_stored": "2e4a54b32d2889ce4d052b79377f730b429f3e696fa021bab3e9b068908333d0",
+    "sha256_original": "2e4a54b32d2889ce4d052b79377f730b429f3e696fa021bab3e9b068908333d0",
+    "bytes_stored": 337032
+  },
+  {
+    "file": "raw/tl_2026_06053_faces.zip",
+    "url": "https://www2.census.gov/geo/tiger/TIGER2026/FACES/tl_2026_06053_faces.zip",
+    "retrieved_at": "2026-10-23T06:53:01.778289Z",
+    "sha256_stored": "d1bc50c16b909933b33733c22f367f3d93561ee4f65306e8ac18c4f613c9f31a",
+    "sha256_original": "d1bc50c16b909933b33733c22f367f3d93561ee4f65306e8ac18c4f613c9f31a",
+    "bytes_stored": 5730338
+  }
+]

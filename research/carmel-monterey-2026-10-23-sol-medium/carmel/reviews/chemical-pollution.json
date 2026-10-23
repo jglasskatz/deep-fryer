@@ -1,0 +1,7 @@
+[
+  {
+    "indicator_slug": "tri-releases-per-capita",
+    "content_supported": "pass",
+    "verifier_note": "Independently refetched official EPA statewide 2024 TRI file (SHA256 eca9b383e2dc35cb5fe34034804fdc8253f5a4bdefe880f600648f2a9f6bf8c9), both Census population files and all three official boundaries; bytes match archives. Independently checked points with Shapely: no reporter inside either Carmel boundary, eight county forms, no missing statewide coordinates; rerunning derive.py reproduces inventory zero and score -100. EPA metadata confirms federal/tribal inclusion and quantity scope; zero denotes the complete reported inventory empty sum, with the stated reporting-threshold/compliance limitations, not zero environmental pollution. Derived exhibit inspected; nearest reporter is 8.33km away."
+  }
+]

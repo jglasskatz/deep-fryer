@@ -1,0 +1,416 @@
+{
+  "dimension": "land-conversion",
+  "searched_at": "2026-10-23T07:48:27.626595+00:00",
+  "queries": [
+    {
+      "query": "site.ci.carmel.ca.us habitat land cover conversion native development 2022 2023",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "site.countyofmonterey.gov native habitat land conversion land cover change 2022",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "Monterey County land cover change 2011 2021 natural habitat developed California",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "site.usgs.gov annual NLCD 2025 land cover classes grassland non native 1985 2024",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "site.wildlife.ca.gov Monterey vegetation map 2024 2012 change native",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "site.coast.noaa.gov C-CAP Monterey California 2021 2011 land cover change native",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "Monterey County native habitat conversion 2012 2022 land cover conservation strategy",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "Monterey California habitat conversion land cover change map NatureServe 2023 Conservation Science Partners",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "site.landfire.gov existing vegetation type compare versions change not recommended",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "site.montereycountyrcis.org vegetation land cover 2016 2021 data",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "Monterey County habitat loss native 2023 2024 conservation land conversion rate",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "Annual NLCD 2024 ImageServer MRLC land cover 2014 2024 service",
+      "tool": "web.run.search_query",
+      "round": "reopened-correct-canonical-construct"
+    },
+    {
+      "query": "Annual NLCD 2025 cloud optimized geotiff s3 data download 2015",
+      "tool": "web.run.search_query",
+      "round": "reopened-correct-canonical-construct"
+    },
+    {
+      "query": "site.epa.gov NLCD natural land cover barren forest shrub grassland wetlands developed",
+      "tool": "web.run.search_query",
+      "round": "reopened-correct-canonical-construct"
+    },
+    {
+      "query": "site.usgs.gov natural land cover barren NLCD developed agriculture natural 31",
+      "tool": "web.run.search_query",
+      "round": "reopened-correct-canonical-construct"
+    },
+    {
+      "query": "site.mrlc.gov natural land developed conversion barren natural land cover",
+      "tool": "web.run.search_query",
+      "round": "reopened-correct-canonical-construct"
+    }
+  ],
+  "web_open_attempts": [
+    {
+      "operation": "open",
+      "url": "https://ci.carmel.ca.us/forest-parks-beach",
+      "result": "success; city assessment/forest-plan links"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.countyofmonterey.gov/government/departments-a-h/housing-community-development/monterey-county-gis-maps",
+      "result": "403 failure"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.conservation.ca.gov/dlrp/fmmp/Pages/Monterey.aspx",
+      "result": "success"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.usgs.gov/special-topics/annual-nlcd/science/annual-nlcd-data",
+      "result": "inaccessible"
+    },
+    {
+      "operation": "click",
+      "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/carmel-by-the-sea_tree_canopy__land_cover_assessment_20230822client_delivery_2.pdf?1709165446=",
+      "result": "success; 46-page PDF"
+    },
+    {
+      "operation": "click",
+      "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/cfmp_v8.pdf?1770394254=",
+      "result": "success; 50-page PDF"
+    },
+    {
+      "operation": "click",
+      "url": "https://www.conservation.ca.gov/dlrp/fmmp/Documents/fmmp/pubs/2020-2022/Alternate_Conversion_tables/Alternate_Monterey_County_2020-2022_Land_Use_Conversion.pdf",
+      "result": "internal error"
+    },
+    {
+      "operation": "click",
+      "url": "https://www.conservation.ca.gov/dlrp/fmmp/Pages/Map-Categories,-Criteria,-and-Data.aspx",
+      "result": "success"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.usgs.gov/centers/eros/science/annual-nlcd-land-cover-classification",
+      "result": "success"
+    },
+    {
+      "operation": "open",
+      "url": "https://wildlife.ca.gov/Data/VegCAMP/Reports-and-Maps",
+      "result": "success"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.coast.noaa.gov/digitalcoast/data/ccapregional.html",
+      "result": "success"
+    },
+    {
+      "operation": "open",
+      "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/carmel-by-the-sea_tree_canopy__land_cover_assessment_20230822client_delivery_2.pdf?1709165446= [line 70]",
+      "result": "success"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.conservation.ca.gov/dlrp/fmmp/Pages/Map-Categories,-Criteria,-and-Data.aspx [line 65]",
+      "result": "success"
+    },
+    {
+      "operation": "click",
+      "url": "https://www.usgs.gov/media/images/annual-nlcd-land-cover-change-legend",
+      "result": "success"
+    },
+    {
+      "operation": "click",
+      "url": "https://coast.noaa.gov/data/digitalcoast/pdf/ccap-class-scheme-regional.pdf",
+      "result": "success; broad cover classes"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=193212&inline=",
+      "result": "cache-miss failure"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.scienceforconservation.org/products/whither-the-rangeland",
+      "result": "success; rejected 2008 period end"
+    },
+    {
+      "operation": "open",
+      "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/carmel-by-the-sea_tree_canopy__land_cover_assessment_20230822client_delivery_2.pdf?1709165446= [line 100]",
+      "result": "success; 2022 baseline, not change"
+    },
+    {
+      "operation": "open",
+      "url": "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=193212&inline",
+      "result": "timeout failure"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.usgs.gov/centers/eros/science/about-annual-nlcd",
+      "result": "success; annual record through 2025"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.montereycountyrcis.org/about",
+      "result": "success; aspirational strategy"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.montereycountyrcis.org/explore?tab=species",
+      "result": "success; strategies and focal species"
+    },
+    {
+      "operation": "open",
+      "url": "https://landfire.gov/sites/default/files/documents/Comparing_LF_Vegetation_Type_Cover_and_Height_Across_Versions.pdf",
+      "result": "404"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.landfire.gov/sites/default/files/documents/Comparing_LF_Vegetation_Type_Cover_and_Height_Across_Versions.pdf",
+      "result": "inaccessible"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.usgs.gov/data/agricultural-domestic-and-ecological-vulnerability-californias-central-coast-projected-changes",
+      "result": "success; projected/partial basin coverage"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.natureserve.org/products/modeling-landscape-condition",
+      "result": "success; ecological condition construct"
+    },
+    {
+      "operation": "open",
+      "url": "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_NLCD_Landcover_CONUS/ImageServer?f=pjson",
+      "result": "web403; subsequent shell raw metadata and TIFF exports succeeded"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.mrlc.gov/data/legends/annual-nlcd-land-cover-legend",
+      "result": "success; full class descriptions and current collection release"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.mrlc.gov/data-services-page",
+      "result": "success; source services"
+    },
+    {
+      "operation": "open",
+      "url": "https://www.epa.gov/sites/production/files/2015-11/documents/wihwreport_0.pdf",
+      "result": "success; Table1 natural/non-natural crosswalk, limitations read"
+    }
+  ],
+  "additional_find_requests": [
+    {
+      "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/carmel-by-the-sea_tree_canopy__land_cover_assessment_20230822client_delivery_2.pdf?1709165446=",
+      "pattern": "201",
+      "result": "no match returned by find"
+    },
+    {
+      "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/carmel-by-the-sea_tree_canopy__land_cover_assessment_20230822client_delivery_2.pdf?1709165446=",
+      "pattern": "202",
+      "result": "no match returned by find; open/local text extraction subsequently established 2022"
+    },
+    {
+      "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/cfmp_v8.pdf?1770394254=",
+      "pattern": "native",
+      "result": "internal error/no match"
+    },
+    {
+      "url": "https://www.conservation.ca.gov/dlrp/fmmp/Pages/Map-Categories,-Criteria,-and-Data.aspx",
+      "pattern": "Other Land",
+      "result": "no match"
+    },
+    {
+      "url": "https://www.epa.gov/sites/production/files/2015-11/documents/wihwreport_0.pdf",
+      "pattern": "TABLE 1. CLASSIFICATION",
+      "result": "success; Table1 PDF22, excludes31 due mined areas"
+    }
+  ],
+  "raw_responses": "calculations/land-conversion/raw-web-results.json",
+  "evidence_capture_log": [
+    {
+      "tenant": "carmel",
+      "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/carmel-by-the-sea_tree_canopy__land_cover_assessment_20230822client_delivery_2.pdf?1709165446=",
+      "page": 4,
+      "result": "failure: sandbox tsx IPC EPERM before capture"
+    },
+    {
+      "tenant": "carmel",
+      "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/carmel-by-the-sea_tree_canopy__land_cover_assessment_20230822client_delivery_2.pdf?1709165446=",
+      "page": 4,
+      "result": "success but contents-page view not selected; archived full PDF",
+      "snapshot_path": "evidence/9d2fa77730079d48.png"
+    },
+    {
+      "tenant": "carmel",
+      "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/carmel-by-the-sea_tree_canopy__land_cover_assessment_20230822client_delivery_2.pdf?1709165446=",
+      "page": 6,
+      "result": "success; visually checked",
+      "snapshot_path": "evidence/8c5979ffe834bc15.png"
+    },
+    {
+      "tenant": "monterey-county",
+      "url": "https://landfire.gov/sites/default/files/documents/Comparing_LF_Vegetation_Type_Cover_and_Height_Across_Versions.pdf",
+      "page": 1,
+      "result": "failure: curl 404"
+    },
+    {
+      "tenant": "monterey-county",
+      "url": "https://www.conservation.ca.gov/dlrp/fmmp/Pages/Monterey.aspx",
+      "result": "success; visually checked",
+      "snapshot_path": "evidence/8621148a6da4e1f6.png"
+    },
+    {
+      "tenant": "carmel",
+      "url": "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_NLCD_Landcover_CONUS/ImageServer",
+      "result": "failure: helper browser HTTP403"
+    },
+    {
+      "tenant": "monterey-county",
+      "url": "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_NLCD_Landcover_CONUS/ImageServer",
+      "result": "failure: helper browser HTTP403"
+    },
+    {
+      "tenant": "carmel",
+      "url": "https://www.epa.gov/sites/production/files/2015-11/documents/wihwreport_0.pdf",
+      "page": 22,
+      "result": "success; Table1 visually checked",
+      "snapshot_path": "evidence/c4ebae4510bb63ff.png"
+    },
+    {
+      "tenant": "monterey-county",
+      "url": "https://www.epa.gov/sites/production/files/2015-11/documents/wihwreport_0.pdf",
+      "page": 22,
+      "result": "success; Table1 visually checked",
+      "snapshot_path": "evidence/ed91f705894c2435.png"
+    },
+    {
+      "tenant": "carmel",
+      "url": "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_NLCD_Landcover_CONUS/ImageServer?f=pjson",
+      "mode": "--download",
+      "result": "success; original JSON bytes retained, no screenshot",
+      "original_path": "evidence/5b07dce0e0369e83.bin"
+    },
+    {
+      "tenant": "monterey-county",
+      "url": "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_NLCD_Landcover_CONUS/ImageServer?f=pjson",
+      "mode": "--download",
+      "result": "success; original JSON bytes retained, no screenshot",
+      "original_path": "evidence/d3c4d6c8efda88e1.bin"
+    },
+    {
+      "tenant": "carmel",
+      "url": "https://www.mrlc.gov/data/legends/annual-nlcd-land-cover-legend",
+      "result": "success; current class legend",
+      "snapshot_path": "evidence/2e13eb6e89fc071a.png"
+    },
+    {
+      "tenant": "monterey-county",
+      "url": "https://www.mrlc.gov/data/legends/annual-nlcd-land-cover-legend",
+      "result": "success; current class legend",
+      "snapshot_path": "evidence/624f314fa1e17937.png"
+    }
+  ],
+  "conclusion": "County mapped natural-vegetation-to-developed gross conversion proxy derived for2014\u20132024; same county proxy explicitly used for Carmel under accepted county fallback. Full natural-land field measure and city0 are not claimed.",
+  "shell_network_acquisitions_note": "11 URL acquisitions outside capture helper: initialUSFSmetadata success, Esri metadata success (exploratory unused), guessed MRLClyrx404, official catalog query success, initial raster30/info success, plus6 successful requests in download-manifest.json (two native infos, two export JSON requests, two raw TIFF downloads). Boundary inputs reused from sibling same-campaign archival provenance; not counted as new network.",
+  "reopened_after_review": {
+    "reason": "Initial native-only requirement overstated the canonical natural-land construct; extra requirement withdrawn explicitly in dimension prompts.",
+    "portable_inputs": "calculations/land-conversion/raw",
+    "calculation": "calculations/land-conversion/calculate.py",
+    "corrections": [
+      "Initial county polygon included ocean NoData; official Census LWFLAG=P perennial water excluded.",
+      "Initial area assertion0.01m\u00b2 was too strict for full county numeric geometry; changed to relative1e-8 (actual discrepancy5.633m\u00b2 /8.5bnm\u00b2).",
+      "City numeric zero rejected: natural-barren attribution alters score across target.",
+      "Published crosswalk supports explicit operational vegetation proxy, not complete native habitat ontology."
+    ],
+    "rejected_city_exact_measure": {
+      "baseline_year": 2014,
+      "end_year": 2024,
+      "period_years": 10,
+      "natural_class_codes": [
+        41,
+        42,
+        43,
+        52,
+        71,
+        90,
+        95
+      ],
+      "developed_class_codes": [
+        21,
+        22,
+        23,
+        24
+      ],
+      "boundary_area_m2": 2747428.2653409634,
+      "raster_weighted_boundary_area_m2": 2747428.265340907,
+      "nodata_inside_m2": 0.0,
+      "baseline_natural_m2": 44133.00373854232,
+      "converted_natural_to_developed_m2": 0.0,
+      "baseline_natural_ha": 4.4133003738542325,
+      "converted_ha": 0.0,
+      "value_pct_per_decade": 0.0,
+      "baseline_natural_effective_pixels": 49.03667082060258,
+      "converted_effective_pixels": 0.0,
+      "baseline_natural_center_pixels": 48,
+      "converted_center_pixels": 0,
+      "pixel_center_rate_sensitivity_pct": 0.0,
+      "including_barren_31_and_snow_12_sensitivity": {
+        "baseline_m2": 121187.06580295468,
+        "converted_m2": 900.0,
+        "rate_pct": 0.7426535117727531
+      },
+      "baseline_class_area_m2": {
+        "11": 1.658427323238264,
+        "21": 892225.140509947,
+        "22": 1347531.0926961452,
+        "23": 379283.30790453707,
+        "24": 7200.0,
+        "31": 77054.06206441236,
+        "42": 33324.299182640825,
+        "90": 900.0,
+        "95": 9908.704555901491
+      },
+      "gross_conversion_by_baseline_class_m2": {
+        "41": 0.0,
+        "42": 0.0,
+        "43": 0.0,
+        "52": 0.0,
+        "71": 0.0,
+        "90": 0.0,
+        "95": 0.0
+      },
+      "gross_conversion_by_developed_end_class_m2": {
+        "21": 0.0,
+        "22": 0.0,
+        "23": 0.0,
+        "24": 0.0
+      }
+    }
+  }
+}

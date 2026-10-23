@@ -1,0 +1,19 @@
+{
+  "source_url": "https://ecowatch.noaa.gov/node/392",
+  "context_url": "https://ecowatch.noaa.gov/regions/california-current",
+  "year": 2024,
+  "value": 2.15,
+  "unit": "Ω aragonite",
+  "method": "Official NOAA chart annual regional value, parsed directly from numeric x/y fields; no new spatial or temporal averaging.",
+  "level_pct": 28.3,
+  "scoring": {
+    "threshold_ref": "ocean-acidification.aragonite-saturation",
+    "function": "higher_is_better",
+    "inputs": {
+      "value": 2.15,
+      "target": 3,
+      "scale": 3
+    },
+    "worked_math": "level_pct = (target − value) ⁄ scale × 100 = (3 − 2.15) ⁄ 3 × 100 = +28.3"
+  }
+}

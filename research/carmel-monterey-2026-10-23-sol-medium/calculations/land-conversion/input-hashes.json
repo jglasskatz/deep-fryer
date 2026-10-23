@@ -1,0 +1,72 @@
+[
+  {
+    "file": "raw/carmel-census-boundary.json",
+    "sha256": "dbca6bec0565e79eca85b081a69b60686e38fbeb68072ab03f8218f831ff0228",
+    "bytes": 10904
+  },
+  {
+    "file": "raw/carmel-lafco-boundary.json",
+    "sha256": "4b35c38498f882daf9437a1f7104a9859e2391e28b99361e48e4621f28d4e352",
+    "bytes": 22205
+  },
+  {
+    "file": "raw/esri-metadata.json",
+    "sha256": "e32c47c2fe7298f17dad0036db9f2a05a33e3a7ba9cbae927cc101adc2d64b75",
+    "bytes": 16006
+  },
+  {
+    "file": "raw/export-2014.json",
+    "sha256": "be8390a6cd7469559aba052daf2f759f34b6a62637a740185558878b8b315335",
+    "bytes": 724
+  },
+  {
+    "file": "raw/export-2024.json",
+    "sha256": "37c87bf02e3020477329f42f3173853be125244cf49e199bfd7e08b7df6ce619",
+    "bytes": 724
+  },
+  {
+    "file": "raw/landcover-2014.tif",
+    "sha256": "6490dbf32d4aca37dbbf8d56586386b923c494d2286254b1246e0aa031464d36",
+    "bytes": 21964662
+  },
+  {
+    "file": "raw/landcover-2024.tif",
+    "sha256": "805202f08e2fae3d92b1eca8d7047347bbf181b3ad8f5809c18f4c20dc94359a",
+    "bytes": 21964662
+  },
+  {
+    "file": "raw/monterey-census-boundary.json",
+    "sha256": "2e4a54b32d2889ce4d052b79377f730b429f3e696fa021bab3e9b068908333d0",
+    "bytes": 337032
+  },
+  {
+    "file": "raw/raster30-native-info.json",
+    "sha256": "7b0c1c31cbcb34ce7f56b8e4f53f21651110fbc0744bbcbc618e4ec5b100a521",
+    "bytes": 1788
+  },
+  {
+    "file": "raw/raster40-native-info.json",
+    "sha256": "933f923f98798bcf7e281d203d97829ec0ff46d3262abc71d9d1698b4593c48d",
+    "bytes": 1789
+  },
+  {
+    "file": "raw/tl_2026_06053_faces.zip",
+    "sha256": "d1bc50c16b909933b33733c22f367f3d93561ee4f65306e8ac18c4f613c9f31a",
+    "bytes": 5730338
+  },
+  {
+    "file": "raw/usfs-catalog-2014-2024.json",
+    "sha256": "3a0603d719546239a36abff032484e72f14f55069c7fe236256cf3574bdae1bb",
+    "bytes": 16174
+  },
+  {
+    "file": "raw/usfs-metadata.json",
+    "sha256": "96c0131f0a4cd2ee08ae15cc3d8f0bbeac8dbbafcc315d00b3a9136446b69242",
+    "bytes": 10476
+  },
+  {
+    "file": "raw/usfs-raster30-info.json",
+    "sha256": "7b0c1c31cbcb34ce7f56b8e4f53f21651110fbc0744bbcbc618e4ec5b100a521",
+    "bytes": 1788
+  }
+]

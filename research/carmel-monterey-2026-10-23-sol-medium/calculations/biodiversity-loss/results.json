@@ -1,0 +1,41 @@
+{
+  "carmel": {
+    "land_m2": 2747428.280958295,
+    "protected_m2": 140384.97263398004,
+    "land_acres": 678.9043134198778,
+    "protected_acres": 34.6898822149772,
+    "protected_share_pct": 5.109686524192514,
+    "level_pct": 82.96771158602495,
+    "boundary_total_m2": 2752358.1540892785,
+    "water_removed_m2": 4929.873130983673,
+    "summed_protected_before_dedup_m2": 140384.97263398007,
+    "overlap_removed_m2": 2.9103830456733704e-11,
+    "intersecting_feature_count": 3
+  },
+  "monterey-county": {
+    "land_m2": 8499610982.289927,
+    "protected_m2": 1564208099.1453793,
+    "land_acres": 2100299.61410126,
+    "protected_acres": 386524.2390333485,
+    "protected_share_pct": 18.403290484760014,
+    "level_pct": 38.65569838413329,
+    "boundary_total_m2": 9767417204.50515,
+    "water_removed_m2": 1267806222.2152233,
+    "summed_protected_before_dedup_m2": 1564208853.727362,
+    "overlap_removed_m2": 754.5819826126099,
+    "intersecting_feature_count": 517
+  },
+  "carmel-census-crosscheck": {
+    "land_m2": 2748714.156340312,
+    "protected_m2": 139971.21803163024,
+    "land_acres": 679.2220601466704,
+    "protected_acres": 34.58764122612976,
+    "protected_share_pct": 5.092243502612526,
+    "level_pct": 83.02585499129158,
+    "boundary_total_m2": 2748714.163566249,
+    "water_removed_m2": 0.007225936744362116,
+    "summed_protected_before_dedup_m2": 139971.21803163027,
+    "overlap_removed_m2": 2.9103830456733704e-11,
+    "intersecting_feature_count": 2
+  }
+}

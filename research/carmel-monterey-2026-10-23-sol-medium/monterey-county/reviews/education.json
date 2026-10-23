@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "hs-attainment",
+    "content_supported": "pass",
+    "verifier_note": "Inspected f4637d0fd262116d.png and raw ACS response: Monterey County GEOID 05000US06053, ACS 2024 one-year, B15003 population age 25+. Diploma-or-higher cells 017–025 sum to 206,180 / 280,853 = 73.412% → 73.4%; score 22.7. Includes GED/alternative credentials. This replaces the prior 2020–2024 QuickFacts estimate; do not conflate periods with Carmel’s five-year estimate. Exact support is the archived publisher response; reviewer API refetch failed. Tier 3 redisplay and higher-tier access limits are disclosed.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B15003%2CB28002&geo_ids=05000US06053",
+    "exhibit_checked": true
+  }
+]

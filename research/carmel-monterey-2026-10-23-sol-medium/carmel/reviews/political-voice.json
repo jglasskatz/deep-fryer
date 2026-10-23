@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "voter-turnout",
+    "content_supported": "pass",
+    "verifier_note": "Archived e11936579caa6970.pdf visually checked against independent live SOS PDF. Monterey County row: registered 214883, total voters 148916, registered turnout 69.30% (eligible turnout is a different 58.12%). Source footnote uses the 15-day registration report and excludes later registrations in its denominator. Score (70−69.3)/70×100=1.0. County proxy is explicit and permitted; this is not Carmel city turnout. Both PDF and screenshot are present.",
+    "reviewed_at": "2026-10-23T03:18:52.050896+00:00",
+    "source_url": "https://elections.cdn.sos.ca.gov/sov/2024-general/sov/03-voter-participation-stats-by-county.pdf",
+    "exhibit_checked": true
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "pm25-annual",
+    "name": "Annual mean PM2.5 (stale CHR county measure)",
+    "value": 8.8,
+    "unit": "µg/m³",
+    "year": 2020,
+    "target": 5,
+    "level_pct": 76.0,
+    "scoring": {
+      "threshold_ref": "air-pollution.pm25-annual",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 8.8,
+        "target": 5,
+        "scale": 5
+      },
+      "worked_math": "level_pct = (value − target) ⁄ scale × 100 = (8.8 − 5) ⁄ 5 × 100 = +76.0"
+    },
+    "source": "County Health Rankings & Roadmaps 2025 County Health Release, Monterey County, underlying source Environmental Public Health Tracking Network",
+    "source_url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv125_rawvalue&returnGeometry=false&f=pjson",
+    "source_tier": 3,
+    "evidence": {
+      "snapshot_path": "evidence/d0f4d763a4c71ce5.png",
+      "captured_at": "2026-10-23T03:12:46.826Z"
+    },
+    "confidence": "low",
+    "geographic_scale": "county",
+    "notes": "Stale Monterey County proxy, not a Carmel city-limit measurement. County Health Rankings 2025 feature row for FIPS 06053 reports 8.8 µg/m³. The feature year field is release year 2025; its v125_rawvalue metadata explicitly identifies underlying data year 2020 and describes the measure as annual averages based on daily PM2.5 from the Environmental Public Health Tracking Network. The CHR measure methodology page (https://www.countyhealthrankings.org/health-data/community-conditions/physical-environment/air-water-and-land/air-pollution-particulate-matter) explains that the modeled county value takes the maximum among tract-centroid estimates, rather than a population-weighted county spatial mean or direct individual exposure. The value is outside the configured five-year recency window at the October 2026 portrait date; retain only as stale contextual evidence, not current-year performance. This is the CHR county measure, not a Carmel city estimate. Tier 1 local sources and Tier 2 EPA/CARB sources were searched; EPA annual series did not expose a verified Monterey annual mean and the CARB 2023 three-year design value was a different construct. This tier-3 measure is methodologically unlike an area-weighted or exposure-weighted county mean; use its stated CHR construct and caveat."
+  }
+]

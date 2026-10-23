@@ -1,0 +1,19 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "energy-burden",
+    "reason": "No compliant 2021\u20132026 median energy burden for low-income households in Carmel-by-the-Sea city limits or the accepted Monterey County fallback was found in this pass. Tier 1 searches of City housing/energy-conservation materials and county sustainability/planning publications found programs/policies rather than the required statistic. The current city Housing page was read, but its Appendix G link and older full 2024 PDF could not be fetched by the web reader. DOE LEAD is unsuitable for the configured median: its December 2024 methodology section 2.3 assigns PUMA housing-type weighted-average income and energy expenditures to tract housing cohorts; DOE FAQ explicitly defines burden using average annual costs divided by average income. Computing a median across those cohort averages would not recover a household median. The 2020 PUMA catalog also shows 0605303 combines southern/eastern Monterey with San Benito County, so a simple union of Monterey-related public-use microdata areas is not full Monterey County alone. No defensible household-level median derivation was identified. Tier 2 DOE/CPUC/Census and Tier 3 ACEEE methods and geography checks therefore did not close the gap. This records a research result, not a claim that the statistic cannot exist.",
+    "scales_tried": [
+      "city",
+      "county",
+      "regional"
+    ],
+    "tiers_tried": [
+      1,
+      2,
+      3
+    ],
+    "searched_at": "2026-10-23T07:14:10.312571Z",
+    "nearest_data": "New official nearest county context: CPUC CHANGES 2022\u20132024 Evaluation, dated December 19, 2025, Table 4-18, printed p.70/PDF p.76, lists Monterey average energy burden 2.2% (https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/news-and-outreach/reports/cab/changes/changes-evaluation-report_final.pdf). Section 4.5.3 uses DOE tract averages; this is not a median of low-income households and the table is framed by IOU service territories/limited-English households. Do not score 2.2%. ACEEE September 2024 Data Update Appendix B is an actual median series using 2021 AHS (2019 for starred metros), but no Carmel, Monterey County or Salinas row is present; San Jose 8.5% and San Francisco 7.6% low-income medians are different metro geographies, rejected (https://www.aceee.org/sites/default/files/pdfs/data_update_-_city_energy_burdens_0.pdf). DOE methodology: https://www.energy.gov/sites/default/files/2024-12/lead-methodology_122024.pdf; FAQ: https://www.energy.gov/cmei/scep/slsc/low-income-energy-affordability-data-lead-tool-frequently-asked-questions. Census geography constraint: https://www2.census.gov/geo/maps/DC2020/PUMA/st06_ca/Catalog_PUMAmaps_st06.pdf. Archived PDFs and visually checked exhibits are in energy evidence-additions; no numerical value or score is accepted."
+  }
+]

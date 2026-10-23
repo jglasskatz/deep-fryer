@@ -1,0 +1,22 @@
+{
+  "campaign": "carmel-monterey-2026-10-23-sol-medium",
+  "baseline": "carmel-monterey-2026-10-23-expansion",
+  "started_at": "2026-10-23T06:40:19.284841+00:00",
+  "research_model": "gpt-6.1-sol",
+  "research_reasoning_effort": "medium",
+  "budget_usd": null,
+  "approved": false,
+  "baseline_review_manifest_sha256": "bc96f155faafadc316926aa55c75babacbd29f304acaf4183b1fd011def0a958",
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "dimension_replacements": {
+    "ozone-depletion": "extreme-heat"
+  },
+  "superseded_work_note": "Ozone research was completed before the user replaced it with extreme heat. Its findings and sources remain archived; activity remains included in this round\u2019s cost model.",
+  "integration_notes": [
+    "Five new crime/conservation/county-TRI scoring payloads were regenerated through core computeScoring to match canonical one-decimal rounding. Raw values, targets and source claims remain unchanged. Independent reviewer rechecks these mechanical corrections.",
+    "Extreme heat uses a separate unscored public-preview observation contract and catalog-scoped profile; server publication approval remains unchanged."
+  ],
+  "completed_at": "2026-10-23T07:52:26.185387+00:00",
+  "review_manifest_sha256": "6a9a89546d7b3d8982dd4d31a899318616e6c40f1c5de8ca7a9e62522d357393"
+}

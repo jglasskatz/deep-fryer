@@ -1,0 +1,50 @@
+[
+  {
+    "url": "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_NLCD_Landcover_CONUS/ImageServer/30/info?f=pjson",
+    "file": "raw/raster30-native-info.json",
+    "bytes": 1788,
+    "sha256": "7b0c1c31cbcb34ce7f56b8e4f53f21651110fbc0744bbcbc618e4ec5b100a521",
+    "retrieved_at": "2026-10-23T07:36:21.976456+00:00",
+    "status": "success"
+  },
+  {
+    "url": "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_NLCD_Landcover_CONUS/ImageServer/40/info?f=pjson",
+    "file": "raw/raster40-native-info.json",
+    "bytes": 1789,
+    "sha256": "933f923f98798bcf7e281d203d97829ec0ff46d3262abc71d9d1698b4593c48d",
+    "retrieved_at": "2026-10-23T07:36:23.227387+00:00",
+    "status": "success"
+  },
+  {
+    "url": "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_NLCD_Landcover_CONUS/ImageServer/exportImage?f=json&bbox=-2281815%2C1690005%2C-2145495%2C1846635&bboxSR=%7B%22wkt%22%3A+%22PROJCS%5B%5C%22AEA_WGS84%5C%22%2CGEOGCS%5B%5C%22GCS_WGS_1984%5C%22%2CDATUM%5B%5C%22D_WGS_1984%5C%22%2CSPHEROID%5B%5C%22WGS_1984%5C%22%2C6378137.0%2C298.257223563%5D%5D%2CPRIMEM%5B%5C%22Greenwich%5C%22%2C0.0%5D%2CUNIT%5B%5C%22Degree%5C%22%2C0.0174532925199433%5D%5D%2CPROJECTION%5B%5C%22Albers%5C%22%5D%2CPARAMETER%5B%5C%22False_Easting%5C%22%2C0.0%5D%2CPARAMETER%5B%5C%22False_Northing%5C%22%2C0.0%5D%2CPARAMETER%5B%5C%22Central_Meridian%5C%22%2C-96.0%5D%2CPARAMETER%5B%5C%22Standard_Parallel_1%5C%22%2C29.5%5D%2CPARAMETER%5B%5C%22Standard_Parallel_2%5C%22%2C45.5%5D%2CPARAMETER%5B%5C%22Latitude_Of_Origin%5C%22%2C23.0%5D%2CUNIT%5B%5C%22Meter%5C%22%2C1.0%5D%5D%22%7D&imageSR=%7B%22wkt%22%3A+%22PROJCS%5B%5C%22AEA_WGS84%5C%22%2CGEOGCS%5B%5C%22GCS_WGS_1984%5C%22%2CDATUM%5B%5C%22D_WGS_1984%5C%22%2CSPHEROID%5B%5C%22WGS_1984%5C%22%2C6378137.0%2C298.257223563%5D%5D%2CPRIMEM%5B%5C%22Greenwich%5C%22%2C0.0%5D%2CUNIT%5B%5C%22Degree%5C%22%2C0.0174532925199433%5D%5D%2CPROJECTION%5B%5C%22Albers%5C%22%5D%2CPARAMETER%5B%5C%22False_Easting%5C%22%2C0.0%5D%2CPARAMETER%5B%5C%22False_Northing%5C%22%2C0.0%5D%2CPARAMETER%5B%5C%22Central_Meridian%5C%22%2C-96.0%5D%2CPARAMETER%5B%5C%22Standard_Parallel_1%5C%22%2C29.5%5D%2CPARAMETER%5B%5C%22Standard_Parallel_2%5C%22%2C45.5%5D%2CPARAMETER%5B%5C%22Latitude_Of_Origin%5C%22%2C23.0%5D%2CUNIT%5B%5C%22Meter%5C%22%2C1.0%5D%5D%22%7D&size=4544%2C5221&format=tiff&pixelType=U8&interpolation=RSP_NearestNeighbor&renderingRule=%7B%22rasterFunction%22%3A+%22None%22%7D&mosaicRule=%7B%22mosaicMethod%22%3A+%22esriMosaicLockRaster%22%2C+%22lockRasterIds%22%3A+%5B30%5D%7D&noData=0&noDataInterpretation=esriNoDataMatchAny&adjustAspectRatio=false",
+    "file": "raw/export-2014.json",
+    "bytes": 724,
+    "sha256": "be8390a6cd7469559aba052daf2f759f34b6a62637a740185558878b8b315335",
+    "retrieved_at": "2026-10-23T07:36:27.240435+00:00",
+    "status": "success"
+  },
+  {
+    "url": "https://imagery.geoplatform.gov/iipp/rest/directories/0123456789abcdef/arcgisoutput/_ags_b49928a2_e696_4ab9_a07e_3b37b861509c.tif",
+    "file": "raw/landcover-2014.tif",
+    "bytes": 21964662,
+    "sha256": "6490dbf32d4aca37dbbf8d56586386b923c494d2286254b1246e0aa031464d36",
+    "retrieved_at": "2026-10-23T07:36:30.800972+00:00",
+    "status": "success"
+  },
+  {
+    "url": "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_NLCD_Landcover_CONUS/ImageServer/exportImage?f=json&bbox=-2281815%2C1690005%2C-2145495%2C1846635&bboxSR=%7B%22wkt%22%3A+%22PROJCS%5B%5C%22AEA_WGS84%5C%22%2CGEOGCS%5B%5C%22GCS_WGS_1984%5C%22%2CDATUM%5B%5C%22D_WGS_1984%5C%22%2CSPHEROID%5B%5C%22WGS_1984%5C%22%2C6378137.0%2C298.257223563%5D%5D%2CPRIMEM%5B%5C%22Greenwich%5C%22%2C0.0%5D%2CUNIT%5B%5C%22Degree%5C%22%2C0.0174532925199433%5D%5D%2CPROJECTION%5B%5C%22Albers%5C%22%5D%2CPARAMETER%5B%5C%22False_Easting%5C%22%2C0.0%5D%2CPARAMETER%5B%5C%22False_Northing%5C%22%2C0.0%5D%2CPARAMETER%5B%5C%22Central_Meridian%5C%22%2C-96.0%5D%2CPARAMETER%5B%5C%22Standard_Parallel_1%5C%22%2C29.5%5D%2CPARAMETER%5B%5C%22Standard_Parallel_2%5C%22%2C45.5%5D%2CPARAMETER%5B%5C%22Latitude_Of_Origin%5C%22%2C23.0%5D%2CUNIT%5B%5C%22Meter%5C%22%2C1.0%5D%5D%22%7D&imageSR=%7B%22wkt%22%3A+%22PROJCS%5B%5C%22AEA_WGS84%5C%22%2CGEOGCS%5B%5C%22GCS_WGS_1984%5C%22%2CDATUM%5B%5C%22D_WGS_1984%5C%22%2CSPHEROID%5B%5C%22WGS_1984%5C%22%2C6378137.0%2C298.257223563%5D%5D%2CPRIMEM%5B%5C%22Greenwich%5C%22%2C0.0%5D%2CUNIT%5B%5C%22Degree%5C%22%2C0.0174532925199433%5D%5D%2CPROJECTION%5B%5C%22Albers%5C%22%5D%2CPARAMETER%5B%5C%22False_Easting%5C%22%2C0.0%5D%2CPARAMETER%5B%5C%22False_Northing%5C%22%2C0.0%5D%2CPARAMETER%5B%5C%22Central_Meridian%5C%22%2C-96.0%5D%2CPARAMETER%5B%5C%22Standard_Parallel_1%5C%22%2C29.5%5D%2CPARAMETER%5B%5C%22Standard_Parallel_2%5C%22%2C45.5%5D%2CPARAMETER%5B%5C%22Latitude_Of_Origin%5C%22%2C23.0%5D%2CUNIT%5B%5C%22Meter%5C%22%2C1.0%5D%5D%22%7D&size=4544%2C5221&format=tiff&pixelType=U8&interpolation=RSP_NearestNeighbor&renderingRule=%7B%22rasterFunction%22%3A+%22None%22%7D&mosaicRule=%7B%22mosaicMethod%22%3A+%22esriMosaicLockRaster%22%2C+%22lockRasterIds%22%3A+%5B40%5D%7D&noData=0&noDataInterpretation=esriNoDataMatchAny&adjustAspectRatio=false",
+    "file": "raw/export-2024.json",
+    "bytes": 724,
+    "sha256": "37c87bf02e3020477329f42f3173853be125244cf49e199bfd7e08b7df6ce619",
+    "retrieved_at": "2026-10-23T07:36:35.159098+00:00",
+    "status": "success"
+  },
+  {
+    "url": "https://imagery.geoplatform.gov/iipp/rest/directories/0123456789abcdef/arcgisoutput/_ags_e369a728_b9c7_4a06_80a9_0660c2534eb4.tif",
+    "file": "raw/landcover-2024.tif",
+    "bytes": 21964662,
+    "sha256": "805202f08e2fae3d92b1eca8d7047347bbf181b3ad8f5809c18f4c20dc94359a",
+    "retrieved_at": "2026-10-23T07:36:38.726793+00:00",
+    "status": "success"
+  }
+]
