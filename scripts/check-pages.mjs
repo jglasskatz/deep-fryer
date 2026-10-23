@@ -49,6 +49,37 @@ try {
     // Check every referenced local evidence file; source websites are external.
     for (const asset of new Set(portrait.dimensions.flatMap(d => d.indicators.flatMap(i => [i.evidence_path, i.pdf_path].filter(Boolean))))) assert.equal((await page.request.get(`${origin}${asset}`)).status(), 200, asset);
   }
+  await page.goto(`${origin}carmel/`, { waitUntil: 'networkidle' });
+  const canvas = page.locator('canvas');
+  await canvas.scrollIntoViewIfNeeded();
+  const bounds = await canvas.boundingBox();
+  const carmel = release.portraits.find(p => p.slug === 'carmel');
+  const social = carmel.dimensions.filter(d => d.ring === 'social');
+  const angle = Math.PI / social.length;
+  const segment = { x: bounds.x + bounds.width * (.5 + .24 * Math.cos(angle)), y: bounds.y + bounds.height * (.5 + .24 * Math.sin(angle)) };
+  await page.mouse.move(segment.x, segment.y);
+  assert.equal(await page.locator('#chart-tooltip').isVisible(), true);
+  assert.ok((await page.locator('#chart-tooltip').innerText()).includes(social[0].name));
+  for (const indicator of social[0].indicators) assert.ok((await page.locator('#chart-tooltip').innerText()).includes(String(indicator.value ?? 'Data needed')));
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#chart-tooltip').isVisible(), false);
+  const beforeClick = await page.evaluate(() => scrollY);
+  await page.mouse.click(segment.x, segment.y);
+  assert.equal(await page.locator('#detail-panel').isVisible(), true);
+  assert.equal(await page.locator('#panel-heading').innerText(), social[0].name);
+  assert.equal(await page.locator('#detail-panel .indicator').count(), social[0].indicators.length);
+  assert.ok(Math.abs(await page.evaluate(() => scrollY) - beforeClick) < 2, 'Canvas selection must not scroll the page');
+  await page.mouse.click(segment.x, segment.y);
+  assert.equal(await page.locator('#detail-panel').isVisible(), true, 'Repeated click keeps the panel open');
+  await page.screenshot({ path: path.join(screenshots, 'dimension-side-panel.png') });
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#detail-panel').isVisible(), false, 'Escape closes the desktop panel');
+  await page.mouse.click(segment.x, segment.y);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.waitForFunction(() => document.getElementById('detail-panel').matches(':modal'));
+  await page.screenshot({ path: path.join(screenshots, 'dimension-mobile-panel.png') });
+  await page.getByRole('button', { name: 'Close dimension details' }).click();
+  assert.equal(await page.locator('#detail-panel').isVisible(), false);
   await page.setViewportSize({ width: 390, height: 844 });
   for (const route of ['', 'nyc/', 'santa-cruz/', 'carmel/', 'monterey-county/']) {
     await page.goto(origin + route, { waitUntil: 'networkidle' });
@@ -75,9 +106,15 @@ try {
   await page.goto(`${origin}carmel/?area=monterey-county`, { waitUntil: 'networkidle' });
   await page.screenshot({ path: path.join(screenshots, 'regional-selector-mobile.png') });
   await page.getByRole('link', { name: 'Health', exact: true }).click();
-  assert.match(page.url(), /#dim-health$/);
+  assert.equal(new URL(page.url()).searchParams.get('dim'), 'health');
+  assert.equal(await page.locator('#detail-panel').isVisible(), true);
+  assert.equal(await page.locator('#panel-heading').innerText(), 'Health');
   await page.reload({ waitUntil: 'networkidle' });
   assert.equal(await page.getByRole('heading', { level: 1 }).innerText(), 'Monterey County');
+  assert.equal(await page.locator('#detail-panel').isVisible(), true, 'Selected evidence panel survives reload');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#detail-panel').isVisible(), false);
+  await page.goto(`${origin}carmel/?area=monterey-county#dim-health`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => { const top = document.getElementById('dim-health').getBoundingClientRect().top; return top >= 0 && top < 100; }, null, { timeout: 10000 }).catch(async error => {
     console.error(await page.evaluate(() => ({ url: location.href, scrollY, healthTop: document.getElementById('dim-health').getBoundingClientRect().top, height: document.documentElement.scrollHeight })));
     throw error;
