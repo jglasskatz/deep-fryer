@@ -8,6 +8,8 @@ Pages hosts a portable, frozen public artifact. It has no account, database, mod
 
 `site/catalog.json` is the explicit public export allowlist. The first release includes Santa Cruz city, Santa Cruz County, Watsonville, NYC and its five boroughs, Carmel-by-the-Sea city limits and Monterey County. The historical Santa Cruz views retain their source project’s context and varying vintages; NYC is read from existing published dimension versions. All indicators survive the export; a dimension's score must not be explained using only its first indicator.
 
+Regional selectors keep related portraits together at `/santa-cruz/`, `/nyc/` and `/carmel/`. Selection uses a shareable `?area=slug` query (for example `/carmel/?area=monterey-county`), supports browser back/reload, and preserves each portrait's original static route as a no-JavaScript fallback. Monterey continues to mean the researched county boundary, not the larger Monterey Bay region.
+
 Carmel and Monterey are **research previews**, explicitly requested for public display, not newly approved publications. Each has 24 findings, including 16 gaps. Independent source support is not human approval. Per-claim statuses distinguish source-supported drafts with exhibits from uncertainty and gaps. Missing numeric archives suppress the dimension's draft wedge. County proxies in Carmel say they are not city-limit measurements. The ordinary database research-verify gate still requires disposition of flags and a content-bound human approval before these findings can become published versions. This static preview grants neither.
 
 This follows Keel's single source of truth, reproducible gate, evidence-at-access, numbers-with-epistemic-type, gap honesty and content-bound approval principles. The architecture map names this snapshot path separately from the application's public plane. The canonical renderer and score-to-display function are shared with the app.
@@ -43,6 +45,8 @@ Review changes to data, provenance, geography, archived files and statuses toget
 ## CI/CD
 
 The existing `check` job runs fresh and idempotent database migrations, types, unit/Postgres/Stripe tests, production build and the Keel gate. Critical or unexpected gate errors block release; warnings are retained for review.
+
+A locked pnpm patch corrects Keel 0.2.0's filesystem-path detector: government HTTP URLs containing `/home/showpublisheddocument` are source addresses, not machine paths. The regression check proves that local paths on the same line, file URLs and malformed HTTP prefixes still fail. The remaining findings-without-approval warnings are expected for explicitly unapproved previews.
 
 The `pages-build` job tests the exact catalog, indicator coverage, preview approval boundaries, scoring and paths. It verifies every referenced archive's hash and size, builds all static routes, then uses a browser at `/deep-fryer/` to check the entire collection, evidence links, labels, keyboard-reachable dimension links and mobile overflow. Local checks reuse installed Chromium. Only fresh CI runners install the locked Playwright browser. Screenshots and the release manifest are retained as workflow artifacts.
 

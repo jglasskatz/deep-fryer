@@ -55,9 +55,37 @@ try {
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `Mobile overflow: ${route}`);
   }
   await page.screenshot({ path: path.join(screenshots, 'monterey-mobile.png') });
+  for (const [hub, target] of [['carmel', 'monterey-county'], ['nyc', 'manhattan'], ['santa-cruz', 'watsonville']]) {
+    await page.goto(`${origin}${hub}/`, { waitUntil: 'networkidle' });
+    const portrait = release.portraits.find(p => p.slug === target);
+    await page.locator(`.portrait-switcher a[data-portrait="${target}"]`).click();
+    assert.equal(new URL(page.url()).pathname, `/deep-fryer/${hub}/`);
+    assert.equal(new URL(page.url()).searchParams.get('area'), target);
+    assert.equal(await page.getByRole('heading', { level: 1 }).innerText(), portrait.name);
+    assert.equal(await page.locator('.indicator').count(), portrait.dimensions.reduce((n, d) => n + d.indicators.length, 0));
+    assert.equal(await page.locator('.portrait-switcher [aria-current="page"]').getAttribute('data-portrait'), target);
+    await page.reload({ waitUntil: 'networkidle' });
+    assert.equal(await page.getByRole('heading', { level: 1 }).innerText(), portrait.name, 'Selection survives reload');
+    await page.goBack({ waitUntil: 'networkidle' });
+    assert.equal(await page.getByRole('heading', { level: 1 }).innerText(), release.portraits.find(p => p.slug === hub).name);
+    await page.goForward({ waitUntil: 'networkidle' });
+    assert.equal(await page.getByRole('heading', { level: 1 }).innerText(), portrait.name, 'Forward restores selection');
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `Selector overflow: ${hub}`);
+  }
+  await page.goto(`${origin}carmel/?area=monterey-county`, { waitUntil: 'networkidle' });
+  await page.screenshot({ path: path.join(screenshots, 'regional-selector-mobile.png') });
   await page.getByRole('link', { name: 'Health', exact: true }).click();
   assert.match(page.url(), /#dim-health$/);
+  await page.reload({ waitUntil: 'networkidle' });
+  assert.equal(await page.getByRole('heading', { level: 1 }).innerText(), 'Monterey County');
+  await page.waitForFunction(() => { const top = document.getElementById('dim-health').getBoundingClientRect().top; return top >= 0 && top < 100; });
+  const noScript = await browser.newContext({ javaScriptEnabled: false });
+  const fallback = await noScript.newPage();
+  await fallback.goto(`${origin}santa-cruz/`);
+  await fallback.getByRole('navigation', { name: 'Santa Cruz portraits' }).getByRole('link', { name: 'City of Watsonville' }).click();
+  assert.equal(await fallback.getByRole('heading', { level: 1 }).innerText(), 'City of Watsonville');
+  await noScript.close();
   assert.deepEqual(errors, []);
   assert.deepEqual(failures, []);
-  console.log(JSON.stringify({ passed: true, portraits: release.portraits.length, checks: ['all public routes', 'all indicators', 'evidence links', 'draft and proxy labels', 'mobile overflow', 'dimension navigation', 'no browser errors'] }));
+  console.log(JSON.stringify({ passed: true, portraits: release.portraits.length, checks: ['all public routes', 'all indicators', 'evidence links', 'draft and proxy labels', 'mobile overflow', 'regional selection and history', 'deep links and reload', 'no-JavaScript navigation', 'no browser errors'] }));
 } finally { await browser?.close(); await new Promise(resolve => server.close(resolve)); }

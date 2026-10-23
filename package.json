@@ -21,7 +21,7 @@
     "provision:nyc": "tsx scripts/provision-nyc.ts",
     "pages:snapshot": "node --env-file=.env.local --import tsx scripts/snapshot-pages.ts",
     "pages:build": "node scripts/build-pages.mjs",
-    "pages:test": "node --test scripts/pages-contract.test.mjs",
+    "pages:test": "node --test scripts/pages-contract.test.mjs scripts/keel-path.test.mjs",
     "pages:check": "node scripts/check-pages.mjs"
   },
   "dependencies": {
@@ -43,5 +43,10 @@
     "@keel_flow/cli": "^0.2.0",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@keel_flow/pack-general-se@0.2.0": "patches/@keel_flow__pack-general-se@0.2.0.patch"
+    }
   }
 }
