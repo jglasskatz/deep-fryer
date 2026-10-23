@@ -43,7 +43,7 @@ async function evidence(root: string, relative: string | undefined): Promise<str
   return target;
 }
 
-const portraits: any[] = [];
+const portraits: Array<Record<string, unknown>> = [];
 const legacyText = await readFile(path.join(santaCruz, 'docs/data.js'), 'utf8');
 const legacy = vm.runInNewContext(`${legacyText}\nJSON.stringify(JURISDICTIONS)`, {}, { timeout: 1000 });
 const legacyCommit = execFileSync('git', ['-C', santaCruz, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
@@ -63,7 +63,7 @@ for (const [key, slug, geography] of [['city_santa_cruz', 'santa-cruz', 'city'],
     provenance: { kind: 'legacy-source', repository: 'https://github.com/jglasskatz/doughnut-santa-cruz', commit: legacyCommit, source_file: 'docs/data.js', source_sha256: digest(legacyText), jurisdiction: key, geography }, dimensions });
 }
 
-for (const { slug } of catalog.portraits.filter((p: any) => p.status === 'published')) {
+for (const { slug } of catalog.portraits.filter((p: { slug: string; status: string }) => p.status === 'published')) {
   const portrait = await publishedDoughnut<PublishedPortrait>(getDb(), slug);
   if (!portrait?.dimensions.length) throw new Error(`No published portrait for ${slug}; refusing an incomplete release`);
   const dimensions = [];
@@ -93,10 +93,10 @@ for (const slug of ['carmel', 'monterey-county']) {
     const raw = await readFile(path.join(directory, 'findings', `${dimension.slug}.json`), 'utf8');
     const reviewText = await readFile(path.join(directory, 'reviews', `${dimension.slug}.json`), 'utf8');
     hashes[dimension.slug] = digest(raw + reviewText);
-    const reviews = JSON.parse(reviewText);
+    const reviews = JSON.parse(reviewText) as Array<{ indicator_slug: string; content_supported: 'pass' | 'fail' | 'uncertain'; verifier_note: string }>;
     const indicators = [];
     for (const row of JSON.parse(raw) as FindingPayload[]) {
-      const review = reviews.find((r: any) => r.indicator_slug === row.indicator_slug);
+      const review = reviews.find(r => r.indicator_slug === row.indicator_slug);
       if (!review) throw new Error(`Unreviewed research finding: ${slug}/${row.indicator_slug}`);
       if (row.kind === 'gap') indicators.push({ indicator_slug: row.indicator_slug, name: dimension.indicators.find(i => i.slug === row.indicator_slug)?.name ?? row.indicator_slug,
         value: null, unit: '', year: null, status: 'gap', notes: row.reason, search_context: row.nearest_data,

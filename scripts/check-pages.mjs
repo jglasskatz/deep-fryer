@@ -78,7 +78,10 @@ try {
   assert.match(page.url(), /#dim-health$/);
   await page.reload({ waitUntil: 'networkidle' });
   assert.equal(await page.getByRole('heading', { level: 1 }).innerText(), 'Monterey County');
-  await page.waitForFunction(() => { const top = document.getElementById('dim-health').getBoundingClientRect().top; return top >= 0 && top < 100; });
+  await page.waitForFunction(() => { const top = document.getElementById('dim-health').getBoundingClientRect().top; return top >= 0 && top < 100; }, null, { timeout: 10000 }).catch(async error => {
+    console.error(await page.evaluate(() => ({ url: location.href, scrollY, healthTop: document.getElementById('dim-health').getBoundingClientRect().top, height: document.documentElement.scrollHeight })));
+    throw error;
+  });
   const noScript = await browser.newContext({ javaScriptEnabled: false });
   const fallback = await noScript.newPage();
   await fallback.goto(`${origin}santa-cruz/`);

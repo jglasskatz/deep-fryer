@@ -48,6 +48,7 @@ function restoreAnchor() {
   requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: 'start', behavior: 'instant' }));
 }
 restoreAnchor();
+window.addEventListener('load', restoreAnchor, { once: true });
 for (const link of links) link.addEventListener('click', event => {
   if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
   event.preventDefault();
