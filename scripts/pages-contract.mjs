@@ -7,6 +7,9 @@ export function publicAssetPath(value) {
   if (typeof value !== 'string' || !/^evidence\/[a-z0-9-]+\/[a-f0-9]+\.(png|jpg|jpeg|pdf)$/.test(value)) throw new Error(`Invalid evidence path: ${value}`);
   return value;
 }
+export function indicatorAssets(indicator) {
+  return [indicator, ...(indicator.supporting_evidence ?? [])].flatMap(item => [item.evidence_path, item.pdf_path].filter(Boolean));
+}
 export function validateRelease(release) {
   if (release.schema_version !== 1 || !Array.isArray(release.portraits) || !release.portraits.length) throw new Error('Invalid portrait release');
   const slugs = new Set();
@@ -27,7 +30,11 @@ export function validateRelease(release) {
       if (dimension.level !== null && (!Number.isFinite(dimension.level) || dimension.level < -100 || dimension.level > 150)) throw new Error('Invalid visualization level');
       for (const indicator of dimension.indicators) {
         if (!['published', 'legacy-source', 'source-supported-draft', 'uncertain', 'gap'].includes(indicator.status)) throw new Error('Indicator status missing');
-        for (const value of [indicator.evidence_path, indicator.pdf_path]) if (value) publicAssetPath(value);
+        if (indicator.supporting_evidence !== undefined && !Array.isArray(indicator.supporting_evidence)) throw new Error('Invalid supporting evidence');
+        for (const value of indicatorAssets(indicator)) publicAssetPath(value);
+        for (const source of indicator.supporting_evidence ?? []) {
+          if (!source.label || !source.evidence_path || !['https:', 'http:'].includes(new URL(source.source_url).protocol)) throw new Error('Invalid supporting source');
+        }
         if (indicator.source_url && !['https:', 'http:'].includes(new URL(indicator.source_url).protocol)) throw new Error('Unsafe source URL');
         if (indicator.status === 'source-supported-draft' && (!indicator.evidence_path || !indicator.review_note)) throw new Error('Unsupported draft badge');
         if (indicator.status === 'gap' && indicator.value !== null) throw new Error('A gap cannot be a numeric claim');

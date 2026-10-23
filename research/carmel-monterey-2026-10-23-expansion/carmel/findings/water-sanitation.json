@@ -1,0 +1,17 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "safe-drinking-water",
+    "reason": "A direct city water-system compliance percentage could not be established. Official sources identify California American Water\u2019s Monterey system as serving Carmel-by-the-Sea and its 2024 CCR reports compliance with state and federal drinking-water requirements, but the report\u2019s served population is system-wide across multiple communities and does not report Carmel\u2019s share. The system\u2019s current 2024 exhibit could not be archived by the local capture helper (provider 403; Water Board report route 404), so the accessible direct browser view is retained only as nearest context.",
+    "scales_tried": [
+      "city",
+      "county"
+    ],
+    "tiers_tried": [
+      1,
+      2
+    ],
+    "searched_at": "2026-10-23T02:52:58Z",
+    "nearest_data": "Useful current context: California American Water\u2019s 2024 Monterey Water System CCR identifies PWS CA2710004 and lists Carmel-by-the-Sea among the communities served (PDF pp.1 and 5); it states 2024 testing complied with all state and federal drinking-water requirements (p.12). California Drinking Water Watch\u2019s system detail lists 128,928 people served across the system, which also includes multiple other cities and unincorporated areas, so this cannot be used as the Carmel population denominator. The State Board violations listing for the system shows seven historical violations dated 2005\u20132012, not a 2024 compliance count. City utilities page lists California American Water among local providers. Direct report URL: https://ear.waterboards.ca.gov/Home/ViewCCR?PwsID=CA2710004&Year=2024&isCert=false ; source host report capture returned HTTP 404. Vendor mirror https://www.amwater.com/ccr/Monterey.pdf returned HTTP 403. System detail https://sdwis.waterboards.ca.gov/PDWW/JSP/WaterSystemDetail.jsp?tinwsys_is_number=3167&tinwsys_st_code=CA&wsnumber=CA2710004 ; violations listing https://sdwis.waterboards.ca.gov/PDWW/JSP/Violations.jsp?tinwsys_is_number=3167&tinwsys_st_code=CA."
+  }
+]

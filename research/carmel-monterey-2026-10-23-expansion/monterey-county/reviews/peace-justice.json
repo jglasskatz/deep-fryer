@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "violent-crime-rate",
+    "content_supported": "uncertain",
+    "verifier_note": "Correctly follows offenses reported within the geography, not residence of perpetrators/victims. Agency-only data may omit other jurisdictions and require coverage review before county aggregation. DOJ/FBI county data remain unextracted. Neither zero crime nor definitive absence of data is supported.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

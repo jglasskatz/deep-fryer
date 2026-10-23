@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "broadband-access",
+    "content_supported": "pass",
+    "verifier_note": "Inspected screenshot 149d725c14fb10ca.png and raw B28002 response: city GEOID 16000US0611250, ACS 2020–2024, household universe. B28002004 broadband of any type 1581 / B28002001 all households 1619×100=97.6529→97.7; score (95−97.7)/95×100=−2.8. This includes cellular/satellite broadband subscription and is not fixed-line availability or subscription alone. MOEs 266/267 refer to counts; a derived percentage MOE is not supplied. Direct reviewer API refetch failed; exact support is archived publisher response. Source support does not resolve human review flags or approval.",
+    "reviewed_at": "2026-10-23T03:10:15.064927+00:00",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B28002&geo_ids=16000US0611250",
+    "exhibit_checked": true
+  }
+]

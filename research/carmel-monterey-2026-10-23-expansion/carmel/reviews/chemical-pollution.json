@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "tri-releases-per-capita",
+    "content_supported": "uncertain",
+    "verifier_note": "A failed exact TRI query cannot establish zero facilities or releases. Prior city/county and EPA searches are documented, but a dated jurisdiction query, reporting coverage, release total and matching population remain unextracted. Postal Carmel must not be city limits. Provisional retrieval gap remains unscored.",
+    "reviewed_at": "2026-10-23T03:18:52.050896+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_slug": "cost-burdened-renters",
+    "content_supported": "uncertain",
+    "verifier_note": "Inspected dd6e71fc936cda74.png and raw B25070: county ACS 2024 one-year renter-occupied universe; total 62,754, not computed 1,967. Numerator 5,888+3,826+8,738+16,798 = 35,250; 35,250/(62,754−1,967)×100 = 57.989% → 58.0%; conditional score 93.3. Bins include exactly 30.0%, so the unchanged framework’s strict OVER 30% share cannot be isolated. The corrected name identifies 30% OR MORE. Keep the construct flag; no combined-share MOE was calculated. Related measurement is supported; exact framework match remains uncertain.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B19083%2CB25070%2CB20017%2CB27001&geo_ids=05000US06053",
+    "exhibit_checked": true
+  },
+  {
+    "indicator_slug": "homelessness-rate",
+    "content_supported": "pass",
+    "verifier_note": "Independent live PIT report and matching archived PDF page 12 support Monterey County count 2,436 on January 31, 2024. Live DOF report and rendered archive 4482a1372d1295ee.pdf physical page 31 identify rightmost TOTAL population 437,614 on January 1, 2024. Adjacent adjusted population 425,625 is NOT used; the exclusions apply to adjusted/growth columns. 2,436/437,614×10,000 = 55.6655 → 55.7; rounded-value score 457.0. Both inputs are archived and the sidecar exposes the denominator. PIT is a one-night estimate with HUD exclusions, not annual persons served.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": "https://chsp.org/wp-content/uploads/2025/12/2024-Monterey-County-PIT-Count-Report_Final.pdf",
+    "exhibit_checked": true
+  }
+]

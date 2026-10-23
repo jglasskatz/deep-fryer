@@ -5,14 +5,21 @@ import vm from 'node:vm';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { framework } from '@deep-fryer/contract';
-import { pctToVizLevel, type FindingPayload } from '@deep-fryer/core';
+import { pctToVizLevel, findingPayloadSchema, maxDataAgeYears, acceptedScales, resolveThreshold, computeScoring, type FindingPayload } from '@deep-fryer/core';
 import { getDb, publishedDoughnut } from '@deep-fryer/db';
 import type { PublishedPortrait } from '../apps/web/lib/portrait.js';
 
 const sourceIndex = process.argv.indexOf('--santa-cruz');
 if (sourceIndex < 0 || !process.argv[sourceIndex + 1]) throw new Error('Usage: node --env-file=.env.local --import tsx scripts/snapshot-pages.ts --santa-cruz <source-checkout>');
 const santaCruz = path.resolve(process.argv[sourceIndex + 1]!);
-const destination = path.resolve('site');
+function option(name: string, fallback: string) {
+  const index = process.argv.indexOf(name);
+  if (index < 0) return fallback;
+  const value = process.argv[index + 1];
+  if (!value || value.startsWith('--')) throw new Error(`Missing value for ${name}`);
+  return value;
+}
+const destination = path.resolve(option('--output', 'site'));
 const catalog = JSON.parse(await readFile(path.join(destination, 'catalog.json'), 'utf8'));
 await mkdir(path.join(destination, 'data'), { recursive: true });
 const digest = (bytes: string | Buffer) => createHash('sha256').update(bytes).digest('hex');
@@ -83,30 +90,62 @@ for (const { slug } of catalog.portraits.filter((p: { slug: string; status: stri
     provenance: { kind: 'published-db', source_sha256: digest(JSON.stringify(portrait)), versions: portrait.dimensions.map(d => ({ dimension: d.slug, version: d.version_num, published_at: d.published_at })) }, dimensions });
 }
 
-const campaign = 'research/carmel-monterey-2026-10-18';
+const campaign = option('--campaign', 'research/carmel-monterey-2026-10-23-expansion');
+type ReviewManifest = { reviewer: string; reviewed_at: string; approved: false; supporting_evidence_sha256?: Record<string, string>; portraits: Record<string, Record<string, { findings_sha256: string; reviews_sha256: string }>> };
+let reviewManifest: ReviewManifest | null = null;
+try { reviewManifest = JSON.parse(await readFile(path.join(campaign, 'review-manifest.json'), 'utf8')); }
+catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
+if (process.argv.includes('--require-review-manifest') && !reviewManifest) throw new Error('Missing independent review manifest');
+if (reviewManifest && (reviewManifest.reviewer !== 'gpt-6.1-sol' || reviewManifest.approved !== false || !reviewManifest.reviewed_at)) throw new Error('Invalid independent review manifest');
 for (const slug of ['carmel', 'monterey-county']) {
   const directory = path.join(campaign, slug);
   const config = JSON.parse(await readFile(path.join(directory, 'config.json'), 'utf8'));
+  let supporting: Record<string, Array<{ label: string; source_url: string; snapshot_path: string; pdf_path?: string }>> = {};
+  try {
+    const raw = await readFile(path.join(directory, 'supporting-evidence.json'), 'utf8');
+    if (reviewManifest && reviewManifest.supporting_evidence_sha256?.[slug] !== digest(raw)) throw new Error(`Independent supporting-evidence review is stale: ${slug}`);
+    supporting = JSON.parse(raw);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+    if (reviewManifest?.supporting_evidence_sha256?.[slug]) throw new Error(`Missing reviewed supporting evidence: ${slug}`);
+  }
   const dimensions = [];
   const hashes: Record<string, string> = {};
   for (const dimension of framework.dimensions) {
     const raw = await readFile(path.join(directory, 'findings', `${dimension.slug}.json`), 'utf8');
     const reviewText = await readFile(path.join(directory, 'reviews', `${dimension.slug}.json`), 'utf8');
+    if (reviewManifest) {
+      const binding = reviewManifest.portraits[slug]?.[dimension.slug];
+      if (binding?.findings_sha256 !== digest(raw) || binding?.reviews_sha256 !== digest(reviewText)) throw new Error(`Independent review is stale or missing: ${slug}/${dimension.slug}`);
+    }
     hashes[dimension.slug] = digest(raw + reviewText);
     const reviews = JSON.parse(reviewText) as Array<{ indicator_slug: string; content_supported: 'pass' | 'fail' | 'uncertain'; verifier_note: string }>;
     const indicators = [];
-    for (const row of JSON.parse(raw) as FindingPayload[]) {
+    for (const rawFinding of JSON.parse(raw) as unknown[]) {
+      const row = findingPayloadSchema.parse(rawFinding) as FindingPayload;
       const review = reviews.find(r => r.indicator_slug === row.indicator_slug);
       if (!review) throw new Error(`Unreviewed research finding: ${slug}/${row.indicator_slug}`);
       if (row.kind === 'gap') indicators.push({ indicator_slug: row.indicator_slug, name: dimension.indicators.find(i => i.slug === row.indicator_slug)?.name ?? row.indicator_slug,
         value: null, unit: '', year: null, status: 'gap', notes: row.reason, search_context: row.nearest_data,
         review_note: review.verifier_note, geography: 'Not measured', evidence_path: null, pdf_path: null });
       else {
+        const spec = dimension.indicators.find(i => i.slug === row.indicator_slug);
+        const threshold = spec && resolveThreshold(spec.threshold_ref, config.threshold_overrides);
+        if (!threshold || !spec || typeof row.value !== 'number' || row.target !== threshold.target || row.scoring.threshold_ref !== spec.threshold_ref || row.scoring.function !== threshold.function || row.level_pct !== computeScoring(row.value, spec.threshold_ref, threshold).level_pct) throw new Error(`Research score disagrees with canonical threshold: ${slug}/${row.indicator_slug}`);
         const snapshot = await evidence(path.resolve('apps/web/public/evidence', slug), row.evidence.snapshot_path);
+        const supportingEvidence = [];
+        for (const item of supporting[row.indicator_slug] ?? []) supportingEvidence.push({ label: item.label, source_url: item.source_url,
+          evidence_path: await evidence(path.resolve('apps/web/public/evidence', slug), item.snapshot_path),
+          pdf_path: await evidence(path.resolve('apps/web/public/evidence', slug), item.pdf_path) });
         indicators.push({ ...row, status: review.content_supported === 'pass' && snapshot ? 'source-supported-draft' : 'uncertain',
+          quality_flags: [
+            ...(row.confidence === 'low' ? ['Low confidence estimate'] : []),
+            ...(new Date().getFullYear() - row.year > maxDataAgeYears(config.recency, dimension.slug) ? [`Outside the configured recency limit (${row.year})`] : []),
+            ...(!acceptedScales(config.scale_policy, dimension.slug).includes(row.geographic_scale) ? ['Geography falls outside the configured scale policy'] : []),
+          ],
           geography: slug === 'carmel' && row.geographic_scale === 'county' ? 'Monterey County proxy — not Carmel city limits' : row.geographic_scale,
           evidence_path: snapshot, pdf_path: await evidence(path.resolve('apps/web/public/evidence', slug), row.evidence.pdf_path),
-          review_note: review.verifier_note });
+          review_note: review.verifier_note, ...(supportingEvidence.length ? { supporting_evidence: supportingEvidence } : {}) });
       }
     }
     // A preview may show only independently supported, archived scores. A
@@ -118,7 +157,8 @@ for (const slug of ['carmel', 'monterey-county']) {
   }
   portraits.push({ slug, name: config.region.name, group: 'Carmel & Monterey', region: config.region.definition, status: 'research-preview',
     notice: 'Research preview — not an approved portrait. Luna researched; Sol 6.1 independently checked the sources. Supported drafts, missing evidence and gaps are labeled per indicator. Colored wedges show only archived, source-supported draft scores; unarchived dimensions stay unknown. No human approval is implied.',
-    provenance: { kind: 'session-research', researcher: 'gpt-6-luna', reviewer: 'gpt-6.1-sol', hashes, approved: false }, dimensions });
+    provenance: { kind: 'session-research', campaign: path.basename(campaign), researcher: 'gpt-6-luna', reviewer: 'gpt-6.1-sol', hashes,
+      ...(reviewManifest ? { review_manifest_sha256: digest(JSON.stringify(reviewManifest)), reviewed_at: reviewManifest.reviewed_at } : {}), approved: false }, dimensions });
 }
 const ledger = JSON.parse(await readFile(path.join(campaign, 'cost-ledger.json'), 'utf8'));
 const data = { schema_version: 1, captured_at: new Date().toISOString(), portraits, cost_scenarios: ledger };

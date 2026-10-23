@@ -32,6 +32,13 @@ test('public file and HTML boundaries reject traversal and escape source text', 
   const unsafe = structuredClone(release);
   unsafe.portraits[0].dimensions[0].indicators[0].source_url = 'javascript:alert(1)';
   assert.throws(() => validateRelease(unsafe), /Unsafe source/);
+  const supporting = structuredClone(release);
+  const item = supporting.portraits[0].dimensions[0].indicators[0];
+  item.supporting_evidence = [{ label: 'Population denominator', source_url: 'https://example.gov/population', evidence_path: '../secret.png' }];
+  assert.throws(() => validateRelease(supporting), /Invalid evidence path/);
+  item.supporting_evidence[0].evidence_path = 'evidence/shared/abc123.png';
+  item.supporting_evidence[0].source_url = 'javascript:alert(1)';
+  assert.throws(() => validateRelease(supporting), /Invalid supporting source/);
 });
 test('wedge tampering, approval relabeling and catalog substitution fail closed', () => {
   const score = structuredClone(release);

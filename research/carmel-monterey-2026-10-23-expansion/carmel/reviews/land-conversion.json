@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "natural-land-conversion",
+    "content_supported": "uncertain",
+    "verifier_note": "Gap reflects an unperformed geospatial analysis, not established absence of land-cover data. Baseline city/tier1 search does not exhaust allowed county or state/federal NLCD annual land-cover products. A valid result needs stable city boundary, defined natural classes, baseline/end years and area conversion; no supported rate or zero is present.",
+    "reviewed_at": "2026-10-23T03:18:52.050896+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

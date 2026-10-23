@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "gender-pay-ratio",
+    "content_supported": "pass",
+    "verifier_note": "Inspected screenshot 7f5db5f803341064.png and raw B20017 response: city GEOID 16000US0611250, ACS 2020–2024, population 16+ with earnings; B20017006 female FT/year-round median $100313 and B20017003 male FT/year-round median $109800, both 2024 dollars. 100313/109800×100=91.3597→91.4; score (95−91.4)/95×100=3.8. Comparable sex/work-experience universes are used. Individual 90% MOEs $35400/$44124 are large; no ratio MOE is asserted. Direct reviewer API refetch failed; exact support is archived publisher response. Retain low-confidence flag and no-approval status.",
+    "reviewed_at": "2026-10-23T03:10:15.064927+00:00",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B20017&geo_ids=16000US0611250",
+    "exhibit_checked": true
+  }
+]

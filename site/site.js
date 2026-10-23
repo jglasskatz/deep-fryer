@@ -45,6 +45,7 @@ function selectPortrait(slug, restoreDimension = true) {
     for (const indicator of d.indicators) {
       add('p', `${indicator.name}: ${indicator.value === null ? 'Data needed' : `${indicator.value} ${indicator.unit || ''}`} ${indicator.year ? `(${indicator.year})` : ''}`);
       add('small', `${collection.statuses[indicator.status]} · ${indicator.geography || 'See source context'}`);
+      if (indicator.quality_flags?.length) add('small', indicator.quality_flags.join(' · '));
       if (indicator.source) add('small', `Source: ${indicator.source}`);
     }
     if (!d.indicators.length) add('p', 'No published measurement available.');

@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "aragonite-saturation",
+    "content_supported": "uncertain",
+    "verifier_note": "Updated NOAA regional source is allowed context; its 2019–2024 downward trend is not a numeric annual Ωar value. Accession0287551 contains potential monthly gridded source data that were not extracted, so this is an access/calculation gap rather than unavailable science. Regional California Current must not be called Carmel nearshore. No numeric score can be inferred from trend direction; global fallback also remains configured.",
+    "reviewed_at": "2026-10-23T03:18:52.050896+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

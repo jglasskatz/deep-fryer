@@ -1,0 +1,302 @@
+[
+  {
+    "query": "site:ci.carmel.ca.us drinking water annual water quality report California American Water Carmel 2024",
+    "url": "https://ci.carmel.ca.us/",
+    "decision": "search result not relied on; no city-specific CCR located",
+    "reason": "Broad official-domain query returned no result establishing a current city-served population or violation count."
+  },
+  {
+    "query": "site:amwater.com California American Water Monterey District 2024 Consumer Confidence Report Carmel-by-the-Sea",
+    "url": "https://www.amwater.com/caaw/",
+    "decision": "search result candidate only",
+    "reason": "Search result confirms California American Water publishes annual CCRs, but did not surface a Monterey report or Carmel system boundary; must find direct report and service population before use."
+  },
+  {
+    "query": "Carmel-by-the-Sea 2024 ACS uninsured under 65 S2701 Census API 0611250",
+    "url": "https://api.census.gov/data/2024/acs/acs1/subject/groups/S2701.html",
+    "decision": "identified authoritative ACS subject-table metadata; determine 5-year estimate for small city",
+    "reason": "Search result surfaced 2024 ACS 1-year S2701 metadata; Carmel’s ~3,000 population is below the ACS 1-year general 65,000 threshold, so this is not a valid city estimate; pursue ACS 5-year."
+  },
+  {
+    "query": "Carmel-by-the-Sea ACS 2024 renter households cost burden 30 percent 2024 B25070",
+    "url": "https://ci.carmel.ca.us/sites/main/files/carmel_housing_study_01_2023_final.pdf",
+    "decision": "reject city report value as stale; pursue 2024 ACS source",
+    "reason": "City housing study reports 47% from ACS 2016–2020. That is outside the five-year data window and does not satisfy current indicator recency."
+  },
+  {
+    "query": "California American Water Monterey Service Area Tariff Area includes Carmel-by-the-Sea",
+    "url": "https://amwater-prod.awapps.com/caaw/Customer-Service-Billing/Rates/Monterey-District",
+    "decision": "opened; use only to establish system/service geography, not city-only compliance",
+    "reason": "Official utility page explicitly includes Carmel-by-the-Sea and also other incorporated communities and unincorporated areas."
+  },
+  {
+    "query": "California American Water 2024 Monterey system Consumer Confidence Report",
+    "url": "https://www.amwater.com/ccr/Monterey.pdf",
+    "decision": "search result found, direct open failed on redirect to inaccessible 2025 PDF",
+    "reason": "Search result states Monterey system communities include Carmel-by-the-Sea and several other places; district-wide report cannot allocate city population/violations."
+  },
+  {
+    "query": "Carmel-by-the-Sea 2024 ACS S2701 uninsured under 65 Census API",
+    "url": "https://api.census.gov/data/2024/acs/acs5/subject/groups/S2701.html",
+    "decision": "metadata opened, value endpoint attempt failed HTTP 503; retained as gap pending viable API",
+    "reason": "ACS 5-year is appropriate for small city; official subject table has age bands that require summing under-19 and 19–64 counts, not averaging percentages."
+  },
+  {
+    "query": "Carmel-by-the-Sea 2024 ACS B25070 renter gross rent burden Census API",
+    "url": "https://api.census.gov/data/2024/acs/acs5/groups/B25070.html",
+    "decision": "metadata opened, official value endpoint inaccessible; 2024 5-year city candidate found on Neilsberg and opened",
+    "reason": "Census table defines 30.0–34.9 category; secondary city page reports aggregate renter burden >=30% but does not expose bin counts or denominator in the opened text."
+  },
+  {
+    "query": "Carmel-by-the-Sea 2024 ACS B19083 Gini Census API",
+    "url": "https://api.census.gov/data/2024/acs/acs5/groups/B19083.html",
+    "decision": "official value endpoint inaccessible; rounded city value 0.52 found in opened secondary profile",
+    "reason": "Underlying exact estimate and margin of error remain unavailable; page reports 2020–2024 ACS 5-year and rounds to two decimals."
+  },
+  {
+    "query": "Carmel-by-the-Sea 2024 ACS S2002 women median earnings full-time year-round",
+    "url": "https://api.census.gov/data/2024/acs/acs5/subject/groups/S2002.html",
+    "decision": "metadata opened, exact city endpoint not retrieved",
+    "reason": "No matching female-to-male full-time/year-round median-earnings ratio extracted; retain honest gap."
+  },
+  {
+    "query": "Carmel-by-the-Sea 2024 ACS uninsured rent burden Gini exact city values",
+    "url": "https://www.neilsberg.com/insights/topic/carmel-by-the-sea-ca/",
+    "decision": "opened; candidate numeric values identified; source tier 4; capture attempts both returned HTTP 403, so findings remain unarchived and review-flagged",
+    "reason": "Page explicitly identifies Carmel-by-the-Sea and ACS 2020–2024 5-year. Reports renter cost burden 55.7% at >=30%, Gini 0.52 rounded; not direct Census table, not exact bins/MOE."
+  },
+  {
+    "query": "Carmel-by-the-Sea renter households paying over 30 percent ACS 2024",
+    "url": "https://ci.carmel.ca.us/sites/main/files/carmel_6th_cycle_housing_element_adopted_040824_sm.pdf",
+    "decision": "city adopted Housing Element source retained as older context, not accepted for recency",
+    "reason": "Prior city plan source is older ACS vintage (2016–2020/2019 per report); 55.7% current secondary ACS candidate was found but threshold/denominator caveats remain."
+  },
+  {
+    "query": "Census Reporter Carmel-by-the-Sea city profile ACS 2024 five-year",
+    "url": "https://censusreporter.org/profiles/16000US0611250-carmel-by-the-sea-ca/",
+    "decision": "opened and archived; confirms city identity and ACS vintage, but not requested rent/Gini/uninsured exact tables",
+    "reason": "Directly opened text shows Carmel-by-the-Sea, GEOID 0611250, ACS 2024 5-year, including population, education and poverty; evidence was archived successfully."
+  },
+  {
+    "query": "Census Reporter API schema for 2024 ACS table and geography endpoint",
+    "url": "https://github.com/censusreporter/census-api/blob/master/API.md?plain=1",
+    "decision": "opened official Census Reporter API documentation and corrected earlier malformed request",
+    "reason": "Documentation specifies /1.0/data/show/<acs>?table_ids=...&geo_ids=... and response includes estimate/error, table, and geography metadata."
+  },
+  {
+    "query": "Carmel-by-the-Sea ACS 2024 B25070 exact renter cost burden with MOEs",
+    "url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B19083&geo_ids=16000US0611250",
+    "decision": "captured direct Census Reporter table response successfully",
+    "reason": "The response explicitly includes 2020–2024 vintage, exact place, table universe, category counts, MOEs, denominator and supports calculation; strict >30 threshold ambiguity retained."
+  },
+  {
+    "query": "Carmel-by-the-Sea ACS 2024 B19083 exact Gini with margin of error",
+    "url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B19083&geo_ids=16000US0611250",
+    "decision": "captured direct Census Reporter table response successfully",
+    "reason": "Response includes ACS 2020–2024 city value 0.5225 and MOE 0.0558, household universe, and release metadata."
+  },
+  {
+    "query": "Carmel-by-the-Sea ACS 2024 B27001 under-65 health insurance table",
+    "url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B27001&geo_ids=16000US0611250",
+    "decision": "captured table response successfully; numeric estimate with large MOE retained for reviewer",
+    "reason": "Exact place, table universe, age-specific insurance status counts, vintage and MOEs are in the archive; uninsured count MOE 25 exceeds estimate 15."
+  },
+  {
+    "query": "Carmel-by-the-Sea ACS 2024 B20017 women and men full-time year-round earnings",
+    "url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B20017&geo_ids=16000US0611250",
+    "decision": "captured table response successfully; numeric ratio retained with low-confidence flag",
+    "reason": "Exact city table and matched full-time/year-round construct retrieved with both median estimates and MOEs; large uncertainty limits precision."
+  },
+  {
+    "query": "Combined ACS 2024 B27001 B20017 S2002 query",
+    "url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B27001%2CB20017%2CS2002&geo_ids=16000US0611250",
+    "decision": "combined query returned HTTP 400; isolated B27001 and B20017 queries succeeded",
+    "reason": "A table-specific unsupported or incompatible request prevented combined response; source was retried table-by-table."
+  },
+  {
+    "query": "Carmel-by-the-Sea police violent crime FBI ORI agency identity",
+    "url": "https://uscrimereview.com/ca/agency/carmel-pd",
+    "decision": "opened secondary record establishes agency identity/ORI CA0270100 and 2022–2024 coverage; incident-category totals not visible in opened view",
+    "reason": "This is Carmel Police Department in Monterey County, city agency reporting to DOJ CJSC; do not confuse with Carmel, Indiana. No exact violent count was extracted."
+  },
+  {
+    "query": "Carmel-by-the-Sea police violent crime official California DOJ Crimes & Clearances data",
+    "url": "https://openjustice.doj.ca.gov/exploration/crime-statistics/crimes-clearances",
+    "decision": "official interactive DOJ dataset/page found and opened, but web-text extraction exposes no city result; no value inferred",
+    "reason": "DOJ defines violent crime as homicide, rape, robbery and aggravated assault, but exact Carmel agency rows and denominator were not returned by the interactive page."
+  },
+  {
+    "query": "Carmel-by-the-Sea police 2024 violent crime rate FBI or DOJ",
+    "url": "https://www.crimeexplorer.com/california/carmel/",
+    "decision": "reject conflicting secondary rate summary",
+    "reason": "Search result combines 138 incidents over 2019–2023 with 96.3/100,000 average rate, which is arithmetically inconsistent with city population; do not use."
+  },
+  {
+    "query": "Carmel-by-the-Sea police violent crime 2024 FBI CA0270100",
+    "url": "https://www.geostat.org/data/carmel-by-the-sea-ca/crime",
+    "decision": "secondary summary candidate rejected for no exact year/table evidence in snippet",
+    "reason": "Search result reports approx 0.8 violent crimes per 1,000, but lacks exact underlying city-year table and capture; use only as nearest context."
+  },
+  {
+    "query": "California DOJ 2024 Crimes & Clearances official download city agency UCR row",
+    "url": "https://data-openjustice.doj.ca.gov/sites/default/files/dataset/2024-07/crimes-clear-arson-context-06062024.pdf",
+    "decision": "official methodological documentation surfaced but no Carmel agency value extract retrieved; keep crime gap until source CSV/agency row is captured",
+    "reason": "DOJ defines violent crime as homicide+rape+robbery+aggravated assault and identifies agency-reported summary data. Interactive OpenJustice page returned zero extractable lines; searches did not surface a machine-readable direct file."
+  },
+  {
+    "query": "Carmel climatecarmel community greenhouse gas emissions indicator 1327",
+    "url": "https://climatecarmel.com/indicators/1327",
+    "decision": "opened city climate-plan indicator page; no value was exposed in the accessible HTML",
+    "reason": "The page returned only navigation and policy links, so it did not establish a newer per-capita inventory."
+  },
+  {
+    "query": "Carmel-by-the-Sea adopted climate action plan community GHG 2019 inventory",
+    "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/climate_adaptation_plan_appendixa_climate_action_plan_prefinal_042822_0.pdf?1677096044=",
+    "decision": "opened and archived official city CAP Appendix A; retained 2019 city-community total as stale contextual data, not a per-capita finding",
+    "reason": "The plan identifies 2019 as the latest community inventory; totals are 30,962 MT CO2e Scope 1 and 46,076 MT incl Scope 3, but no matching-year observed population denominator was verified. 2020 population 3,949 is a forecast."
+  },
+  {
+    "query": "Carmel-by-the-Sea durable protected land share city park acres PAD-US",
+    "url": "https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-download",
+    "decision": "USGS PAD-US 4.1 source identified as spatial inventory; no city-boundary intersection or area computation was made",
+    "reason": "PAD-US has protected-area geometry, but extracting a city-only protected-land numerator requires spatial intersection with incorporated city boundary and protection-status filtering. Search snippets and general-plan acreage cannot substitute."
+  },
+  {
+    "query": "Carmel-by-the-Sea acres parks open space city limits conservation protected area",
+    "url": "https://ci.carmel.ca.us/post/parks-1",
+    "decision": "official city park descriptions opened; no acreage totals or legal protection share in this page",
+    "reason": "City page documents park system and Mission Trail Preserve acquisition, but does not give a city-limit protected area denominator/numerator."
+  },
+  {
+    "query": "Carmel-by-the-Sea parks open space 68 acres general plan city boundary Rio Park outside limits",
+    "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/open_space_and_conservation_cc_adopted_9-1-09.pdf?1510257845=",
+    "decision": "opened 2009 General Plan; acreage retained only as dated contextual information, not a protected-land-share estimate",
+    "reason": "It reports over 68 acres of parks/open space plus other resources, while also identifying Rio Park outside city limits; old acreage does not establish current durable protection or a clean city-only numerator."
+  },
+  {
+    "query": "Carmel by the Sea protected land acres protected areas PAD-US",
+    "url": "https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-download",
+    "decision": "USGS PAD-US 4.1 official source confirms protected areas geodatabase is downloadable; no city-only numeric result surfaced",
+    "reason": "The source is suitable for a reproducible GIS intersection, but this research pass did not retrieve and spatially intersect the data."
+  },
+  {
+    "query": "site:dof.ca.gov Carmel-by-the-Sea 2019 population estimate E-4 city 11250",
+    "url": "https://dof.ca.gov/media/docs/budget/covid-19-information/covid-19-direct-disaster-response-allocations-and-notifications/6-3-21-section-28-coronavirus_fiscal_recovery_fund_allocations_for_small_cities.pdf",
+    "decision": "opened official California DOF 2019 city estimate and used as matched-year denominator",
+    "reason": "The June 2021 allocation schedule explicitly labels the column “2019 Population Estimate” and lists Carmel-by-the-Sea City as 3,811 (PDF p.6). This is a city-specific administrative estimate used for the population-share allocation, not a current estimate."
+  },
+  {
+    "query": "Census PEP 2019 city Carmel-by-the-Sea place 11250 population estimate 2019",
+    "url": "https://api.census.gov/data/2019/pep/population?get=NAME%2CPOP&for=place%3A11250&in=state%3A06",
+    "decision": "Census API endpoint page accessible but direct query for the Carmel row failed through web open; did not use Census value",
+    "reason": "The dataset metadata describes annual population estimates but the row query was inaccessible; used the directly opened California DOF schedule instead."
+  },
+  {
+    "query": "NOAA California Current LME aragonite saturation 2019 2024 regional average",
+    "url": "https://www.ecowatch.noaa.gov/regions/california-current",
+    "decision": "opened and archived NOAA indicator; retained qualitative trend as nearest regional context, not numeric finding",
+    "reason": "NOAA states 2019–2024 sea-surface Ωar trended down but was mostly within the historical range. The web page describes regional annual averages and method, but no exact value was exposed in text."
+  },
+  {
+    "query": "NOAA NCEI RFR-LME ocean acidification indicators 0287551 aragonite monthly 0.25 degree",
+    "url": "https://www.ncei.noaa.gov/data/oceans/ncei/ocads/metadata/0287551.html",
+    "decision": "opened NOAA/NCEI dataset metadata; confirms model variable and time/spatial coverage, but no regional numeric value",
+    "reason": "Metadata describes monthly 0.25° model output from 1998–2025, aragonite saturation state and included uncertainty; data page did not yield a usable annual regional figure."
+  },
+  {
+    "query": "Sharp et al 2024 NOAA California Current LME aragonite regional annual mean table",
+    "url": "https://www.nature.com/articles/s41597-024-03530-7",
+    "decision": "opened peer-reviewed methods paper; confirmed 1998–2022 grid and regional time series, no exact Ωar value retrieved",
+    "reason": "Paper describes quantitative regional averages and mapped NetCDF, but table data were not exposed as accessible row values in this pass; do not infer from plots or chart fragments."
+  },
+  {
+    "query": "California American Water Monterey District 2024 Consumer Confidence Report Carmel-by-the-Sea health violations 2024",
+    "url": "https://ear.waterboards.ca.gov/Home/ViewCCR?PwsID=CA2710004&Year=2024&isCert=false",
+    "decision": "direct browser view opened and read; exact 2024 system compliance and Carmel service list verified; no city population share available; local evidence archive failed HTTP 404",
+    "reason": "2024 Monterey Water System CCR says 2024 testing complied with state/federal requirements and that residential/commercial distribution includes Carmel-by-the-Sea plus surrounding towns. It is a multi-community system; 128,928 people served are system-wide, not Carmel denominator."
+  },
+  {
+    "query": "California Drinking Water Watch Monterey County Cal-Am Monterey system CA2710004 violations 2024",
+    "url": "https://sdwis.waterboards.ca.gov/PDWW/JSP/WaterSystemDetail.jsp?tinwsys_is_number=3167&tinwsys_st_code=CA&wsnumber=CA2710004",
+    "decision": "opened State Board system record; system population and ID identified but not geographically apportioned to Carmel",
+    "reason": "Record is PWS CA2710004 and lists 128,928 people served. System serves multiple cities/areas, so this is not a Carmel-specific population count."
+  },
+  {
+    "query": "California Drinking Water Watch violations California American Water Monterey system 3167",
+    "url": "https://sdwis.waterboards.ca.gov/PDWW/JSP/Violations.jsp?tinwsys_is_number=3167&tinwsys_st_code=CA",
+    "decision": "opened official State Board violations page; only seven historical entries (2005–2012); use 2024 CCR for current-year compliance",
+    "reason": "The page is a current system portal but historical violation list alone does not prove 2024 compliance; 2024 CCR separately reports compliance."
+  },
+  {
+    "query": "Carmel-by-the-Sea local water supplier CalAm service area and city provider",
+    "url": "https://ci.carmel.ca.us/post/utilities",
+    "decision": "opened city utilities page; lists California American Water as a local utility provider",
+    "reason": "The city page supports provider connection but does not explicitly state that all city residents are served by one water system or give a population share."
+  },
+  {
+    "query": "Monterey Peninsula California American Water service Carmel-by-the-Sea communities and population",
+    "url": "https://www.montereywaterinfo.org/about-us/your-water-supplier/",
+    "decision": "opened joint utility/district information page; confirms CalAm serves Carmel-by-the-Sea",
+    "reason": "It establishes service to the city but not the percentage of Carmel residents served or a city-only compliance total."
+  },
+  {
+    "query": "Carmel-by-the-Sea ACS 2024 B28002 broadband subscriptions city Census Reporter API",
+    "url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B28002&geo_ids=16000US0611250",
+    "decision": "accepted city ACS secondary interface after Census API endpoint failed; archived exact response, metadata and MOEs",
+    "reason": "ACS 2024 5-year response identifies Carmel city (GEOID 16000US0611250), B28002 household universe, 1,581 households with broadband of any type out of 1,619 total; both MOEs are large. Evidence captured."
+  },
+  {
+    "query": "Carmel-by-the-Sea ACS 2024 B23025 unemployment city civilian labor force Census Reporter API",
+    "url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B23025&geo_ids=16000US0611250",
+    "decision": "accepted city ACS secondary interface after Census API endpoint failed; archived exact response, metadata and MOEs",
+    "reason": "ACS 2024 5-year response identifies Carmel city (GEOID 16000US0611250), population 16+ universe, 56 unemployed and 1,780 civilian labor-force participants; MOEs are large. This period/series differs from 2025 annual county BLS data."
+  },
+  {
+    "query": "official Census ACS 2024 5-year city B28002 Carmel broadband place 11250",
+    "url": "https://api.census.gov/data/2024/acs/acs5?get=NAME%2CB28002_001E%2CB28002_004E&for=place%3A11250&in=state%3A06",
+    "decision": "official Tier 2 city value endpoint attempted but inaccessible in browser tool",
+    "reason": "Used Census Reporter direct API interface for the ACS values after repeated Census API access errors; it exposes ACS estimates, MOEs, release and universe metadata."
+  },
+  {
+    "query": "official Census ACS 2024 5-year city B23025 Carmel unemployment place 11250",
+    "url": "https://api.census.gov/data/2024/acs/acs5?get=NAME%2CB23025_003E%2CB23025_005E&for=place%3A11250&in=state%3A06",
+    "decision": "official Tier 2 city value endpoint attempted but inaccessible in browser tool",
+    "reason": "Used Census Reporter direct API interface for the ACS values after repeated Census API access errors; it exposes ACS estimates, MOEs, release and universe metadata."
+  },
+  {
+    "query": "capture retry Census Reporter Carmel ACS city education and poverty profile",
+    "url": "https://censusreporter.org/profiles/16000US0611250-carmel-by-the-sea-ca/",
+    "decision": "recaptured shared source exhibit for ACS education and poverty findings",
+    "reason": "Latest capture shows city profile supporting 2020–2024 ACS B15002 education and B17001 poverty; archive refreshed in Carmel evidence tenant."
+  },
+  {
+    "query": "capture retry California Secretary of State 2024 county voter participation PDF",
+    "url": "https://elections.cdn.sos.ca.gov/sov/2024-general/sov/03-voter-participation-stats-by-county.pdf",
+    "decision": "recaptured direct official PDF exhibit for county turnout proxy",
+    "reason": "Latest PDF capture preserves the Monterey County voter and registered-voter counts; county scale remains explicitly labeled."
+  },
+  {
+    "query": "capture retry Monterey County 2024 PIT homelessness report PDF page 12",
+    "url": "https://chsp.org/wp-content/uploads/2025/12/2024-Monterey-County-PIT-Count-Report_Final.pdf",
+    "decision": "capture succeeded after earlier timeout; accepted as documented county proxy evidence",
+    "reason": "PDF exhibit archived after successful retry. Report gives Monterey County PIT total; rate denominator still county population, not Carmel city."
+  },
+  {
+    "query": "Review-verified CHR 2025 Monterey County PM2.5 row and v125 observation-year field metadata",
+    "url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv125_rawvalue&returnGeometry=false&f=pjson",
+    "decision": "added as explicitly stale county contextual candidate for Sol review; do not call it current or city data",
+    "reason": "Reviewer-verified raw row reports 8.8 µg/m³, release year 2025, while field metadata explicitly states observation year 2020; actual exhibit captured by county researcher and copied to Carmel evidence tenant."
+  },
+  {
+    "query": "Review-verified California DOF 2024 Monterey County population estimate for 2024 PIT denominator",
+    "url": "https://dof.ca.gov/media/docs/forecasting/Demographics/estimates/PriceandPopulation2024.pdf",
+    "decision": "used Total column 437,614 as matched 2024 county denominator; adjusted total 425,625 rejected",
+    "reason": "County reviewer inspected source exhibit and confirmed Monterey County Total column, page 31; copy of actual archived PDF/screenshot added to Carmel evidence tenant for the county proxy."
+  },
+  {
+    "query": "Sol review-provided County Health Rankings air-pollution aggregation methodology",
+    "url": "https://www.countyhealthrankings.org/health-data/community-conditions/physical-environment/air-water-and-land/air-pollution-particulate-matter",
+    "decision": "method caveat added to stale CHR Monterey County PM2.5 candidate; value/year/score unchanged",
+    "reason": "Reviewer-verified CHR method page explains the 2020 annual daily-data estimate and that the county value is the maximum among tract-centroid estimates, not a population-weighted spatial mean or direct individual exposure. Captured exhibit copied into Carmel supporting-evidence sidecar."
+  }
+]

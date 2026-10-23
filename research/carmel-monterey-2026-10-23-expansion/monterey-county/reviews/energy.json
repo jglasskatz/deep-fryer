@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "energy-burden",
+    "content_supported": "uncertain",
+    "verifier_note": "Independent DOE LEAD FAQ confirms 2018–2022 ACS data calibrated to 2022 EIA, but defines burden using average cost/average income and weighted county means. The framework asks for median low-income-household burden. A mean cannot be silently relabeled median. Distinguish this construct mismatch from failure to extract county data. No supported median or measured zero is present.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

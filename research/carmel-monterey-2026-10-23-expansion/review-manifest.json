@@ -1,0 +1,183 @@
+{
+  "reviewer": "gpt-6.1-sol",
+  "reviewed_at": "2026-10-23T03:31:02.913599+00:00",
+  "approved": false,
+  "portraits": {
+    "carmel": {
+      "air-pollution": {
+        "findings_sha256": "7bf74b8f8aa1819d3d669fc36f48577af1847ee5f75e9c2c60071bf444ecb812",
+        "reviews_sha256": "375749d9cf370be6ec21dddefc1fb45a75dd3ae9d7ddd8e7c298b17e6b9a3837"
+      },
+      "biodiversity-loss": {
+        "findings_sha256": "2ba1ea1ce0e18e93d407b95a540c7404687f4fa226f3f2aa2581687bc6f220f9",
+        "reviews_sha256": "b1dbccd078e7755482f2987c9cd5afab234ea62519e3d8189fbb84124a140a3d"
+      },
+      "chemical-pollution": {
+        "findings_sha256": "d3e6d0e6e0ee557234c02191f0a40ef2e5d3710fb5c1a8878081756e8308b0e5",
+        "reviews_sha256": "6b12599980c8800987e47002626726be66f31c720e3d80f23b5226fdbd2a64a2"
+      },
+      "climate-change": {
+        "findings_sha256": "76833f8e71c51116dee10b3bf80ecdebb845618080a158d780759599fe1ba1a0",
+        "reviews_sha256": "8e25382de19183048d7242139d37bd8a4520a45acc36688f9a4c5bdcf644937c"
+      },
+      "education": {
+        "findings_sha256": "3c2d10ffd651a017c3505c0d6258b4dbbf258e4b24c5319bb17e63e528eed234",
+        "reviews_sha256": "14c1b7fe15d768784b7ee16885e4510e4df4060c491dbab2d13189919771180d"
+      },
+      "energy": {
+        "findings_sha256": "9ed5aa7c9fc3d93ae3477329657a2cb782495e281c60cbaf92f774425cf08523",
+        "reviews_sha256": "2d59143e59afa4a5edc94a9b1346da9de0e8da61e6375532fb45b6de6384d9ed"
+      },
+      "food": {
+        "findings_sha256": "9273692c65227053ae9303bebed6dacaeb315bcdaa0087f6210b0804ec846bbb",
+        "reviews_sha256": "349c088c9b98638add9e094a996ffeea942165e18ee43f186d3258f6ad0cef47"
+      },
+      "freshwater-withdrawals": {
+        "findings_sha256": "5fc3c9c2bcd3a1a940f23aef4d3a47b58717b7b6f897d6568f316f676b6b7dba",
+        "reviews_sha256": "494d45308bafcfac807ce0f84405a99d847730cc5a8313ade5426b28369312de"
+      },
+      "gender-equality": {
+        "findings_sha256": "e294144a909e3db2f38eadf54c79f4ffe8e48b91344ef0c606ff039a2dd9b022",
+        "reviews_sha256": "1c057fc070b9d1434729a2c354587226bf30b0940473efcfe2b561334a57f0be"
+      },
+      "health": {
+        "findings_sha256": "ab0dd08738dc0c456b7d9aa0cd02744a76f9c91e56bdd962ec7b39d4ccfe51c6",
+        "reviews_sha256": "fc85573bb80718f10ca0af18c94b3000a2bb487664bb86b3df308def5e9902ff"
+      },
+      "housing": {
+        "findings_sha256": "5a56acedcfd61d286a69b6a1e309861cec66ba973008d8aec62c2fbf9b9456ed",
+        "reviews_sha256": "4dae8e97566cfb912a6c8d672546067246c0f263d3998bb218b4bf2b0181511b"
+      },
+      "income-work": {
+        "findings_sha256": "1be992ef8a1bf1687630e6669401bfe49a81c11bac16236cdeb3b67e8f939ec2",
+        "reviews_sha256": "f94f653c5b4e1b762f8c5b07169f9193f31db277613902d21f00db17582ed872"
+      },
+      "land-conversion": {
+        "findings_sha256": "6a446e525f3eb95a74399410ed34e8741ba3f04269f2a66880a829d134f7b0dc",
+        "reviews_sha256": "4b7c9f859f68b333de3a019ab06bdf17e82df5c2c74be35426ccccc43404eb39"
+      },
+      "networks": {
+        "findings_sha256": "5d1be35150b9904c429d55491911c1e21f992abea4a75f306dbbf974a1f8802c",
+        "reviews_sha256": "f5a61c3cade25c89120cb21f92e23744df8df5933b683bf5e36c087a5fe80266"
+      },
+      "nitrogen-phosphorus-loading": {
+        "findings_sha256": "a905c1d4a951ebe6009774a6c78570b70cb5b835c072f1de13f9fb36d02bbe39",
+        "reviews_sha256": "f26b67c6ada1775be8cbfa6afd9b6c93dd85e3bbe7e51721f51690a624f4d3e4"
+      },
+      "ocean-acidification": {
+        "findings_sha256": "f97ec20011fe79b1f22dc03074e263be8ac7bee6e973793f8bde425ffa60ad93",
+        "reviews_sha256": "010c3415f0bf8dd23fc9b2b56b53b54a43b9b8276658f33d9123f8aa8cc7c9da"
+      },
+      "ozone-depletion": {
+        "findings_sha256": "7cdcb234bd77a4af9596fa790b6a5858b7c09b1554c37733f75041929b3f1004",
+        "reviews_sha256": "b393fe7f5e6517012747f4da8817fbf940cd3428e7f2d485fb7e2357f8b93a06"
+      },
+      "peace-justice": {
+        "findings_sha256": "3d651bf68b5dcd0f38153d00aafd9172a481ecf84426a0ab1dc6dbacf051e161",
+        "reviews_sha256": "3e7450a4d220655d3862e48f2a6bf98f60360782ac419d58990b0f6bd0f0670b"
+      },
+      "political-voice": {
+        "findings_sha256": "c781f794af1b8426a5fd6a5218e3dda922b9acd9632752789100de3d916076fe",
+        "reviews_sha256": "3e3f17c066df59aefa4f88dfe141b70e21dbe95bed030774fc6efe9be79eff9b"
+      },
+      "social-equity": {
+        "findings_sha256": "51620aaf2e2d9c40b70ec11f07b5aa5807bf059b0c1959b6cc3468334738bd16",
+        "reviews_sha256": "3b6e96c56d1562289c6460c39023252a2431f35a3345e6f7b5087c0c60e86e64"
+      },
+      "water-sanitation": {
+        "findings_sha256": "d6ca4167e9120f22a85403323b958c8144e86c438c98ce2fef4f3aeeeec0564d",
+        "reviews_sha256": "ef9e122d6b06ab79e22f9dae752948a32004c6c3fff0afec5cc774ea572c5dbc"
+      }
+    },
+    "monterey-county": {
+      "air-pollution": {
+        "findings_sha256": "d900486181999f3caeee556fb9ac0549a905ced10d49f52ad91747261e81a483",
+        "reviews_sha256": "4afd105cc50f9f1dc6ce5c106e967cc39e994b7ee7bff5df2c5eabd6338f6425"
+      },
+      "biodiversity-loss": {
+        "findings_sha256": "b65c3ec7719f17bb897ffe96f883fe292071e952e15aaa3adb7af7663b1cc0e0",
+        "reviews_sha256": "a56964c2621cd914036484c30662faa5099e2728e00767adb4a3ecf9cee526be"
+      },
+      "chemical-pollution": {
+        "findings_sha256": "01c6533a55695e3080626dd97f1bc7025c3a3628776ccc60d0833bc7101c2a11",
+        "reviews_sha256": "337506cbba1df9fbeb12b4e69cd6d71d2fb339371c786e6b3a941d03b9ca901c"
+      },
+      "climate-change": {
+        "findings_sha256": "e433ac70d0a12ab3cdcc02f13ff3b0c8c4567c3900952a814ed7730f30f66411",
+        "reviews_sha256": "3fe47d30ac577c5a510c09c758728f97f50722ec8f6b50c037fcd5995f6d4c07"
+      },
+      "education": {
+        "findings_sha256": "d2f669aeac9227707c4c12ae71fddcbd1a0869187631fb6207848061a2b55146",
+        "reviews_sha256": "c9b0ae79505ad7e39241ea4d6e4942c18c2d29ef98d650b501456d33faf4c325"
+      },
+      "energy": {
+        "findings_sha256": "39250897f7be1527120d17d62d1009924e84a4a2dff6fe0e8fd6a1b21559cffa",
+        "reviews_sha256": "c860ae15703f181edbc8099020a1c045d107fdfd206b5971ba5ec3de3ef759fc"
+      },
+      "food": {
+        "findings_sha256": "e7f49d8ef6099c1096ffdce1d8037bd6c8de2249771814f5ea78bcb0215d152f",
+        "reviews_sha256": "b7a7096774050bc4c41f72e9a3e70a009cdecac0cef2cd372e63dcbbc780df44"
+      },
+      "freshwater-withdrawals": {
+        "findings_sha256": "87cc4cb4ab0b31fe9e1ac7075727a278b76576d140bdb8c9b13cf01d586b5092",
+        "reviews_sha256": "e76e7efcea33d3999f6268aa1575bd19fe0b3d599ecb91b9665969ba344caa1d"
+      },
+      "gender-equality": {
+        "findings_sha256": "8938cc4fef968ceaa3cdb3e842806506b518bcea5a63f81ace833a7d558c015b",
+        "reviews_sha256": "58c8e08002cc3a6df7712ffddf352e26236452fc26c4f529988e7322da17aa0f"
+      },
+      "health": {
+        "findings_sha256": "cd2a3d0aa748636862a8a823ad25a52b799c171b940ac57f38ab28ea8e7844cb",
+        "reviews_sha256": "d5fbeb41ad11fc45ed5a79f15d2c0521a9463a331404202619ab5c7e7b674d63"
+      },
+      "housing": {
+        "findings_sha256": "99d0e5e0b56567473c75a81c533fc257aef1b9963e1c3ca21925e05a33c4765d",
+        "reviews_sha256": "0427ea5ec79382182bc5a1c94d6fa8356ac8f81c332e5aa84e9921423ffae24c"
+      },
+      "income-work": {
+        "findings_sha256": "78e82cedee8daebce22ca1e285be748109fbfcb527ecf140a64fb98d2138c742",
+        "reviews_sha256": "914f529b4362db829a720f4417127fb17b940fac0f6c800ec6855329b863886c"
+      },
+      "land-conversion": {
+        "findings_sha256": "028a6ca71b7ae83169c02d5ffe92b3ccfba1dbb6e4531cf9015073186e70d4db",
+        "reviews_sha256": "bbd9ec88d5deb4d11feddd8d46f48ac43268aee9c2ad2c4550b21557028986ff"
+      },
+      "networks": {
+        "findings_sha256": "5ad2ccf0074e23838af7900da845d9f7adafe93cd1fef836dc4907ffbd049ba3",
+        "reviews_sha256": "b2dbadf90c860e21eb61ebf01a566b45fd1252be2e0c1b867367879d951d2685"
+      },
+      "nitrogen-phosphorus-loading": {
+        "findings_sha256": "6ec5c791d58e64217591a874c1d124b0a4ca6fe64b2500580d2cc01368a9a0c2",
+        "reviews_sha256": "1c7a5c251ce693c4b9cc59d44c4c05a0ce9a896184ed2bdfda7eedfca03c870b"
+      },
+      "ocean-acidification": {
+        "findings_sha256": "a33fc6db2bb1a8345dfc9c522e2be0824ad1c2b4bc399367a75a6da0dee1b02d",
+        "reviews_sha256": "5769d5309879f19198b7ae777a854efb9b1b2f56ea3457cb991317ec3f78e16f"
+      },
+      "ozone-depletion": {
+        "findings_sha256": "6d7e2b4dbb1155a09a656e78ff4ed11a4652d00af7924a217ea759b365b6ce42",
+        "reviews_sha256": "0f4451ae4f654098757ebc1b2fa4454974770b917db3ee6391e546e0d7a5e003"
+      },
+      "peace-justice": {
+        "findings_sha256": "d03c8a9bf33a6fca0974c04ac4271f1b820c035e4c46fc10f9f7fab55c96eac5",
+        "reviews_sha256": "ce1eb651ca01c5be544c71e3177816c95c55a418b341db952965e846c044b7b9"
+      },
+      "political-voice": {
+        "findings_sha256": "2d444e17dce597344f55309b6b8cfce4b0e715b06679518daf5e7e9597598e4c",
+        "reviews_sha256": "8845a3d37d090fff9566cef464f4962aa4ffa1a73cbbb696df0aef524b2dd8c5"
+      },
+      "social-equity": {
+        "findings_sha256": "475737f7aae0130a3cd6fc5feebffa1b20ffbebdce691d85cef9453f3966c2f4",
+        "reviews_sha256": "355ec21c5fc81e7e9902b658e5bd4bef6dac8a6a734276368a4772ed8e7e9562"
+      },
+      "water-sanitation": {
+        "findings_sha256": "0c7bc61ccaf3ae6ac884a018e62fccf2b4b40074d3847cd235b6616082528813",
+        "reviews_sha256": "1b8e4bb7aaecb1ef422636f0798f9f2eb879ec10cbbbace1639332846b9da90b"
+      }
+    }
+  },
+  "supporting_evidence_sha256": {
+    "carmel": "3c352736dcaf07ac76846c79e7dfba32bed109daa415cd1c205793770383a3de",
+    "monterey-county": "102d6f49ea2dc7e2e7459021f1dd793e28abd6a64ffb6cd35a85c3648e74dd9c"
+  }
+}

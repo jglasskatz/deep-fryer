@@ -5,6 +5,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import { chromium } from '../apps/worker/node_modules/playwright-core/index.mjs';
 import { installedChromium } from './chromium-path.mjs';
+import { indicatorAssets } from './pages-contract.mjs';
 const root = path.resolve('dist/pages');
 const server = createServer(async (req, res) => {
   try {
@@ -47,7 +48,7 @@ try {
       await page.screenshot({ path: path.join(screenshots, 'carmel-desktop.png') });
     }
     // Check every referenced local evidence file; source websites are external.
-    for (const asset of new Set(portrait.dimensions.flatMap(d => d.indicators.flatMap(i => [i.evidence_path, i.pdf_path].filter(Boolean))))) assert.equal((await page.request.get(`${origin}${asset}`)).status(), 200, asset);
+    for (const asset of new Set(portrait.dimensions.flatMap(d => d.indicators.flatMap(indicatorAssets)))) assert.equal((await page.request.get(`${origin}${asset}`)).status(), 200, asset);
   }
   await page.goto(`${origin}carmel/`, { waitUntil: 'networkidle' });
   const canvas = page.locator('canvas');

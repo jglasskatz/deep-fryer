@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_slug": "poverty-rate",
+    "content_supported": "pass",
+    "verifier_note": "Prior independent FRED/Census SAIPE content support retained; new 4f84e84eea2f9518.png visually inspected. The county observation is 2024 = 13.7%, annual Census SAIPE, not a release year or ACS five-year period. Source/release notes match the selected series. Canonical JavaScript scoring yields 71.2 from the displayed input. This modeled estimate is not a direct enumeration and should not be conflated with ACS survey poverty. Previously missing archive is now present; no human approval implied.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": "https://fred.stlouisfed.org/series/PPAACA06053A156NCEN",
+    "exhibit_checked": true
+  },
+  {
+    "indicator_slug": "unemployment-rate",
+    "content_supported": "pass",
+    "verifier_note": "Prior independent FRED/BLS content support retained; new 9bbea11678423972.png visually inspected. Monterey County 2025 observation is 7.9%, annual and not seasonally adjusted, updated May 19, 2026. Source notes define the civilian noninstitutionalized labor force age 16+ denominator. Score (7.9−4)/4×100 = 97.5. This is not November 2024 or ACS five-year unemployment. Previously missing archive is now present; no human approval implied.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": "https://fred.stlouisfed.org/series/LAUCN060530000000003A",
+    "exhibit_checked": true
+  }
+]

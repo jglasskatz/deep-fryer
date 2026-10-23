@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "safe-drinking-water",
+    "content_supported": "uncertain",
+    "verifier_note": "System counts or one utility’s compliance do not establish the population-weighted county share served by systems without health-based violations. A complete served-population inventory, dates, overlaps and exclusions are needed. The prior 2024 compliance-report retrieval failed. This is a provisional aggregation/access gap, not evidence of unsafe water or nonexistent source data.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

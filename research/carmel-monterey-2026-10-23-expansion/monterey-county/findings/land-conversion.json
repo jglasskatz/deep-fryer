@@ -1,0 +1,11 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "natural-land-conversion",
+    "reason": "The directly opened State Farmland Mapping and Monitoring Program page provides county farmland conversion products, but farmland conversion is not equivalent to natural land converted to developed use. No countywide natural-land conversion estimate for the requested construct was found in this pass.",
+    "scales_tried": ["county"],
+    "tiers_tried": [1, 2],
+    "searched_at": "2026-10-19T03:47:05Z",
+    "nearest_data": "California Department of Conservation Monterey County FMMP page, opened: https://www.conservation.ca.gov/dlrp/fmmp/Pages/Monterey.aspx. The page lists Important Farmland conversion tables through 2020–2022 and historic farmland mapping products; those classify farmland categories and do not by themselves measure all natural land converted to developed use. County-specific natural land conversion was not established."
+  }
+]

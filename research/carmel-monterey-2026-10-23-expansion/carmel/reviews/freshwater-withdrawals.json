@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "residential-gpcd",
+    "content_supported": "uncertain",
+    "verifier_note": "Provider/service-area water-use figures must not be silently called city residential GPCD. The 2011 plan is stale; current Cal-Am Monterey district reporting is a useful source lead but its geography and residential numerator/population denominator remain unmatched. Keep provisional city/county access/construct gap, not proof no current utility data exists.",
+    "reviewed_at": "2026-10-23T03:18:52.050896+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

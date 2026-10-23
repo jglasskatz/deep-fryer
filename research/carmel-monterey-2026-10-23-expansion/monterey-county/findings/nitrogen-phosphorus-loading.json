@@ -1,0 +1,16 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "nitrate-groundwater",
+    "reason": "This pass did not retrieve a defensible county-scale groundwater nitrate concentration; materials located point to individual wells or groundwater subbasins. An individual public-water-system sample cannot represent county groundwater, so it is not substituted.",
+    "scales_tried": [
+      "county"
+    ],
+    "tiers_tried": [
+      1,
+      2
+    ],
+    "searched_at": "2026-10-19T03:47:05Z",
+    "nearest_data": "The opened Salinas Valley Basin Groundwater Sustainability Agency Monterey Subbasin page describes basin-level groundwater sustainability planning and monitoring reports but did not yield a representative countywide nitrate mean in the sources read: https://svbgsa.org/monterey-subbasin/. A State Water Board query for an individual public-water-system sample returned a cache miss and, even if available, would not estimate countywide groundwater concentration. The County GEMS page attempt returned 403, so its contents were not treated as evidence. This is an incomplete-data constraint, not evidence that no such dataset exists."
+  }
+]

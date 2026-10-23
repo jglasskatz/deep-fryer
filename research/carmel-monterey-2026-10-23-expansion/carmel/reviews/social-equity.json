@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "gini-index",
+    "content_supported": "pass",
+    "verifier_note": "Inspected archived screenshot 9d3bf8944d1a92a6.png and accompanying raw API JSON: ACS 2024 five-year release, 2020–2024, exact city GEOID 16000US0611250, B19083001=0.5225, household universe, 90% MOE 0.0558. Score (0.5225−0.4)/0.4×100=30.625→30.6. Independent live Neilsberg corroborates the rounded 0.52; direct Census/CensusReporter API refetches failed in the reviewer web tool, so exact support comes from the archived publisher response, not a successful fresh API read. Tier 3 redisplay and substantial uncertainty remain disclosed. Source support is not human approval.",
+    "reviewed_at": "2026-10-23T03:10:15.064927+00:00",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B19083&geo_ids=16000US0611250",
+    "exhibit_checked": true
+  }
+]

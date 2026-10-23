@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "ods-phaseout-compliance",
+    "content_supported": "uncertain",
+    "verifier_note": "Do not reject global context solely because it is not Monterey. Independent UNEP facts report 99% global phaseout, about 1.8 million ODP tonnes, without an explicit observation year there. A dated tracked-production denominator remains unresolved. EPA national requirements are not a measured county percentage. Keep a provisional dated-source/construct gap.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

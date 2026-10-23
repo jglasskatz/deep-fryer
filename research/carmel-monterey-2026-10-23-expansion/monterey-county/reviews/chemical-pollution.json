@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "tri-releases-per-capita",
+    "content_supported": "uncertain",
+    "verifier_note": "County-capable EPA TRI data exist, but the dated on-site release sum, reporting coverage and matched population remain unextracted. A single facility or failed query cannot establish the county aggregate or zero. Keep a provisional access/calculation gap, not a claim that data do not exist.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

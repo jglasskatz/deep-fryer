@@ -1,0 +1,62 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "poverty-rate",
+    "name": "Residents below the poverty line",
+    "value": 6.2,
+    "unit": "% of residents",
+    "year": 2024,
+    "target": 8,
+    "level_pct": -22.5,
+    "scoring": {
+      "threshold_ref": "income-work.poverty-rate",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 6.2,
+        "target": 8,
+        "scale": 8
+      },
+      "worked_math": "level_pct = (6.2 − 8) ÷ 8 × 100 = −22.5"
+    },
+    "source": "Census Reporter city profile, reproducing U.S. Census Bureau 2024 ACS 5-year poverty estimate for Carmel-by-the-Sea",
+    "source_url": "https://censusreporter.org/profiles/16000US0611250-carmel-by-the-sea-ca/",
+    "source_tier": 3,
+    "evidence": {
+      "snapshot_path": "evidence/d8edc5b46036f291.png",
+      "captured_at": "2026-10-23T02:57:11.289Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "city",
+    "notes": "The directly opened profile identifies ACS 2024 5-year and reports 6.2% ±3.6 percentage points (195 ±113 people) below poverty for Carmel-by-the-Sea, GEOID 0611250. Tier 1 local searches found no adopted city poverty measure; Tier 2 official Census S1701 table/API was attempted but inaccessible. Census Reporter is a tier-3 secondary interface to Census data; large uncertainty should be considered."
+  },
+  {
+    "kind": "indicator",
+    "indicator_slug": "unemployment-rate",
+    "name": "Unemployment rate (ACS five-year estimate)",
+    "value": 3.1,
+    "unit": "% of civilian labor force, population 16 years and over",
+    "year": 2024,
+    "target": 4,
+    "level_pct": -22.5,
+    "scoring": {
+      "threshold_ref": "income-work.unemployment-rate",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 3.1,
+        "target": 4,
+        "scale": 4
+      },
+      "worked_math": "level_pct = (value − target) ⁄ scale × 100 = (3.1 − 4) ⁄ 4 × 100 = −22.5"
+    },
+    "source": "Census Reporter API, republishing U.S. Census Bureau ACS 2024 5-year table B23025",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B23025&geo_ids=16000US0611250",
+    "source_tier": 3,
+    "evidence": {
+      "snapshot_path": "evidence/136808188e5cea7f.png",
+      "captured_at": "2026-10-23T02:54:44.218Z"
+    },
+    "confidence": "low",
+    "geographic_scale": "city",
+    "notes": "Exact geography 16000US0611250, Carmel-by-the-Sea; ACS 2020–2024 5-year release, B23025 universe population age 16+. Table estimate is 56 unemployed of 1,780 civilian labor-force participants, 56 ÷ 1,780 = 3.146%, rounded to 3.1%. The table's MOEs are ±51 unemployed and ±411 civilian labor force; the rate therefore has substantial uncertainty and this five-year ACS estimate is not directly comparable to the previous county annual BLS 2025 series. Tier 1 local city searches did not locate a city unemployment series. Official Census city API access failed; the Census Reporter API is a tier-3 secondary interface to the ACS data, with captured response metadata and MOEs."
+  }
+]

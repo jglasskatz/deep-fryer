@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_slug": "uninsured-rate",
+    "content_supported": "pass",
+    "verifier_note": "Inspected screenshot 23be1f6ba5432e07.png and raw B27001 API JSON: city GEOID 16000US0611250, ACS 2020–2024, civilian noninstitutionalized universe. Under-65 denominator =3157−444−348−664−372=1329; sum of uninsured under-65 age/sex cells=15; 15/1329×100=1.1287→1.13; score−77.4. This is the correct under-65 construct, not all-age uninsured. Direct reviewer API refetch failed; support is the archived publisher response. Low confidence is appropriate: 25 is the MOE of the single nonzero age-sex cell only, not the aggregated uninsured numerator; zero estimate cells also have nonzero MOEs. Aggregate/rate MOE remains uncomputed and must not be presented as ±25. Source support is not publication approval.",
+    "reviewed_at": "2026-10-23T03:10:15.064927+00:00",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B27001&geo_ids=16000US0611250",
+    "exhibit_checked": true
+  },
+  {
+    "indicator_slug": "life-expectancy",
+    "content_supported": "pass",
+    "verifier_note": "Independent narrow-field API refetch and real screenshot/HTML/TXT show Monterey FIPS 06053 life expectancy 80.8471266197383. v 147 field description explicitly says 2020–2022, resolving release-year 2025 ambiguity; revised finding year 2022 is the period endpoint. Tier 3 is correct. Target 80 gives−1.1. Genuine exhibit checked; racial disparity fields in full archive merit contextual attention. Carmel finding explicitly labels this as permitted Monterey County context, not a city measurement. Carmel snapshot bf05ecd029d2c018 visually checked and byte-identical to independent reviewer API exhibit.",
+    "reviewed_at": "2026-10-19T06:52:12.732643+00:00",
+    "source_url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv139_rawvalue%2Cv139_numerator%2Cv147_rawvalue&returnGeometry=false&f=pjson",
+    "exhibit_checked": true
+  }
+]

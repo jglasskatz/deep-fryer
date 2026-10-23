@@ -1,0 +1,48 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "poverty-rate",
+    "name": "Residents below the poverty line",
+    "value": 13.7,
+    "unit": "% of residents",
+    "year": 2024,
+    "target": 8,
+    "level_pct": 71.2,
+    "scoring": {
+      "threshold_ref": "income-work.poverty-rate",
+      "function": "lower_is_better",
+      "inputs": {"value": 13.7, "target": 8, "scale": 8},
+      "worked_math": "level_pct = (13.7 − 8) ⁄ 8 × 100 = +71.2"
+    },
+    "source": "U.S. Census Bureau 2024 Small Area Income and Poverty Estimates (SAIPE), Monterey County; distributed through FRED",
+    "source_url": "https://fred.stlouisfed.org/series/PPAACA06053A156NCEN",
+    "source_tier": 2,
+    "evidence": {"snapshot_path": "evidence/4f84e84eea2f9518.png", "captured_at": "2026-10-23T03:06:57.259Z"},
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "FRED series page now captured and readable: it identifies the source as Census Bureau SAIPE, annual estimates, and reports Monterey County 2024 = 13.7%. The official 2024 SAIPE release confirms the estimate year: https://www.census.gov/data/datasets/2024/demo/saipe/2024-state-and-county.html. QuickFacts also displays 13.7%, but its row omits the data year. County/local tier-1 searches did not retrieve a later countywide poverty estimate; the captured FRED series page is the Tier 2 Census value."
+  },
+  {
+    "kind": "indicator",
+    "indicator_slug": "unemployment-rate",
+    "name": "Unemployment rate",
+    "value": 7.9,
+    "unit": "% of labor force",
+    "year": 2025,
+    "target": 4,
+    "level_pct": 97.5,
+    "scoring": {
+      "threshold_ref": "income-work.unemployment-rate",
+      "function": "lower_is_better",
+      "inputs": {"value": 7.9, "target": 4, "scale": 4},
+      "worked_math": "level_pct = (7.9 − 4) ⁄ 4 × 100 = +97.5"
+    },
+    "source": "U.S. Bureau of Labor Statistics Local Area Unemployment Statistics, retrieved through FRED: Unemployment Rate in Monterey County, CA (annual, not seasonally adjusted)",
+    "source_url": "https://fred.stlouisfed.org/series/LAUCN060530000000003A",
+    "source_tier": 2,
+    "evidence": {"snapshot_path": "evidence/9bbea11678423972.png", "captured_at": "2026-10-23T03:06:52.051Z"},
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "The captured series page reports 7.9% for calendar year 2025, updated May 19, 2026. It identifies BLS as source, annual frequency, and the civilian labor force denominator; the labor force includes civilian noninstitutionalized persons ages 16+ who are employed or unemployed, and the unemployment rate is unemployed persons as a percent of that labor force. The County 2025–26 Legislative Platform (opened at https://www.countyofmonterey.gov/home/showpublisheddocument/138247/638736919326900000) cites 5.2% in a November 2024 EDD report; that cited figure is not presented here as a final full-calendar-year 2024 comparison. Earlier indexed 2024 candidates of 7.3–7.4% were not used."
+  }
+]

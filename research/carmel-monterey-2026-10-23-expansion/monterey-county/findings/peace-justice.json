@@ -1,0 +1,11 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "violent-crime-rate",
+    "reason": "The California DOJ county crime portal was opened, but its interactive statistics did not return an extractable Monterey County violent-crime rate in this pass. The FBI national 2024 release describes agency-level reporting coverage. The configured indicator is offenses reported within the geography, so an agency-only rate does not establish a complete county-geography rate.",
+    "scales_tried": ["county"],
+    "tiers_tried": [1, 2],
+    "searched_at": "2026-10-19T03:47:05Z",
+    "nearest_data": "California DOJ Crime Data page, opened: https://www.oag.ca.gov/crime. It directs users to interactive county/local-agency statistics and downloadable data, but the linked interface did not provide an extractable Monterey County geography-level rate in this pass. The 2024 FBI release is at https://www.fbi.gov/news/press-releases/fbi-releases-2024-reported-crimes-in-the-nation-statistics and explains reported agency coverage; agency-only rates found in search were not treated as complete county-geography values."
+  }
+]

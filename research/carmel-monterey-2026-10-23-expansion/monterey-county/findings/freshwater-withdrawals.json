@@ -1,0 +1,11 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "residential-gpcd",
+    "reason": "The County groundwater-extraction report indexes 2024 large-system water use per connection class, but the opened source returned 403 and those acre-foot-per-connection figures do not provide full-county residential gallons per capita per day. District-level utility production is not a full-county resident denominator.",
+    "scales_tried": ["county"],
+    "tiers_tried": [1],
+    "searched_at": "2026-10-19T03:47:05Z",
+    "nearest_data": "County of Monterey 2024 draft groundwater extraction summary indexed water use by connection class for 2020–2024: https://www.countyofmonterey.gov/home/showpublisheddocument/142365/638926748365700000 (403 on open). Monterey Peninsula Water Management District annual reports and production reports were opened, but their service territory is a subset of the county and cannot stand in for all residents."
+  }
+]

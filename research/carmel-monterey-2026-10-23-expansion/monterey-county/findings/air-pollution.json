@@ -1,0 +1,25 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "pm25-annual",
+    "name": "Annual mean PM2.5 (CHR county measure)",
+    "value": 8.8,
+    "unit": "µg/m³",
+    "year": 2020,
+    "target": 5,
+    "level_pct": 76,
+    "scoring": {
+      "threshold_ref": "air-pollution.pm25-annual",
+      "function": "lower_is_better",
+      "inputs": {"value": 8.8, "target": 5, "scale": 5},
+      "worked_math": "level_pct = (8.8 − 5) ⁄ 5 × 100 = +76.0"
+    },
+    "source": "County Health Rankings & Roadmaps 2025 County layer, Monterey County row; underlying measure source is Environmental Public Health Tracking Network",
+    "source_url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv125_rawvalue&returnGeometry=false&f=pjson",
+    "source_tier": 3,
+    "evidence": {"snapshot_path": "evidence/d0f4d763a4c71ce5.png", "captured_at": "2026-10-23T03:12:46.826Z"},
+    "confidence": "low",
+    "geographic_scale": "county",
+    "notes": "The exact Monterey County row (FIPS 06053) reports v125_rawvalue=8.8. The field alias is 'Average daily amount of fine particulate matter in micrograms per cubic meter'; its descriptor says the measure is average daily density of PM2.5, source Environmental Public Health Tracking Network, Year(s): 2020. CHR row field `year=2025` is release year; observation year is 2020. This predates the framework's five-year acceptance window as of October 2026 and must be treated as stale/recency-flagged, not as a current estimate. CHR methods explain that modeled daily county estimates select the maximum among census-tract-centroid estimates, rather than a population-weighted county spatial mean; the measure is a general pattern/trend indicator and does not directly reflect individual exposure. Methodology: https://www.countyhealthrankings.org/health-data/community-conditions/physical-environment/air-water-and-land/air-pollution-particulate-matter. Tier 1/2 searches found no newer countywide annual mean in accessible Monterey County, MBARD, CARB, or EPA sources; local CARB/MBARD monitor readings are site-specific and were not averaged. The exact response, including county value and field descriptor, is archived in evidence/d0f4d763a4c71ce5.txt and screenshot evidence/d0f4d763a4c71ce5.png."
+  }
+]

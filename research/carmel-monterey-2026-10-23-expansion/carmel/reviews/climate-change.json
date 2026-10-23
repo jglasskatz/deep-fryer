@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "ghg-per-capita",
+    "content_supported": "pass",
+    "verifier_note": "Independent live CAP and population PDF reads corroborate both archived PDFs, visually rendered at CAP physical page 8 (printed 4), Table B, and population physical page 7 (allocation page 2). Core community inventory 30,962 MT / 2019 population 3,811 = 8.1244, rounded 8.12; conditional score (8.12−2.5)/2.5×100=224.8. Population is a Treasury estimate republished by DOF. CAP core total includes 155 MT electricity even though the subtotal says Scope 1; attributed travel extends beyond city limits within Monterey County. It is an accounting inventory for the city community, not a strict territorial-only or complete consumption inventory; adding separately reported outside-county travel gives 46,076/3,811=12.09 and still does not establish a full consumption inventory. Canonical framework does not prescribe a scope, so the explicitly named CAP core quantity is content-supported. The 2019 observation is stale under the five-year policy; keep stale/low-confidence and scope-comparability flags, suppress any implication of current performance or publication approval. Both supporting-evidence entries match inspected sources.",
+    "reviewed_at": "2026-10-23T03:10:15.064927+00:00",
+    "source_url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/climate_adaptation_plan_appendixa_climate_action_plan_prefinal_042822_0.pdf?1677096044=",
+    "exhibit_checked": true
+  }
+]

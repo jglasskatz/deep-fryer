@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "ghg-per-capita",
+    "content_supported": "uncertain",
+    "verifier_note": "The unincorporated County CCAAP inventory is correctly distinguished from the whole county including incorporated cities. It is useful context but cannot be labeled a full-county community inventory without compatible aggregation, scope, year and denominator. Regional fallback is permitted but not extracted here. This is a geography/aggregation gap, not proof no inventory exists.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

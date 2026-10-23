@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "aragonite-saturation",
+    "content_supported": "uncertain",
+    "verifier_note": "Regional/global fallback is configured; lack of a county nearshore value alone does not exhaust it. NOAA California Current sources and accession 0287551 offer monthly modeled grids and uncertainty, but no annual Ωar was extracted. Trend direction is not a numeric value. Keep an access/calculation gap with the actual region identified.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

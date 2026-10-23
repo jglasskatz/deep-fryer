@@ -12,7 +12,7 @@ Regional selectors keep related portraits together at `/santa-cruz/`, `/nyc/` an
 
 Hover summaries show each indicator's value, year, geography and evidence status. Selecting a segment opens its full evidence beside the chart, with a modal overlay on small screens, without scrolling the page. The `dim` query preserves the selected panel on reload. Keyboard links, Close and Escape provide the same controls; the full dimension list remains available without JavaScript.
 
-Carmel and Monterey are **research previews**, explicitly requested for public display, not newly approved publications. Each has 24 findings, including 16 gaps. Independent source support is not human approval. Per-claim statuses distinguish source-supported drafts with exhibits from uncertainty and gaps. Missing numeric archives suppress the dimension's draft wedge. County proxies in Carmel say they are not city-limit measurements. The ordinary database research-verify gate still requires disposition of flags and a content-bound human approval before these findings can become published versions. This static preview grants neither.
+Carmel and Monterey are **research previews**, explicitly requested for public display, not newly approved publications. Each has 24 findings. The expansion has 14 numeric findings and 10 gaps for Carmel, and 13 numeric findings and 11 gaps for Monterey County. Carmel has 9 city measures and 5 explicitly labeled county proxies. Dated and low-confidence estimates carry visible flags, and Census source periods remain explicit (city ACS 2020–2024 five-year; county ACS 2024 one-year). Independent source support is not human approval. Per-claim statuses distinguish source-supported drafts with exhibits from uncertainty and gaps. Missing numeric archives suppress the dimension's draft wedge. County proxies in Carmel say they are not city-limit measurements. The ordinary database research-verify gate still requires disposition of flags and a content-bound human approval before these findings can become published versions. This static preview grants neither.
 
 This follows Keel's single source of truth, reproducible gate, evidence-at-access, numbers-with-epistemic-type, gap honesty and content-bound approval principles. The architecture map names this snapshot path separately from the application's public plane. The canonical renderer and score-to-display function are shared with the app.
 
@@ -20,8 +20,9 @@ This follows Keel's single source of truth, reproducible gate, evidence-at-acces
 
 - `site/data/portraits.json`: explicit snapshot, every indicator, geography, period, source, review note, cost scenarios and provenance.
 - `site/data/evidence-manifest.json`: SHA-256 and byte length of every referenced archive.
-- `site/evidence/shared/`: content-addressed, deduplicated screenshots and PDFs.
-- `research/carmel-monterey-2026-10-18/`: source findings, reviews, configs and search/activity records for the research previews.
+- `site/evidence/shared/`: content-addressed, deduplicated screenshots and PDFs, including separate denominator exhibits for derived rates.
+- `research/carmel-monterey-2026-10-18/`: original source findings, reviews, configs and search/activity records.
+- `research/carmel-monterey-2026-10-23-expansion/`: additional source research, independent reviews and cumulative cost scenarios. The original pass remains unchanged.
 
 Snapshots contain no user accounts, memberships, session transcripts, private tenant listings or credentials. Exporting is read-only. The six NYC slugs are explicitly selected; the exporter never enumerates and publishes all tenants. Missing historical snapshots are disclosed and never fabricated. Source-producer hashes and version numbers make changes reviewable; they do not substitute for approval.
 
@@ -34,13 +35,17 @@ Use the Node version in `.nvmrc` and pnpm 9.12.0:
 ```sh
 corepack enable
 pnpm install --frozen-lockfile
-pnpm pages:snapshot --santa-cruz /path/to/doughnut-santa-cruz
+pnpm pages:snapshot --santa-cruz /path/to/doughnut-santa-cruz --campaign research/carmel-monterey-2026-10-23-expansion --require-review-manifest
 pnpm pages:test
 pnpm pages:build
 pnpm pages:check
 ```
 
 Only `pages:snapshot` needs `.env.local` with `DATABASE_URL`, the original Santa Cruz checkout and local mirrors of the referenced tenant evidence under `apps/web/public/evidence/`. Do not run database migrations against an old production database merely to export it. CI builds exclusively from the committed snapshot and evidence; it does not fetch sources or access a developer's database. For a new public portrait, change the catalog and provide its approved source. Never hand-edit a research preview into a published status.
+
+The expansion's independent reviewer records hashes of the exact findings and reviews in `review-manifest.json`. Export rejects changed or missing records when that manifest is present; `--require-review-manifest` also rejects its absence. This binds an independent review to its inputs and grants no human publication approval. `--output` can select a separate worktree's `site` directory while reading the original local evidence mirrors.
+
+To update the expansion's cost model after activity is finalized, run `node scripts/estimate-research-costs.mjs research/carmel-monterey-2026-10-18/cost-ledger.json research/carmel-monterey-2026-10-23-expansion` before exporting. It preserves the original ledger, records incremental expansion scenarios in CSV, and sums both research rounds in JSON. Each round's token quantities remain explicit assumptions; recorded tool calls are a search-cost proxy.
 
 Review changes to data, provenance, geography, archived files and statuses together. Open a PR. A schema-valid record can still be scientifically wrong: independent review and the application's publication gate remain necessary. Evidence hashes detect file drift, not truth.
 

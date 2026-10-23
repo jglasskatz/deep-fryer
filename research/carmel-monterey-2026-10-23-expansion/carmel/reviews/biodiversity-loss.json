@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "protected-land-share",
+    "content_supported": "uncertain",
+    "verifier_note": "Retrieval/calculation gap remains provisional: baseline only lists city/tier1. County/state/federal protected-area inventories (CPAD/PAD-US), protected status, city intersection and total land denominator have not been independently extracted. Park area alone is correctly rejected as durable-conservation numerator. No absence claim or measured zero is supported.",
+    "reviewed_at": "2026-10-23T03:18:52.050896+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]
