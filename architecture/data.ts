@@ -18,6 +18,18 @@ const data: ArchitectureMap = {
   ],
   nodes: [
     {
+      id: "pages-snapshot",
+      label: "Public portrait snapshots",
+      layer: "frontend",
+      tech: "Static HTML / canonical canvas / GitHub Pages",
+      description: "An explicit public catalog of existing published portraits, attributed legacy source portraits, and separately labeled research previews. No accounts or private database reads at build time. Every indicator survives export; preview scores require independent source support and an archive, and never imply human approval.",
+      keyFiles: ["site/catalog.json", "scripts/snapshot-pages.ts", "scripts/build-pages.mjs", "scripts/pages-contract.mjs", ".github/workflows/ci.yml"],
+      keyFunctionality: ["complete public snapshots", "content-addressed exhibits", "catalog and preview gates", "checked artifact deployment"],
+      fileCount: 10,
+      linesOfCode: "~700",
+      principles: { upholds: [{ id: "gate-is-reproducible", reason: "Frozen inputs and dependencies; CI checks all routes and evidence hashes before deploying the same artifact" }, { id: "approval-binds-to-content", reason: "Preview status is not publication approval; ordinary review gates remain authoritative" }, { id: "single-source-of-truth", reason: "Uses the app renderer and canonical score mapping; snapshots retain producer hashes and version numbers" }], violates: [] },
+    },
+    {
       id: "web-app",
       label: "Web app",
       layer: "frontend",
@@ -380,6 +392,7 @@ const data: ArchitectureMap = {
     },
   ],
   connections: [
+    { from: "pages-snapshot", to: "shared-contract", type: "grounds-on", label: "indicator identities and score mapping" },
     { from: "web-app", to: "research-worker", type: "uses", label: "enqueues planned runs (quota-gated)" },
     { from: "web-app", to: "accounts", type: "uses", label: "sessions + roles" },
     { from: "web-app", to: "billing", type: "uses", label: "standing, usage, checkout" },
@@ -418,6 +431,7 @@ const data: ArchitectureMap = {
     { from: "research-verify-gate", to: "web-app", type: "uses", label: "requires review-queue dispositions" },
   ],
   contexts: [
+    { id: "public-snapshots", label: "Public snapshots", description: "Portable published/legacy portraits plus explicitly disclosed research previews; no publication approval or server capability implied", nodeIds: ["pages-snapshot"] },
     { id: "public-plane", label: "Public plane", description: "No AI visible; published versions only", nodeIds: ["web-app", "progress-engine", "service-worker", "language-access", "emergency-view", "theme", "get-involved", "discussion-moderation", "feature-flags"] },
     { id: "accounts-billing", label: "Accounts & billing", description: "Who may act, and what the organization's plan allows", nodeIds: ["accounts", "billing", "any-city-build"] },
     { id: "review-plane", label: "Review plane", description: "Human gate between research and publication", nodeIds: ["web-app", "research-verify-gate", "policy-analysis", "get-involved", "discussion-moderation"] },

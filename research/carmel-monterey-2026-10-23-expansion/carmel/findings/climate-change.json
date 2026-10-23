@@ -1,0 +1,33 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "ghg-per-capita",
+    "name": "2019 community greenhouse-gas emissions per capita (City CAP core inventory)",
+    "value": 8.12,
+    "unit": "tCO2e per resident per year",
+    "year": 2019,
+    "target": 2.5,
+    "level_pct": 224.8,
+    "scoring": {
+      "threshold_ref": "climate-change.ghg-per-capita",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 8.12,
+        "target": 2.5,
+        "scale": 2.5
+      },
+      "worked_math": "level_pct = (value − target) ÷ scale × 100 = (8.12 − 2.5) ÷ 2.5 × 100 = +224.8"
+    },
+    "source": "City of Carmel-by-the-Sea Climate Action Plan Appendix A (2019 inventory); U.S. Treasury 2019 population estimate in allocation schedule republished by California Department of Finance",
+    "source_url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/climate_adaptation_plan_appendixa_climate_action_plan_prefinal_042822_0.pdf?1677096044=",
+    "source_tier": 1,
+    "evidence": {
+      "snapshot_path": "evidence/021dd883fedd3c42.png",
+      "pdf_path": "evidence/021dd883fedd3c42.pdf",
+      "captured_at": "2026-10-23T02:46:27.452Z"
+    },
+    "confidence": "low",
+    "geographic_scale": "city",
+    "notes": "Stale contextual city-limit accounting-core measurement: the official City CAP Appendix A identifies 2019 as the latest available Carmel community inventory (printed pp. 2–4; Table B is printed p. 4 / physical PDF page 8). The narrative scope definitions are on printed p. 3 / physical PDF page 7. Table B reports 30,962 metric tons CO2e as “Total Scope 1 Emissions” and 46,076 as “Total with Scope 3 Emissions.” The CAP's own prose defines Scope 2 as indirect emissions from electricity generation, yet Table B adds residential/commercial electricity (63+92 MT) into the 30,962 subtotal labeled Scope 1. This finding calls 30,962 the CAP accounting-core total excluding its separately reported Scope 3 travel; it is not a technically strict Scope 1 total. That core also includes travel occurring within Monterey County even when the trip originates outside the City, as well as solid waste and wastewater; it is not a strict city-territorial or full consumption inventory. The CAP identifies added Scope 3 as vehicle travel outside Monterey County and excludes those emissions from target-setting (printed pp. 3, 6); thus 46,076 is not a complete value-chain inventory either. As context, 46,076 ÷ 3,811 = 12.09 tCO2e/resident/year if the City-reported Scope 3 travel is included. Matched-year denominator: the 2019 Population Estimate for Carmel-by-the-Sea City is 3,811 in the U.S. Treasury allocation schedule republished by California Department of Finance (printed allocation p. 2 / physical PDF page 7; https://dof.ca.gov/media/docs/budget/covid-19-information/covid-19-direct-disaster-response-allocations-and-notifications/6-3-21-section-28-coronavirus_fiscal_recovery_fund_allocations_for_small_cities.pdf; archived evidence/7774d8e37920ee62.png and .pdf, captured 2026-10-23T02:48:20.625Z). Calculation: 30,962 ÷ 3,811 = 8.1244, rounded to 8.12. The 2019 measurement is outside the configured 5-year recency window and must be visibly flagged stale; it is not current-year performance. The CAP’s 2020 population 3,949 is a growth forecast and was not used."
+  }
+]

@@ -1,0 +1,15 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "natural-land-conversion",
+    "reason": "Initial city GIS/planning review did not produce a 2021+ city or county natural-land-conversion rate with a stable baseline and defined land-cover classes. No geospatial calculation was made.",
+    "scales_tried": [
+      "city"
+    ],
+    "tiers_tried": [
+      1
+    ],
+    "searched_at": "2026-10-19T06:37:34Z",
+    "nearest_data": "City GIS and planning portals explored; no current land-cover conversion series retrieved."
+  }
+]

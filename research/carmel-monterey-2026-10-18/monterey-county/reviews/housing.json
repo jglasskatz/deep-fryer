@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_slug": "cost-burdened-renters",
+    "content_supported": "uncertain",
+    "verifier_note": "Independent local DataShare fetch failed. Independently opened FRED DP 04 ACS 006053 combines owners and renters and is not an acceptable substitute. Rerun Census DP 04_0141 E+DP 04_0142 E over DP 04_0136 E or B 25070 with universe/exclusions explicit. This is source retrieval gap, no exhibit.",
+    "reviewed_at": "2026-10-19T06:28:25.901663+00:00",
+    "source_url": "https://www.datasharemontereycounty.org/indicators/index/view?indicatorId=393&localeTypeId=3&periodId=6201",
+    "exhibit_checked": false
+  },
+  {
+    "indicator_slug": "homelessness-rate",
+    "content_supported": "pass",
+    "verifier_note": "Independently read PIT report p12: 2436 county persons counted Jan2024; County 2025\u201326 Legislative Platform p6 explicitly attributes 2024 population 437614 to DOF. 2436/437614*10000=55.6655, rounds 55.7; target 10 gives 457.0 using rounded value. This is a point-in-time HUD-definition count, not annual prevalence. Claim evidence paths are empty; archive both numerator and denominator.",
+    "reviewed_at": "2026-10-19T06:37:20.672353+00:00",
+    "source_url": "https://chsp.org/wp-content/uploads/2025/12/2024-Monterey-County-PIT-Count-Report_Final.pdf",
+    "exhibit_checked": false
+  }
+]

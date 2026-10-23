@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "tri-releases-per-capita",
+    "content_supported": "uncertain",
+    "verifier_note": "Independent EPA TRI EZ Search describes configurable facility/release reports, but contains no verified Monterey on-site aggregate. Gap is honest extraction incompleteness; rerun official county-filtered annual release download, distinguish on/off-site totals and pair same-year county population. No exhibit.",
+    "reviewed_at": "2026-10-19T06:28:25.901663+00:00",
+    "source_url": "https://www.epa.gov/enviro/tri-ez-search",
+    "exhibit_checked": false
+  }
+]

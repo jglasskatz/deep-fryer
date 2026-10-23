@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "gini-index",
+    "content_supported": "uncertain",
+    "verifier_note": "Premature retrieval gap: source names without URLs are insufficient, and documented secondary-host fallback or county B 19083 are allowed after official access failure. Verify current city/county estimate and period, not a source snippet. No numeric claim or exhibit checked.",
+    "reviewed_at": "2026-10-19T06:43:06.063363+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

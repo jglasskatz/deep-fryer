@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "aragonite-saturation",
+    "content_supported": "uncertain",
+    "verifier_note": "Incomplete scale/tier exhaustion: config permits global as well as regional and tier 3 science. Independent NOAA page provides ecosystem indicators; extract California Current annual values or archive matching MBARI observations with depth/season definition. Do not reject recent regional data simply because it is not city water.",
+    "reviewed_at": "2026-10-19T06:43:06.063363+00:00",
+    "source_url": "https://www.ecowatch.noaa.gov/thematic/ocean-acidification",
+    "exhibit_checked": false
+  }
+]

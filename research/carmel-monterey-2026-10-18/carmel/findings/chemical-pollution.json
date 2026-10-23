@@ -1,0 +1,17 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "tri-releases-per-capita",
+    "reason": "EPA TRI tools were opened and show reporting-year 2024 data with city/county search options, but no Carmel-by-the-Sea facility query result or covered-facility aggregate was retrieved. TRI coverage is limited, so zero cannot be inferred from an unresolved search.",
+    "scales_tried": [
+      "city",
+      "county"
+    ],
+    "tiers_tried": [
+      1,
+      2
+    ],
+    "searched_at": "2026-10-19T06:37:34Z",
+    "nearest_data": "EPA TRI Toxics Tracker and search guide describe 2024 and city search functionality; no exact city result was captured."
+  }
+]

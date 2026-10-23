@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "hs-attainment",
+    "content_supported": "pass",
+    "verifier_note": "Refreshed screenshot d8edc5b46036f291.png inspected alongside independent live Census Reporter profile: correct city GEOID 16000US0611250, ACS 2020–2024 five-year, 94% high-school-or-higher among age 25+ (B15002), not graduation-cohort rate. Profile reports MOE ±13.6 percentage points; substantial uncertainty disclosed. Score (95−94)/95×100=1.1. Tier 3 Census redisplay with higher-tier access attempts documented. Source support does not grant human approval.",
+    "reviewed_at": "2026-10-23T03:18:52.050896+00:00",
+    "source_url": "https://censusreporter.org/profiles/16000US0611250-carmel-by-the-sea-ca/",
+    "exhibit_checked": true
+  }
+]

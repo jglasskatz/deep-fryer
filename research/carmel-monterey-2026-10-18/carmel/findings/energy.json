@@ -1,0 +1,15 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "energy-burden",
+    "reason": "Initial City planning/budget review did not produce a 2021+ city or county household energy-burden estimate with a stated income and energy-cost denominator. Regional utility coverage does not establish a city household burden measure.",
+    "scales_tried": [
+      "city"
+    ],
+    "tiers_tried": [
+      1
+    ],
+    "searched_at": "2026-10-19T06:37:34Z",
+    "nearest_data": "City budget/utility pages reviewed; no current energy-burden metric retrieved. County fallback remains unverified."
+  }
+]

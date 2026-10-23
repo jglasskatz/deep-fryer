@@ -1,0 +1,25 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "hs-attainment",
+    "name": "Adults with a high-school credential",
+    "value": 73.3,
+    "unit": "% of residents 25+",
+    "year": 2024,
+    "target": 95,
+    "level_pct": 22.8,
+    "scoring": {
+      "threshold_ref": "education.hs-attainment",
+      "function": "higher_is_better",
+      "inputs": {"value": 73.3, "target": 95, "scale": 95},
+      "worked_math": "level_pct = (95 − 73.3) ⁄ 95 × 100 = +22.8"
+    },
+    "source": "U.S. Census Bureau QuickFacts, Monterey County, California; 2020–2024 ACS period",
+    "source_url": "https://www.census.gov/quickfacts/fact/table/montereycountycalifornia/SBO040223",
+    "source_tier": 2,
+    "evidence": {"snapshot_path": "", "captured_at": "2026-10-19T03:43:33Z"},
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "QuickFacts reports 73.3% for the 2020–2024 period. Census QuickFacts was opened directly; a retry after enabling browser fallback still returned HTTP 403 in the browser, so no snapshot was saved. Local tier-1 searches did not expose a newer countywide attainment figure. The period begins in 2020, so this is the latest available multi-year ACS estimate rather than a single-year 2021+ observation."
+  }
+]

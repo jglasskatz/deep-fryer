@@ -1,0 +1,25 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "gini-index",
+    "name": "Income inequality (Gini index)",
+    "value": 0.4567,
+    "unit": "index 0–1",
+    "year": 2024,
+    "target": 0.4,
+    "level_pct": 14.2,
+    "scoring": {
+      "threshold_ref": "social-equity.gini-index",
+      "function": "lower_is_better",
+      "inputs": {"value": 0.4567, "target": 0.4, "scale": 0.4},
+      "worked_math": "level_pct = (value − target) ⁄ scale × 100 = (0.4567 − 0.4) ⁄ 0.4 × 100 = +14.2"
+    },
+    "source": "Census Reporter API, ACS 2024 1-year table B19083, Monterey County row; underlying estimate is U.S. Census Bureau ACS",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B19083%2CB25070%2CB20017%2CB27001&geo_ids=05000US06053",
+    "source_tier": 3,
+    "evidence": {"snapshot_path": "evidence/dd6e71fc936cda74.png", "captured_at": "2026-10-23T03:03:09.136Z"},
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "ACS table B19083, universe Households, B19083_001 estimate 0.4567; reported margin of error is 0.0168. The response identifies Monterey County as GEOID 05000US06053 and release ACS 2024 1-year. County/DataShare higher-tier search did not produce an accessible current value; Census Bureau API query attempts returned HTTP 503 and direct data.census.gov table URLs were inaccessible in the research browser. Census Reporter redisplays ACS data and is therefore classified tier 3 for this finding, with primary-source access limitation disclosed."
+  }
+]

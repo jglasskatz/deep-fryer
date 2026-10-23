@@ -1,0 +1,18 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "aragonite-saturation",
+    "reason": "A permitted regional NOAA California Current LME aragonite indicator is available and reports a 2019\u20132024 downward trend, but the opened NOAA page provides no exact saturation value for a year and the underlying monthly gridded NetCDF values were not extracted. Keep a gap rather than score a trend as \u03a9ar.",
+    "scales_tried": [
+      "city",
+      "county",
+      "regional"
+    ],
+    "tiers_tried": [
+      1,
+      2
+    ],
+    "searched_at": "2026-10-23T02:51:10Z",
+    "nearest_data": "NOAA National Marine Ecosystem Status, California Current Aragonite: 2019\u20132024 sea-surface \u03a9ar showed a downward trend and was mostly within its historical range (https://www.ecowatch.noaa.gov/regions/california-current; archived evidence/7d1e47fee8b272e4.png/.html/.txt, captured 2026-10-23T02:49:39.438Z). Its source-method text says regional averages are derived from mapped pCO2 and ESPER-estimated total alkalinity, with uncertainty propagated. NOAA/NCEI Accession 0287551 describes monthly 0.25\u00b0 gridded model output for 1998\u20132025, revised 2026-09-15, with \u03a9ar and uncertainty (https://www.ncei.noaa.gov/data/oceans/ncei/ocads/metadata/0287551.html). The 2024 peer-reviewed method paper describes 1998\u20132022 monthly grids and regional means but no single annual \u03a9ar number was extracted. City/county measurements remain unavailable; the California Current is regional proxy/context only."
+  }
+]

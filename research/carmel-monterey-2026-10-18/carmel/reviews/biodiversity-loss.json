@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "protected-land-share",
+    "content_supported": "uncertain",
+    "verifier_note": "Premature gap: only city and tier 1 were tried although county is allowed. Add CPAD/PAD-US and County conservation sources; define durable protection, overlap removal and jurisdiction land denominator. Initial city GIS search alone does not establish no compliant data exists.",
+    "reviewed_at": "2026-10-19T06:43:06.063363+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

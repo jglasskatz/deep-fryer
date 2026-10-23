@@ -1,0 +1,11 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "tri-releases-per-capita",
+    "reason": "The EPA TRI system supports geography filters including county and publishes facility-reported releases, but a directly readable Monterey County sum of on-site releases for the latest year was not extracted. The facility-only and search-index figures found cannot establish the county aggregate and matched population denominator.",
+    "scales_tried": ["county"],
+    "tiers_tried": [1, 2],
+    "searched_at": "2026-10-19T03:47:05Z",
+    "nearest_data": "EPA TRI EZ Search overview, opened: https://www.epa.gov/enviro/tri-ez-search. It describes customizable HTML/CSV reports requiring subject, fields, and search criteria. EPA's TRI toolbox supports facility-level downloads and mapping: https://www.epa.gov/toxics-release-inventory-tri-program/tri-toolbox. County aggregate and population-based rate were not obtained in this pass."
+  }
+]

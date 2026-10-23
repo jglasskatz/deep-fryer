@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "residential-gpcd",
+    "content_supported": "uncertain",
+    "verifier_note": "Utility territory/production and acre-feet per connection are not full-county residential GPCD. Residential use, served population, period and aggregation across systems remain unmatched; baseline searches list only local Tier 1. Keep a provisional access/construct gap, not proof that no county statistic exists.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

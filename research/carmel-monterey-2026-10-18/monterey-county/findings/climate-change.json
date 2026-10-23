@@ -1,0 +1,11 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "ghg-per-capita",
+    "reason": "This pass did not verify a recent full-county or permitted regional community greenhouse-gas inventory with an interpretable emissions total covering incorporated cities and unincorporated county. The opened Board report describes a CCAAP inventory for unincorporated County areas, which does not cover the full county geography requested.",
+    "scales_tried": ["county", "regional"],
+    "tiers_tried": [1, 2],
+    "searched_at": "2026-10-19T03:44:44Z",
+    "nearest_data": "Opened County CCAAP Board report: https://monterey.legistar.com/View.ashx?GUID=A054CB68-D930-4298-916C-7F0301B607AA&ID=13601690&M=F. It describes an inventory for unincorporated County areas. EPA FLIGHT facility-level releases and CARB statewide inventory sources were considered but did not provide a full-county community inventory per capita in this pass."
+  }
+]

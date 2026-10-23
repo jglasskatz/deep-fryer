@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "nitrate-groundwater",
+    "content_supported": "uncertain",
+    "verifier_note": "Individual well/system/subbasin readings cannot represent county groundwater without a sampling frame and aggregation. The mistaken Yolo-system candidate was discarded and is no longer attributed to Monterey. County GEMS access and a representative well statistic remain incomplete. No county mean, measured safety or zero is established.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

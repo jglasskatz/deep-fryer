@@ -1,0 +1,25 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "broadband-access",
+    "name": "Households with a broadband subscription",
+    "value": 92.9,
+    "unit": "% of households",
+    "year": 2024,
+    "target": 95,
+    "level_pct": 2.2,
+    "scoring": {
+      "threshold_ref": "networks.broadband-access",
+      "function": "higher_is_better",
+      "inputs": {"value": 92.9, "target": 95, "scale": 95},
+      "worked_math": "level_pct = (95 − 92.9) ⁄ 95 × 100 = +2.2"
+    },
+    "source": "Census Reporter API, ACS 2024 1-year table B28002, Monterey County row; underlying estimates are U.S. Census Bureau ACS",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B15003%2CB28002&geo_ids=05000US06053",
+    "source_tier": 3,
+    "evidence": {"snapshot_path": "evidence/f4637d0fd262116d.png", "captured_at": "2026-10-23T03:07:48.564Z"},
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "ACS table B28002 universe is households. The estimate for B28002004 ('Broadband of any type') is 123,233 (MOE 2,259) out of B28002001 total households 132,591 (MOE 1,848): 123,233 ÷ 132,591 × 100 = 92.94%, rounded to 92.9%. This is a single-year ACS 2024 1-year estimate, GEOID 05000US06053. County/local sources did not provide an accessible newer countywide figure; the direct Census API was unavailable, so Census Reporter is classified tier 3."
+  }
+]

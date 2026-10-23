@@ -1,0 +1,47 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "cost-burdened-renters",
+    "reason": "City draft Housing Element cites 47% renter cost burden using ACS 2016–2020, outside the 2021+ data window. Census 2024 S2503 was searched but the city table could not be opened or archived.",
+    "scales_tried": [
+      "city",
+      "county"
+    ],
+    "tiers_tried": [
+      1,
+      2
+    ],
+    "searched_at": "2026-10-19T06:37:34Z",
+    "nearest_data": "City Housing Element 2016–2020 estimate (47%) rejected as stale; 2024 ACS table candidate could not be directly verified."
+  },
+  {
+    "kind": "indicator",
+    "indicator_slug": "homelessness-rate",
+    "name": "Residents experiencing homelessness",
+    "value": 55.7,
+    "unit": "per 10,000 residents",
+    "year": 2024,
+    "target": 10,
+    "level_pct": 457,
+    "scoring": {
+      "threshold_ref": "housing.homelessness-rate",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 55.7,
+        "target": 10,
+        "scale": 10
+      },
+      "worked_math": "level_pct = (55.7 − 10) ⁄ 10 × 100 = +457.0"
+    },
+    "source": "Monterey County 2024 Homelessness Point-In-Time Count, Applied Survey Research; denominator: California DOF population estimate reproduced in the County's 2025–26 Legislative Platform",
+    "source_url": "https://chsp.org/wp-content/uploads/2025/12/2024-Monterey-County-PIT-Count-Report_Final.pdf",
+    "source_tier": 3,
+    "evidence": {
+      "snapshot_path": "",
+      "captured_at": "2026-10-19T06:31:48Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "The opened PIT report identifies 2,436 people experiencing homelessness in Monterey County on January 31, 2024 (report lines/page 12). The opened County 2025–26 Legislative Platform states that California DOF estimated Monterey County population at 437,614 in 2024 (PDF page 6): https://www.countyofmonterey.gov/home/showpublisheddocument/138247/638736919326900000. Calculation: 2,436 ÷ 437,614 × 10,000 = 55.7. The PIT study is produced by Applied Survey Research for the local Continuum of Care; capture helper attempts timed out connecting to chsp.org, so snapshot_path is empty and no evidence file was saved. This is a Monterey County proxy permitted by the configured scale policy; it is not a Carmel-by-the-Sea city-limit rate."
+  }
+]

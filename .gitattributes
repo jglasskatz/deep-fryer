@@ -1,0 +1,5 @@
+# Preserve archived exhibits byte-for-byte across operating systems.
+site/evidence/**/*.pdf binary
+site/evidence/**/*.png binary
+site/evidence/**/*.jpg binary
+site/evidence/**/*.jpeg binary

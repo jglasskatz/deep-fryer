@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_slug": "cost-burdened-renters",
+    "content_supported": "uncertain",
+    "verifier_note": "Archived screenshot 04546e42323ac53c.png and raw B25070 response establish city ACS 2020–2024 renter-occupied housing units: total 646, not computed 28, qualifying bins 61+44+60+179=344; 344/(646−28)×100=55.6634→55.7, conditional score 85.7. Independent live Neilsberg corroborates 55.7; reviewer API refetch failed. This resolves denominator/exclusions, but the published bins are 30.0% OR MORE and cannot isolate the framework’s strict OVER 30% share. This is a supported related measure with an explicit construct flag, not an exact verified match to the unchanged indicator definition. Constituent MOEs are large; no combined percentage MOE has been calculated. No human disposition/approval implied.",
+    "reviewed_at": "2026-10-23T03:10:15.064927+00:00",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B25070&geo_ids=16000US0611250",
+    "exhibit_checked": true
+  },
+  {
+    "indicator_slug": "homelessness-rate",
+    "content_supported": "pass",
+    "verifier_note": "Independent live PIT PDF and visually rendered archived f81081b48e2af104.pdf page 12 support county PIT count 2436 in January 2024. Independently opened and rendered DOF PriceandPopulation2024.pdf physical page 31 supports January 1, 2024 rightmost TOTAL population 437614; adjacent population-minus-exclusions is 425625 and is NOT used. Exclusion footnote applies to adjusted/growth columns, so no all-residents denominator mismatch exists. 2436/437614×10000=55.6655→55.7, conditional rounded-value score457.0. Both source archives are exposed in supporting-evidence; county proxy is explicitly not city-limit prevalence. PIT is a one-night estimate with HUD exclusions, not annual persons served.",
+    "reviewed_at": "2026-10-23T03:18:52.050896+00:00",
+    "source_url": "https://chsp.org/wp-content/uploads/2025/12/2024-Monterey-County-PIT-Count-Report_Final.pdf",
+    "exhibit_checked": true
+  }
+]

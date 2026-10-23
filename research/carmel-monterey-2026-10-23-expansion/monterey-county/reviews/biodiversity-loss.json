@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "protected-land-share",
+    "content_supported": "uncertain",
+    "verifier_note": "Provisional extraction/calculation gap. The 2021 RCIS planning area is not the full county denominator; an unopened PDF or snippet cannot supply acreage. CPAD/PAD-US intersections and durable-protection definitions remain plausible sources. No verified county-area calculation was completed, so neither measured zero nor absence of protected-land data is established.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

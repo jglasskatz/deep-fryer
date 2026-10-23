@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "violent-crime-rate",
+    "content_supported": "uncertain",
+    "verifier_note": "Revised gap now correctly describes offenses reported within geography rather than county-of-residence data. Independent DOJ portal provides county/local agency downloads; extraction and complete reporting coverage still need work, so gap remains provisional. Sheriff-only data are insufficient. No exhibit.",
+    "reviewed_at": "2026-10-19T06:46:52.807565+00:00",
+    "source_url": "https://www.oag.ca.gov/crime",
+    "exhibit_checked": false
+  }
+]

@@ -1,0 +1,11 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "aragonite-saturation",
+    "reason": "NOAA's recent sources describe aragonite saturation state and provide estimates at U.S. Large Marine Ecosystem scales or fixed monitoring locations, but no directly read value was identified for Monterey County's coastal waters or a permitted regional observation. No county value was inferred from an LME-wide estimate.",
+    "scales_tried": ["county", "regional", "global"],
+    "tiers_tried": [1, 2],
+    "searched_at": "2026-10-19T03:47:05Z",
+    "nearest_data": "NOAA National Marine Ecosystem Status ocean-acidification page, opened: https://www.ecowatch.noaa.gov/thematic/ocean-acidification. It explains Ωar and presents mapped estimates for U.S. Large Marine Ecosystems, calculated from observed surface pCO2 and estimated alkalinity; the reader exposed no Monterey nearshore numeric estimate. NOAA's indicator overview says the dashboard tracks 11 set locations across seven LMEs: https://oceanacidification.noaa.gov/oa-indicators-explained/."
+  }
+]

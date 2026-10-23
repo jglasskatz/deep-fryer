@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_slug": "uninsured-rate",
+    "content_supported": "pass",
+    "verifier_note": "Inspected dd6e71fc936cda74.png and raw B27001: county ACS 2024 one-year civilian noninstitutionalized universe. Under-65 denominator 422,151−18,330−12,875−20,295−16,692 = 353,959. Male uninsured 18,058 + female 13,289 = 31,347; 31,347/353,959×100 = 8.856% → 8.9%; score 78.0. Component MOEs were not propagated to a rate MOE. Separately checked official SAHIE ZIP hash and exact 2024 county row: 32,903/352,397 reports 9.3±0.8%. Census dataset/method pages were opened independently. SAHIE uses a different estimation procedure; no unsupported universe-only explanation is asserted. Reviewer ACS API refetch failed; archived response supports the selected ACS estimate.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B19083%2CB25070%2CB20017%2CB27001&geo_ids=05000US06053",
+    "exhibit_checked": true
+  },
+  {
+    "indicator_slug": "life-expectancy",
+    "content_supported": "pass",
+    "verifier_note": "Independent narrow-field API refetch and real screenshot/HTML/TXT show Monterey FIPS 06053 life expectancy 80.8471266197383. v 147 field description explicitly says 2020–2022, resolving release-year 2025 ambiguity; revised finding year 2022 is the period endpoint. Tier 3 is correct. Target 80 gives−1.1. Genuine exhibit checked; racial disparity fields in full archive merit contextual attention.",
+    "reviewed_at": "2026-10-19T06:51:21.778695+00:00",
+    "source_url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv139_rawvalue%2Cv139_numerator%2Cv147_rawvalue&returnGeometry=false&f=pjson",
+    "exhibit_checked": true
+  }
+]

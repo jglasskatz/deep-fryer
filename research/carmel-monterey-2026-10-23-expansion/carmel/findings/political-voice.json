@@ -1,0 +1,33 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "voter-turnout",
+    "name": "Turnout of registered voters, most recent general election",
+    "value": 69.3,
+    "unit": "% of registered voters",
+    "year": 2024,
+    "target": 70,
+    "level_pct": 1,
+    "scoring": {
+      "threshold_ref": "political-voice.voter-turnout",
+      "function": "higher_is_better",
+      "inputs": {
+        "value": 69.3,
+        "target": 70,
+        "scale": 70
+      },
+      "worked_math": "level_pct = (70 − 69.3) ⁄ 70 × 100 = +1.0"
+    },
+    "source": "California Secretary of State, November 5, 2024 General Election Voter Participation Statistics by County",
+    "source_url": "https://elections.cdn.sos.ca.gov/sov/2024-general/sov/03-voter-participation-stats-by-county.pdf",
+    "source_tier": 2,
+    "evidence": {
+      "snapshot_path": "evidence/e11936579caa6970.png",
+      "pdf_path": "evidence/e11936579caa6970.pdf",
+      "captured_at": "2026-10-23T02:57:11.392Z"
+    },
+    "confidence": "high",
+    "geographic_scale": "county",
+    "notes": "The State report records 148,916 total voters and 214,883 registered voters for Monterey County, with turnout of registered voters reported as 69.30%. This is the most recent general election series found and matches the indicator denominator. This is a Monterey County proxy permitted by portrait scale policy; it is not Carmel city turnout. Tier 1 City election sources were checked but no citywide registered-voter turnout denominator was available; the 2,136 mayor-contest votes are not unique voter participation. Tier 2 California Secretary of State county participation exhibit provides a matching registered-voter denominator. The captured exhibit files are copied into the Carmel evidence tenant."
+  }
+]

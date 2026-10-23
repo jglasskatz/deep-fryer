@@ -1,0 +1,17 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "nitrate-groundwater",
+    "reason": "No 2021+ groundwater nitrate concentration series attributable to the city footprint was directly verified. Water-supply service geography is regional; basin-wide well results cannot be treated as a city measure without explicit sampling geography.",
+    "scales_tried": [
+      "city",
+      "county"
+    ],
+    "tiers_tried": [
+      1,
+      2
+    ],
+    "searched_at": "2026-10-19T06:37:34Z",
+    "nearest_data": "State/utility search surfaced broader Monterey Peninsula context; no current city-specific nitrate metric retrieved."
+  }
+]

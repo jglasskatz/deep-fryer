@@ -1,0 +1,10 @@
+{
+  "homelessness-rate": [
+    {
+      "label": "California Department of Finance, Price Factor and Population Information 2024, Attachment B, Monterey County Total Population, January 1, 2024 (PDF p. 31)",
+      "source_url": "https://dof.ca.gov/media/docs/forecasting/Demographics/estimates/PriceandPopulation2024.pdf",
+      "snapshot_path": "evidence/4482a1372d1295ee.png",
+      "pdf_path": "evidence/4482a1372d1295ee.pdf"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "gini-index",
+    "reason": "No directly retrieved 2021+ city Gini estimate from official ACS B19083 was available. A secondary 2024 trend page displayed a city value but lacks a directly opened official table exhibit.",
+    "scales_tried": [
+      "city",
+      "county"
+    ],
+    "tiers_tried": [
+      1,
+      2
+    ],
+    "searched_at": "2026-10-19T06:37:34Z",
+    "nearest_data": "Secondary city trend result is nearest; Census 2024 city B19083 value not directly retrieved or archived."
+  }
+]

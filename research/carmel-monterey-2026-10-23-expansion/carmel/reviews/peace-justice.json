@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "violent-crime-rate",
+    "content_supported": "uncertain",
+    "verifier_note": "Provisional primary-series retrieval gap. Exact city agency/ORI, reporting completeness, offenses and matching population are required; a Carmel-named agency or ZIP search alone is insufficient. City/county fallback and state/FBI sources have not yielded a complete rate in this reviewed payload. Do not count unresolved offenses as zero or call this proven absence.",
+    "reviewed_at": "2026-10-23T03:18:52.050896+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

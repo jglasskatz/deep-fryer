@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "natural-land-conversion",
+    "content_supported": "uncertain",
+    "verifier_note": "Independent State FMMP page establishes county land-change products; farmland-category conversion alone does not verify natural-to-developed% per decade. Gap is reasonable for this pass; NLCD/LCMAP or county land-cover overlay with explicit natural classes and decade remain untested. No exhibit.",
+    "reviewed_at": "2026-10-19T06:28:25.901663+00:00",
+    "source_url": "https://www.conservation.ca.gov/dlrp/fmmp/Pages/Monterey.aspx",
+    "exhibit_checked": false
+  }
+]

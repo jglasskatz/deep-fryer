@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "gini-index",
+    "content_supported": "uncertain",
+    "verifier_note": "Independent DataShare fetch inaccessible; current Census B 19083_001 E is a focused rerun. Failure to retrieve one dashboard does not establish no current county value exists. Older indexed period is properly rejected, but source exhaustion remains incomplete. No exhibit.",
+    "reviewed_at": "2026-10-19T06:28:25.901663+00:00",
+    "source_url": "https://www.datasharemontereycounty.org/indicators/index/view?indicatorId=288&localeFilterId=7&localeId=264",
+    "exhibit_checked": false
+  }
+]

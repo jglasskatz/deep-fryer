@@ -1,0 +1,17 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "pm25-annual",
+    "reason": "No current city or county annual mean was directly verified from an opened source. EPA AirData confirms monitor-level annual files and county summaries, but the opened pages did not expose a Monterey County annual mean; CARB’s nearest opened figure was a 2023 three-year PM2.5 design value of 4.5 µg/m³, not the requested annual mean.",
+    "scales_tried": [
+      "city",
+      "county"
+    ],
+    "tiers_tried": [
+      1,
+      2
+    ],
+    "searched_at": "2026-10-19T06:37:34Z",
+    "nearest_data": "EPA AirData and CARB are nearest; 2023 Monterey County 3-year design value 4.5 µg/m³ rejected because it is not an annual mean."
+  }
+]

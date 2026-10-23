@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "broadband-access",
+    "content_supported": "pass",
+    "verifier_note": "Inspected f4637d0fd262116d.png and raw B28002 response: county GEOID 05000US06053, ACS 2024 one-year household universe. Broadband of any type (004) 123,233 / all households 132,591 = 92.942% → 92.9%; score 2.2. Includes cellular/satellite subscriptions, not fixed-line availability. Count MOEs are 2,259 and 1,848; no derived-share MOE is asserted. This is not the prior five-year 93.8%. Reviewer API refetch failed; archived publisher response supports the selected estimate. No human approval implied.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B15003%2CB28002&geo_ids=05000US06053",
+    "exhibit_checked": true
+  }
+]

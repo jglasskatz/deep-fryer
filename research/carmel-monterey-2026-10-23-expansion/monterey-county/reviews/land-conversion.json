@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "natural-land-conversion",
+    "content_supported": "uncertain",
+    "verifier_note": "FMMP farmland conversion is correctly rejected as a substitute for all natural-land conversion to developed use. A current NLCD calculation with defined classes, county boundary and baseline/end years remains unperformed. The gap does not prove no land-cover data exist.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

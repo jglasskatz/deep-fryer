@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "nitrate-groundwater",
+    "content_supported": "uncertain",
+    "verifier_note": "Provisional geographic/statistical gap. City service-area mismatch is a sound warning, but allowed county raw-groundwater monitoring still needs specified method, unitsNO 3-N versusNO 3 and sampling geography. Use County GEMS/GAMA/SVBGSA URLs; avoid unrelated Nelson's GroveYolo system from other pass.",
+    "reviewed_at": "2026-10-19T06:43:06.063363+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "energy-burden",
+    "content_supported": "uncertain",
+    "verifier_note": "Gap is provisional, not proof of no available data. Baseline finding lists city/tier1 only despite allowed county fallback. Independent DOE LEAD FAQ establishes a useful county-capable 2018–2022 calibrated source but defines mean cost/mean income and weighted means, not the framework median low-income-household burden. Do not relabel a mean as median. Search/extract an actual median or explicitly keep this construct/access gap with DOE URL and excluded alternative documented.",
+    "reviewed_at": "2026-10-23T03:18:52.050896+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

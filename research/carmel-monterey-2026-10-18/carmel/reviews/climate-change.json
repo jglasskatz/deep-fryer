@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "ghg-per-capita",
+    "content_supported": "uncertain",
+    "verifier_note": "Rejecting 2019 City inventory as stale is justified, but city-only current-inventory reasoning does not exhaust accepted county/regional scales. Independent County Board record also describes 2019 unincorporated inventory, not full county. Add exact City/AMBAG URLs and exhaust recent regional inventory before final gap.",
+    "reviewed_at": "2026-10-19T06:43:06.063363+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]

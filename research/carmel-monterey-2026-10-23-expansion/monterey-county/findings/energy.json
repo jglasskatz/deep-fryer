@@ -1,0 +1,11 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "energy-burden",
+    "reason": "DOE's county-capable LEAD tool was identified, but no directly readable county median for low-income household energy burden was extracted. A value cannot be inferred from the national average or from a utility service area that does not match the full county.",
+    "scales_tried": ["county"],
+    "tiers_tried": [1, 2],
+    "searched_at": "2026-10-19T03:47:05Z",
+    "nearest_data": "DOE LEAD tool description, opened directly: https://www.energy.gov/cmei/scep/low-income-energy-affordability-data-lead-tool. It says the tool can combine state, county, city, and tract geographies, but the interactive county estimate was not accessible in the reader."
+  }
+]

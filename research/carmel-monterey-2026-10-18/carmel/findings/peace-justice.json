@@ -1,0 +1,17 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "violent-crime-rate",
+    "reason": "No current primary city violent-crime rate with a defined 2021+ reporting year and city population denominator was directly opened. A secondary 2024 source surfaced a small incident count for a Carmel-named agency, but the primary agency series was not verified.",
+    "scales_tried": [
+      "city",
+      "county"
+    ],
+    "tiers_tried": [
+      1,
+      2
+    ],
+    "searched_at": "2026-10-19T06:37:34Z",
+    "nearest_data": "FBI/California crime searches surfaced agency/city candidates; primary rate and denominator unverified."
+  }
+]

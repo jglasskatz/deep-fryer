@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "hs-attainment",
+    "content_supported": "pass",
+    "verifier_note": "Independent live Census Reporter profile and captured screenshot/text/HTML agree: Carmel place 0611250, ACS 2024 five-year, high-school-or-higher 94%. Archived profileData metadata identifies B 15002 universe population 25+, value 93.99 rounding 94; researcher notes now correctly identify B 15002. Target 95 gives 1.1. Period is 2020\u20132024; tier 3 fallback and large sampling uncertainty are disclosed.",
+    "reviewed_at": "2026-10-19T06:46:06.804767+00:00",
+    "source_url": "https://censusreporter.org/profiles/16000US0611250-carmel-by-the-sea-ca/",
+    "exhibit_checked": true
+  }
+]

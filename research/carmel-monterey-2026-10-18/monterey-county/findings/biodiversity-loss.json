@@ -1,0 +1,11 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "protected-land-share",
+    "reason": "A recent regional conservation planning document was indexed, but no directly verified, durable conservation acreage divided by full Monterey County land area was retrieved. Regional-plan area cannot be used as the County denominator, and no acreage from a search snippet is accepted.",
+    "scales_tried": ["county", "regional"],
+    "tiers_tried": [1, 2],
+    "searched_at": "2026-10-19T03:47:05Z",
+    "nearest_data": "The Monterey County Regional Conservation Investment Strategy (2021) search result described protected lands within its regional planning area, which is not identical to Monterey County; https://www.montereycountyrcis.org/static/MontereyCountyRCIS_Final_Jun2021.pdf. This PDF was not opened and no figure from its search result is used. The County GIS and California Protected Area Database were considered, but no verified county-area calculation was completed."
+  }
+]

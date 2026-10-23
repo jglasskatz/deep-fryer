@@ -1,0 +1,37 @@
+{
+  "ghg-per-capita": [
+    {
+      "label": "Carmel City Climate Action Plan Appendix A, 2019 inventory; printed pages 2–4, Table B printed p. 4 / physical PDF p. 8",
+      "source_url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/climate_adaptation_plan_appendixa_climate_action_plan_prefinal_042822_0.pdf?1677096044=",
+      "snapshot_path": "evidence/021dd883fedd3c42.png",
+      "pdf_path": "evidence/021dd883fedd3c42.pdf"
+    },
+    {
+      "label": "U.S. Treasury 2019 Population Estimate schedule republished by California Department of Finance; Carmel row printed allocation p. 2 / physical PDF p. 7",
+      "source_url": "https://dof.ca.gov/media/docs/budget/covid-19-information/covid-19-direct-disaster-response-allocations-and-notifications/6-3-21-section-28-coronavirus_fiscal_recovery_fund_allocations_for_small_cities.pdf",
+      "snapshot_path": "evidence/7774d8e37920ee62.png",
+      "pdf_path": "evidence/7774d8e37920ee62.pdf"
+    }
+  ],
+  "homelessness-rate": [
+    {
+      "label": "Monterey County 2024 PIT Count report, printed p. 12",
+      "source_url": "https://chsp.org/wp-content/uploads/2025/12/2024-Monterey-County-PIT-Count-Report_Final.pdf",
+      "snapshot_path": "evidence/f81081b48e2af104.png",
+      "pdf_path": "evidence/f81081b48e2af104.pdf"
+    },
+    {
+      "label": "California Department of Finance 2024 Price and Population report, Monterey County Total column, printed p. 31 / physical PDF page 31",
+      "source_url": "https://dof.ca.gov/media/docs/forecasting/Demographics/estimates/PriceandPopulation2024.pdf",
+      "snapshot_path": "evidence/4482a1372d1295ee.png",
+      "pdf_path": "evidence/4482a1372d1295ee.pdf"
+    }
+  ],
+  "pm25-annual": [
+    {
+      "label": "County Health Rankings air-pollution measure methodology (annual daily-data estimate; county value uses maximum tract-centroid estimate)",
+      "source_url": "https://www.countyhealthrankings.org/health-data/community-conditions/physical-environment/air-water-and-land/air-pollution-particulate-matter",
+      "snapshot_path": "evidence/d0d1610e6d986325.png"
+    }
+  ]
+}

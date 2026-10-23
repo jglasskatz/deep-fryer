@@ -1,0 +1,63 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "cost-burdened-renters",
+    "name": "Renter-occupied housing units paying 30% or more of household income in gross rent",
+    "value": 55.7,
+    "unit": "% of renter households",
+    "year": 2024,
+    "target": 30,
+    "level_pct": 85.7,
+    "scoring": {
+      "threshold_ref": "housing.cost-burdened-renters",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 55.7,
+        "target": 30,
+        "scale": 30
+      },
+      "worked_math": "level_pct = (55.7 − 30) ÷ 30 × 100 = +85.7"
+    },
+    "source": "Census Reporter API, republishing U.S. Census Bureau ACS 2024 5-year table B25070",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B25070&geo_ids=16000US0611250",
+    "source_tier": 3,
+    "evidence": {
+      "snapshot_path": "evidence/04546e42323ac53c.png",
+      "captured_at": "2026-10-23T02:41:02.454Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "city",
+    "notes": "Captured raw API response identifies release acs2024_5yr (2020–2024), geography 16000US0611250 Carmel-by-the-Sea, and B25070 universe renter-occupied housing units. Table estimates: total 646; not computed 28; 30.0–34.9%=61, 35.0–39.9%=44, 40.0–49.9%=60, 50.0%+=179. Numerator 344 and computable denominator 618 (646−28), so 344/618×100=55.66%, rounded to 55.7%. Prompt says over 30%; ACS bin includes exactly 30.0%, so cannot isolate a strict >30 share from published bins. Census Reporter republishes ACS and is a long-running nonprofit data service (tier 3); official Census API endpoint failed during this pass. Margins of error for the constituent categories are large (30–34.9 ±60, 35–39.9 ±44, 40–49.9 ±59, 50+ ±148); combined-share MOE was not calculated."
+  },
+  {
+    "kind": "indicator",
+    "indicator_slug": "homelessness-rate",
+    "name": "Residents experiencing homelessness",
+    "value": 55.7,
+    "unit": "per 10,000 residents",
+    "year": 2024,
+    "target": 10,
+    "level_pct": 457,
+    "scoring": {
+      "threshold_ref": "housing.homelessness-rate",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 55.7,
+        "target": 10,
+        "scale": 10
+      },
+      "worked_math": "level_pct = (55.7 − 10) ⁄ 10 × 100 = +457.0"
+    },
+    "source": "Monterey County 2024 Homelessness Point-In-Time Count, Applied Survey Research; California Department of Finance 2024 Price and Population report (U.S. Census Bureau population estimates)",
+    "source_url": "https://chsp.org/wp-content/uploads/2025/12/2024-Monterey-County-PIT-Count-Report_Final.pdf",
+    "source_tier": 3,
+    "evidence": {
+      "snapshot_path": "evidence/f81081b48e2af104.png",
+      "pdf_path": "evidence/f81081b48e2af104.pdf",
+      "captured_at": "2026-10-23T02:56:59.555Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "The PIT report identifies 2,436 people experiencing homelessness in Monterey County on January 31, 2024 (report printed p. 12). The California Department of Finance Price and Population report gives Monterey County's 2024 population estimate as 437,614 in the Total column (printed p. 31 / physical PDF page 31); the adjusted total 425,625 was not used. Source PDF: https://dof.ca.gov/media/docs/forecasting/Demographics/estimates/PriceandPopulation2024.pdf. Calculation: 2,436 ÷ 437,614 × 10,000 = 55.7. The PIT report was captured at evidence/f81081b48e2af104.pdf/.png; the denominator report is captured at evidence/4482a1372d1295ee.pdf/.png (captured 2026-10-23T03:10:50.924Z). This is a Monterey County proxy permitted by portrait scale policy, not a Carmel-by-the-Sea city-limit rate."
+  }
+]

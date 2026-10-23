@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_slug": "uninsured-rate",
+    "content_supported": "uncertain",
+    "verifier_note": "Revised gap correctly retracts unsupported ACS-period attribution: QuickFacts directly shows county 9.3% but no row year; independent Census metadata confirms SAHIE single-year rather than ACS five-year. No exact dated county SAHIE observation or archive checked. This is a dated-source retrieval gap, not evidence no county uninsured data exists.",
+    "reviewed_at": "2026-10-19T06:37:20.672353+00:00",
+    "source_url": "https://www.census.gov/quickfacts/fact/table/montereycountycalifornia/SBO040223",
+    "exhibit_checked": false
+  },
+  {
+    "indicator_slug": "life-expectancy",
+    "content_supported": "pass",
+    "verifier_note": "Independent narrow-field API refetch and real screenshot/HTML/TXT show Monterey FIPS 06053 life expectancy 80.8471266197383. v 147 field description explicitly says 2020\u20132022, resolving release-year 2025 ambiguity; revised finding year 2022 is the period endpoint. Tier 3 is correct. Target 80 gives\u22121.1. Genuine exhibit checked; racial disparity fields in full archive merit contextual attention.",
+    "reviewed_at": "2026-10-19T06:51:21.778695+00:00",
+    "source_url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv139_rawvalue%2Cv139_numerator%2Cv147_rawvalue&returnGeometry=false&f=pjson",
+    "exhibit_checked": true
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "gender-pay-ratio",
+    "content_supported": "uncertain",
+    "verifier_note": "Independent Census S 2002 metadata verifies the full-time year-round workers 16+ earnings-ratio series exists, but not a county value. This is table retrieval gap. A reproducible ratio from matching-universe medians is permissible; do not imply derivation is inherently invalid. No numeric county exhibit.",
+    "reviewed_at": "2026-10-19T06:28:25.901663+00:00",
+    "source_url": "https://api.census.gov/data/2024/acs/acs5/subject/groups/S2002.html",
+    "exhibit_checked": false
+  }
+]

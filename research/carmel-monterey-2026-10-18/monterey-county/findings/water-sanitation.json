@@ -1,0 +1,11 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "safe-drinking-water",
+    "reason": "The State Water Board's accessible eAR information explains annual reports are collected from public water systems, but this pass did not obtain a directly readable Monterey County aggregate for the share of served population whose systems have no health-based violations. A county system count or individual violation record would not establish the indicator's population denominator.",
+    "scales_tried": ["county"],
+    "tiers_tried": [1, 2],
+    "searched_at": "2026-10-19T03:47:05Z",
+    "nearest_data": "State Water Board Electronic Annual Report overview: https://waterboards.ca.gov/drinking_water/certlic/drinkingwater/ear.html. It describes system-submitted annual reports and distinguishes large and small systems by population/service connections, but provides no extracted countywide served-population percentage in the opened page. California's 2024 Drinking Water Program Annual Compliance Report was located at https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/docs/2024/2024%20ACR%20Final%206-25-2025.pdf but the reader returned an internal error."
+  }
+]

@@ -1,5 +1,7 @@
 # Deploying deep-fryer
 
+For the public static portrait collection, use [GitHub Pages deployment](pages.md). Its CI/CD publishes checked snapshots without database or model credentials. The account-based application described below still requires a server; Pages cannot execute its login, billing or research services.
+
 Fully self-hosted (SPEC-v3 §2.4, SPEC-v4): one droplet (or any Docker host)
 running `docker compose` — Postgres 16, SeaweedFS (S3-compatible) for evidence, a one-shot
 migration job, the web app, the research worker, and Caddy for TLS. No

@@ -1,0 +1,11 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "nitrate-groundwater",
+    "reason": "This pass did not retrieve a defensible county-scale groundwater nitrate concentration; materials located point to individual wells or groundwater subbasins. An individual public-water-system sample cannot represent county groundwater, so it is not substituted.",
+    "scales_tried": ["county"],
+    "tiers_tried": [1, 2],
+    "searched_at": "2026-10-19T03:47:05Z",
+    "nearest_data": "An indexed State Water Board result for Nelson's Grove (system 5700802) was checked and discarded: the system is in Yolo County, not Monterey County; its post-treatment sample cannot represent Monterey County groundwater. The direct result URL https://sdwis.waterboards.ca.gov/PDWW/JSP/WSamplingResultsByStoret.jsp?Analyte=&ChemicalName=&FacilityID=008&SamplingPointID=008&SamplingPointName=NITRATE+POST+TREATMENT+LOCATION&SystemName=NELSON%27S+GROVE&SystemNumber=5700802&WSFNumber=67516&begin_date=&end_date=&mDWW=&tinwsys_is_number=8220 returned a cache miss. County GEMS, SVBGSA, and Monterey Subbasin monitoring sources describe distinct program/basin data, not a whole-county average."
+  }
+]

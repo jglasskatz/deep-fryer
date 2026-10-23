@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "broadband-access",
+    "content_supported": "pass",
+    "verifier_note": "Independent QuickFacts county row supports 93.8% broadband subscriptions,2020\u20132024 ACS period; target 95 gives 1.3. County proxy is allowed and explicitly distinguished from city-limit measurement. No claimed snapshot exists; publication/import remains uncertain pending archive.",
+    "reviewed_at": "2026-10-19T06:46:06.804767+00:00",
+    "source_url": "https://www.census.gov/quickfacts/fact/table/montereycountycalifornia/SBO040223",
+    "exhibit_checked": false
+  }
+]

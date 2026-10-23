@@ -1,0 +1,18 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "ghg-per-capita",
+    "reason": "City-adopted Climate Action Plan material references AMBAG community inventories through 2019, outside the 2021+ recency window. No newer city-limits inventory with a matching population denominator was directly retrieved.",
+    "scales_tried": [
+      "city",
+      "county",
+      "regional"
+    ],
+    "tiers_tried": [
+      1,
+      2
+    ],
+    "searched_at": "2026-10-19T06:37:34Z",
+    "nearest_data": "City CAP/AMBAG inventory through 2019 rejected as stale; no newer inventory value appeared in the reviewed City sources."
+  }
+]

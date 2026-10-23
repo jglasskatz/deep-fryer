@@ -1,0 +1,48 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "cost-burdened-renters",
+    "name": "Renter-occupied units paying 30% or more of income in gross rent",
+    "value": 58.0,
+    "unit": "% of renter households",
+    "year": 2024,
+    "target": 30,
+    "level_pct": 93.3,
+    "scoring": {
+      "threshold_ref": "housing.cost-burdened-renters",
+      "function": "lower_is_better",
+      "inputs": {"value": 58, "target": 30, "scale": 30},
+      "worked_math": "level_pct = (value − target) ⁄ scale × 100 = (58 − 30) ⁄ 30 × 100 = +93.3"
+    },
+    "source": "Census Reporter API, ACS 2024 1-year table B25070, Monterey County row; underlying estimates are U.S. Census Bureau ACS",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B19083%2CB25070%2CB20017%2CB27001&geo_ids=05000US06053",
+    "source_tier": 3,
+    "evidence": {"snapshot_path": "evidence/dd6e71fc936cda74.png", "captured_at": "2026-10-23T03:03:09.136Z"},
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "Table B25070 covers renter-occupied housing units. Sum of ACS estimate cells at gross rent ≥30% of household income: B25070007 5,888 + B25070008 3,826 + B25070009 8,738 + B25070010 16,798 = 35,250. Exclude B25070011 “Not computed” (1,967) from the denominator: 62,754 total − 1,967 = 60,787 with computed ratios. Share = 35,250 ÷ 60,787 × 100 = 57.989%, rounded to 58.0%; uncertainty was not propagated for the derived share. The framework's strict >30% construct cannot be isolated from the published bins because the first included bin starts at exactly 30.0%; this finding is therefore 30% or more and has a construct-match limitation. Release ACS 2024 1-year; GEOID 05000US06053. County sources did not provide an accessible current value; Census API returned 503 and direct data.census.gov row was inaccessible, so Census Reporter is classified tier 3 and the source access limitation is explicit."
+  },
+  {
+    "kind": "indicator",
+    "indicator_slug": "homelessness-rate",
+    "name": "Residents experiencing homelessness",
+    "value": 55.7,
+    "unit": "per 10,000 residents",
+    "year": 2024,
+    "target": 10,
+    "level_pct": 457,
+    "scoring": {
+      "threshold_ref": "housing.homelessness-rate",
+      "function": "lower_is_better",
+      "inputs": {"value": 55.7, "target": 10, "scale": 10},
+      "worked_math": "level_pct = (55.7 − 10) ⁄ 10 × 100 = +457.0"
+    },
+    "source": "Monterey County 2024 Homelessness Point-In-Time Count, Applied Survey Research; denominator: California DOF population estimate reproduced in the County's 2025–26 Legislative Platform",
+    "source_url": "https://chsp.org/wp-content/uploads/2025/12/2024-Monterey-County-PIT-Count-Report_Final.pdf",
+    "source_tier": 3,
+    "evidence": {"snapshot_path": "evidence/74f93355d80838f8.png", "pdf_path": "evidence/74f93355d80838f8.pdf", "captured_at": "2026-10-23T03:06:15.649Z"},
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "The PIT report reports 2,436 people experiencing homelessness in Monterey County on January 31, 2024 (report page 12). California Department of Finance's Price Factor and Population Information, Attachment B, reports Monterey County Total Population = 437,614 on January 1, 2024 (PDF page 31): https://dof.ca.gov/media/docs/forecasting/Demographics/estimates/PriceandPopulation2024.pdf. Rate = 2,436 ÷ 437,614 × 10,000 = 55.7. The adjacent DOF 'population minus exclusions' figure is 425,625; this rate uses the rightmost Total Population column (437,614), which includes the otherwise excluded residents, matching the intended all-resident denominator. Both the PIT numerator and DOF population table are captured; denominator exhibit is apps/web/public/evidence/monterey-county/evidence/4482a1372d1295ee.png and its PDF."
+  }
+]

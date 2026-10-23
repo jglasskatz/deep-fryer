@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "safe-drinking-water",
+    "content_supported": "uncertain",
+    "verifier_note": "City distribution-zone caution is sound, but county is allowed; final gap must audit county served-population share as well. Independent State eAR overview describes systems and cannot alone verify population coverage. Add SDWIS/State health-based compliance source URLs and served-population method.",
+    "reviewed_at": "2026-10-19T06:43:06.063363+00:00",
+    "source_url": "https://waterboards.ca.gov/drinking_water/certlic/drinkingwater/ear.html",
+    "exhibit_checked": false
+  }
+]

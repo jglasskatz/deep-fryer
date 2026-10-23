@@ -1,0 +1,119 @@
+{
+  "model": "gpt-6-luna",
+  "start_timestamp_utc": null,
+  "start_timestamp_note": "The web tool did not expose a turn-start timestamp; no start time is estimated.",
+  "end_timestamp_utc": "2026-10-19T06:51:03Z",
+  "web_tool_calls": 46,
+  "search_queries": 108,
+  "unique_successfully_opened_urls": 35,
+  "urls_opened": [
+    "https://ci.carmel.ca.us/post/general-plan",
+    "https://ci.carmel.ca.us/post/utilities",
+    "https://ci.carmel.ca.us/budget",
+    "https://ci.carmel.ca.us/planning",
+    "https://maps.co.monterey.ca.us/server/rest/services/LAFCO/Incorporated_Cities_2/FeatureServer/2",
+    "https://ci.carmel.ca.us/post/local-coastal-program",
+    "https://tigerweb.geo.census.gov/tigerwebmain/Files/acs26/tigerweb_acs26_incplace_2025_acs25_ca.html",
+    "https://www2.census.gov/geo/pvs/bas/bas24maps/st06_ca/incplace/p0611250_carmel-by-the-sea/BAS24P10600011250.pdf",
+    "https://www.cawd.org/service-area",
+    "https://www.cawd.org/district-transparency",
+    "https://www.carmelunified.org/departments/student-services/enrollment-residency",
+    "https://www.amwater.com/caaw/Customer-Service-Billing/Rates/Monterey-District",
+    "https://www.mbard.org/air-quality-and-planning",
+    "https://www.ambag.org/about-us",
+    "https://ci.carmel.ca.us/police-fire",
+    "https://mpc.edu/about/index.html",
+    "https://ci.carmel.ca.us/post/gis-mapping-tool",
+    "https://www.census.gov/programs-surveys/geography/guidance/geo-areas/pumas.html",
+    "https://ci.carmel.ca.us/post/long-range-planning-initiatives",
+    "https://www.sos.ca.gov/elections/county-city-school-district-ballot-measure-election-results",
+    "https://www.sos.ca.gov/elections/prior-elections/statewide-election-results/general-election-nov-5-2024/statement-vote",
+    "https://www.sos.ca.gov/elections/report-registration/15day-gen-2024",
+    "https://elections.cdn.sos.ca.gov/county-city-school-district-election-results/2024/city.pdf",
+    "https://elections.cdn.sos.ca.gov/sov/2024-general/sov/03-voter-participation-stats-by-county.pdf",
+    "https://aqs.epa.gov/aqsweb/airdata/download_files.html?monitor=25-025-1004",
+    "https://www.epa.gov/air-trends/air-quality-cities-and-counties",
+    "https://www.epa.gov/outdoor-air-quality-data/air-quality-statistics-report",
+    "https://ozone.unep.org/facts-and-figures-ozone-protection",
+    "https://www.ecowatch.noaa.gov/regions/california-current",
+    "https://www.pmel.noaa.gov/co2/story/CCE%2B1",
+    "https://www.mbari.org/data/wave-glider-sparky-real-time-data-plots/",
+    "https://www.ncei.noaa.gov/data/oceans/ncei/ocads/metadata/0287551.html",
+    "https://censusreporter.org/profiles/16000US0611250-carmel-by-the-sea-ca/",
+    "https://ozone.unep.org/refrigeration-cool-technology-heating-planet?q=node%2F16288",
+    "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv139_rawvalue%2Cv139_numerator%2Cv147_rawvalue&returnGeometry=false&f=pjson"
+  ],
+  "failed_open_urls": [
+    {
+      "url": "https://www.countyofmonterey.gov/business/developing-here/gis-mapping-data",
+      "result": "HTTP 403"
+    },
+    {
+      "url": "https://www.countyofmonterey.gov/government/government-links/lafco/studies-maps",
+      "result": "HTTP 403"
+    },
+    {
+      "url": "https://data.census.gov/all?q=Carmel-by-the-Sea+city%2C+California",
+      "result": "Open redirected without page content"
+    },
+    {
+      "url": "https://www.countyofmonterey.gov/visitors/hospitals",
+      "result": "Open failed"
+    },
+    {
+      "url": "https://ci.carmel.ca.us/pod/november-5-2024-municipal-election-results",
+      "result": "web open HTTP 403"
+    },
+    {
+      "url": "https://www.countyofmonterey.gov/home/showpublisheddocument/137108/638768525468870000",
+      "result": "web open HTTP 403"
+    },
+    {
+      "url": "https://api.census.gov/data/2024/acs/acs5/subject?get=NAME%2CS1701_C03_001E%2CS1701_C03_001M&for=place%3A11250&in=state%3A06",
+      "result": "web open URL inaccessible"
+    },
+    {
+      "url": "https://api.census.gov/data/2024/acs/acs5/subject?get=NAME%2CS2801_C01_012E%2CS2801_C02_012E%2CS2801_C02_016E&for=place%3A11250&in=state%3A06",
+      "result": "web open URL inaccessible"
+    },
+    {
+      "url": "https://api.census.gov/data/2024/acs/acs5/subject?get=NAME%2CS2503_C03_001E&for=place%3A11250&in=state%3A06",
+      "result": "web open URL inaccessible"
+    },
+    {
+      "url": "https://data.census.gov/table/ACSST5Y2024.S2503?g=160XX00US0611250",
+      "result": "web open URL inaccessible"
+    },
+    {
+      "url": "https://data.census.gov/table/ACSST5Y2024.S2801?g=160XX00US0611250",
+      "result": "web open URL inaccessible"
+    },
+    {
+      "url": "https://data.census.gov/table/ACSST5Y2024.S1903?g=160XX00US0611250",
+      "result": "web open URL inaccessible"
+    },
+    {
+      "url": "https://ozone.unep.org/sites/default/files/2023-05/Final_20Qs%202022%20full%20document_26April2023_digital%20version.pdf",
+      "result": "web open content length too large"
+    },
+    {
+      "url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv139_rawvalue%2Cv139_numerator%2Cv147_rawvalue&returnGeometry=false&f=pjson",
+      "result": "web reader reported URL inaccessible; exact API response was archived successfully by approved evidence capture helper, including field descriptions and Monterey FIPS 06053 row"
+    }
+  ],
+  "actual_token_usage": null,
+  "actual_usd": null,
+  "failed_evidence_capture_attempts": [
+    {
+      "url": "https://data.census.gov/table/ACSST5Y2024.S1501?g=160XX00US0611250",
+      "attempted_at_utc": null,
+      "result": "capture helper failed before navigation: pinned Playwright chromium_headless_shell executable missing; no evidence path generated"
+    },
+    {
+      "url": "https://data.census.gov/table/ACSST5Y2024.S1501?g=160XX00US0611250",
+      "attempted_at_utc": null,
+      "result": "retry failed with same missing pinned Playwright browser; no evidence path generated"
+    }
+  ],
+  "failed_evidence_capture_attempts_note": "The helper tool output did not expose per-attempt timestamps; actual times are not estimated."
+}

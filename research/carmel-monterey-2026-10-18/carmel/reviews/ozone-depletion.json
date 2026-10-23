@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "ods-phaseout-compliance",
+    "content_supported": "uncertain",
+    "verifier_note": "Revised gap now correctly recognizes allowed global scale. Independent June25,2025 UNEP feature supports a dated99% production-phaseout summary, but underlying dataset/report, denominator and observation cutoff are not supplied; it is contextual rather than a verified compliance metric. Keep gap provisional, do not assert no local percentage is published without exhaustive search.",
+    "reviewed_at": "2026-10-19T06:46:06.804767+00:00",
+    "source_url": "https://ozone.unep.org/refrigeration-cool-technology-heating-planet?q=node%2F16288",
+    "exhibit_checked": false
+  }
+]

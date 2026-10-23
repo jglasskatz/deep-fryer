@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "nitrate-groundwater",
+    "content_supported": "uncertain",
+    "verifier_note": "A city drinking-water service concentration is not automatically ambient groundwater nitrate within city limits. The inherited city/county search identifies no sampled-well statistic, dates, aggregation or full denominator. County fallback remains possible under policy; no newly extracted compliant result is present. Keep provisional sampling/construct gap, not measured safety or proof of no data.",
+    "reviewed_at": "2026-10-23T03:18:52.050896+00:00",
+    "source_url": null,
+    "exhibit_checked": false
+  }
+]
