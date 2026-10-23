@@ -2,7 +2,7 @@ import path from 'node:path';
 import { readFileSync } from 'node:fs';
 import { pctToVizLevel } from '../packages/core/src/viz-level.js';
 const catalog = JSON.parse(readFileSync(new URL('../site/catalog.json', import.meta.url), 'utf8'));
-const framework = JSON.parse(readFileSync(new URL('../packages/contract/framework/framework.json', import.meta.url), 'utf8'));
+import { portraitFramework } from './portrait-framework.mjs';
 export function publicAssetPath(value) {
   if (typeof value !== 'string' || !/^evidence\/[a-z0-9-]+\/[a-f0-9]+\.(png|jpg|jpeg|pdf)$/.test(value)) throw new Error(`Invalid evidence path: ${value}`);
   return value;
@@ -20,6 +20,8 @@ export function validateRelease(release) {
     const declared = catalog.portraits.find(p => p.slug === portrait.slug);
     if (!declared || portrait.status !== declared.status) throw new Error('Portrait not authorized by release catalog');
     if (!['published', 'legacy-source', 'research-preview'].includes(portrait.status) || !portrait.notice || !portrait.provenance) throw new Error('Portrait provenance/status missing');
+    const framework = portraitFramework(declared);
+    if (portrait.status === 'research-preview' && (portrait.provenance.framework_profile !== framework.profile || portrait.provenance.framework_profile_sha256 !== framework.sha256)) throw new Error('Preview framework provenance mismatch');
     if (!portrait.dimensions.length) throw new Error('Empty portrait');
     const dimensions = new Set();
     for (const dimension of portrait.dimensions) {
@@ -29,7 +31,7 @@ export function validateRelease(release) {
       if (!dimension.indicators.length && dimension.level !== null) throw new Error('Empty dimension cannot have a score');
       if (dimension.level !== null && (!Number.isFinite(dimension.level) || dimension.level < -100 || dimension.level > 150)) throw new Error('Invalid visualization level');
       for (const indicator of dimension.indicators) {
-        if (!['published', 'legacy-source', 'source-supported-draft', 'uncertain', 'gap'].includes(indicator.status)) throw new Error('Indicator status missing');
+        if (!['published', 'legacy-source', 'source-supported-draft', 'source-supported-observation', 'uncertain', 'gap'].includes(indicator.status)) throw new Error('Indicator status missing');
         if (indicator.supporting_evidence !== undefined && !Array.isArray(indicator.supporting_evidence)) throw new Error('Invalid supporting evidence');
         for (const value of indicatorAssets(indicator)) publicAssetPath(value);
         for (const source of indicator.supporting_evidence ?? []) {
@@ -37,9 +39,16 @@ export function validateRelease(release) {
         }
         if (indicator.source_url && !['https:', 'http:'].includes(new URL(indicator.source_url).protocol)) throw new Error('Unsafe source URL');
         if (indicator.status === 'source-supported-draft' && (!indicator.evidence_path || !indicator.review_note)) throw new Error('Unsupported draft badge');
+        const spec = framework.dimensions.find(d => d.slug === dimension.slug)?.indicators.find(i => i.slug === indicator.indicator_slug);
+        if (indicator.status === 'source-supported-observation' && (!indicator.evidence_path || !indicator.review_note || spec?.scoring !== 'unscored' || !Number.isFinite(indicator.value))) throw new Error('Unsupported observation badge');
+        if (indicator.kind === 'observation' || spec?.scoring === 'unscored') {
+          const validGap = indicator.kind !== 'observation' && indicator.status === 'gap' && indicator.value === null && indicator.target == null && indicator.level_pct == null && indicator.scoring == null;
+          const validObservation = indicator.kind === 'observation' && Number.isFinite(indicator.value) && indicator.target === null && indicator.level_pct === null && indicator.scoring === null && indicator.unscored_reason?.trim() && ['source-supported-observation', 'uncertain'].includes(indicator.status) && spec?.scoring === 'unscored';
+          if (!validGap && !validObservation) throw new Error('Unscored observation cannot acquire a score');
+        }
         if (indicator.status === 'gap' && indicator.value !== null) throw new Error('A gap cannot be a numeric claim');
         if (portrait.slug === 'carmel' && indicator.geographic_scale === 'county' && !indicator.geography?.includes('proxy')) throw new Error('Carmel county proxy not labeled');
-        if (portrait.status === 'research-preview' && !['source-supported-draft', 'uncertain', 'gap'].includes(indicator.status)) throw new Error('Preview cannot imply publication approval');
+        if (portrait.status === 'research-preview' && !['source-supported-draft', 'source-supported-observation', 'uncertain', 'gap'].includes(indicator.status)) throw new Error('Preview cannot imply publication approval');
       }
       if (portrait.status === 'research-preview') {
         const expected = framework.dimensions.find(d => d.slug === dimension.slug);

@@ -1,0 +1,24 @@
+{
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "dimension": "energy",
+  "portraits_researched": [
+    "carmel",
+    "monterey-county"
+  ],
+  "started_at": null,
+  "first_retained_timestamp": "2026-10-23T07:11:47.818Z",
+  "finished_at": "2026-10-23T07:15:03.951538Z",
+  "timestamp_note": "Exact research start not retained; first_retained_timestamp is first successful capture, not start. Counts cover this pass only.",
+  "web_tool_calls": 9,
+  "search_queries": 20,
+  "url_open_attempts": 17,
+  "url_open_attempts_note": "15 web open entries, one web click, one failed direct urllib attempt. Six web find entries excluded. Repeated opens counted.",
+  "evidence_capture_attempts": 6,
+  "evidence_capture_successes": 5,
+  "evidence_capture_failures": 1,
+  "capture_success_note": "Four distinct PDFs; DOE separately captured in both tenants. Three source archives copied to second tenant without recapture. All four distinct exhibits visually checked.",
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "result": "Both energy gaps updated with direct DOE method rejection, new CPUC 2.2% nearest context, actual ACEEE median geography check and Census PUMA obstacle; no substitution or score."
+}

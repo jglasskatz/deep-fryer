@@ -1,0 +1,968 @@
+{
+ "displayFieldName": "STATEFP",
+ "fieldAliases": {
+  "GEOID": "GEOID",
+  "COUNTY": "COUNTY",
+  "E_TOTPOP": "E_TOTPOP",
+  "E_NEHD": "E_NEHD",
+  "EPL_NEHD": "EPL_NEHD"
+ },
+ "fields": [
+  {
+   "name": "GEOID",
+   "type": "esriFieldTypeString",
+   "alias": "GEOID",
+   "length": 4000
+  },
+  {
+   "name": "COUNTY",
+   "type": "esriFieldTypeString",
+   "alias": "COUNTY",
+   "length": 1073741822
+  },
+  {
+   "name": "E_TOTPOP",
+   "type": "esriFieldTypeDouble",
+   "alias": "E_TOTPOP"
+  },
+  {
+   "name": "E_NEHD",
+   "type": "esriFieldTypeDouble",
+   "alias": "E_NEHD"
+  },
+  {
+   "name": "EPL_NEHD",
+   "type": "esriFieldTypeDouble",
+   "alias": "EPL_NEHD"
+  }
+ ],
+ "features": [
+  {
+   "attributes": {
+    "GEOID": "06053010506",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 6207.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010605",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4620.0,
+    "E_NEHD": 15.8,
+    "EPL_NEHD": 0.7425
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053014108",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 5137.0,
+    "E_NEHD": 15.2,
+    "EPL_NEHD": 0.6949
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053014201",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 5083.0,
+    "E_NEHD": 15.2,
+    "EPL_NEHD": 0.6949
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010101",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4497.0,
+    "E_NEHD": 15.6,
+    "EPL_NEHD": 0.7282
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010804",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 5268.0,
+    "E_NEHD": 15.4,
+    "EPL_NEHD": 0.711
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011306",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3105.0,
+    "E_NEHD": 16.4,
+    "EPL_NEHD": 0.7807
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053000101",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2500.0,
+    "E_NEHD": 16.8,
+    "EPL_NEHD": 0.8091
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053000600",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 7103.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010505",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 5678.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010606",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 6960.0,
+    "E_NEHD": 15.8,
+    "EPL_NEHD": 0.7425
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011104",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 5296.0,
+    "E_NEHD": 15.6,
+    "EPL_NEHD": 0.7282
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011605",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2932.0,
+    "E_NEHD": 6.8,
+    "EPL_NEHD": 0.1226
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053012700",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3829.0,
+    "E_NEHD": 10.0,
+    "EPL_NEHD": 0.2828
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011305",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4506.0,
+    "E_NEHD": 16.6,
+    "EPL_NEHD": 0.795
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011400",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4631.0,
+    "E_NEHD": 18.4,
+    "EPL_NEHD": 0.9089
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053012000",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3745.0,
+    "E_NEHD": 10.8,
+    "EPL_NEHD": 0.3405
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053012302",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2110.0,
+    "E_NEHD": 10.8,
+    "EPL_NEHD": 0.3405
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053012504",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2669.0,
+    "E_NEHD": 10.8,
+    "EPL_NEHD": 0.3405
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053012601",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2841.0,
+    "E_NEHD": 10.8,
+    "EPL_NEHD": 0.3405
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053013400",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 1611.0,
+    "E_NEHD": 6.8,
+    "EPL_NEHD": 0.1226
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053014109",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4253.0,
+    "E_NEHD": 15.2,
+    "EPL_NEHD": 0.6949
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053000701",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 5666.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010607",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4475.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053000300",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4878.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053000502",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4974.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053001400",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3030.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053001500",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 6615.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010504",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 5181.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011502",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2036.0,
+    "E_NEHD": 16.6,
+    "EPL_NEHD": 0.795
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053012401",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 1712.0,
+    "E_NEHD": 10.8,
+    "EPL_NEHD": 0.3405
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053012402",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2771.0,
+    "E_NEHD": 10.8,
+    "EPL_NEHD": 0.3405
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053012200",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2540.0,
+    "E_NEHD": 10.8,
+    "EPL_NEHD": 0.3405
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053013600",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4674.0,
+    "E_NEHD": 6.8,
+    "EPL_NEHD": 0.1226
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053013700",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4608.0,
+    "E_NEHD": 10.0,
+    "EPL_NEHD": 0.2828
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053014601",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4930.0,
+    "E_NEHD": 15.8,
+    "EPL_NEHD": 0.7425
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010306",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 1150.0,
+    "E_NEHD": 16.6,
+    "EPL_NEHD": 0.795
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011801",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 1456.0,
+    "E_NEHD": 6.8,
+    "EPL_NEHD": 0.1226
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053000800",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 5447.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010608",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3584.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011203",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 7213.0,
+    "E_NEHD": 16.2,
+    "EPL_NEHD": 0.767
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053013000",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4051.0,
+    "E_NEHD": 6.8,
+    "EPL_NEHD": 0.1226
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010102",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2588.0,
+    "E_NEHD": 15.6,
+    "EPL_NEHD": 0.7282
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011802",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 1783.0,
+    "E_NEHD": 6.8,
+    "EPL_NEHD": 0.1226
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010702",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3472.0,
+    "E_NEHD": 15.2,
+    "EPL_NEHD": 0.6949
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011202",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 8025.0,
+    "E_NEHD": 16.2,
+    "EPL_NEHD": 0.767
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053000103",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4344.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053000900",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 5572.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053001700",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4441.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053001801",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4493.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053001802",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 5436.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010603",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 8866.0,
+    "E_NEHD": 16.6,
+    "EPL_NEHD": 0.795
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011103",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4365.0,
+    "E_NEHD": 15.6,
+    "EPL_NEHD": 0.7282
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011105",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 7029.0,
+    "E_NEHD": 15.6,
+    "EPL_NEHD": 0.7282
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011901",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 1898.0,
+    "E_NEHD": 7.8,
+    "EPL_NEHD": 0.1644
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053013500",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4624.0,
+    "E_NEHD": 11.0,
+    "EPL_NEHD": 0.3526
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053014105",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3503.0,
+    "E_NEHD": 15.2,
+    "EPL_NEHD": 0.6949
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053014202",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4236.0,
+    "E_NEHD": 15.2,
+    "EPL_NEHD": 0.6949
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053000400",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 8338.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010305",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4956.0,
+    "E_NEHD": 16.4,
+    "EPL_NEHD": 0.7807
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010900",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 6768.0,
+    "E_NEHD": 15.6,
+    "EPL_NEHD": 0.7282
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011303",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3999.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053000200",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 7390.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011001",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3428.0,
+    "E_NEHD": 13.2,
+    "EPL_NEHD": 0.5517
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011204",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4443.0,
+    "E_NEHD": 16.2,
+    "EPL_NEHD": 0.767
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011604",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2096.0,
+    "E_NEHD": 6.8,
+    "EPL_NEHD": 0.1226
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011606",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3044.0,
+    "E_NEHD": 7.4,
+    "EPL_NEHD": 0.1466
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053012800",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4875.0,
+    "E_NEHD": 6.8,
+    "EPL_NEHD": 0.1226
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053014110",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 6556.0,
+    "E_NEHD": 15.6,
+    "EPL_NEHD": 0.7282
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053000104",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3574.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053001200",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3356.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010202",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3932.0,
+    "E_NEHD": 15.8,
+    "EPL_NEHD": 0.7425
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010400",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 6620.0,
+    "E_NEHD": 16.6,
+    "EPL_NEHD": 0.795
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010501",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 7505.0,
+    "E_NEHD": 16.4,
+    "EPL_NEHD": 0.7807
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053010604",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 5847.0,
+    "E_NEHD": 15.8,
+    "EPL_NEHD": 0.7425
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053012100",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2220.0,
+    "E_NEHD": 10.8,
+    "EPL_NEHD": 0.3405
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053000105",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3456.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053000106",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 5859.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053001600",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2915.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011106",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 1343.0,
+    "E_NEHD": 15.6,
+    "EPL_NEHD": 0.7282
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011302",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 5573.0,
+    "E_NEHD": 16.4,
+    "EPL_NEHD": 0.7807
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011700",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3669.0,
+    "E_NEHD": 6.8,
+    "EPL_NEHD": 0.1226
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053012503",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2497.0,
+    "E_NEHD": 10.8,
+    "EPL_NEHD": 0.3405
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053013200",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3945.0,
+    "E_NEHD": 8.6,
+    "EPL_NEHD": 0.2039
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053014000",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2258.0,
+    "E_NEHD": 9.0,
+    "EPL_NEHD": 0.2205
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053013800",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 5353.0,
+    "E_NEHD": 14.0,
+    "EPL_NEHD": 0.596
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053014302",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4369.0,
+    "E_NEHD": 15.2,
+    "EPL_NEHD": 0.6949
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053000501",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 5231.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053001300",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2562.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011002",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2487.0,
+    "E_NEHD": 17.0,
+    "EPL_NEHD": 0.8281
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011101",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 701.0,
+    "E_NEHD": 15.8,
+    "EPL_NEHD": 0.7425
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053013300",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 5844.0,
+    "E_NEHD": 6.8,
+    "EPL_NEHD": 0.1226
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053013900",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2316.0,
+    "E_NEHD": 15.2,
+    "EPL_NEHD": 0.6949
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053014500",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4539.0,
+    "E_NEHD": 15.8,
+    "EPL_NEHD": 0.7425
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053980000",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 0.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053014700",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 7352.0,
+    "E_NEHD": 16.6,
+    "EPL_NEHD": 0.795
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053014104",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2093.0,
+    "E_NEHD": 15.2,
+    "EPL_NEHD": 0.6949
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053011902",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 1505.0,
+    "E_NEHD": 10.8,
+    "EPL_NEHD": 0.3405
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053014301",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 3562.0,
+    "E_NEHD": 15.2,
+    "EPL_NEHD": 0.6949
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053014102",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 4125.0,
+    "E_NEHD": 15.2,
+    "EPL_NEHD": 0.6949
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053014800",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 6016.0,
+    "E_NEHD": 15.2,
+    "EPL_NEHD": 0.6949
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053013100",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 2304.0,
+    "E_NEHD": 6.8,
+    "EPL_NEHD": 0.1226
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06053000702",
+    "COUNTY": "Monterey County",
+    "E_TOTPOP": 6541.0,
+    "E_NEHD": 16.0,
+    "EPL_NEHD": 0.7536
+   }
+  }
+ ]
+}

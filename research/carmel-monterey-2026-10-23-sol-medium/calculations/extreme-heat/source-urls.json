@@ -1,0 +1,70 @@
+[
+  {
+    "url": "https://ci.carmel.ca.us/climate-committee",
+    "result": "Opened official city plans and found assessment link."
+  },
+  {
+    "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/carmel_climate_adaptation_plan_prefinal_042822.pdf?1656629980=",
+    "result": "Opened; adaptation actions do not provide recent observed city annual heat-day count."
+  },
+  {
+    "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/climate_adaptation_plan_appendixb_vuln_assesst.pdf?1651195961",
+    "result": "Web parser failed; direct download succeeded. >87.9F modeled baseline and future days; rejected as recent observation."
+  },
+  {
+    "url": "https://www.countyofmonterey.gov/home/showdocument?id=143632&t=639004615782643009",
+    "result": "Opened pp27\u201328. Nine annual days >=92.5F for2010\u20132024, but Cal-Adapt chart observed/projected split not sufficiently documented; rejected."
+  },
+  {
+    "url": "https://monterey.legistar.com/View.ashx?GUID=8EA88CFA-9446-4E59-B7C2-0D7770059313&ID=15457547&M=F",
+    "result": "Search result only: public draft contains1961\u20131990 baseline and future projections, no accepted observation."
+  },
+  {
+    "url": "https://www.cdc.gov/environmental-health-tracking/php/data-research/heat-heat-related-illness.html",
+    "result": "Official historical heat indicator lead."
+  },
+  {
+    "url": "https://github.com/CDCgov/EPHTrackR",
+    "result": "Opened official CDC API documentation; API token not required, throttling applies."
+  },
+  {
+    "url": "https://ephtracking.cdc.gov/apigateway/api/v1/measuresearch",
+    "result": "Downloaded inventory; annual heat days measure423."
+  },
+  {
+    "url": "https://ephtracking.cdc.gov/apigateway/api/v1/stratificationlevel/423/2/0",
+    "result": "API returned JSON code429 non-token quota. Not accepted; raw response preserved."
+  },
+  {
+    "url": "https://ephtracking.cdc.gov/apigateway/api/v1/temporalItems/423/2/2/6053",
+    "result": "API returned JSON code429 non-token quota. Not accepted; raw response preserved."
+  },
+  {
+    "url": "https://onemap.cdc.gov/onemapservices/rest/services/EJI/CBM_Heat_ExtremeHeatDays_2024/MapServer/0",
+    "result": "Metadata accessible; ranks only. Rejected as day counts; followed full data service."
+  },
+  {
+    "url": "https://onemap.cdc.gov/onemapservices/rest/services/EJI/EJI_2024_Data_Service/MapServer/0",
+    "result": "Accepted raw E_NEHD and E_TOTPOP; all103 county tracts downloaded with where STATEFP=06,COUNTYFP=053 and no geometry."
+  },
+  {
+    "url": "https://atsdr.cdc.gov/place-health/media/pdfs/2024/10/EJI_2024_Technical_Documentation.pdf",
+    "result": "Accepted pp93\u201394 event definition, year, five-year annualization and tract crosswalk/interpolation methods; archived per tenant."
+  },
+  {
+    "url": "https://eji.cdc.gov/Documents/Data/2024/2024_CSV/EJI_2024_California_CSV.zip",
+    "result": "Accepted original CSV package with dictionary. Exact match all103 tract heat/population fields to data service. Original bytes archived per tenant via helper."
+  },
+  {
+    "url": "https://www.atsdr.cdc.gov/place-health/php/eji/eji-data-download.html",
+    "result": "Official download provenance; followed application, public JS supplies exact ZIP URL pattern."
+  },
+  {
+    "url": "https://www.atsdr.cdc.gov/place-health/php/eji/eji-technical-documentation.html",
+    "result": "Official method provenance."
+  },
+  {
+    "url": "https://www.cdph.ca.gov/Programs/OHE/Pages/Climate-Health-Equity/Health-Vulnerability-Indicators-Narratives/Extreme-Heat-Days.aspx",
+    "result": "Search result distinguishes98th percentile1961\u20131990 projected indicator; not substituted for CDC historical95th percentile measure."
+  }
+]

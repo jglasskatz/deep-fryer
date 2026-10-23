@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "aragonite-saturation",
+    "name": "Coastal aragonite saturation state (Ω) — California Current regional proxy",
+    "value": 2.15,
+    "unit": "Ω aragonite",
+    "year": 2024,
+    "target": 3,
+    "level_pct": 28.3,
+    "scoring": {
+      "threshold_ref": "ocean-acidification.aragonite-saturation",
+      "function": "higher_is_better",
+      "inputs": {
+        "value": 2.15,
+        "target": 3,
+        "scale": 3
+      },
+      "worked_math": "level_pct = (target − value) ⁄ scale × 100 = (3 − 2.15) ⁄ 3 × 100 = +28.3"
+    },
+    "source": "NOAA National Marine Ecosystem Status, California Current Omega Aragonite annual regional series",
+    "source_url": "https://ecowatch.noaa.gov/node/392",
+    "source_tier": 2,
+    "evidence": {
+      "snapshot_path": "evidence/322f3a0634603679.png",
+      "captured_at": "2026-10-23T07:28:11.346Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "regional",
+    "notes": "PERMITTED REGIONAL PROXY for all incorporated and unincorporated Monterey County: California Current Large Marine Ecosystem (U.S. EEZ-defined region), not a city, county or Monterey Bay measurement. Annual 2024 sea-surface estimate; not depth-integrated or a seasonal/instantaneous sensor reading. NOAA publishes spatially weighted annual regional averages from monthly 0.25° RFR-LME maps: observed SOCAT surface CO2 informs interpolation; ESPER-estimated total alkalinity and carbonate chemistry calculations provide Ωar. This is observation-constrained model output, not a future projection or a pH substitution. The broad regional mean cannot resolve nearshore upwelling, daily variability, benthic exposure or biological extremes. Tier 1 searched City climate/adaptation publications and County sustainability/climate-plan records; none supplied a recent numeric Ωar series for the required jurisdiction. County sustainability direct open returned 403 and City plan PDF direct open failed, so their unseen contents are not asserted. Tier 2 NOAA exact regional metric accepted under the configured regional fallback. Published chart numeric x=2024,y=2.15 is extracted directly, with no digitization or new averaging. NOAA chart has erroneous optional name=\"3/1/2000\" for this point; explicit x axis is titled Year, spans 1998–2024 with 27 annual points, and agrees with the narrative ending 2024 and the method paper identifying NaMES annual series. Both independent tenant browser fetches reproduce x/y. Archived raw HTML/chart JSON, annual CSV and portable extract.ts preserve discrepancy. Precision is the source chart two decimals; uncertainty for this individual annual value is not supplied by chart, and no domain-wide uncertainty is assigned. Latest shown chart year 2024 retained even though accession metadata now covers 2025. Threshold 3 unchanged."
+  }
+]

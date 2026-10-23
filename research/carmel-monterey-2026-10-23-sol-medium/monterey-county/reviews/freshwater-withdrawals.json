@@ -1,0 +1,7 @@
+[
+  {
+    "indicator_slug": "residential-gpcd",
+    "content_supported": "pass",
+    "verifier_note": "Independently opened MPWMD December 2025 packet pp 10\u201312:390 AF Carmel residential use is a selected-year/unspecified five-year average and customer accounts are not residents; County row is CalAm partial service geography. Independently refetched state monthly CSV, byte-identical SHA256 a06d8cb289c297c2336143c7243ec92c10fe09bd4e32a5389add9280ae100430, and reran inspect.py in a temporary copy:878 reports/six Monterey-labeled suppliers, with August 2026 CalAm district 67.334788397407 R-GPCD and 96,866 service population. These do not establish a city/full-county numerator-denominator allocation; USGS guide confirms recent public-supply estimates stop 2020 and old compilations 2015. Pass supports a provisional geography/period/denominator gap, not proof no suitable source exists; configured 55 target remains unscored."
+  }
+]

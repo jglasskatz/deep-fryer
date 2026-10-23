@@ -1,0 +1,22 @@
+{
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "dimension": "climate-change",
+  "portraits_researched": [
+    "monterey-county"
+  ],
+  "completed_at": "2026-10-23T07:08:37.043655Z",
+  "timestamp_note": "Completion and evidence-capture times recorded; exact start time not instrumented.",
+  "web_tool_calls": 17,
+  "search_queries": 31,
+  "url_open_attempts": 11,
+  "url_find_attempts": 3,
+  "evidence_capture_attempts": 1,
+  "evidence_capture_successes": 1,
+  "evidence_capture_failures": 0,
+  "raw_download_attempts": 3,
+  "raw_download_successes": 2,
+  "raw_download_failures": 1,
+  "actual_tokens": null,
+  "actual_billed_usd": null
+}

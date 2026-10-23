@@ -1,0 +1,25 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "food-insecurity-rate",
+    "name": "Food insecurity rate",
+    "value": 13,
+    "unit": "% of residents",
+    "year": 2022,
+    "target": 5,
+    "level_pct": 160,
+    "scoring": {
+      "threshold_ref": "food.food-insecurity-rate",
+      "function": "lower_is_better",
+      "inputs": {"value": 13, "target": 5, "scale": 5},
+      "worked_math": "level_pct = (value − target) ⁄ scale × 100 = (13 − 5) ⁄ 5 × 100 = +160"
+    },
+    "source": "County Health Rankings & Roadmaps 2025 County Health Release, Monterey County, California (Map the Meal Gap measure)",
+    "source_url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv139_rawvalue%2Cv139_numerator%2Cv147_rawvalue&returnGeometry=false&f=pjson",
+    "source_tier": 3,
+    "evidence": {"snapshot_path": "evidence/7340038b7e846424.png", "captured_at": "2026-10-19T06:49:17.949Z"},
+    "confidence": "high",
+    "geographic_scale": "county",
+    "notes": "The CHR 2025 county-layer row for FIPS 06053 reports v139_rawvalue = 13 (% of population), with v139_numerator = 56,940. Its field description identifies Map the Meal Gap and explicitly dates this value to 2022. CHR's measure page defines this as a modeled percentage of the population lacking reliable food access and says the denominator is total county population: https://www.countyhealthrankings.org/health-data/community-conditions/health-infrastructure/health-promotion-and-harm-reduction/food-insecurity. The exact query, year, field descriptions, and Monterey values appear in the archived source text at apps/web/public/evidence/monterey-county/evidence/7340038b7e846424.txt; raw row JSON is also preserved at apps/web/public/evidence/monterey-county/evidence/37056c673ae97ec8.bin (SHA-256 e03064c1cee2c9e9500b5906f518569999a41a9bbf1a15a116adf1751c7c3136). Readable extract: research/carmel-monterey-2026-10-18/monterey-county/exhibits/chr-2025-monterey-row.csv. This modeled all-population measure is distinct from the County CHNA's self-reported household food-stress construct."
+  }
+]

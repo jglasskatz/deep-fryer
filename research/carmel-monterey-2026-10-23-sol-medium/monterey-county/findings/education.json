@@ -1,0 +1,25 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "hs-attainment",
+    "name": "Adults with a high-school credential",
+    "value": 73.4,
+    "unit": "% of residents 25+",
+    "year": 2024,
+    "target": 95,
+    "level_pct": 22.7,
+    "scoring": {
+      "threshold_ref": "education.hs-attainment",
+      "function": "higher_is_better",
+      "inputs": {"value": 73.4, "target": 95, "scale": 95},
+      "worked_math": "level_pct = (target − value) ⁄ scale × 100 = (95 − 73.4) ⁄ 95 × 100 = +22.7"
+    },
+    "source": "Census Reporter API, ACS 2024 1-year table B15003, Monterey County row; underlying estimates are U.S. Census Bureau ACS",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B15003%2CB28002&geo_ids=05000US06053",
+    "source_tier": 3,
+    "evidence": {"snapshot_path": "evidence/f4637d0fd262116d.png", "captured_at": "2026-10-23T03:07:48.564Z"},
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "ACS table B15003, universe population 25 years and over: total B15003001=280,853; diploma-or-higher categories B15003017–B15003025 sum to 206,180; 206,180 ÷ 280,853 × 100 = 73.412%, rounded to 73.4%. This replaces the prior QuickFacts 2020–24 estimate with a single-year 2024 ACS estimate. County/local Tier 1 searches did not produce a more recent countywide figure; Census Bureau API returned 503 and QuickFacts browser capture returned 403. Census Reporter is classified Tier 3, and the underlying Census table estimate remains identifiable."
+  }
+]

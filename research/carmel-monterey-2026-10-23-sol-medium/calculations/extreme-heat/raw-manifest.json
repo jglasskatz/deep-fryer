@@ -1,0 +1,70 @@
+{
+  "raw/times423.json": {
+    "sha256": "d7cf79b43ef8c60529d21b6160f4ca5162842d27f03ca91bd71d2ffd9a3e362d",
+    "bytes": 344
+  },
+  "raw/carmel-vulnerability-2021.txt": {
+    "sha256": "9dc67012e890e3972da848c84fc33eb784426a90420ba9a03c341e8d3a0a6b62",
+    "bytes": 645823
+  },
+  "raw/monterey-tract-heat.json": {
+    "sha256": "0dfc3b8f2fc5479cd1dd36ecb7e8b7412f054ceb9fb48ec07302d7fdba372817",
+    "bytes": 17234
+  },
+  "raw/EJI_2024_California_CSV.zip": {
+    "sha256": "b31f0610997df43e75d2e84e60689d7a6ee4cba19eba03912411ff3e4ba278ca",
+    "bytes": 2638758
+  },
+  "raw/eji-download-app.js": {
+    "sha256": "c6a02669bade06c73553f510c58d8641ded13e188b3f22e1027d410d38e51735",
+    "bytes": 1615
+  },
+  "raw/carmel-vulnerability-2021.pdf": {
+    "sha256": "132d3f99a9e9f0dc5759ba5f1e7fa2a621d3f18742b99eff163e858e7ba7037f",
+    "bytes": 11982020
+  },
+  "raw/strata423.json": {
+    "sha256": "379947cb207dbe730039773fb0054c4fe964e569371e8424c44a0c743cd558c2",
+    "bytes": 345
+  },
+  "raw/measures.json": {
+    "sha256": "ec41a59d12f86f9371c150b24ded2d1f3b4da4d853ed7b670f66be1546ccad83",
+    "bytes": 296732
+  },
+  "raw/eji-data-metadata.json": {
+    "sha256": "fa7637eda6adfeeb88f2227db34303ccce1efdf64b36d086d999d6e84fc2d9ff",
+    "bytes": 28126
+  },
+  "raw/carmel-html.json": {
+    "sha256": "62d899d3876dd90540b641413103f2e722c0b0f5b6db39adff218d68ebaecd2e",
+    "bytes": 196096
+  },
+  "raw/eji-folder.json": {
+    "sha256": "177f05b6835bbf161e2834bb62a6447c82257f8c4dfc2e23bcecd800d100efc0",
+    "bytes": 6745
+  },
+  "raw/eji-california/EJI_2024_California.csv": {
+    "sha256": "38bea1eaf6f5fe0755d2d52d81c2be2a0ba43e0276bd842edd5247760a1ba9c6",
+    "bytes": 8578574
+  },
+  "raw/eji-california/EJI_DATADICTIONARY_2024.csv": {
+    "sha256": "ec5461cdd609d2d7ae1f33815cb1658172ad8497a2b0a3ae02f92335c729053b",
+    "bytes": 46013
+  },
+  "raw/eji-california/EJI_DATADICTIONARY_2024.xlsx": {
+    "sha256": "ae60d0b883d3451eada1877c70520a936c0524f856758a3cf7c7d63bc35fc6a1",
+    "bytes": 34496
+  },
+  "reviewer-coverage/county-tracts-2020.json": {
+    "sha256": "059ff0fa1f01911a5cdec0c4e7eb71c08fccc367da2d77e495d1cdc5b7ec2a23",
+    "bytes": 11086
+  },
+  "reviewer-coverage/manifest.json": {
+    "sha256": "cde8893b2fb554ab7342884b84de32763a587276ca88b1df3f81d450359496da",
+    "bytes": 803
+  },
+  "reviewer-coverage/tract-06053990000-2020.json": {
+    "sha256": "595c2d1b1e1e92985600cae94aa03499955e5a3ee146a5cd0f4acc6b5fa89bd6",
+    "bytes": 2272
+  }
+}

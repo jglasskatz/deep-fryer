@@ -1,0 +1,39 @@
+{
+  "protected-land-share": [
+    {
+      "label": "Official 2024 conservation-unit layer metadata",
+      "source_url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/CA_Cons_Areas_parentlyr_Merge_ecofix/FeatureServer/55",
+      "snapshot_path": "evidence/1aef9d6e15f16845.png"
+    },
+    {
+      "label": "Official CNRA state conservation definition (faithful publisher-text extract)",
+      "source_url": "https://storymaps.arcgis.com/stories/3e501348c1f940a892850798fea7702e",
+      "snapshot_path": "evidence/biodiversity-loss-guide-extract.png"
+    },
+    {
+      "label": "Official guide raw API capture",
+      "source_url": "https://www.arcgis.com/sharing/rest/content/items/3e501348c1f940a892850798fea7702e/data?f=pjson",
+      "snapshot_path": "evidence/690635fab9c08915.png"
+    },
+    {
+      "label": "Official boundary metadata",
+      "source_url": "https://maps.co.monterey.ca.us/server/rest/services/LAFCO/Incorporated_Cities_2/FeatureServer/2",
+      "snapshot_path": "evidence/e4718327ed7bd95b.png"
+    },
+    {
+      "label": "Census 2026 TIGER documentation, water-face input",
+      "source_url": "https://www.census.gov/programs-surveys/geography/technical-documentation/complete-technical-documentation/tiger-geo-line.html",
+      "snapshot_path": "evidence/961ba4433f35a3cc.png"
+    },
+    {
+      "label": "Official Census water/land area convention (method definition)",
+      "source_url": "https://www.census.gov/programs-surveys/geography/technical-documentation/user-note/tiger-geo-line/2010.html",
+      "snapshot_path": "evidence/6d274518b88b4d23.png"
+    },
+    {
+      "label": "Official 2024 uniform Conservation Unit assignment methodology",
+      "source_url": "https://www.arcgis.com/sharing/rest/content/items/6dc5f19f7f6c4413a3bac944d1f9a173?f=pjson",
+      "snapshot_path": "evidence/a813f5b3406143fa.png"
+    }
+  ]
+}

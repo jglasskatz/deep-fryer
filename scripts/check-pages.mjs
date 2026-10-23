@@ -115,6 +115,13 @@ try {
   assert.equal(await page.locator('#detail-panel').isVisible(), true, 'Selected evidence panel survives reload');
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('#detail-panel').isVisible(), false);
+  await page.goto(`${origin}carmel/?area=monterey-county&dim=extreme-heat`, { waitUntil: 'networkidle' });
+  assert.equal(await page.locator('#panel-heading').innerText(), 'Extreme Heat');
+  assert.match(await page.locator('#detail-panel').innerText(), /Observed · no scoring target/);
+  assert.match(await page.locator('#detail-panel').innerText(), /Unscored:/);
+  assert.equal(await page.locator('#detail-panel').getByText('Scoring calculation', { exact: true }).count(), 0);
+  assert.equal(await page.locator('a[href="#dim-ozone-depletion"]').count(), 0);
+  await page.screenshot({ path: path.join(screenshots, 'extreme-heat-observation.png') });
   await page.goto(`${origin}carmel/?area=monterey-county#dim-health`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => { const top = document.getElementById('dim-health').getBoundingClientRect().top; return top >= 0 && top < 100; }, null, { timeout: 10000 }).catch(async error => {
     console.error(await page.evaluate(() => ({ url: location.href, scrollY, healthTop: document.getElementById('dim-health').getBoundingClientRect().top, height: document.documentElement.scrollHeight })));

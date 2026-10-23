@@ -1,0 +1,643 @@
+{
+  "currentVersion" : 12, 
+  "id" : 55, 
+  "name" : "CA_Cons_Areas_parentlyr_Merge_ecofix", 
+  "type" : "Feature Layer", 
+  "serviceItemId" : "6dc5f19f7f6c4413a3bac944d1f9a173", 
+  "cacheMaxAge" : 30, 
+  "displayField" : "cpad_PARK_NAME", 
+  "description" : "The California Protected Areas Database (CPAD) contains data on lands owned in fee by governments, non-profits and some private entities that are protected for open space purposes. Data includes all such areas in California, from small urban parks to large national parks and forests, mostly aligned to assessor parcel boundaries. Data is collected by Holdings (parcels) which are aggregated to Units (commonly named areas within counties) and Super Units (commonly named areas generally).", 
+  "copyrightText" : "California Protected Areas Database (CPAD - www.calands.org). December 2022.", 
+  "defaultVisibility" : true, 
+  "editingInfo" : {
+    "lastEditDate" : 1750093638972, 
+    "schemaLastEditDate" : 1750093638972, 
+    "dataLastEditDate" : 1723500983645
+  }, 
+  "relationships" : [], 
+  "isDataVersioned" : false, 
+  "hasContingentValuesDefinition" : false, 
+  "supportsAppend" : true, 
+  "supportsCalculate" : true, 
+  "supportsASyncCalculate" : true, 
+  "supportsTruncate" : true, 
+  "supportsAttachmentsByUploadId" : true, 
+  "supportsAttachmentsResizing" : true, 
+  "supportsRollbackOnFailureParameter" : true, 
+  "supportsStatistics" : true, 
+  "supportsExceedsLimitStatistics" : true, 
+  "supportsAdvancedQueries" : true, 
+  "supportsValidateSql" : true, 
+  "supportsCoordinatesQuantization" : true, 
+  "supportsLayerOverrides" : true, 
+  "supportsTilesAndBasicQueriesMode" : true, 
+  "supportsFieldDescriptionProperty" : true, 
+  "supportsQuantizationEditMode" : true, 
+  "supportsColumnStoreIndex" : true, 
+  "supportsApplyEditsWithGlobalIds" : false, 
+  "supportsMultiScaleGeometry" : true, 
+  "supportsReturningQueryGeometry" : true, 
+  "enableNullGeometry" : false, 
+  "hasGeometryProperties" : true, 
+  "geometryProperties" : 
+  {
+    "shapeAreaFieldName" : "Shape__Area", 
+    "shapeLengthFieldName" : "Shape__Length", 
+    "units" : "esriMeters"
+  }, 
+  "advancedQueryCapabilities" : {
+    "supportsPagination" : true, 
+    "supportsPaginationOnAggregatedQueries" : true, 
+    "supportsQueryRelatedPagination" : true, 
+    "supportsQueryWithDistance" : true, 
+    "supportsOutDistance" : true, 
+    "supportsReturningQueryExtent" : true, 
+    "supportsStatistics" : true, 
+    "supportsOrderBy" : true, 
+    "supportsDistinct" : true, 
+    "supportsQueryWithResultType" : true, 
+    "supportsSqlExpression" : true, 
+    "supportsTimeRelation" : true, 
+    "supportsAdvancedQueryRelated" : true, 
+    "supportsCountDistinct" : true, 
+    "supportsPercentileStatistics" : true, 
+    "supportsApproxPercentileStatistics" : true, 
+    "supportsSpatialAggregationStatistics" : true, 
+    "supportsTrueCurve" : true, 
+    "supportedSpatialAggregationStatistics" : [
+      "EnvelopeAggregate", 
+      "CentroidAggregate", 
+      "ConvexHullAggregate"
+    ], 
+    "supportsLod" : true, 
+    "supportsQueryWithLodSR" : false, 
+    "supportedLodTypes" : [
+      "geohash"
+    ], 
+    "supportsReturningGeometryCentroid" : true, 
+    "supportsReturningGeometryEnvelope" : true, 
+    "supportsReturningGeometryProperties" : true, 
+    "supportsQueryWithDatumTransformation" : true, 
+    "supportsCurrentUserQueries" : true, 
+    "supportsHavingClause" : true, 
+    "supportsOutFieldSQLExpression" : true, 
+    "supportsMaxRecordCountFactor" : true, 
+    "supportsTopFeaturesQuery" : true, 
+    "supportsDisjointSpatialRel" : true, 
+    "supportsQueryWithCacheHint" : true, 
+    "supportedOperationsWithCacheHint" : [
+      "query", 
+      "queryTopFilter", 
+      "queryAnalytics", 
+      "queryAttachments", 
+      "queryRelated", 
+      "queryBins", 
+      "queryPivot"
+    ], 
+    "supportsQueryAnalytic" : true, 
+    "supportsQueryPivot" : true, 
+    "supportsQueryBins" : true, 
+    "supportsDefaultSR" : true, 
+    "supportsTranslations" : false, 
+    "supportsAggIds" : true, 
+    "supportsQueryWithCollation" : true, 
+    "supportsISODOW" : true, 
+    "supportsISOWeek" : true, 
+    "supportsFullTextSearch" : true, 
+    "fullTextSearchCapabilities" : {
+      "supportsAccentSensitivity" : true, 
+      "supportsStopWords" : true, 
+      "supportsSearchOperator" : true, 
+      "supportsOperator" : true
+    }
+  }, 
+  "advancedQueryAnalyticCapabilities" : {
+    "supportsLinearRegression" : true, 
+    "supportsTrendlineRegression" : true, 
+    "supportsAsync" : true, 
+    "supportsPercentileAnalytic" : true
+  }, 
+  "queryBinsCapabilities" : {
+    "supportsAsync" : true, 
+    "supportsAutoIntervalBin" : true, 
+    "supportsFixedIntervalBin" : true, 
+    "supportsFixedBoundariesBin" : true, 
+    "supportsDateBin" : true, 
+    "supportsClassificationBin" : true, 
+    "supportsStackBy" : true, 
+    "supportsSplitBy" : true, 
+    "supportsFirstDayOfWeek" : true, 
+    "supportsSnapToData" : true, 
+    "supportsReturnFullIntervalBin" : true, 
+    "supportsReturnStackValueRange" : true, 
+    "supportsNormalization" : true, 
+    "supportedStatisticTypes" : [
+      "COUNT", 
+      "SUM", 
+      "AVG", 
+      "VAR", 
+      "STDDEV", 
+      "MIN", 
+      "MAX", 
+      "PERCENTILE_CONT", 
+      "PERCENTILE_DISC", 
+      "APPROX_PERCENTILE_CONT", 
+      "APPROX_PERCENTILE_DISC", 
+      "CentroidAggregate", 
+      "EnvelopeAggregate", 
+      "ConvexHullAggregate"
+    ], 
+    "supportedNormalizationTypes" : [
+      "boxCox", 
+      "field", 
+      "inverse", 
+      "log", 
+      "naturalLog", 
+      "percentOfTotal", 
+      "squareRoot"
+    ]
+  }, 
+  "supportedOperationsWithCollation" : "query,addField,updateField", 
+  "advancedEditingCapabilities" : {
+    "supportedSqlFormatsInCalculate" : [
+      "standard"
+    ], 
+    "supportsAsyncApplyEdits" : true, 
+    "supportsReturnEditResults" : true, 
+    "supportsApplyEditsbyUploadID" : true, 
+    "supportedApplyEditsUploadIDFormats" : "JSON,PBF", 
+    "supportsTranslation" : false, 
+    "supportsMaxTranslations" : 10
+  }, 
+  "infoInEstimates" : [
+    "extent", 
+    "count"
+  ], 
+  "useStandardizedQueries" : true, 
+  "geometryType" : "esriGeometryPolygon", 
+  "minScale" : 0, 
+  "maxScale" : 0, 
+  "extent" : {
+    "xmin" : -415928.40058344975, 
+    "ymin" : -608557.19463886134, 
+    "xmax" : 551863.25003042526, 
+    "ymax" : 458550.07296288013, 
+    "spatialReference" : {
+      "wkid" : 3310, 
+      "latestWkid" : 3310
+    }
+  }, 
+  "spatialReference" : {
+    "wkid" : 3310, 
+    "latestWkid" : 3310
+  }, 
+  "drawingInfo":{"renderer":{"type":"simple","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[252,201,238,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[110,110,110,255],"width":0.7}}},"scaleSymbols":true,"transparency":0,"labelingInfo":null}, 
+  "allowGeometryUpdates" : true, 
+  "trueCurveSupportMode" : "OGC", 
+  "supportedCurveTypes" : [
+    "esriGeometryCircularArc"
+  ], 
+  "supportedTrueCurvePbfFeatureEncodings" : [
+    "esriCompressedShapeBuffer", 
+    "esriDefault"
+  ], 
+  "allowTrueCurvesUpdates" : true, 
+  "onlyAllowTrueCurveUpdatesByTrueCurveClients" : true, 
+  "hasAttachments" : false, 
+  "htmlPopupType" : "esriServerHTMLPopupTypeAsHTMLText", 
+  "hasMetadata" : true, 
+  "hasM" : true, 
+  "allowUpdateWithoutMValues" : true, 
+  "hasZ" : true, 
+  "enableZDefaults" : true, 
+  "zDefault" : 0, 
+  "objectIdField" : "OBJECTID", 
+  "uniqueIdField" : 
+  {
+    "name" : "OBJECTID", 
+    "isSystemMaintained" : true
+  }, 
+  "globalIdField" : "", 
+  "typeIdField" : "", 
+  "collation" : {
+    "locale" : "neutral", 
+    "caseSensitive" : false, 
+    "accentSensitive" : true
+  }, 
+  "fields" : [
+    {
+      "name" : "OBJECTID", 
+      "type" : "esriFieldTypeOID", 
+      "alias" : "OBJECTID", 
+      "sqlType" : "sqlTypeOther", 
+      "nullable" : false, 
+      "editable" : false, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "cpad_ACCESS_TYP", 
+      "type" : "esriFieldTypeString", 
+      "alias" : "cpad_ACCESS_TYP", 
+      "sqlType" : "sqlTypeOther", 
+      "length" : 20, 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "cpad_PARK_NAME", 
+      "type" : "esriFieldTypeString", 
+      "alias" : "cpad_PARK_NAME", 
+      "sqlType" : "sqlTypeOther", 
+      "length" : 80, 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "cpad_MNG_AGENCY", 
+      "type" : "esriFieldTypeString", 
+      "alias" : "cpad_MNG_AGENCY", 
+      "sqlType" : "sqlTypeOther", 
+      "length" : 100, 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "cpad_MNG_AG_LEV", 
+      "type" : "esriFieldTypeString", 
+      "alias" : "cpad_MNG_AG_LEV", 
+      "sqlType" : "sqlTypeOther", 
+      "length" : 50, 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "reGAP", 
+      "type" : "esriFieldTypeSmallInteger", 
+      "alias" : "reGAP", 
+      "sqlType" : "sqlTypeOther", 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "Easement", 
+      "type" : "esriFieldTypeSmallInteger", 
+      "alias" : "Easement", 
+      "sqlType" : "sqlTypeOther", 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "TYPE", 
+      "type" : "esriFieldTypeString", 
+      "alias" : "TYPE", 
+      "sqlType" : "sqlTypeOther", 
+      "length" : 20, 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "CA_County_Name", 
+      "type" : "esriFieldTypeString", 
+      "alias" : "County", 
+      "sqlType" : "sqlTypeOther", 
+      "length" : 40, 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "CA_Region_Name", 
+      "type" : "esriFieldTypeString", 
+      "alias" : "Region", 
+      "sqlType" : "sqlTypeOther", 
+      "length" : 50, 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "TerrMar", 
+      "type" : "esriFieldTypeString", 
+      "alias" : "TerrMar", 
+      "sqlType" : "sqlTypeOther", 
+      "length" : 25, 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "CA_Ecoregion_Name", 
+      "type" : "esriFieldTypeString", 
+      "alias" : "Ecoregion", 
+      "sqlType" : "sqlTypeOther", 
+      "length" : 255, 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "ACCESS_TYP", 
+      "type" : "esriFieldTypeString", 
+      "alias" : "Access", 
+      "sqlType" : "sqlTypeOther", 
+      "length" : 255, 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "MNG_AGNCY", 
+      "type" : "esriFieldTypeString", 
+      "alias" : "Managing Agency", 
+      "sqlType" : "sqlTypeOther", 
+      "length" : 255, 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "MNG_AG_LEV", 
+      "type" : "esriFieldTypeString", 
+      "alias" : "Managing Agency Level", 
+      "sqlType" : "sqlTypeOther", 
+      "length" : 255, 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "UNIT_NAME", 
+      "type" : "esriFieldTypeString", 
+      "alias" : "Name", 
+      "sqlType" : "sqlTypeOther", 
+      "length" : 255, 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "DefaultSelection", 
+      "type" : "esriFieldTypeString", 
+      "alias" : "Default Selection", 
+      "sqlType" : "sqlTypeOther", 
+      "length" : 3, 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : "No"
+    }, 
+    {
+      "name" : "CA_Ecoregion_Acres", 
+      "type" : "esriFieldTypeSingle", 
+      "alias" : "Ecoregion Acres", 
+      "sqlType" : "sqlTypeOther", 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "CA_Region_Acres", 
+      "type" : "esriFieldTypeSingle", 
+      "alias" : "Region Acres", 
+      "sqlType" : "sqlTypeOther", 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "CA_County_Acres", 
+      "type" : "esriFieldTypeSingle", 
+      "alias" : "County Acres", 
+      "sqlType" : "sqlTypeOther", 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "Acres", 
+      "type" : "esriFieldTypeSingle", 
+      "alias" : "Acres", 
+      "sqlType" : "sqlTypeOther", 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "CA_Marine_Acres", 
+      "type" : "esriFieldTypeSingle", 
+      "alias" : "Marine Acres", 
+      "sqlType" : "sqlTypeOther", 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "Release_Year", 
+      "type" : "esriFieldTypeSmallInteger", 
+      "alias" : "Release_Year", 
+      "sqlType" : "sqlTypeOther", 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "mgmt_stack", 
+      "type" : "esriFieldTypeString", 
+      "alias" : "mgmt_stack", 
+      "sqlType" : "sqlTypeOther", 
+      "length" : 3000, 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "Shape__Area", 
+      "type" : "esriFieldTypeDouble", 
+      "alias" : "Shape__Area", 
+      "sqlType" : "sqlTypeDouble", 
+      "nullable" : true, 
+      "editable" : false, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "Shape__Length", 
+      "type" : "esriFieldTypeDouble", 
+      "alias" : "Shape__Length", 
+      "sqlType" : "sqlTypeDouble", 
+      "nullable" : true, 
+      "editable" : false, 
+      "domain" : null, 
+      "defaultValue" : null
+    }
+  ], 
+  "indexes" : [
+    {
+      "name" : "PK__CA_CONS___F4B70D858D565F64", 
+      "fields" : "OBJECTID", 
+      "isAscending" : true, 
+      "isUnique" : true, 
+      "description" : "", 
+      "indexType" : "Attribute"
+    }, 
+    {
+      "name" : "user_59785.CA_CONS_AREAS_PARENTLYR_MERGE_ECOFIX_CA_CONS_AREAS_PARENTLYR_MERGE_ECOFIX_Shape_sidx", 
+      "fields" : "Shape", 
+      "isAscending" : true, 
+      "isUnique" : false, 
+      "description" : "", 
+      "indexType" : "Spatial"
+    }, 
+    {
+      "name" : "Shape__Area_Index", 
+      "fields" : "Shape__Area", 
+      "isAscending" : true, 
+      "isUnique" : false, 
+      "description" : "", 
+      "indexType" : "Attribute"
+    }, 
+    {
+      "name" : "Shape__Length_Index", 
+      "fields" : "Shape__Length", 
+      "isAscending" : true, 
+      "isUnique" : false, 
+      "description" : "", 
+      "indexType" : "Attribute"
+    }, 
+    {
+      "name" : "Release_Year_Index", 
+      "fields" : "Release_Year", 
+      "isAscending" : true, 
+      "isUnique" : false, 
+      "description" : "Release_Year_Index", 
+      "indexType" : "Attribute"
+    }, 
+    {
+      "name" : "TerrMar_Index", 
+      "fields" : "TerrMar", 
+      "isAscending" : true, 
+      "isUnique" : false, 
+      "description" : "TerrMar_Index", 
+      "indexType" : "Attribute"
+    }, 
+    {
+      "name" : "reGAP_Index", 
+      "fields" : "reGAP", 
+      "isAscending" : true, 
+      "isUnique" : false, 
+      "description" : "reGAP_Index", 
+      "indexType" : "Attribute"
+    }, 
+    {
+      "name" : "DefaultSelection_Index", 
+      "fields" : "DefaultSelection", 
+      "isAscending" : true, 
+      "isUnique" : false, 
+      "description" : "DefaultSelection_Index", 
+      "indexType" : "Attribute"
+    }
+  ], 
+  "dateFieldsTimeReference" : {
+    "timeZone" : "UTC", 
+    "timeZoneIANA" : "Etc/UTC", 
+    "respectsDaylightSaving" : false
+  }, 
+  "preferredTimeReference" : null, 
+  "types" : [], 
+  "templates" : [
+    {
+      "name" : "CA_Cons_Areas_parentlyr_Merge_ecofix", 
+      "description" : "", 
+      "drawingTool" : "esriFeatureEditToolPolygon", 
+      "prototype" : {
+        "attributes" : {
+          "Release_Year" : null, 
+          "mgmt_stack" : null, 
+          "cpad_ACCESS_TYP" : null, 
+          "cpad_PARK_NAME" : null, 
+          "cpad_MNG_AGENCY" : null, 
+          "cpad_MNG_AG_LEV" : null, 
+          "reGAP" : null, 
+          "Easement" : null, 
+          "TYPE" : null, 
+          "CA_County_Name" : null, 
+          "CA_Region_Name" : null, 
+          "TerrMar" : null, 
+          "CA_Ecoregion_Name" : null, 
+          "ACCESS_TYP" : null, 
+          "MNG_AGNCY" : null, 
+          "MNG_AG_LEV" : null, 
+          "UNIT_NAME" : null, 
+          "DefaultSelection" : "No", 
+          "CA_Ecoregion_Acres" : null, 
+          "CA_Region_Acres" : null, 
+          "CA_County_Acres" : null, 
+          "Acres" : null, 
+          "CA_Marine_Acres" : null
+        }
+      }
+    }
+  ], 
+  "supportedQueryFormats" : "JSON, geoJSON, PBF", 
+  "supportedAppendFormats" : "sqlite,geoPackage,shapefile,filegdb,featureCollection,geojson,csv,excel,jsonl,featureService,pbf", 
+  "supportedAppendSourceFilterFormats" : "sqlite,geoPackage,shapefile,filegdb,featureService", 
+  "supportedExportFormats" : "csv,shapefile,sqlite,geoPackage,filegdb,featureCollection,geojson,kml,excel,parquet", 
+  "supportedConvertFileFormats" : "JSON,PBF,Parquet", 
+  "supportedConvertContentFormats" : "LayerEditCollection,FeatureCollection", 
+  "supportedSpatialRelationships" : [
+    "esriSpatialRelIntersects", 
+    "esriSpatialRelContains", 
+    "esriSpatialRelCrosses", 
+    "esriSpatialRelEnvelopeIntersects", 
+    "esriSpatialRelIndexIntersects", 
+    "esriSpatialRelOverlaps", 
+    "esriSpatialRelTouches", 
+    "esriSpatialRelWithin", 
+    "esriSpatialRelDisjoint", 
+    "esriSpatialRelRelation"
+  ], 
+  "guidFormat" : "", 
+  "supportsContingentValues" : true, 
+  "supportsEditingContingentValues" : true, 
+  "supportedContingentValuesFormats" : "JSON, PBF", 
+  "supportsFieldGroups" : true, 
+  "supportedSyncDataOptions" : 260, 
+  "hasStaticData" : true, 
+  "maxRecordCount" : 2000, 
+  "standardMaxRecordCount" : 2000, 
+  "maxIdsCount" : 1000000, 
+  "standardMaxRecordCountNoGeometry" : 32000, 
+  "tileMaxRecordCount" : 4000, 
+  "maxRecordCountFactor" : 1, 
+  "capabilities" : "Query,Extract"
+}

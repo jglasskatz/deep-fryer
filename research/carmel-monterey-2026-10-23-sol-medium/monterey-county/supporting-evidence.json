@@ -1,0 +1,219 @@
+{
+  "homelessness-rate": [
+    {
+      "label": "California Department of Finance, Price Factor and Population Information 2024, Attachment B, Monterey County Total Population, January 1, 2024 (PDF p. 31)",
+      "source_url": "https://dof.ca.gov/media/docs/forecasting/Demographics/estimates/PriceandPopulation2024.pdf",
+      "snapshot_path": "evidence/4482a1372d1295ee.png",
+      "pdf_path": "evidence/4482a1372d1295ee.pdf"
+    }
+  ],
+  "protected-land-share": [
+    {
+      "label": "Official 2024 conservation-unit layer metadata",
+      "source_url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/CA_Cons_Areas_parentlyr_Merge_ecofix/FeatureServer/55",
+      "snapshot_path": "evidence/b40c23b60c4debc3.png"
+    },
+    {
+      "label": "Official CNRA state conservation definition (faithful publisher-text extract)",
+      "source_url": "https://storymaps.arcgis.com/stories/3e501348c1f940a892850798fea7702e",
+      "snapshot_path": "evidence/biodiversity-loss-guide-extract.png"
+    },
+    {
+      "label": "Official guide raw API capture",
+      "source_url": "https://www.arcgis.com/sharing/rest/content/items/3e501348c1f940a892850798fea7702e/data?f=pjson",
+      "snapshot_path": "evidence/690635fab9c08915.png"
+    },
+    {
+      "label": "Official boundary metadata",
+      "source_url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/1",
+      "snapshot_path": "evidence/587d7b75785ad97a.png"
+    },
+    {
+      "label": "Census 2026 TIGER documentation, water-face input",
+      "source_url": "https://www.census.gov/programs-surveys/geography/technical-documentation/complete-technical-documentation/tiger-geo-line.html",
+      "snapshot_path": "evidence/961ba4433f35a3cc.png"
+    },
+    {
+      "label": "Official Census water/land area convention (method definition)",
+      "source_url": "https://www.census.gov/programs-surveys/geography/technical-documentation/user-note/tiger-geo-line/2010.html",
+      "snapshot_path": "evidence/6d274518b88b4d23.png"
+    },
+    {
+      "label": "Official 2024 uniform Conservation Unit assignment methodology",
+      "source_url": "https://www.arcgis.com/sharing/rest/content/items/6dc5f19f7f6c4413a3bac944d1f9a173?f=pjson",
+      "snapshot_path": "evidence/a813f5b3406143fa.png"
+    }
+  ],
+  "tri-releases-per-capita": [
+    {
+      "label": "EPA TRI Basic complete files, coverage, year and units",
+      "source_url": "https://www.epa.gov/toxics-release-inventory-tri-program/tri-basic-data-files-calendar-years-1987-present",
+      "snapshot_path": "evidence/518caa9396c6e5db.png"
+    },
+    {
+      "label": "EPA Basic file documentation: zero placeholders and Form A annual reportable amount (page 4)",
+      "source_url": "https://www.epa.gov/system/files/documents/2025-09/basic_data_files_documentation_august_2024.pdf",
+      "snapshot_path": "evidence/4427331eb788024b.png",
+      "pdf_path": "evidence/4427331eb788024b.pdf"
+    },
+    {
+      "label": "Census Vintage 2025 July 2024 resident population, faithful extracted source row",
+      "source_url": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/counties/totals/co-est2025-alldata.csv",
+      "snapshot_path": "evidence/chemical-pollution-2024-tri-extract.png"
+    }
+  ],
+  "ghg-per-capita": [
+    {
+      "label": "AMBAG adopted 2026 Final EIR, Table 4.8-2 footnote: 2022 non-road GHG is interpolated from 2020 and forecast 2025 (gap context)",
+      "source_url": "https://www.ambag.org/sites/default/files/2026-05/AMBAG_2050%20MTPSCS_FEIR_Combined%20May%202026_Acc.pdf",
+      "snapshot_path": "evidence/594f2d25668baf0b.png",
+      "pdf_path": "evidence/594f2d25668baf0b.pdf"
+    }
+  ],
+  "energy-burden": [
+    {
+      "label": "DOE LEAD December 2024 methodology, section 2.3: cohort averages, not household medians",
+      "source_url": "https://www.energy.gov/sites/default/files/2024-12/lead-methodology_122024.pdf",
+      "snapshot_path": "evidence/af803de02884f336.png",
+      "pdf_path": "evidence/af803de02884f336.pdf"
+    },
+    {
+      "label": "ACEEE 2024 median table; San Jose/San Francisco context only, excludes Monterey and Carmel",
+      "source_url": "https://www.aceee.org/sites/default/files/pdfs/data_update_-_city_energy_burdens_0.pdf",
+      "snapshot_path": "evidence/eca9ce0b3898bf27.png",
+      "pdf_path": "evidence/eca9ce0b3898bf27.pdf"
+    },
+    {
+      "label": "CPUC CHANGES 2022\u20132024 evaluation: Monterey average 2.2%; rejected as low-income median",
+      "source_url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/news-and-outreach/reports/cab/changes/changes-evaluation-report_final.pdf",
+      "snapshot_path": "evidence/6793f4ac6347ad3f.png",
+      "pdf_path": "evidence/6793f4ac6347ad3f.pdf"
+    },
+    {
+      "label": "Census 2020 PUMA catalog p.4: southern/eastern Monterey combined with San Benito",
+      "source_url": "https://www2.census.gov/geo/maps/DC2020/PUMA/st06_ca/Catalog_PUMAmaps_st06.pdf",
+      "snapshot_path": "evidence/b8037a0667716d04.png",
+      "pdf_path": "evidence/b8037a0667716d04.pdf"
+    }
+  ],
+  "residential-gpcd": [
+    {
+      "label": "MPWMD December 2025 committee packet, PDF page 10: mixed-year residential consumption by political jurisdiction; contextual gap evidence",
+      "source_url": "https://www.mpwmd.net/wp-content/uploads/Dec-4-2025-WDC-Mtg-Agenda.pdf",
+      "snapshot_path": "evidence/676178839871c8b9.png",
+      "pdf_path": "evidence/676178839871c8b9.pdf"
+    },
+    {
+      "label": "State Water Board dataset documentation, page 1: supplier reporting geography and urban-supplier scope; contextual gap evidence",
+      "source_url": "https://publish.data.ca.gov/dataset/c69ac02b-adfb-459a-bc58-bf69a8b572d2/resource/54936a0d-09ce-46d3-a4e7-8808d42326c0/download/documentation-for-water-conservation-and-production-dataset_v1.1.pdf",
+      "snapshot_path": "evidence/f18d4933e4cd5041.png",
+      "pdf_path": "evidence/f18d4933e4cd5041.pdf"
+    }
+  ],
+  "nitrate-groundwater": [
+    {
+      "label": "Rejected county proxy: cumulative voluntary well-testing counts, Tables 2\u20133, PDF p.9",
+      "source_url": "https://www.waterboards.ca.gov/centralcoast/board_info/agendas/2024/dec/item12_stfrpt.pdf",
+      "snapshot_path": "evidence/d30d2ee8c45163fc.png",
+      "pdf_path": "evidence/d30d2ee8c45163fc.pdf"
+    },
+    {
+      "label": "Rejected subbasin proxy: Water Board Figure 2, 2024 on-farm domestic-well nitrate distribution, PDF p.3",
+      "source_url": "https://www.waterboards.ca.gov/centralcoast/water_issues/programs/ilp/docs/2025/gw-quality-tech-memo.pdf",
+      "snapshot_path": "evidence/a30e4b302db8c7e3.png",
+      "pdf_path": "evidence/a30e4b302db8c7e3.pdf"
+    },
+    {
+      "label": "Rejected selected-well proxy: Monterey Subbasin WY2025, section 4.4.3.2, printed p.87 / PDF p.95",
+      "source_url": "https://www.mcwd.org/docs/gsa/3-004.10_WY_2025.pdf",
+      "snapshot_path": "evidence/d5bbef696c56fbb2-p95.png",
+      "pdf_path": "evidence/d5bbef696c56fbb2.pdf"
+    }
+  ],
+  "violent-crime-rate": [
+    {
+      "label": "DOF E-1 revised January 1, 2025 resident population, PDF page 8",
+      "source_url": "https://dof.ca.gov/media/docs/forecasting/Demographics/estimates/E-1_2026_Press_Release.pdf",
+      "snapshot_path": "evidence/987a36fe7167ad12.png",
+      "pdf_path": "evidence/987a36fe7167ad12.pdf"
+    },
+    {
+      "label": "DOJ June 2026 README: 2025 reporting limitations, PDF page 14",
+      "source_url": "https://data-openjustice.doj.ca.gov/sites/default/files/dataset/2026-07/Crimes-Clear-Arson%20Context_06222026.pdf",
+      "snapshot_path": "evidence/da85342b32e116d5.png",
+      "pdf_path": "evidence/da85342b32e116d5.pdf"
+    }
+  ],
+  "safe-drinking-water": [
+    {
+      "label": "2025 California Annual Compliance Report, Appendix C (PDF page 69): violations dataset scope and definitions; contextual gap evidence",
+      "source_url": "https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/docs/2026/acr-2025_final.pdf",
+      "snapshot_path": "evidence/07643c1128cc5a49.png",
+      "pdf_path": "evidence/07643c1128cc5a49.pdf"
+    }
+  ],
+  "extreme-heat-days": [
+    {
+      "label": "CDC EJI 2024 heat methodology, page 94",
+      "source_url": "https://atsdr.cdc.gov/place-health/media/pdfs/2024/10/EJI_2024_Technical_Documentation.pdf",
+      "snapshot_path": "evidence/9ee7cb18950c6e78.png",
+      "pdf_path": "evidence/9ee7cb18950c6e78.pdf"
+    },
+    {
+      "label": "CDC raw county tract inputs (103 records)",
+      "source_url": "https://onemap.cdc.gov/onemapservices/rest/services/EJI/EJI_2024_Data_Service/MapServer/0/query?where=STATEFP%3D%2706%27%20AND%20COUNTYFP%3D%27053%27&outFields=GEOID%2CCOUNTY%2CE_TOTPOP%2CE_NEHD%2CEPL_NEHD&returnGeometry=false&f=pjson",
+      "snapshot_path": "evidence/76c4056a32c81bd7.png"
+    },
+    {
+      "label": "Census 2020 Monterey County tract geography list (104 tracts)",
+      "source_url": "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/6/query?f=json&where=STATE%3D%2706%27+AND+COUNTY%3D%27053%27&outFields=GEOID%2CNAME%2CAREALAND%2CAREAWATER&returnGeometry=false",
+      "snapshot_path": "evidence/c1316f778afcf383.png"
+    },
+    {
+      "label": "Census 2020 water-only tract 06053990000: zero population, housing, and land",
+      "source_url": "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/6/query?f=json&where=GEOID%3D%2706053990000%27&outFields=%2A&returnGeometry=false",
+      "snapshot_path": "evidence/6701b636a56920d1.png"
+    }
+  ],
+  "aragonite-saturation": [
+    {
+      "label": "NOAA RFR-LME accession metadata: surface \u03a9ar, observation-constrained monthly grids and 2025 coverage",
+      "source_url": "https://www.ncei.noaa.gov/data/oceans/ncei/ocads/metadata/0287551.html",
+      "snapshot_path": "evidence/5dd81ec0f8877931.png"
+    },
+    {
+      "label": "Sharp et al. 2024 primary method paper: spatially weighted annual regional averages and limitations",
+      "source_url": "https://www.nature.com/articles/s41597-024-03530-7.pdf",
+      "snapshot_path": "evidence/af6fdaa55e891a47.png",
+      "pdf_path": "evidence/af6fdaa55e891a47.pdf"
+    }
+  ],
+  "natural-land-conversion": [
+    {
+      "label": "Nearest data catalog, rejected construct: Monterey FMMP conversion products through 2020\u20132022",
+      "source_url": "https://www.conservation.ca.gov/dlrp/fmmp/Pages/Monterey.aspx",
+      "snapshot_path": "evidence/8621148a6da4e1f6.png"
+    },
+    {
+      "label": "Derived whole-county 2014\u20132024 transition rate and sensitivity; county proxy in Carmel portrait",
+      "source_url": "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_NLCD_Landcover_CONUS/ImageServer?f=pjson",
+      "snapshot_path": "evidence/land-conversion-derived-2014-2024.png"
+    },
+    {
+      "label": "Faithful selected official metadata and raw export record; browser source returned403",
+      "source_url": "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_NLCD_Landcover_CONUS/ImageServer?f=pjson",
+      "snapshot_path": "evidence/land-conversion-source-metadata.png"
+    },
+    {
+      "label": "Published natural/non-natural NLCD crosswalk, EPA2014 Table1, PDFp22; method support only",
+      "source_url": "https://www.epa.gov/sites/production/files/2015-11/documents/wihwreport_0.pdf",
+      "snapshot_path": "evidence/ed91f705894c2435.png",
+      "pdf_path": "evidence/ed91f705894c2435.pdf"
+    },
+    {
+      "label": "Current MRLC class definitions; supports natural/developed crosswalk and mixed barren caveat",
+      "source_url": "https://www.mrlc.gov/data/legends/annual-nlcd-land-cover-legend",
+      "snapshot_path": "evidence/624f314fa1e17937.png"
+    }
+  ]
+}

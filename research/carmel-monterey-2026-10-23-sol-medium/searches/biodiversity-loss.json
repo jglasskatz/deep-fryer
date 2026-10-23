@@ -1,0 +1,110 @@
+{
+  "dimension": "biodiversity-loss",
+  "searched_at": "2026-10-23T06:56:07.960187Z",
+  "queries": [
+    {
+      "query": "site.californianature.ca.gov Monterey county conserved lands 30x30 2025",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "site.countyofmonterey.gov protected land conservation acreage county 30x30",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "California conserved lands 2025 GIS FeatureServer 30x30",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "site.californianature.ca.gov \"GAP\" \"1\" \"2\" conserved areas",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "site.californianature.ca.gov \"2026\" \"durable\" conservation",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "site.ci.carmel.ca.us conservation acres Mission Trail 2024",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "site.countyofmonterey.gov \"conserved\" \"percent\" land",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "Census LWFLAG \"P\" \"I\" perennial intermittent faces",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "site.californianature.ca.gov \"2026\" \"GAP\"",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "site.californianature.ca.gov \"GAP 3\" conservation",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "\"DefaultSelection\" \"2026\" conserved",
+      "tool": "web.run.search_query"
+    },
+    {
+      "query": "\"30x30\" \"2026\" \"easements\" \"GAP\"",
+      "tool": "web.run.search_query"
+    }
+  ],
+  "web_open_attempts": [
+    {
+      "url": "https://storymaps.arcgis.com/stories/3e501348c1f940a892850798fea7702e",
+      "result": "Dynamic content not exposed by web open; later archived publisher JSON and faithful selected text"
+    },
+    {
+      "url": "https://www.californianature.ca.gov/datasets/CAnature::30x30-conserved-areas-terrestrial-2026/about",
+      "result": "Web tool inaccessible; used official ArcGIS owner item and service directly"
+    },
+    {
+      "url": "https://www.census.gov/programs-surveys/geography/technical-documentation/complete-technical-documentation/tiger-geo-line.html",
+      "result": "success, 2026 technical documentation"
+    },
+    {
+      "url": "https://www.californianature.ca.gov/pages/ca-nature",
+      "result": "Dynamic content unavailable to web tool; used official ArcGIS item/API"
+    },
+    {
+      "url": "https://www.californianature.ca.gov/pages/resources",
+      "result": "Dynamic content unavailable to web tool"
+    }
+  ],
+  "tier1_results": [
+    {
+      "url": "https://ci.carmel.ca.us/post/mission-trail-nature-preserve",
+      "result": "34-acre park description; rejected as incomplete jurisdiction inventory and no durable status definition"
+    },
+    {
+      "url": "https://www.countyofmonterey.gov/government/departments-a-h/housing-community-development/monterey-county-gis-maps",
+      "result": "Official GIS planning maps, no qualifying full-county durable protected-share series retrieved"
+    },
+    {
+      "url": "https://www.countyofmonterey.gov/government/departments-a-h/agricultural-commissioner/land-use/williamson-act?navid=2605",
+      "result": "Agricultural restrictions; not permanent biodiversity conservation; rejected for numerator"
+    }
+  ],
+  "acquisition_provenance": "calculations/biodiversity-loss/raw-manifest.json",
+  "success": "Both gaps filled with 2024 official CNRA conservation-unit GIS derivation, generalized publisher mapping; 2026 mixed-unit geometry explicitly rejected",
+  "rejected_or_failed": [
+    {
+      "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/CA_Cons_Areas_parentlyr_Merge_ecofix/FeatureServer/0?f=pjson",
+      "reason": "2024 layer ID 0 absent; official service uses 55; later superseded by 2026 release"
+    },
+    {
+      "url": "https://www2.census.gov/geo/tiger/TIGER2026/AREAWATER/tl_2026_06053_areawater.zip",
+      "reason": "Contains ALAND and mixed ALAND/AWATER features; do not subtract entire area-water geometries; replaced with exact perennial water faces"
+    },
+    {
+      "url": "https://storymaps.arcgis.com/stories/3e501348c1f940a892850798fea7702e",
+      "reason": "Initial helper screenshot contained title only; replaced by source API capture and faithful extract"
+    },
+    {
+      "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0",
+      "reason": "2026 geometries mix GAP classes and conserved fractions are not spatially located within units; cannot precisely clip to city. Use recent 2024 uniform-unit snapshot instead."
+    }
+  ]
+}

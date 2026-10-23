@@ -1,0 +1,20 @@
+[
+  {
+    "url": "https://maps.co.monterey.ca.us/server/rest/services/LAFCO/Incorporated_Cities_2/FeatureServer/2/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&where=CITY+%3D+%27CARMEL+BY-THE-SEA%27",
+    "file": "carmel-lafco-boundary.json",
+    "sha256": "4b35c38498f882daf9437a1f7104a9859e2391e28b99361e48e4621f28d4e352",
+    "retrieved_at": "2026-10-23T06:45:29.095847+00:00"
+  },
+  {
+    "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/1/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&where=GEOID+%3D+%2706053%27",
+    "file": "monterey-census-boundary.json",
+    "sha256": "2e4a54b32d2889ce4d052b79377f730b429f3e696fa021bab3e9b068908333d0",
+    "retrieved_at": "2026-10-23T06:45:34.829439+00:00"
+  },
+  {
+    "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Places_CouSub_ConCity_SubMCD/MapServer/4/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&where=GEOID+%3D+%270611250%27",
+    "file": "carmel-census-boundary.json",
+    "sha256": "dbca6bec0565e79eca85b081a69b60686e38fbeb68072ab03f8218f831ff0228",
+    "retrieved_at": "2026-10-23T06:45:35.954548+00:00"
+  }
+]

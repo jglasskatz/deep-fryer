@@ -1,0 +1,25 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "gender-pay-ratio",
+    "name": "Women's median earnings as a share of men's",
+    "value": 95.7,
+    "unit": "% of men's median earnings",
+    "year": 2024,
+    "target": 95,
+    "level_pct": -0.7,
+    "scoring": {
+      "threshold_ref": "gender-equality.gender-pay-ratio",
+      "function": "higher_is_better",
+      "inputs": {"value": 95.7, "target": 95, "scale": 95},
+      "worked_math": "level_pct = (target − value) ⁄ scale × 100 = (95 − 95.7) ⁄ 95 × 100 = -0.7"
+    },
+    "source": "Census Reporter API, ACS 2024 1-year table B20017, Monterey County row; underlying estimates are U.S. Census Bureau ACS",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B19083%2CB25070%2CB20017%2CB27001&geo_ids=05000US06053",
+    "source_tier": 3,
+    "evidence": {"snapshot_path": "evidence/dd6e71fc936cda74.png", "captured_at": "2026-10-23T03:03:09.136Z"},
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "For population 16 years and over with earnings, ACS B20017 reports median earnings for full-time, year-round workers: male $57,171 (B20017_003; MOE $4,095) and female $54,686 (B20017_006; MOE $5,577); ratio = 54,686 ÷ 57,171 × 100 = 95.6525%, displayed to one decimal as 95.7%. This matches the prompt's median earnings ratio for the same work-experience group, although B20017 provides components rather than a single ratio field. The response is the ACS 2024 1-year release, county GEOID 05000US06053. County/DataShare did not yield an accessible current number; official Census API queries returned 503 and direct table URLs were inaccessible. Census Reporter is classified tier 3, and raw Census access remains a limitation."
+  }
+]

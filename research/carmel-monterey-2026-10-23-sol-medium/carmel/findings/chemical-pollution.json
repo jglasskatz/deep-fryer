@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "tri-releases-per-capita",
+    "name": "Reported TRI on-site releases per capita",
+    "value": 0.0,
+    "unit": "lbs per resident per year",
+    "year": 2024,
+    "target": 1,
+    "level_pct": -100.0,
+    "scoring": {
+      "threshold_ref": "chemical-pollution.tri-releases-per-capita",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 0.0,
+        "target": 1,
+        "scale": 1
+      },
+      "worked_math": "Reported quantified on-site release rate = 0 lb / 3118 residents = 0.0 lb per resident per year. level_pct = (0.0 - 1) / 1 \u00d7 100 = -100.0."
+    },
+    "source": "EPA 2024 TRI Basic California full reporting file; Census Population Estimates Program Vintage 2025 July 2024 population; official LAFCO/Census boundary crosschecks",
+    "source_url": "https://data.epa.gov/efservice/downloads/tri/mv_tri_basic_download/2024_CA/csv",
+    "source_tier": 2,
+    "evidence": {
+      "snapshot_path": "evidence/chemical-pollution-2024-tri-extract.png",
+      "captured_at": "2026-10-23T06:57:46.070Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "city",
+    "notes": "Tier 1 exhausted via City General Plan/Environmental Safety Element and city/county TRI-specific searches; city material is policy-oriented (adopted 2009), county CUPA materials concern hazardous-material storage/emergency response rather than annual TRI releases, and the county CUPA page returned 403. Tier 2 accepted EPA complete 2024 California TRI Basic file (forms processed as of November 5, 2025), including federal/tribal facilities, and Census Population Estimates Program Vintage 2025 POPESTIMATE2024 for July 1, 2024. On-site releases are field 65, comprising air, surface water, underground injection and land disposal; off-site releases/transfers, treatment, recycling, energy recovery and total waste managed are excluded. All selected rows are Pounds, not kg; no dioxin grams occur in the selected county data. TRI covers certain industries and federal facilities meeting employee/chemical thresholds; this is reported chemical mass, not all pollution, toxicity-weighted risk or exposure. Reproducible raw files, hashes, row extracts and standard-library Python scripts are under calculations/chemical-pollution/. Primary exhibit is a visually reviewed researcher-generated faithful extract; the official EPA source and Census bytes are separately archived. City-only result: zero reporting facilities after testing every one of the 1,075 California reporting facilities (3,361 forms; no missing coordinates) against the LAFCO incorporated Carmel-by-the-Sea polygon, crosschecked with Census incorporated-place 0611250 polygon. No postal-city-name shortcut or county substitution was used. Nearest reporting facility is Granite Rock Monterey Branch, 8.33 km outside the city boundary. Thus numerator 0 is an empty sum in the complete reported TRI inventory, not a measured zero of environmental chemical releases or proof of reporting compliance. Current official polygons were used for the 2024 reporting inventory; no nearby point makes minor boundary-vintage differences consequential. Denominator: 3,118 incorporated-city residents, July 1, 2024 Census Vintage 2025. Raw tenant EPA archive: evidence/8b14a7fde5fd10c4.bin; population archive: evidence/e90008f295357d2f.csv."
+  }
+]

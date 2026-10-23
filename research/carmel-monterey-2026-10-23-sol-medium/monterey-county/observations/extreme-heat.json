@@ -1,0 +1,24 @@
+[
+  {
+    "kind": "observation",
+    "indicator_slug": "extreme-heat-days",
+    "name": "Extreme heat exposure",
+    "value": 14.513427283259714,
+    "unit": "population-weighted mean days/year",
+    "year": 2022,
+    "target": null,
+    "level_pct": null,
+    "scoring": null,
+    "unscored_reason": "No adopted or scientifically defensible safe annual number of locally extreme-temperature days was established. The 95th-percentile rule defines an exposure event; it is not a safe annual-day target. Historical climatological averages, forecast HeatRisk categories, occupational exposure limits and zero days are not adopted annual targets for this measure.",
+    "source": "Derived from CDC/ATSDR Environmental Justice Index 2024: 2018\u20132022 extreme-heat days and ACS population",
+    "source_url": "https://eji.cdc.gov/Documents/Data/2024/2024_CSV/EJI_2024_California_CSV.zip",
+    "source_tier": 2,
+    "evidence": {
+      "snapshot_path": "evidence/extreme-heat-derived.png",
+      "captured_at": "2026-10-23T07:25:07.221Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "Observation period: 2018\u20132022 annual average; year=2022 is the period end, not a single-year count. Derived resident-weighted county exposure summary: sum(E_NEHD \u00d7 E_TOTPOP) / sum(E_TOTPOP) = 6,351,206.4 / 437,609 = 14.513427283259714 days/year. All 103 Monterey County tracts included in CDC EJI 2024; Census 2020 lists 104 county tracts, with water-only zero-population tract 06053990000 absent from EJI. The remaining 103 cover the county resident land geography. No residents are removed by this water-tract omission. This is an observed membership difference; CDC documentation does not state a removal policy. CDC EJI 2024 E_NEHD is the annual mean for 2018\u20132022, computed as the five-year sum divided by five. The included dictionary defines a day as maximum temperature exceeding the tract-specific historical 95th percentile; this is a relative local-temperature criterion. Weights E_TOTPOP are 2018\u20132022 ACS S0601 population estimates from the same package. Both fields agree across all 103 tracts between the official CSV package and CDC data service; none is missing or negative. This is a weighted mean of tract annual means, not the number of days when the entire county simultaneously exceeded a threshold, an absolute-temperature count, heat-index count, NWS HeatRisk, or future projection. CDC crosswalked heat from 2010 to 2020 tracts; nationally 13 missing tracts were interpolated but the local interpolation status is not identified. The EJI heat entry does not specify historical baseline years or seasonal window; do not import a baseline from Cal-Adapt or another CDC series. Tract annual means range 6.8\u201318.4. Source tier 1 searched: Carmel 2021 vulnerability assessment and 2022 adaptation plan give modeled baseline and projections (>87.9\u00b0F), not a recent observed city series; the county economic report gives 2010\u20132024 mean nine days >=92.5\u00b0F but its Cal-Adapt observed/projected split is insufficiently documented for acceptance. County 2026 public draft climate plan provides old historical baselines and projections. Tier 2 official retrospective CDC EJI series accepted; direct CDC Tracking county API requests were rate-limited (429), not treated as evidence of no data. Reproduction and raw hash manifest are in calculations/extreme-heat/."
+  }
+]

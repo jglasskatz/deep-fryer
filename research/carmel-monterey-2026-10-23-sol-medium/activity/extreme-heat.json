@@ -1,0 +1,33 @@
+{
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "dimension": "extreme-heat",
+  "portraits_researched": [
+    "carmel",
+    "monterey-county"
+  ],
+  "recorded_at": "2026-10-23T07:18:14.683895Z",
+  "first_retained_network_response_at": "2026-10-23T07:08:04Z",
+  "completed_at": "2026-10-23T07:26:14.600122Z",
+  "web_tool_calls": 13,
+  "search_queries": 12,
+  "url_open_attempts": 41,
+  "url_open_attempts_definition": "20 web open/find/click attempts plus21 direct network attempts including initial DNS failures; excludes helper network requests, which are counted as evidence captures. Search retrieval is counted separately.",
+  "evidence_capture_attempts": 15,
+  "evidence_capture_successes": 14,
+  "evidence_capture_failures": 1,
+  "evidence_capture_notes": "Six helper source captures (two method PDFs,two raw service exhibits,two ZIP downloads); two successful derived browser screenshots. One derived screenshot run failed on module path before corrected. Coverage followup: four successful helper captures of two official Census queries for both tenants; two successful regenerated derived screenshots. No additional research-agent web searches or direct URL requests: reviewer supplied raw Census queries/hashes, recorded separately in reviewer-coverage/manifest.json.",
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "notes": "Counts cover only new extreme-heat work. No spending cap. No inferred billing or token usage. The first retained response timestamp is not claimed as the exact turn start.",
+  "followups": [
+    {
+      "at": "2026-10-23T07:26:14.600122Z",
+      "reason": "Independent review tract coverage correction",
+      "evidence_capture_attempts": 6,
+      "evidence_capture_successes": 6,
+      "evidence_capture_failures": 0,
+      "offline_checks": "Verified raw SHA256 hashes, Census104 vs EJI103 ID membership, water-only tract zero-population/zero-land facts, unchanged value and denominator."
+    }
+  ]
+}

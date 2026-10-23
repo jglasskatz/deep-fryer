@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "protected-land-share",
+    "name": "Land under durable conservation protection",
+    "value": 18.403290484760014,
+    "unit": "% of jurisdiction land area",
+    "year": 2024,
+    "target": 30,
+    "level_pct": 38.7,
+    "scoring": {
+      "threshold_ref": "biodiversity-loss.protected-land-share",
+      "function": "higher_is_better",
+      "inputs": {
+        "value": 18.403290484760014,
+        "target": 30,
+        "scale": 30
+      },
+      "worked_math": "level_pct = (target − value) ⁄ scale × 100 = (30 − 18.403290484760014) ⁄ 30 × 100 = +38.7"
+    },
+    "source": "Derived from CNRA CA Nature 30x30 Conserved Areas, Terrestrial (2024 snapshot), official boundaries and Census 2026 land/water faces",
+    "source_url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/CA_Cons_Areas_parentlyr_Merge_ecofix/FeatureServer/55",
+    "source_tier": 2,
+    "evidence": {
+      "snapshot_path": "evidence/biodiversity-loss-derived-2024.png",
+      "captured_at": "2026-10-23T07:02:34.970016Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "Derived 2024 mapped inventory, not a jurisdiction-published total or a complete legal parcel audit. Tier 1 searched: City park/GIS and County GIS/Williamson Act sources did not supply complete recent durable conservation shares. Tier 2 official CNRA dataset accepted. Filter Release_Year=2024 and reGAP IN (1,2), matching that snapshot's DefaultSelection=Yes; county category-statistics query confirms GAP3/4 are No. The 2024 publisher methodology uniformly assigns operative Conservation Units based on >80% GAP-code overlap (or combined GAP1/2 overlap), so mapped units are a generalized conservation inventory, not exact parcel-level legal status. Older 2023 records sharing this service are explicitly excluded. More recent 2026 data was investigated and rejected for this derivation: its geometries mix GAP classes, with partial conserved-acre fields and qualifying portions inside GAP3/4 units; precise jurisdiction clipping would need their underlying subgeometry. No partial 2026 fractions are imputed to city land. Jurisdiction: all incorporated and unincorporated Monterey County, current Census TIGERweb GEOID 06053, retrieved 2026-10-23. The 2024 conservation inventory is evaluated against current retrieved boundaries and Census 2026 perennial-water faces; it is not a claim about conservation gains through 2026. Exclude LWFLAG=P water (ocean, bays, lakes, other perennial water) from numerator and denominator; retain intermittent water under Census land convention. WGS84 GeoJSON and NAD83 Census water are transformed to California Albers EPSG:3310 using the null NAD83/WGS84 geographic transform at this precision. Union protected polygons before measuring clipped area; overlaps count once. Numerator=1564208099.145379305 m² (386524.239033349 acres), denominator=8499610982.289926529 m² (2100299.614101260 acres). 2,125 candidate features downloaded completely; 1,316 belong to Release_Year=2024; 517 intersect jurisdiction land. Union removes 754.581983 m² of overlapping protected polygons. Land denominator differs from Census AREALAND=8,499,610,214 m² by 768 m² (0.000009%), consistent with projection/rounding. Source uncertainty includes generalized boundaries and omitted/misclassified conservation; confidence medium. All raw query URLs/hashes, compressed polygons, per-feature areas and offline script are archived in calculations/biodiversity-loss/. Primary exhibit is labelled our derived calculation; official dataset, methodology, boundary and water-definition captures are supplemental."
+  }
+]

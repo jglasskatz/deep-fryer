@@ -3,3 +3,10 @@ site/evidence/**/*.pdf binary
 site/evidence/**/*.png binary
 site/evidence/**/*.jpg binary
 site/evidence/**/*.jpeg binary
+
+# Research datasets and faithful exhibits are immutable byte archives. Keep
+# publisher encodings/CRLF and copied source fields intact; review the portable
+# derivations, findings and SHA-256 manifests rather than enormous data diffs.
+research/**/raw/** binary
+research/**/*.csv binary
+research/**/source-extract.html binary

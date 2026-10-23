@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "violent-crime-rate",
+    "name": "Violent crime rate",
+    "value": 4.219766152720789,
+    "unit": "per 1,000 residents",
+    "year": 2025,
+    "target": 4,
+    "level_pct": 5.5,
+    "scoring": {
+      "threshold_ref": "peace-justice.violent-crime-rate",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 4.219766152720789,
+        "target": 4,
+        "scale": 4
+      },
+      "worked_math": "level_pct = (value − target) ⁄ scale × 100 = (4.219766152720789 − 4) ⁄ 4 × 100 = +5.5"
+    },
+    "source": "California DOJ OpenJustice, Crimes and Clearances (including Arson), 1985–2025 annual CSV; California Department of Finance E-1, May 2026",
+    "source_url": "https://data-openjustice.doj.ca.gov/sites/default/files/dataset/2026-07/Crimes_and_Clearances_with_Arson-1985-2025.csv",
+    "source_tier": 2,
+    "evidence": {
+      "snapshot_path": "evidence/peace-justice-2025-doj-extract.png",
+      "captured_at": "2026-10-23T06:48:38.252Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "Tier 1 searched: County public-health STRYVE page concerns Salinas, the Sheriff Investigations page describes responsibilities, and the 2022 County-hosted Community Health Needs Assessment reports 2014–16 crime rates; these do not supply a current countywide rate. Tier 2 accepted: official DOJ annual crimes CSV, revised June 2026 README and California Department of Finance E-1 May 2026 revised January 1, 2025 population. County numerator sums every 2025 CSV row labeled Monterey County: all 12 municipal agencies plus the County Sheriff, CHP Monterey, CSU Monterey Bay, Monterey DPR, Union Pacific RR Monterey, and Cal Fire San Benito/Monterey. The latter two report explicit zero values, not imputed missing values. Components total 17 homicides + 157 rapes + 374 robberies + 1,298 aggravated assaults = 1,846. This includes incorporated and unincorporated areas and special-jurisdiction agencies, not the Sheriff alone. Population is the year-matched January 1 resident estimate, not an annual average or visitor population; this researcher-derived rate can differ from DOJ/FBI published rates using another population vintage or reference date. The DOJ README page 14 lists 2025 agency reporting limitations and names none in Monterey County. DOJ combines SRS and converted incident-based reporting; counts are reported offenses/victims under UCR hierarchy rules, not all experienced crime. Small counts make Carmel annual rates volatile. The main exhibit is a visually reviewed faithful extract generated from the archived raw CSV, clearly labeled as a researcher extract. Raw archive and derivation are in calculations/peace-justice/derive.py and the tenant evidence source records. Raw CSV: evidence/fd1ad0d0c2681cbe.csv."
+  }
+]

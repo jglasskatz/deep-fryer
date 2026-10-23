@@ -1,0 +1,16 @@
+{
+  "nitrate-groundwater": [
+    {
+      "label": "Nearest local monitoring: MPWMD report section IV-B, printed IV-3 / PDF p.44; non-city sampling geography",
+      "source_url": "https://www.mpwmd.net/wp-content/uploads/MPWMD-MitigationReport-finalRY2024.pdf",
+      "snapshot_path": "evidence/a1ffc5723130ab61.png",
+      "pdf_path": "evidence/a1ffc5723130ab61.pdf"
+    },
+    {
+      "label": "Rejected subbasin proxy: Water Board Figure 2, 2024 on-farm domestic-well nitrate distribution, PDF p.3",
+      "source_url": "https://www.waterboards.ca.gov/centralcoast/water_issues/programs/ilp/docs/2025/gw-quality-tech-memo.pdf",
+      "snapshot_path": "evidence/6193d48705c8a913.png",
+      "pdf_path": "evidence/6193d48705c8a913.pdf"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "natural-land-conversion": [
+    {
+      "label": "Nearest data catalog, rejected construct: Monterey FMMP conversion products through 2020–2022",
+      "source_url": "https://www.conservation.ca.gov/dlrp/fmmp/Pages/Monterey.aspx",
+      "snapshot_path": "evidence/8621148a6da4e1f6.png"
+    },
+    {
+      "label": "Derived whole-county 2014–2024 transition rate and sensitivity; county proxy in Carmel portrait",
+      "source_url": "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_NLCD_Landcover_CONUS/ImageServer?f=pjson",
+      "snapshot_path": "evidence/land-conversion-derived-2014-2024.png"
+    },
+    {
+      "label": "Faithful selected official metadata and raw export record; browser source returned403",
+      "source_url": "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_NLCD_Landcover_CONUS/ImageServer?f=pjson",
+      "snapshot_path": "evidence/land-conversion-source-metadata.png"
+    },
+    {
+      "label": "Published natural/non-natural NLCD crosswalk, EPA2014 Table1, PDFp22; method support only",
+      "source_url": "https://www.epa.gov/sites/production/files/2015-11/documents/wihwreport_0.pdf",
+      "snapshot_path": "evidence/ed91f705894c2435.png",
+      "pdf_path": "evidence/ed91f705894c2435.pdf"
+    },
+    {
+      "label": "Current MRLC class definitions; supports natural/developed crosswalk and mixed barren caveat",
+      "source_url": "https://www.mrlc.gov/data/legends/annual-nlcd-land-cover-legend",
+      "snapshot_path": "evidence/624f314fa1e17937.png"
+    }
+  ]
+}

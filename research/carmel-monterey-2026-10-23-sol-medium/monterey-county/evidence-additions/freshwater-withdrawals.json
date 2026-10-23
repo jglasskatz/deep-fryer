@@ -1,0 +1,16 @@
+{
+  "residential-gpcd": [
+    {
+      "label": "MPWMD December 2025 committee packet, PDF page 10: mixed-year residential consumption by political jurisdiction; contextual gap evidence",
+      "source_url": "https://www.mpwmd.net/wp-content/uploads/Dec-4-2025-WDC-Mtg-Agenda.pdf",
+      "snapshot_path": "evidence/676178839871c8b9.png",
+      "pdf_path": "evidence/676178839871c8b9.pdf"
+    },
+    {
+      "label": "State Water Board dataset documentation, page 1: supplier reporting geography and urban-supplier scope; contextual gap evidence",
+      "source_url": "https://publish.data.ca.gov/dataset/c69ac02b-adfb-459a-bc58-bf69a8b572d2/resource/54936a0d-09ce-46d3-a4e7-8808d42326c0/download/documentation-for-water-conservation-and-production-dataset_v1.1.pdf",
+      "snapshot_path": "evidence/f18d4933e4cd5041.png",
+      "pdf_path": "evidence/f18d4933e4cd5041.pdf"
+    }
+  ]
+}

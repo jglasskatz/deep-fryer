@@ -1,0 +1,7 @@
+[
+  {
+    "indicator_slug": "tri-releases-per-capita",
+    "content_supported": "pass",
+    "verifier_note": "Independently refetched EPA 2024 California TRI file (SHA256 eca9b383e2dc35cb5fe34034804fdc8253f5a4bdefe880f600648f2a9f6bf8c9), Census July2024 population files and official boundaries; all bytes match archives. Seven Form R rows total 24,485.44 lb and county POPESTIMATE2024 is 433,447, reproducing 0.05649004376544307 and unrounded score -94.35099562345569. Shapely independently confirms county-point selection equals all eight county forms; units are Pounds and field65 scope is on-site only. EPA documentation confirms the eighth Form A chlorine row is an unquantified zero placeholder with <=500lb total reportable amount: pass applies specifically to the revised quantified Form R display label and disclosed lower bound, not a complete measured release total. Derived exhibit and 0\u2013500lb omission caveat are faithful; medium confidence is appropriate. Reviewed revised scoring against core computeScoring round1: canonical level_pct=-94.4; source value/target are unchanged."
+  }
+]

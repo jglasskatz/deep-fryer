@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "gini-index",
+    "content_supported": "pass",
+    "verifier_note": "Inspected dd6e71fc936cda74.png and raw response: exact county GEOID 05000US06053, ACS 2024 one-year, B19083 household Gini 0.4567 with 90% MOE 0.0168. Score (0.4567−0.4)/0.4×100 = 14.175 → 14.2. This is not a rounded 0.46 or a five-year estimate. Tier 3 redisplay and failed primary/reviewer API access are disclosed. Archive identifies the release and universe.",
+    "reviewed_at": "2026-10-23T03:23:31.110588+00:00",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B19083%2CB25070%2CB20017%2CB27001&geo_ids=05000US06053",
+    "exhibit_checked": true
+  }
+]

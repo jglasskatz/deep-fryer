@@ -1,0 +1,150 @@
+{
+  "dimension": "freshwater-withdrawals",
+  "portraits": [
+    "carmel",
+    "monterey-county"
+  ],
+  "searched_at": "2026-10-23T07:22:31.613731Z",
+  "queries": [
+    "site.mpwmd.net Carmel residential gallons per capita day 2024 2023",
+    "site.countyofmonterey.gov residential gallons per capita day 2024 water",
+    "site.waterboards.ca.gov Monterey residential gallons per capita day data 2025",
+    "site.mpwmd.net \"Carmel-by-the-Sea\" \"residential\" \"2024\" consumption",
+    "site.mpwmd.net \"jurisdiction\" \"consumption\" \"2023\" Carmel",
+    "site.ci.carmel.ca.us \"water\" \"per capita\"",
+    "\"Monterey County\" \"residential\" \"GPCD\"",
+    "site.mpwmd.net \"Consumption\" \"Jurisdiction\" \"2024\"",
+    "site.ci.carmel.ca.us water consumption 2023 2024",
+    "site.mpwmd.net \"2024\" \"Carmel-by-the-Sea\" \"consumption\" -EIR -Forecast -Agenda -ordinances",
+    "site.mpwmd.net \"2023\" \"Customers & Consumption\" ",
+    "site.mpwmd.net \"2024\" \"Political Jurisdiction\" \"Residential\" ",
+    "\"Monterey County\" \"residential gallons\" -reddit -site:mpwmd.net",
+    "site.mpwmd.net \"Customers\" \"Consumption\" \"2024\" \"Carmel\"",
+    "site.mpwmd.net \"Customers\" \"Consumption\" \"2025\" \"Carmel\"",
+    "site.countyofmonterey.gov \"2024\" \"Water Use\" \"population\" extraction",
+    "site.usgs.gov \"2020\" \"Monterey\" \"domestic\" water use",
+    "site.mpwmd.net \"2024\" \"Carmel\" \"RESIDENTIAL\" \"Acre-Feet\" -2025-WDC -Forecast -2022 -2018 -2000",
+    "site.mpwmd.net \"2023\" \"Carmel\" \"Customers & Consumption by Political Jurisdiction\"",
+    "site.mpwmd.net \"2024\" \"CONSUMPTION\" \"3,0\" \"Carmel\"",
+    "site.usgs.gov \"Water Use\" \"county\" \"2020\" \"2015\" California data"
+  ],
+  "web_requests": [
+    {
+      "url": "https://www.mpwmd.net/resources/annual-reports/",
+      "result": "success; followed 2025 and 2024 reports"
+    },
+    {
+      "url": "https://www.countyofmonterey.gov/home/showpublisheddocument/142365/638926748365700000",
+      "result": "failure: 403; rejected per-connection units and unverified snippet"
+    },
+    {
+      "url": "https://water.waterboards.ca.gov/conservation/conservation_reporting.html",
+      "result": "success; supplier reporting portal, followed dataset"
+    },
+    {
+      "url": "https://www.mpwmd.net/asd/board/boardpacket/2022/20220919/17/Item-17-Exh-17-A.pdf",
+      "result": "failure: web tool 400 OK; search indexed forecast; rejected stale baseline and mapped production"
+    },
+    {
+      "url": "https://www.mpwmd.net/annrpt/2025-Annual-Report.pdf",
+      "result": "success; general annual report, no exact jurisdiction residential rate"
+    },
+    {
+      "url": "https://www.mpwmd.net/wp-content/uploads/M_Annual%20Report_2024_Singles.pdf",
+      "result": "success; general annual report, no exact jurisdiction residential rate"
+    },
+    {
+      "url": "https://www.mpwmd.net/water-supply/water-supply-overview/",
+      "result": "success; forecast uses 2017-2019 allocation, not current annual measurement"
+    },
+    {
+      "url": "https://data.ca.gov/dataset/urws-conservation-supply-demand",
+      "result": "success; dataset metadata"
+    },
+    {
+      "url": "https://www.mpwmd.net/wp-content/uploads/MPWMD-MitigationReport-finalRY2024.pdf",
+      "result": "success; page 74 describes underlying city consumption records but publishes district aggregate"
+    },
+    {
+      "url": "https://data.ca.gov/organizations",
+      "result": "success; unintended navigation, not used"
+    },
+    {
+      "url": "https://www.mpwmd.net/wp-content/uploads/MPWMD-MitigationReport-finalRY2024.pdf",
+      "result": "success find: WATER-USE section; no published city annual R-GPCD"
+    },
+    {
+      "url": "https://data.ca.gov/dataset/urws-conservation-supply-demand",
+      "result": "success find: CSV links"
+    },
+    {
+      "url": "https://publish.data.ca.gov/dataset/c69ac02b-adfb-459a-bc58-bf69a8b572d2/resource/54936a0d-09ce-46d3-a4e7-8808d42326c0/download/documentation-for-water-conservation-and-production-dataset_v1.1.pdf",
+      "result": "failure web redirect; subsequently capture helper downloaded successfully"
+    },
+    {
+      "url": "https://publish.data.ca.gov/dataset/c69ac02b-adfb-459a-bc58-bf69a8b572d2/resource/f4d50112-5fb5-4066-b45c-44696b10a49e/download/monthly_combined_dataset.csv",
+      "result": "failure web redirect; subsequently direct curl download succeeded"
+    },
+    {
+      "url": "https://www.usgs.gov/mission-areas/water-resources/science/accessing-water-use-data/",
+      "result": "success; latest modeled data 2020, rejected recency"
+    },
+    {
+      "url": "https://water.waterboards.ca.gov/conservation/faq.html",
+      "result": "success; R-GPCD denominator is supplier served population"
+    },
+    {
+      "url": "https://ci.carmel.ca.us/post/water-conservation",
+      "result": "success; municipal plan 2011/2012 stale"
+    }
+  ],
+  "direct_downloads": [
+    {
+      "url": "https://www.mpwmd.net/wp-content/uploads/MPWMD-MitigationReport-finalRY2024.pdf",
+      "result": "failure sandbox DNS; not retried directly because web had readable full PDF"
+    },
+    {
+      "url": "https://www.mpwmd.net/wp-content/uploads/Dec-4-2025-WDC-Mtg-Agenda.pdf",
+      "result": "success after network escalation; raw PDF/text retained"
+    },
+    {
+      "url": "https://www.countyofmonterey.gov/home/showpublisheddocument/142365/638926748365700000",
+      "result": "failure 403 after escalation"
+    },
+    {
+      "url": "https://publish.data.ca.gov/dataset/c69ac02b-adfb-459a-bc58-bf69a8b572d2/resource/f4d50112-5fb5-4066-b45c-44696b10a49e/download/monthly_combined_dataset.csv",
+      "result": "success after escalation; raw CSV retained, inspection reproduced"
+    }
+  ],
+  "captures": [
+    {
+      "tenant": "carmel",
+      "url": "https://www.mpwmd.net/wp-content/uploads/Dec-4-2025-WDC-Mtg-Agenda.pdf",
+      "page": 10,
+      "result": "success",
+      "snapshot_path": "evidence/2a630dacb33cc47b.png"
+    },
+    {
+      "tenant": "monterey-county",
+      "url": "https://www.mpwmd.net/wp-content/uploads/Dec-4-2025-WDC-Mtg-Agenda.pdf",
+      "page": 10,
+      "result": "success",
+      "snapshot_path": "evidence/676178839871c8b9.png"
+    },
+    {
+      "tenant": "carmel",
+      "url": "https://publish.data.ca.gov/dataset/c69ac02b-adfb-459a-bc58-bf69a8b572d2/resource/54936a0d-09ce-46d3-a4e7-8808d42326c0/download/documentation-for-water-conservation-and-production-dataset_v1.1.pdf",
+      "page": 1,
+      "result": "success",
+      "snapshot_path": "evidence/04318341d08802bd.png"
+    },
+    {
+      "tenant": "monterey-county",
+      "url": "https://publish.data.ca.gov/dataset/c69ac02b-adfb-459a-bc58-bf69a8b572d2/resource/54936a0d-09ce-46d3-a4e7-8808d42326c0/download/documentation-for-water-conservation-and-production-dataset_v1.1.pdf",
+      "page": 1,
+      "result": "success",
+      "snapshot_path": "evidence/f18d4933e4cd5041.png"
+    }
+  ],
+  "disposition": "Both gaps preserved after new raw dataset inspection and city-jurisdiction consumption discovery; no scoring on rejected observations. Search results with wrong Carmel Indiana geography, forecasts, secondary stories, and nonresidential production were not accepted."
+}

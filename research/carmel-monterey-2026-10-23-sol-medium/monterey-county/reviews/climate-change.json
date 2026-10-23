@@ -1,0 +1,7 @@
+[
+  {
+    "indicator_slug": "ghg-per-capita",
+    "content_supported": "pass",
+    "verifier_note": "Independently opened the official adoption page (June 10, 2026) and refetched the May 2026 Final EIR, byte-identical to archived PDF SHA256 f7be33ee64a3bc09ff3464f804a04cbac7cabc43844e887a766d20f22172e567. PDF pp348\u2013349 explicitly call 2019/2020 the most current inventory; pp366\u2013368 and Table4.8-2 footnote1 state all 2022 non-road sources were interpolated from 2020/2025 forecast values. Therefore the nominal 2022 baseline does not establish a recent observed community inventory at the permitted regional scale. Pass supports the strengthened provisional extraction/recency gap, not an exhaustive proof that no compliant county/regional inventory exists; no regional mean or unincorporated-only total is substituted."
+  }
+]

@@ -1,0 +1,7 @@
+[
+  {
+    "indicator_slug": "aragonite-saturation",
+    "content_supported": "pass",
+    "verifier_note": "Independently fetched NOAA node392 HTML and parsed embedded chart: title California Current Omega Aragonite, linear x-axis Year, exactly27 consecutive annual x values1998\u20132024, latest explicit x=2024/y=2.15. Live whole HTML differs from archive but parsed chart is identical. Optional name=3/1/2000 is inconsistent sequential-month metadata; numeric annual axis plus NOAA narrative ending2024 and primary methods annual NaMES series support the stated year. Reran saved extract.ts in a temporary copy using node --import tsx after CLI IPC sandbox failure: value2.15 and canonical round1 score28.3 reproduce. Independently opened NOAA accession and Sharp2024 paper:0.25-degree monthly sea-surface observation-constrained maps, US-EEZ-defined LME regions and spatially weighted annual averages, with carbonate chemistry from estimated alkalinity. Pass is the configured permitted California Current regional proxy, not a Carmel/Monterey Bay/full-county coastal measurement or future projection. Source precision, unknown point-specific uncertainty and nearshore/depth/seasonal limitations remain disclosed; primary chart screenshot inspected."
+  }
+]

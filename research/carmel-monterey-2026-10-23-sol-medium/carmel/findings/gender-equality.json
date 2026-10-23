@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "gender-pay-ratio",
+    "name": "Women’s full-time, year-round median earnings as a share of men’s",
+    "value": 91.4,
+    "unit": "% of men’s median earnings",
+    "year": 2024,
+    "target": 95,
+    "level_pct": 3.8,
+    "scoring": {
+      "threshold_ref": "gender-equality.gender-pay-ratio",
+      "function": "higher_is_better",
+      "inputs": {
+        "value": 91.4,
+        "target": 95,
+        "scale": 95
+      },
+      "worked_math": "level_pct = (95 − 91.4) ÷ 95 × 100 = +3.8"
+    },
+    "source": "Census Reporter API, republishing U.S. Census Bureau ACS 2024 5-year table B20017",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B20017&geo_ids=16000US0611250",
+    "source_tier": 3,
+    "evidence": {
+      "snapshot_path": "evidence/7f5db5f803341064.png",
+      "captured_at": "2026-10-23T02:42:26.552Z"
+    },
+    "confidence": "low",
+    "geographic_scale": "city",
+    "notes": "Captured API response identifies ACS 2020–2024 5-year, Carmel-by-the-Sea place 16000US0611250, B20017 title Median Earnings in the Past 12 Months by Sex by Work Experience, universe population 16+ with earnings. Male full-time/year-round median earnings are $109,800 (MOE $44,124); female are $100,313 (MOE $35,400), in 2024 inflation-adjusted dollars. Calculation 100,313/109,800×100=91.35%, rounded to 91.4%. Both margins are large relative to estimates; no ratio MOE has been computed, so confidence is low. Census Reporter republishes ACS as a long-running nonprofit data service (tier 3); official Census API endpoint failed during this pass."
+  }
+]

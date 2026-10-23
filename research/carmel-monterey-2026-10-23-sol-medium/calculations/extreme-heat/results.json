@@ -1,0 +1,15 @@
+{
+  "tract_count": 103,
+  "census_2020_tract_count": 104,
+  "omitted_water_tract": "06053990000",
+  "coverage_note": "All 103 Monterey County tracts included in CDC EJI 2024; Census 2020 lists 104 county tracts, with water-only zero-population tract 06053990000 absent from EJI. The remaining 103 cover the county resident land geography. No residents are removed by this water-tract omission.",
+  "population_weight_total": 437609.0,
+  "weighted_days_population_sum": 6351206.4,
+  "value": 14.513427283259714,
+  "displayed_value": 14.5,
+  "period": "2018\u20132022",
+  "unit": "population-weighted mean days/year",
+  "tract_min": 6.8,
+  "tract_max": 18.4,
+  "source_archive_sha256": "b31f0610997df43e75d2e84e60689d7a6ee4cba19eba03912411ff3e4ba278ca"
+}

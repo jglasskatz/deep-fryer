@@ -1,0 +1,40 @@
+{
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "dimension": "land-conversion",
+  "portraits_researched": [
+    "carmel",
+    "monterey-county"
+  ],
+  "started_at": "2026-10-23T07:22:00Z",
+  "started_at_precision": "approximate; session tool transcript is authoritative",
+  "completed_at": "2026-10-23T07:49:39.206461+00:00",
+  "web_tool_calls": 14,
+  "search_queries": 16,
+  "url_open_attempts": 30,
+  "additional_find_requests": 5,
+  "evidence_capture_attempts": 13,
+  "evidence_capture_successes": 9,
+  "evidence_capture_failures": 4,
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "result": "County gap filled with explicitly mapped vegetation-to-developed gross conversion proxy0.21705712715843378%/decade2014\u20132024; same county proxy for Carmel. City exact zero rejected. Canonical computeScoring gives-56.6.",
+  "validation": [
+    "Canonical finding schema passed both findings",
+    "Exact native raster grids/date IDs and raw U8 categories verified",
+    "Offline same-pixel transition calculation; fractional boundary area weights and mask inputs archived",
+    "NoData not imputed;0.562371922m\u00b2 residual explicitly excluded",
+    "Barren-included and pixel-center sensitivity preserved",
+    "City LAFCO/Census comparison and rejected zero preserved",
+    "Both selected crosswalk and derived exhibits visually checked; source artifacts preserved",
+    "Boundary archival hashes independently verified against original same-campaign manifests",
+    "Final derived county and city-proxy exhibits plus faithful metadata exhibits visually checked after proxy-label render",
+    "Input SHA256 and original boundary provenance hash checks passed for all archived files",
+    "Display label explicitly mapped natural-vegetation-to-developed gross conversion proxy; core computeScoring exact-56.6 and county scale asserted"
+  ],
+  "shell_url_acquisition_attempts": 11,
+  "shell_url_acquisition_successes": 10,
+  "shell_url_acquisition_failures": 1,
+  "generated_exhibit_count": 4,
+  "generated_exhibit_note": "Two derived tables and two faithful metadata extracts rendered with existing browser; figures are generated from archived inputs and distinct from13 capture-helper attempts. First render then explicit proxy-label rerender."
+}

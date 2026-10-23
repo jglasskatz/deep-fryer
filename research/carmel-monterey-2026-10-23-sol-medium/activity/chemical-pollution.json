@@ -1,0 +1,27 @@
+{
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "dimension": "chemical-pollution",
+  "portraits_researched": [
+    "carmel",
+    "monterey-county"
+  ],
+  "started_at": "2026-10-23T06:52:34.971268+00:00",
+  "completed_at": "2026-10-23T06:59:55.249751+00:00",
+  "web_tool_calls": 10,
+  "search_queries": 12,
+  "url_open_attempts": 10,
+  "evidence_capture_attempts": 11,
+  "evidence_capture_successes": 11,
+  "evidence_capture_failures": 0,
+  "evidence_capture_breakdown": {
+    "existing_helper": 9,
+    "faithful_extraction_screenshots": 2
+  },
+  "direct_raw_download_attempts": 5,
+  "direct_raw_download_successes": 4,
+  "direct_raw_download_failures": 1,
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "notes": "New work only. Boundary source files reused unchanged from this campaign biodiversity calculations with original provenance retained; not counted as new downloads. Local processing failures (initial incorrect EPA TRIFID header and population UTF-8 assumption) were corrected before producing results. Initial population read failed because official Census CSV uses Latin-1; derivation explicitly selects Latin-1. started_at records first persisted chemical research work directory."
+}

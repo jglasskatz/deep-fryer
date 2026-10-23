@@ -1,0 +1,85 @@
+{
+  "dimension": "ocean-acidification",
+  "searched_at": "2026-10-23T07:31:11.692900Z",
+  "queries": [
+    "site.ci.carmel.ca.us \"aragonite\"",
+    "site.countyofmonterey.gov \"aragonite\"",
+    "site.ecowatch.noaa.gov California Current aragonite saturation data download",
+    "site.mbari.org Monterey aragonite saturation 2023 2024 M1",
+    "Monterey Bay aragonite saturation state observations 2021 2022 2023 dataset",
+    "site.ci.carmel.ca.us ocean acidification climate adaptation plan 2022",
+    "site.countyofmonterey.gov ocean acidification climate plan"
+  ],
+  "sources": [
+    {
+      "url": "https://ecowatch.noaa.gov/regions/california-current",
+      "result": "read, archived raw HTML and captured; regional annual \u03a9ar accepted"
+    },
+    {
+      "url": "https://ecowatch.noaa.gov/node/392",
+      "result": "web reader failed; both helper browser fetches succeeded; explicit chart x=2024,y=2.15 accepted, name date discrepancy documented"
+    },
+    {
+      "url": "https://www.ncei.noaa.gov/data/oceans/ncei/ocads/metadata/0287551.html",
+      "result": "read and captured both tenants; calculated surface \u03a9ar; latest coverage 2025 does not imply latest shown dashboard year"
+    },
+    {
+      "url": "https://www.nature.com/articles/s41597-024-03530-7",
+      "result": "read and captured; peer-reviewed method defines regional annual spatial weighting; original 1998\u20132022 validation, current source extends series"
+    },
+    {
+      "url": "https://www.nature.com/articles/s41597-024-03530-7.pdf",
+      "result": "captured both tenants page 7; complete searchable PDF archived"
+    },
+    {
+      "url": "https://www.mbari.org/data/m1-mooring-real-time-data/",
+      "result": "wrong guessed path; web open failed"
+    },
+    {
+      "url": "https://www.mbari.org/data/m1-mooring-real-time-plots/",
+      "result": "read current real-time station page; single bay-mouth station cannot establish jurisdiction or annual regional mean; no local \u03a9ar value accepted"
+    },
+    {
+      "url": "https://www.pmel.noaa.gov/co2/story/Monterey+Bay",
+      "result": "guessed station URL failed; no data inferred"
+    },
+    {
+      "url": "https://www.pmel.noaa.gov/co2/story/CCE2",
+      "result": "read; event-scale southern-California fixed mooring 34.324N 120.814W and calculated \u03a9ar; rejected as local or representative annual regional value"
+    },
+    {
+      "url": "https://water.waterboards.ca.gov/water_issues/programs/tmdl/2025_2026state_ir_reports_final/apx-b-factsheets/04505.shtml",
+      "result": "search result describes one May 2016 sample; direct open cache miss; old data outside recency, no local mean accepted"
+    },
+    {
+      "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/carmel_climate_adaptation_plan_final_041222.pdf",
+      "result": "local plan located in search; direct web open failed; no local \u03a9ar value established"
+    },
+    {
+      "url": "https://www.countyofmonterey.gov/government/departments-a-h/administrative-office/intergovernmental-and-legislative-affairs/sustainability",
+      "result": "local official source searched; direct open HTTP 403; no contents inferred"
+    }
+  ],
+  "tier_outcome": "Tier 1 local government search did not establish exact recent value. Tier 2 NOAA regional annual metric accepted. Tier 3 MBARI and primary method paper explored; no need to substitute global or tier 4 source once compliant regional source found.",
+  "scales_tried": {
+    "carmel": [
+      "city",
+      "county",
+      "regional"
+    ],
+    "monterey-county": [
+      "county",
+      "regional"
+    ]
+  },
+  "extraction": "Numeric chart x/y, not misleading name labels. No annual averaging performed by this research. Portable extract.ts imports canonical computeScoring. Compare independent captured HTML for both tenants.",
+  "failures": [
+    "python command unavailable; used python3",
+    "sandbox python3 urllib DNS blocked; escalated request succeeded",
+    "initial pnpm tsx extract blocked by IPC EPERM; node --import tsx succeeded"
+  ],
+  "capture_attempts": 8,
+  "capture_successes": 8,
+  "capture_failures": 0,
+  "validation": "Both findings pass canonical draft-2020-12 finding.schema.json with Ajv 8 and formats. All primary and supporting tenant screenshot/PDF paths exist. Initial Ajv import guessed worker-local location and failed; corrected to existing pnpm store, no installation."
+}

@@ -81,6 +81,17 @@ export const indicatorFindingPayloadSchema = z.object({
   notes: z.string().optional(),
 });
 
+// Public previews may expose a measured value without inventing a safe target.
+// Deliberately excluded from findingPayloadSchema and the approval/DB pipeline.
+export const previewObservationSchema = indicatorFindingPayloadSchema.extend({
+  kind: z.literal('observation'),
+  value: z.number().finite(),
+  target: z.null(),
+  level_pct: z.null(),
+  scoring: z.null(),
+  unscored_reason: z.string().min(1),
+}).strict();
+
 export const gapFindingPayloadSchema = z.object({
   kind: z.literal('gap'),
   indicator_slug: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),

@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_slug": "pm25-annual",
+    "content_supported": "pass",
+    "verifier_note": "Inspected d0f4d763a4c71ce5.png and raw metadata: Monterey FIPS 06053, v125_rawvalue 8.8 µg/m³, source EPHT, observation 2020; row 2025 is the release year. Independent CHR methods describe annual averages of daily monitoring/model data; modeled daily county estimates select the MAXIMUM among tract centroids. This is a defined CHR county density, not population-weighted spatial-average or individual exposure. Notes preserve that limitation. Conditional score (8.8−5)/5×100 = 76.0. Observation 2020 is stale under the five-year policy; source support does not resolve recency or human-approval flags. Carmel uses this as an explicitly labeled permitted county proxy, not a city-limit measurement.",
+    "reviewed_at": "2026-10-23T03:18:52.050896+00:00",
+    "source_url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv125_rawvalue&returnGeometry=false&f=pjson",
+    "exhibit_checked": true
+  }
+]

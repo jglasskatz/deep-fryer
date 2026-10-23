@@ -1,0 +1,140 @@
+[
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?where=reGAP+IN+%28%271%27%2C%272%27%29&geometry=-122.1%2C35.7%2C-120.1%2C37.1&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&returnIdsOnly=true&f=json",
+    "file": "conservation-ids.json",
+    "sha256": "87c7d4f8fa8b64db0625ba4a7e2cfba45148ea4f2b98955a75b8a4089b9970b8",
+    "retrieved_at": "2026-10-23T06:44:44.796552+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=2980%2C4111%2C2969%2C2625%2C29%2C2591%2C4145%2C2986%2C4483%2C4151%2C3132%2C4128%2C4540%2C3358%2C4563%2C3850%2C3338%2C3836%2C4085%2C3550%2C304%2C2711%2C4569%2C3152%2C2654%2C3544%2C4134%2C190%2C4103%2C3439%2C3533%2C4481%2C4149%2C4126%2C3130%2C2938%2C3556%2C4109%2C113%2C4097%2C2984%2C4395%2C67%2C4558%2C2589%2C3857%2C2932%2C3021%2C127%2C4650",
+    "file": "conservation-features-0000.json",
+    "sha256": "0cfd0ccd1be2be093e6d552e2f846d4cc7009bcf53a7468b05696745fa9e0d6d",
+    "retrieved_at": "2026-10-23T06:44:46.370636+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=3024%2C3545%2C3808%2C3402%2C3141%2C4137%2C4398%2C3831%2C3851%2C4664%2C4000%2C4117%2C64%2C3974%2C4143%2C4564%2C4713%2C3539%2C4086%2C3339%2C4913%2C2663%2C44%2C4372%2C3104%2C4129%2C4621%2C342%2C3837%2C3367%2C4578%2C379%2C4484%2C4555%2C3081%2C3536%2C216%2C3845%2C4100%2C4461%2C4123%2C4338%2C4146%2C2964%2C3018%2C2981%2C2626%2C4106%2C4160%2C4455",
+    "file": "conservation-features-0050.json",
+    "sha256": "6821ebd989013770007c04a2d64eb271e2961bd5afc3b38a5a7030f59c5880de",
+    "retrieved_at": "2026-10-23T06:44:48.295670+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=3121%2C3127%2C3075%2C4501%2C4020%2C3854%2C2881%2C3213%2C4730%2C4140%2C3144%2C3548%2C4163%2C4089%2C4687%2C4853%2C2623%2C2789%2C3971%2C3138%2C4561%2C4538%2C4120%2C3101%2C2709%2C4418%2C3399%2C4667%2C253%2C147%2C3150%2C4575%2C3542%2C4624%2C4625%2C4934%2C96%2C4742%2C3153%2C5074%2C4765%2C142%2C3105%2C4101%2C4556%2C4533%2C4124%2C211%2C3531%2C3846",
+    "file": "conservation-features-0100.json",
+    "sha256": "26f736d60131ee2608fbf5f22eb0cd24e13ccaf2b2ce21c38e71d553f4fa7cd1",
+    "retrieved_at": "2026-10-23T06:44:50.501842+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=305%2C33607%2C2967%2C188%2C2990%2C4416%2C234%2C3136%2C3554%2C4341%2C4882%2C125%2C3706%2C65%2C2936%2C4656%2C2675%2C265%2C4347%2C3019%2C3122%2C3322%2C3076%2C4155%2C73%2C2927%2C33567%2C271%2C4115%2C2598%2C391%2C3829%2C4164%2C3165%2C4825%2C3474%2C4519%2C3855%2C4782%2C2624%2C2790%2C4539%2C4682%2C4141%2C3139%2C4633%2C3331%2C3382%2C3972%2C4021",
+    "file": "conservation-features-0150.json",
+    "sha256": "b140d20fe1c7544ebed9cce8938ed3aa8fda351e3510b20f8c5b49a04859982e",
+    "retrieved_at": "2026-10-23T06:44:52.854914+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=4562%2C4619%2C3208%2C2710%2C4121%2C3551%2C3102%2C4570%2C56%2C3537%2C3543%2C179%2C228%2C3216%2C4135%2C3145%2C4576%2C491%2C2655%2C4092%2C148%2C4427%2C99%2C3394%2C3534%2C4862%2C262%2C4104%2C168%2C4152%2C191%2C3843%2C3594%2C25%2C3133%2C2987%2C162%2C4931%2C2939%2C4404%2C2581%2C2592%2C2924%2C3909%2C4215%2C4098%2C4559%2C4201%2C4739%2C2970",
+    "file": "conservation-features-0200.json",
+    "sha256": "94d41618e869e83f10d45168b410fe7eaf40d615991b1d437e968c4e2430871c",
+    "retrieved_at": "2026-10-23T06:44:55.181701+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=4015%2C2933%2C4393%2C4396%2C2784%2C4112%2C5034%2C3374%2C3677%2C2979%2C4487%2C3022%2C3073%2C4158%2C4991%2C33601%2C4058%2C2787%2C5040%2C3892%2C2930%2C165%2C4387%2C4055%2C3832%2C4161%2C251%2C3168%2C4138%2C3142%2C247%2C4610%2C4118%2C4034%2C3477%2C3393%2C3975%2C3969%2C182%2C3852%2C3334%2C3826%2C104%2C4636%2C4685%2C4630%2C4095%2C4144%2C2595%2C4536",
+    "file": "conservation-features-0250.json",
+    "sha256": "37a872972d7d351bec8481e406dd0310e2fe47d72d74fd61f918170ad94168c1",
+    "retrieved_at": "2026-10-23T06:44:57.302571+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=3540%2C208%2C41%2C4914%2C2664%2C4324%2C4728%2C4716%2C3597%2C302%2C351%2C2701%2C2707%2C45%2C3742%2C4373%2C145%2C3342%2C3840%2C3777%2C4573%2C196%2C4524%2C2%2C33383%2C3479%2C3099%2C4132%2C2965%2C286%2C4577%2C2942%2C3164%2C3844%2C94%2C263%2C3535%2C4863%2C2672%2C4531%2C3287%2C3134%2C4391%2C2796%2C3828%2C4147%2C4485%2C2988%2C3529%2C4216",
+    "file": "conservation-features-0300.json",
+    "sha256": "1573aecdfb36f7f4363dc47296f02623e32fdd2e7ba99aa98219024e389c7cbd",
+    "retrieved_at": "2026-10-23T06:44:59.562472+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=3967%2C3907%2C3330%2C2579%2C204%2C4544%2C4013%2C2934%2C3017%2C4099%2C4740%2C4654%2C4753%2C2982%2C33569%2C217%2C5043%2C3128%2C4159%2C4153%2C4502%2C2925%2C4648%2C3320%2C3074%2C2597%2C4107%2C4402%2C2882%2C4637%2C60%2C3214%2C4376%2C4139%2C4401%2C2622%2C170%2C3071%2C3120%2C2788%2C4780%2C4754%2C2931%2C4090%2C4162%2C4445%2C4568%2C4113%2C2640%2C3549",
+    "file": "conservation-features-0350.json",
+    "sha256": "f6f1426524174121be9ae56e32f7b0ff10ce8492eaa69d784ec0dc4d6aff275f",
+    "retrieved_at": "2026-10-23T06:45:01.473361+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=3970%2C4213%2C33612%2C2696%2C3163%2C3908%2C2596%2C11%2C4096%2C4014%2C279%2C3947%2C2935%2C4611%2C4119%2C4346%2C2686%2C303%2C4133%2C3137%2C2616%2C3598%2C3586%2C103%2C3337%2C4668%2C4833%2C352%2C4419%2C4979%2C389%2C287%2C3151%2C4823%2C3343%2C4674%2C4425%2C97%2C346%2C3100%2C4574%2C143%2C4127%2C2795%2C3131%2C4743%2C237%2C5075%2C3440%2C3177",
+    "file": "conservation-features-0400.json",
+    "sha256": "3ca3a64cd73158e3ac8fecc37b3f85ee2bd946899051afb8c8a4db3d63263bce",
+    "retrieved_at": "2026-10-23T06:45:03.644011+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=3841%2C166%2C3154%2C4150%2C4482%2C187%2C2968%2C3555%2C33602%2C33608%2C4557%2C3532%2C2985%2C4534%2C4342%2C260%2C3701%2C3824%2C4488%2C3077%2C114%2C4110%2C266%2C2922%2C2590%2C3363%2C4764%2C5073%2C93%2C4741%2C4545%2C3323%2C4651%2C3317%2C3891%2C141%2C2682%2C2928%2C3171%2C2703%2C4156%2C4910%2C3475%2C3546%2C3973%2C392%2C249%2C4614%2C4116%2C4399",
+    "file": "conservation-features-0450.json",
+    "sha256": "6dd7de1017ad5e9f650a45a86dc094aae709c6ab4c54a012d1ddd3efc516df71",
+    "retrieved_at": "2026-10-23T06:45:05.974653+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=4565%2C3595%2C180%2C2785%2C2941%2C4634%2C24%2C4919%2C3140%2C157%2C4514%2C2593%2C4093%2C4734%2C386%2C4714%2C3552%2C3639%2C3944%2C4571%2C3340%2C4677%2C4336%2C349%2C4087%2C4322%2C2613%2C4130%2C4628%2C3147%2C4136%2C3638%2C4522%2C194%2C4528%2C3346%2C4920%2C3838%2C4428%2C100%2C343%2C3097%2C3148%2C4627%2C4670%2C193%2C3098%2C3347%2C3596%2C7",
+    "file": "conservation-features-0500.json",
+    "sha256": "a2dcf88ac706034925d81cafaa23c227423ab0469a770439c6afe716e1e68ea9",
+    "retrieved_at": "2026-10-23T06:45:08.761127+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=2649%2C207%2C4535%2C350%2C101%2C4678%2C3210%2C3825%2C2620%2C2643%2C4733%2C4615%2C4658%2C4515%2C3359%2C3167%2C4421%2C130%2C2786%2C4066%2C58%2C3476%2C250%2C4186%2C107%2C273%2C4684%2C4157%2C4303%2C4990%2C3170%2C276%2C2683%2C27%2C3316%2C33609%2C4644%2C3078%2C4441%2C4690%2C267%2C184%2C3702%2C307%2C3631%2C4930%2C167%2C144%2C5076%2C4435",
+    "file": "conservation-features-0550.json",
+    "sha256": "9603c658df7192a5c3cc4eed03a69f4b9ced13460c64aa0c8ccb74a1bf81257e",
+    "retrieved_at": "2026-10-23T06:45:10.926228+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=149%2C4377%2C4626%2C3103%2C490%2C3146%2C98%2C4426%2C341%2C4028%2C3893%2C4371%2C4620%2C3538%2C2697%2C4832%2C112%2C63%2C3381%2C4048%2C4142%2C4781%2C4165%2C4420%2C3999%2C4663%2C33568%2C3178%2C3842%2C261%2C4174%2C2585%2C4861%2C4529%2C4460%2C378%2C46%2C3155%2C4337%2C4343%2C4122%2C2963%2C161%2C2940%2C4500%2C2923%2C3172%2C232%2C4560%2C5047",
+    "file": "conservation-features-0600.json",
+    "sha256": "afe2ba3a19c0b7fad1fd364a277765fd6df5bcc90c245fbcf4e71ceb0c0bd6b7",
+    "retrieved_at": "2026-10-23T06:45:12.893824+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=2637%2C4214%2C3364%2C175%2C3080%2C4752%2C4005%2C169%2C3324%2C4105%2C2631%2C3126%2C75%2C3272%2C4059%2C2929%2C344%2C3355%2C4517%2C4019%2C4566%2C3853%2C3547%2C4374%2C4729%2C3143%2C4852%2C3069%2C2671%2C2594%2C3335%2C2665%2C4094%2C181%2C4829%2C3478%2C3945%2C4609%2C3976%2C4635%2C2720%2C4537%2C4915%2C4666%2C4417%2C3398%2C4572%2C4523%2C4715%2C387",
+    "file": "conservation-features-0650.json",
+    "sha256": "f50fb038e08cad84b25c4ed38a7cd655cb4c250913c7ba09ef9efbb82a9dc9b9",
+    "retrieved_at": "2026-10-23T06:45:15.760291+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=4629%2C301%2C4323%2C2700%2C2614%2C2651%2C3341%2C3833%2C4088%2C3%2C4480%2C3441%2C3298%2C3541%2C4623%2C2708%2C4131%2C3149%2C2608%2C95%2C4008%2C189%2C4031%2C72%2C5050%2C4125%2C2797%2C3129%2C2774%2C4864%2C3106%2C4102%2C335%2C264%2C4271%2C2937%2C4148%2C4486%2C381%2C4881%2C3135%2C3553%2C2966%2C2989%2C4440%2C235%2C3530%2C66%2C4394%2C218",
+    "file": "conservation-features-0700.json",
+    "sha256": "ac7fd490a428176f4a2e29f6a4a0e5635035612b1cd370cfa9a697dce9ef2cb3",
+    "retrieved_at": "2026-10-23T06:45:18.773976+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=3968%2C3707%2C2628%2C32%2C4655%2C2983%2C3315%2C3020%2C2926%2C3169%2C4154%2C126%2C5044%2C3321%2C4649%2C4108%2C4403%2C3830%2C12%2C3856%2C4397%2C4446%2C106%2C4114%2C155%2C129%2C390%2C3215%2C2883%2C3023%2C3072%2C2740%2C4683%2C4091%2C3166%2C4974%2C3388%2C4321%2C397%2C42%2C33447%2C4676%2C248%2C139%2C3016%2C3611%2C3528%2C3766%2C3079%2C33610",
+    "file": "conservation-features-0750.json",
+    "sha256": "502a63e1c8cd8c4b50ec35763f7cd0fcff84a69efc4b7437332894ded81fec01",
+    "retrieved_at": "2026-10-23T06:45:20.616247+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=3966%2C33318%2C4012%2C4645%2C4350%2C3271%2C222%2C3119%2C274%2C59%2C82%2C3946%2C2695%2C3354%2C159%2C3162%2C2644%2C4622%2C4965%2C4971%2C245%2C2409%2C4822%2C345%2C2919%2C140%2C163%2C4786%2C17%2C3658%2C4408%2C123%2C3641%2C2739%2C83%2C4282%2C4047%2C3827%2C4588%2C183%2C4660%2C111%2C4070%2C4880%2C91%2C289%2C395%2C4966%2C5052%2C3632",
+    "file": "conservation-features-0800.json",
+    "sha256": "dcc79d68ed73df838809144ebcd555801416c9b86e8d57f55c9c0e4abbb83e05",
+    "retrieved_at": "2026-10-23T06:45:24.039302+00:00"
+  },
+  {
+    "url": "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/Conserved_areas_2026a_minfields_sat_chuck_Elim_webmerc/FeatureServer/0/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&objectIds=4302%2C2636%2C2630%2C3858%2C4202%2C3369%2C3025%2C4640%2C2719%2C2642%2C137%2C300%2C33597%2C33611%2C1251%2C35%2C4849%2C2668",
+    "file": "conservation-features-0850.json",
+    "sha256": "f7a4f01f78769d0620b7147da8b76ef3506a7022fb32ca3b84ebb2cf90749e9e",
+    "retrieved_at": "2026-10-23T06:45:25.885222+00:00"
+  },
+  {
+    "url": "https://maps.co.monterey.ca.us/server/rest/services/LAFCO/Incorporated_Cities_2/FeatureServer/2/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&where=CITY+%3D+%27CARMEL+BY-THE-SEA%27",
+    "file": "carmel-lafco-boundary.json",
+    "sha256": "4b35c38498f882daf9437a1f7104a9859e2391e28b99361e48e4621f28d4e352",
+    "retrieved_at": "2026-10-23T06:45:29.095847+00:00"
+  },
+  {
+    "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/1/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&where=GEOID+%3D+%2706053%27",
+    "file": "monterey-census-boundary.json",
+    "sha256": "2e4a54b32d2889ce4d052b79377f730b429f3e696fa021bab3e9b068908333d0",
+    "retrieved_at": "2026-10-23T06:45:34.829439+00:00"
+  },
+  {
+    "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Places_CouSub_ConCity_SubMCD/MapServer/4/query?f=geojson&outFields=%2A&returnGeometry=true&outSR=4326&where=GEOID+%3D+%270611250%27",
+    "file": "carmel-census-boundary.json",
+    "sha256": "dbca6bec0565e79eca85b081a69b60686e38fbeb68072ab03f8218f831ff0228",
+    "retrieved_at": "2026-10-23T06:45:35.954548+00:00"
+  },
+  {
+    "url": "https://www2.census.gov/geo/tiger/TIGER2025/AREAWATER/tl_2025_06053_areawater.zip",
+    "file": "tl_2025_06053_areawater.zip",
+    "sha256": "024102e8fa0b782ad5644d42ded8f79f748ad2f37d3fa5aaed5881d2e96291ac",
+    "retrieved_at": "2026-10-23T06:45:37.620764+00:00"
+  }
+]

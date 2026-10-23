@@ -1,0 +1,17 @@
+[
+  {
+    "kind": "gap",
+    "indicator_slug": "safe-drinking-water",
+    "reason": "No defensible countywide share of served population in systems with no health-based violations was established after tier 1 local and tier 2 state/federal searches, plus Tracking California. The 2025 California Annual Compliance Report and full XLSX were retrieved, replacing the earlier inaccessible-report lead. The workbook is violations-only: its 107 Monterey-coded rows represent 54 distinct systems, not all systems or a served-population denominator. EPA ECHO returned 684 Monterey-coded records, 311 active, but its geography fields are not quality-assured service-area allocations and population is estimated average daily system population; summing all system types can duplicate people. No current, boundary-aligned all-system annual denominator was established. CDC Tracking describes water-use and contaminant-specific measures; these do not establish an all-health-based-violations percentage. Tracking California points to contaminant maps and 2022 ACR context; its explorer required JavaScript and embedded viewer was unavailable through the reader. County public-water-system page was blocked (403); the county health-assessment lead is explicitly 2013, outside recency.",
+    "scales_tried": [
+      "county"
+    ],
+    "tiers_tried": [
+      1,
+      2,
+      3
+    ],
+    "searched_at": "2026-10-23T06:50:33.582656Z",
+    "nearest_data": "2025 ACR: https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/docs/2026/acr-2025_final.pdf; full dataset: https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/docs/2026/acr-2025-dataset.xlsx. Raw workbook, EPA results and reproducible read-only extraction are preserved under searches/water-sanitation/. CalAm Monterey CA2710004 has a 2025 WW (Waterworks Standard) record with population 92,450 in the ACR, while current EPA ECHO reports 128,928; these populations cannot be mixed to derive 2025 coverage. WW is not automatically an MCL/MRDL/TT health-based violation. ECHO query: https://echodata.epa.gov/echo/sdw_rest_services.get_systems?output=JSON&p_co=Monterey&p_st=CA&responseset=1000; field definitions: https://echo.epa.gov/help/facility-search/drinking-water-search-results-help. CDC lead: https://www.cdc.gov/environmental-health-tracking/php/data-research/drinking-water.html; California lead: https://trackingcalifornia.org/topics/water-quality. Neither opened resource supplied the configured county percentage. This is an unresolved extraction/denominator gap, not a claim that no such data exist."
+  }
+]

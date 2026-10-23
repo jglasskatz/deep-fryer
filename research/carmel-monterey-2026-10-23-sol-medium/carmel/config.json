@@ -1,0 +1,81 @@
+{
+  "region": {
+    "name": "Carmel-by-the-Sea",
+    "definition": "Incorporated city limits of Carmel-by-the-Sea, Monterey County, California, United States. Excludes Carmel Valley, Carmel Highlands and other unincorporated Carmel areas.",
+    "context_notes": "Keep city measurements separate from county proxies. Clearly label every county-scale fallback; never describe it as a city measurement. Prefer city-specific Census ACS place data and adopted municipal reports."
+  },
+  "source_priority": {
+    "tiers": [
+      {
+        "tier": 1,
+        "name": "Official local government",
+        "description": "The jurisdiction itself: city/county departments, adopted plans, open-data portals, utility reports.",
+        "examples": [
+          "cityofX.gov",
+          "county open data portal",
+          "municipal utility annual report"
+        ]
+      },
+      {
+        "tier": 2,
+        "name": "State and federal statistical agencies",
+        "description": "Census/ACS, CDC, EPA, HUD, BLS, state departments — official series with the jurisdiction as a reporting unit.",
+        "examples": [
+          "data.census.gov",
+          "EPA SDWIS/TRI",
+          "HUD PIT counts",
+          "state health department"
+        ]
+      },
+      {
+        "tier": 3,
+        "name": "Established research institutions",
+        "description": "Universities, national labs, and long-running nonprofit research series with published methodology.",
+        "examples": [
+          "County Health Rankings",
+          "Feeding America Map the Meal Gap",
+          "university institutes"
+        ]
+      },
+      {
+        "tier": 4,
+        "name": "Reputable secondary reporting",
+        "description": "Journalism and advocacy reports that cite primary data — acceptable only when tiers 1–3 are exhausted, and flagged for review.",
+        "examples": [
+          "local newspaper data desk",
+          "issue-advocacy reports with cited sources"
+        ]
+      }
+    ]
+  },
+  "recency": {
+    "default_max_age_years": 5
+  },
+  "scale_policy": {
+    "default_accepted": [
+      "city",
+      "county"
+    ],
+    "per_dimension": {
+      "climate-change": [
+        "city",
+        "county",
+        "regional"
+      ],
+      "ocean-acidification": [
+        "city",
+        "county",
+        "regional",
+        "global"
+      ],
+      "ozone-depletion": [
+        "city",
+        "county",
+        "regional",
+        "state",
+        "national",
+        "global"
+      ]
+    }
+  }
+}

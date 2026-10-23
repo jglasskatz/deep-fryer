@@ -1,0 +1,15 @@
+{
+  "aragonite-saturation": [
+    {
+      "label": "NOAA RFR-LME accession metadata: surface \u03a9ar, observation-constrained monthly grids and 2025 coverage",
+      "source_url": "https://www.ncei.noaa.gov/data/oceans/ncei/ocads/metadata/0287551.html",
+      "snapshot_path": "evidence/5dd81ec0f8877931.png"
+    },
+    {
+      "label": "Sharp et al. 2024 primary method paper: spatially weighted annual regional averages and limitations",
+      "source_url": "https://www.nature.com/articles/s41597-024-03530-7.pdf",
+      "snapshot_path": "evidence/af6fdaa55e891a47.png",
+      "pdf_path": "evidence/af6fdaa55e891a47.pdf"
+    }
+  ]
+}

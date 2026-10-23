@@ -1,0 +1,28 @@
+{
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "dimension": "freshwater-withdrawals",
+  "portraits_researched": [
+    "carmel",
+    "monterey-county"
+  ],
+  "started_at": null,
+  "first_retained_timestamp": "2026-10-23T07:18:12.928Z",
+  "finished_at": "2026-10-23T07:22:31.613731Z",
+  "timestamp_note": "Initial start time not retained. First retained timestamp is first evidence capture, not research start. All counters cover this researcher new work only.",
+  "web_tool_calls": 10,
+  "search_queries": 21,
+  "url_open_attempts": 17,
+  "url_open_count_definition": "web open/click/find requests, including failures and one unintended organizations navigation; direct curl requests and evidence captures counted separately",
+  "direct_download_attempts": 4,
+  "direct_download_successes": 2,
+  "direct_download_failures": 2,
+  "evidence_capture_attempts": 4,
+  "evidence_capture_successes": 4,
+  "evidence_capture_failures": 0,
+  "capture_success_note": "Two distinct PDF exhibits captured separately in each tenant. Both distinct exhibits visually reviewed; identical-source tenant copies have separately generated metadata.",
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "result": "Both gaps updated with raw statewide supplier CSV, portable coverage inspection, new MPWMD jurisdiction consumption tables, and archived context evidence. No defensible full-city/current-year or countywide residential rate derived.",
+  "validation": "Contract gap-branch required/additional field, basic type, slug, timestamp and scale enum checks passed for both findings; paths exist; log counts reconcile. Python jsonschema package unavailable; no dependency installed."
+}

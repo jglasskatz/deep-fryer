@@ -1,0 +1,7 @@
+[
+  {
+    "indicator_slug": "nitrate-groundwater",
+    "content_supported": "pass",
+    "verifier_note": "Independently fetched MCWD WY 2025 report and read PDFp 95:non-detect to approximately 6 mg/L asN and MCWD-30 approximately 5 mg/L are selected-well observations. Water Board 2025 memo describes 2024 on-farm domestic-well subbasin distributions;2024 GAP Tables 2\u20133 confirm 253 Monterey wells/141 nitrate exceedances overOct 2018\u2013Jul 2024, not a representative recent county concentration. MPWMD 2024 report confirms five lower-Carmel-Valley wells sampledNov 2024, a different geography from city limits. These sources support the documented sampling/geographic/statistic mismatch; no unsound average or drinking-system/risk index is substituted. Pass is a provisional extraction/representativeness gap, not proof no suitable groundwater dataset exists."
+  }
+]

@@ -2,10 +2,11 @@
 import { readFile, writeFile, mkdir, copyFile, stat, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import vm from 'node:vm';
+import { isDeepStrictEqual } from 'node:util';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { framework } from '@deep-fryer/contract';
-import { pctToVizLevel, findingPayloadSchema, maxDataAgeYears, acceptedScales, resolveThreshold, computeScoring, type FindingPayload } from '@deep-fryer/core';
+import { portraitFramework } from './portrait-framework.mjs';
+import { pctToVizLevel, findingPayloadSchema, previewObservationSchema, maxDataAgeYears, acceptedScales, resolveThreshold, computeScoring, type FindingPayload } from '@deep-fryer/core';
 import { getDb, publishedDoughnut } from '@deep-fryer/db';
 import type { PublishedPortrait } from '../apps/web/lib/portrait.js';
 
@@ -25,7 +26,7 @@ await mkdir(path.join(destination, 'data'), { recursive: true });
 const digest = (bytes: string | Buffer) => createHash('sha256').update(bytes).digest('hex');
 const artifacts: Record<string, { sha256: string; bytes: number }> = {};
 
-async function evidence(root: string, relative: string | undefined): Promise<string | null> {
+async function evidence(root: string, relative: string | undefined, expectedHash?: string): Promise<string | null> {
   if (!relative) return null;
   // Older published records sometimes stored a disclosed capture failure in
   // this field. Preserve that original record but never turn it into a path.
@@ -41,6 +42,7 @@ async function evidence(root: string, relative: string | undefined): Promise<str
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
     throw error;
   }
+  if (expectedHash && digest(bytes) !== expectedHash) throw new Error(`Reviewed evidence changed: ${relative}`);
   const extension = path.extname(relative).toLowerCase();
   if (!['.png', '.jpg', '.jpeg', '.pdf'].includes(extension)) throw new Error(`Unsupported public evidence type: ${extension}`);
   const target = `evidence/shared/${digest(bytes).slice(0, 24)}${extension}`;
@@ -90,14 +92,34 @@ for (const { slug } of catalog.portraits.filter((p: { slug: string; status: stri
     provenance: { kind: 'published-db', source_sha256: digest(JSON.stringify(portrait)), versions: portrait.dimensions.map(d => ({ dimension: d.slug, version: d.version_num, published_at: d.published_at })) }, dimensions });
 }
 
-const campaign = option('--campaign', 'research/carmel-monterey-2026-10-23-expansion');
-type ReviewManifest = { reviewer: string; reviewed_at: string; approved: false; supporting_evidence_sha256?: Record<string, string>; portraits: Record<string, Record<string, { findings_sha256: string; reviews_sha256: string }>> };
+const campaign = option('--campaign', 'research/carmel-monterey-2026-10-23-sol-medium');
+let campaignMetadata: { research_model?: string; research_reasoning_effort?: string; baseline?: string } = {};
+try { campaignMetadata = JSON.parse(await readFile(path.join(campaign, 'campaign.json'), 'utf8')); }
+catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
+// Older campaign snapshots used Luna. New runs record their actual research
+// model and retain the prior campaign, so inherited findings stay attributable.
+const researchModel = campaignMetadata.research_model ?? 'gpt-6-luna';
+const researchLabel = researchModel === 'gpt-6.1-sol' ? 'Sol 6.1' : researchModel === 'gpt-6-luna' ? 'Luna' : researchModel;
+const researchDescription = campaignMetadata.baseline
+  ? `This pass used ${researchLabel}${campaignMetadata.research_reasoning_effort ? ` at ${campaignMetadata.research_reasoning_effort} effort` : ''} to extend earlier research; unchanged findings retain their prior sources.`
+  : `${researchLabel} researched.`;
+type ReviewManifest = { reviewer: string; reviewed_at: string; approved: false; supporting_evidence_sha256?: Record<string, string>; framework_profiles?: Record<string, { id: string; sha256: string }>; evidence_sha256?: Record<string, Record<string, string>>; portraits: Record<string, Record<string, { findings_sha256: string; reviews_sha256: string }>> };
 let reviewManifest: ReviewManifest | null = null;
 try { reviewManifest = JSON.parse(await readFile(path.join(campaign, 'review-manifest.json'), 'utf8')); }
 catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
 if (process.argv.includes('--require-review-manifest') && !reviewManifest) throw new Error('Missing independent review manifest');
 if (reviewManifest && (reviewManifest.reviewer !== 'gpt-6.1-sol' || reviewManifest.approved !== false || !reviewManifest.reviewed_at)) throw new Error('Invalid independent review manifest');
 for (const slug of ['carmel', 'monterey-county']) {
+  const profile = portraitFramework(catalog.portraits.find((p: { slug: string }) => p.slug === slug));
+  if (reviewManifest && (reviewManifest.framework_profiles?.[slug]?.id !== profile.profile || reviewManifest.framework_profiles?.[slug]?.sha256 !== profile.sha256)) throw new Error(`Independent framework review is stale: ${slug}`);
+  async function researchEvidence(relative: string | undefined) {
+    if (!relative) return null;
+    const expectedHash = reviewManifest?.evidence_sha256?.[slug]?.[relative];
+    if (reviewManifest && !expectedHash) throw new Error(`Missing reviewed evidence binding: ${slug}/${relative}`);
+    const exported = await evidence(path.resolve('apps/web/public/evidence', slug), relative, expectedHash);
+    if (expectedHash && !exported) throw new Error(`Reviewed evidence missing: ${slug}/${relative}`);
+    return exported;
+  }
   const directory = path.join(campaign, slug);
   const config = JSON.parse(await readFile(path.join(directory, 'config.json'), 'utf8'));
   let supporting: Record<string, Array<{ label: string; source_url: string; snapshot_path: string; pdf_path?: string }>> = {};
@@ -111,7 +133,7 @@ for (const slug of ['carmel', 'monterey-county']) {
   }
   const dimensions = [];
   const hashes: Record<string, string> = {};
-  for (const dimension of framework.dimensions) {
+  for (const dimension of profile.dimensions) {
     const raw = await readFile(path.join(directory, 'findings', `${dimension.slug}.json`), 'utf8');
     const reviewText = await readFile(path.join(directory, 'reviews', `${dimension.slug}.json`), 'utf8');
     if (reviewManifest) {
@@ -122,29 +144,32 @@ for (const slug of ['carmel', 'monterey-county']) {
     const reviews = JSON.parse(reviewText) as Array<{ indicator_slug: string; content_supported: 'pass' | 'fail' | 'uncertain'; verifier_note: string }>;
     const indicators = [];
     for (const rawFinding of JSON.parse(raw) as unknown[]) {
-      const row = findingPayloadSchema.parse(rawFinding) as FindingPayload;
+      const row = (rawFinding as { kind?: string }).kind === 'observation' ? previewObservationSchema.parse(rawFinding) : findingPayloadSchema.parse(rawFinding) as FindingPayload;
+      const spec = dimension.indicators.find((i: { slug: string }) => i.slug === row.indicator_slug);
+      if (!spec || (row.kind === 'observation' && spec.scoring !== 'unscored') || (row.kind === 'indicator' && spec.scoring === 'unscored')) throw new Error(`Finding disagrees with framework profile: ${slug}/${row.indicator_slug}`);
+      const supportingEvidence = [];
+      for (const item of supporting[row.indicator_slug] ?? []) supportingEvidence.push({ label: item.label, source_url: item.source_url,
+        evidence_path: await researchEvidence(item.snapshot_path),
+        pdf_path: await researchEvidence(item.pdf_path) });
       const review = reviews.find(r => r.indicator_slug === row.indicator_slug);
       if (!review) throw new Error(`Unreviewed research finding: ${slug}/${row.indicator_slug}`);
-      if (row.kind === 'gap') indicators.push({ indicator_slug: row.indicator_slug, name: dimension.indicators.find(i => i.slug === row.indicator_slug)?.name ?? row.indicator_slug,
+      if (row.kind === 'gap') indicators.push({ indicator_slug: row.indicator_slug, name: spec.name ?? row.indicator_slug,
         value: null, unit: '', year: null, status: 'gap', notes: row.reason, search_context: row.nearest_data,
-        review_note: review.verifier_note, geography: 'Not measured', evidence_path: null, pdf_path: null });
+        review_note: review.verifier_note, geography: 'Not measured', evidence_path: null, pdf_path: null, ...(supportingEvidence.length ? { supporting_evidence: supportingEvidence } : {}) });
       else {
-        const spec = dimension.indicators.find(i => i.slug === row.indicator_slug);
-        const threshold = spec && resolveThreshold(spec.threshold_ref, config.threshold_overrides);
-        if (!threshold || !spec || typeof row.value !== 'number' || row.target !== threshold.target || row.scoring.threshold_ref !== spec.threshold_ref || row.scoring.function !== threshold.function || row.level_pct !== computeScoring(row.value, spec.threshold_ref, threshold).level_pct) throw new Error(`Research score disagrees with canonical threshold: ${slug}/${row.indicator_slug}`);
-        const snapshot = await evidence(path.resolve('apps/web/public/evidence', slug), row.evidence.snapshot_path);
-        const supportingEvidence = [];
-        for (const item of supporting[row.indicator_slug] ?? []) supportingEvidence.push({ label: item.label, source_url: item.source_url,
-          evidence_path: await evidence(path.resolve('apps/web/public/evidence', slug), item.snapshot_path),
-          pdf_path: await evidence(path.resolve('apps/web/public/evidence', slug), item.pdf_path) });
-        indicators.push({ ...row, status: review.content_supported === 'pass' && snapshot ? 'source-supported-draft' : 'uncertain',
+        if (row.kind === 'indicator') {
+        const threshold = resolveThreshold(spec.threshold_ref, config.threshold_overrides);
+        if (!threshold || !spec || typeof row.value !== 'number' || row.target !== threshold.target || row.scoring.threshold_ref !== spec.threshold_ref || row.scoring.function !== threshold.function || row.level_pct !== computeScoring(row.value, spec.threshold_ref, threshold).level_pct || !isDeepStrictEqual(row.scoring.inputs, computeScoring(row.value, spec.threshold_ref, threshold).scoring.inputs)) throw new Error(`Research score disagrees with canonical threshold: ${slug}/${row.indicator_slug}`);
+        }
+        const snapshot = await researchEvidence(row.evidence.snapshot_path);
+        indicators.push({ ...row, status: review.content_supported === 'pass' && snapshot ? (row.kind === 'observation' ? 'source-supported-observation' : 'source-supported-draft') : 'uncertain',
           quality_flags: [
             ...(row.confidence === 'low' ? ['Low confidence estimate'] : []),
             ...(new Date().getFullYear() - row.year > maxDataAgeYears(config.recency, dimension.slug) ? [`Outside the configured recency limit (${row.year})`] : []),
             ...(!acceptedScales(config.scale_policy, dimension.slug).includes(row.geographic_scale) ? ['Geography falls outside the configured scale policy'] : []),
           ],
           geography: slug === 'carmel' && row.geographic_scale === 'county' ? 'Monterey County proxy — not Carmel city limits' : row.geographic_scale,
-          evidence_path: snapshot, pdf_path: await evidence(path.resolve('apps/web/public/evidence', slug), row.evidence.pdf_path),
+          evidence_path: snapshot, pdf_path: await researchEvidence(row.evidence.pdf_path),
           review_note: review.verifier_note, ...(supportingEvidence.length ? { supporting_evidence: supportingEvidence } : {}) });
       }
     }
@@ -156,8 +181,10 @@ for (const slug of ['carmel', 'monterey-county']) {
     dimensions.push({ slug: dimension.slug, ring: dimension.ring, name: dimension.name, level, context: 'Provisional research. Gaps and missing archives remain unresolved.', actions: [], indicators });
   }
   portraits.push({ slug, name: config.region.name, group: 'Carmel & Monterey', region: config.region.definition, status: 'research-preview',
-    notice: 'Research preview — not an approved portrait. Luna researched; Sol 6.1 independently checked the sources. Supported drafts, missing evidence and gaps are labeled per indicator. Colored wedges show only archived, source-supported draft scores; unarchived dimensions stay unknown. No human approval is implied.',
-    provenance: { kind: 'session-research', campaign: path.basename(campaign), researcher: 'gpt-6-luna', reviewer: 'gpt-6.1-sol', hashes,
+    notice: `Research preview — not an approved portrait. ${researchDescription} Sol 6.1 independently checked the sources. Supported drafts, unscored observations, missing evidence and gaps are labeled per indicator. Colored wedges show only archived, source-supported draft scores; unarchived or unscored dimensions stay grey. No human approval is implied.`,
+    provenance: { kind: 'session-research', campaign: path.basename(campaign), researcher: researchModel,
+      ...(campaignMetadata.research_reasoning_effort ? { research_reasoning_effort: campaignMetadata.research_reasoning_effort } : {}),
+      ...(campaignMetadata.baseline ? { baseline_campaign: campaignMetadata.baseline } : {}), reviewer: 'gpt-6.1-sol', hashes, framework_profile: profile.profile, framework_profile_sha256: profile.sha256,
       ...(reviewManifest ? { review_manifest_sha256: digest(JSON.stringify(reviewManifest)), reviewed_at: reviewManifest.reviewed_at } : {}), approved: false }, dimensions });
 }
 const ledger = JSON.parse(await readFile(path.join(campaign, 'cost-ledger.json'), 'utf8'));

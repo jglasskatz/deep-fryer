@@ -59,3 +59,21 @@ test('wedge tampering, approval relabeling and catalog substitution fail closed'
   wrongRing.portraits.find(p => p.slug === 'carmel').dimensions.find(d => d.slug === 'food').ring = 'ecological';
   assert.throws(() => validateRelease(wrongRing), /ring mismatch/);
 });
+
+test('local heat observations replace ozone only in the two authorized previews and stay unscored', () => {
+  for (const slug of ['carmel', 'monterey-county']) {
+    const portrait = release.portraits.find(p => p.slug === slug);
+    assert.equal(portrait.dimensions.some(d => d.slug === 'ozone-depletion'), false);
+    const dimension = portrait.dimensions.find(d => d.slug === 'extreme-heat');
+    assert.equal(dimension.level, null);
+    assert.equal(dimension.indicators[0].status, 'source-supported-observation');
+    for (const patch of [{ value: null, status: 'uncertain', target: 10, level_pct: 100, scoring: { worked_math: 'invented scoring' } }, { value: null, status: 'uncertain' }, { level_pct: 0 }, { target: 0 }, { scoring: {} }, { unscored_reason: '' }, { status: 'source-supported-draft' }]) {
+      const modified = structuredClone(release);
+      Object.assign(modified.portraits.find(p => p.slug === slug).dimensions.find(d => d.slug === 'extreme-heat').indicators[0], patch);
+      assert.throws(() => validateRelease(modified), /Unscored observation/);
+    }
+  }
+  const forged = structuredClone(release);
+  forged.portraits.find(p => p.slug === 'carmel').provenance.framework_profile = 'default';
+  assert.throws(() => validateRelease(forged), /framework provenance/);
+});

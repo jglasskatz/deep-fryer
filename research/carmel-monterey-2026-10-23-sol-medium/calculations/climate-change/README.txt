@@ -1,0 +1,3 @@
+No numeric derivation accepted. Raw downloaded draft and final EIR PDFs and pdftotext -layout extracts are preserved with SHA256 manifest. Final report PDF p348 identifies 2019/2020 inventory; p368 states nominal 2022 non-road sources use forecast interpolation. Evidence screenshot p368 was inspected. The 2022 regional total/per-capita is not an observed 2022 all-sector inventory, so no threshold arithmetic applies.
+
+Text extracts are stored as deterministic gzip archives to keep redundant, reproducible text compact. The manifest records both compressed and original content hashes; decompress with Python gzip or gzip -dc. Original PDFs are unchanged.

@@ -10,6 +10,7 @@
     "./framework": "./framework/framework.json",
     "./thresholds": "./framework/thresholds.json",
     "./schemas/finding": "./schemas/finding.schema.json",
+    "./schemas/preview-observation": "./schemas/preview-observation.schema.json",
     "./schemas/portrait-config": "./schemas/portrait-config.schema.json",
     "./schemas/framework": "./schemas/framework.schema.json"
   },

@@ -1,0 +1,27 @@
+{
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "dimension": "nitrogen-phosphorus-loading",
+  "portraits_researched": [
+    "carmel",
+    "monterey-county"
+  ],
+  "started_at": null,
+  "first_recorded_timestamp": "2026-10-23T07:17:03Z",
+  "completed_at": "2026-10-23T07:22:13.189181Z",
+  "timestamp_note": "Research began before first recorded clock timestamp; exact start unavailable.",
+  "web_tool_calls": 10,
+  "search_queries": 16,
+  "url_open_attempts": 29,
+  "web_url_open_attempts": 19,
+  "direct_url_open_attempts": 2,
+  "url_open_count_note": "29 = 15 web opens + 4 web clicks + 2 direct shell URL requests + 8 helper captures. Web find operations (2) and screenshot attempts (2) excluded.",
+  "evidence_capture_attempts": 8,
+  "evidence_capture_successes": 5,
+  "evidence_capture_failures": 3,
+  "web_screenshot_attempts": 2,
+  "web_screenshot_failures": 2,
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "result": "2 refined gaps; 5 archived primary-source PDFs; no numeric derivation."
+}

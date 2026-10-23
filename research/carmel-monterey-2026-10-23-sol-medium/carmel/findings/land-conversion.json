@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "natural-land-conversion",
+    "name": "Mapped natural-vegetation-to-developed gross conversion proxy",
+    "value": 0.21705712715843378,
+    "unit": "% per decade",
+    "year": 2024,
+    "target": 0.5,
+    "level_pct": -56.6,
+    "scoring": {
+      "threshold_ref": "land-conversion.natural-land-conversion",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 0.21705712715843378,
+        "target": 0.5,
+        "scale": 0.5
+      },
+      "worked_math": "level_pct = (value − target) ⁄ scale × 100 = (0.21705712715843378 − 0.5) ⁄ 0.5 × 100 = -56.6"
+    },
+    "source": "Derived 2014–2024 whole-county pixel transitions: USGS Annual NLCD C1.1 via official USDA Forest Service/GeoPlatform service",
+    "source_url": "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_NLCD_Landcover_CONUS/ImageServer?f=pjson",
+    "source_tier": 2,
+    "evidence": {
+      "snapshot_path": "evidence/land-conversion-derived-2014-2024.png",
+      "captured_at": "2026-10-23T07:46:47.159Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "COUNTY PROXY FOR CARMEL-BY-THE-SEA; this value does not measure conversion inside city limits. City and county are separate geographies. The permitted county fallback is used because the city result is sensitive to unresolved natural bare-land attribution: natural-vegetated crosswalk0% versus including class31 0.7426535117727531%/decade. City natural baseline is only 49.03667082060258 effective 30m pixels; the one900m² class31→23 pixel lies near longitude-121.9288913375, latitude36.5508477455. A Census-city boundary crosscheck gives0% or 0.7091831133062586% depending on class31. No city0 value is accepted. Derived mapped gross conversion, 2014–2024, not a field-survey estimate, not total developed/impervious share, not native-only habitat loss, and not net land loss after restoration. Tier 1 City/County planning, forest assessment, GIS and TAMC RCIS did not provide a current exact decadal conversion statistic; FMMP farmland conversion was rejected. Tier 2 USGS Annual NLCD Collection 1.1 was accessed through the official USDA Forest Service/GeoPlatform ImageServer. Catalog raster IDs 30 and 40 are Annual_NLCD_LndCov_2014_CU_C1V1 and Annual_NLCD_LndCov_2024_CU_C1V1. Both exports preserve the same original 30 m WGS84 Albers grid, unrendered U8 classes and nearest-neighbor resampling; they are not screenshots or interpolated cover percentages. Natural-land crosswalk uses the terrestrial classes in EPA's published Wisconsin Integrated Assessment Table 1 (2014; PDF p.22): forest 41/42/43, shrub52, non-intensively-managed grass/herb71 and wetlands90/95. Water11 is omitted because this indicator is land conversion; pasture81 and crops82 are omitted. Barren31 is omitted in that published crosswalk because it combines natural bare surfaces and mined areas. This is an explicit operational natural-cover definition, not a claim that every natural dune or beach is represented; the Wisconsin report is method support, not Monterey observations. The classification definitions are checked against the current MRLC legend. Applying all classes31/12 as natural instead yields 0.21987428971596729%/decade; a pixel-center boundary rule gives 0.21719657042855467%/decade. Both remain below the configured 0.5 threshold. No snow12 occurs here. Numerator is the area of pixels in natural classes in 2014 and developed21–24 in 2024, intersected with the same current whole-county boundary for both years; denominator is 2014 natural-class area. Fractional boundary pixels use geometric intersection area. This is 15431398.708466765 m² / 7109372039.741001 m² ×100 = 0.21705712715843378% per 10-year period. No city rates are averaged, and all incorporated/unincorporated county land is included. The archived current Census county boundary and 2026 TIGER Faces LWFLAG='P' perennial-water exclusion define a fixed reporting footprint, not historical jurisdiction changes. An unobserved 0.5623719223487662m² coastal sliver remains; it is reported, excluded from observed classes, and never recoded as zero conversion. This is less than 1m² of 8499610994.628198m² county land. Raster-vs-polygon land-area integration differs by 5.633291244506836m² (~6.6e-10 relative), retained as numerical/boundary sliver tolerance. Classification errors, 30m mixed pixels and development's open-space class limit accuracy; no local transition accuracy or statistical confidence interval is available. Raw rasters, source requests, hashes, boundary inputs, exact area weights, class transitions, sensitivities and offline calculate.py are preserved in calculations/land-conversion. The image-service browser capture returned403; the existing capture helper archived original JSON bytes, and reviewed faithful metadata/derived-table exhibits supply the visible evidence."
+  }
+]

@@ -21,7 +21,7 @@
     "provision:nyc": "tsx scripts/provision-nyc.ts",
     "pages:snapshot": "node --env-file=.env.local --import tsx scripts/snapshot-pages.ts",
     "pages:build": "node scripts/build-pages.mjs",
-    "pages:test": "node --test scripts/pages-contract.test.mjs scripts/keel-path.test.mjs",
+    "pages:test": "node --import tsx --test scripts/campaign-snapshot.test.mjs scripts/preview-observation.test.mjs scripts/pages-contract.test.mjs scripts/keel-path.test.mjs scripts/estimate-research-costs.test.mjs",
     "pages:check": "node scripts/check-pages.mjs"
   },
   "dependencies": {

@@ -1,0 +1,7 @@
+[
+  {
+    "indicator_slug": "violent-crime-rate",
+    "content_supported": "pass",
+    "verifier_note": "Independently refetched the official 2025 DOJ CSV (SHA256 e6f70072cc7fd6bea009b7474227c7684dc2f19a516b522c652f614fd69f6f3f), byte-identical to the archive; reran derive.py in a temporary copy and checked all 18 Monterey County agency rows, their four violent-crime components, and explicit zeros. Carmel has 3 aggravated assaults and no other violent components; the City Police page confirms city jurisdiction, and independently opened DOF E-1 PDF p.8 confirms January 1, 2025 population 3,115: 3/3115*1000 = 0.9630818619582664, and (rate-4)/4*100 = -75.92295345104334. The DOJ 2025 reporting-limitations list names no Monterey agency; the clearly labeled derived exhibit matches the raw rows. Reported offenses and a January 1 resident denominator retain the stated coverage/visitor caveats. Reviewed revised scoring against core computeScoring round1: canonical level_pct=-75.9; source value/target are unchanged."
+  }
+]

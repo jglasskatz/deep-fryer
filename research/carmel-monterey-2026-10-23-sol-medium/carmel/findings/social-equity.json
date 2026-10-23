@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "gini-index",
+    "name": "Income inequality (Gini index)",
+    "value": 0.5225,
+    "unit": "index 0–1",
+    "year": 2024,
+    "target": 0.4,
+    "level_pct": 30.6,
+    "scoring": {
+      "threshold_ref": "social-equity.gini-index",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 0.5225,
+        "target": 0.4,
+        "scale": 0.4
+      },
+      "worked_math": "level_pct = (0.5225 − 0.4) ÷ 0.4 × 100 = +30.6"
+    },
+    "source": "Census Reporter API, republishing U.S. Census Bureau ACS 2024 5-year table B19083",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B19083&geo_ids=16000US0611250",
+    "source_tier": 3,
+    "evidence": {
+      "snapshot_path": "evidence/9d3bf8944d1a92a6.png",
+      "captured_at": "2026-10-23T02:41:26.623Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "city",
+    "notes": "Captured raw API response identifies release acs2024_5yr (2020–2024), geography 16000US0611250 Carmel-by-the-Sea, and B19083 universe Households. Exact Gini estimate 0.5225; 90% margin of error 0.0558. Census Reporter republishes ACS and is a long-running nonprofit data service (tier 3); official Census API endpoint failed during this pass. Treat estimate cautiously because the margin of error is material."
+  }
+]

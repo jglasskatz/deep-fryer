@@ -1,0 +1,177 @@
+{
+  "dimension": "water-sanitation",
+  "searched_at": "2026-10-23T06:50:33.582656Z",
+  "queries": [
+    "site.amwater.com Monterey 2025 water quality report 2710004 violations",
+    "site.waterboards.ca.gov 2024 annual compliance report Monterey health based violations population",
+    "Monterey County drinking water violations population served SDWIS county 2024",
+    "site.countyofmonterey.gov \"drinking water\" \"violations\"",
+    "site.waterboards.ca.gov \"Monterey\" \"population\" \"2024\" \"compliance\"",
+    "site.data.ca.gov drinking water public water systems violations",
+    "site.countyofmonterey.gov \"Drinking Water Protection\" \"systems\"",
+    "site.waterboards.ca.gov \"2024 ACR\" \"Monterey\"",
+    "site.amwater.com \"monterey_2025\"",
+    "site.waterboards.ca.gov \"annual compliance\" \"2024\" drinking water",
+    "site.echo.epa.gov \"sdw_rest_services.get_systems\"",
+    "site.ephtracking.cdc.gov Monterey drinking water population community water systems violations",
+    "site.countyofmonterey.gov \"water\" \"health-based\"",
+    "site.cehtp.org \"drinking water\" violations",
+    "California tracking drinking water Monterey population served standards violations percent",
+    "site.cdph.ca.gov \"Tracking\" \"Drinking Water\"",
+    "site.ephtracking.cdc.gov \"Community Water\" \"violations\"",
+    "site.countyofmonterey.gov \"health assessment\" \"drinking water\"",
+    "site.cdph.ca.gov Monterey \"water systems\""
+  ],
+  "sources": [
+    {
+      "url": "https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/docs/2026/acr-2025_final.pdf",
+      "result": "Opened and captured for both tenants; statewide publication, no complete county denominator"
+    },
+    {
+      "url": "https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/docs/2026/acr-2025-dataset.xlsx",
+      "result": "Downloaded and parsed; 4247 statewide violation records, 107 Monterey rows / 54 distinct systems; not a denominator table"
+    },
+    {
+      "url": "https://echodata.epa.gov/echo/sdw_rest_services.get_systems?output=JSON&p_co=Monterey&p_st=CA&responseset=1000",
+      "result": "API success; results retained; county/service geometry, population duplication and time mismatch prevent acceptance"
+    },
+    {
+      "url": "https://echodata.epa.gov/echo/sdw_rest_services.get_qid?output=JSON&qid=47&responseset=1000",
+      "result": "684 raw records retained, 311 active; query IDs temporary, regenerate using get_systems URL"
+    },
+    {
+      "url": "https://echodata.epa.gov/echo/sdw_rest_services.metadata?output=JSON",
+      "result": "Metadata downloaded; field definitions do not resolve annual HealthFlag interval"
+    },
+    {
+      "url": "https://echodata.epa.gov/echo/sdw_rest_services.get_systems?output=JSON&p_co=Monterey&p_st=CA&p_act=Y&p_systyp=CWS&responseset=1000",
+      "result": "157 records indicated; community-only restriction does not by itself fix county allocation or temporal population mismatch"
+    },
+    {
+      "url": "https://echo.epa.gov/help/facility-search/drinking-water-search-results-help",
+      "result": "Opened; confirms average daily population; service areas not quality assured; health-based MCL/MRDL/TT distinguished from monitoring/reporting"
+    },
+    {
+      "url": "https://ear.waterboards.ca.gov/Home/ViewCCR?PwsID=CA2710004&Year=2025&isCert=false",
+      "result": "Web reader success 16-page 2025 report; capture helper failed HTTP404; no city-only population allocation"
+    },
+    {
+      "url": "https://amwater.com/_resources/ccr/CA2710004/2025/monterey_2025.pdf",
+      "result": "Direct download 403; web open inaccessible"
+    },
+    {
+      "url": "https://www.amwater.com/ccr/Monterey.pdf",
+      "result": "Web open follows new 2025 redirect but fails; not archived"
+    },
+    {
+      "url": "https://ci.carmel.ca.us/post/utilities",
+      "result": "Opened city provider list, no denominator"
+    },
+    {
+      "url": "https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/Publications.html",
+      "result": "Opened; located current report and XLSX link; direct download successful"
+    },
+    {
+      "url": "https://waterboards.ca.gov/drinking_water/certlic/drinkingwater/docs/2024/2024%20ACR%20Final%206-25-2025.pdf",
+      "result": "Non-www URL opened 70 pages; www spaced URL returned 404; current report supersedes"
+    },
+    {
+      "url": "https://publish.data.ca.gov/api/3/action/package_show?id=drinking-water-public-water-system-information",
+      "result": "Metadata success; only facilities resource, no annual all-system violations-population denominator"
+    },
+    {
+      "url": "https://data.ca.gov/@california-state-water-resources-control-board/drinking-water-public-water-system-information",
+      "result": "Opened resource catalog; facility inventory is not complete compliance denominator"
+    },
+    {
+      "url": "https://www.waterboards.ca.gov/resources/data_databases/compliance_enforcement.html",
+      "result": "Opened; identifies Drinking Water Watch but no directly usable county percentage"
+    },
+    {
+      "url": "https://www.countyofmonterey.gov/government/departments-a-h/health/environmental-health/drinking-water-protection/public-water-systems",
+      "result": "Two web opens 403; search snippet notes September 2025 regulatory transfer, no indicator"
+    },
+    {
+      "url": "https://www.cdc.gov/environmental-health-tracking/php/data-research/drinking-water.html",
+      "result": "Opened; public-water-use and contaminant-specific measures, no all-health-based-violations county percentage"
+    },
+    {
+      "url": "https://ephtracking.cdc.gov/showIndicatorPages.action?selectedContentAreaAbbreviation=1&selectedIndicatorId=41&selectedMeasureId=",
+      "result": "CDC public water use link 404"
+    },
+    {
+      "url": "https://ephtracking.cdc.gov/apihelp",
+      "result": "CDC API help link 404"
+    },
+    {
+      "url": "https://trackingcalifornia.org/topics/water-quality",
+      "result": "Opened; contaminant viewer and 2022 ACR context; no county percentage"
+    },
+    {
+      "url": "https://trackingcalifornia.org/data-and-tools/water-quality",
+      "result": "Opened embedded viewer wrapper"
+    },
+    {
+      "url": "https://data.trackingcalifornia.org/",
+      "result": "JavaScript-required response, no extracted statistic"
+    },
+    {
+      "url": "https://ext.trackingcalifornia.org/static/cehtp/",
+      "result": "Reader cache miss"
+    },
+    {
+      "url": "https://www.cdph.ca.gov/Programs/OHE/CDPH%20Document%20Library/HCI/ADA%20Compliant%20Documents/HCI_DrinkingWater_426_Narrative_and_examples-7-15-14-ADA.pdf",
+      "result": "502; historic 2014 narrative lead, not current observation"
+    },
+    {
+      "url": "https://services2.arcgis.com/fI5CUOPa2wdhkCHV/ArcGIS/rest/services/Count_of_MCL_Violations/FeatureServer",
+      "result": "Reader cache miss; counts of MCL violations are not the configured all-health-based served-population indicator"
+    },
+    {
+      "url": "https://www.countyofmonterey.gov/home/showpublisheddocument/18340/638531056240600000",
+      "result": "Reader cache miss; search identifies 2013 community health assessment, out of recency"
+    },
+    {
+      "url": "https://echo.epa.gov/help/web-services/sdw-system-search-services",
+      "result": "Reader inaccessible; used public ECHO API instead"
+    }
+  ],
+  "network_failures": [
+    {
+      "stage": "first urllib batch inside sandbox",
+      "urls": [
+        "https://amwater.com/_resources/ccr/CA2710004/2025/monterey_2025.pdf",
+        "https://publish.data.ca.gov/api/3/action/package_show?id=drinking-water-public-water-system-information"
+      ],
+      "result": "DNS restricted; retried with escalation, 403 and 200 respectively"
+    }
+  ],
+  "extraction": "water-sanitation/extract.py",
+  "raw_evidence_download": {
+    "tenant": "monterey-county",
+    "original_path": "evidence/1d7a684652cd27a5.xlsx",
+    "screenshot_available": false
+  },
+  "capture_results": [
+    {
+      "tenant": "carmel",
+      "url": "https://ear.waterboards.ca.gov/Home/ViewCCR?PwsID=CA2710004&Year=2025&isCert=false",
+      "result": "failure HTTP404"
+    },
+    {
+      "tenant": "monterey-county",
+      "url": "https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/docs/2026/acr-2025_final.pdf",
+      "result": "success PDF page69, visually inspected"
+    },
+    {
+      "tenant": "monterey-county",
+      "url": "https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/docs/2026/acr-2025-dataset.xlsx",
+      "result": "success raw download; no screenshot"
+    },
+    {
+      "tenant": "carmel",
+      "url": "https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/docs/2026/acr-2025_final.pdf",
+      "result": "success PDF page69"
+    }
+  ]
+}

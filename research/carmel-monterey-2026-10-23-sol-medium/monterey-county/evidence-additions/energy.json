@@ -1,0 +1,28 @@
+{
+  "energy-burden": [
+    {
+      "label": "DOE LEAD December 2024 methodology, section 2.3: cohort averages, not household medians",
+      "source_url": "https://www.energy.gov/sites/default/files/2024-12/lead-methodology_122024.pdf",
+      "snapshot_path": "evidence/af803de02884f336.png",
+      "pdf_path": "evidence/af803de02884f336.pdf"
+    },
+    {
+      "label": "ACEEE 2024 median table; San Jose/San Francisco context only, excludes Monterey and Carmel",
+      "source_url": "https://www.aceee.org/sites/default/files/pdfs/data_update_-_city_energy_burdens_0.pdf",
+      "snapshot_path": "evidence/eca9ce0b3898bf27.png",
+      "pdf_path": "evidence/eca9ce0b3898bf27.pdf"
+    },
+    {
+      "label": "CPUC CHANGES 2022\u20132024 evaluation: Monterey average 2.2%; rejected as low-income median",
+      "source_url": "https://www.cpuc.ca.gov/-/media/cpuc-website/divisions/news-and-outreach/reports/cab/changes/changes-evaluation-report_final.pdf",
+      "snapshot_path": "evidence/6793f4ac6347ad3f.png",
+      "pdf_path": "evidence/6793f4ac6347ad3f.pdf"
+    },
+    {
+      "label": "Census 2020 PUMA catalog p.4: southern/eastern Monterey combined with San Benito",
+      "source_url": "https://www2.census.gov/geo/maps/DC2020/PUMA/st06_ca/Catalog_PUMAmaps_st06.pdf",
+      "snapshot_path": "evidence/b8037a0667716d04.png",
+      "pdf_path": "evidence/b8037a0667716d04.pdf"
+    }
+  ]
+}

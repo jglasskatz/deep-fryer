@@ -1,0 +1,18 @@
+[
+  {
+    "tenant": "carmel",
+    "evidence": {
+      "snapshot_path": "evidence/land-conversion-derived-2014-2024.png",
+      "captured_at": "2026-10-23T07:46:47.159Z"
+    },
+    "metadata_exhibit": "evidence/land-conversion-source-metadata.png"
+  },
+  {
+    "tenant": "monterey-county",
+    "evidence": {
+      "snapshot_path": "evidence/land-conversion-derived-2014-2024.png",
+      "captured_at": "2026-10-23T07:46:47.159Z"
+    },
+    "metadata_exhibit": "evidence/land-conversion-source-metadata.png"
+  }
+]

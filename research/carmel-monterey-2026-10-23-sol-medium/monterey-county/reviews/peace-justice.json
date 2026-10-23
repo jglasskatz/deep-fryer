@@ -1,0 +1,7 @@
+[
+  {
+    "indicator_slug": "violent-crime-rate",
+    "content_supported": "pass",
+    "verifier_note": "Independently refetched the official 2025 DOJ CSV (SHA256 e6f70072cc7fd6bea009b7474227c7684dc2f19a516b522c652f614fd69f6f3f), byte-identical to the archive; reran derive.py in a temporary copy and checked all 18 Monterey County agency rows, their four violent-crime components, and explicit zeros. All municipal, sheriff and special-agency rows sum to 17 homicides + 157 rapes + 374 robberies + 1,298 aggravated assaults = 1,846; independently opened DOF E-1 PDF p.8 confirms full-county January 1, 2025 population 437,465, yielding 4.219766152720789 per 1,000 and unrounded level 5.49415381801972. The DOJ 2025 reporting-limitations list names no Monterey agency; the derived exhibit matches the raw rows. This is an agency-county aggregation with the stated resident-denominator and reporting limitations, not a sheriff-only rate. Reviewed revised scoring against core computeScoring round1: canonical level_pct=5.5; source value/target are unchanged."
+  }
+]

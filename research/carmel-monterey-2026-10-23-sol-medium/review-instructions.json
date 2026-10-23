@@ -1,0 +1,16 @@
+{
+  "campaign": "research/carmel-monterey-2026-10-23-sol-medium",
+  "baseline": "research/carmel-monterey-2026-10-23-expansion",
+  "review_model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "approved": false,
+  "instructions": [
+    "Read vendor/open-doughnut/plugin/agents/verifier.md and campaign research-instructions.json. Independently verify revised findings; never edit research numeric claims yourself. Request corrections from root/researcher when needed.",
+    "All previous non-gap findings are intentionally inherited unchanged. Check their exact finding/review bytes against baseline before reusing the earlier independent verdict. Review every changed finding, including updated gaps, against current source evidence. A gap is provisional and does not prove no data exist.",
+    "For new numeric claims, fetch source yourself, inspect actual archived number/input, confirm geography, universe, year, completeness, units, accepted scale and recency, threshold math. For derived GIS/aggregations, rerun saved calculation from archived raw inputs and independently inspect method/filter/source definition. Generated exhibits must be labeled derived and cannot pretend to be publisher tables.",
+    "Write JSON arrays in each affected portrait/reviews/<dimension>.json with indicator_slug, content_supported pass/fail/uncertain and concise verifier_note. Do not mark pass for a plausible number or a differently defined measure. No human approval is granted. Review claimed zero carefully: missing values or no returned records are not necessarily measured zero.",
+    "Researchers own per-dimension evidence-additions files; root merges into supporting-evidence.json before final manifest. After all revisions and supporting files are final, create review-manifest.json binding all findings and reviews bytes plus both supporting-evidence sidecars by SHA256. Use baseline inheritance explicitly and approved false.",
+    "Record only new research verification activity in review-activity.json: reviewer_model, reasoning_effort medium, timestamps, web_tool_calls, search_queries, url_open_attempts, evidence attempts, URLs, actual_tokens and actual_billed_usd null if unavailable. Engineering/UI/CI review is excluded. Keep cumulative activity across resumed review turns; do not reset counters.",
+    "Do not modify previous campaign, app code, cost ledger, branches or other agent outputs. Send early blocking findings with precise evidence and file paths. Ask root for finalized dimensions; do not review a file still being edited. Final report includes verdict counts and remaining limitations."
+  ]
+}

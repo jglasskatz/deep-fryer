@@ -1,0 +1,116 @@
+{
+  "dimension": "chemical-pollution",
+  "searched_at": "2026-10-23T06:59:55.249751+00:00",
+  "queries": [
+    {
+      "query": "site.countyofmonterey.gov \"toxic release\" inventory",
+      "result": "Official local searches did not yield annual jurisdiction TRI on-site release totals; federal data discovery yielded EPA Basic files and Census population files."
+    },
+    {
+      "query": "site.ci.carmel.ca.us \"toxic\" \"releases\"",
+      "result": "Official local searches did not yield annual jurisdiction TRI on-site release totals; federal data discovery yielded EPA Basic files and Census population files."
+    },
+    {
+      "query": "site.epa.gov TRI basic data files 2024 California download",
+      "result": "Official local searches did not yield annual jurisdiction TRI on-site release totals; federal data discovery yielded EPA Basic files and Census population files."
+    },
+    {
+      "query": "site.countyofmonterey.gov \"Toxics Release Inventory\"",
+      "result": "Official local searches did not yield annual jurisdiction TRI on-site release totals; federal data discovery yielded EPA Basic files and Census population files."
+    },
+    {
+      "query": "site.ci.carmel.ca.us \"TRI\" toxic",
+      "result": "Official local searches did not yield annual jurisdiction TRI on-site release totals; federal data discovery yielded EPA Basic files and Census population files."
+    },
+    {
+      "query": "site.census.gov Monterey County 2024 population estimate 439",
+      "result": "Official local searches did not yield annual jurisdiction TRI on-site release totals; federal data discovery yielded EPA Basic files and Census population files."
+    },
+    {
+      "query": "site.ci.carmel.ca.us \"hazardous materials\" \"General Plan\"",
+      "result": "Official local searches did not yield annual jurisdiction TRI on-site release totals; federal data discovery yielded EPA Basic files and Census population files."
+    },
+    {
+      "query": "site.countyofmonterey.gov \"toxic releases\"",
+      "result": "Official local searches did not yield annual jurisdiction TRI on-site release totals; federal data discovery yielded EPA Basic files and Census population files."
+    },
+    {
+      "query": "site.countyofmonterey.gov \"hazardous materials\" \"CUPA\"",
+      "result": "Official local searches did not yield annual jurisdiction TRI on-site release totals; federal data discovery yielded EPA Basic files and Census population files."
+    },
+    {
+      "query": "site.dof.ca.gov \"Carmel-by-the-Sea\" \"2024\" \"2025\" population",
+      "result": "Official local searches did not yield annual jurisdiction TRI on-site release totals; federal data discovery yielded EPA Basic files and Census population files."
+    },
+    {
+      "query": "site.epa.gov \"TRI\" \"10 or more\" \"25,000\"",
+      "result": "Official local searches did not yield annual jurisdiction TRI on-site release totals; federal data discovery yielded EPA Basic files and Census population files."
+    },
+    {
+      "query": "site.epa.gov/toxics-release-inventory-tri-program \"reporting\" \"10 or more\"",
+      "result": "Official local searches did not yield annual jurisdiction TRI on-site release totals; federal data discovery yielded EPA Basic files and Census population files."
+    }
+  ],
+  "url_results": [
+    {
+      "url": "https://www.epa.gov/toxics-release-inventory-tri-program/tri-basic-data-files-calendar-years-1987-present",
+      "result": "accepted full California downloadable file; browser/helper captured"
+    },
+    {
+      "url": "https://www.epa.gov/void%280%29%3B",
+      "result": "web click failed 404; inspected page JavaScript to recover actual data URL"
+    },
+    {
+      "url": "https://www.epa.gov/system/files/documents/2025-09/basic_data_files_documentation_august_2024.pdf",
+      "result": "accepted definitions; page 4 Form A/zero placeholders captured"
+    },
+    {
+      "url": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/counties/totals/co-est2025-alldata.csv",
+      "result": "web unsupported content-type; curl and evidence helper successful; accepted matched-year July 2024 denominator"
+    },
+    {
+      "url": "https://dof.ca.gov/media/docs/forecasting/Demographics/estimates/PressRelease_July2025.pdf",
+      "result": "read official 2024/2025 report; did not use because Census vintage 2025 county/city family supplies both denominators"
+    },
+    {
+      "url": "https://www.countyofmonterey.gov/government/departments-a-h/health/environmental-health/hazardous-materials-management/cupa-programs",
+      "result": "403; not a source for observed TRI mass"
+    },
+    {
+      "url": "https://ci.carmel.ca.us/post/general-plan",
+      "result": "opened; links Environmental Safety Element, a policy document rather than annual TRI inventory"
+    },
+    {
+      "url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/environmental_safety_cc_adopted_9-1-09.pdf?1510257865=",
+      "result": "opened official 2009 safety plan; hazardous-material policies, outdated/no current TRI observation"
+    },
+    {
+      "url": "https://www.epa.gov/toxics-release-inventory-tri-program/basics-tri-reporting",
+      "result": "404; used current official RSEI coverage description and Basic documentation"
+    },
+    {
+      "url": "https://data.epa.gov/efservice/downloads/tri/mv_tri_basic_download/2024_CA/csv",
+      "result": "accepted; raw download and helper archival both tenants"
+    },
+    {
+      "url": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/cities/totals/sub-est2025.csv",
+      "result": "accepted official July 2024 incorporated-place population, Vintage 2025"
+    },
+    {
+      "url": "https://www.epa.gov/rsei/rsei-and-tri-emissions-data",
+      "result": "official search result describes TRI reporting coverage/limitations; no risk figure substituted"
+    },
+    {
+      "url": "https://maps.co.monterey.ca.us/server/rest/services/LAFCO/Incorporated_Cities_2/FeatureServer/2",
+      "result": "official boundary archived in this campaign by biodiversity worker; copied exact source bytes/provenance, helper capture new in this work"
+    }
+  ],
+  "failures": [
+    {
+      "action": "curl EPA landing page inside sandbox",
+      "result": "DNS resolution failed; retried require_escalated successfully"
+    }
+  ],
+  "derivation": "calculations/chemical-pollution/derive.py",
+  "method": "Full 3361-row California inventory, 1075 facilities, unique DCNs; all coordinates present; city LAFCO and Census PIP zero; county-field matches spatial county inventory. Seven Form R quantified rows summed; Form A placeholder explicitly unquantified, no pollution-wide zero claim."
+}

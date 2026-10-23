@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://deep-fryer.io/schemas/preview-observation.schema.json",
+  "title": "Unscored public preview observation",
+  "description": "Sourced observation with no defensible scoring target. Separate from approved research findings; never authorizes publication in the server review pipeline.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "indicator_slug",
+    "name",
+    "value",
+    "unit",
+    "year",
+    "target",
+    "level_pct",
+    "scoring",
+    "source",
+    "source_url",
+    "source_tier",
+    "evidence",
+    "confidence",
+    "geographic_scale",
+    "unscored_reason"
+  ],
+  "properties": {
+    "kind": {
+      "const": "observation"
+    },
+    "indicator_slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "value": {
+      "type": "number"
+    },
+    "unit": {
+      "type": "string"
+    },
+    "year": {
+      "type": "integer",
+      "minimum": 1900,
+      "maximum": 2100
+    },
+    "target": {
+      "type": "null"
+    },
+    "level_pct": {
+      "type": "null"
+    },
+    "scoring": {
+      "type": "null"
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "source_tier": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Which source-priority tier (portrait config) this source satisfied."
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "snapshot_path",
+        "captured_at"
+      ],
+      "properties": {
+        "snapshot_path": {
+          "type": "string",
+          "description": "Tenant-storage path of the page screenshot captured at retrieval time."
+        },
+        "pdf_path": {
+          "type": "string",
+          "description": "Tenant-storage path of the source PDF, when the source is a document."
+        },
+        "captured_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "confidence": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ]
+    },
+    "geographic_scale": {
+      "enum": [
+        "city",
+        "county",
+        "regional",
+        "state",
+        "national",
+        "global"
+      ]
+    },
+    "notes": {
+      "type": "string",
+      "description": "Session's caveats about the value (methodology quirks, denominator choices\u2026)."
+    },
+    "unscored_reason": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

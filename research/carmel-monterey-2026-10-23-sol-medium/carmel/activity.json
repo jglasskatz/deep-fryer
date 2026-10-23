@@ -1,0 +1,71 @@
+{
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "portrait": "carmel",
+  "dimension_sessions": [
+    {
+      "dimension": "peace-justice",
+      "activity_path": "activity/peace-justice.json",
+      "allocated_fraction": 0.5
+    },
+    {
+      "dimension": "water-sanitation",
+      "activity_path": "activity/water-sanitation.json",
+      "allocated_fraction": 0.5
+    },
+    {
+      "dimension": "biodiversity-loss",
+      "activity_path": "activity/biodiversity-loss.json",
+      "allocated_fraction": 0.5
+    },
+    {
+      "dimension": "chemical-pollution",
+      "activity_path": "activity/chemical-pollution.json",
+      "allocated_fraction": 0.5
+    },
+    {
+      "dimension": "energy",
+      "activity_path": "activity/energy.json",
+      "allocated_fraction": 0.5
+    },
+    {
+      "dimension": "freshwater-withdrawals",
+      "activity_path": "activity/freshwater-withdrawals.json",
+      "allocated_fraction": 0.5
+    },
+    {
+      "dimension": "nitrogen-phosphorus-loading",
+      "activity_path": "activity/nitrogen-phosphorus-loading.json",
+      "allocated_fraction": 0.5
+    },
+    {
+      "dimension": "land-conversion",
+      "activity_path": "activity/land-conversion.json",
+      "allocated_fraction": 0.5
+    },
+    {
+      "dimension": "ocean-acidification",
+      "activity_path": "activity/ocean-acidification.json",
+      "allocated_fraction": 0.5
+    },
+    {
+      "dimension": "ozone-depletion",
+      "activity_path": "activity/ozone-depletion.json",
+      "allocated_fraction": 0.5
+    },
+    {
+      "dimension": "extreme-heat",
+      "activity_path": "activity/extreme-heat.json",
+      "allocated_fraction": 0.5
+    }
+  ],
+  "web_tool_calls": 53.0,
+  "search_queries": 78.5,
+  "url_open_attempts": 107.0,
+  "evidence_capture_attempts": 46.5,
+  "evidence_capture_successes": 40.5,
+  "evidence_capture_failures": 6.0,
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "allocation_note": "Shared dimension-session counts are allocated equally across their researched portraits; totals count every session once. Fractions are accounting allocations, not fractional tool calls. Raw per-session counters and search records are retained. Failed attempts are included when recorded. API search charges are only modeled from web-tool-call proxies. Capture and URL counters retain the definitions recorded by each session; separately logged generated exhibits or direct acquisitions are preserved in raw logs rather than inferred into these totals."
+}

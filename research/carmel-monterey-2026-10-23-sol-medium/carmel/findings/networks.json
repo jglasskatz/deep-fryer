@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "indicator",
+    "indicator_slug": "broadband-access",
+    "name": "Households with a broadband subscription",
+    "value": 97.7,
+    "unit": "% of households",
+    "year": 2024,
+    "target": 95,
+    "level_pct": -2.8,
+    "scoring": {
+      "threshold_ref": "networks.broadband-access",
+      "function": "higher_is_better",
+      "inputs": {
+        "value": 97.7,
+        "target": 95,
+        "scale": 95
+      },
+      "worked_math": "level_pct = (target − value) ⁄ scale × 100 = (95 − 97.7) ⁄ 95 × 100 = −2.8"
+    },
+    "source": "Census Reporter API, republishing U.S. Census Bureau ACS 2024 5-year table B28002",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B28002&geo_ids=16000US0611250",
+    "source_tier": 3,
+    "evidence": {
+      "snapshot_path": "evidence/149d725c14fb10ca.png",
+      "captured_at": "2026-10-23T02:54:44.120Z"
+    },
+    "confidence": "low",
+    "geographic_scale": "city",
+    "notes": "Exact geography 16000US0611250, Carmel-by-the-Sea; ACS 2020–2024 5-year release (acs2024_5yr), B28002 universe households. Estimate for households with broadband of any type is 1,581 of 1,619 = 97.65%, rounded to 97.7%; published MOEs are ±266 and ±267 respectively, so the estimate is imprecise and should be treated cautiously. Tier 1 city sources reviewed did not provide a household broadband measure. The official Census Bureau ACS API endpoint was inaccessible in this run; Census Reporter API is the tier-3 secondary interface to the underlying ACS, captured with response metadata and MOEs."
+  }
+]

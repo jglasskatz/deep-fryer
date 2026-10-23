@@ -1,0 +1,7 @@
+[
+  {
+    "indicator_slug": "extreme-heat-days",
+    "content_supported": "pass",
+    "verifier_note": "Independently refetched official CDC EJI 2024 ZIP in preceding review (SHA256 b31f0610997df43e75d2e84e60689d7a6ee4cba19eba03912411ff3e4ba278ca) and confirmed all 103 live heat/population pairs. Repeated corrected offline derivation and independently checked Decimal arithmetic:6,351,206.4/437,609=14.513427283259714 days/year for 2018\u20132022, not 2022 alone. Corrected notes/exhibit now match independently archived Census 2020 coverage:104 tracts, with sole omitted 06053990000 having zero population/housing/land and 1,141,754,797 m\u00b2 water; no CDC removal policy inferred. The 95th-percentile maximum-temperature event definition,2010-to 2020 crosswalk and national 13 interpolations match official methodology; unknown baseline/season/local interpolation remain disclosed. Target/level_pct/scoring remain null under separate local-extreme-heat-v 1 observation profile. Pass is county context/proxy only for Carmel, explicitly not a city measurement."
+  }
+]

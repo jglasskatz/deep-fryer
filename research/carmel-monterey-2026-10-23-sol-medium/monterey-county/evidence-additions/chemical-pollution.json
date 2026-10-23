@@ -1,0 +1,20 @@
+{
+  "tri-releases-per-capita": [
+    {
+      "label": "EPA TRI Basic complete files, coverage, year and units",
+      "source_url": "https://www.epa.gov/toxics-release-inventory-tri-program/tri-basic-data-files-calendar-years-1987-present",
+      "snapshot_path": "evidence/518caa9396c6e5db.png"
+    },
+    {
+      "label": "EPA Basic file documentation: zero placeholders and Form A annual reportable amount (page 4)",
+      "source_url": "https://www.epa.gov/system/files/documents/2025-09/basic_data_files_documentation_august_2024.pdf",
+      "snapshot_path": "evidence/4427331eb788024b.png",
+      "pdf_path": "evidence/4427331eb788024b.pdf"
+    },
+    {
+      "label": "Census Vintage 2025 July 2024 resident population, faithful extracted source row",
+      "source_url": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/counties/totals/co-est2025-alldata.csv",
+      "snapshot_path": "evidence/chemical-pollution-2024-tri-extract.png"
+    }
+  ]
+}

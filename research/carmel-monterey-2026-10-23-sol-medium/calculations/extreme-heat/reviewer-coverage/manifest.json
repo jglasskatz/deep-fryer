@@ -1,0 +1,14 @@
+[
+  {
+    "file": "county-tracts-2020.json",
+    "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/6/query?f=json&where=STATE%3D%2706%27+AND+COUNTY%3D%27053%27&outFields=GEOID%2CNAME%2CAREALAND%2CAREAWATER&returnGeometry=false",
+    "sha256": "059ff0fa1f01911a5cdec0c4e7eb71c08fccc367da2d77e495d1cdc5b7ec2a23",
+    "retrieved_at": "2026-10-23T07:23:49.941756+00:00"
+  },
+  {
+    "file": "tract-06053990000-2020.json",
+    "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/6/query?f=json&where=GEOID%3D%2706053990000%27&outFields=%2A&returnGeometry=false",
+    "sha256": "595c2d1b1e1e92985600cae94aa03499955e5a3ee146a5cd0f4acc6b5fa89bd6",
+    "retrieved_at": "2026-10-23T07:23:51.013280+00:00"
+  }
+]

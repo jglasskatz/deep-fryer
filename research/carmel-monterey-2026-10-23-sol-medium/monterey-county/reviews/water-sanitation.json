@@ -1,0 +1,7 @@
+[
+  {
+    "indicator_slug": "safe-drinking-water",
+    "content_supported": "pass",
+    "verifier_note": "Independently opened the 2025 ACR and EPA field definitions and refetched the ACR workbook (SHA256 4c43ed7afe1421abcba2ab1b803549c49d3c230bf5c55073bcc8d1f65f756fa2), byte-identical to the archive; rerunning extract.py confirms 107 Monterey violation rows for 54 systems and the archived ECHO counts of 684/311. EPA explicitly warns service-area fields are incomplete/not quality assured and defines population as estimated average daily system population; neither this violations-only table nor mixed current system counts establishes the configured county annual served-population percentage. The CA2710004 WW record is not automatically an MCL/MRDL/TT health violation. Pass applies to the documented provisional denominator/extraction gap, not proof no usable county data exist."
+  }
+]

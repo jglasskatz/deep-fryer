@@ -1,0 +1,7 @@
+[
+  {
+    "indicator_slug": "energy-burden",
+    "content_supported": "pass",
+    "verifier_note": "Independently opened DOE December2024 methodology sec2.3 and FAQ: burden uses average costs/income, with housing-type cohort averages assigned from PUMA to tract; these cannot recover the configured household median. CPUC December2025 Table4-18 states Monterey2.2% as an average, not the low-income-household median; ACEEE2024 AppendixB supplies medians only for listed metros and includes no Carmel/Monterey/Salinas observation. Census2020 PUMA catalog confirms0605303 combines southern/eastern Monterey with San Benito, preventing a county-exact simple PUMA union. Pass supports the documented provisional statistic/geography gap, not proof no suitable source or defensible microdata derivation can exist."
+  }
+]

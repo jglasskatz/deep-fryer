@@ -1,0 +1,31 @@
+{
+  "natural-land-conversion": [
+    {
+      "label": "Nearest data, rejected as rate: 2023 city assessment, 2022 single-date baseline, PDF p.6",
+      "source_url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/carmel-by-the-sea_tree_canopy__land_cover_assessment_20230822client_delivery_2.pdf?1709165446=",
+      "snapshot_path": "evidence/8c5979ffe834bc15.png",
+      "pdf_path": "evidence/8c5979ffe834bc15.pdf"
+    },
+    {
+      "label": "Derived whole-county 2014–2024 transition rate and sensitivity; county proxy in Carmel portrait",
+      "source_url": "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_NLCD_Landcover_CONUS/ImageServer?f=pjson",
+      "snapshot_path": "evidence/land-conversion-derived-2014-2024.png"
+    },
+    {
+      "label": "Faithful selected official metadata and raw export record; browser source returned403",
+      "source_url": "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_NLCD_Landcover_CONUS/ImageServer?f=pjson",
+      "snapshot_path": "evidence/land-conversion-source-metadata.png"
+    },
+    {
+      "label": "Published natural/non-natural NLCD crosswalk, EPA2014 Table1, PDFp22; method support only",
+      "source_url": "https://www.epa.gov/sites/production/files/2015-11/documents/wihwreport_0.pdf",
+      "snapshot_path": "evidence/c4ebae4510bb63ff.png",
+      "pdf_path": "evidence/c4ebae4510bb63ff.pdf"
+    },
+    {
+      "label": "Current MRLC class definitions; supports natural/developed crosswalk and mixed barren caveat",
+      "source_url": "https://www.mrlc.gov/data/legends/annual-nlcd-land-cover-legend",
+      "snapshot_path": "evidence/2e13eb6e89fc071a.png"
+    }
+  ]
+}
