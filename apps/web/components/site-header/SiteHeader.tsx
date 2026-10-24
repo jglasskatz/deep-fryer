@@ -12,6 +12,7 @@ import { signInHref } from '@/app/login/sign-in';
 import { adminTenant } from '@/lib/admin-data';
 import { getAuth } from '@/lib/auth';
 import { countHeldComments } from '@/lib/discussion';
+import { publishedCustomPages } from '@/lib/custom-pages';
 import { deploymentFeatureOn, portraitFeatures } from '@/lib/features';
 import { authConfigured, hasDatabase } from '@/lib/env';
 import { familyForTenant, organizationOfTenant, type Family } from '@/lib/family';
@@ -110,6 +111,8 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
   // themselves are built, and tested, in nav-links.ts.
   if (variant === 'tenant' && tenant) {
     const features = await portraitFeatures(tenant.slug);
+    const pages = features.custom_pages ? await publishedCustomPages(tenant.slug) : [];
+    if (pages.length) links.push({ href: href(`/${tenant.slug}/pages`), label: 'Pages', lang: 'en' });
     links.push(
       ...tenantNavLinks(
         tenant.slug,

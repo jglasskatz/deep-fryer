@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://data.cityofnewyork.us/resource/ebb7-mvp5.json?%24select=borough%2Csum%28refusetonscollected%29+as+tons%2Ccount%28%2A%29+as+records&%24where=month+between+%272024+%2F+07%27+and+%272025+%2F+06%27&%24group=borough",
+  "stem": "dsny-refuse-fy",
+  "captured_at": "2026-10-24T01:27:27.326Z",
+  "status": 200,
+  "content_type": "application/json;charset=utf-8",
+  "raw_path": "raw/dsny-refuse-fy.json",
+  "sha256": "87c3c4b0e54760831bb26f5f7face6b1d216be9b711759123b2855eb2ffa8bf6",
+  "bytes": 296,
+  "success": true
+}

@@ -1,0 +1,588 @@
+{
+  "schema_version": 1,
+  "reviewer": "gpt-6.1-sol",
+  "reasoning_effort": "high",
+  "role": "corrective self-check by correction author; NOT independent review",
+  "approved": false,
+  "human_approval": false,
+  "requires_separate_independent_review": true,
+  "amendment_file": "findings/reviewer-suggested-corrections.json",
+  "amendment_file_sha256": "5d2d818dd01a773117b660bd70e6fd58d5e0258b4d694c903643d16d43259c1b",
+  "evidence_manifest_sha256": "2310d3509411c610de5724bdcc3237c53b919702605323323c5716f83e5ffd93",
+  "summary": {
+    "checks": 36,
+    "passed": 36,
+    "failed": 0,
+    "new_exhibits_visually_inspected": 3
+  },
+  "amendments": [
+    {
+      "id": "nyc:chemical-pollution:1:reviewer-correction-v1",
+      "supersedes_amendment_id": "nyc:chemical-pollution:1",
+      "amendment_canonical_sha256": "caa3a41a9fe5af3d5a96ceeb7996e22649c2e57ad936eeb6edce182d78f7271b",
+      "after_canonical_sha256": "6db4ab57f46e151800f4f39b6df2780ff3e73f9160f5b5ac31f8ca0465123eae",
+      "proposed_disposition": "ready for separate independent review",
+      "reason": "Remove the ambiguous Bronx sentence from the NYC fiscal-year observation. The supported NYC result remains FY 2005–2025 reduction 12.55%, unscored."
+    },
+    {
+      "id": "nyc:biodiversity-loss:0:reviewer-correction-v1",
+      "supersedes_amendment_id": "nyc:biodiversity-loss:0",
+      "amendment_canonical_sha256": "e9823330a6ce50dccf239aaf563d1c2a8d8455f5ed84d7a7fcb70b299f270baf",
+      "after_canonical_sha256": "375ed4d67122266e196029b48f3f53aa3d960071bb50cf28cd69515edf771f48",
+      "proposed_disposition": "ready for separate independent review",
+      "reason": "Correct the derived exhibit arithmetic to 19.52183345%; preserve the rounded 19.5% land-and-water observation and null land-only score."
+    },
+    {
+      "id": "santa-cruz-county:networks:0:reviewer-correction-v1",
+      "supersedes_amendment_id": "santa-cruz-county:networks:0",
+      "amendment_canonical_sha256": "1465b847487aedcb3ae1f115b6b0f10de1fc645b2a88f9562399ebd56af8eade",
+      "after_canonical_sha256": "3edc1a271ccb5415b0ef2fab443f706e87444f046a821b7370551cd1c539de99",
+      "proposed_disposition": "ready for separate independent review",
+      "reason": "Replace the mismatched exhibit with the exact official GCT2801 county 94.9% ±1.1 percentage point row and explicit 2024 one-year period."
+    },
+    {
+      "id": "bronx:networks:0:reviewer-correction-v1",
+      "supersedes_amendment_id": "bronx:networks:0",
+      "amendment_canonical_sha256": "ae7c3672785979b25aea61c59d1023ffaae1d1d44b86e463d4f7d0a5839f78f7",
+      "after_canonical_sha256": "52aecf44c6c8c846ba87baa9c00ac2dae4d485ce5f9dab44b11ccc4e1aa5873a",
+      "proposed_disposition": "ready for separate independent review",
+      "reason": "Retain the publisher-supported 2023 fixed-broadband estimate as an unscored related observation; do not apply the generic any-broadband contract."
+    },
+    {
+      "id": "staten-island:networks:0:reviewer-correction-v1",
+      "supersedes_amendment_id": "staten-island:networks:0",
+      "amendment_canonical_sha256": "8cfa5683420daafc7a0ec05cc1ac7048cf064e0a3183e363fd931d566ac35f2b",
+      "after_canonical_sha256": "989729303030ade55af12a41d1e902f4bba1e297162db7669477e9c722a8fb6d",
+      "proposed_disposition": "ready for separate independent review",
+      "reason": "Retain the publisher-supported 2023 fixed-broadband estimate as an unscored related observation; do not apply the generic any-broadband contract."
+    }
+  ],
+  "checks": [
+    {
+      "check": "nyc:chemical-pollution:1:reviewer-correction-v1 before unchanged",
+      "pass": true,
+      "actual": {
+        "name": "Reduction in landfill-bound waste vs 2005",
+        "unit": "% reduction",
+        "year": 2025,
+        "value": 12.55,
+        "source": "NYC Department of Sanitation (DSNY) Monthly Tonnage Data, NYC Open Data dataset ebb7-mvp5 — refusetonscollected aggregated citywide via Socrata SoQL sum, FY2005 vs FY2025",
+        "target": 90,
+        "scoring": {
+          "inputs": {
+            "scale": 90,
+            "value": 12.55,
+            "target": 90
+          },
+          "function": "higher_is_better",
+          "worked_math": "NYC Open Data 'DSNY Monthly Tonnage Data' (dataset ebb7-mvp5), field refusetonscollected, summed across all 59 community districts for two full fiscal years (708 district-month records each, confirming complete coverage: 59 districts × 12 months = 708). FY2005 (Jul 2004–Jun 2005) total refuse tons collected = 3,348,817.81. FY2025 (Jul 2024–Jun 2025, most recent complete fiscal year as of Aug 2026) total refuse tons collected = 2,928,470.67. % reduction = (3,348,817.81 − 2,928,470.67) / 3,348,817.81 × 100 = 420,347.14 / 3,348,817.81 × 100 = 12.55%. level_pct (higher_is_better) = (target − value) / scale × 100 = (90 − 12.55) / 90 × 100 = 86.06.",
+          "threshold_ref": "chemical-pollution.landfill-reduction-vs-2005"
+        },
+        "evidence": {
+          "captured_at": "2026-08-05T21:37:00.000Z",
+          "snapshot_path": "CAPTURE_FAILED — evidence-capture tool's browser crashed (browser.newContext: Target page, context or browser has been closed) on every attempt across 10 retries and a 60+ second recovery wait; no snapshot could be stored. Source URL is public and was read live via the Socrata JSON API (see source_url and notes); it is not paywalled or blocked — this is a tool-availability failure, not a source access failure."
+        },
+        "level_pct": 86.06,
+        "confidence": "medium",
+        "source_url": "https://data.cityofnewyork.us/City-Government/DSNY-Monthly-Tonnage-Data/ebb7-mvp5",
+        "source_tier": 1,
+        "geographic_scale": "city",
+        "geography": "city",
+        "status": "published",
+        "evidence_path": null,
+        "pdf_path": null
+      },
+      "expected": {
+        "name": "Reduction in landfill-bound waste vs 2005",
+        "unit": "% reduction",
+        "year": 2025,
+        "value": 12.55,
+        "source": "NYC Department of Sanitation (DSNY) Monthly Tonnage Data, NYC Open Data dataset ebb7-mvp5 — refusetonscollected aggregated citywide via Socrata SoQL sum, FY2005 vs FY2025",
+        "target": 90,
+        "scoring": {
+          "inputs": {
+            "scale": 90,
+            "value": 12.55,
+            "target": 90
+          },
+          "function": "higher_is_better",
+          "worked_math": "NYC Open Data 'DSNY Monthly Tonnage Data' (dataset ebb7-mvp5), field refusetonscollected, summed across all 59 community districts for two full fiscal years (708 district-month records each, confirming complete coverage: 59 districts × 12 months = 708). FY2005 (Jul 2004–Jun 2005) total refuse tons collected = 3,348,817.81. FY2025 (Jul 2024–Jun 2025, most recent complete fiscal year as of Aug 2026) total refuse tons collected = 2,928,470.67. % reduction = (3,348,817.81 − 2,928,470.67) / 3,348,817.81 × 100 = 420,347.14 / 3,348,817.81 × 100 = 12.55%. level_pct (higher_is_better) = (target − value) / scale × 100 = (90 − 12.55) / 90 × 100 = 86.06.",
+          "threshold_ref": "chemical-pollution.landfill-reduction-vs-2005"
+        },
+        "evidence": {
+          "captured_at": "2026-08-05T21:37:00.000Z",
+          "snapshot_path": "CAPTURE_FAILED — evidence-capture tool's browser crashed (browser.newContext: Target page, context or browser has been closed) on every attempt across 10 retries and a 60+ second recovery wait; no snapshot could be stored. Source URL is public and was read live via the Socrata JSON API (see source_url and notes); it is not paywalled or blocked — this is a tool-availability failure, not a source access failure."
+        },
+        "level_pct": 86.06,
+        "confidence": "medium",
+        "source_url": "https://data.cityofnewyork.us/City-Government/DSNY-Monthly-Tonnage-Data/ebb7-mvp5",
+        "source_tier": 1,
+        "geographic_scale": "city",
+        "geography": "city",
+        "status": "published",
+        "evidence_path": null,
+        "pdf_path": null
+      }
+    },
+    {
+      "check": "nyc:chemical-pollution:1:reviewer-correction-v1 unscored",
+      "pass": true,
+      "actual": [
+        null,
+        null,
+        null
+      ],
+      "expected": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "check": "nyc:chemical-pollution:1:reviewer-correction-v1 raw raw/dsny-raw-fy.json",
+      "pass": true,
+      "actual": "4a6a2b54c537103f5b700dbf770176f2d8df544d10b1c96d1f2fd62c8801d554",
+      "expected": "4a6a2b54c537103f5b700dbf770176f2d8df544d10b1c96d1f2fd62c8801d554"
+    },
+    {
+      "check": "nyc:chemical-pollution:1:reviewer-correction-v1 snapshot evidence/nyc-waste-extract.png",
+      "pass": true,
+      "actual": "c03105e42ae283ae7689cf82926d3ccc44889835bf4c510702c90f9b3be38a11",
+      "expected": "c03105e42ae283ae7689cf82926d3ccc44889835bf4c510702c90f9b3be38a11"
+    },
+    {
+      "check": "nyc:chemical-pollution:1:reviewer-correction-v1 raw raw/dsny-metadata.json",
+      "pass": true,
+      "actual": "78ab86a96342ce705ba03ef38d807108f83a10b1f6801619879fc88ad3d61f6f",
+      "expected": "78ab86a96342ce705ba03ef38d807108f83a10b1f6801619879fc88ad3d61f6f"
+    },
+    {
+      "check": "nyc:biodiversity-loss:0:reviewer-correction-v1 before unchanged",
+      "pass": true,
+      "actual": {
+        "name": "Land under durable conservation protection",
+        "unit": "% of jurisdiction land area",
+        "year": 2023,
+        "value": 19.5,
+        "source": "Protect the Adirondacks!, \"20% in 2023: An Assessment of the New York State 30 by 30 Act\" (Nov. 2023) — Appendix county tables for Bronx, Kings, New York, Queens, and Richmond Counties",
+        "target": 30,
+        "scoring": {
+          "inputs": {
+            "scale": 30,
+            "value": 19.5,
+            "target": 30
+          },
+          "function": "higher_is_better",
+          "worked_math": "Citywide protected acreage = sum of 5 county totals: Bronx 5,646 + Kings 12,804 + New York 2,735 + Queens 14,071 + Richmond 8,118 = 43,374 acres. Citywide total area = 30,863 + 52,820 + 20,528 + 80,102 + 37,869 = 222,182 acres. Share = 43,374 / 222,182 × 100 = 19.523% ≈ 19.5%. level_pct = (target − value) / scale × 100 = (30 − 19.5) / 30 × 100 = +35.0",
+          "threshold_ref": "biodiversity-loss.protected-land-share"
+        },
+        "evidence": {
+          "captured_at": "2026-08-05T00:00:00Z",
+          "snapshot_path": "CAPTURE_FAILED: mcp__evidence__capture_evidence returned 'browser.newContext: Target page, context or browser has been closed' on 7 consecutive attempts across 3 distinct URLs (report landing page, PDF, and an unrelated control URL nyc.gov), indicating a session-level evidence-capture tool outage rather than a site-specific block. No snapshot or PDF archive could be stored this session."
+        },
+        "level_pct": 35,
+        "confidence": "low",
+        "source_url": "https://www.protectadks.org/wp-content/uploads/2023/11/Protect-the-Adirondacks-30-by-30-Report-NYS-Counties-web.pdf",
+        "source_tier": 3,
+        "geographic_scale": "city",
+        "geography": "city",
+        "status": "published",
+        "evidence_path": null,
+        "pdf_path": null
+      },
+      "expected": {
+        "name": "Land under durable conservation protection",
+        "unit": "% of jurisdiction land area",
+        "year": 2023,
+        "value": 19.5,
+        "source": "Protect the Adirondacks!, \"20% in 2023: An Assessment of the New York State 30 by 30 Act\" (Nov. 2023) — Appendix county tables for Bronx, Kings, New York, Queens, and Richmond Counties",
+        "target": 30,
+        "scoring": {
+          "inputs": {
+            "scale": 30,
+            "value": 19.5,
+            "target": 30
+          },
+          "function": "higher_is_better",
+          "worked_math": "Citywide protected acreage = sum of 5 county totals: Bronx 5,646 + Kings 12,804 + New York 2,735 + Queens 14,071 + Richmond 8,118 = 43,374 acres. Citywide total area = 30,863 + 52,820 + 20,528 + 80,102 + 37,869 = 222,182 acres. Share = 43,374 / 222,182 × 100 = 19.523% ≈ 19.5%. level_pct = (target − value) / scale × 100 = (30 − 19.5) / 30 × 100 = +35.0",
+          "threshold_ref": "biodiversity-loss.protected-land-share"
+        },
+        "evidence": {
+          "captured_at": "2026-08-05T00:00:00Z",
+          "snapshot_path": "CAPTURE_FAILED: mcp__evidence__capture_evidence returned 'browser.newContext: Target page, context or browser has been closed' on 7 consecutive attempts across 3 distinct URLs (report landing page, PDF, and an unrelated control URL nyc.gov), indicating a session-level evidence-capture tool outage rather than a site-specific block. No snapshot or PDF archive could be stored this session."
+        },
+        "level_pct": 35,
+        "confidence": "low",
+        "source_url": "https://www.protectadks.org/wp-content/uploads/2023/11/Protect-the-Adirondacks-30-by-30-Report-NYS-Counties-web.pdf",
+        "source_tier": 3,
+        "geographic_scale": "city",
+        "geography": "city",
+        "status": "published",
+        "evidence_path": null,
+        "pdf_path": null
+      }
+    },
+    {
+      "check": "nyc:biodiversity-loss:0:reviewer-correction-v1 unscored",
+      "pass": true,
+      "actual": [
+        null,
+        null,
+        null
+      ],
+      "expected": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "check": "nyc:biodiversity-loss:0:reviewer-correction-v1 raw raw/nyc-protected-2023.pdf",
+      "pass": true,
+      "actual": "c9b6ff50f9eff4442e5e875cd78c50cfb5daacdec4e7c351dad109ce382b38dd",
+      "expected": "c9b6ff50f9eff4442e5e875cd78c50cfb5daacdec4e7c351dad109ce382b38dd"
+    },
+    {
+      "check": "nyc:biodiversity-loss:0:reviewer-correction-v1 snapshot evidence/reviewer-conservation-corrected.png",
+      "pass": true,
+      "actual": "dcae778cbafeea8139847bf60e63c8e011c79a9cbc6abe47380a2fce8514178a",
+      "expected": "dcae778cbafeea8139847bf60e63c8e011c79a9cbc6abe47380a2fce8514178a"
+    },
+    {
+      "check": "nyc:biodiversity-loss:0:reviewer-correction-v1 input_html",
+      "pass": true,
+      "actual": "d9cba00f6374d5f063b1b3e3d96bc9c14b71a8da5bed4e6113be127d5e8c0d46",
+      "expected": "d9cba00f6374d5f063b1b3e3d96bc9c14b71a8da5bed4e6113be127d5e8c0d46"
+    },
+    {
+      "check": "nyc:biodiversity-loss:0:reviewer-correction-v1 rendered_html",
+      "pass": true,
+      "actual": "5ed9649762e431b5c22d3c4a5550162dcf4fce51318537047aad0a858fb00dd0",
+      "expected": "5ed9649762e431b5c22d3c4a5550162dcf4fce51318537047aad0a858fb00dd0"
+    },
+    {
+      "check": "santa-cruz-county:networks:0:reviewer-correction-v1 before unchanged",
+      "pass": true,
+      "actual": {
+        "name": "Broadband access",
+        "value": "C- grade; ~16,000 households lack internet",
+        "unit": "",
+        "year": 2024,
+        "target": "Universal broadband access",
+        "source": "CA Broadband Report Card; Equal Access SC",
+        "source_url": "https://equalaccesssantacruz.com/",
+        "geography": "See source context",
+        "status": "legacy-source",
+        "notes": "15,745 students without broadband. Equal Access SC provides $15/mo internet. $500K county grant to Cruzio. $10M state grant for rural fiber. Digital divide worst in south county and rural areas.",
+        "evidence_path": null,
+        "pdf_path": null
+      },
+      "expected": {
+        "name": "Broadband access",
+        "value": "C- grade; ~16,000 households lack internet",
+        "unit": "",
+        "year": 2024,
+        "target": "Universal broadband access",
+        "source": "CA Broadband Report Card; Equal Access SC",
+        "source_url": "https://equalaccesssantacruz.com/",
+        "geography": "See source context",
+        "status": "legacy-source",
+        "notes": "15,745 students without broadband. Equal Access SC provides $15/mo internet. $500K county grant to Cruzio. $10M state grant for rural fiber. Digital divide worst in south county and rural areas.",
+        "evidence_path": null,
+        "pdf_path": null
+      }
+    },
+    {
+      "check": "santa-cruz-county:networks:0:reviewer-correction-v1 unscored",
+      "pass": true,
+      "actual": [
+        null,
+        null,
+        null
+      ],
+      "expected": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "check": "santa-cruz-county:networks:0:reviewer-correction-v1 raw raw/broadband-2024-comparison.csv",
+      "pass": true,
+      "actual": "65f8c5ac344a26d9d9b04cc272e1bf06fd8de8b5cfc0cf10993e94fd2060b031",
+      "expected": "65f8c5ac344a26d9d9b04cc272e1bf06fd8de8b5cfc0cf10993e94fd2060b031"
+    },
+    {
+      "check": "santa-cruz-county:networks:0:reviewer-correction-v1 snapshot evidence/reviewer-county-broadband-corrected.png",
+      "pass": true,
+      "actual": "23de48804dbabf414e32f7b2cd249053ed72326aa22410d25cabbc5a4e0eff5e",
+      "expected": "23de48804dbabf414e32f7b2cd249053ed72326aa22410d25cabbc5a4e0eff5e"
+    },
+    {
+      "check": "santa-cruz-county:networks:0:reviewer-correction-v1 raw raw/acs5-shells2024.bin.gz",
+      "pass": true,
+      "actual": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+      "expected": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d"
+    },
+    {
+      "check": "santa-cruz-county:networks:0:reviewer-correction-v1 input_html",
+      "pass": true,
+      "actual": "8eb266081852336ae99f4770ef4398aff6bdd0c01e63a0ba0397fa6ad12514c4",
+      "expected": "8eb266081852336ae99f4770ef4398aff6bdd0c01e63a0ba0397fa6ad12514c4"
+    },
+    {
+      "check": "santa-cruz-county:networks:0:reviewer-correction-v1 rendered_html",
+      "pass": true,
+      "actual": "cc47bd2adfc52e31b4879a97cef019d37d605f2295edc893627b92e45fc19b6f",
+      "expected": "cc47bd2adfc52e31b4879a97cef019d37d605f2295edc893627b92e45fc19b6f"
+    },
+    {
+      "check": "bronx:networks:0:reviewer-correction-v1 before unchanged",
+      "pass": true,
+      "actual": {
+        "name": "Households with a broadband subscription",
+        "unit": "% of households",
+        "year": 2023,
+        "value": 63.3,
+        "source": "New York State Office of the State Comptroller, \"Broadband Availability, Access and Affordability in New York City\" (Report 20-2025), Dec. 2024, citing 2023 ACS 1-Year Estimates",
+        "target": 100,
+        "scoring": {
+          "inputs": {
+            "scale": 100,
+            "value": 63.3,
+            "target": 100
+          },
+          "function": "higher_is_better",
+          "worked_math": "level_pct = (target − value) / scale × 100 = (100 − 63.3) / 100 × 100 = +36.7",
+          "threshold_ref": "networks.broadband-access"
+        },
+        "evidence": {
+          "pdf_path": "evidence/ee506dff8b84.pdf",
+          "captured_at": "2026-08-05T08:50:11.311Z",
+          "snapshot_path": "evidence/ee506dff8b84.png"
+        },
+        "level_pct": 36.7,
+        "confidence": "medium",
+        "source_url": "https://www.osc.ny.gov/press/releases/2024/12/dinapoli-report-examines-broadband-availability-access-and-affordability-nyc",
+        "source_tier": 2,
+        "geographic_scale": "county",
+        "geography": "county",
+        "status": "published",
+        "evidence_path": "evidence/shared/87f5facc4b0932f21ecd4cef.png",
+        "pdf_path": "evidence/shared/e89455fc53fef9ac48a438f1.pdf"
+      },
+      "expected": {
+        "name": "Households with a broadband subscription",
+        "unit": "% of households",
+        "year": 2023,
+        "value": 63.3,
+        "source": "New York State Office of the State Comptroller, \"Broadband Availability, Access and Affordability in New York City\" (Report 20-2025), Dec. 2024, citing 2023 ACS 1-Year Estimates",
+        "target": 100,
+        "scoring": {
+          "inputs": {
+            "scale": 100,
+            "value": 63.3,
+            "target": 100
+          },
+          "function": "higher_is_better",
+          "worked_math": "level_pct = (target − value) / scale × 100 = (100 − 63.3) / 100 × 100 = +36.7",
+          "threshold_ref": "networks.broadband-access"
+        },
+        "evidence": {
+          "pdf_path": "evidence/ee506dff8b84.pdf",
+          "captured_at": "2026-08-05T08:50:11.311Z",
+          "snapshot_path": "evidence/ee506dff8b84.png"
+        },
+        "level_pct": 36.7,
+        "confidence": "medium",
+        "source_url": "https://www.osc.ny.gov/press/releases/2024/12/dinapoli-report-examines-broadband-availability-access-and-affordability-nyc",
+        "source_tier": 2,
+        "geographic_scale": "county",
+        "geography": "county",
+        "status": "published",
+        "evidence_path": "evidence/shared/87f5facc4b0932f21ecd4cef.png",
+        "pdf_path": "evidence/shared/e89455fc53fef9ac48a438f1.pdf"
+      }
+    },
+    {
+      "check": "bronx:networks:0:reviewer-correction-v1 unscored",
+      "pass": true,
+      "actual": [
+        null,
+        null,
+        null
+      ],
+      "expected": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "check": "bronx:networks:0:reviewer-correction-v1 raw ../../site/evidence/shared/e89455fc53fef9ac48a438f1.pdf",
+      "pass": true,
+      "actual": "e89455fc53fef9ac48a438f1a821ec55b9e4759b207149acf6c263aa894a7d61",
+      "expected": "e89455fc53fef9ac48a438f1a821ec55b9e4759b207149acf6c263aa894a7d61"
+    },
+    {
+      "check": "bronx:networks:0:reviewer-correction-v1 snapshot evidence/reviewer-fixed-broadband-corrected.png",
+      "pass": true,
+      "actual": "901f341c58e9e154569646353103e994a926250ab3a2c80a18ead411ed502ecf",
+      "expected": "901f341c58e9e154569646353103e994a926250ab3a2c80a18ead411ed502ecf"
+    },
+    {
+      "check": "bronx:networks:0:reviewer-correction-v1 input_html",
+      "pass": true,
+      "actual": "95dd957024b8b6b27f0acd079b57d1cba93fbbe2e75333bdbea49e58971d5cde",
+      "expected": "95dd957024b8b6b27f0acd079b57d1cba93fbbe2e75333bdbea49e58971d5cde"
+    },
+    {
+      "check": "bronx:networks:0:reviewer-correction-v1 rendered_html",
+      "pass": true,
+      "actual": "03357aff3a9564acda8572812c0b1e45d9589f63e55496629513b355782880b5",
+      "expected": "03357aff3a9564acda8572812c0b1e45d9589f63e55496629513b355782880b5"
+    },
+    {
+      "check": "staten-island:networks:0:reviewer-correction-v1 before unchanged",
+      "pass": true,
+      "actual": {
+        "name": "Households with a broadband subscription",
+        "unit": "% of households",
+        "year": 2023,
+        "value": 76.5,
+        "source": "NYS Office of the State Comptroller (OSC), \"Broadband Availability, Access and Affordability in New York City,\" Report 20-2025 (December 2024), Figure 4 — borough-level table citing U.S. Census Bureau American Community Survey 1-year files, 2023, OSC analysis",
+        "target": 100,
+        "scoring": {
+          "inputs": {
+            "scale": 100,
+            "value": 76.5,
+            "target": 100
+          },
+          "function": "higher_is_better",
+          "worked_math": "level_pct = (100 − 76.5) / 100 × 100 = +23.5",
+          "threshold_ref": "networks.broadband-access"
+        },
+        "evidence": {
+          "pdf_path": "evidence/ee506dff8b84.pdf",
+          "captured_at": "2026-08-05T18:37:33.313Z",
+          "snapshot_path": "evidence/ee506dff8b84.png"
+        },
+        "level_pct": 23.5,
+        "confidence": "medium",
+        "source_url": "https://www.osc.ny.gov/files/reports/pdf/report-20-2025.pdf",
+        "source_tier": 2,
+        "geographic_scale": "county",
+        "geography": "county",
+        "status": "published",
+        "evidence_path": "evidence/shared/87f5facc4b0932f21ecd4cef.png",
+        "pdf_path": "evidence/shared/e89455fc53fef9ac48a438f1.pdf"
+      },
+      "expected": {
+        "name": "Households with a broadband subscription",
+        "unit": "% of households",
+        "year": 2023,
+        "value": 76.5,
+        "source": "NYS Office of the State Comptroller (OSC), \"Broadband Availability, Access and Affordability in New York City,\" Report 20-2025 (December 2024), Figure 4 — borough-level table citing U.S. Census Bureau American Community Survey 1-year files, 2023, OSC analysis",
+        "target": 100,
+        "scoring": {
+          "inputs": {
+            "scale": 100,
+            "value": 76.5,
+            "target": 100
+          },
+          "function": "higher_is_better",
+          "worked_math": "level_pct = (100 − 76.5) / 100 × 100 = +23.5",
+          "threshold_ref": "networks.broadband-access"
+        },
+        "evidence": {
+          "pdf_path": "evidence/ee506dff8b84.pdf",
+          "captured_at": "2026-08-05T18:37:33.313Z",
+          "snapshot_path": "evidence/ee506dff8b84.png"
+        },
+        "level_pct": 23.5,
+        "confidence": "medium",
+        "source_url": "https://www.osc.ny.gov/files/reports/pdf/report-20-2025.pdf",
+        "source_tier": 2,
+        "geographic_scale": "county",
+        "geography": "county",
+        "status": "published",
+        "evidence_path": "evidence/shared/87f5facc4b0932f21ecd4cef.png",
+        "pdf_path": "evidence/shared/e89455fc53fef9ac48a438f1.pdf"
+      }
+    },
+    {
+      "check": "staten-island:networks:0:reviewer-correction-v1 unscored",
+      "pass": true,
+      "actual": [
+        null,
+        null,
+        null
+      ],
+      "expected": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "check": "staten-island:networks:0:reviewer-correction-v1 raw ../../site/evidence/shared/e89455fc53fef9ac48a438f1.pdf",
+      "pass": true,
+      "actual": "e89455fc53fef9ac48a438f1a821ec55b9e4759b207149acf6c263aa894a7d61",
+      "expected": "e89455fc53fef9ac48a438f1a821ec55b9e4759b207149acf6c263aa894a7d61"
+    },
+    {
+      "check": "staten-island:networks:0:reviewer-correction-v1 snapshot evidence/reviewer-fixed-broadband-corrected.png",
+      "pass": true,
+      "actual": "901f341c58e9e154569646353103e994a926250ab3a2c80a18ead411ed502ecf",
+      "expected": "901f341c58e9e154569646353103e994a926250ab3a2c80a18ead411ed502ecf"
+    },
+    {
+      "check": "staten-island:networks:0:reviewer-correction-v1 input_html",
+      "pass": true,
+      "actual": "95dd957024b8b6b27f0acd079b57d1cba93fbbe2e75333bdbea49e58971d5cde",
+      "expected": "95dd957024b8b6b27f0acd079b57d1cba93fbbe2e75333bdbea49e58971d5cde"
+    },
+    {
+      "check": "staten-island:networks:0:reviewer-correction-v1 rendered_html",
+      "pass": true,
+      "actual": "03357aff3a9564acda8572812c0b1e45d9589f63e55496629513b355782880b5",
+      "expected": "03357aff3a9564acda8572812c0b1e45d9589f63e55496629513b355782880b5"
+    },
+    {
+      "check": "Conservation corrected exact arithmetic",
+      "pass": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "County correct GCT row in exhibit",
+      "pass": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "NYC note no Bronx misattribution",
+      "pass": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "Fixed exhibit contains both source values",
+      "pass": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "Original main batch unchanged",
+      "pass": true,
+      "actual": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "expected": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a"
+    },
+    {
+      "check": "Original housing supplement unchanged",
+      "pass": true,
+      "actual": "0b7508b08a4ea7af36a32850f13aec3e578f2897a5fc6e4b41960fbe7ce21d30",
+      "expected": "0b7508b08a4ea7af36a32850f13aec3e578f2897a5fc6e4b41960fbe7ce21d30"
+    }
+  ]
+}

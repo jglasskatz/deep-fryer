@@ -86,6 +86,19 @@ describe('runProgress', () => {
     expect(p.finished).toBe(0);
   });
 
+  it('counts split sessions of one dense dimension separately', () => {
+    const first = { ...row(0, 'complete', 2, 4), id: 'part-1' };
+    const second = { ...row(0, 'failed', 3, 5), id: 'part-2' };
+    const specs = [spec('region_context'), spec('dimension', 'd0'), spec('dimension', 'd0'), spec('dimension', 'd0')];
+    const progress = runProgress(specs, [second, row('region', 'complete', 0, 2), first], slugById, 'running');
+    expect(progress.items.map((item) => [item.session?.id ?? null, item.chip])).toEqual([
+      ['s-region', 'done'], ['part-1', 'done'], ['part-2', 'failed'], [null, 'queued'],
+    ]);
+    expect(progress).toMatchObject({ done: 2, failed: 1, queued: 1, finished: 3, total: 4 });
+    const settled = runProgress(specs, [second, first], slugById, 'failed');
+    expect(settled.notRun).toBe(2);
+  });
+
   it('marks sessions that never started as "did not run" once the run has settled', () => {
     const p = runProgress(plan(3), [row('region', 'failed', 0, 1), row(0, 'failed', 1, 2)], slugById, 'failed');
     expect(p.items.map((i) => i.chip)).toEqual(['failed', 'failed', 'not_run', 'not_run']);

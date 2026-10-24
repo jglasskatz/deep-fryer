@@ -69,6 +69,19 @@ describe.skipIf(!hasDb)('admin actions on their own transaction', () => {
     return rows.map((r) => [r.action, r.userId]);
   }
 
+  it('clears the wedge when the final measured indicator is removed', async () => {
+    signedIn = people.editor;
+    const m = await import('@deep-fryer/db');
+    const db = m.getDb();
+    const base = (await m.latestVersion(db, dimensionId))!;
+    await m.appendDimensionVersion(db, { dimensionId, status: 'draft', origin: 'human', createdBy: people.editor,
+      data: base.data, vizLevel: 75, changeNote: 'Historical scored fixture.' });
+    const result = await (await import('./actions')).saveDimensionEdit({ tenantSlug, dimensionId,
+      data: { ...base.data, indicators: [] }, changeNote: 'Remove the unsupported last indicator.' });
+    expect(result.ok).toBe(true);
+    expect((await m.latestVersion(db, dimensionId))!.vizLevel).toBeNull();
+  });
+
   it('saves a human edit, reading the threshold overrides and its author on its own transaction', async () => {
     // It used to read the overrides through configValue, a second userDb
     // transaction, and the author and audit actor through getAuth(), each a

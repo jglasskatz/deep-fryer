@@ -1,0 +1,185 @@
+{
+  "scope": "This new high-effort researcher session only; tool-result prefixes identify the session outputs. Browser request/exhibit logs are separate.",
+  "calls": [
+    {
+      "tool_result_prefix": "turn434",
+      "exact_search_queries": [
+        "site.health.ny.gov 2025 \"new_york_city_compliance_report\"",
+        "site.nyc.gov \"2025\" \"drinking-water-supply-quality-report\" violations"
+      ],
+      "open_requests": 0,
+      "click_requests": 0,
+      "find_requests": 0,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn435",
+      "exact_search_queries": [],
+      "open_requests": 3,
+      "click_requests": 0,
+      "find_requests": 0,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn436",
+      "exact_search_queries": [
+        "site:health.ny.gov \"New York City\" \"2025\" \"Violations\" drinking water",
+        "site:nyc.gov \"2025\" \"Drinking Water\" \"violations\"",
+        "site:nyc.gov \"2024\" \"Drinking Water\" \"violation\" filtration"
+      ],
+      "open_requests": 0,
+      "click_requests": 0,
+      "find_requests": 0,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn437",
+      "exact_search_queries": [],
+      "open_requests": 3,
+      "click_requests": 0,
+      "find_requests": 0,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn438",
+      "exact_search_queries": [],
+      "open_requests": 0,
+      "click_requests": 2,
+      "find_requests": 0,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn439",
+      "exact_search_queries": [
+        "site:www2.census.gov 2024 \"GCT1701\" \"csv\"",
+        "site:census.gov \"GCT1903\" \"Gini\"",
+        "site:santacruzca.gov 2024 greenhouse gas inventory 2022 2023",
+        "site:watsonville.gov 2024 water quality report nitrate violations"
+      ],
+      "open_requests": 0,
+      "click_requests": 0,
+      "find_requests": 0,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn440",
+      "exact_search_queries": [],
+      "open_requests": 2,
+      "click_requests": 0,
+      "find_requests": 0,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn441",
+      "exact_search_queries": [
+        "site:housingforhealthpartnership.org \"2025\" \"Watsonville\" \"Point\"",
+        "site:santacruzcountyca.gov \"2025\" \"point-in-time\"",
+        "site:santacruzca.gov \"2025\" \"PIT\" 2025 2026"
+      ],
+      "open_requests": 0,
+      "click_requests": 2,
+      "find_requests": 0,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn442",
+      "exact_search_queries": [],
+      "open_requests": 1,
+      "click_requests": 0,
+      "find_requests": 0,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn443",
+      "exact_search_queries": [
+        "site:ambag.org Monterey County 2022 greenhouse gas emissions inventory 2023 all jurisdictions",
+        "site:countyofmonterey.gov greenhouse gas inventory \"2022\" \"incorporated\"",
+        "site:carmelca.gov \"water\" \"2024\" \"residential\" gallons"
+      ],
+      "open_requests": 0,
+      "click_requests": 1,
+      "find_requests": 0,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn444",
+      "exact_search_queries": [],
+      "open_requests": 1,
+      "click_requests": 0,
+      "find_requests": 0,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn445",
+      "exact_search_queries": [],
+      "open_requests": 1,
+      "click_requests": 0,
+      "find_requests": 1,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn446",
+      "exact_search_queries": [],
+      "open_requests": 0,
+      "click_requests": 1,
+      "find_requests": 0,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn447",
+      "exact_search_queries": [],
+      "open_requests": 0,
+      "click_requests": 2,
+      "find_requests": 0,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn448",
+      "exact_search_queries": [
+        "site:www2.census.gov \"2024\" \"B19083\" \"5-Year\"",
+        "site:census.gov \"table-based\" \"2024\" summary file download"
+      ],
+      "open_requests": 0,
+      "click_requests": 0,
+      "find_requests": 0,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn449",
+      "exact_search_queries": [],
+      "open_requests": 1,
+      "click_requests": 0,
+      "find_requests": 2,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn450",
+      "exact_search_queries": [],
+      "open_requests": 1,
+      "click_requests": 0,
+      "find_requests": 0,
+      "screenshot_requests": 0
+    },
+    {
+      "tool_result_prefix": "turn451",
+      "exact_search_queries": [],
+      "open_requests": 0,
+      "click_requests": 0,
+      "find_requests": 0,
+      "screenshot_requests": 2
+    },
+    {
+      "tool_result_prefix": "turn452",
+      "exact_search_queries": [
+        "site:ci.carmel.ca.us \"California American Water\" \"entire\"",
+        "site:ci.carmel.ca.us \"water\" \"service\" \"Monterey\" \"city\"",
+        "site:amwater.com \"2025\" \"Monterey\" \"Water Quality\"",
+        "site:countyofmonterey.gov \"2025\" \"all\" \"greenhouse gas\" inventory"
+      ],
+      "open_requests": 0,
+      "click_requests": 0,
+      "find_requests": 0,
+      "screenshot_requests": 0
+    }
+  ]
+}

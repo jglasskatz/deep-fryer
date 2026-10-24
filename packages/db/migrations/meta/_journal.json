@@ -127,6 +127,34 @@
       "when": 1792251890478,
       "tag": "0017_subscriptions_first_invoice_paid",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792771200000,
+      "tag": "0018_finding_audits",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792771200001,
+      "tag": "0019_custom_pages_publication",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792771200002,
+      "tag": "0020_dual_review",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1792771200003,
+      "tag": "0021_portrait_content_management",
+      "breakpoints": true
     }
   ]
 }

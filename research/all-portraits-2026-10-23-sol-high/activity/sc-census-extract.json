@@ -1,0 +1,12 @@
+{
+  "mode": "render",
+  "url": "calculations/sc-census-extract.html",
+  "stem": "sc-census-extract",
+  "captured_at": "2026-10-24T01:40:49.134Z",
+  "status": 200,
+  "raw_path": "raw/sc-census-extract.html",
+  "snapshot_path": "evidence/sc-census-extract.png",
+  "sha256": "9a5b557a3a8fcd3d406c2dc98bf9d25137e707703643165033e1801ce573e772",
+  "bytes": 5488,
+  "success": true
+}

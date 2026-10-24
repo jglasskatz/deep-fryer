@@ -110,8 +110,10 @@ const specKey = (spec: PlannedSession): string =>
  * Pure: every planned session with its row (if it started) and its chip,
  * plus the counts the page summarizes. Rows are matched to the plan by
  * dimension (slugById maps a row's dimension id to the slug the plan names),
- * the region-context session by kind; a run never holds two sessions for the
- * same dimension.
+ * the region-context session by kind. Dense dimensions have several rows:
+ * consume each once in start order, so one finished part cannot make every
+ * part appear finished. These historic rows carry no chunk identifier, so
+ * progress labels the dimension rather than claiming a particular chunk.
  */
 export function runProgress(
   specs: readonly PlannedSession[],
@@ -119,13 +121,18 @@ export function runProgress(
   slugById: ReadonlyMap<string, string>,
   phase: RunPhase,
 ): RunProgress {
-  const rowByKey = new Map(
-    sessions.map((s) => [s.kind === 'region_context' ? 'region_context' : (slugById.get(s.dimensionId ?? '') ?? ''), s]),
-  );
+  const rowsByKey = new Map<string, SessionRow[]>();
+  for (const session of [...sessions].sort((a, b) =>
+    (a.startedAt?.getTime() ?? 0) - (b.startedAt?.getTime() ?? 0) || a.id.localeCompare(b.id))) {
+    const key = session.kind === 'region_context' ? 'region_context' : (slugById.get(session.dimensionId ?? '') ?? '');
+    const rows = rowsByKey.get(key) ?? [];
+    rows.push(session);
+    rowsByKey.set(key, rows);
+  }
   const settled = phase === 'complete' || phase === 'failed';
   const items = specs.map((spec): PlannedSessionProgress => {
     const key = specKey(spec);
-    const session = rowByKey.get(key) ?? null;
+    const session = rowsByKey.get(key)?.shift() ?? null;
     let chip: SessionChip;
     if (!session) chip = settled ? 'not_run' : 'queued';
     else if (session.status === 'complete') chip = 'done';

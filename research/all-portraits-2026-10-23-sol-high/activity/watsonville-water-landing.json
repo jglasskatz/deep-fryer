@@ -1,0 +1,8 @@
+{
+  "mode": "page",
+  "url": "https://watsonville.gov/777/Water-Quality",
+  "stem": "watsonville-water-landing",
+  "captured_at": "2026-10-24T01:27:37.463Z",
+  "success": false,
+  "error": "Error: page.goto: net::ERR_CONNECTION_CLOSED at https://watsonville.gov/777/Water-Quality\nCall log:\n\u001b[2m  - navigating to \"https://watsonville.gov/777/Water-Quality\", waiting until \"domcontentloaded\"\u001b[22m\n"
+}

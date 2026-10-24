@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { pctToVizLevel } from '../packages/core/src/viz-level.js';
 const catalog = JSON.parse(readFileSync(new URL('../site/catalog.json', import.meta.url), 'utf8'));
 import { portraitFramework } from './portrait-framework.mjs';
+import { overlayConfig, validateReviewedOverlay } from './research-overlays.mjs';
 export function publicAssetPath(value) {
   if (typeof value !== 'string' || !/^evidence\/[a-z0-9-]+\/[a-f0-9]+\.(png|jpg|jpeg|pdf)$/.test(value)) throw new Error(`Invalid evidence path: ${value}`);
   return value;
@@ -22,6 +23,7 @@ export function validateRelease(release) {
     if (!['published', 'legacy-source', 'research-preview'].includes(portrait.status) || !portrait.notice || !portrait.provenance) throw new Error('Portrait provenance/status missing');
     const framework = portraitFramework(declared);
     if (portrait.status === 'research-preview' && (portrait.provenance.framework_profile !== framework.profile || portrait.provenance.framework_profile_sha256 !== framework.sha256)) throw new Error('Preview framework provenance mismatch');
+    if (declared.framework_profile && (portrait.provenance.framework_profile !== framework.profile || portrait.provenance.framework_profile_sha256 !== framework.sha256)) throw new Error('Portrait framework provenance mismatch');
     if (!portrait.dimensions.length) throw new Error('Empty portrait');
     const dimensions = new Set();
     for (const dimension of portrait.dimensions) {
@@ -40,10 +42,14 @@ export function validateRelease(release) {
         if (indicator.source_url && !['https:', 'http:'].includes(new URL(indicator.source_url).protocol)) throw new Error('Unsafe source URL');
         if (indicator.status === 'source-supported-draft' && (!indicator.evidence_path || !indicator.review_note)) throw new Error('Unsupported draft badge');
         const spec = framework.dimensions.find(d => d.slug === dimension.slug)?.indicators.find(i => i.slug === indicator.indicator_slug);
-        if (indicator.status === 'source-supported-observation' && (!indicator.evidence_path || !indicator.review_note || spec?.scoring !== 'unscored' || !Number.isFinite(indicator.value))) throw new Error('Unsupported observation badge');
+        // An explicit reviewed overlay may retain a related measurement as
+        // context without pretending it answers the configured scored metric.
+        // Exact payload/review binding is checked at the end of this function.
+        const reviewedObservation = indicator.research_review?.campaign === overlayConfig.campaign && indicator.research_review?.approved === false;
+        if (indicator.status === 'source-supported-observation' && (!indicator.evidence_path || !indicator.review_note || (spec?.scoring !== 'unscored' && !reviewedObservation) || !Number.isFinite(indicator.value))) throw new Error('Unsupported observation badge');
         if (indicator.kind === 'observation' || spec?.scoring === 'unscored') {
           const validGap = indicator.kind !== 'observation' && indicator.status === 'gap' && indicator.value === null && indicator.target == null && indicator.level_pct == null && indicator.scoring == null;
-          const validObservation = indicator.kind === 'observation' && Number.isFinite(indicator.value) && indicator.target === null && indicator.level_pct === null && indicator.scoring === null && indicator.unscored_reason?.trim() && ['source-supported-observation', 'uncertain'].includes(indicator.status) && spec?.scoring === 'unscored';
+          const validObservation = indicator.kind === 'observation' && Number.isFinite(indicator.value) && indicator.target === null && indicator.level_pct === null && indicator.scoring === null && indicator.unscored_reason?.trim() && ['source-supported-observation', 'uncertain'].includes(indicator.status) && (spec?.scoring === 'unscored' || reviewedObservation);
           if (!validGap && !validObservation) throw new Error('Unscored observation cannot acquire a score');
         }
         if (indicator.status === 'gap' && indicator.value !== null) throw new Error('A gap cannot be a numeric claim');
@@ -65,6 +71,7 @@ export function validateRelease(release) {
     if (portrait.status === 'research-preview' && (portrait.provenance.approved !== false || portrait.provenance.kind !== 'session-research' || portrait.dimensions.length !== framework.dimensions.length)) throw new Error('Invalid preview provenance or dimension coverage');
   }
   for (const { slug } of catalog.portraits) if (!slugs.has(slug)) throw new Error(`Required portrait missing: ${slug}`);
+  validateReviewedOverlay(release);
   return release;
 }
 export function escapeHtml(value) { return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;'); }

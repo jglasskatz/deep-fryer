@@ -1,0 +1,120 @@
+{
+  "id": "bronx:food:0",
+  "portrait": "bronx",
+  "dimension": "food",
+  "indicator_index": 0,
+  "kind": "replace",
+  "before": {
+    "name": "Food insecurity rate",
+    "unit": "% of residents",
+    "year": 2022,
+    "value": 20.2,
+    "source": "NYC Mayor's Office of Food Policy, \"NYC Food by the Numbers\" (2024 edition, published January 2025), section \"Food Insecurity By Borough\"",
+    "target": 5,
+    "scoring": {
+      "inputs": {
+        "scale": 5,
+        "value": 20.2,
+        "target": 5
+      },
+      "function": "lower_is_better",
+      "worked_math": "level_pct = (20.2 − 5) ⁄ 5 × 100 = 15.2 ⁄ 5 × 100 = +304.0 (shortfall: 4.04× the target rate)",
+      "threshold_ref": "food.food-insecurity-rate"
+    },
+    "evidence": {
+      "captured_at": "2026-08-05T23:24:02Z",
+      "snapshot_path": "CAPTURE_FAILED — capture_evidence invoked 3× (2× with pdf_url, 1× url-only) and returned no snapshot_path/pdf_path; no path fabricated"
+    },
+    "level_pct": 304,
+    "confidence": "medium",
+    "source_url": "https://www.nyc.gov/assets/foodpolicy/downloads/pdf/NYC-Food-by-the-Numbers-2024.pdf",
+    "source_tier": 1,
+    "geographic_scale": "county",
+    "geography": "county",
+    "status": "published",
+    "evidence_path": null,
+    "pdf_path": null
+  },
+  "after": {
+    "name": "Food insecurity rate",
+    "unit": "% of residents",
+    "year": 2022,
+    "value": 20.2,
+    "source": "NYC Mayor's Office of Food Policy, \"NYC Food by the Numbers\" (2024 edition, published January 2025), section \"Food Insecurity By Borough\"",
+    "target": 5,
+    "scoring": {
+      "inputs": {
+        "scale": 5,
+        "value": 20.2,
+        "target": 5
+      },
+      "function": "lower_is_better",
+      "worked_math": "level_pct = (20.2 − 5) ⁄ 5 × 100 = 15.2 ⁄ 5 × 100 = +304.0 (shortfall: 4.04× the target rate)",
+      "threshold_ref": "food.food-insecurity-rate"
+    },
+    "evidence": {
+      "snapshot_path": "evidence/bronx-food-report-page4.png",
+      "captured_at": "2026-10-24T01:26:23.503Z",
+      "pdf_path": "raw/bronx-food-2024-report.pdf"
+    },
+    "level_pct": 304,
+    "confidence": "medium",
+    "source_url": "https://home4.nyc.gov/assets/foodpolicy/downloads/pdf/NYC-Food-by-the-Numbers-2024.pdf",
+    "source_tier": 1,
+    "geographic_scale": "county",
+    "geography": "county",
+    "status": "source-supported-draft",
+    "evidence_path": "evidence/bronx-food-report-page4.png",
+    "pdf_path": "raw/bronx-food-2024-report.pdf",
+    "notes": "Official NYC Food by the Numbers 2024 PDF physicalpage 4 identifies Bronx County 290,990 people /20.2% food insecure, explicitly asof 2022. Report publication year is not the observation year. This restores missing evidence; it does not establish a 2024 prevalence."
+  },
+  "field_diff": {
+    "evidence": {
+      "before": {
+        "captured_at": "2026-08-05T23:24:02Z",
+        "snapshot_path": "CAPTURE_FAILED — capture_evidence invoked 3× (2× with pdf_url, 1× url-only) and returned no snapshot_path/pdf_path; no path fabricated"
+      },
+      "after": {
+        "snapshot_path": "evidence/bronx-food-report-page4.png",
+        "captured_at": "2026-10-24T01:26:23.503Z",
+        "pdf_path": "raw/bronx-food-2024-report.pdf"
+      }
+    },
+    "source_url": {
+      "before": "https://www.nyc.gov/assets/foodpolicy/downloads/pdf/NYC-Food-by-the-Numbers-2024.pdf",
+      "after": "https://home4.nyc.gov/assets/foodpolicy/downloads/pdf/NYC-Food-by-the-Numbers-2024.pdf"
+    },
+    "status": {
+      "before": "published",
+      "after": "source-supported-draft"
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/bronx-food-report-page4.png"
+    },
+    "pdf_path": {
+      "before": null,
+      "after": "raw/bronx-food-2024-report.pdf"
+    },
+    "notes": {
+      "before": null,
+      "after": "Official NYC Food by the Numbers 2024 PDF physicalpage 4 identifies Bronx County 290,990 people /20.2% food insecure, explicitly asof 2022. Report publication year is not the observation year. This restores missing evidence; it does not establish a 2024 prevalence."
+    }
+  },
+  "reason": "Restore the exact archived table supporting the already-published 2022 observation.",
+  "source_support": [
+    {
+      "url": "https://home4.nyc.gov/assets/foodpolicy/downloads/pdf/NYC-Food-by-the-Numbers-2024.pdf",
+      "raw_path": "raw/bronx-food-2024-report.pdf",
+      "raw_sha256": "7caf285beb326d5141cc62b9903c9579ceba41e651b718dfb672ac83ab3bc336",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:26:23.503Z",
+      "period": "2022",
+      "scale": "county",
+      "snapshot_path": "evidence/bronx-food-report-page4.png",
+      "snapshot_sha256": "dbb52493ec7fd91f46bdf4b5e8999287b53d8806d6f530b678212cf76bc39708",
+      "pdf_path": "raw/bronx-food-2024-report.pdf"
+    }
+  ],
+  "review_required": true
+}

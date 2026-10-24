@@ -1,0 +1,14 @@
+{
+  "mode": "fetch",
+  "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b19083.dat",
+  "stem": "acs5-gini2024",
+  "captured_at": "2026-10-24T01:31:17.815Z",
+  "status": 200,
+  "raw_path": "raw/acs5-gini2024.bin",
+  "sha256": "338f7a1191eaaf3913913e78c36aaa9d82f2b5c8faaf889be2e597b28869205e",
+  "bytes": 9870217,
+  "success": true,
+  "stored_path": "raw/acs5-gini2024.bin.gz",
+  "stored_sha256": "c5002dfc80371b532da1b97128d8780fbd0eeca51a14c5abb235d4def89f00d3",
+  "storage_encoding": "gzip; original bytes round-trip exactly"
+}

@@ -1,0 +1,10 @@
+[
+ ["fetch","https://data.cityofnewyork.us/resource/c3uy-2p5r.json?name=Fine%20particles%20(PM%202.5)&measure=Annual%20mean&geo_type_name=Citywide&time_period=2024","nyc-pm25-2024"],
+ ["fetch","https://data.cityofnewyork.us/api/views/ebb7-mvp5.json","dsny-metadata"],
+ ["fetch","https://data.cityofnewyork.us/resource/wq7q-htne.json?$limit=1","nyc-ghg-schema"],
+ ["fetch","https://www.protectadks.org/wp-content/uploads/2023/11/Protect-the-Adirondacks-30-by-30-Report-NYS-Counties-web.pdf","nyc-protected-2023"],
+ ["fetch","https://home4.nyc.gov/assets/foodpolicy/downloads/pdf/NYC-Food-by-the-Numbers-2024.pdf","bronx-food-2024-report"],
+ ["fetch","https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2024.1398087/full","nyc-ocean-study"],
+ ["fetch","https://api.census.gov/data/2024/acs/acs5?get=NAME,B17001_001E,B17001_002E,B19083_001E,B28002_001E,B28002_004E,B28002_007E&for=place:69112,83668&in=state:06","sc-city-census-2024"],
+ ["fetch","https://www2.census.gov/programs-surveys/acs/data/2024/1_year_geographic_comparison_tables/GCT2801.csv","broadband-2024-comparison"]
+]

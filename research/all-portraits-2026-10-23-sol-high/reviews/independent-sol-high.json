@@ -1,0 +1,1547 @@
+{
+  "schema_version": 1,
+  "reviewer": "gpt-6.1-sol",
+  "reasoning_effort": "high",
+  "reviewer_role": "independent machine reviewer; did not author frozen amendments",
+  "reviewed_at": "2026-10-24T01:56:37.784910+00:00",
+  "approved": false,
+  "human_approval": false,
+  "acceptance_scope": "research-preview only",
+  "hash_serialization": "Whole-file SHA-256 binds exact UTF-8 bytes. Per-object hashes use Python json.dumps(sort_keys=True,ensure_ascii=False,separators=(comma,colon)) UTF-8; the complete file hash remains authoritative.",
+  "baseline_snapshot_sha256": "a5e318a6bc47afe632dbd1aab17ea354e68279af02ad2c59b18cd43011964d2b",
+  "amendment_files": {
+    "findings/amendments.json": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+    "findings/supplemental-housing.json": "0b7508b08a4ea7af36a32850f13aec3e578f2897a5fc6e4b41960fbe7ce21d30"
+  },
+  "evidence_manifests": {
+    "evidence-manifest.json": "55bec24447b6cbbc488a361b4b20c89173733659fc9b23e8efa0336e2fe84991",
+    "supplemental-evidence-manifest.json": "b69e034893904bd6c8acd26b258e209fcc9069785e66f4d9a012a515a2b19284"
+  },
+  "gap_dispositions_sha256": "4514f7b6f65c351f74d124767939530fdc80e80a03dca7b996a1ac99f92b43e3",
+  "checks_sha256": "43824043d324ed770c50bf990af15facf6779db3b12353e1b14d5e6d0af522c2",
+  "summary": {
+    "reviewed": 36,
+    "accept": 31,
+    "revise": 5,
+    "reject": 0,
+    "deterministic_and_content_checks": 334,
+    "passed_checks": 332,
+    "failed_checks": 2,
+    "unique_raw_sources": 28,
+    "unique_exhibits_visually_inspected": 16,
+    "source_support_entries": 70,
+    "gaps_audited": 9
+  },
+  "global_integration_conditions": [
+    "Accepted means source/construct review of the explicitly described research-preview semantics, not a human-approved finding, DB write, production publication or auto-approval.",
+    "Raw after payloads use heterogeneous snapshot fields. The integration owner must validate the preview observation contract and required source tiers; null-score observations must not acquire wedges from legacy prose, inherited scores or color levels.",
+    "Keep each exhibit labeled as a researcher-generated extract where applicable; original publisher bytes and source URLs remain load-bearing.",
+    "Supply this independent review note to the preview. Inherited historical review_note fields are not the verdict for newly bound evidence.",
+    "A revised amendment or exhibit changes its binding and requires a new review; do not silently treat a revised payload as covered by this frozen verdict.",
+    "Retain non-comparable ACS periods, explicit regional proxies, unknown FormA quantities, source arithmetic conflicts and unresolved metric definitions in visible context."
+  ],
+  "reviews": [
+    {
+      "id": "nyc:air-pollution:0",
+      "portrait": "nyc",
+      "dimension": "air-pollution",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Exact archived DOHMH citywide 2024 annual-mean PM2.5 row is 6.255051193 µg/m³; existing target 5 and +25.1 scoring arithmetic reproduce. This repairs evidence capture without changing the measure. The spaced dataset identifier in source prose is cosmetic; the load-bearing URL and raw row identify c3uy-2p5r exactly.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "283f0ebcb05e5d7d6d821f7c006cc6264c2f1945ffc2a25479cf2223a7040877",
+      "before_canonical_sha256": "a0033deb540370beeeda89d60333cd855a1b831fd2f4812d84de661347112aa2",
+      "after_canonical_sha256": "fb06f53d84949d845bc5cd927c94a6554ec86f39e7dbf135c7e959ddc48b7dd5",
+      "source_support": [
+        {
+          "url": "https://data.cityofnewyork.us/resource/c3uy-2p5r.json?name=Fine%20particles%20(PM%202.5)&measure=Annual%20mean&geo_type_name=Citywide&time_period=2024",
+          "raw_path": "raw/nyc-pm25-2024.json",
+          "raw_sha256": "0b337f6ca8aef27d3bda3fb8316993611ab49c28ee8d95a7168fa228fcf916f2",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:26:20.873Z",
+          "period": "calendar 2024",
+          "scale": "city",
+          "snapshot_path": "evidence/nyc-pm25-extract.png",
+          "snapshot_sha256": "9d6ec1af3cab0daae110a11e2db72bcd2b9231e3c39b7351db031453328e182a"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "bronx:food:0",
+      "portrait": "bronx",
+      "dimension": "food",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "The publisher PDF and page-4 exhibit identify Bronx County 290,990 people, 20.2%, as of 2022. Publication year is not observation year. Existing 5% target and +304 score reproduce; no new 2024 prevalence is inferred.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "efc48e5f45cb43dae58e8adc8fa64ccec509526509c4e3c6b64dfd552b323a60",
+      "before_canonical_sha256": "1cc1425b0228817e25e033a575f71b8dc34f020136711bc330147444a7b79b03",
+      "after_canonical_sha256": "d397f44da34e76731c2053e22dfb95ad9f02d9bbdea4d8675482f7d54db0972d",
+      "source_support": [
+        {
+          "url": "https://home4.nyc.gov/assets/foodpolicy/downloads/pdf/NYC-Food-by-the-Numbers-2024.pdf",
+          "raw_path": "raw/bronx-food-2024-report.pdf",
+          "raw_sha256": "7caf285beb326d5141cc62b9903c9579ceba41e651b718dfb672ac83ab3bc336",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:26:23.503Z",
+          "period": "2022",
+          "scale": "county",
+          "snapshot_path": "evidence/bronx-food-report-page4.png",
+          "snapshot_sha256": "dbb52493ec7fd91f46bdf4b5e8999287b53d8806d6f530b678212cf76bc39708",
+          "pdf_path": "raw/bronx-food-2024-report.pdf"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "nyc:water-sanitation:0",
+      "portrait": "nyc",
+      "dimension": "water-sanitation",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "The NYSDOH annual2025 report says no violations entered in SDWIS/State; DEP reports meeting all drinking-water standards. EPA ECHO independently archives historical TT violation20170201, beginning2017-02-01 and Addressed under the2019-05-15 decree, with recent Violation-Addressed quarters. These annual-entry and historical/current regulatory constructs do not identify one coherent population-with-no-health-based-violations percentage. Accept explicit uncertainty/null score pending definition; this is not a finding that the former100 or0 endpoint was categorically false, and0 never establishes that no residents had safe tap water. Boroughs share system context rather than independent borough estimates.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "d0fe74935c014313e144e8d66df92f3a20d1d9c7b87fdf37e0582d5d3b939541",
+      "before_canonical_sha256": "48991cb9c0e9a562ccc92b6eae1ba51492578422160cfd41c8158b2a10ac5ed7",
+      "after_canonical_sha256": "89a422a67e8b51df063363758904123acecc9c20049f93250b4043fc64292cbd",
+      "source_support": [
+        {
+          "url": "https://healthweb-back.health.ny.gov/environmental/water/drinking/violations/2025/new_york_city_compliance_report.htm",
+          "raw_path": "raw/nyc-state-water-2025.html",
+          "raw_sha256": "36bee3097012520dc5141fb3e49e628b4188b2a84cca5bd2af02fb70a23f9fc2",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:27.185Z",
+          "period": "calendar 2025 annual violations entered",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-state-water-2025.png",
+          "snapshot_sha256": "c68322c9facd61158df39f826862418d26013fefa228e64b3005ce121297cea1"
+        },
+        {
+          "url": "https://home4.nyc.gov/assets/dep/downloads/pdf/water/drinking-water/drinking-water-supply-quality-report/2025-drinking-water-supply-quality-report.pdf",
+          "raw_path": "raw/nyc-water-2025-mirror.pdf",
+          "raw_sha256": "b08c91a50768fbfced4be715c61b485d61a56cb61afe80b0bb2ce29d3f252dff",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:37.629Z",
+          "period": "calendar 2025",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-water2025-page3.png",
+          "snapshot_sha256": "8fdebef76a8410601ab00ee108044c9c38d40f95c42c7cfdb621905a329427d2",
+          "pdf_path": "raw/nyc-water-2025-mirror.pdf"
+        },
+        {
+          "url": "https://echo.epa.gov/detailed-facility-report?fid=NY7003493&sys=SDWIS",
+          "raw_path": "raw/nyc-echo-current.html",
+          "raw_sha256": "31f1ddac3173794b9059a135df44889ca772cc1578326781ce42296166efc41f",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:56.817Z",
+          "period": "currentthrough 2026 Q2; historicalstart 2017-02-01",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-echo-current.png",
+          "snapshot_sha256": "51a2e988ce87efab3cee39b94f153e47f418a4e75a166a82617d13c0b844f8df"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "manhattan:water-sanitation:0",
+      "portrait": "manhattan",
+      "dimension": "water-sanitation",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "The NYSDOH annual2025 report says no violations entered in SDWIS/State; DEP reports meeting all drinking-water standards. EPA ECHO independently archives historical TT violation20170201, beginning2017-02-01 and Addressed under the2019-05-15 decree, with recent Violation-Addressed quarters. These annual-entry and historical/current regulatory constructs do not identify one coherent population-with-no-health-based-violations percentage. Accept explicit uncertainty/null score pending definition; this is not a finding that the former100 or0 endpoint was categorically false, and0 never establishes that no residents had safe tap water. Boroughs share system context rather than independent borough estimates.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "8d8bfe07c3fe302b6504e0b51da303ccefc27aadf4abce2ee4b18a4a03643871",
+      "before_canonical_sha256": "bd8a0d64275f26087b1b1f94ea5048ce5933d3d6e65087cf71f0c88d40ccbded",
+      "after_canonical_sha256": "89a422a67e8b51df063363758904123acecc9c20049f93250b4043fc64292cbd",
+      "source_support": [
+        {
+          "url": "https://healthweb-back.health.ny.gov/environmental/water/drinking/violations/2025/new_york_city_compliance_report.htm",
+          "raw_path": "raw/nyc-state-water-2025.html",
+          "raw_sha256": "36bee3097012520dc5141fb3e49e628b4188b2a84cca5bd2af02fb70a23f9fc2",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:27.185Z",
+          "period": "calendar 2025 annual violations entered",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-state-water-2025.png",
+          "snapshot_sha256": "c68322c9facd61158df39f826862418d26013fefa228e64b3005ce121297cea1"
+        },
+        {
+          "url": "https://home4.nyc.gov/assets/dep/downloads/pdf/water/drinking-water/drinking-water-supply-quality-report/2025-drinking-water-supply-quality-report.pdf",
+          "raw_path": "raw/nyc-water-2025-mirror.pdf",
+          "raw_sha256": "b08c91a50768fbfced4be715c61b485d61a56cb61afe80b0bb2ce29d3f252dff",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:37.629Z",
+          "period": "calendar 2025",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-water2025-page3.png",
+          "snapshot_sha256": "8fdebef76a8410601ab00ee108044c9c38d40f95c42c7cfdb621905a329427d2",
+          "pdf_path": "raw/nyc-water-2025-mirror.pdf"
+        },
+        {
+          "url": "https://echo.epa.gov/detailed-facility-report?fid=NY7003493&sys=SDWIS",
+          "raw_path": "raw/nyc-echo-current.html",
+          "raw_sha256": "31f1ddac3173794b9059a135df44889ca772cc1578326781ce42296166efc41f",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:56.817Z",
+          "period": "currentthrough 2026 Q2; historicalstart 2017-02-01",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-echo-current.png",
+          "snapshot_sha256": "51a2e988ce87efab3cee39b94f153e47f418a4e75a166a82617d13c0b844f8df"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "brooklyn:water-sanitation:0",
+      "portrait": "brooklyn",
+      "dimension": "water-sanitation",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "The NYSDOH annual2025 report says no violations entered in SDWIS/State; DEP reports meeting all drinking-water standards. EPA ECHO independently archives historical TT violation20170201, beginning2017-02-01 and Addressed under the2019-05-15 decree, with recent Violation-Addressed quarters. These annual-entry and historical/current regulatory constructs do not identify one coherent population-with-no-health-based-violations percentage. Accept explicit uncertainty/null score pending definition; this is not a finding that the former100 or0 endpoint was categorically false, and0 never establishes that no residents had safe tap water. Boroughs share system context rather than independent borough estimates.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "b25f7ef17ddca91cb3b175408681d66f5e530694ae179d852496b4427ba0114f",
+      "before_canonical_sha256": "462a04f725bbc70c6d164ac5615b853eaf4931351429f7e5a2d756500ec9cba8",
+      "after_canonical_sha256": "89a422a67e8b51df063363758904123acecc9c20049f93250b4043fc64292cbd",
+      "source_support": [
+        {
+          "url": "https://healthweb-back.health.ny.gov/environmental/water/drinking/violations/2025/new_york_city_compliance_report.htm",
+          "raw_path": "raw/nyc-state-water-2025.html",
+          "raw_sha256": "36bee3097012520dc5141fb3e49e628b4188b2a84cca5bd2af02fb70a23f9fc2",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:27.185Z",
+          "period": "calendar 2025 annual violations entered",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-state-water-2025.png",
+          "snapshot_sha256": "c68322c9facd61158df39f826862418d26013fefa228e64b3005ce121297cea1"
+        },
+        {
+          "url": "https://home4.nyc.gov/assets/dep/downloads/pdf/water/drinking-water/drinking-water-supply-quality-report/2025-drinking-water-supply-quality-report.pdf",
+          "raw_path": "raw/nyc-water-2025-mirror.pdf",
+          "raw_sha256": "b08c91a50768fbfced4be715c61b485d61a56cb61afe80b0bb2ce29d3f252dff",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:37.629Z",
+          "period": "calendar 2025",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-water2025-page3.png",
+          "snapshot_sha256": "8fdebef76a8410601ab00ee108044c9c38d40f95c42c7cfdb621905a329427d2",
+          "pdf_path": "raw/nyc-water-2025-mirror.pdf"
+        },
+        {
+          "url": "https://echo.epa.gov/detailed-facility-report?fid=NY7003493&sys=SDWIS",
+          "raw_path": "raw/nyc-echo-current.html",
+          "raw_sha256": "31f1ddac3173794b9059a135df44889ca772cc1578326781ce42296166efc41f",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:56.817Z",
+          "period": "currentthrough 2026 Q2; historicalstart 2017-02-01",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-echo-current.png",
+          "snapshot_sha256": "51a2e988ce87efab3cee39b94f153e47f418a4e75a166a82617d13c0b844f8df"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "queens:water-sanitation:0",
+      "portrait": "queens",
+      "dimension": "water-sanitation",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "The NYSDOH annual2025 report says no violations entered in SDWIS/State; DEP reports meeting all drinking-water standards. EPA ECHO independently archives historical TT violation20170201, beginning2017-02-01 and Addressed under the2019-05-15 decree, with recent Violation-Addressed quarters. These annual-entry and historical/current regulatory constructs do not identify one coherent population-with-no-health-based-violations percentage. Accept explicit uncertainty/null score pending definition; this is not a finding that the former100 or0 endpoint was categorically false, and0 never establishes that no residents had safe tap water. Boroughs share system context rather than independent borough estimates.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "76c8155c1875935b2c3269499e0116a16f4a74655e1d678ae8cb853b829eaae1",
+      "before_canonical_sha256": "18ed14473bdef9cd8ccd5d5ca3e4a18e1144314766263b64e7a753cde0cb7c6b",
+      "after_canonical_sha256": "01f8dfeb8887debae441718e05d3c9b2ef9ce80d4a7f7483c1d4aacf1bc587e0",
+      "source_support": [
+        {
+          "url": "https://healthweb-back.health.ny.gov/environmental/water/drinking/violations/2025/new_york_city_compliance_report.htm",
+          "raw_path": "raw/nyc-state-water-2025.html",
+          "raw_sha256": "36bee3097012520dc5141fb3e49e628b4188b2a84cca5bd2af02fb70a23f9fc2",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:27.185Z",
+          "period": "calendar 2025 annual violations entered",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-state-water-2025.png",
+          "snapshot_sha256": "c68322c9facd61158df39f826862418d26013fefa228e64b3005ce121297cea1"
+        },
+        {
+          "url": "https://home4.nyc.gov/assets/dep/downloads/pdf/water/drinking-water/drinking-water-supply-quality-report/2025-drinking-water-supply-quality-report.pdf",
+          "raw_path": "raw/nyc-water-2025-mirror.pdf",
+          "raw_sha256": "b08c91a50768fbfced4be715c61b485d61a56cb61afe80b0bb2ce29d3f252dff",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:37.629Z",
+          "period": "calendar 2025",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-water2025-page3.png",
+          "snapshot_sha256": "8fdebef76a8410601ab00ee108044c9c38d40f95c42c7cfdb621905a329427d2",
+          "pdf_path": "raw/nyc-water-2025-mirror.pdf"
+        },
+        {
+          "url": "https://echo.epa.gov/detailed-facility-report?fid=NY7003493&sys=SDWIS",
+          "raw_path": "raw/nyc-echo-current.html",
+          "raw_sha256": "31f1ddac3173794b9059a135df44889ca772cc1578326781ce42296166efc41f",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:56.817Z",
+          "period": "currentthrough 2026 Q2; historicalstart 2017-02-01",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-echo-current.png",
+          "snapshot_sha256": "51a2e988ce87efab3cee39b94f153e47f418a4e75a166a82617d13c0b844f8df"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "bronx:water-sanitation:0",
+      "portrait": "bronx",
+      "dimension": "water-sanitation",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "The NYSDOH annual2025 report says no violations entered in SDWIS/State; DEP reports meeting all drinking-water standards. EPA ECHO independently archives historical TT violation20170201, beginning2017-02-01 and Addressed under the2019-05-15 decree, with recent Violation-Addressed quarters. These annual-entry and historical/current regulatory constructs do not identify one coherent population-with-no-health-based-violations percentage. Accept explicit uncertainty/null score pending definition; this is not a finding that the former100 or0 endpoint was categorically false, and0 never establishes that no residents had safe tap water. Boroughs share system context rather than independent borough estimates.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "4b4912d5554c8c41d95c968b7b71d49699265919a686c8bda2e89044c67da523",
+      "before_canonical_sha256": "fac1cbebaa9abd6a95cdd3ca64141053779c603e0c1066f6f5c3ba96b6516f7a",
+      "after_canonical_sha256": "89a422a67e8b51df063363758904123acecc9c20049f93250b4043fc64292cbd",
+      "source_support": [
+        {
+          "url": "https://healthweb-back.health.ny.gov/environmental/water/drinking/violations/2025/new_york_city_compliance_report.htm",
+          "raw_path": "raw/nyc-state-water-2025.html",
+          "raw_sha256": "36bee3097012520dc5141fb3e49e628b4188b2a84cca5bd2af02fb70a23f9fc2",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:27.185Z",
+          "period": "calendar 2025 annual violations entered",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-state-water-2025.png",
+          "snapshot_sha256": "c68322c9facd61158df39f826862418d26013fefa228e64b3005ce121297cea1"
+        },
+        {
+          "url": "https://home4.nyc.gov/assets/dep/downloads/pdf/water/drinking-water/drinking-water-supply-quality-report/2025-drinking-water-supply-quality-report.pdf",
+          "raw_path": "raw/nyc-water-2025-mirror.pdf",
+          "raw_sha256": "b08c91a50768fbfced4be715c61b485d61a56cb61afe80b0bb2ce29d3f252dff",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:37.629Z",
+          "period": "calendar 2025",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-water2025-page3.png",
+          "snapshot_sha256": "8fdebef76a8410601ab00ee108044c9c38d40f95c42c7cfdb621905a329427d2",
+          "pdf_path": "raw/nyc-water-2025-mirror.pdf"
+        },
+        {
+          "url": "https://echo.epa.gov/detailed-facility-report?fid=NY7003493&sys=SDWIS",
+          "raw_path": "raw/nyc-echo-current.html",
+          "raw_sha256": "31f1ddac3173794b9059a135df44889ca772cc1578326781ce42296166efc41f",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:56.817Z",
+          "period": "currentthrough 2026 Q2; historicalstart 2017-02-01",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-echo-current.png",
+          "snapshot_sha256": "51a2e988ce87efab3cee39b94f153e47f418a4e75a166a82617d13c0b844f8df"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "staten-island:water-sanitation:0",
+      "portrait": "staten-island",
+      "dimension": "water-sanitation",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "The NYSDOH annual2025 report says no violations entered in SDWIS/State; DEP reports meeting all drinking-water standards. EPA ECHO independently archives historical TT violation20170201, beginning2017-02-01 and Addressed under the2019-05-15 decree, with recent Violation-Addressed quarters. These annual-entry and historical/current regulatory constructs do not identify one coherent population-with-no-health-based-violations percentage. Accept explicit uncertainty/null score pending definition; this is not a finding that the former100 or0 endpoint was categorically false, and0 never establishes that no residents had safe tap water. Boroughs share system context rather than independent borough estimates.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "840f6626c1048995337f6d9867b5ddf6e08ffbcfeb57ea8f37fe992cb945eb82",
+      "before_canonical_sha256": "36430dd93e70466dd425f493f86cf1cbbb3c7f197da7077fb2a898e7a2be2860",
+      "after_canonical_sha256": "b9311158e268afab12532d97491c9a49ffe06cf0be8a8c8111d48d1204f0b0e4",
+      "source_support": [
+        {
+          "url": "https://healthweb-back.health.ny.gov/environmental/water/drinking/violations/2025/new_york_city_compliance_report.htm",
+          "raw_path": "raw/nyc-state-water-2025.html",
+          "raw_sha256": "36bee3097012520dc5141fb3e49e628b4188b2a84cca5bd2af02fb70a23f9fc2",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:27.185Z",
+          "period": "calendar 2025 annual violations entered",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-state-water-2025.png",
+          "snapshot_sha256": "c68322c9facd61158df39f826862418d26013fefa228e64b3005ce121297cea1"
+        },
+        {
+          "url": "https://home4.nyc.gov/assets/dep/downloads/pdf/water/drinking-water/drinking-water-supply-quality-report/2025-drinking-water-supply-quality-report.pdf",
+          "raw_path": "raw/nyc-water-2025-mirror.pdf",
+          "raw_sha256": "b08c91a50768fbfced4be715c61b485d61a56cb61afe80b0bb2ce29d3f252dff",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:37.629Z",
+          "period": "calendar 2025",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-water2025-page3.png",
+          "snapshot_sha256": "8fdebef76a8410601ab00ee108044c9c38d40f95c42c7cfdb621905a329427d2",
+          "pdf_path": "raw/nyc-water-2025-mirror.pdf"
+        },
+        {
+          "url": "https://echo.epa.gov/detailed-facility-report?fid=NY7003493&sys=SDWIS",
+          "raw_path": "raw/nyc-echo-current.html",
+          "raw_sha256": "31f1ddac3173794b9059a135df44889ca772cc1578326781ce42296166efc41f",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:25:56.817Z",
+          "period": "currentthrough 2026 Q2; historicalstart 2017-02-01",
+          "scale": "NYCsystem",
+          "snapshot_path": "evidence/nyc-echo-current.png",
+          "snapshot_sha256": "51a2e988ce87efab3cee39b94f153e47f418a4e75a166a82617d13c0b844f8df"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "nyc:chemical-pollution:1",
+      "portrait": "nyc",
+      "dimension": "chemical-pollution",
+      "verdict": "revise",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "NYC FY2005 3,348,817.81 tons and FY2025 2,928,470.67 tons reproduce 12.5521053652%→12.55 with 708 unique district-month records per year and all 12 months. Null score correctly recognizes collection versus final landfill disposal. However the note ends 'Original Bronx calculation omitted January; full year reduction 12.55%.' That juxtaposition assigns or appears to assign NYC's fiscal-year result to Bronx, whose corrected calendar-year result is 6.44%. Revise that sentence before accepting the exact amendment.",
+      "required_changes_or_integration_conditions": [
+        "Delete the last Bronx sentence from the NYC notes, or explicitly state Bronx CY6.44% versus NYC FY12.55%; retain null score."
+      ],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "4556714ca025e2ed564c1eeccd5ebc31f6bd12b44d4d59e3aac318911178ab91",
+      "before_canonical_sha256": "f8dd90347876cc2df2abceb1aefaf632cc7b6773a010a4c3f4411f6327c09c47",
+      "after_canonical_sha256": "800f294c3e13ac2ee31c01277ee4cea4b532e68c044f327acbb9649bace4299e",
+      "source_support": [
+        {
+          "url": "https://data.cityofnewyork.us/resource/ebb7-mvp5.json?%24select=month%2Cborough%2Ccommunitydistrict%2Crefusetonscollected&%24where=month+between+%272004+%2F+07%27+and+%272005+%2F+06%27+OR+month+between+%272024+%2F+07%27+and+%272025+%2F+06%27&%24order=month%2Cborough%2Ccommunitydistrict&%24limit=5000",
+          "raw_path": "raw/dsny-raw-fy.json",
+          "raw_sha256": "4a6a2b54c537103f5b700dbf770176f2d8df544d10b1c96d1f2fd62c8801d554",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:28:52.187Z",
+          "period": "FY2005 vs FY2025",
+          "scale": "city",
+          "snapshot_path": "evidence/nyc-waste-extract.png",
+          "snapshot_sha256": "c03105e42ae283ae7689cf82926d3ccc44889835bf4c510702c90f9b3be38a11"
+        },
+        {
+          "url": "https://data.cityofnewyork.us/api/views/ebb7-mvp5.json",
+          "raw_path": "raw/dsny-metadata.json",
+          "raw_sha256": "78ab86a96342ce705ba03ef38d807108f83a10b1f6801619879fc88ad3d61f6f",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:26:20.873Z",
+          "period": null,
+          "scale": null
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "bronx:chemical-pollution:1",
+      "portrait": "bronx",
+      "dimension": "chemical-pollution",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Full Bronx calendar-year totals are 556,777.75 and 520,903.27 tons across 144 unique district-month records each, giving 6.4432316126%→6.44. Removing January exactly reproduces the old 513,421.85 and 478,703.47 inputs. DSNY metadata defines refuse collected from residences/institutions, not final landfill destination or all privately collected waste. Null target/score appropriately keep this a related disposal proxy.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "14533d84727595de05e00a520df010094e1519f003b7b2f9ce9dfbaafee5edd5",
+      "before_canonical_sha256": "71869dce7a94f1d161a28e01aac16518cbf5d284519601fc7bbf9722b99c75e4",
+      "after_canonical_sha256": "9fa69af4738ad0c89bad19ae2b74300949284859f4ed468ce826ead42354b4fc",
+      "source_support": [
+        {
+          "url": "https://data.cityofnewyork.us/resource/ebb7-mvp5.json?%24select=month%2Cborough%2Ccommunitydistrict%2Crefusetonscollected&%24where=month+between+%272005+%2F+01%27+and+%272005+%2F+12%27+OR+month+between+%272025+%2F+01%27+and+%272025+%2F+12%27&%24order=month%2Cborough%2Ccommunitydistrict&%24limit=5000",
+          "raw_path": "raw/dsny-raw-cy.json",
+          "raw_sha256": "6526a4c9014c32037621bee09c8f7a8a7a4f4d4e94e0bb5a45e49960838126b2",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:28:52.184Z",
+          "period": "CY2005 vs CY2025",
+          "scale": "county",
+          "snapshot_path": "evidence/nyc-waste-extract.png",
+          "snapshot_sha256": "c03105e42ae283ae7689cf82926d3ccc44889835bf4c510702c90f9b3be38a11"
+        },
+        {
+          "url": "https://data.cityofnewyork.us/api/views/ebb7-mvp5.json",
+          "raw_path": "raw/dsny-metadata.json",
+          "raw_sha256": "78ab86a96342ce705ba03ef38d807108f83a10b1f6801619879fc88ad3d61f6f",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:26:20.873Z",
+          "period": null,
+          "scale": null
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "bronx:climate-change:0",
+      "portrait": "bronx",
+      "dimension": "climate-change",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "The inventory's single Total row gives CY2024 47,944,551.47 tCO2e. Five NYC county Vintage-2024 population rows sum to 8,478,072; division gives 5.6551243573→5.66 and the retained rounded-input score +126.4. The citywide regional-proxy label is explicit. Vintage-2025's revised denominator would give 5.58; retaining and disclosing the original vintage is defensible.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "422790b52ea98cd1770754753494ca50dbab29d7e53e9c0ebddfbabaeb01d3a8",
+      "before_canonical_sha256": "57969da48e7f8e48a2a36a95785bec1dda8718f61edf5548efddcc28228cfb4e",
+      "after_canonical_sha256": "418d9ccffc96aa512163339d24bc5af6d9306891563f9531f4e7113e97095398",
+      "source_support": [
+        {
+          "url": "https://data.cityofnewyork.us/resource/wq7q-htne.json?$limit=5000",
+          "raw_path": "raw/nyc-ghg-full.json",
+          "raw_sha256": "c1037d86fe7af7b1ba2ca30c6ea5f5717d2ef452576e7c9da29a1ba76bacf41b",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:27:27.329Z",
+          "period": "CY2024;2005 baseline",
+          "scale": "citywide regional proxy",
+          "snapshot_path": "evidence/nyc-ghg-extract.png",
+          "snapshot_sha256": "ec53108458c950aac09274237f6b2d920ac3e6dc231a19267b47e3ba3587a468"
+        },
+        {
+          "url": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2024/counties/totals/co-est2024-alldata.csv",
+          "raw_path": "raw/census-county-pop-v2024.csv",
+          "raw_sha256": "abcc8720d669e793bbfdcd440eeec37a78db3b452adbe4ccd1eadf7c72b522b9",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:32:20.760Z",
+          "period": "July 1,2024; Vintage 2024",
+          "scale": "five NYCcounties"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "bronx:climate-change:1",
+      "portrait": "bronx",
+      "dimension": "climate-change",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Same-method archived Total-row CY2005 64,139,720.6 and CY2024 47,944,551.47 tCO2e yield 25.2498279982%→25.25 reduction. Existing 80% target gives +68.4375→68.44. It is explicitly a NYC citywide regional proxy, not an independent Bronx inventory.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "ff23c0b3eff85151195790f53dc8a5ebb8af86aa483317b1a4cbc751b49de1da",
+      "before_canonical_sha256": "df799df6c2845e317923abb832ec3f9907c49b30f69e18726b3a9066ea3ad4a2",
+      "after_canonical_sha256": "5ebb11fe23bc6adb79bfe80a6b7d6c940fdfbef113eae36b7d94ca1c3a955cb4",
+      "source_support": [
+        {
+          "url": "https://data.cityofnewyork.us/resource/wq7q-htne.json?$limit=5000",
+          "raw_path": "raw/nyc-ghg-full.json",
+          "raw_sha256": "c1037d86fe7af7b1ba2ca30c6ea5f5717d2ef452576e7c9da29a1ba76bacf41b",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:27:27.329Z",
+          "period": "CY2024;2005 baseline",
+          "scale": "citywide regional proxy",
+          "snapshot_path": "evidence/nyc-ghg-extract.png",
+          "snapshot_sha256": "ec53108458c950aac09274237f6b2d920ac3e6dc231a19267b47e3ba3587a468"
+        },
+        {
+          "url": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2024/counties/totals/co-est2024-alldata.csv",
+          "raw_path": "raw/census-county-pop-v2024.csv",
+          "raw_sha256": "abcc8720d669e793bbfdcd440eeec37a78db3b452adbe4ccd1eadf7c72b522b9",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:32:20.760Z",
+          "period": "July 1,2024; Vintage 2024",
+          "scale": "five NYCcounties"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "bronx:climate-change:2",
+      "portrait": "bronx",
+      "dimension": "climate-change",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Urban Green Council's January-2026 publisher page states 43% of all covered buildings meet 2030 limits using 2024 benchmarking. Complement 57% and existing +57 score reproduce. Notes correctly type this as future-cap exposure under current energy use, not a 2024 legal-violation rate or Bronx-specific estimate.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "b2ffd8870be9489b182d5a098acb7e6a5b754a25dc585d0e84ac9dc0fe6a1294",
+      "before_canonical_sha256": "e46ebf4f8007e7b6a1f299c955c8cfa7d046057d5788c42e0abc17a14b85616e",
+      "after_canonical_sha256": "d574c352026d2955dc7bf210f636fbf76a7dd11b3c80d261d71774e6d62c5f74",
+      "source_support": [
+        {
+          "url": "https://www.urbangreencouncil.org/what-we-do/explore-nyc-building-data-hub/local-law-97-progress/",
+          "raw_path": "raw/nyc-ll97.html",
+          "raw_sha256": "35d7bda1573eaa86f43b79ed1ae7f747b70d788dc5558c15a5a6594b0ab0988e",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:27:27.325Z",
+          "period": "2024 benchmarking;2030 caps",
+          "scale": "NYC citywide regional proxy",
+          "snapshot_path": "evidence/nyc-ll97.png",
+          "snapshot_sha256": "09440cdbf0c942dc760cbe2c647a1826a920ff0ca2e9e933696210a13971588f"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "nyc:chemical-pollution:0",
+      "portrait": "nyc",
+      "dimension": "chemical-pollution",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Archived EPA data have 46 quantified Form R and 9 unquantified Form A records after removing two Jamestown facilities misassigned NEW YORK county; their coordinates are outside NYC. All selected source units are Pounds. Form R on-site sum 210,234.1768175 lb divided by Vintage-2025 July-2024 NYC population 8,596,825 gives 0.02445486290781771. Missing Form A quantities are not measured zeros. Unscored quantified lower-bound observation is supported; a complete total-release score is not established.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "fe43068fb3a6342afcd8be7ee877b9bfe844d2a6618e2c711d144a42565a7fa8",
+      "before_canonical_sha256": "4dc9fe8605363e659f2ad471ff4c61d2ca73cc6b87418a0dc0823a386e911ea3",
+      "after_canonical_sha256": "f9aee026fe8cc144329f0ccbb952cce0d7d717197c42b76c56b7c12e8eeda737",
+      "source_support": [
+        {
+          "url": "https://data.epa.gov/efservice/mv_tri_basic_download/st/NY/year/2024/JSON",
+          "raw_path": "raw/nyc-tri-2024.json",
+          "raw_sha256": "f8263a50d71d3b186310c5d07742ae5a9bd496e0efd5a041a3de606e09e84391",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:28:52.173Z",
+          "period": "reportingyear 2024",
+          "scale": "city",
+          "snapshot_path": "evidence/nyc-tri-extract.png",
+          "snapshot_sha256": "d2ec70e5a244b223fde7b833eb31a670e005ca1dba7e7efbe82d4384b9f7975b"
+        },
+        {
+          "url": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/counties/totals/co-est2025-alldata.csv",
+          "raw_path": "raw/census-county-pop-v2025.csv",
+          "raw_sha256": "4f5a499d851e2cb48fd7a5405e5a9235453a8a66933657aacd10df0e264f35d5",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:32:20.760Z",
+          "period": "July 1,2024; Vintage 2025",
+          "scale": "county"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "bronx:chemical-pollution:0",
+      "portrait": "bronx",
+      "dimension": "chemical-pollution",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Bronx has four Form R and two unquantified Form A records, all Pounds. Form R on-site sum 1,355.76362 lb / same-period Vintage-2025 population 1,406,052 = 0.0009642343384170714. Null score appropriately avoids treating Form A placeholders as measured zero or implying exhaustive pollution coverage.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "9ade62f4d4af1b39a335151c2fe9da2f2b63d286846f0e2eae4762067d3f8604",
+      "before_canonical_sha256": "641deb8b9b5cdb0e750e1c8704f8bca843fd95a995ca46e47cbebf5a3ca91a3f",
+      "after_canonical_sha256": "f2237464b905ecb273a9b87b3bc3c8c5bc327c926d650065f834d22914da13ee",
+      "source_support": [
+        {
+          "url": "https://data.epa.gov/efservice/mv_tri_basic_download/st/NY/year/2024/JSON",
+          "raw_path": "raw/nyc-tri-2024.json",
+          "raw_sha256": "f8263a50d71d3b186310c5d07742ae5a9bd496e0efd5a041a3de606e09e84391",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:28:52.173Z",
+          "period": "reportingyear 2024",
+          "scale": "county",
+          "snapshot_path": "evidence/nyc-tri-extract.png",
+          "snapshot_sha256": "d2ec70e5a244b223fde7b833eb31a670e005ca1dba7e7efbe82d4384b9f7975b"
+        },
+        {
+          "url": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/counties/totals/co-est2025-alldata.csv",
+          "raw_path": "raw/census-county-pop-v2025.csv",
+          "raw_sha256": "4f5a499d851e2cb48fd7a5405e5a9235453a8a66933657aacd10df0e264f35d5",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:32:20.760Z",
+          "period": "July 1,2024; Vintage 2025",
+          "scale": "county"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "nyc:biodiversity-loss:0",
+      "portrait": "nyc",
+      "dimension": "biodiversity-loss",
+      "verdict": "revise",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Publisher county tables explicitly report protected Lands and Waters. Five numerators sum to 43,374 acres and denominators to 222,182 acres; the reproducible share is 19.521833451854786%, rounding to 19.5. The bound cited exhibit instead prints 19.52273360% for that exact division. Correct the extract and recapture/rebind its screenshot. Retaining 19.5 as an unscored related land-and-water observation is scientifically appropriate; it cannot be scored against the land-only 30% target.",
+      "required_changes_or_integration_conditions": [
+        "Correct exhibit division to19.52183345%; create a new exhibit and source/snapshot binding; preserve19.5 rounded related observation and null land-only score."
+      ],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "5e84c618e416da03b63b14517c3896060a27f1940f824a6b0edbaba6889799cc",
+      "before_canonical_sha256": "0f7e97e8d27f729d3f1ce4d7cf415badb729c413fe244056d7b07e6094a47a5b",
+      "after_canonical_sha256": "91f0a00d828e76c56c1c1181d7501021782d09857dadc86ffe193092aef1b8b1",
+      "source_support": [
+        {
+          "url": "https://www.protectadks.org/wp-content/uploads/2023/11/Protect-the-Adirondacks-30-by-30-Report-NYS-Counties-web.pdf",
+          "raw_path": "raw/nyc-protected-2023.pdf",
+          "raw_sha256": "c9b6ff50f9eff4442e5e875cd78c50cfb5daacdec4e7c351dad109ce382b38dd",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:26:20.873Z",
+          "period": "2023",
+          "scale": "five NYCcounties",
+          "snapshot_path": "evidence/nyc-conservation-extract.png",
+          "pdf_path": "raw/nyc-protected-2023.pdf",
+          "snapshot_sha256": "2a8a39a7c81bcebdb2e9bce2d1f23a0c151e75fbea10fd97528125069feba6b5"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "bronx:ocean-acidification:0",
+      "portrait": "bronx",
+      "dimension": "ocean-acidification",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "The archived original research paper's Table 1 caption and 2022 row support western Long Island Sound July–September average bottom-water Ωar=1.09±0.00. The framework names coastal aragonite saturation and does not impose annual surface-only sampling, while this portrait already permits regional scale. Thus the inherited Ω3 target and +63.7 arithmetic may remain as explicitly qualified regional proxy scoring in a research preview. This does not establish a representative annual Bronx mean, a direct borough-water observation, or universal biological safety at Ω3.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "aee8bdb1963b3dddfed8027d38bbd9bd80271af7384af2333aa002e3b6b0927e",
+      "before_canonical_sha256": "078da16588ed835187dfcc4d01d00ef0f09bb413ec0eb90bdcf01d308b960517",
+      "after_canonical_sha256": "bc3c0817748af668288b822337007afc7e4759fb09f4d3bd4051894ae02d9ff0",
+      "source_support": [
+        {
+          "url": "https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2024.1398087/full",
+          "raw_path": "raw/nyc-ocean-study.bin",
+          "raw_sha256": "14121af82825e7ca6bcff5a06bfa22e4f4a649dfe2c86335784b21755d6a2cb0",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:26:23.739Z",
+          "period": "July–September 2022",
+          "scale": "western Long Island Sound regional",
+          "snapshot_path": "evidence/nyc-ocean-extract.png",
+          "snapshot_sha256": "05ae76fafd16e359757523dbb072834d4f5acd1828e59f8c5cb65eb43e773664"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "staten-island:ocean-acidification:append",
+      "portrait": "staten-island",
+      "dimension": "ocean-acidification",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "The paper supports 1.09 only for western Long Island Sound summer bottom water. The proposed text explicitly says it is not Staten Island coastal water and asserts no target or score. Accept as regional contextual observation, with the local measurement remaining unresolved; do not let this contextual row imply closure of a Staten-specific gap.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "66bbf255ec2da0b9c774d3a253aad220344de018e36143017dad13894b42b7cd",
+      "before_canonical_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "after_canonical_sha256": "ee2a4e1c28461bc54b30ed471ef8db61495482e10aaa863a1cca09a64ea662cd",
+      "source_support": [
+        {
+          "url": "https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2024.1398087/full",
+          "raw_path": "raw/nyc-ocean-study.bin",
+          "raw_sha256": "14121af82825e7ca6bcff5a06bfa22e4f4a649dfe2c86335784b21755d6a2cb0",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:26:23.739Z",
+          "period": "July–September 2022",
+          "scale": "western Long Island Sound regional",
+          "snapshot_path": "evidence/nyc-ocean-extract.png",
+          "snapshot_sha256": "05ae76fafd16e359757523dbb072834d4f5acd1828e59f8c5cb65eb43e773664"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "santa-cruz:social-equity:0",
+      "portrait": "santa-cruz",
+      "dimension": "social-equity",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Official ACS2024 five-year B19083 row 1600000US0669112 gives household Gini 0.4936 with 90% MOE±0.0183. City boundary and 2020–2024 period are explicit; null score avoids silently adopting the legacy prose target.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "78618351e8d17c72fbb0d2ce93c0fa2e802716757fb802440b5b32f145fd32e3",
+      "before_canonical_sha256": "6fa8da2a68eee73c1b1f7bf5351269a1885e6a7728c0164f88f66dc3e0f5e608",
+      "after_canonical_sha256": "80ac5475fce2902f7b9120e0b09740d908fcb5abd24fe011b92dc18eaa3374ed",
+      "source_support": [
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b19083.dat",
+          "raw_path": "raw/acs5-gini2024.bin.gz",
+          "raw_sha256": "338f7a1191eaaf3913913e78c36aaa9d82f2b5c8faaf889be2e597b28869205e",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:31:17.815Z",
+          "period": "2020–2024 ACS5 year",
+          "scale": "city",
+          "stored_sha256": "c5002dfc80371b532da1b97128d8780fbd0eeca51a14c5abb235d4def89f00d3",
+          "snapshot_path": "evidence/sc-census-extract.png",
+          "snapshot_sha256": "aa09836439b82e14d85a09c9864b2f1bfe6d37647682d95aa0140d7b0444c51e"
+        },
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+          "raw_path": "raw/acs5-shells2024.bin.gz",
+          "raw_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:31:51.961Z",
+          "period": null,
+          "scale": null,
+          "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "santa-cruz:income-work:0",
+      "portrait": "santa-cruz",
+      "dimension": "income-work",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Official ACS2024 five-year C17002 city row gives (5,321+3,557)/52,096×100=17.04161548%→17.0. Universe is persons whose poverty status is determined, not all residents. Constituent MOEs remain archived; no combined-ratio MOE or new target is asserted.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "87ca05f3c043d7145037b12a8d571e6321cc8917876406967a4f6908f01e005d",
+      "before_canonical_sha256": "2e11eaaee1d34f19d4f0e9860381fdb09c85d29aadbdc14f500f4e1e61973be8",
+      "after_canonical_sha256": "01de089aa5fe76bccb32db08a8c2ea5670ae6ceee3feea35f5644da7bf9c13a5",
+      "source_support": [
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-c17002.dat",
+          "raw_path": "raw/acs5-poverty2024.bin.gz",
+          "raw_sha256": "dc3dc675113683ec3ff2a0e29a840f43e03268151d7f14b922658d7306da5187",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:31:52.021Z",
+          "period": "2020–2024 ACS5 year",
+          "scale": "city",
+          "stored_sha256": "6dc1d0e3945702d95eb5425b5fac23d5541e9f198ed2f8775dc3c74862647e4f",
+          "snapshot_path": "evidence/sc-census-extract.png",
+          "snapshot_sha256": "aa09836439b82e14d85a09c9864b2f1bfe6d37647682d95aa0140d7b0444c51e"
+        },
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+          "raw_path": "raw/acs5-shells2024.bin.gz",
+          "raw_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:31:51.961Z",
+          "period": null,
+          "scale": null,
+          "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "santa-cruz:networks:0",
+      "portrait": "santa-cruz",
+      "dimension": "networks",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Official ACS2024 five-year B28002 city row gives 20,739/21,713×100=95.51420808%→95.5 broadband of any type, including cellular-only subscriptions. The notes explicitly exclude price/quality/speed/commuting inferences and keep score null.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "1909bbf3e347df75348dc4904908483ba5e95812cc2532bc8eafd126cc1e95c9",
+      "before_canonical_sha256": "0da7d33aae431de3f057dbfbf5be6df3a6bddd54b1128a2ba5d853b1b7476534",
+      "after_canonical_sha256": "69536f7441b1be2442c2e9d9b06e82e42f71fa213cfa342bcdd7430df2c90edb",
+      "source_support": [
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b28002.dat",
+          "raw_path": "raw/acs5-broadband2024.bin.gz",
+          "raw_sha256": "12446ff0691b8818f5908cdc398817361772c5b3078c506d0409adc9c841840b",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:31:52.403Z",
+          "period": "2020–2024 ACS5 year",
+          "scale": "city",
+          "stored_sha256": "59028b167c65c1755422af36458bce1ec5227bfb324574982d61d7de8c9f140c",
+          "snapshot_path": "evidence/sc-census-extract.png",
+          "snapshot_sha256": "aa09836439b82e14d85a09c9864b2f1bfe6d37647682d95aa0140d7b0444c51e"
+        },
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+          "raw_path": "raw/acs5-shells2024.bin.gz",
+          "raw_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:31:51.961Z",
+          "period": null,
+          "scale": null,
+          "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "watsonville:social-equity:0",
+      "portrait": "watsonville",
+      "dimension": "social-equity",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Official ACS2024 five-year B19083 row 1600000US0683668 gives household Gini 0.4282 with 90% MOE±0.0213. It supplies exact city scope and separates income inequality from environmental-justice context; no threshold or score is fabricated.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "e47b79e8f0509c7905eeb0385a22a32d91cbdaeb772a4f339d27b0e7c8c53c74",
+      "before_canonical_sha256": "b49e720dbe9622b736f4014917348e4f5e7b930d9bf9554881ed48845aa4974b",
+      "after_canonical_sha256": "3be446b77dee539228f60d1bd9736bf3a5429dd18cdb2d50ba7fd2f77daf5a63",
+      "source_support": [
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b19083.dat",
+          "raw_path": "raw/acs5-gini2024.bin.gz",
+          "raw_sha256": "338f7a1191eaaf3913913e78c36aaa9d82f2b5c8faaf889be2e597b28869205e",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:31:17.815Z",
+          "period": "2020–2024 ACS5 year",
+          "scale": "city",
+          "stored_sha256": "c5002dfc80371b532da1b97128d8780fbd0eeca51a14c5abb235d4def89f00d3",
+          "snapshot_path": "evidence/sc-census-extract.png",
+          "snapshot_sha256": "aa09836439b82e14d85a09c9864b2f1bfe6d37647682d95aa0140d7b0444c51e"
+        },
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+          "raw_path": "raw/acs5-shells2024.bin.gz",
+          "raw_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:31:51.961Z",
+          "period": null,
+          "scale": null,
+          "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "watsonville:income-work:0",
+      "portrait": "watsonville",
+      "dimension": "income-work",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Official ACS2024 five-year C17002 city row gives (2,861+4,674)/51,194×100=14.71852170%→14.7 for the poverty-status-determined universe. This supports the typed poverty observation, not the old combined income narrative. No combined MOE/score is invented.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "6e0b8d5bdc7b1ce3ca1d30f636579476357a5f3c6b5d31d1cd94bea2c8cd2419",
+      "before_canonical_sha256": "2a0f1830d59683e82e04714be784680d776f1b1af9415ba932c673df69537032",
+      "after_canonical_sha256": "62dfe032d71a25577aacb6b52f7e02346a528090130fa2d1b29a1d7dd9a159a7",
+      "source_support": [
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-c17002.dat",
+          "raw_path": "raw/acs5-poverty2024.bin.gz",
+          "raw_sha256": "dc3dc675113683ec3ff2a0e29a840f43e03268151d7f14b922658d7306da5187",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:31:52.021Z",
+          "period": "2020–2024 ACS5 year",
+          "scale": "city",
+          "stored_sha256": "6dc1d0e3945702d95eb5425b5fac23d5541e9f198ed2f8775dc3c74862647e4f",
+          "snapshot_path": "evidence/sc-census-extract.png",
+          "snapshot_sha256": "aa09836439b82e14d85a09c9864b2f1bfe6d37647682d95aa0140d7b0444c51e"
+        },
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+          "raw_path": "raw/acs5-shells2024.bin.gz",
+          "raw_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:31:51.961Z",
+          "period": null,
+          "scale": null,
+          "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "watsonville:networks:0",
+      "portrait": "watsonville",
+      "dimension": "networks",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Official ACS2024 five-year B28002 city row gives 13,556/15,151×100=89.47264207%→89.5 broadband of any type, including cellular-only. It is a subscription estimate for city households, not a service-quality or commuting measure; null score preserves that scope.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "84fb5d900c86f3f187167910ccc4c0878db4ff4b4e12ea0c637bd5da6dba11ca",
+      "before_canonical_sha256": "128a7e712608d6559c34ce0a9a40533d1fd0b8006cd378155b0f84c9b00e911d",
+      "after_canonical_sha256": "821a0fa6fc372ffa143ace6c0d3d9ca19950fc4d2c7540183ea9c855cd99bbe4",
+      "source_support": [
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b28002.dat",
+          "raw_path": "raw/acs5-broadband2024.bin.gz",
+          "raw_sha256": "12446ff0691b8818f5908cdc398817361772c5b3078c506d0409adc9c841840b",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:31:52.403Z",
+          "period": "2020–2024 ACS5 year",
+          "scale": "city",
+          "stored_sha256": "59028b167c65c1755422af36458bce1ec5227bfb324574982d61d7de8c9f140c",
+          "snapshot_path": "evidence/sc-census-extract.png",
+          "snapshot_sha256": "aa09836439b82e14d85a09c9864b2f1bfe6d37647682d95aa0140d7b0444c51e"
+        },
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+          "raw_path": "raw/acs5-shells2024.bin.gz",
+          "raw_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:31:51.961Z",
+          "period": null,
+          "scale": null,
+          "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "santa-cruz-county:social-equity:0",
+      "portrait": "santa-cruz-county",
+      "dimension": "social-equity",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Official ACS2024 one-year B19083 row 0500000US06087 gives Gini0.4864 and 90% MOE±0.0184. The distinct one-year period is explicit; do not present direct city/county numerical differences as a like-for-like same-period comparison. Null score is appropriate.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "34ff8828f6698e77db95fd9906b74d78f5098abd7566a17c816d6e62801a1137",
+      "before_canonical_sha256": "2ebf59aece536c124fd1ca62a921f0c90a6e23c6e42d2a8f714ebc54ce8b4da8",
+      "after_canonical_sha256": "00d6f6cc9977611b210a06d22a099273afad65415b1e7ab2d0391999dc4a0c63",
+      "source_support": [
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/1YRData/acsdt1y2024-b19083.dat",
+          "raw_path": "raw/acs1-gini2024.bin",
+          "raw_sha256": "dc8a2b21190b808d732d9271ec2613edbfe101fd47f29c8051de16d439a16dc4",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:31:17.798Z",
+          "period": "2024 ACS1 year",
+          "scale": "county",
+          "snapshot_path": "evidence/sc-census-extract.png",
+          "snapshot_sha256": "aa09836439b82e14d85a09c9864b2f1bfe6d37647682d95aa0140d7b0444c51e"
+        },
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+          "raw_path": "raw/acs5-shells2024.bin.gz",
+          "raw_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:31:51.961Z",
+          "period": null,
+          "scale": null,
+          "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "santa-cruz-county:networks:0",
+      "portrait": "santa-cruz-county",
+      "dimension": "networks",
+      "verdict": "revise",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "The official ACS2024 one-year GCT2801 CSV supports Santa Cruz County94.9% with 90% MOE±1.1. However its cited sc-census-extract.png contains the county's five-year B28002 row (91,231/96,898) and one-year Gini, without the GCT2801 94.9 row. Add a faithful GCT2801 extract/exhibit and bind its exact bytes. Until then the raw statistic passes but the load-bearing cited exhibit is mismatched.",
+      "required_changes_or_integration_conditions": [
+        "Add the official GCT2801 county94.9±1.1 row with2024 one-year period to a dedicated faithful extract, recapture and bind the new exhibit."
+      ],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "f7d8c7a1211ae0d18f014d308f3ac668c9a5f324e95db992eb30b350319c57b8",
+      "before_canonical_sha256": "177db3620e568a152c18f8afee27c934bc878f9e09ecf1bd36ea818379c293c8",
+      "after_canonical_sha256": "a38075b43200a8e811a5325ca4bb47ea577ec72e775eb430c4f53ab0aec7579d",
+      "source_support": [
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/data/2024/1_year_geographic_comparison_tables/GCT2801.csv",
+          "raw_path": "raw/broadband-2024-comparison.csv",
+          "raw_sha256": "65f8c5ac344a26d9d9b04cc272e1bf06fd8de8b5cfc0cf10993e94fd2060b031",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:26:24.972Z",
+          "period": "2024 ACS1 year",
+          "scale": "county",
+          "snapshot_path": "evidence/sc-census-extract.png",
+          "snapshot_sha256": "aa09836439b82e14d85a09c9864b2f1bfe6d37647682d95aa0140d7b0444c51e"
+        },
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+          "raw_path": "raw/acs5-shells2024.bin.gz",
+          "raw_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:31:51.961Z",
+          "period": null,
+          "scale": null,
+          "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "bronx:networks:0",
+      "portrait": "bronx",
+      "dimension": "networks",
+      "verdict": "revise",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "OSC publisher Report20-2025 Figure4 supports Bronx63.3% in2023, and report definitions identify fixed cable/FTTP/DSL broadband separately from cellular-only. The corrected name is supported. But the amendment retains +36.7 scoring and the generic broadband-access threshold for a narrower fixed-only construct. Record this as an unscored related observation, or explicitly establish/review a fixed-broadband indicator/profile and threshold before scoring. Core broadband subscription target is95; the retained local100 also needs its explicit tenant override provenance for any future scored contract.",
+      "required_changes_or_integration_conditions": [
+        "Use fixed-broadband related observation with target/level_pct/scoring null, or supply an independently reviewed fixed-only contract and target override provenance."
+      ],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "1f6ae39278f193417d948a3ea5df5435c651b3f5e5e79728640ddec08717d17d",
+      "before_canonical_sha256": "24b785cea1d07eef389089b4d1cf45d43976a7b61fce2c897b00b9fa8dd9f786",
+      "after_canonical_sha256": "7203235d06478a2f82c1fff366d1911fc228d256685a3a2f6373c290ee67440d",
+      "source_support": [
+        {
+          "url": "https://www.osc.ny.gov/press/releases/2024/12/dinapoli-report-examines-broadband-availability-access-and-affordability-nyc",
+          "snapshot_path": "../../site/evidence/shared/87f5facc4b0932f21ecd4cef.png",
+          "snapshot_sha256": "87f5facc4b0932f21ecd4cef9e768df38d05a31aabfc1ab4d5f1881e295612b6",
+          "period": "2023 ACS1 yearfixed broadband",
+          "scale": "county",
+          "captured_at": "2026-08-05T08:50:11.311Z",
+          "raw_path": "../../site/evidence/shared/e89455fc53fef9ac48a438f1.pdf",
+          "raw_sha256": "e89455fc53fef9ac48a438f1a821ec55b9e4759b207149acf6c263aa894a7d61",
+          "pdf_path": "../../site/evidence/shared/e89455fc53fef9ac48a438f1.pdf"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "staten-island:networks:0",
+      "portrait": "staten-island",
+      "dimension": "networks",
+      "verdict": "revise",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "OSC publisher Report20-2025 Figure4 supports Staten Island76.5% fixed broadband in2023. The proposed label correction is sound. It retains +23.5 scoring for generic broadband-access, however, without an explicit fixed-only contract or documented local100 target override (core target95). Make it an unscored related observation or establish the fixed-broadband contract and target provenance before scoring. Do not portray the2024 any-broadband94.0 figure as improvement in this fixed-only series.",
+      "required_changes_or_integration_conditions": [
+        "Use fixed-broadband related observation with target/level_pct/scoring null, or supply an independently reviewed fixed-only contract and target override provenance."
+      ],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "e314005bcaeb101530d033ff4dc480be5333cddb4b3f6a01b94bce77279a7bd0",
+      "before_canonical_sha256": "e658ee729ad8c774038c3278af40e5e4db891fb94cae27f765f5e1497eeafb96",
+      "after_canonical_sha256": "7aa584052f51cf0625d9a6e174c8770c81aeac4272c53249c174b4ca5b9afb2a",
+      "source_support": [
+        {
+          "url": "https://www.osc.ny.gov/files/reports/pdf/report-20-2025.pdf",
+          "snapshot_path": "../../site/evidence/shared/87f5facc4b0932f21ecd4cef.png",
+          "snapshot_sha256": "87f5facc4b0932f21ecd4cef9e768df38d05a31aabfc1ab4d5f1881e295612b6",
+          "period": "2023 ACS1 yearfixed broadband",
+          "scale": "county",
+          "captured_at": "2026-08-05T18:37:33.313Z",
+          "raw_path": "../../site/evidence/shared/e89455fc53fef9ac48a438f1.pdf",
+          "raw_sha256": "e89455fc53fef9ac48a438f1a821ec55b9e4759b207149acf6c263aa894a7d61",
+          "pdf_path": "../../site/evidence/shared/e89455fc53fef9ac48a438f1.pdf"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "santa-cruz:housing:0",
+      "portrait": "santa-cruz",
+      "dimension": "housing",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Publisher Figure4/page13 prints city total1,024 while789 unsheltered+234 sheltered=1,023; incorporated and county subtotals agree with1,023. Retaining the publisher's printed1,024 with status uncertain, low confidence, explicit arithmetic conflict and null score is appropriate. Enumeration is January29 with shelter occupancy January28,2026; methodology changes make unqualified year-over-year comparisons unsound. The prior1,850 was county2024, not city.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "3771ce7afa161086284195f098504173a139bf98160db61beb829644e902b353",
+      "before_canonical_sha256": "d073ee00531dcbb0a0852a66dacb2227b4223211befde601dab5c4d2e88e9895",
+      "after_canonical_sha256": "32d4235c4fe6ac1b9c521e0f54bf5587cbb0f28ef8faf28edb3318b141c9b669",
+      "source_support": [
+        {
+          "url": "https://housingforhealthpartnership.org/Portals/29/HAP/pdf/2026%20Santa%20Cruz%20County%20PIT%20Report.pdf",
+          "raw_path": "raw/sc-pit-2026-full.pdf",
+          "raw_sha256": "bcc4066636e61288f2a997b957bbabe6add5080390e4b36bbddfec1f55c680a7",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:29:36.285Z",
+          "period": "January 28–29,2026 PIT",
+          "scale": "city/countyjurisdictiontable",
+          "snapshot_path": "evidence/sc-pit-2026-page13.png",
+          "snapshot_sha256": "03cdd098d78f96fdc4deb0d2214de8f7e1b0052ad8f63df1527e1d1225b10f71",
+          "pdf_path": "raw/sc-pit-2026-full.pdf"
+        },
+        {
+          "url": "https://www.santacruzcountyca.gov/portals/0/county/CAO/press%20releases/2026/2026PITCount.08052026.pdf",
+          "raw_path": "raw/sc-pit-2026-release.pdf",
+          "raw_sha256": "492d9fcbbb2d49c2bf9c5945b9fbcf396bddc948e86f7d67d25c6f80edee5015",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:28:52.185Z",
+          "period": "January 29,2026",
+          "scale": "county",
+          "pdf_path": "raw/sc-pit-2026-release.pdf"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "watsonville:housing:0",
+      "portrait": "watsonville",
+      "dimension": "housing",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Publisher jurisdiction table supports179 unsheltered+124 sheltered=303 in Watsonville on the2026 PIT night. The method-change footnote and one-night/undercoverage limits are preserved; this is not annual persons served, a homelessness rate, or a rent-burden measure. Keeping target/score null is appropriate.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "aa20607d332a0998a93f6e0037610966c49ddf06bdd2f67c5fa7eb53b2341a23",
+      "before_canonical_sha256": "2d88020b7709721539cd8e9da52467527061d98b34eff4c390c53169121a9d45",
+      "after_canonical_sha256": "ee781f0b01c207f12dbc58be63dd24aae915462af75320c9774445de4389cfbd",
+      "source_support": [
+        {
+          "url": "https://housingforhealthpartnership.org/Portals/29/HAP/pdf/2026%20Santa%20Cruz%20County%20PIT%20Report.pdf",
+          "raw_path": "raw/sc-pit-2026-full.pdf",
+          "raw_sha256": "bcc4066636e61288f2a997b957bbabe6add5080390e4b36bbddfec1f55c680a7",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:29:36.285Z",
+          "period": "January 28–29,2026 PIT",
+          "scale": "city/countyjurisdictiontable",
+          "snapshot_path": "evidence/sc-pit-2026-page13.png",
+          "snapshot_sha256": "03cdd098d78f96fdc4deb0d2214de8f7e1b0052ad8f63df1527e1d1225b10f71",
+          "pdf_path": "raw/sc-pit-2026-full.pdf"
+        },
+        {
+          "url": "https://www.santacruzcountyca.gov/portals/0/county/CAO/press%20releases/2026/2026PITCount.08052026.pdf",
+          "raw_path": "raw/sc-pit-2026-release.pdf",
+          "raw_sha256": "492d9fcbbb2d49c2bf9c5945b9fbcf396bddc948e86f7d67d25c6f80edee5015",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:28:52.185Z",
+          "period": "January 29,2026",
+          "scale": "county",
+          "pdf_path": "raw/sc-pit-2026-release.pdf"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "santa-cruz-county:housing:0",
+      "portrait": "santa-cruz-county",
+      "dimension": "housing",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Publisher table supports1,290 unsheltered+358 sheltered=1,648 countywide in2026, also corroborated by the archived county release. This is a one-night PIT estimate with collection/method limits, not a national per-capita ranking. No unsupported count-based score is inferred.",
+      "required_changes_or_integration_conditions": [],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "5d015da08eb12c55d0990b55123661dbf8b886a091c4037c5a13c150526ad412",
+      "before_canonical_sha256": "dbcfbb369338c8bcb40cc16a5a1d4d81c66d8caeb8c934b5b6d8293a1c29ae68",
+      "after_canonical_sha256": "f6d098b5dd83150a9aeb6f63a47cf24f8be2df8b3b2944ba744502cc4bb30289",
+      "source_support": [
+        {
+          "url": "https://housingforhealthpartnership.org/Portals/29/HAP/pdf/2026%20Santa%20Cruz%20County%20PIT%20Report.pdf",
+          "raw_path": "raw/sc-pit-2026-full.pdf",
+          "raw_sha256": "bcc4066636e61288f2a997b957bbabe6add5080390e4b36bbddfec1f55c680a7",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:29:36.285Z",
+          "period": "January 28–29,2026 PIT",
+          "scale": "city/countyjurisdictiontable",
+          "snapshot_path": "evidence/sc-pit-2026-page13.png",
+          "snapshot_sha256": "03cdd098d78f96fdc4deb0d2214de8f7e1b0052ad8f63df1527e1d1225b10f71",
+          "pdf_path": "raw/sc-pit-2026-full.pdf"
+        },
+        {
+          "url": "https://www.santacruzcountyca.gov/portals/0/county/CAO/press%20releases/2026/2026PITCount.08052026.pdf",
+          "raw_path": "raw/sc-pit-2026-release.pdf",
+          "raw_sha256": "492d9fcbbb2d49c2bf9c5945b9fbcf396bddc948e86f7d67d25c6f80edee5015",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:28:52.185Z",
+          "period": "January 29,2026",
+          "scale": "county",
+          "pdf_path": "raw/sc-pit-2026-release.pdf"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "santa-cruz:ozone-layer-depletion:0",
+      "portrait": "santa-cruz",
+      "dimension": "ozone-layer-depletion",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Independent ZIP extraction gives69 unique Santa Cruz County tracts; all E_NEHD/weights are nonnegative. Sum(E_NEHD×E_TOTPOP)=3,963,492.8 and population weights268,571 yield14.757709506983256 days/year. Census2020 has70 tracts; omitted06087990100 has0 population and0 land. ZIP dictionary defines local95th-percentile maximum-temperature exceedance; CDC's primary Climate Burden Module documentation independently confirms2018–2022 annual-mean period. This is a resident-weighted county exposure summary using estimated tract data, not simultaneous countywide events, absolute heat-index days or a projection. Accept only unscored under explicit local-extreme-heat-v1 profile, with Santa Cruz/Watsonville visibly county proxies; no annual safe-day target is established.",
+      "required_changes_or_integration_conditions": [
+        "Integration requires explicit local-extreme-heat-v1 profile for all three Santa Cruz portraits; target, score and wedge remain null; city views retain county-proxy label."
+      ],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "729b09dfad700c4ebdd7e3a302bcb50e3ccdeaae458d72b6731fe7b9ec273991",
+      "before_canonical_sha256": "d9609aa83a558d5cf57294fac3d4d5987861996e561533bf5694bdeb2fb4b332",
+      "after_canonical_sha256": "1873807a87367ff75c38f70ce4f3ad6d088e85d5914d3c18620e1cad5687b823",
+      "source_support": [
+        {
+          "url": "https://eji.cdc.gov/Documents/Data/2024/2024_CSV/EJI_2024_California_CSV.zip",
+          "raw_path": "../carmel-monterey-2026-10-23-sol-medium/calculations/extreme-heat/raw/EJI_2024_California_CSV.zip",
+          "raw_sha256": "b31f0610997df43e75d2e84e60689d7a6ee4cba19eba03912411ff3e4ba278ca",
+          "snapshot_path": "evidence/sc-heat-extract.png",
+          "captured_at": null,
+          "period": "2018–2022",
+          "scale": "county",
+          "reuse_note": "Originalarchivefrompriorcampaign; no newdownloadclaimed. Newofflinecountyextraction/coveragequeryinthehighcampaign.",
+          "snapshot_sha256": "97185a82e531e0bc88326d1e87ee5d9c46b00117ae4289092cce599095b12688"
+        },
+        {
+          "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/6/query?where=STATE%3D%2706%27%20AND%20COUNTY%3D%27087%27&outFields=GEOID,POP100,HU100,AREALAND,AREAWATER&returnGeometry=false&f=pjson",
+          "raw_path": "raw/sc-census2020-tract-coverage-correct.bin",
+          "raw_sha256": "472028c2a3e44c825ed7720b37267c0fd72ff8f90aad454153be60aafbda85ba",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:37:58.123Z",
+          "period": null,
+          "scale": null
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "watsonville:ozone-layer-depletion:0",
+      "portrait": "watsonville",
+      "dimension": "ozone-layer-depletion",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Independent ZIP extraction gives69 unique Santa Cruz County tracts; all E_NEHD/weights are nonnegative. Sum(E_NEHD×E_TOTPOP)=3,963,492.8 and population weights268,571 yield14.757709506983256 days/year. Census2020 has70 tracts; omitted06087990100 has0 population and0 land. ZIP dictionary defines local95th-percentile maximum-temperature exceedance; CDC's primary Climate Burden Module documentation independently confirms2018–2022 annual-mean period. This is a resident-weighted county exposure summary using estimated tract data, not simultaneous countywide events, absolute heat-index days or a projection. Accept only unscored under explicit local-extreme-heat-v1 profile, with Santa Cruz/Watsonville visibly county proxies; no annual safe-day target is established.",
+      "required_changes_or_integration_conditions": [
+        "Integration requires explicit local-extreme-heat-v1 profile for all three Santa Cruz portraits; target, score and wedge remain null; city views retain county-proxy label."
+      ],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "3df1149135d4fd6889f2876737b7fc6fe6020292109a01a2017be47ab5b70bae",
+      "before_canonical_sha256": "022a7006646598c9250f4ad89210aef6edae3f5328ac2dcc6d67600104ff476f",
+      "after_canonical_sha256": "1873807a87367ff75c38f70ce4f3ad6d088e85d5914d3c18620e1cad5687b823",
+      "source_support": [
+        {
+          "url": "https://eji.cdc.gov/Documents/Data/2024/2024_CSV/EJI_2024_California_CSV.zip",
+          "raw_path": "../carmel-monterey-2026-10-23-sol-medium/calculations/extreme-heat/raw/EJI_2024_California_CSV.zip",
+          "raw_sha256": "b31f0610997df43e75d2e84e60689d7a6ee4cba19eba03912411ff3e4ba278ca",
+          "snapshot_path": "evidence/sc-heat-extract.png",
+          "captured_at": null,
+          "period": "2018–2022",
+          "scale": "county",
+          "reuse_note": "Originalarchivefrompriorcampaign; no newdownloadclaimed. Newofflinecountyextraction/coveragequeryinthehighcampaign.",
+          "snapshot_sha256": "97185a82e531e0bc88326d1e87ee5d9c46b00117ae4289092cce599095b12688"
+        },
+        {
+          "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/6/query?where=STATE%3D%2706%27%20AND%20COUNTY%3D%27087%27&outFields=GEOID,POP100,HU100,AREALAND,AREAWATER&returnGeometry=false&f=pjson",
+          "raw_path": "raw/sc-census2020-tract-coverage-correct.bin",
+          "raw_sha256": "472028c2a3e44c825ed7720b37267c0fd72ff8f90aad454153be60aafbda85ba",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:37:58.123Z",
+          "period": null,
+          "scale": null
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "santa-cruz-county:ozone-layer-depletion:0",
+      "portrait": "santa-cruz-county",
+      "dimension": "ozone-layer-depletion",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Independent ZIP extraction gives69 unique Santa Cruz County tracts; all E_NEHD/weights are nonnegative. Sum(E_NEHD×E_TOTPOP)=3,963,492.8 and population weights268,571 yield14.757709506983256 days/year. Census2020 has70 tracts; omitted06087990100 has0 population and0 land. ZIP dictionary defines local95th-percentile maximum-temperature exceedance; CDC's primary Climate Burden Module documentation independently confirms2018–2022 annual-mean period. This is a resident-weighted county exposure summary using estimated tract data, not simultaneous countywide events, absolute heat-index days or a projection. Accept only unscored under explicit local-extreme-heat-v1 profile, with Santa Cruz/Watsonville visibly county proxies; no annual safe-day target is established.",
+      "required_changes_or_integration_conditions": [
+        "Integration requires explicit local-extreme-heat-v1 profile for all three Santa Cruz portraits; target, score and wedge remain null; city views retain county-proxy label."
+      ],
+      "bound_amendment_file": "findings/amendments.json",
+      "bound_amendment_file_sha256": "8a4f14c2b14a2ac501f3eb884819bd74c134abf3b4283d6bc7936001ab69866a",
+      "amendment_canonical_sha256": "2a50bec8edf920cfe80cbb9ef0bd1ddba33817851cfc9a157a2e8f16a9cabecb",
+      "before_canonical_sha256": "b17d1895178c6d2dc1da3151dd93e02958bd81815639ec24e1ae23bdf860eaa7",
+      "after_canonical_sha256": "8fe5fbe864e88f7808df19c967a67905d9046edf50f5af5ee84f5857ea0fc176",
+      "source_support": [
+        {
+          "url": "https://eji.cdc.gov/Documents/Data/2024/2024_CSV/EJI_2024_California_CSV.zip",
+          "raw_path": "../carmel-monterey-2026-10-23-sol-medium/calculations/extreme-heat/raw/EJI_2024_California_CSV.zip",
+          "raw_sha256": "b31f0610997df43e75d2e84e60689d7a6ee4cba19eba03912411ff3e4ba278ca",
+          "snapshot_path": "evidence/sc-heat-extract.png",
+          "captured_at": null,
+          "period": "2018–2022",
+          "scale": "county",
+          "reuse_note": "Originalarchivefrompriorcampaign; no newdownloadclaimed. Newofflinecountyextraction/coveragequeryinthehighcampaign.",
+          "snapshot_sha256": "97185a82e531e0bc88326d1e87ee5d9c46b00117ae4289092cce599095b12688"
+        },
+        {
+          "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/6/query?where=STATE%3D%2706%27%20AND%20COUNTY%3D%27087%27&outFields=GEOID,POP100,HU100,AREALAND,AREAWATER&returnGeometry=false&f=pjson",
+          "raw_path": "raw/sc-census2020-tract-coverage-correct.bin",
+          "raw_sha256": "472028c2a3e44c825ed7720b37267c0fd72ff8f90aad454153be60aafbda85ba",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:37:58.123Z",
+          "period": null,
+          "scale": null
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "carmel:housing:0:primary-supplement",
+      "portrait": "carmel",
+      "dimension": "housing",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Direct official2020–2024 ACS five-year B25070 city row establishes(61+44+60+179)/(646−28)×100=55.6634304207%→55.7. At-least30% differs from strict over30%; source bins yield identification bounds45.7928802589–55.6634304207%, not a sampling confidence interval for the true population. Null target/score is correct. Constituent MOEs are retained; no ratio MOE is claimed. Inherited review_note references older exhibits/conditional85.7 and must be clearly treated as historical, with this independent verdict supplied for the new source binding.",
+      "required_changes_or_integration_conditions": [
+        "Render as an unscored related observation under the preview contract; show this new verdict rather than representing inherited review_note as this review. Retain strict-over30 construct caveat and identification-versus-sampling uncertainty distinction."
+      ],
+      "bound_amendment_file": "findings/supplemental-housing.json",
+      "bound_amendment_file_sha256": "0b7508b08a4ea7af36a32850f13aec3e578f2897a5fc6e4b41960fbe7ce21d30",
+      "amendment_canonical_sha256": "f798f9e5773558de79c7238f4074a58fad4922ddc6fe7f20c1f9269f74b2f6ed",
+      "before_canonical_sha256": "7af96c9e927ee7aec931608746138556bc05c531903872c812bdf4d0575497cd",
+      "after_canonical_sha256": "ae70e805278e6a4c495354a474ba20c50e69ef02fef0619bda6fb70ea8508f05",
+      "source_support": [
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b25070.dat",
+          "raw_path": "raw/acs5-rentburden2024.bin.gz",
+          "raw_sha256": "862ccc17d913305d11e6f802ce4518d76b30585ea0b05b251cd8cf21f8661386",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:41:43.950Z",
+          "snapshot_path": "evidence/carmel-monterey-rentburden-extract.png",
+          "period": "2020–2024 ACS five-year",
+          "scale": "city",
+          "stored_sha256": "cf972ef7d65acc5e0a6693968f204e6092958e258798587d71b53930e2d14996",
+          "snapshot_sha256": "5503a4bc4b0db043712b5b718e8f950ae3d0699f9a58d945c8f30fd6e033c480"
+        },
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+          "raw_path": "raw/acs5-shells2024.bin.gz",
+          "raw_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+          "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:31:51.961Z",
+          "period": "2024 ACS table shell labels",
+          "scale": "table definitions"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    },
+    {
+      "id": "monterey-county:housing:0:primary-supplement",
+      "portrait": "monterey-county",
+      "dimension": "housing",
+      "verdict": "accept",
+      "acceptance_scope": "research-preview only; no human approval or publication authorization",
+      "reason": "Direct official2024 ACS one-year B25070 county row establishes(5,888+3,826+8,738+16,798)/(62,754−1,967)×100=57.9893727277%→58.0. Strict over30% is only identified within48.3030911215–57.9893727277% from these bins; those are identification bounds, not a sampling confidence interval. Null target/score is appropriate and city/county periods differ. Historical inherited review_note's old exhibit and conditional93.3 do not represent this new independent review.",
+      "required_changes_or_integration_conditions": [
+        "Render as an unscored related observation under the preview contract; show this new verdict rather than representing inherited review_note as this review. Retain strict-over30 construct caveat and identification-versus-sampling uncertainty distinction."
+      ],
+      "bound_amendment_file": "findings/supplemental-housing.json",
+      "bound_amendment_file_sha256": "0b7508b08a4ea7af36a32850f13aec3e578f2897a5fc6e4b41960fbe7ce21d30",
+      "amendment_canonical_sha256": "c78ccadc32135c92aaac52efb2da19337cc85b843cf59933cc425147fbec53df",
+      "before_canonical_sha256": "eaf63717d7a9b93907385e3837d191f208a0095b8c1c6ea9512436ec4a3975e6",
+      "after_canonical_sha256": "f1e0132ee2a3516ffb2a28c86b0fb40e03aaff7f3c696435801b85900e3bf91d",
+      "source_support": [
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/1YRData/acsdt1y2024-b25070.dat",
+          "raw_path": "raw/acs1-rentburden2024.bin",
+          "raw_sha256": "edf1abe1970b39c3cb9038f762fc203dcfea081e8f2ca6cb0f8c7a75c62cd770",
+          "raw_encoding": "identity",
+          "captured_at": "2026-10-24T01:41:43.950Z",
+          "snapshot_path": "evidence/carmel-monterey-rentburden-extract.png",
+          "period": "2024 ACS one-year",
+          "scale": "county",
+          "snapshot_sha256": "5503a4bc4b0db043712b5b718e8f950ae3d0699f9a58d945c8f30fd6e033c480"
+        },
+        {
+          "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+          "raw_path": "raw/acs5-shells2024.bin.gz",
+          "raw_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+          "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0",
+          "raw_encoding": "gzip; original bytes round-trip exactly",
+          "captured_at": "2026-10-24T01:31:51.961Z",
+          "period": "2024 ACS table shell labels",
+          "scale": "table definitions"
+        }
+      ],
+      "baseline_match": true,
+      "source_bindings_match": true
+    }
+  ],
+  "gap_reviews": [
+    {
+      "portrait": "carmel",
+      "dimension": "water-sanitation",
+      "verdict": "retain-gap",
+      "baseline_finding_sha256": "8242dab34b237f25ecd788cfb537e18ea96437099ba0aad0bd49f898e45464ca",
+      "reason": "Baseline bytes and embedded finding match. No new compliant numeric candidate is supplied. Retain the stated boundary/construct/coverage/recency limitation; this audit does not assert an exhaustive new source search or impossibility of obtaining the measure."
+    },
+    {
+      "portrait": "carmel",
+      "dimension": "energy",
+      "verdict": "retain-gap",
+      "baseline_finding_sha256": "c78f23e0524815980650b57eb57ad438b7ec9f04936ce98ac866ae822d267ca2",
+      "reason": "Baseline bytes and embedded finding match. No new compliant numeric candidate is supplied. Retain the stated boundary/construct/coverage/recency limitation; this audit does not assert an exhaustive new source search or impossibility of obtaining the measure."
+    },
+    {
+      "portrait": "carmel",
+      "dimension": "nitrogen-phosphorus-loading",
+      "verdict": "retain-gap",
+      "baseline_finding_sha256": "d02dc38e969cd488f4e5f4b4ba939e1e64f90db9202e8605f0efce6c2794cb1f",
+      "reason": "Baseline bytes and embedded finding match. No new compliant numeric candidate is supplied. Retain the stated boundary/construct/coverage/recency limitation; this audit does not assert an exhaustive new source search or impossibility of obtaining the measure."
+    },
+    {
+      "portrait": "carmel",
+      "dimension": "freshwater-withdrawals",
+      "verdict": "retain-gap",
+      "baseline_finding_sha256": "e212e077ae5dc7ab4a8c27376293ea725c1bee11fe5d3491359c807dd4b25b55",
+      "reason": "Baseline bytes and embedded finding match. No new compliant numeric candidate is supplied. Retain the stated boundary/construct/coverage/recency limitation; this audit does not assert an exhaustive new source search or impossibility of obtaining the measure."
+    },
+    {
+      "portrait": "monterey-county",
+      "dimension": "water-sanitation",
+      "verdict": "retain-gap",
+      "baseline_finding_sha256": "207294f606e062db99aacb3694f4908c7783340a390ab875b8ca3be47365ebae",
+      "reason": "Baseline bytes and embedded finding match. No new compliant numeric candidate is supplied. Retain the stated boundary/construct/coverage/recency limitation; this audit does not assert an exhaustive new source search or impossibility of obtaining the measure."
+    },
+    {
+      "portrait": "monterey-county",
+      "dimension": "energy",
+      "verdict": "retain-gap",
+      "baseline_finding_sha256": "b1c041d2d8af3ebe183d1f1abc9dd8bf32fd2a9857bed9e3c6dfe8ec60c64c43",
+      "reason": "Baseline bytes and embedded finding match. No new compliant numeric candidate is supplied. Retain the stated boundary/construct/coverage/recency limitation; this audit does not assert an exhaustive new source search or impossibility of obtaining the measure."
+    },
+    {
+      "portrait": "monterey-county",
+      "dimension": "nitrogen-phosphorus-loading",
+      "verdict": "retain-gap",
+      "baseline_finding_sha256": "a2a506aa3398c03bc13260d05bb8b0674cfb4fbb0c0b0d96c31f9b3bb443243a",
+      "reason": "Baseline bytes and embedded finding match. No new compliant numeric candidate is supplied. Retain the stated boundary/construct/coverage/recency limitation; this audit does not assert an exhaustive new source search or impossibility of obtaining the measure."
+    },
+    {
+      "portrait": "monterey-county",
+      "dimension": "freshwater-withdrawals",
+      "verdict": "retain-gap",
+      "baseline_finding_sha256": "e2d8a79fbf214771cdedc2ee57494ab62487be7e316571061657cb5a50fc5a86",
+      "reason": "Baseline bytes and embedded finding match. No new compliant numeric candidate is supplied. Retain the stated boundary/construct/coverage/recency limitation; this audit does not assert an exhaustive new source search or impossibility of obtaining the measure."
+    },
+    {
+      "portrait": "monterey-county",
+      "dimension": "climate-change",
+      "verdict": "retain-gap",
+      "baseline_finding_sha256": "eae84352982be36c9ecdd991b47d75bf3b9c49941bfd40230221d4a912fc215a",
+      "reason": "Baseline bytes and embedded finding match. No new compliant numeric candidate is supplied. Retain the stated boundary/construct/coverage/recency limitation; this audit does not assert an exhaustive new source search or impossibility of obtaining the measure."
+    }
+  ],
+  "additional_primary_check": {
+    "url": "https://atsdr.cdc.gov/place-health/php/eji/eji-indicators-climate-burden-module.html",
+    "claim_supported": "EJI extreme heat is an annual mean using2018–2022 data. Local95th-percentile definition independently appears in the archived ZIP data dictionary.",
+    "method": "primary publisher web reader;2 search queries,1 opened primary page",
+    "not_independent_triangulation": "CDC explanation and CDC-derived EJI data share publisher/upstream provenance; they are documentation corroboration, not a second independent heat measurement."
+  },
+  "limitations": [
+    "This pass reviewed36 proposed amendments and9 retained gap dispositions, not every untouched legacy claim across all portraits.",
+    "Primary archived publisher bytes carry the review. Only the EJI period documentation was newly checked on the public web; no claim of fresh live refetch for every source is made.",
+    "The complete ECHO screenshot is extremely tall; its raw archived HTML/text supports detailed compliance checking. Preview usability would benefit from focused excerpts while retaining the original archive.",
+    "No application or DB execution was performed. No actual tokens or invoiced USD were available."
+  ]
+}

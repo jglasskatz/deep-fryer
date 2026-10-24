@@ -1,0 +1,15 @@
+Quantified TRI FormR onsite releases — reportingyear2024
+
+Researcher-generated faithful extract/derivation from archived source bytes. Original inputs, exact URLs and SHA-256 hashes are retained in this campaign. This exhibit is not a publisher-authored table.
+
+County	Rows	Formcounts	Quantified onsite lbs	2024population(V2025)	lb/resident
+BRONX	6	{'R': 4, 'A': 2}	1355.76362	1406052	0.0009642343384170714
+KINGS	22	{'A': 5, 'R': 17}	44293.48715	2658657	0.01666009836921423
+NEW YORK	3	{'R': 3}	28732.499	1665510	0.01725147192151353
+QUEENS	19	{'R': 17, 'A': 2}	130753.0270475	2367034	0.05523918416359883
+RICHMOND	5	{'R': 5}	5099.4	499572	0.010207537652230309
+CITY	55	{'R': 46, 'A': 9}	210234.1768175	8596825	0.02445486290781771
+
+The EPA source contains 1,509 New York reporting-year 2024 rows. Two records assigned county NEW YORK belong to the Jamestown Blackstone facility, outside Manhattan, and are excluded using the source facility address and coordinates.
+
+Form A certifications do not quantify releases. Zero placeholders in the basic export are not measurements of zero. This extract sums quantified Form R releases only; it does not measure all pollutants, facilities, exposure, or true total releases.

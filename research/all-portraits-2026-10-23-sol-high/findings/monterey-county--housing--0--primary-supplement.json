@@ -1,0 +1,156 @@
+{
+  "id": "monterey-county:housing:0:primary-supplement",
+  "portrait": "monterey-county",
+  "dimension": "housing",
+  "indicator_index": 0,
+  "kind": "replace",
+  "before": {
+    "kind": "indicator",
+    "indicator_slug": "cost-burdened-renters",
+    "name": "Renter-occupied units paying 30% or more of income in gross rent",
+    "value": 58,
+    "unit": "% of renter households",
+    "year": 2024,
+    "target": 30,
+    "level_pct": 93.3,
+    "scoring": {
+      "threshold_ref": "housing.cost-burdened-renters",
+      "function": "lower_is_better",
+      "inputs": {
+        "value": 58,
+        "target": 30,
+        "scale": 30
+      },
+      "worked_math": "level_pct = (value − target) ⁄ scale × 100 = (58 − 30) ⁄ 30 × 100 = +93.3"
+    },
+    "source": "Census Reporter API, ACS 2024 1-year table B25070, Monterey County row; underlying estimates are U.S. Census Bureau ACS",
+    "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B19083%2CB25070%2CB20017%2CB27001&geo_ids=05000US06053",
+    "source_tier": 3,
+    "evidence": {
+      "snapshot_path": "evidence/dd6e71fc936cda74.png",
+      "captured_at": "2026-10-23T03:03:09.136Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "Table B25070 covers renter-occupied housing units. Sum of ACS estimate cells at gross rent ≥30% of household income: B25070007 5,888 + B25070008 3,826 + B25070009 8,738 + B25070010 16,798 = 35,250. Exclude B25070011 “Not computed” (1,967) from the denominator: 62,754 total − 1,967 = 60,787 with computed ratios. Share = 35,250 ÷ 60,787 × 100 = 57.989%, rounded to 58.0%; uncertainty was not propagated for the derived share. The framework's strict >30% construct cannot be isolated from the published bins because the first included bin starts at exactly 30.0%; this finding is therefore 30% or more and has a construct-match limitation. Release ACS 2024 1-year; GEOID 05000US06053. County sources did not provide an accessible current value; Census API returned 503 and direct data.census.gov row was inaccessible, so Census Reporter is classified tier 3 and the source access limitation is explicit.",
+    "status": "uncertain",
+    "quality_flags": [],
+    "geography": "county",
+    "evidence_path": "evidence/shared/a991342705531285b3c5fd53.png",
+    "pdf_path": null,
+    "review_note": "Inspected dd6e71fc936cda74.png and raw B25070: county ACS 2024 one-year renter-occupied universe; total 62,754, not computed 1,967. Numerator 5,888+3,826+8,738+16,798 = 35,250; 35,250/(62,754−1,967)×100 = 57.989% → 58.0%; conditional score 93.3. Bins include exactly 30.0%, so the unchanged framework’s strict OVER 30% share cannot be isolated. The corrected name identifies 30% OR MORE. Keep the construct flag; no combined-share MOE was calculated. Related measurement is supported; exact framework match remains uncertain."
+  },
+  "after": {
+    "kind": "indicator",
+    "indicator_slug": "cost-burdened-renters",
+    "name": "Renter-occupied units paying 30% or more of income in gross rent",
+    "value": 58.0,
+    "unit": "% of renter-occupied units with computable rent burden",
+    "year": 2024,
+    "target": null,
+    "level_pct": null,
+    "scoring": null,
+    "source": "U.S. Census Bureau ACS 2024 detailed table B25070 (official table-based summary file)",
+    "source_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/1YRData/acsdt1y2024-b25070.dat",
+    "source_tier": 2,
+    "evidence": {
+      "snapshot_path": "evidence/carmel-monterey-rentburden-extract.png",
+      "captured_at": "2026-10-24T01:41:43.950Z"
+    },
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "notes": "2024 ACS one-year; exact geography 0500000US06053. B25070 estimates: four bins from 30.0% upward sum to 35250; total renter-occupied units minus not-computed units = 60787. 35250/60787 × 100 = 57.98937273%. This establishes a related AT-LEAST-30% observation, not the configured strict OVER-30% point estimate. Published bins only bound the strict share between 48.30309112% and 57.98937273%; a safe exact point cannot be recovered. Target and score remain null; no definition or threshold is silently changed. Constituent 90% MOEs are retained in the raw source row; no combined-ratio MOE was calculated. The official primary table now replaces the earlier Census Reporter/API-access fallback.",
+    "status": "source-supported-observation",
+    "quality_flags": [],
+    "geography": "county",
+    "evidence_path": "evidence/carmel-monterey-rentburden-extract.png",
+    "pdf_path": null,
+    "review_note": "Inspected dd6e71fc936cda74.png and raw B25070: county ACS 2024 one-year renter-occupied universe; total 62,754, not computed 1,967. Numerator 5,888+3,826+8,738+16,798 = 35,250; 35,250/(62,754−1,967)×100 = 57.989% → 58.0%; conditional score 93.3. Bins include exactly 30.0%, so the unchanged framework’s strict OVER 30% share cannot be isolated. The corrected name identifies 30% OR MORE. Keep the construct flag; no combined-share MOE was calculated. Related measurement is supported; exact framework match remains uncertain."
+  },
+  "field_diff": {
+    "unit": {
+      "before": "% of renter households",
+      "after": "% of renter-occupied units with computable rent burden"
+    },
+    "target": {
+      "before": 30,
+      "after": null
+    },
+    "level_pct": {
+      "before": 93.3,
+      "after": null
+    },
+    "scoring": {
+      "before": {
+        "threshold_ref": "housing.cost-burdened-renters",
+        "function": "lower_is_better",
+        "inputs": {
+          "value": 58,
+          "target": 30,
+          "scale": 30
+        },
+        "worked_math": "level_pct = (value − target) ⁄ scale × 100 = (58 − 30) ⁄ 30 × 100 = +93.3"
+      },
+      "after": null
+    },
+    "source": {
+      "before": "Census Reporter API, ACS 2024 1-year table B25070, Monterey County row; underlying estimates are U.S. Census Bureau ACS",
+      "after": "U.S. Census Bureau ACS 2024 detailed table B25070 (official table-based summary file)"
+    },
+    "source_url": {
+      "before": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B19083%2CB25070%2CB20017%2CB27001&geo_ids=05000US06053",
+      "after": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/1YRData/acsdt1y2024-b25070.dat"
+    },
+    "source_tier": {
+      "before": 3,
+      "after": 2
+    },
+    "evidence": {
+      "before": {
+        "snapshot_path": "evidence/dd6e71fc936cda74.png",
+        "captured_at": "2026-10-23T03:03:09.136Z"
+      },
+      "after": {
+        "snapshot_path": "evidence/carmel-monterey-rentburden-extract.png",
+        "captured_at": "2026-10-24T01:41:43.950Z"
+      }
+    },
+    "notes": {
+      "before": "Table B25070 covers renter-occupied housing units. Sum of ACS estimate cells at gross rent ≥30% of household income: B25070007 5,888 + B25070008 3,826 + B25070009 8,738 + B25070010 16,798 = 35,250. Exclude B25070011 “Not computed” (1,967) from the denominator: 62,754 total − 1,967 = 60,787 with computed ratios. Share = 35,250 ÷ 60,787 × 100 = 57.989%, rounded to 58.0%; uncertainty was not propagated for the derived share. The framework's strict >30% construct cannot be isolated from the published bins because the first included bin starts at exactly 30.0%; this finding is therefore 30% or more and has a construct-match limitation. Release ACS 2024 1-year; GEOID 05000US06053. County sources did not provide an accessible current value; Census API returned 503 and direct data.census.gov row was inaccessible, so Census Reporter is classified tier 3 and the source access limitation is explicit.",
+      "after": "2024 ACS one-year; exact geography 0500000US06053. B25070 estimates: four bins from 30.0% upward sum to 35250; total renter-occupied units minus not-computed units = 60787. 35250/60787 × 100 = 57.98937273%. This establishes a related AT-LEAST-30% observation, not the configured strict OVER-30% point estimate. Published bins only bound the strict share between 48.30309112% and 57.98937273%; a safe exact point cannot be recovered. Target and score remain null; no definition or threshold is silently changed. Constituent 90% MOEs are retained in the raw source row; no combined-ratio MOE was calculated. The official primary table now replaces the earlier Census Reporter/API-access fallback."
+    },
+    "status": {
+      "before": "uncertain",
+      "after": "source-supported-observation"
+    },
+    "evidence_path": {
+      "before": "evidence/shared/a991342705531285b3c5fd53.png",
+      "after": "evidence/carmel-monterey-rentburden-extract.png"
+    }
+  },
+  "reason": "Restore direct primary-source support while keeping the strict-threshold point estimate unresolved and unscored.",
+  "source_support": [
+    {
+      "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/1YRData/acsdt1y2024-b25070.dat",
+      "raw_path": "raw/acs1-rentburden2024.bin",
+      "raw_sha256": "edf1abe1970b39c3cb9038f762fc203dcfea081e8f2ca6cb0f8c7a75c62cd770",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:41:43.950Z",
+      "snapshot_path": "evidence/carmel-monterey-rentburden-extract.png",
+      "period": "2024 ACS one-year",
+      "scale": "county",
+      "snapshot_sha256": "5503a4bc4b0db043712b5b718e8f950ae3d0699f9a58d945c8f30fd6e033c480"
+    },
+    {
+      "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+      "raw_path": "raw/acs5-shells2024.bin.gz",
+      "raw_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+      "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0",
+      "raw_encoding": "gzip; original bytes round-trip exactly",
+      "captured_at": "2026-10-24T01:31:51.961Z",
+      "period": "2024 ACS table shell labels",
+      "scale": "table definitions"
+    }
+  ],
+  "review_required": true
+}

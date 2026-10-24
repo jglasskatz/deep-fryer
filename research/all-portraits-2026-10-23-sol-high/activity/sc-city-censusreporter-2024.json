@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://api.censusreporter.org/1.0/data/show/acs2024_5yr?table_ids=B17001,B19083,B28002&geo_ids=16000US0669112,16000US0683668",
+  "stem": "sc-city-censusreporter-2024",
+  "captured_at": "2026-10-24T01:27:29.845Z",
+  "status": 200,
+  "content_type": "application/json",
+  "raw_path": "raw/sc-city-censusreporter-2024.json",
+  "sha256": "2954a0ced03fba972db6340197fa97da071d1084498b344f9704fd2da2c697ae",
+  "bytes": 10101,
+  "success": true
+}

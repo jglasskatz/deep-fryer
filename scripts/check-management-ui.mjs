@@ -1,0 +1,57 @@
+/** Mutations are confined to an explicitly selected synthetic local tenant. */
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import { mkdir } from 'node:fs/promises';
+import { chromium } from '../apps/worker/node_modules/playwright-core/index.mjs';
+import { installedChromium } from './chromium-path.mjs';
+const base=process.env.UI_MANAGEMENT_FIXTURE_URL;
+assert.ok(base&&process.env.UI_TEST_ISOLATED==='1'&&['localhost','127.0.0.1'].includes(new URL(base).hostname),'Requires an explicit isolated local fixture');
+const out='/private/tmp/deep-fryer-high-effort-visuals';await mkdir(out,{recursive:true});
+const browser=await chromium.launch({executablePath:installedChromium(chromium.executablePath())});
+try {
+ const page=await browser.newPage({viewport:{width:1440,height:1000}});
+ const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ await page.goto(`${base}/admin/manage`,{waitUntil:'networkidle'});
+ const name=`Local UI dimension ${Date.now()}`;const slug=`ui-dimension-${Date.now()}`;
+ const create=page.getByRole('region',{name:'Add a dimension'});
+ await create.getByLabel('Name',{exact:true}).fill(name);
+ await create.getByLabel('URL slug').fill(slug);
+ await create.getByLabel('Custom indicator names (optional)').fill('Local measure one\nLocal measure two');
+ await create.getByRole('button',{name:'Create draft dimension'}).click();
+ const active=page.getByRole('region',{name:'Portrait dimensions'});
+ const item=active.locator('ol > li').filter({has:page.getByRole('heading',{name,exact:true})});
+ await item.waitFor();
+ await item.getByRole('button',{name:`Move ${name} up`,exact:true}).click();
+ await page.getByRole('status').filter({hasText:'Dimension order saved.'}).waitFor();
+ await item.getByRole('link',{name:'Edit content'}).click();
+ await page.getByRole('button',{name:'Add indicator',exact:true}).click();
+ const fields=page.locator('fieldset');assert.equal(await fields.count(),3);
+ assert.equal(await fields.last().getByLabel('Indicator',{exact:true}).evaluate(el=>el===document.activeElement),true,'Add indicator focuses its name');
+ await fields.last().getByLabel('Indicator',{exact:true}).fill('Temporary third measure');
+ await fields.last().getByRole('button',{name:/Remove indicator/}).click();assert.equal(await fields.count(),2);
+ await page.getByLabel(/Change note/).fill('Local UI lifecycle check: retain two empty indicators.');
+ await page.getByRole('button',{name:'Save as new draft version'}).click();
+ await page.getByRole('status').filter({hasText:'New draft version saved.'}).waitFor();
+ for(const width of [390,320]) {await page.setViewportSize({width,height:844});await fields.first().scrollIntoViewIfNeeded();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`Dimension editor overflow ${width}`);await page.screenshot({path:path.join(out,`dimension-editor-mobile-${width}.png`)});}
+ await page.goto(`${base}/admin/manage`,{waitUntil:'networkidle'});
+ await item.getByText('Archive this dimension…',{exact:true}).click();await item.getByLabel('Reason for archiving').fill('Local UI fixture lifecycle complete.');await item.getByRole('button',{name:`Archive ${name}`,exact:true}).click();
+ const restore=page.getByRole('button',{name:`Restore ${name}`,exact:true});await restore.waitFor();await restore.click();await item.waitFor();
+ await page.setViewportSize({width:1440,height:1000});await item.scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'portrait-management-desktop.png')});
+ await page.setViewportSize({width:320,height:844});await item.scrollIntoViewIfNeeded();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:path.join(out,'portrait-management-mobile.png')});
+ await page.goto(`${base}/admin/outreach`,{waitUntil:'networkidle'});
+ const org=`Local UI organization ${Date.now()}`;const privateValue='Private staff detail UI test';
+ await page.getByLabel('Organization name (public)').fill(org);await page.getByLabel('Website (public, HTTPS)').fill('https://example.org/local-ui');await page.getByLabel('Public description').fill('Public local support description.');await page.getByLabel('Tags (public, separated by commas)').fill('housing, local');
+ await page.getByText('Staff contact details and notes',{exact:true}).click();await page.getByLabel('Contact person',{exact:true}).fill(privateValue);await page.getByLabel('Email',{exact:true}).fill('ui@example.org');await page.getByRole('button',{name:'Save contact draft'}).click();
+ const contacts=page.getByRole('region',{name:'Saved outreach contacts'});const contact=contacts.locator(':scope > ul > li').filter({has:page.getByRole('heading',{name:org,exact:true})});await contact.waitFor();
+ const publicPage=await browser.newPage();await publicPage.goto(`${base}/outreach`,{waitUntil:'networkidle'});assert.equal(await publicPage.getByRole('heading',{name:org,exact:true}).count(),0,'Draft contact stays private');
+ await contact.getByText('Version 1 — preview public fields',{exact:true}).click();await contact.scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'outreach-contact-mobile.png')});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await contact.getByRole('button',{name:'Publish version 1',exact:true}).click();await contact.getByRole('button',{name:'Published',exact:true}).waitFor();
+ await publicPage.reload({waitUntil:'networkidle'});assert.ok(await publicPage.getByRole('heading',{name:org,exact:true}).isVisible());assert.ok(!(await publicPage.content()).includes(privateValue),'Staff-only details excluded from public HTML and serialized payload');
+ await page.getByLabel('Public description').fill('Second public description.');await page.getByRole('button',{name:'Save contact draft'}).click();await contact.getByRole('button',{name:'Publish version 2',exact:true}).waitFor();await publicPage.reload({waitUntil:'networkidle'});assert.ok(!(await publicPage.content()).includes('Second public description.'),'New contact draft does not change public version');
+ await contact.getByRole('button',{name:'Publish version 2',exact:true}).click();await page.getByRole('status').filter({hasText:'version 2.'}).waitFor();await contact.getByRole('button',{name:'Publish version 1',exact:true}).click();await page.getByRole('status').filter({hasText:'version 1.'}).waitFor();await publicPage.reload({waitUntil:'networkidle'});assert.ok((await publicPage.content()).includes('Public local support description.'));
+ await page.setViewportSize({width:1440,height:1000});await contact.scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'outreach-contact-desktop.png')});
+ await contact.getByRole('button',{name:'Archive contact',exact:true}).click();await contact.getByRole('button',{name:'Restore contact',exact:true}).waitFor();await publicPage.reload({waitUntil:'networkidle'});assert.equal(await publicPage.getByRole('heading',{name:org,exact:true}).count(),0);
+ await contact.getByRole('button',{name:'Restore contact',exact:true}).click();await contact.getByRole('button',{name:'Archive contact',exact:true}).waitFor();await publicPage.reload({waitUntil:'networkidle'});assert.ok(await publicPage.getByRole('heading',{name:org,exact:true}).isVisible());
+ await contact.getByRole('button',{name:'Archive contact',exact:true}).click();await contact.getByRole('button',{name:'Restore contact',exact:true}).waitFor();
+ assert.deepEqual(errors,[]);console.log(JSON.stringify({passed:true,dimension:slug,contact:org,checks:['dimension create/reorder/archive/restore','indicator add/remove/focus/save','320px and390px dimension editing','contact draft/publish/history/revert','staff-only public projection','contact archive/restore']}));
+}finally{await browser.close();}

@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://housingforhealthpartnership.org/Portals/29/HAP/pdf/2026%20PIT%20Exec%20Summary.pdf",
+  "stem": "sc-pit-2026-summary",
+  "captured_at": "2026-10-24T01:29:36.321Z",
+  "status": 200,
+  "content_type": "application/pdf",
+  "raw_path": "raw/sc-pit-2026-summary.pdf",
+  "sha256": "6a15f7ea12c3c0f5b37bb33c35496e54d6af5e475ff0603a3129e86faf767e20",
+  "bytes": 4066246,
+  "success": true
+}

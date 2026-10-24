@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://www2.census.gov/programs-surveys/acs/data/2024/1_year_geographic_comparison_tables/GCT1701.csv",
+  "stem": "poverty-2024-comparison",
+  "captured_at": "2026-10-24T01:27:29.249Z",
+  "status": 200,
+  "content_type": "text/csv",
+  "raw_path": "raw/poverty-2024-comparison.csv",
+  "sha256": "c48a69aaf1dd20c5ce87e770fe30b35ba5d7ef40de1ea91e91a0597f28b54f23",
+  "bytes": 628988,
+  "success": true
+}

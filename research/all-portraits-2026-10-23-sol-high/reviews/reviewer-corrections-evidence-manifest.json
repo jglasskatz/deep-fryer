@@ -1,0 +1,88 @@
+{
+  "raw/dsny-raw-fy.json": {
+    "sha256": "4a6a2b54c537103f5b700dbf770176f2d8df544d10b1c96d1f2fd62c8801d554",
+    "bytes": 141964,
+    "role": "publisher source archive",
+    "original_sha256": "4a6a2b54c537103f5b700dbf770176f2d8df544d10b1c96d1f2fd62c8801d554"
+  },
+  "evidence/nyc-waste-extract.png": {
+    "sha256": "c03105e42ae283ae7689cf82926d3ccc44889835bf4c510702c90f9b3be38a11",
+    "bytes": 197760,
+    "role": "derived exhibit screenshot"
+  },
+  "raw/dsny-metadata.json": {
+    "sha256": "78ab86a96342ce705ba03ef38d807108f83a10b1f6801619879fc88ad3d61f6f",
+    "bytes": 27453,
+    "role": "publisher source archive",
+    "original_sha256": "78ab86a96342ce705ba03ef38d807108f83a10b1f6801619879fc88ad3d61f6f"
+  },
+  "raw/nyc-protected-2023.pdf": {
+    "sha256": "c9b6ff50f9eff4442e5e875cd78c50cfb5daacdec4e7c351dad109ce382b38dd",
+    "bytes": 306831,
+    "role": "publisher source archive",
+    "original_sha256": "c9b6ff50f9eff4442e5e875cd78c50cfb5daacdec4e7c351dad109ce382b38dd"
+  },
+  "evidence/reviewer-conservation-corrected.png": {
+    "sha256": "dcae778cbafeea8139847bf60e63c8e011c79a9cbc6abe47380a2fce8514178a",
+    "bytes": 103507,
+    "role": "derived exhibit screenshot"
+  },
+  "calculations/reviewer-conservation-corrected.html": {
+    "sha256": "d9cba00f6374d5f063b1b3e3d96bc9c14b71a8da5bed4e6113be127d5e8c0d46",
+    "bytes": 1396,
+    "role": "derived exhibit HTML"
+  },
+  "raw/reviewer-conservation-corrected.html": {
+    "sha256": "5ed9649762e431b5c22d3c4a5550162dcf4fce51318537047aad0a858fb00dd0",
+    "bytes": 1411,
+    "role": "derived exhibit HTML"
+  },
+  "raw/broadband-2024-comparison.csv": {
+    "sha256": "65f8c5ac344a26d9d9b04cc272e1bf06fd8de8b5cfc0cf10993e94fd2060b031",
+    "bytes": 628436,
+    "role": "publisher source archive",
+    "original_sha256": "65f8c5ac344a26d9d9b04cc272e1bf06fd8de8b5cfc0cf10993e94fd2060b031"
+  },
+  "evidence/reviewer-county-broadband-corrected.png": {
+    "sha256": "23de48804dbabf414e32f7b2cd249053ed72326aa22410d25cabbc5a4e0eff5e",
+    "bytes": 126473,
+    "role": "derived exhibit screenshot"
+  },
+  "raw/acs5-shells2024.bin.gz": {
+    "sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0",
+    "bytes": 336902,
+    "role": "publisher source archive",
+    "original_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d"
+  },
+  "calculations/reviewer-county-broadband-corrected.html": {
+    "sha256": "8eb266081852336ae99f4770ef4398aff6bdd0c01e63a0ba0397fa6ad12514c4",
+    "bytes": 1602,
+    "role": "derived exhibit HTML"
+  },
+  "raw/reviewer-county-broadband-corrected.html": {
+    "sha256": "cc47bd2adfc52e31b4879a97cef019d37d605f2295edc893627b92e45fc19b6f",
+    "bytes": 1517,
+    "role": "derived exhibit HTML"
+  },
+  "../../site/evidence/shared/e89455fc53fef9ac48a438f1.pdf": {
+    "sha256": "e89455fc53fef9ac48a438f1a821ec55b9e4759b207149acf6c263aa894a7d61",
+    "bytes": 1184692,
+    "role": "publisher source archive",
+    "original_sha256": "e89455fc53fef9ac48a438f1a821ec55b9e4759b207149acf6c263aa894a7d61"
+  },
+  "evidence/reviewer-fixed-broadband-corrected.png": {
+    "sha256": "901f341c58e9e154569646353103e994a926250ab3a2c80a18ead411ed502ecf",
+    "bytes": 115714,
+    "role": "derived exhibit screenshot"
+  },
+  "calculations/reviewer-fixed-broadband-corrected.html": {
+    "sha256": "95dd957024b8b6b27f0acd079b57d1cba93fbbe2e75333bdbea49e58971d5cde",
+    "bytes": 1521,
+    "role": "derived exhibit HTML"
+  },
+  "raw/reviewer-fixed-broadband-corrected.html": {
+    "sha256": "03357aff3a9564acda8572812c0b1e45d9589f63e55496629513b355782880b5",
+    "bytes": 1536,
+    "role": "derived exhibit HTML"
+  }
+}

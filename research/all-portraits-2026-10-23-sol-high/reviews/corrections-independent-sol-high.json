@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "reviewer": "gpt-6.1-sol",
+  "reasoning_effort": "high",
+  "approved": false,
+  "human_approval": false,
+  "baseline_snapshot_sha256": "a5e318a6bc47afe632dbd1aab17ea354e68279af02ad2c59b18cd43011964d2b",
+  "amendment_files": {
+    "findings/reviewer-suggested-corrections.json": "5d2d818dd01a773117b660bd70e6fd58d5e0258b4d694c903643d16d43259c1b"
+  },
+  "evidence_manifests": {
+    "reviews/reviewer-corrections-evidence-manifest.json": "2310d3509411c610de5724bdcc3237c53b919702605323323c5716f83e5ffd93"
+  },
+  "reviews": [
+    {
+      "id": "nyc:chemical-pollution:1:reviewer-correction-v1",
+      "verdict": "accept",
+      "reason": "Accept as an unscored DSNY-collected residential/institutional refuse disposal proxy. Independently recomputed FY2005 3,348,817.81 and FY2025 2,928,470.67 tons from 708 unique district-month rows per year: reduction 12.5521053652%, rounded 12.55%. The derived exhibit labels fiscal and calendar comparisons separately; text explicitly excludes landfill-destination and whole-commercial-system claims.",
+      "bound_amendment_file": "findings/reviewer-suggested-corrections.json",
+      "bound_amendment_file_sha256": "5d2d818dd01a773117b660bd70e6fd58d5e0258b4d694c903643d16d43259c1b"
+    },
+    {
+      "id": "nyc:biodiversity-loss:0:reviewer-correction-v1",
+      "verdict": "accept",
+      "reason": "Accept as an unscored combined land-and-water protected-area observation. The five county totals in the archived primary report sum to 43,374 protected acres of 222,182 total acres, 19.5218334519%, rounded 19.5%. The corrected derived exhibit agrees, and the amendment explicitly declines the framework land-only target and score.",
+      "bound_amendment_file": "findings/reviewer-suggested-corrections.json",
+      "bound_amendment_file_sha256": "5d2d818dd01a773117b660bd70e6fd58d5e0258b4d694c903643d16d43259c1b"
+    },
+    {
+      "id": "santa-cruz-county:networks:0:reviewer-correction-v1",
+      "verdict": "accept",
+      "reason": "Accept as unscored ACS2024 one-year county broadband of any type. The archived GCT2801 CSV has exactly one Santa Cruz County GEOID0500000US06087 row, estimate94.9 and margin +/-1.1. The categorical definition includes cellular-only service. The corrected exhibit and wording separate county one-year from city five-year data and disclaim fixed-only, quality, speed, affordability, and commuting claims.",
+      "bound_amendment_file": "findings/reviewer-suggested-corrections.json",
+      "bound_amendment_file_sha256": "5d2d818dd01a773117b660bd70e6fd58d5e0258b4d694c903643d16d43259c1b"
+    },
+    {
+      "id": "bronx:networks:0:reviewer-correction-v1",
+      "verdict": "accept",
+      "reason": "Accept as an unscored Bronx fixed cable/fiber/DSL observation. Independently inspected archived OSC Report20-2025 Figure4, printed page5: 2023 fixed63.3%, cellular-only20.3%, nointernet7.1%. The report defines fixed broadband separately; the corrected exhibit preserves series/year/geography and the amendment removes the incompatible generic-broadband target and score.",
+      "bound_amendment_file": "findings/reviewer-suggested-corrections.json",
+      "bound_amendment_file_sha256": "5d2d818dd01a773117b660bd70e6fd58d5e0258b4d694c903643d16d43259c1b"
+    },
+    {
+      "id": "staten-island:networks:0:reviewer-correction-v1",
+      "verdict": "accept",
+      "reason": "Accept as an unscored Staten Island fixed cable/fiber/DSL observation. Independently inspected archived OSC Report20-2025 Figure4, printed page5: 2023 fixed76.5%, cellular-only12.0%, nointernet6.3%. The corrected exhibit agrees and the amendment explicitly avoids applying the generic any-broadband threshold to the fixed series.",
+      "bound_amendment_file": "findings/reviewer-suggested-corrections.json",
+      "bound_amendment_file_sha256": "5d2d818dd01a773117b660bd70e6fd58d5e0258b4d694c903643d16d43259c1b"
+    }
+  ],
+  "reviewed_at": "2026-10-24T02:03:58.193979+00:00"
+}

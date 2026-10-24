@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://data.cityofnewyork.us/resource/c3uy-2p5r.json?name=Fine%20particles%20(PM%202.5)&measure=Annual%20mean&geo_type_name=Citywide&time_period=2024",
+  "stem": "nyc-pm25-2024",
+  "captured_at": "2026-10-24T01:26:20.873Z",
+  "status": 200,
+  "content_type": "application/json;charset=utf-8",
+  "raw_path": "raw/nyc-pm25-2024.json",
+  "sha256": "0b337f6ca8aef27d3bda3fb8316993611ab49c28ee8d95a7168fa228fcf916f2",
+  "bytes": 293,
+  "success": true
+}

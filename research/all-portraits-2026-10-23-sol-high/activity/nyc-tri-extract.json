@@ -1,0 +1,12 @@
+{
+  "mode": "render",
+  "url": "calculations/nyc-tri-extract.html",
+  "stem": "nyc-tri-extract",
+  "captured_at": "2026-10-24T01:40:47.046Z",
+  "status": 200,
+  "raw_path": "raw/nyc-tri-extract.html",
+  "snapshot_path": "evidence/nyc-tri-extract.png",
+  "sha256": "f1e99bf9f20c6bf6a9f660ee72a6f743953e8b0fbef44141c56913fd119a6d20",
+  "bytes": 2130,
+  "success": true
+}

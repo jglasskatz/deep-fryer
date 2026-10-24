@@ -1,0 +1,123 @@
+{
+  "id": "bronx:ocean-acidification:0",
+  "portrait": "bronx",
+  "dimension": "ocean-acidification",
+  "indicator_index": 0,
+  "kind": "replace",
+  "before": {
+    "name": "Coastal aragonite saturation state (Ω)",
+    "unit": "Ω aragonite",
+    "year": 2022,
+    "value": 1.09,
+    "source": "Barrett, L.J., Vlahos, P., McGuinness, M.A., Whitney, M.M., Vaudrey, J.M.P. (2024). 'Droughts and deluges: changes in river discharge and the carbonate chemistry of an urbanized temperate estuary.' Frontiers in Marine Science 11:1398087. Table 1 — western Long Island Sound (WLIS) July–September average bottom-water aragonite saturation state.",
+    "target": 3,
+    "scoring": {
+      "inputs": {
+        "scale": 3,
+        "value": 1.09,
+        "target": 3
+      },
+      "function": "higher_is_better",
+      "worked_math": "higher_is_better, scale defaults to |target| = 3. level_pct = (target − value) ⁄ scale × 100 = (3 − 1.09) ⁄ 3 × 100 = 1.91 ⁄ 3 × 100 = +63.7. Positive = overshoot beyond the ecological ceiling: measured Ω is 1.91 units below the Ω≥3 target, i.e. 64% of the way from the target toward Ω=0. Context: Ω 1.09 is only just above the Ω=1 dissolution threshold.",
+      "threshold_ref": "ocean-acidification.aragonite-saturation"
+    },
+    "evidence": {
+      "pdf_path": "CAPTURE_FAILED — no pdf_path returned; direct PDF at https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2024.1398087/pdf",
+      "captured_at": "2026-08-05T00:00:00Z",
+      "snapshot_path": "CAPTURE_FAILED — capture_evidence returned no snapshot_path (three attempts, with and without pdf_url)"
+    },
+    "level_pct": 63.7,
+    "confidence": "medium",
+    "source_url": "https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2024.1398087/full",
+    "source_tier": 3,
+    "geographic_scale": "regional",
+    "geography": "regional",
+    "status": "published",
+    "evidence_path": null,
+    "pdf_path": null
+  },
+  "after": {
+    "name": "Western Long Island Sound summertime bottom-water aragonite saturation (regional proxy)",
+    "unit": "Ω aragonite",
+    "year": 2022,
+    "value": 1.09,
+    "source": "Barrett, L.J., Vlahos, P., Mc Guinness, M.A., Whitney, M.M., Vaudrey, J.M.P. (2024). 'Droughts and deluges: changes in river discharge and the carbonate chemistry of an urbanized temperate estuary.' Frontiers in Marine Science 11:1398087. Table 1 — western Long Island Sound (WLIS) July–September average bottom-water aragonite saturation state.",
+    "target": 3,
+    "scoring": {
+      "inputs": {
+        "scale": 3,
+        "value": 1.09,
+        "target": 3
+      },
+      "function": "higher_is_better",
+      "worked_math": "higher_is_better, scale defaults to |target| = 3. level_pct = (target − value) ⁄ scale × 100 = (3 − 1.09) ⁄ 3 × 100 = 1.91 ⁄ 3 × 100 = +63.7. Positive = overshoot beyond the ecological ceiling: measured Ω is 1.91 units below the Ω≥3 target, i.e. 64% of the way from the target toward Ω=0. Context: Ω 1.09 is only just above the Ω=1 dissolution threshold.",
+      "threshold_ref": "ocean-acidification.aragonite-saturation"
+    },
+    "evidence": {
+      "snapshot_path": "evidence/nyc-ocean-extract.png",
+      "captured_at": "2026-10-24T01:26:23.739Z"
+    },
+    "level_pct": 63.7,
+    "confidence": "medium",
+    "source_url": "https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2024.1398087/full",
+    "source_tier": 3,
+    "geographic_scale": "regional",
+    "geography": "Western Long Island Sound regional proxy — not Bronx waters alone",
+    "status": "source-supported-draft",
+    "evidence_path": "evidence/nyc-ocean-extract.png",
+    "pdf_path": null,
+    "notes": "Source Table 1 exactly supports 2022 July–September western LISbottomwater Ωar 1.09±0.00. This is aseasonal bottomwater regionalproxy permitted by inheritedregional scale, not a NYCannualsurfaceoceanmean. TargetΩ3 retained from existing framework; depth/season/ecosystem comparability remains a scientific limitation."
+  },
+  "field_diff": {
+    "name": {
+      "before": "Coastal aragonite saturation state (Ω)",
+      "after": "Western Long Island Sound summertime bottom-water aragonite saturation (regional proxy)"
+    },
+    "source": {
+      "before": "Barrett, L.J., Vlahos, P., McGuinness, M.A., Whitney, M.M., Vaudrey, J.M.P. (2024). 'Droughts and deluges: changes in river discharge and the carbonate chemistry of an urbanized temperate estuary.' Frontiers in Marine Science 11:1398087. Table 1 — western Long Island Sound (WLIS) July–September average bottom-water aragonite saturation state.",
+      "after": "Barrett, L.J., Vlahos, P., Mc Guinness, M.A., Whitney, M.M., Vaudrey, J.M.P. (2024). 'Droughts and deluges: changes in river discharge and the carbonate chemistry of an urbanized temperate estuary.' Frontiers in Marine Science 11:1398087. Table 1 — western Long Island Sound (WLIS) July–September average bottom-water aragonite saturation state."
+    },
+    "evidence": {
+      "before": {
+        "pdf_path": "CAPTURE_FAILED — no pdf_path returned; direct PDF at https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2024.1398087/pdf",
+        "captured_at": "2026-08-05T00:00:00Z",
+        "snapshot_path": "CAPTURE_FAILED — capture_evidence returned no snapshot_path (three attempts, with and without pdf_url)"
+      },
+      "after": {
+        "snapshot_path": "evidence/nyc-ocean-extract.png",
+        "captured_at": "2026-10-24T01:26:23.739Z"
+      }
+    },
+    "geography": {
+      "before": "regional",
+      "after": "Western Long Island Sound regional proxy — not Bronx waters alone"
+    },
+    "status": {
+      "before": "published",
+      "after": "source-supported-draft"
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/nyc-ocean-extract.png"
+    },
+    "notes": {
+      "before": null,
+      "after": "Source Table 1 exactly supports 2022 July–September western LISbottomwater Ωar 1.09±0.00. This is aseasonal bottomwater regionalproxy permitted by inheritedregional scale, not a NYCannualsurfaceoceanmean. TargetΩ3 retained from existing framework; depth/season/ecosystem comparability remains a scientific limitation."
+    }
+  },
+  "reason": "Restore failed source capture and make seasonal/depth/geographic proxy explicit.",
+  "source_support": [
+    {
+      "url": "https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2024.1398087/full",
+      "raw_path": "raw/nyc-ocean-study.bin",
+      "raw_sha256": "14121af82825e7ca6bcff5a06bfa22e4f4a649dfe2c86335784b21755d6a2cb0",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:26:23.739Z",
+      "period": "July–September 2022",
+      "scale": "western Long Island Sound regional",
+      "snapshot_path": "evidence/nyc-ocean-extract.png",
+      "snapshot_sha256": "05ae76fafd16e359757523dbb072834d4f5acd1828e59f8c5cb65eb43e773664"
+    }
+  ],
+  "review_required": true
+}

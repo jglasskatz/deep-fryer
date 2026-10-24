@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defaultPortraitConfig, framework } from '@deep-fryer/contract';
-import { renderPlan, REGION_BRIEF_PLACEHOLDER } from './plan.js';
+import { MAX_INDICATORS_PER_SESSION, renderPlan, renderVerifierPrompt, researchModels, REGION_BRIEF_PLACEHOLDER } from './plan.js';
 import { deterministicChecks, isFlagged, mergeVerification } from './verify.js';
 
 const config = defaultPortraitConfig('City of Santa Cruz', 'City of Santa Cruz municipal boundary');
@@ -60,6 +60,43 @@ describe('renderPlan', () => {
     expect(overridden.sessions[1]!.prompt).toContain('adopted housing element goal');
     expect(overridden.config_hash).not.toBe(plan.config_hash);
   });
+
+  it('splits dense dimensions without losing or duplicating an indicator', () => {
+    const indicators = Array.from({ length: 8 }, (_, i) => ({
+      slug: `custom-indicator-${i}`, name: `Custom indicator ${i}`, unit: '%', threshold_ref: '',
+    }));
+    const split = renderPlan({ config, dimensions: [{ dimensionId: 'd', slug: 'custom', ring: 'social', name: 'Custom', indicators }] });
+    expect(split.sessions).toHaveLength(4); // region + 3 + 3 + 2 indicators
+    for (const [index, session] of split.sessions.slice(1).entries()) {
+      expect(session.dimension_slug).toBe('custom');
+      expect(session.prompt).toContain(`part ${index + 1} of 3`);
+      const assigned = indicators.filter((indicator) => session.prompt.includes(`slug: ${indicator.slug},`));
+      expect(assigned.map((indicator) => indicator.slug)).toEqual(
+        indicators.slice(index * MAX_INDICATORS_PER_SESSION, (index + 1) * MAX_INDICATORS_PER_SESSION).map((i) => i.slug),
+      );
+    }
+  });
+
+  it('still plans a custom dimension whose indicators will be discovered by research', () => {
+    expect(renderPlan({ config, dimensions: [{ dimensionId: 'd', slug: 'custom', ring: 'social', name: 'Custom', indicators: [] }] }).sessions).toHaveLength(2);
+  });
+
+  it('freezes the researcher/scout/verifier models in the inspectable plan', () => {
+    const standard = renderPlan({ config, dimensions: [], strategy: 'standard', modelDefaults: { session_model: 'ignored-default', subagent_model: 'ignored-scout' } });
+    expect(standard.strategy).toBe('standard');
+    expect(standard.models).toEqual({ session_model: 'claude-sonnet-5', subagent_model: null, verifier_model: 'claude-opus-5' });
+    expect(researchModels('deep')).toEqual({ session_model: 'claude-opus-5', subagent_model: 'claude-sonnet-5', verifier_model: 'claude-opus-5' });
+    expect(researchModels(undefined, { session_model: 'operator-researcher', verifier_model: 'operator-verifier', subagent_model: 'operator-scout' })).toEqual({ session_model: 'operator-researcher', verifier_model: 'operator-verifier', subagent_model: 'operator-scout' });
+  });
+
+  it('tells the independent verifier to read the archive first and discloses missing exhibits', () => {
+    const input = { indicator_name: 'Rent burden', claimed_value: '42', unit: '%', year: '2025', geography: 'City', source_name: 'ACS', source_url: 'https://example.gov/report' };
+    const prompt = renderVerifierPrompt({ ...input, archived_exhibits: ['archived-source.pdf', 'archived-snapshot.png'] });
+    expect(prompt).toContain('Read the archived exhibits yourself');
+    expect(prompt).toContain('- archived-source.pdf');
+    expect(prompt).toContain('A live-site access block does not invalidate a readable archive');
+    expect(renderVerifierPrompt(input)).toContain('No archived exhibit could be loaded');
+  });
 });
 
 describe('deterministicChecks', () => {
@@ -101,6 +138,24 @@ describe('deterministicChecks', () => {
     );
     expect(checks.recency_ok).toBe(false);
     expect(checks.scale_ok).toBe(false);
+  });
+
+  it('flags future observations and accepts the exact oldest permitted year', async () => {
+    const year = new Date().getUTCFullYear();
+    expect((await deterministicChecks({ ...goodFinding, year: year + 1 }, config, 'housing', async () => true)).checks.recency_ok).toBe(false);
+    expect((await deterministicChecks({ ...goodFinding, year }, config, 'housing', async () => true)).checks.recency_ok).toBe(true);
+    expect((await deterministicChecks({ ...goodFinding, year: year - 5 }, config, 'housing', async () => true)).checks.recency_ok).toBe(true);
+    expect((await deterministicChecks({ ...goodFinding, year: year - 6 }, config, 'housing', async () => true)).checks.recency_ok).toBe(false);
+  });
+
+  it('validates sourced narrative drafts and never treats an uncertain narrative as an unflagged finding', async () => {
+    const narrative = { context: 'Supported context.', actions: [{ text: 'Attend the hearing', source_url: 'https://city.example/hearing', evidence: { snapshot_path: 'evidence/action.png', captured_at: '2026-10-23T12:00:00Z' } }] };
+    const parsed = await deterministicChecks({ ...goodFinding, narrative_draft: narrative }, config, 'housing', async () => true);
+    expect(parsed.payload).toMatchObject({ narrative_draft: narrative });
+    expect(isFlagged(mergeVerification(parsed.checks, { content_supported: 'pass', narrative_supported: 'uncertain' }))).toBe(true);
+    expect(isFlagged(mergeVerification(parsed.checks, { content_supported: 'pass', narrative_supported: 'pass' }))).toBe(false);
+    const bad = { ...narrative, actions: [{ ...narrative.actions[0]!, source_url: 'javascript:alert(1)' }] };
+    expect((await deterministicChecks({ ...goodFinding, narrative_draft: bad }, config, 'housing', async () => true)).payload).toBeNull();
   });
 
   it('rejects malformed payloads at the schema gate', async () => {

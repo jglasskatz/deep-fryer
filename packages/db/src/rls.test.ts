@@ -81,13 +81,13 @@ describe.skipIf(!hasDb)('row-level security under the app role', () => {
     await expect(
       asEditor((tx) => tx.insert(m.dimensionVersions).values({
         dimensionId: b.dimensions[2]!.dimensionId, versionNum: 99, status: 'draft',
-        data: editorA as never, origin: 'human', changeNote: 'cross-tenant write',
+        data: editorA as never, origin: 'human', changeNote: 'cross-tenant write', createdBy: editor!.id,
       })),
     ).rejects.toThrow(/row-level security/);
     // …but can write A.
     const v1 = (await m.latestVersion(db, a.dimensions[2]!.dimensionId))!;
     const written = await asEditor((tx) => m.appendDimensionVersion(tx, {
-      dimensionId: a.dimensions[2]!.dimensionId, status: 'draft', data: v1.data, origin: 'human', changeNote: 'in-tenant edit',
+      dimensionId: a.dimensions[2]!.dimensionId, status: 'draft', data: v1.data, origin: 'human', changeNote: 'in-tenant edit', createdBy: editor!.id,
     }));
     expect(written.versionNum).toBe(2);
     // Editors cannot change their own role.
@@ -295,7 +295,7 @@ describe.skipIf(!hasDb)('row-level security under the app role', () => {
     const draft = (await m.latestVersion(db, dim))!;
     const publishedAt = new Date(Date.UTC(2026, 0, 2));
     await as(owner!.id)(async (tx) => {
-      const v = await m.appendDimensionVersion(tx, { dimensionId: dim, status: 'draft', data: draft.data, origin: 'human', changeNote: 'first publish' });
+      const v = await m.appendDimensionVersion(tx, { dimensionId: dim, status: 'draft', data: draft.data, origin: 'human', changeNote: 'first publish', createdBy: owner!.id });
       await tx.update(m.dimensionVersions).set({ status: 'published', publishedAt }).where(eq(m.dimensionVersions.id, v.id));
       await tx.update(m.dimensions).set({ publishedVersionId: v.id }).where(eq(m.dimensions.id, dim));
     });

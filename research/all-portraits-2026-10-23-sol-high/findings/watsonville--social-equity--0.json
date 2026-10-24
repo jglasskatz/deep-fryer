@@ -1,0 +1,130 @@
+{
+  "id": "watsonville:social-equity:0",
+  "portrait": "watsonville",
+  "dimension": "social-equity",
+  "indicator_index": 0,
+  "kind": "replace",
+  "before": {
+    "name": "Environmental justice",
+    "value": "CalEnviroScreen flagged; Gini ~0.50",
+    "unit": "",
+    "year": 2021,
+    "target": "Environmental and economic equity",
+    "source": "CalEnviroScreen; Census ACS",
+    "source_url": "https://oehha.ca.gov/calenviroscreen",
+    "geography": "See source context",
+    "status": "legacy-source",
+    "notes": "CalEnviroScreen flags south county as high pesticide exposure and pollution burden. County Gini 0.50 (severe inequality). Watsonville disproportionately bears county's environmental costs while having lower incomes.",
+    "evidence_path": null,
+    "pdf_path": null
+  },
+  "after": {
+    "name": "Income inequality (household Gini index)",
+    "value": 0.4282,
+    "unit": "Gini 0–1",
+    "year": 2024,
+    "target": null,
+    "source": "US Census Bureau ACS2024 Detailed Table B19083",
+    "source_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b19083.dat",
+    "geography": "city",
+    "status": "source-supported-observation",
+    "notes": "Official B19083_E001=0.4282;90%MOE±0.0213. 2020–2024 ACS5 year, geography 1600000 US0683668. Replaces earlier unclear countyproxy/approximation. Legacytarget was prose and differs byportrait; no new numericthreshold approved here. Watsonville environmentaljustice context is distinct from household income Gini.",
+    "evidence_path": "evidence/sc-census-extract.png",
+    "pdf_path": null,
+    "level_pct": null,
+    "scoring": null,
+    "confidence": "medium",
+    "geographic_scale": "city",
+    "evidence": {
+      "snapshot_path": "evidence/sc-census-extract.png",
+      "captured_at": "2026-10-24T01:31:17.815Z"
+    }
+  },
+  "field_diff": {
+    "name": {
+      "before": "Environmental justice",
+      "after": "Income inequality (household Gini index)"
+    },
+    "value": {
+      "before": "CalEnviroScreen flagged; Gini ~0.50",
+      "after": 0.4282
+    },
+    "unit": {
+      "before": "",
+      "after": "Gini 0–1"
+    },
+    "year": {
+      "before": 2021,
+      "after": 2024
+    },
+    "target": {
+      "before": "Environmental and economic equity",
+      "after": null
+    },
+    "source": {
+      "before": "CalEnviroScreen; Census ACS",
+      "after": "US Census Bureau ACS2024 Detailed Table B19083"
+    },
+    "source_url": {
+      "before": "https://oehha.ca.gov/calenviroscreen",
+      "after": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b19083.dat"
+    },
+    "geography": {
+      "before": "See source context",
+      "after": "city"
+    },
+    "status": {
+      "before": "legacy-source",
+      "after": "source-supported-observation"
+    },
+    "notes": {
+      "before": "CalEnviroScreen flags south county as high pesticide exposure and pollution burden. County Gini 0.50 (severe inequality). Watsonville disproportionately bears county's environmental costs while having lower incomes.",
+      "after": "Official B19083_E001=0.4282;90%MOE±0.0213. 2020–2024 ACS5 year, geography 1600000 US0683668. Replaces earlier unclear countyproxy/approximation. Legacytarget was prose and differs byportrait; no new numericthreshold approved here. Watsonville environmentaljustice context is distinct from household income Gini."
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/sc-census-extract.png"
+    },
+    "confidence": {
+      "before": null,
+      "after": "medium"
+    },
+    "geographic_scale": {
+      "before": null,
+      "after": "city"
+    },
+    "evidence": {
+      "before": null,
+      "after": {
+        "snapshot_path": "evidence/sc-census-extract.png",
+        "captured_at": "2026-10-24T01:31:17.815Z"
+      }
+    }
+  },
+  "reason": "Replace unspecified/approximate geography with exact primary ACSGini and explicitperiod.",
+  "source_support": [
+    {
+      "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b19083.dat",
+      "raw_path": "raw/acs5-gini2024.bin.gz",
+      "raw_sha256": "338f7a1191eaaf3913913e78c36aaa9d82f2b5c8faaf889be2e597b28869205e",
+      "raw_encoding": "gzip; original bytes round-trip exactly",
+      "captured_at": "2026-10-24T01:31:17.815Z",
+      "period": "2020–2024 ACS5 year",
+      "scale": "city",
+      "stored_sha256": "c5002dfc80371b532da1b97128d8780fbd0eeca51a14c5abb235d4def89f00d3",
+      "snapshot_path": "evidence/sc-census-extract.png",
+      "snapshot_sha256": "aa09836439b82e14d85a09c9864b2f1bfe6d37647682d95aa0140d7b0444c51e"
+    },
+    {
+      "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+      "raw_path": "raw/acs5-shells2024.bin.gz",
+      "raw_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+      "raw_encoding": "gzip; original bytes round-trip exactly",
+      "captured_at": "2026-10-24T01:31:51.961Z",
+      "period": null,
+      "scale": null,
+      "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0"
+    }
+  ],
+  "review_required": true
+}

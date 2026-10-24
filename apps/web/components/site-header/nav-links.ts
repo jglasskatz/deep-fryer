@@ -69,6 +69,8 @@ export function adminNavLinks({
     links.push({ href: `${a}/discussion`, label: 'Discussion', count: counts?.heldComments, countLabel: 'awaiting approval' });
   }
   links.push({ href: `${a}/research`, label: 'Research' });
+  links.push({ href: `${a}/manage`, label: 'Portrait content' });
+  links.push({ href: `${a}/outreach`, label: 'Outreach contacts' });
   if (features.policy_analysis) links.push({ href: `${a}/policy`, label: 'Policy' });
   if (features.emergency) links.push({ href: `${a}/emergency`, label: 'Emergency' });
   if (features.involvement) {
@@ -79,6 +81,7 @@ export function adminNavLinks({
       countLabel: 'new submissions',
     });
   }
+  if (features.custom_pages) links.push({ href: `${a}/pages`, label: 'Pages' });
   links.push({ href: `${a}/members`, label: 'Members' });
   links.push({ href: `${a}/settings`, label: 'Settings' });
   if (orgSlug) links.push({ href: `/o/${orgSlug}/billing`, label: 'Billing' });

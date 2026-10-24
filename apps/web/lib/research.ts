@@ -1,12 +1,14 @@
 import 'server-only';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { frameworkDimension } from '@deep-fryer/contract';
+import type { ResearchStrategy } from '@deep-fryer/core';
 import {
   dimensions,
   gateResearchSpend,
   latestVersion,
   organizationForTenant,
   researchRuns,
+  type DbExecutor,
 } from '@deep-fryer/db';
 import {
   enqueueResearchApply,
@@ -24,13 +26,20 @@ import { alreadyAppliedMessage } from './run-progress';
  * allowlists, config hash — without spending tokens, and store it on the
  * run row for inspection before apply.
  */
-export async function createPlannedRun(input: {
+export interface PlannedRunInput {
   tenantId: string;
   dimensionIds?: string[];
   reviewerNotes?: Record<string, string>;
   requestedBy?: string | null;
-}) {
-  return userDb(async (db) => {
+  strategy?: ResearchStrategy;
+}
+
+export async function createPlannedRun(input: PlannedRunInput) {
+  return userDb((db) => createPlannedRunIn(db, input));
+}
+
+/** Plan atomically with a review decision on its already-authorized transaction. */
+export async function createPlannedRunIn(db: DbExecutor, input: PlannedRunInput) {
     // On this transaction, not through tenantConfigMap's own: that would wait
     // for a second pooled connection while this one is held (lib/admin-data.ts).
     const configMap = await tenantConfigMapIn(db, input.tenantId);
@@ -80,7 +89,11 @@ export async function createPlannedRun(input: {
       });
     }
 
-    const plan = renderPlan({ config, dimensions: specs });
+    const plan = renderPlan({ config, dimensions: specs, strategy: input.strategy, modelDefaults: {
+      session_model: process.env.ANTHROPIC_MODEL,
+      subagent_model: process.env.RESEARCH_SUBAGENT_MODEL || null,
+      verifier_model: process.env.VERIFIER_MODEL,
+    } });
 
     const [run] = await db
       .insert(researchRuns)
@@ -95,7 +108,6 @@ export async function createPlannedRun(input: {
     if (!run) throw new Error('run insert failed');
 
     return { run, sessionCount: plan.sessions.length };
-  });
 }
 
 /**

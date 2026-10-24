@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/8/query?where=STATE%3D%2706%27%20AND%20COUNTY%3D%27087%27&outFields=GEOID,POP100,HU100,AREALAND,AREAWATER&returnGeometry=false&f=pjson",
+  "stem": "sc-census2020-tract-coverage",
+  "captured_at": "2026-10-24T01:31:52.069Z",
+  "status": 200,
+  "content_type": "text/plain;charset=UTF-8",
+  "raw_path": "raw/sc-census2020-tract-coverage.bin",
+  "sha256": "2cc0b9740597b849fe0f9a1f0251422a624b9a26100496eb93cd161a599f31e3",
+  "bytes": 22367,
+  "success": true
+}

@@ -1,0 +1,112 @@
+[
+  {
+    "Table ID": "B25070",
+    "Line": "1.0",
+    "Indent": "0",
+    "Unique ID": "B25070_001",
+    "Label": "Total:",
+    "Title": "Gross Rent as a Percentage of Household Income in the Past 12 Months",
+    "Universe": "Renter-occupied housing units",
+    "Type": "int"
+  },
+  {
+    "Table ID": "B25070",
+    "Line": "2.0",
+    "Indent": "1",
+    "Unique ID": "B25070_002",
+    "Label": "Less than 10.0 percent",
+    "Title": "Gross Rent as a Percentage of Household Income in the Past 12 Months",
+    "Universe": "Renter-occupied housing units",
+    "Type": "int"
+  },
+  {
+    "Table ID": "B25070",
+    "Line": "3.0",
+    "Indent": "1",
+    "Unique ID": "B25070_003",
+    "Label": "10.0 to 14.9 percent",
+    "Title": "Gross Rent as a Percentage of Household Income in the Past 12 Months",
+    "Universe": "Renter-occupied housing units",
+    "Type": "int"
+  },
+  {
+    "Table ID": "B25070",
+    "Line": "4.0",
+    "Indent": "1",
+    "Unique ID": "B25070_004",
+    "Label": "15.0 to 19.9 percent",
+    "Title": "Gross Rent as a Percentage of Household Income in the Past 12 Months",
+    "Universe": "Renter-occupied housing units",
+    "Type": "int"
+  },
+  {
+    "Table ID": "B25070",
+    "Line": "5.0",
+    "Indent": "1",
+    "Unique ID": "B25070_005",
+    "Label": "20.0 to 24.9 percent",
+    "Title": "Gross Rent as a Percentage of Household Income in the Past 12 Months",
+    "Universe": "Renter-occupied housing units",
+    "Type": "int"
+  },
+  {
+    "Table ID": "B25070",
+    "Line": "6.0",
+    "Indent": "1",
+    "Unique ID": "B25070_006",
+    "Label": "25.0 to 29.9 percent",
+    "Title": "Gross Rent as a Percentage of Household Income in the Past 12 Months",
+    "Universe": "Renter-occupied housing units",
+    "Type": "int"
+  },
+  {
+    "Table ID": "B25070",
+    "Line": "7.0",
+    "Indent": "1",
+    "Unique ID": "B25070_007",
+    "Label": "30.0 to 34.9 percent",
+    "Title": "Gross Rent as a Percentage of Household Income in the Past 12 Months",
+    "Universe": "Renter-occupied housing units",
+    "Type": "int"
+  },
+  {
+    "Table ID": "B25070",
+    "Line": "8.0",
+    "Indent": "1",
+    "Unique ID": "B25070_008",
+    "Label": "35.0 to 39.9 percent",
+    "Title": "Gross Rent as a Percentage of Household Income in the Past 12 Months",
+    "Universe": "Renter-occupied housing units",
+    "Type": "int"
+  },
+  {
+    "Table ID": "B25070",
+    "Line": "9.0",
+    "Indent": "1",
+    "Unique ID": "B25070_009",
+    "Label": "40.0 to 49.9 percent",
+    "Title": "Gross Rent as a Percentage of Household Income in the Past 12 Months",
+    "Universe": "Renter-occupied housing units",
+    "Type": "int"
+  },
+  {
+    "Table ID": "B25070",
+    "Line": "10.0",
+    "Indent": "1",
+    "Unique ID": "B25070_010",
+    "Label": "50.0 percent or more",
+    "Title": "Gross Rent as a Percentage of Household Income in the Past 12 Months",
+    "Universe": "Renter-occupied housing units",
+    "Type": "int"
+  },
+  {
+    "Table ID": "B25070",
+    "Line": "11.0",
+    "Indent": "1",
+    "Unique ID": "B25070_011",
+    "Label": "Not computed",
+    "Title": "Gross Rent as a Percentage of Household Income in the Past 12 Months",
+    "Universe": "Renter-occupied housing units",
+    "Type": "int"
+  }
+]

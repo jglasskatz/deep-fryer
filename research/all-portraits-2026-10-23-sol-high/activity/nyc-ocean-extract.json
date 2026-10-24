@@ -1,0 +1,12 @@
+{
+  "mode": "render",
+  "url": "calculations/nyc-ocean-extract.html",
+  "stem": "nyc-ocean-extract",
+  "captured_at": "2026-10-24T01:40:49.201Z",
+  "status": 200,
+  "raw_path": "raw/nyc-ocean-extract.html",
+  "snapshot_path": "evidence/nyc-ocean-extract.png",
+  "sha256": "e869a8731e6e0e66cddb370b6f53e07eb0972ea2c9099719e25c9926bd3210be",
+  "bytes": 4923,
+  "success": true
+}

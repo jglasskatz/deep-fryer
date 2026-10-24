@@ -1,0 +1,14 @@
+NYC protected land AND water — report2023
+
+Researcher-generated faithful extract/derivation from archived source bytes. Original inputs, exact URLs and SHA-256 hashes are retained in this campaign. This exhibit is not a publisher-authored table.
+
+County	Total land+water acres	Protected land+water acres
+Bronx	30863	5646
+Kings	52820	12804
+NewYork	20528	2735
+Queens	80102	14071
+Richmond	37869	8118
+
+The five county totals sum to 43,374 protected acres / 222,182 total acres × 100 = 19.52273360%. The source explicitly includes both LAND AND WATER in its protected area and denominator.
+
+A land-only share cannot be recovered from these aggregate tables. The reproduced 19.5% must not be scored as the framework percent of jurisdiction land area.

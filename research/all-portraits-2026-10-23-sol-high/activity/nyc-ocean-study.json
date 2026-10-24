@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2024.1398087/full",
+  "stem": "nyc-ocean-study",
+  "captured_at": "2026-10-24T01:26:23.739Z",
+  "status": 200,
+  "content_type": "text/html;charset=utf-8",
+  "raw_path": "raw/nyc-ocean-study.bin",
+  "sha256": "14121af82825e7ca6bcff5a06bfa22e4f4a649dfe2c86335784b21755d6a2cb0",
+  "bytes": 809214,
+  "success": true
+}

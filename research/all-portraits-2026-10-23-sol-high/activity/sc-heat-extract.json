@@ -1,0 +1,12 @@
+{
+  "mode": "render",
+  "url": "calculations/sc-heat-extract.html",
+  "stem": "sc-heat-extract",
+  "captured_at": "2026-10-24T01:40:49.137Z",
+  "status": 200,
+  "raw_path": "raw/sc-heat-extract.html",
+  "snapshot_path": "evidence/sc-heat-extract.png",
+  "sha256": "70fa6b14d17326082ce8efc0e385094c2029ce1d8aee26f151e1487d6d294b95",
+  "bytes": 1614,
+  "success": true
+}

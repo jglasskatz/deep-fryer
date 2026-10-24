@@ -1,0 +1,12 @@
+{
+  "mode": "render",
+  "url": "calculations/reviewer-conservation-corrected.html",
+  "stem": "reviewer-conservation-corrected",
+  "captured_at": "2026-10-24T01:58:19.865Z",
+  "status": 200,
+  "raw_path": "raw/reviewer-conservation-corrected.html",
+  "snapshot_path": "evidence/reviewer-conservation-corrected.png",
+  "sha256": "5ed9649762e431b5c22d3c4a5550162dcf4fce51318537047aad0a858fb00dd0",
+  "bytes": 1411,
+  "success": true
+}

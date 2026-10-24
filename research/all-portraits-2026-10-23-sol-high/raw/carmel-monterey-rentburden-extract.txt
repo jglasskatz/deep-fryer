@@ -1,0 +1,62 @@
+Rent burden — official ACS primary tables
+
+Researcher-generated faithful extract from archived Census B25070 summary files. This is the share paying AT LEAST 30% of income in gross rent among units with a computable ratio. It is not the strict over-30% measure.
+
+Place / period	Numerator ≥30%	Computable denominator	Observed ≥30%	Bounds for strict >30%
+carmel / 2020–2024 ACS five-year	344	618	55.66343042%	45.79288026%–55.66343042%
+monterey-county / 2024 ACS one-year	35250	60787	57.98937273%	48.30309112%–57.98937273%
+
+The 30.0–34.9% bin contains exactly-30% units. They cannot be separated from the published bins. No exact strict-over-30% share or corresponding score is asserted. Denominator excludes B25070_E011 (not computed). All raw estimates and 90% MOEs are retained; no combined-ratio MOE was calculated.
+
+carmel
+{
+  "GEO_ID": "1600000US0611250",
+  "B25070_E001": "646",
+  "B25070_M001": "236",
+  "B25070_E002": "83",
+  "B25070_M002": "115",
+  "B25070_E003": "37",
+  "B25070_M003": "41",
+  "B25070_E004": "110",
+  "B25070_M004": "85",
+  "B25070_E005": "0",
+  "B25070_M005": "14",
+  "B25070_E006": "44",
+  "B25070_M006": "43",
+  "B25070_E007": "61",
+  "B25070_M007": "60",
+  "B25070_E008": "44",
+  "B25070_M008": "44",
+  "B25070_E009": "60",
+  "B25070_M009": "59",
+  "B25070_E010": "179",
+  "B25070_M010": "148",
+  "B25070_E011": "28",
+  "B25070_M011": "34"
+}
+monterey-county
+{
+  "GEO_ID": "0500000US06053",
+  "B25070_E001": "62754",
+  "B25070_M001": "2916",
+  "B25070_E002": "1492",
+  "B25070_M002": "713",
+  "B25070_E003": "4037",
+  "B25070_M003": "1200",
+  "B25070_E004": "5840",
+  "B25070_M004": "1315",
+  "B25070_E005": "7541",
+  "B25070_M005": "1491",
+  "B25070_E006": "6627",
+  "B25070_M006": "1491",
+  "B25070_E007": "5888",
+  "B25070_M007": "1423",
+  "B25070_E008": "3826",
+  "B25070_M008": "1342",
+  "B25070_E009": "8738",
+  "B25070_M009": "1987",
+  "B25070_E010": "16798",
+  "B25070_M010": "2328",
+  "B25070_E011": "1967",
+  "B25070_M011": "727"
+}

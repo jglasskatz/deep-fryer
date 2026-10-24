@@ -21,8 +21,9 @@
     "provision:nyc": "tsx scripts/provision-nyc.ts",
     "pages:snapshot": "node --env-file=.env.local --import tsx scripts/snapshot-pages.ts",
     "pages:build": "node scripts/build-pages.mjs",
-    "pages:test": "node --import tsx --test scripts/campaign-snapshot.test.mjs scripts/preview-observation.test.mjs scripts/pages-contract.test.mjs scripts/keel-path.test.mjs scripts/estimate-research-costs.test.mjs",
-    "pages:check": "node scripts/check-pages.mjs"
+    "pages:test": "node --import tsx --test scripts/campaign-snapshot.test.mjs scripts/preview-observation.test.mjs scripts/pages-contract.test.mjs scripts/keel-path.test.mjs scripts/estimate-research-costs.test.mjs scripts/research-overlays.test.mjs",
+    "pages:check": "node scripts/check-pages.mjs && node scripts/check-pages-ui.mjs",
+    "pages:amend": "node scripts/apply-research-overlays.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1151.0",

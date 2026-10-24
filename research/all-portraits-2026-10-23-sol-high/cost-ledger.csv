@@ -1,0 +1,7 @@
+scenario,tier,researcher_usd,reviewer_including_correction_authorship_usd,independent_correction_reviewer_usd,shared_round_usd,prior_tracked_usd,cumulative_tracked_usd,actual_billed_usd
+low,standard,1.49,1.32,0.25,3.06,14.53,17.59,unknown
+low,fast,2.79,2.62,0.5,5.91,25.19,31.1,unknown
+base,standard,4.99,4.82,0.6,10.41,43.23,53.64,unknown
+base,fast,9.79,9.62,1.2,20.61,82.59,103.2,unknown
+high,standard,22.69,22.52,2.3,47.51,188.37,235.88,unknown
+high,fast,45.19,45.02,4.6,94.81,372.87,467.68,unknown

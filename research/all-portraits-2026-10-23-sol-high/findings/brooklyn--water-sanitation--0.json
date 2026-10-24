@@ -1,0 +1,164 @@
+{
+  "id": "brooklyn:water-sanitation:0",
+  "portrait": "brooklyn",
+  "dimension": "water-sanitation",
+  "indicator_index": 0,
+  "kind": "replace",
+  "before": {
+    "name": "Population served by water systems with no health-based violations",
+    "unit": "% of served population",
+    "year": 2026,
+    "value": 0,
+    "source": "US EPA Enforcement and Compliance History Online (ECHO) — SDWIS Compliance data, Detailed Facility Report for PWSID NY7003493 (\"New York City System\")",
+    "target": 100,
+    "scoring": {
+      "inputs": {
+        "scale": 100,
+        "value": 0,
+        "target": 100
+      },
+      "function": "higher_is_better",
+      "worked_math": "level_pct = (target − value) ⁄ scale × 100 = (100 − 0) ⁄ 100 × 100 = 100.0 (maximum shortfall — the entire served population is on a system with an open health-based violation)",
+      "threshold_ref": "water-sanitation.safe-drinking-water"
+    },
+    "evidence": {
+      "captured_at": "2026-08-05T11:18:51.026Z",
+      "snapshot_path": "evidence/5b2b0371bbab.png"
+    },
+    "level_pct": 100,
+    "confidence": "medium",
+    "source_url": "https://echo.epa.gov/detailed-facility-report?fid=NY7003493&sys=SDWIS",
+    "source_tier": 2,
+    "geographic_scale": "city",
+    "geography": "city",
+    "status": "published",
+    "evidence_path": "evidence/shared/ce799f33313d45c45c37f197.png",
+    "pdf_path": null
+  },
+  "after": {
+    "name": "Population served by water systems with no health-based violations",
+    "unit": "% of served population",
+    "year": null,
+    "value": null,
+    "source": "NYSDOH2025 annual compliance report; DEP2025 drinking-water report; EPA ECHO current system record",
+    "target": 100,
+    "scoring": null,
+    "evidence": {
+      "snapshot_path": "evidence/nyc-state-water-2025.png",
+      "captured_at": "2026-10-24T01:25:27.185Z"
+    },
+    "level_pct": null,
+    "confidence": "low",
+    "source_url": "https://healthweb-back.health.ny.gov/environmental/water/drinking/violations/2025/new_york_city_compliance_report.htm",
+    "source_tier": 2,
+    "geographic_scale": "city",
+    "geography": "NYC drinking-water system — shared citywide context",
+    "status": "uncertain",
+    "evidence_path": "evidence/nyc-state-water-2025.png",
+    "pdf_path": null,
+    "notes": "NYSDOH says no violations were entered in SDWIS/State for 2025, and DEP reports meeting all drinking-water standards in 2025. EPA ECHO concurrently lists treatment-technique violation #20170201, beginning February 1, 2017, as Addressed under a May 15, 2019 federal consent decree; recent quarters remain Violation-Addressed. These describe different annual and historical compliance constructs. Neither proves that zero residents had safe tap water. The configured population-with-no-health-based-violations indicator cannot be scored consistently until the reporting period and treatment of addressed historical violations are resolved. Borough evidence refers to the shared NYC system."
+  },
+  "field_diff": {
+    "year": {
+      "before": 2026,
+      "after": null
+    },
+    "value": {
+      "before": 0,
+      "after": null
+    },
+    "source": {
+      "before": "US EPA Enforcement and Compliance History Online (ECHO) — SDWIS Compliance data, Detailed Facility Report for PWSID NY7003493 (\"New York City System\")",
+      "after": "NYSDOH2025 annual compliance report; DEP2025 drinking-water report; EPA ECHO current system record"
+    },
+    "scoring": {
+      "before": {
+        "inputs": {
+          "scale": 100,
+          "value": 0,
+          "target": 100
+        },
+        "function": "higher_is_better",
+        "worked_math": "level_pct = (target − value) ⁄ scale × 100 = (100 − 0) ⁄ 100 × 100 = 100.0 (maximum shortfall — the entire served population is on a system with an open health-based violation)",
+        "threshold_ref": "water-sanitation.safe-drinking-water"
+      },
+      "after": null
+    },
+    "evidence": {
+      "before": {
+        "captured_at": "2026-08-05T11:18:51.026Z",
+        "snapshot_path": "evidence/5b2b0371bbab.png"
+      },
+      "after": {
+        "snapshot_path": "evidence/nyc-state-water-2025.png",
+        "captured_at": "2026-10-24T01:25:27.185Z"
+      }
+    },
+    "level_pct": {
+      "before": 100,
+      "after": null
+    },
+    "confidence": {
+      "before": "medium",
+      "after": "low"
+    },
+    "source_url": {
+      "before": "https://echo.epa.gov/detailed-facility-report?fid=NY7003493&sys=SDWIS",
+      "after": "https://healthweb-back.health.ny.gov/environmental/water/drinking/violations/2025/new_york_city_compliance_report.htm"
+    },
+    "geography": {
+      "before": "city",
+      "after": "NYC drinking-water system — shared citywide context"
+    },
+    "status": {
+      "before": "published",
+      "after": "uncertain"
+    },
+    "evidence_path": {
+      "before": "evidence/shared/ce799f33313d45c45c37f197.png",
+      "after": "evidence/nyc-state-water-2025.png"
+    },
+    "notes": {
+      "before": null,
+      "after": "NYSDOH says no violations were entered in SDWIS/State for 2025, and DEP reports meeting all drinking-water standards in 2025. EPA ECHO concurrently lists treatment-technique violation #20170201, beginning February 1, 2017, as Addressed under a May 15, 2019 federal consent decree; recent quarters remain Violation-Addressed. These describe different annual and historical compliance constructs. Neither proves that zero residents had safe tap water. The configured population-with-no-health-based-violations indicator cannot be scored consistently until the reporting period and treatment of addressed historical violations are resolved. Borough evidence refers to the shared NYC system."
+    }
+  },
+  "reason": "Withhold conflicting/undefined numeric score pending annual/current compliance construct review.",
+  "source_support": [
+    {
+      "url": "https://healthweb-back.health.ny.gov/environmental/water/drinking/violations/2025/new_york_city_compliance_report.htm",
+      "raw_path": "raw/nyc-state-water-2025.html",
+      "raw_sha256": "36bee3097012520dc5141fb3e49e628b4188b2a84cca5bd2af02fb70a23f9fc2",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:25:27.185Z",
+      "period": "calendar 2025 annual violations entered",
+      "scale": "NYCsystem",
+      "snapshot_path": "evidence/nyc-state-water-2025.png",
+      "snapshot_sha256": "c68322c9facd61158df39f826862418d26013fefa228e64b3005ce121297cea1"
+    },
+    {
+      "url": "https://home4.nyc.gov/assets/dep/downloads/pdf/water/drinking-water/drinking-water-supply-quality-report/2025-drinking-water-supply-quality-report.pdf",
+      "raw_path": "raw/nyc-water-2025-mirror.pdf",
+      "raw_sha256": "b08c91a50768fbfced4be715c61b485d61a56cb61afe80b0bb2ce29d3f252dff",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:25:37.629Z",
+      "period": "calendar 2025",
+      "scale": "NYCsystem",
+      "snapshot_path": "evidence/nyc-water2025-page3.png",
+      "snapshot_sha256": "8fdebef76a8410601ab00ee108044c9c38d40f95c42c7cfdb621905a329427d2",
+      "pdf_path": "raw/nyc-water-2025-mirror.pdf"
+    },
+    {
+      "url": "https://echo.epa.gov/detailed-facility-report?fid=NY7003493&sys=SDWIS",
+      "raw_path": "raw/nyc-echo-current.html",
+      "raw_sha256": "31f1ddac3173794b9059a135df44889ca772cc1578326781ce42296166efc41f",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:25:56.817Z",
+      "period": "currentthrough 2026 Q2; historicalstart 2017-02-01",
+      "scale": "NYCsystem",
+      "snapshot_path": "evidence/nyc-echo-current.png",
+      "snapshot_sha256": "51a2e988ce87efab3cee39b94f153e47f418a4e75a166a82617d13c0b844f8df"
+    }
+  ],
+  "review_required": true
+}

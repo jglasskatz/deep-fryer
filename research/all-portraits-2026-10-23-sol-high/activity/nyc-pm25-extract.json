@@ -1,0 +1,12 @@
+{
+  "mode": "render",
+  "url": "calculations/nyc-pm25-extract.html",
+  "stem": "nyc-pm25-extract",
+  "captured_at": "2026-10-24T01:40:47.044Z",
+  "status": 200,
+  "raw_path": "raw/nyc-pm25-extract.html",
+  "snapshot_path": "evidence/nyc-pm25-extract.png",
+  "sha256": "8bdac1ff1787e09052d3b871a7b479bb1d455c87ed044070d13b3027ff68ebdd",
+  "bytes": 1138,
+  "success": true
+}

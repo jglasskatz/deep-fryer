@@ -16,6 +16,16 @@
  */
 import { SESSIONS_PER_FULL_REFRESH } from './plans.js';
 
+/** Bounded contexts for dense custom dimensions (SPEC-v3 W3.6). */
+export const MAX_INDICATORS_PER_RESEARCH_SESSION = 3;
+
+export function dimensionResearchSessions(indicatorCount: number): number {
+  if (!Number.isSafeInteger(indicatorCount) || indicatorCount < 0) {
+    throw new RangeError('indicator count must be a non-negative whole number');
+  }
+  return Math.max(1, Math.ceil(indicatorCount / MAX_INDICATORS_PER_RESEARCH_SESSION));
+}
+
 /**
  * API cost of one full portrait — 22 research sessions plus their verifier
  * sessions — on the current code's models (Sonnet 5 researchers, Opus 5
@@ -46,7 +56,9 @@ export const RESEARCH_SESSION_COST_USD = {
  * charges, because the spend gate counts the plan's sessions
  * (apps/web/lib/research.ts applyRun). renderPlan (packages/research
  * plan.ts) always starts with the region-context session, whose brief goes
- * into every dimension prompt, then adds one session per dimension. So a
+ * into every dimension prompt, then adds one session per sparse dimension.
+ * Dense custom dimensions split; their exact quote uses plan.sessions.length,
+ * rather than this framework/sparse-dimension estimate. So a
  * one-dimension re-run is two sessions, both charged, and every dimension,
  * researchRunSessions(21), is SESSIONS_PER_FULL_REFRESH.
  * packages/research plan-cost.test.ts holds this to renderPlan itself.

@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { and, asc, eq, inArray } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 import { SLUG_RE, evidencePublicBase, type OutreachContactData } from '@deep-fryer/core';
 import {
   organizations,
@@ -136,21 +136,16 @@ export function evidenceUrl(tenantSlug: string, storagePath: string): string {
 /** Published outreach contacts for the public /outreach page. */
 export async function publishedOutreachContacts(
   tenantSlug: string,
-): Promise<OutreachContactData[]> {
+): Promise<Pick<OutreachContactData, 'org' | 'website' | 'why' | 'tags'>[]> {
   if (!hasDatabase()) return [];
-  return userDb(async (db) => {
+  return withAuthContext(systemDb(), null, async (db) => {
     const tenant = await tenantBySlug(db, tenantSlug);
     if (!tenant) return [];
-    const rows = await db
-      .select()
-      .from(outreachContacts)
-      .where(eq(outreachContacts.tenantId, tenant.id));
-    const publishedIds = rows.flatMap((r) => (r.publishedVersionId ? [r.publishedVersionId] : []));
-    if (publishedIds.length === 0) return [];
     const versions = await db
-      .select()
-      .from(outreachContactVersions)
-      .where(inArray(outreachContactVersions.id, publishedIds));
-    return versions.map((v) => v.data);
+      .select({ data: outreachContactVersions.data })
+      .from(outreachContacts)
+      .innerJoin(outreachContactVersions, and(eq(outreachContactVersions.id, outreachContacts.publishedVersionId), eq(outreachContactVersions.contactId, outreachContacts.id)))
+      .where(and(eq(outreachContacts.tenantId, tenant.id), isNull(outreachContacts.archivedAt), eq(outreachContactVersions.status, 'published')));
+    return versions.map(({ data }) => ({ org: data.org, website: data.website, why: data.why, tags: data.tags }));
   });
 }

@@ -40,7 +40,10 @@ export async function deterministicChecks(
   }
 
   const maxAge = maxDataAgeYears(config.recency, dimensionSlug);
-  const recencyOk = new Date().getFullYear() - payload.year <= maxAge;
+  // Projections are not observations. A future year used to pass because its
+  // negative age was always below the recency limit.
+  const age = new Date().getUTCFullYear() - payload.year;
+  const recencyOk = age >= 0 && age <= maxAge;
 
   const scaleOk = acceptedScales(config.scale_policy, dimensionSlug).includes(
     payload.geographic_scale,
@@ -77,11 +80,12 @@ async function defaultUrlCheck(url: string): Promise<boolean> {
 
 export function mergeVerification(
   checks: Omit<FindingVerification, 'content_supported' | 'verifier_note'>,
-  verdict: { content_supported: ContentSupported; verifier_note?: string } | null,
+  verdict: { content_supported: ContentSupported; verifier_note?: string; narrative_supported?: ContentSupported } | null,
 ): FindingVerification {
   return {
     ...checks,
     content_supported: verdict?.content_supported ?? 'uncertain',
     verifier_note: verdict ? verdict.verifier_note : 'verifier session did not return a verdict',
+    ...(verdict?.narrative_supported ? { narrative_supported: verdict.narrative_supported } : {}),
   };
 }

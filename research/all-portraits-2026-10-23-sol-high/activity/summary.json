@@ -1,0 +1,25 @@
+{
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "high",
+  "portraits_inventoried": 11,
+  "web_tool_calls": 19,
+  "search_queries": 21,
+  "web_open_requests": 13,
+  "web_click_requests": 8,
+  "web_find_requests": 3,
+  "web_screenshot_requests": 2,
+  "browser_unique_logged_requests": 52,
+  "browser_requests_by_mode": {
+    "fetch": 35,
+    "render": 9,
+    "page": 8
+  },
+  "browser_success_records": 44,
+  "browser_failure_records": 8,
+  "additional_exhibit_render_attempts": 8,
+  "additional_curl_download_failures": 3,
+  "notes": "Eight initial exhibit renders were refreshed for readable prose; their latest records replaced initial render metadata, so eight additional successful render attempts are explicitly added. Three failed curl download attempts are preserved separately. A failed browser launch is also retained. These are research activity counts, not API billing telemetry. Official large DAT tables are gzip-compressed without changing any decompressed source byte.",
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "completed_at": "2026-10-24T01:46:50.111347+00:00"
+}

@@ -1,0 +1,20 @@
+Santa Cruz County broadband of any type, ACS 2024 one-year
+
+Reviewer-generated extract from frozen publisher bytes. This is a derived research exhibit, not a publisher-authored table. Original source URLs and SHA-256 bindings accompany each amendment.
+
+Geography	GEO_ID	Estimate	90% margin of error
+Santa Cruz County, California	0500000US06087	94.9%	+/-1.1 percentage points
+
+Source: U.S. Census Bureau, ACS 2024 one-year Geographic Comparison Table GCT2801. This is the share of households with a broadband subscription of any type, including cellular-only. It is not fixed cable/fiber/DSL access alone, service quality, speed or affordability. The city observations elsewhere use ACS 2020–2024 five-year estimates; their periods differ.
+
+Exact original publisher CSV row:
+
+{
+  "TBLID": "GCT2801",
+  "GEOID": "0500000US06087",
+  "GEONAME": "Santa Cruz County, California",
+  "ESTIMATE": "94.9",
+  "MG_ERROR": "+/-1.1"
+}
+
+No target or score is asserted.

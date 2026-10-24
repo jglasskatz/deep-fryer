@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { summarizeRunCosts } from '@deep-fryer/core';
+import { RunCostSummary } from '@/components/admin/RunCostSummary';
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { ActionButton } from '@/components/admin/ActionButton';
@@ -223,6 +225,8 @@ export default async function RunDetailPage({
           ) : null}
         </section>
 
+        <RunCostSummary summary={summarizeRunCosts(run.tokenUsage, sessions.map(session => session.id))} runId={run.id} />
+
         {causeGroups.length > 0 || stoppedEarly ? (
           <section className="mt-8" aria-labelledby="why-heading">
             <h2 id="why-heading" className="text-lg font-semibold">
@@ -296,6 +300,15 @@ export default async function RunDetailPage({
             portrait&apos;s config when the run was planned, inspectable before any tokens are spent.
             The region brief placeholder is filled by the phase-0 session when the run starts.
           </p>
+          <div className="mt-3 rounded bg-black/[0.04] p-3 text-xs">
+            <p className="font-medium">Research strategy: {run.plan.strategy === 'deep' ? 'Deep' : run.plan.strategy === 'standard' ? 'Standard' : 'Legacy defaults'}</p>
+            {run.plan.models ? <dl className="mt-2 grid gap-2 sm:grid-cols-3">
+              <div><dt>Researcher</dt><dd className="break-words font-mono">{run.plan.models.session_model}</dd></div>
+              <div><dt>Scout</dt><dd className="break-words font-mono">{run.plan.models.subagent_model ?? 'No separate scout'}</dd></div>
+              <div><dt>Independent verifier</dt><dd className="break-words font-mono">{run.plan.models.verifier_model}</dd></div>
+            </dl> : <p className="mt-1">This older plan did not record model choices; it uses the worker defaults.</p>}
+            <p className="mt-2">New plans preserve these model choices when they run. Retrieved source text is archived when available so reviewers can inspect the evidence; retrieval or archival failures remain visible in verification results.</p>
+          </div>
           <div className="mt-3 space-y-3">
             {run.plan.sessions.map((spec, i) => {
               const key = spec.kind === 'region_context' ? 'region_context' : (spec.dimension_slug ?? '');
@@ -321,40 +334,6 @@ export default async function RunDetailPage({
           </div>
         </details>
 
-        {run.tokenUsage ? (
-          <section className="mt-8">
-            <h2 id="metering-heading" className="text-lg font-semibold">
-              Metering
-            </h2>
-            {/* Focusable and named so the keyboard can scroll the table on a phone in every
-                browser (Safari does not focus scroll containers itself; nothing inside can). */}
-            <div
-              tabIndex={0}
-              role="region"
-              aria-labelledby="metering-heading"
-              className="mt-3 overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-accent)]"
-            >
-<table className="w-full min-w-[560px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b text-left text-[color:var(--color-muted)]">
-                  <th className="py-1 pr-4">Session</th>
-                  <th className="py-1 pr-4">Input tokens</th>
-                  <th className="py-1 pr-4">Output tokens</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(run.tokenUsage).map(([key, u]) => (
-                  <tr key={key} className="border-b">
-                    <td className="py-1 pr-4 font-mono text-xs">{key.slice(0, 20)}</td>
-                    <td className="py-1 pr-4">{u.input_tokens.toLocaleString()}</td>
-                    <td className="py-1 pr-4">{u.output_tokens.toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-</div>
-          </section>
-        ) : null}
       </main>
     </>
   );

@@ -1,0 +1,15 @@
+{
+  "mode": "fetch",
+  "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+  "stem": "acs5-shells2024",
+  "captured_at": "2026-10-24T01:31:51.961Z",
+  "status": 200,
+  "content_type": "text/plain",
+  "raw_path": "raw/acs5-shells2024.bin",
+  "sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+  "bytes": 5622840,
+  "success": true,
+  "stored_path": "raw/acs5-shells2024.bin.gz",
+  "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0",
+  "storage_encoding": "gzip; original bytes round-trip exactly"
+}

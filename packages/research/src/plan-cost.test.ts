@@ -33,4 +33,13 @@ describe('the cost estimate counts the sessions renderPlan emits', () => {
     expect(plan.sessions).toHaveLength(researchRunSessions(framework.dimensions.length));
     expect(plan.sessions).toHaveLength(SESSIONS_PER_FULL_REFRESH);
   });
+
+  it('quotes every session emitted by a dense custom dimension, including its split', () => {
+    const dimension = spec(framework.dimensions[0]!);
+    const plan = renderPlan({ config, dimensions: [{ ...dimension, indicators: Array.from({ length: 7 }, (_, i) => ({ ...dimension.indicators[0]!, slug: `indicator-${i}` })) }] });
+    // The apply gate and NewRunForm both count plan.sessions.length. A dense
+    // dimension is more than the two-session estimate for a sparse re-run.
+    expect(plan.sessions).toHaveLength(4);
+    expect(estimateRunCost(plan.sessions.length)).toEqual({ sessions: 4, lowUsd: 3.64, typicalUsd: 7.27, highUsd: 14.55 });
+  });
 });

@@ -1,0 +1,22 @@
+[
+  [
+    "page",
+    "https://housingforhealthpartnership.org/CommunityData/Point-in-Time(PIT)Counts.aspx",
+    "sc-pit-reports"
+  ],
+  [
+    "fetch",
+    "https://www.santacruzca.gov/files/assets/city/v/1/cmo/documents/homelessness/santa-cruz-county-pit-report-v5-7112024.pdf",
+    "sc-pit-2024"
+  ],
+  [
+    "fetch",
+    "https://watsonville.gov/DocumentCenter/View/26652/Watsonville-Water-Quality-Report-2024",
+    "watsonville-water-2024"
+  ],
+  [
+    "page",
+    "https://watsonville.gov/777/Water-Quality",
+    "watsonville-water-landing"
+  ]
+]

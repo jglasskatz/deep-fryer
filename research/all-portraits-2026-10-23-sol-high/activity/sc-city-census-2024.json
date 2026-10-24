@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://api.census.gov/data/2024/acs/acs5?get=NAME,B17001_001E,B17001_002E,B19083_001E,B28002_001E,B28002_004E,B28002_007E&for=place:69112,83668&in=state:06",
+  "stem": "sc-city-census-2024",
+  "captured_at": "2026-10-24T01:26:23.966Z",
+  "status": 200,
+  "content_type": "text/html",
+  "raw_path": "raw/sc-city-census-2024.bin",
+  "sha256": "c2f4687e09b80676de7f68dec92ebea395209616dbc6f895520e547c5f68c0f5",
+  "bytes": 8531,
+  "success": true
+}

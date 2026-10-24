@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://www.protectadks.org/wp-content/uploads/2023/11/Protect-the-Adirondacks-30-by-30-Report-NYS-Counties-web.pdf",
+  "stem": "nyc-protected-2023",
+  "captured_at": "2026-10-24T01:26:20.873Z",
+  "status": 200,
+  "content_type": "application/pdf",
+  "raw_path": "raw/nyc-protected-2023.pdf",
+  "sha256": "c9b6ff50f9eff4442e5e875cd78c50cfb5daacdec4e7c351dad109ce382b38dd",
+  "bytes": 306831,
+  "success": true
+}

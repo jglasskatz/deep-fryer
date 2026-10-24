@@ -1,0 +1,17 @@
+[
+  [
+    "render",
+    "calculations/reviewer-conservation-corrected.html",
+    "reviewer-conservation-corrected"
+  ],
+  [
+    "render",
+    "calculations/reviewer-county-broadband-corrected.html",
+    "reviewer-county-broadband-corrected"
+  ],
+  [
+    "render",
+    "calculations/reviewer-fixed-broadband-corrected.html",
+    "reviewer-fixed-broadband-corrected"
+  ]
+]

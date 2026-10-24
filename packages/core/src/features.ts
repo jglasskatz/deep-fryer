@@ -16,6 +16,7 @@ export const PORTRAIT_FEATURES = [
   'translation',
   'family_compare',
   'request_research',
+  'custom_pages',
 ] as const;
 export type PortraitFeature = (typeof PORTRAIT_FEATURES)[number];
 
@@ -71,6 +72,11 @@ export const FEATURE_REGISTRY: Record<Feature, FeatureInfo> = {
   request_research: {
     label: 'Research requests from Insights',
     description: 'Editors may request an additional research run for a dimension from the Insights page.',
+    defaultOn: false,
+  },
+  custom_pages: {
+    label: 'Custom pages',
+    description: 'Staff draft, review and publish additional civic information pages for this portrait.',
     defaultOn: false,
   },
   deep_fry: {

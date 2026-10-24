@@ -13,6 +13,7 @@ import {
   dimensions,
   dimensionVersions,
   findings,
+  findingAudits,
   latestVersionsByDimension,
   researchRuns,
   researchSessions,
@@ -57,6 +58,7 @@ export function researchVersionData(
   base: DimensionData | null | undefined,
   dimensionSlug: string,
   payloads: readonly FindingPayload[],
+  includeNarrative = false,
 ): DimensionData {
   const indicators: Indicator[] = [];
   const gaps: DimensionGap[] = [];
@@ -86,21 +88,26 @@ export function researchVersionData(
       });
     }
   }
+  const narratives = includeNarrative ? payloads.flatMap((payload) =>
+    payload.kind === 'indicator' && payload.narrative_draft ? [payload.narrative_draft] : []) : [];
+  const proposedActions = [...new Map(narratives.flatMap(narrative => narrative.actions)
+    .map(action => [`${action.text}\n${action.source_url}`, action])).values()];
   return {
     name: base?.name ?? dimensionSlug,
     icon: base?.icon ?? '',
     description: base?.description ?? '',
-    context: base?.context ?? '',
+    context: narratives.length ? [...new Set(narratives.map(narrative => narrative.context))].join('\n\n') : base?.context ?? '',
     indicators,
     gaps: gaps.length ? gaps : undefined,
-    actions: base?.actions ?? [],
+    actions: narratives.length ? proposedActions.map(action => action.text) : base?.actions ?? [],
+    ...(narratives.length ? { action_sources: proposedActions } : base?.action_sources ? { action_sources: base.action_sources } : {}),
     policy_spotlight: base?.policy_spotlight,
     justice_spotlight: base?.justice_spotlight,
   };
 }
 
 /** The parts of a finding these rules read. */
-export type FindingLike = Pick<Finding, 'id' | 'payload' | 'verification'>;
+export type FindingLike = Pick<Finding, 'id' | 'payload' | 'verification'> & { auditBlocked?: boolean };
 
 /**
  * Whether a finding needs a reviewer's eye, as the review card counts its
@@ -108,7 +115,7 @@ export type FindingLike = Pick<Finding, 'id' | 'payload' | 'verification'>;
  * every finding a check red-flagged (core isFlagged — never dropped).
  */
 export function findingFlagged(f: FindingLike): boolean {
-  return f.payload.kind === 'gap' || (f.verification !== null && isFlagged(f.verification));
+  return f.auditBlocked === true || f.payload.kind === 'gap' || (f.verification !== null && isFlagged(f.verification));
 }
 
 /**
@@ -117,7 +124,7 @@ export function findingFlagged(f: FindingLike): boolean {
  * verifier never judged (no verification yet) is not "passed".
  */
 export function findingApprovable(f: FindingLike): boolean {
-  return f.payload.kind === 'indicator' && f.verification !== null && !isFlagged(f.verification);
+  return !f.auditBlocked && f.payload.kind === 'indicator' && f.verification !== null && !isFlagged(f.verification);
 }
 
 /**
@@ -271,8 +278,11 @@ export async function runResearch(db: DbExecutor, run: ResearchRun, dimensionIds
     if (!s.dimensionId) continue;
     sessionsByDim.set(s.dimensionId, [...(sessionsByDim.get(s.dimensionId) ?? []), { id: s.id, status: s.status }]);
   }
+  const auditRows = runFindings.length ? await db.select({ findingId: findingAudits.findingId, disposition: findingAudits.disposition })
+    .from(findingAudits).where(and(inArray(findingAudits.findingId, runFindings.map((f) => f.id)), isNull(findingAudits.appliedAt))) : [];
+  const blocked = new Set(auditRows.filter((a) => a.disposition !== 'approve').map((a) => a.findingId));
   const findingsByDim = new Map<string, Finding[]>();
-  for (const f of runFindings) findingsByDim.set(f.dimensionId, [...(findingsByDim.get(f.dimensionId) ?? []), f]);
+  for (const f of runFindings) findingsByDim.set(f.dimensionId, [...(findingsByDim.get(f.dimensionId) ?? []), { ...f, auditBlocked: blocked.has(f.id) } as Finding]);
   const runVersionByDim = new Map<string, DimensionVersion>();
   // Newest first: the first one seen per dimension is the one kept.
   for (const v of runVersions) if (!runVersionByDim.has(v.dimensionId)) runVersionByDim.set(v.dimensionId, v);

@@ -53,15 +53,15 @@ export default async function DimensionAdminPage({
             ← Admin
           </Link>
         </p>
-        <h1 className="mt-2 text-2xl font-bold">
+        <h1 className="mt-2 break-words text-2xl font-bold">
           {latest.data.name}
           <span className="ml-2 text-sm font-normal text-[color:var(--color-muted)]">
             {dimension.ring} · {dimension.slug}
           </span>
         </h1>
 
-        <div className="mt-8 grid grid-cols-[1fr_320px] gap-10">
-          <section>
+        <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <section className="min-w-0">
             <h2 className="text-lg font-semibold">Edit (creates a new version)</h2>
             <div className="mt-4">
               <DimensionEditor
@@ -72,7 +72,7 @@ export default async function DimensionAdminPage({
             </div>
           </section>
 
-          <aside>
+          <aside className="min-w-0">
             <h2 className="text-lg font-semibold">Version timeline</h2>
             <ul className="mt-4 space-y-3">
               {versions.map((v) => {

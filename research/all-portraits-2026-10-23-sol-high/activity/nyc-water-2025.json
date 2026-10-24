@@ -1,0 +1,10 @@
+{
+  "mode": "fetch",
+  "url": "https://www.nyc.gov/assets/dep/downloads/pdf/water/drinking-water/drinking-water-supply-quality-report/2025-drinking-water-supply-quality-report.pdf",
+  "stem": "nyc-water-2025",
+  "captured_at": "2026-10-24T01:24:57.851Z",
+  "status": 403,
+  "content_type": "text/html",
+  "success": false,
+  "error": "Error: HTTP 403 <HTML><HEAD>\n<TITLE>Access Denied</TITLE>\n</HEAD><BODY>\n<H1>Access Denied</H1>\n "
+}

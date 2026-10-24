@@ -30,6 +30,18 @@ export interface IndicatorEvidence {
   captured_at: string;
 }
 
+export interface SourcedAction {
+  text: string;
+  source_url: string;
+  evidence: IndicatorEvidence;
+}
+
+/** Research proposal only; it reaches a version solely by explicit human opt-in. */
+export interface NarrativeDraft {
+  context: string;
+  actions: SourcedAction[];
+}
+
 export interface Indicator {
   name: string;
   value: number | string | null;
@@ -63,6 +75,7 @@ export interface DimensionData {
   indicators: Indicator[];
   gaps?: DimensionGap[];
   actions: string[];
+  action_sources?: SourcedAction[];
   policy_spotlight?: string;
   justice_spotlight?: string;
 }
@@ -93,6 +106,8 @@ export interface ReviewPolicyConfig {
   /** 'all' = everything human-gated (default); 'none' reserved for internal dogfooding. */
   require_approval: 'all' | 'none';
   dual_review_on_edits: boolean;
+  /** Machine recommendations still require a human action. Defaults to per_card. */
+  audit_apply?: 'per_card' | 'bulk';
   first_post_requires_approval: boolean;
 }
 
@@ -106,6 +121,7 @@ export interface RetentionConfig {
  * portrait's stored config never needs rewriting when a feature is added.
  */
 export interface FeaturesConfig {
+  custom_pages?: boolean;
   emergency?: boolean;
   policy_analysis?: boolean;
   involvement?: boolean;
@@ -146,6 +162,7 @@ export interface FindingVerification {
   scale_ok: boolean;
   content_supported: ContentSupported;
   verifier_note?: string;
+  narrative_supported?: ContentSupported;
   /**
    * True when the session's output was malformed JSON and this finding was
    * salvaged from inside it (apps/worker session.ts extractJson): the
@@ -175,6 +192,7 @@ export interface IndicatorFindingPayload {
   confidence: Confidence;
   geographic_scale: GeographicScale;
   notes?: string;
+  narrative_draft?: NarrativeDraft;
 }
 
 export interface GapFindingPayload {
@@ -203,6 +221,18 @@ export interface ResearchPlan {
   sessions: PlannedSession[];
   config_hash: string;
   plugin_version: string;
+  /** Optional on historic plans, which retain the worker's env defaults. */
+  strategy?: ResearchStrategy;
+  models?: ResearchModels;
+}
+
+export type ResearchStrategy = 'standard' | 'deep';
+
+/** Frozen at plan time so changing worker defaults cannot change approved spend. */
+export interface ResearchModels {
+  session_model: string;
+  subagent_model: string | null;
+  verifier_model: string;
 }
 
 /**

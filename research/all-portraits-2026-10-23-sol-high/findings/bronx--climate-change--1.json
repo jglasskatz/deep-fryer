@@ -1,0 +1,126 @@
+{
+  "id": "bronx:climate-change:1",
+  "portrait": "bronx",
+  "dimension": "climate-change",
+  "indicator_index": 1,
+  "kind": "replace",
+  "before": {
+    "name": "Citywide GHG reduction vs 2005",
+    "unit": "% reduction",
+    "year": 2024,
+    "value": 25.25,
+    "source": "NYC Greenhouse Gas Emissions Inventory (Mayor's Office of Climate & Environmental Justice, via NYC Open Data)",
+    "target": 80,
+    "scoring": {
+      "inputs": {
+        "scale": 80,
+        "value": 25.25,
+        "target": 80
+      },
+      "function": "higher_is_better",
+      "worked_math": "% reduction = (64,139,720.60 − 47,944,551.47) ⁄ 64,139,720.60 × 100 = 16,195,169.13 ⁄ 64,139,720.60 × 100 = 25.25%; level_pct = (80 − 25.25) ⁄ 80 × 100 = +68.4",
+      "threshold_ref": "climate-change.ghg-reduction-vs-2005"
+    },
+    "evidence": {
+      "captured_at": "2026-08-05T00:00:00Z",
+      "snapshot_path": "CAPTURE_FAILED — mcp__evidence__capture_evidence returned repeated 'browser.newContext: Target page, context or browser has been closed' errors on 3 attempts against this URL; no snapshot could be stored (same source as ghg-per-capita, one capture attempt covers both)"
+    },
+    "level_pct": 68.44,
+    "confidence": "high",
+    "source_url": "https://data.cityofnewyork.us/Environment/NYC-Greenhouse-Gas-Emissions-Inventory/wq7q-htne",
+    "source_tier": 1,
+    "geographic_scale": "regional",
+    "geography": "regional",
+    "status": "published",
+    "evidence_path": null,
+    "pdf_path": null
+  },
+  "after": {
+    "name": "Citywide GHG reduction vs 2005",
+    "unit": "% reduction",
+    "year": 2024,
+    "value": 25.25,
+    "source": "NYC Greenhouse Gas Emissions Inventory (Mayor's Office of Climate & Environmental Justice, via NYC Open Data)",
+    "target": 80,
+    "scoring": {
+      "inputs": {
+        "scale": 80,
+        "value": 25.25,
+        "target": 80
+      },
+      "function": "higher_is_better",
+      "worked_math": "% reduction = (64,139,720.60 − 47,944,551.47) ⁄ 64,139,720.60 × 100 = 16,195,169.13 ⁄ 64,139,720.60 × 100 = 25.25%; level_pct = (80 − 25.25) ⁄ 80 × 100 = +68.4",
+      "threshold_ref": "climate-change.ghg-reduction-vs-2005"
+    },
+    "evidence": {
+      "snapshot_path": "evidence/nyc-ghg-extract.png",
+      "captured_at": "2026-10-24T01:27:27.329Z"
+    },
+    "level_pct": 68.44,
+    "confidence": "high",
+    "source_url": "https://data.cityofnewyork.us/resource/wq7q-htne.json?$limit=5000",
+    "source_tier": 1,
+    "geographic_scale": "regional",
+    "geography": "NYC citywide regional proxy — not Bronx emissions",
+    "status": "source-supported-draft",
+    "evidence_path": "evidence/nyc-ghg-extract.png",
+    "pdf_path": null,
+    "notes": "Exact citywide inventory totals and the original Census Vintage 2024 denominator 8,478,072 independently reproduced from archived primary bytes. The newer Vintage 2025 revises 2024 population to 8,596,825, explaining alternate 5.58 city estimate. Borough value retained with its original vintage; not a Bronx-specific inventory."
+  },
+  "field_diff": {
+    "evidence": {
+      "before": {
+        "captured_at": "2026-08-05T00:00:00Z",
+        "snapshot_path": "CAPTURE_FAILED — mcp__evidence__capture_evidence returned repeated 'browser.newContext: Target page, context or browser has been closed' errors on 3 attempts against this URL; no snapshot could be stored (same source as ghg-per-capita, one capture attempt covers both)"
+      },
+      "after": {
+        "snapshot_path": "evidence/nyc-ghg-extract.png",
+        "captured_at": "2026-10-24T01:27:27.329Z"
+      }
+    },
+    "source_url": {
+      "before": "https://data.cityofnewyork.us/Environment/NYC-Greenhouse-Gas-Emissions-Inventory/wq7q-htne",
+      "after": "https://data.cityofnewyork.us/resource/wq7q-htne.json?$limit=5000"
+    },
+    "geography": {
+      "before": "regional",
+      "after": "NYC citywide regional proxy — not Bronx emissions"
+    },
+    "status": {
+      "before": "published",
+      "after": "source-supported-draft"
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/nyc-ghg-extract.png"
+    },
+    "notes": {
+      "before": null,
+      "after": "Exact citywide inventory totals and the original Census Vintage 2024 denominator 8,478,072 independently reproduced from archived primary bytes. The newer Vintage 2025 revises 2024 population to 8,596,825, explaining alternate 5.58 city estimate. Borough value retained with its original vintage; not a Bronx-specific inventory."
+    }
+  },
+  "reason": "Restore missing numeric evidence with the original population vintage explicit.",
+  "source_support": [
+    {
+      "url": "https://data.cityofnewyork.us/resource/wq7q-htne.json?$limit=5000",
+      "raw_path": "raw/nyc-ghg-full.json",
+      "raw_sha256": "c1037d86fe7af7b1ba2ca30c6ea5f5717d2ef452576e7c9da29a1ba76bacf41b",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:27:27.329Z",
+      "period": "CY2024;2005 baseline",
+      "scale": "citywide regional proxy",
+      "snapshot_path": "evidence/nyc-ghg-extract.png",
+      "snapshot_sha256": "ec53108458c950aac09274237f6b2d920ac3e6dc231a19267b47e3ba3587a468"
+    },
+    {
+      "url": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2024/counties/totals/co-est2024-alldata.csv",
+      "raw_path": "raw/census-county-pop-v2024.csv",
+      "raw_sha256": "abcc8720d669e793bbfdcd440eeec37a78db3b452adbe4ccd1eadf7c72b522b9",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:32:20.760Z",
+      "period": "July 1,2024; Vintage 2024",
+      "scale": "five NYCcounties"
+    }
+  ],
+  "review_required": true
+}

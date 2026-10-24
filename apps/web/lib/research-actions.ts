@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { and, eq, isNotNull, isNull, or } from 'drizzle-orm';
 import { researchRuns } from '@deep-fryer/db';
+import type { ResearchStrategy } from '@deep-fryer/core';
 import { getAuth, requireTenantRole } from './auth';
 import { applyRun, createPlannedRun } from './research';
 import { action, UserError } from './action-result';
@@ -13,14 +14,19 @@ export const planResearchAction = action(async (input: {
   tenantSlug: string;
   dimensionIds?: string[];
   reviewerNotes?: Record<string, string>;
+  strategy?: ResearchStrategy;
 }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+  if (input.strategy !== undefined && input.strategy !== 'standard' && input.strategy !== 'deep') {
+    throw new UserError('Choose the standard or deep research strategy.');
+  }
   const auth = await getAuth();
   const { run, sessionCount } = await createPlannedRun({
     tenantId: tenant.id,
     dimensionIds: input.dimensionIds,
     reviewerNotes: input.reviewerNotes,
     requestedBy: auth.userId,
+    strategy: input.strategy,
   });
   revalidatePath(`/${input.tenantSlug}/admin/research`);
   return { runId: run.id, sessionCount };

@@ -33,6 +33,19 @@ vi.mock('@/auth', () => ({
 
 const PASS: FindingVerification = { url_ok: true, schema_ok: true, recency_ok: true, scale_ok: true, content_supported: 'pass' };
 
+describe('explicit narrative approval', () => {
+  it('preserves staff content by default and includes sourced drafts only on human opt-in', () => {
+    const payload = indicator('energy-burden', 42);
+    if (payload.kind !== 'indicator') throw new Error('test payload');
+    const action = { text: 'Apply for assistance', source_url: 'https://city.example/assistance', evidence: { snapshot_path: 'evidence/action.png', captured_at: '2026-10-23T12:00:00Z' } };
+    payload.narrative_draft = { context: 'Supported new context.', actions: [action] };
+    const base = { name: 'Energy', icon: '', description: 'Staff description', context: 'Staff context', indicators: [], actions: ['Staff action'] };
+    expect(researchVersionData(base, 'energy', [payload])).toMatchObject({ context: 'Staff context', actions: ['Staff action'] });
+    expect(researchVersionData(base, 'energy', [payload], true)).toMatchObject({ context: 'Supported new context.', actions: ['Apply for assistance'], action_sources: [action] });
+    expect(researchVersionData(base, 'energy', [{ ...payload, narrative_draft: undefined }], true)).toMatchObject({ context: 'Staff context', actions: ['Staff action'] });
+  });
+});
+
 function indicator(slug: string, levelPct: number): FindingPayload {
   return {
     kind: 'indicator',

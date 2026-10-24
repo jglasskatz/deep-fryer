@@ -1,0 +1,9 @@
+{
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "high",
+  "started_at": "2026-10-24T01:24:35.009239+00:00",
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "scope": "all 11 public portraits",
+  "notes": "Researcher only. Independent review and public integration performed separately by root."
+}

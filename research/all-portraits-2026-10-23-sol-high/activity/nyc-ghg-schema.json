@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://data.cityofnewyork.us/resource/wq7q-htne.json?$limit=1",
+  "stem": "nyc-ghg-schema",
+  "captured_at": "2026-10-24T01:26:20.895Z",
+  "status": 200,
+  "content_type": "application/json;charset=utf-8",
+  "raw_path": "raw/nyc-ghg-schema.json",
+  "sha256": "d40c3666fe02af5bf5dc4ec99e6f1e7904579664e5231d7430837b179b5c9f1a",
+  "bytes": 3243,
+  "success": true
+}

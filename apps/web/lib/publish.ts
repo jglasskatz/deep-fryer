@@ -1,9 +1,11 @@
 import 'server-only';
 import { revalidatePath } from 'next/cache';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { dimensions, dimensionVersions, type DbExecutor, type Tenant } from '@deep-fryer/db';
 import { audit } from './audit';
 import { UserError } from './action-result';
+import { configValueIn } from './admin-data';
+import { getAuth } from './auth';
 
 /**
  * Publish (or revert to) a version: repoint published_version_id, archive the
@@ -28,11 +30,22 @@ export async function publishVersionFor(
     .where(eq(dimensionVersions.id, versionId));
   if (!version) throw new UserError('Unknown version.');
 
+  // Serialize the pointer and archive updates for concurrent publications.
+  await db.execute(sql`select id from dimensions where id = ${version.dimensionId}::uuid for update`);
+
   const [dimension] = await db
     .select()
     .from(dimensions)
     .where(and(eq(dimensions.id, version.dimensionId), eq(dimensions.tenantId, tenant.id)));
   if (!dimension) throw new UserError('That version does not belong to this portrait.');
+
+  const policy = await configValueIn(db, tenant.id, 'review_policy');
+  if (policy?.dual_review_on_edits && version.origin === 'human' && !version.publishedAt) {
+    const { userId } = await getAuth();
+    if (!userId || !version.createdBy || userId === version.createdBy) {
+      throw new UserError('A second editor must review and publish this edit because this portrait requires dual review. The draft is saved.');
+    }
+  }
 
   const previousPublishedId = dimension.publishedVersionId;
 

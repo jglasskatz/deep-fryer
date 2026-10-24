@@ -1,0 +1,12 @@
+{
+  "mode": "render",
+  "url": "calculations/nyc-ghg-extract.html",
+  "stem": "nyc-ghg-extract",
+  "captured_at": "2026-10-24T01:40:47.048Z",
+  "status": 200,
+  "raw_path": "raw/nyc-ghg-extract.html",
+  "snapshot_path": "evidence/nyc-ghg-extract.png",
+  "sha256": "bff1ab9096fd5baa9c0ba017e4d2265c130cda60d19bb669006fe1fbe7ebcb78",
+  "bytes": 1584,
+  "success": true
+}

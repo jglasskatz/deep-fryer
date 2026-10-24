@@ -1,0 +1,12 @@
+{
+  "mode": "render",
+  "url": "calculations/nyc-conservation-extract.html",
+  "stem": "nyc-conservation-extract",
+  "captured_at": "2026-10-24T01:40:49.040Z",
+  "status": 200,
+  "raw_path": "raw/nyc-conservation-extract.html",
+  "snapshot_path": "evidence/nyc-conservation-extract.png",
+  "sha256": "b6667ac420b118b6d58fee28cf6fc1b0d07196928f02ba9aea7f03c83f937115",
+  "bytes": 1448,
+  "success": true
+}

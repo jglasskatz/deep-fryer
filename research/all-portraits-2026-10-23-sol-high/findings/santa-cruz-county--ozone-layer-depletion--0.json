@@ -1,0 +1,130 @@
+{
+  "id": "santa-cruz-county:ozone-layer-depletion:0",
+  "portrait": "santa-cruz-county",
+  "dimension": "ozone-layer-depletion",
+  "indicator_index": 0,
+  "kind": "replace",
+  "before": {
+    "name": "Stratospheric ozone",
+    "value": "Recovering globally",
+    "unit": "",
+    "year": 2024,
+    "target": "Full recovery ~2066",
+    "source": "NOAA",
+    "source_url": "https://www.epa.gov/ozone-layer-protection",
+    "geography": "See source context",
+    "status": "legacy-source",
+    "notes": "Montreal Protocol success. Local action: proper refrigerant disposal.",
+    "evidence_path": null,
+    "pdf_path": null
+  },
+  "after": {
+    "name": "Extreme heat exposure",
+    "value": 14.757709506983256,
+    "unit": "population-weighted mean days/year",
+    "year": 2022,
+    "target": null,
+    "source": "CDC/ATSDR Environmental Justice Index 2024",
+    "source_url": "https://eji.cdc.gov/Documents/Data/2024/2024_CSV/EJI_2024_California_CSV.zip",
+    "geography": "county",
+    "status": "source-supported-observation",
+    "notes": "CDC EJI 2024 reports tract means of locally extreme heat days during 2018–2022, defined using a local 95th-percentile maximum-temperature threshold. Population-weighted county mean: 14.757709506983256 days/year across 69 EJI tracts. Census 2020 coverage was independently checked; the omitted tract has zero population and zero land area. No safe annual-day target was established, so target, score and wedge must remain null. For Santa Cruz city and Watsonville, this is explicitly a Santa Cruz County proxy, not a city-limit observation. Integration requires an explicit local-extreme-heat-v1 profile replacing the legacy ozone dimension for these three portraits only.",
+    "evidence_path": "evidence/sc-heat-extract.png",
+    "pdf_path": null,
+    "level_pct": null,
+    "scoring": null,
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "evidence": {
+      "snapshot_path": "evidence/sc-heat-extract.png",
+      "captured_at": null
+    }
+  },
+  "field_diff": {
+    "name": {
+      "before": "Stratospheric ozone",
+      "after": "Extreme heat exposure"
+    },
+    "value": {
+      "before": "Recovering globally",
+      "after": 14.757709506983256
+    },
+    "unit": {
+      "before": "",
+      "after": "population-weighted mean days/year"
+    },
+    "year": {
+      "before": 2024,
+      "after": 2022
+    },
+    "target": {
+      "before": "Full recovery ~2066",
+      "after": null
+    },
+    "source": {
+      "before": "NOAA",
+      "after": "CDC/ATSDR Environmental Justice Index 2024"
+    },
+    "source_url": {
+      "before": "https://www.epa.gov/ozone-layer-protection",
+      "after": "https://eji.cdc.gov/Documents/Data/2024/2024_CSV/EJI_2024_California_CSV.zip"
+    },
+    "geography": {
+      "before": "See source context",
+      "after": "county"
+    },
+    "status": {
+      "before": "legacy-source",
+      "after": "source-supported-observation"
+    },
+    "notes": {
+      "before": "Montreal Protocol success. Local action: proper refrigerant disposal.",
+      "after": "CDC EJI 2024 reports tract means of locally extreme heat days during 2018–2022, defined using a local 95th-percentile maximum-temperature threshold. Population-weighted county mean: 14.757709506983256 days/year across 69 EJI tracts. Census 2020 coverage was independently checked; the omitted tract has zero population and zero land area. No safe annual-day target was established, so target, score and wedge must remain null. For Santa Cruz city and Watsonville, this is explicitly a Santa Cruz County proxy, not a city-limit observation. Integration requires an explicit local-extreme-heat-v1 profile replacing the legacy ozone dimension for these three portraits only."
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/sc-heat-extract.png"
+    },
+    "confidence": {
+      "before": null,
+      "after": "medium"
+    },
+    "geographic_scale": {
+      "before": null,
+      "after": "county"
+    },
+    "evidence": {
+      "before": null,
+      "after": {
+        "snapshot_path": "evidence/sc-heat-extract.png",
+        "captured_at": null
+      }
+    }
+  },
+  "reason": "Userrequestedlocalheatfocus; explicitdimension/profiledecisionrequiredbeforeintegration.",
+  "source_support": [
+    {
+      "url": "https://eji.cdc.gov/Documents/Data/2024/2024_CSV/EJI_2024_California_CSV.zip",
+      "raw_path": "../carmel-monterey-2026-10-23-sol-medium/calculations/extreme-heat/raw/EJI_2024_California_CSV.zip",
+      "raw_sha256": "b31f0610997df43e75d2e84e60689d7a6ee4cba19eba03912411ff3e4ba278ca",
+      "snapshot_path": "evidence/sc-heat-extract.png",
+      "captured_at": null,
+      "period": "2018–2022",
+      "scale": "county",
+      "reuse_note": "Originalarchivefrompriorcampaign; no newdownloadclaimed. Newofflinecountyextraction/coveragequeryinthehighcampaign.",
+      "snapshot_sha256": "97185a82e531e0bc88326d1e87ee5d9c46b00117ae4289092cce599095b12688"
+    },
+    {
+      "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/6/query?where=STATE%3D%2706%27%20AND%20COUNTY%3D%27087%27&outFields=GEOID,POP100,HU100,AREALAND,AREAWATER&returnGeometry=false&f=pjson",
+      "raw_path": "raw/sc-census2020-tract-coverage-correct.bin",
+      "raw_sha256": "472028c2a3e44c825ed7720b37267c0fd72ff8f90aad454153be60aafbda85ba",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:37:58.123Z",
+      "period": null,
+      "scale": null
+    }
+  ],
+  "review_required": true,
+  "replacement_dimension_slug": "extreme-heat",
+  "required_profile": "local-extreme-heat-v1"
+}

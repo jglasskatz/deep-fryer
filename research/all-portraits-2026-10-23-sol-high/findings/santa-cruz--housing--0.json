@@ -1,0 +1,136 @@
+{
+  "id": "santa-cruz:housing:0",
+  "portrait": "santa-cruz",
+  "dimension": "housing",
+  "indicator_index": 0,
+  "kind": "replace",
+  "before": {
+    "name": "Homelessness & housing cost burden",
+    "value": "1,850 unhoused; 19.5% cost-burdened (county)",
+    "unit": "",
+    "year": 2024,
+    "target": "Functional zero homelessness; <30% rent burden",
+    "source": "City of Santa Cruz 2024 PIT Count; DataShare SCC",
+    "source_url": "https://www.santacruzca.gov/files/assets/city/v/1/cmo/documents/homelessness/2024pitcount_executive-summary.pdf",
+    "geography": "See source context",
+    "status": "legacy-source",
+    "notes": "2024 PIT count: 1,850 unhoused (sheltered + unsheltered) city-wide. 19.5% of county households cost-burdened (>30% income on housing, DataShare SCC 2023). 60% of city residents are renters. Median rent above $3,000/mo. Rents up 24.4% since 2019. Santa Cruz has the highest per-capita homelessness rate in the nation.",
+    "evidence_path": null,
+    "pdf_path": null
+  },
+  "after": {
+    "name": "People experiencing homelessness on the PIT count night",
+    "value": 1024,
+    "unit": "persons (one-night PIT estimate)",
+    "year": 2026,
+    "target": null,
+    "source": "Santa Cruz County Housing for Health Partnership / Applied Survey Research 2026 PITreport",
+    "source_url": "https://housingforhealthpartnership.org/Portals/29/HAP/pdf/2026%20Santa%20Cruz%20County%20PIT%20Report.pdf",
+    "geography": "city",
+    "status": "uncertain",
+    "notes": "The 2026 PIT report, physical page 13, reports one-night counts by jurisdiction. Street enumeration occurred January 29, with shelter occupancy from January 28. The count excludes some forms of homelessness and is not annual persons served. Newly included safe parking/sleeping records added 124 people in Santa Cruz city and 2 in Watsonville compared with prior practice, so annual changes are not directly comparable. The legacy 1,850 was the 2024 COUNTY total, not Santa Cruz city. Housing cost burden remains a separate unresolved measure. No count-based score is inferred from the legacy combined prose target. Source arithmetic conflict: the published city total is 1,024, but 789 unsheltered + 234 sheltered = 1,023; incorporated and county subtotals also support 1,023. Retain uncertainty and do not silently repair the source.",
+    "evidence_path": "evidence/sc-pit-2026-page13.png",
+    "pdf_path": "raw/sc-pit-2026-full.pdf",
+    "level_pct": null,
+    "scoring": null,
+    "confidence": "low",
+    "geographic_scale": "city",
+    "evidence": {
+      "snapshot_path": "evidence/sc-pit-2026-page13.png",
+      "captured_at": "2026-10-24T01:29:36.285Z",
+      "pdf_path": "raw/sc-pit-2026-full.pdf"
+    }
+  },
+  "field_diff": {
+    "name": {
+      "before": "Homelessness & housing cost burden",
+      "after": "People experiencing homelessness on the PIT count night"
+    },
+    "value": {
+      "before": "1,850 unhoused; 19.5% cost-burdened (county)",
+      "after": 1024
+    },
+    "unit": {
+      "before": "",
+      "after": "persons (one-night PIT estimate)"
+    },
+    "year": {
+      "before": 2024,
+      "after": 2026
+    },
+    "target": {
+      "before": "Functional zero homelessness; <30% rent burden",
+      "after": null
+    },
+    "source": {
+      "before": "City of Santa Cruz 2024 PIT Count; DataShare SCC",
+      "after": "Santa Cruz County Housing for Health Partnership / Applied Survey Research 2026 PITreport"
+    },
+    "source_url": {
+      "before": "https://www.santacruzca.gov/files/assets/city/v/1/cmo/documents/homelessness/2024pitcount_executive-summary.pdf",
+      "after": "https://housingforhealthpartnership.org/Portals/29/HAP/pdf/2026%20Santa%20Cruz%20County%20PIT%20Report.pdf"
+    },
+    "geography": {
+      "before": "See source context",
+      "after": "city"
+    },
+    "status": {
+      "before": "legacy-source",
+      "after": "uncertain"
+    },
+    "notes": {
+      "before": "2024 PIT count: 1,850 unhoused (sheltered + unsheltered) city-wide. 19.5% of county households cost-burdened (>30% income on housing, DataShare SCC 2023). 60% of city residents are renters. Median rent above $3,000/mo. Rents up 24.4% since 2019. Santa Cruz has the highest per-capita homelessness rate in the nation.",
+      "after": "The 2026 PIT report, physical page 13, reports one-night counts by jurisdiction. Street enumeration occurred January 29, with shelter occupancy from January 28. The count excludes some forms of homelessness and is not annual persons served. Newly included safe parking/sleeping records added 124 people in Santa Cruz city and 2 in Watsonville compared with prior practice, so annual changes are not directly comparable. The legacy 1,850 was the 2024 COUNTY total, not Santa Cruz city. Housing cost burden remains a separate unresolved measure. No count-based score is inferred from the legacy combined prose target. Source arithmetic conflict: the published city total is 1,024, but 789 unsheltered + 234 sheltered = 1,023; incorporated and county subtotals also support 1,023. Retain uncertainty and do not silently repair the source."
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/sc-pit-2026-page13.png"
+    },
+    "pdf_path": {
+      "before": null,
+      "after": "raw/sc-pit-2026-full.pdf"
+    },
+    "confidence": {
+      "before": null,
+      "after": "low"
+    },
+    "geographic_scale": {
+      "before": null,
+      "after": "city"
+    },
+    "evidence": {
+      "before": null,
+      "after": {
+        "snapshot_path": "evidence/sc-pit-2026-page13.png",
+        "captured_at": "2026-10-24T01:29:36.285Z",
+        "pdf_path": "raw/sc-pit-2026-full.pdf"
+      }
+    }
+  },
+  "reason": "Correct county as city boundary error and replace vague homelessnessclaim with current jurisdiction-specific count.",
+  "source_support": [
+    {
+      "url": "https://housingforhealthpartnership.org/Portals/29/HAP/pdf/2026%20Santa%20Cruz%20County%20PIT%20Report.pdf",
+      "raw_path": "raw/sc-pit-2026-full.pdf",
+      "raw_sha256": "bcc4066636e61288f2a997b957bbabe6add5080390e4b36bbddfec1f55c680a7",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:29:36.285Z",
+      "period": "January 28–29,2026 PIT",
+      "scale": "city/countyjurisdictiontable",
+      "snapshot_path": "evidence/sc-pit-2026-page13.png",
+      "snapshot_sha256": "03cdd098d78f96fdc4deb0d2214de8f7e1b0052ad8f63df1527e1d1225b10f71",
+      "pdf_path": "raw/sc-pit-2026-full.pdf"
+    },
+    {
+      "url": "https://www.santacruzcountyca.gov/portals/0/county/CAO/press%20releases/2026/2026PITCount.08052026.pdf",
+      "raw_path": "raw/sc-pit-2026-release.pdf",
+      "raw_sha256": "492d9fcbbb2d49c2bf9c5945b9fbcf396bddc948e86f7d67d25c6f80edee5015",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:28:52.185Z",
+      "period": "January 29,2026",
+      "scale": "county",
+      "pdf_path": "raw/sc-pit-2026-release.pdf"
+    }
+  ],
+  "review_required": true
+}

@@ -9,6 +9,7 @@ const bodySchema = z.object({
   tenant: z.string(),
   dimension_ids: z.array(z.string().uuid()).optional(),
   reviewer_notes: z.record(z.string()).optional(),
+  strategy: z.enum(['standard', 'deep']).optional(),
 });
 
 /** POST /api/research/plan — render a run without spending tokens (SPEC §8). */
@@ -29,6 +30,7 @@ export async function POST(request: Request) {
       dimensionIds: body.dimension_ids,
       reviewerNotes: body.reviewer_notes,
       requestedBy: auth.userId,
+      strategy: body.strategy,
     });
     return NextResponse.json({
       run_id: run.id,
@@ -36,6 +38,8 @@ export async function POST(request: Request) {
       session_count: sessionCount,
       config_hash: run.plan.config_hash,
       plugin_version: run.plan.plugin_version,
+      strategy: run.plan.strategy,
+      models: run.plan.models,
     });
   } catch (err) {
     return NextResponse.json(

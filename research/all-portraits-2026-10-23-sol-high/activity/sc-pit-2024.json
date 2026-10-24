@@ -1,0 +1,10 @@
+{
+  "mode": "fetch",
+  "url": "https://www.santacruzca.gov/files/assets/city/v/1/cmo/documents/homelessness/santa-cruz-county-pit-report-v5-7112024.pdf",
+  "stem": "sc-pit-2024",
+  "captured_at": "2026-10-24T01:27:37.425Z",
+  "status": 403,
+  "content_type": "text/html",
+  "success": false,
+  "error": "Error: HTTP 403 <HTML><HEAD>\n<TITLE>Access Denied</TITLE>\n</HEAD><BODY>\n<H1>Access Denied</H1>\n "
+}

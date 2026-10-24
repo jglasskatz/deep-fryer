@@ -1,0 +1,102 @@
+{
+  "id": "staten-island:ocean-acidification:append",
+  "portrait": "staten-island",
+  "dimension": "ocean-acidification",
+  "indicator_index": 0,
+  "kind": "append",
+  "before": null,
+  "after": {
+    "name": "Western Long Island Sound summertime bottom-water aragonite saturation (regional context)",
+    "value": 1.09,
+    "unit": "Ωaragonite",
+    "year": 2022,
+    "target": null,
+    "level_pct": null,
+    "scoring": null,
+    "status": "source-supported-observation",
+    "confidence": "medium",
+    "geography": "Western Long Island Sound regional context — not Staten Island coastal waters",
+    "geographic_scale": "regional",
+    "notes": "Table 1 summer 2022 bottomwater mean 1.09±0.00. No Staten Island-specific observation established. This fills regional context only; no score is asserted until reviewer accepts geography/depth/season comparability.",
+    "source": "Barrett etal 2024 Frontiersin Marine Science 11:1398087",
+    "evidence_path": "evidence/nyc-ocean-extract.png",
+    "pdf_path": null,
+    "source_url": "https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2024.1398087/full",
+    "evidence": {
+      "snapshot_path": "evidence/nyc-ocean-extract.png",
+      "captured_at": "2026-10-24T01:26:23.739Z"
+    }
+  },
+  "field_diff": {
+    "name": {
+      "before": null,
+      "after": "Western Long Island Sound summertime bottom-water aragonite saturation (regional context)"
+    },
+    "value": {
+      "before": null,
+      "after": 1.09
+    },
+    "unit": {
+      "before": null,
+      "after": "Ωaragonite"
+    },
+    "year": {
+      "before": null,
+      "after": 2022
+    },
+    "status": {
+      "before": null,
+      "after": "source-supported-observation"
+    },
+    "confidence": {
+      "before": null,
+      "after": "medium"
+    },
+    "geography": {
+      "before": null,
+      "after": "Western Long Island Sound regional context — not Staten Island coastal waters"
+    },
+    "geographic_scale": {
+      "before": null,
+      "after": "regional"
+    },
+    "notes": {
+      "before": null,
+      "after": "Table 1 summer 2022 bottomwater mean 1.09±0.00. No Staten Island-specific observation established. This fills regional context only; no score is asserted until reviewer accepts geography/depth/season comparability."
+    },
+    "source": {
+      "before": null,
+      "after": "Barrett etal 2024 Frontiersin Marine Science 11:1398087"
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/nyc-ocean-extract.png"
+    },
+    "source_url": {
+      "before": null,
+      "after": "https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2024.1398087/full"
+    },
+    "evidence": {
+      "before": null,
+      "after": {
+        "snapshot_path": "evidence/nyc-ocean-extract.png",
+        "captured_at": "2026-10-24T01:26:23.739Z"
+      }
+    }
+  },
+  "reason": "Empty dimension: archive nearest defensible regional context and retain its limitations.",
+  "source_support": [
+    {
+      "url": "https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2024.1398087/full",
+      "raw_path": "raw/nyc-ocean-study.bin",
+      "raw_sha256": "14121af82825e7ca6bcff5a06bfa22e4f4a649dfe2c86335784b21755d6a2cb0",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:26:23.739Z",
+      "period": "July–September 2022",
+      "scale": "western Long Island Sound regional",
+      "snapshot_path": "evidence/nyc-ocean-extract.png",
+      "snapshot_sha256": "05ae76fafd16e359757523dbb072834d4f5acd1828e59f8c5cb65eb43e773664"
+    }
+  ],
+  "review_required": true
+}

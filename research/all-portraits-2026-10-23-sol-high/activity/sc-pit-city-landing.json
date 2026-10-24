@@ -1,0 +1,9 @@
+{
+  "mode": "page",
+  "url": "https://www.santacruzca.gov/Government/City-Departments/City-Manager/Homelessness-Response/News-and-Updates/Point-In-Time-Count-PIT",
+  "stem": "sc-pit-city-landing",
+  "captured_at": "2026-10-24T01:27:31.196Z",
+  "status": 403,
+  "success": false,
+  "error": "Error: HTTP 403"
+}

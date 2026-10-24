@@ -110,7 +110,7 @@ export const saveDimensionEdit = action(async (input: SaveDimensionEditInput) =>
     // another pooled connection while this one is held (lib/admin-data.ts).
     const overrides = await configValueIn(db, tenant.id, 'threshold_overrides');
     const rescored = rescore(parsed, dimension.slug, dimension.canonicalSlug, overrides);
-    const vizLevel = deriveVizLevel(rescored) ?? previous?.vizLevel ?? null;
+    const vizLevel = deriveVizLevel(rescored);
 
     const auth = await getAuth();
     const version = await appendDimensionVersion(db, {

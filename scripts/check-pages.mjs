@@ -43,7 +43,8 @@ try {
     assert.equal(await page.locator('.dimension').count(), portrait.dimensions.length);
     assert.ok(await page.locator('canvas').evaluate(canvas => canvas.width > 0 && canvas.height > 0));
     if (portrait.slug === 'carmel') {
-      assert.match(await page.locator('.notice').innerText(), /not an approved portrait/);
+      assert.match((await page.locator('.notice').allTextContents()).join(' '), /does not approve the amendments/);
+      assert.equal(await page.locator('.portrait-heading .research-preview').innerText(), 'Updated research preview');
       assert.ok(await page.getByText('Monterey County proxy — not Carmel city limits', { exact: false }).count() > 0);
       await page.screenshot({ path: path.join(screenshots, 'carmel-desktop.png') });
     }

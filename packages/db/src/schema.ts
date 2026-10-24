@@ -26,6 +26,8 @@ import type {
   SessionTokenUsage,
   FindingPayload,
   FindingVerification,
+  FindingCorrection,
+  FindingAuditSource,
   OutreachContactData,
   ResearchPlan,
   RunTokenUsage,
@@ -277,6 +279,7 @@ export const dimensions = pgTable(
   },
   (t) => ({
     uniqTenantRingSlug: unique('dimensions_tenant_ring_slug_uniq').on(t.tenantId, t.ring, t.slug),
+    uniqTenantSlug: unique('dimensions_tenant_slug_uniq').on(t.tenantId, t.slug),
   }),
 );
 
@@ -375,6 +378,24 @@ export const findings = pgTable(
   }),
 );
 
+/** Immutable machine recommendations; applying one records the human decision
+ * separately and never changes the underlying finding. */
+export const findingAudits = pgTable('finding_audits', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  findingId: uuid('finding_id').notNull().references(() => findings.id, { onDelete: 'cascade' }),
+  source: text('source').$type<FindingAuditSource>().notNull(),
+  disposition: text('disposition').$type<'approve' | 'edit' | 're_research' | 'reject'>().notNull(),
+  reason: text('reason').notNull(),
+  correction: jsonb('correction').$type<FindingCorrection>(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  appliedVersionId: uuid('applied_version_id').references(() => dimensionVersions.id),
+  appliedRunId: uuid('applied_run_id').references(() => researchRuns.id),
+  appliedBy: uuid('applied_by').references(() => users.id),
+  appliedAt: timestamp('applied_at', { withTimezone: true }),
+}, (t) => ({
+  findingSource: unique('finding_audits_finding_source_uniq').on(t.findingId, t.source),
+}));
+
 // ---- Discussion board (SPEC.md §7, §10) ----
 
 export const comments = pgTable(
@@ -454,7 +475,9 @@ export const outreachContactVersions = pgTable('outreach_contact_versions', {
   createdBy: uuid('created_by'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   publishedAt: timestamp('published_at', { withTimezone: true }),
-});
+}, (t) => ({
+  uniqContactVersion: unique('outreach_contact_versions_contact_version_uniq').on(t.contactId, t.versionNum),
+}));
 
 export const customPages = pgTable(
   'custom_pages',
@@ -483,7 +506,9 @@ export const customPageVersions = pgTable('custom_page_versions', {
   createdBy: uuid('created_by'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   publishedAt: timestamp('published_at', { withTimezone: true }),
-});
+}, (t) => ({
+  uniqPageVersion: unique('custom_page_versions_page_version_uniq').on(t.pageId, t.versionNum),
+}));
 
 export const auditLog = pgTable('audit_log', {
   id: bigserial('id', { mode: 'bigint' }).primaryKey(),
@@ -1216,6 +1241,7 @@ export type ResearchSession = typeof researchSessions.$inferSelect;
 export type NewResearchSession = typeof researchSessions.$inferInsert;
 export type Finding = typeof findings.$inferSelect;
 export type NewFinding = typeof findings.$inferInsert;
+export type FindingAudit = typeof findingAudits.$inferSelect;
 export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
 export type CommentVote = typeof commentVotes.$inferSelect;

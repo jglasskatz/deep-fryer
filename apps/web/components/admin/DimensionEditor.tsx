@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { Confidence, DimensionData, GeographicScale, Indicator } from '@deep-fryer/core';
 import { saveDimensionEdit } from '@/lib/actions';
 import { unwrap } from '@/lib/action-result';
@@ -10,7 +10,7 @@ const CONFIDENCES: Confidence[] = ['high', 'medium', 'low'];
 const SCALES: GeographicScale[] = ['city', 'county', 'regional', 'state', 'national', 'global'];
 
 const field =
-  'w-full rounded border border-field-border bg-white px-2 py-1 text-sm';
+  'min-h-11 w-full min-w-0 rounded border border-field-border bg-[color:var(--color-bg)] px-2 py-2 text-sm';
 
 /** Form input → indicator value: empty is null, numeric strings are numbers. */
 const parseValueInput = (raw: string): number | string | null =>
@@ -27,6 +27,8 @@ export function DimensionEditor({
 }) {
   const [data, setData] = useState<DimensionData>(initial);
   const [changeNote, setChangeNote] = useState('');
+  const [status, setStatus] = useState('');
+  const indicatorsRef = useRef<HTMLDivElement>(null);
   const { run, pending, error } = useAction();
 
   const setIndicator = (idx: number, patch: Partial<Indicator>) => {
@@ -40,6 +42,7 @@ export function DimensionEditor({
     run(async () => {
       unwrap(await saveDimensionEdit({ tenantSlug, dimensionId, data, changeNote }));
       setChangeNote('');
+      setStatus('New draft version saved. Review it before publishing.');
     });
 
   return (
@@ -89,11 +92,11 @@ export function DimensionEditor({
           Changing a value requires a supporting source URL — human edits meet the same
           provenance bar as research.
         </p>
-        <div className="mt-3 space-y-4">
+        <div ref={indicatorsRef} className="mt-3 space-y-4">
           {data.indicators.map((ind, i) => (
-            <div key={i} className="rounded border border-black/15 p-3">
+            <fieldset key={i} className="min-w-0 rounded border border-black/15 p-3"><legend className="px-1 text-sm font-medium">Indicator {i + 1}</legend>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <label className="col-span-2 block text-xs">
+                <label className="block text-xs sm:col-span-2">
                   <span className="font-medium">Indicator</span>
                   <input
                     className={field}
@@ -110,7 +113,7 @@ export function DimensionEditor({
                   />
                 </label>
               </div>
-              <div className="mt-2 grid grid-cols-4 gap-3">
+              <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <label className="block text-xs">
                   <span className="font-medium">Value</span>
                   <input
@@ -208,9 +211,14 @@ export function DimensionEditor({
                   </select>
                 </label>
               </div>
-            </div>
+              <button type="button" className="mt-3 min-h-11 rounded border border-black/20 px-3 py-2 text-sm disabled:opacity-50" disabled={pending} aria-label={`Remove indicator ${i + 1}: ${ind.name || 'Untitled'}`} onClick={() => { setData(current => ({ ...current, indicators: current.indicators.filter((_, index) => index !== i) })); setStatus('Indicator removed from this edit. Save a new draft to retain the change; previous versions remain available.'); }}>Remove indicator</button>
+            </fieldset>
           ))}
         </div>
+        <button type="button" className="mt-3 min-h-11 rounded border border-black/20 px-3 py-2 text-sm disabled:opacity-50" disabled={pending || data.indicators.length >= 30} onClick={() => {
+          setData(current => ({ ...current, indicators: [...current.indicators, { name: '', value: null, unit: '', year: null, target: null, source: '', source_url: '', confidence: 'low', geographic_scale: 'city' }] }));
+          requestAnimationFrame(() => indicatorsRef.current?.lastElementChild?.querySelector('input')?.focus());
+        }}>Add indicator</button>
       </section>
 
       <label className="block text-sm">
@@ -235,15 +243,16 @@ export function DimensionEditor({
             onChange={(e) => setChangeNote(e.target.value)}
           />
         </label>
-        {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}
+        {error ? <p role="alert" className="mt-2 text-sm text-red-700">{error}</p> : null}
         <button
-          className="mt-3 rounded bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+          className="mt-3 min-h-11 rounded bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
           onClick={save}
           disabled={pending || !changeNote.trim()}
         >
           {pending ? 'Saving…' : 'Save as new draft version'}
         </button>
       </div>
+      <p role="status" className="text-sm">{status}</p>
     </div>
   );
 }

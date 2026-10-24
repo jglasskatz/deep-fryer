@@ -1,0 +1,130 @@
+{
+  "id": "santa-cruz:social-equity:0",
+  "portrait": "santa-cruz",
+  "dimension": "social-equity",
+  "indicator_index": 0,
+  "kind": "replace",
+  "before": {
+    "name": "Gini coefficient (income inequality)",
+    "value": "0.483 (county-level)",
+    "unit": "",
+    "year": 2023,
+    "target": "Below 0.30 (CA Doughnut target)",
+    "source": "DataShare SCC; National Equity Atlas",
+    "source_url": "https://www.datasharescc.org/indicators/index/view?indicatorId=288&localeId=281",
+    "geography": "See source context",
+    "status": "legacy-source",
+    "notes": "Gini of 0.483 — well above the California Doughnut target of <0.30 (where 0 = perfect equality, 1 = all income to one person). California state index is 0.65. Racial Equity Index Inclusion Score: 54 (county) vs CA target of 100. Tech/university incomes vs service/agricultural worker wages create extreme polarization.",
+    "evidence_path": null,
+    "pdf_path": null
+  },
+  "after": {
+    "name": "Income inequality (household Gini index)",
+    "value": 0.4936,
+    "unit": "Gini 0–1",
+    "year": 2024,
+    "target": null,
+    "source": "US Census Bureau ACS2024 Detailed Table B19083",
+    "source_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b19083.dat",
+    "geography": "city",
+    "status": "source-supported-observation",
+    "notes": "Official B19083_E001=0.4936;90%MOE±0.0183. 2020–2024 ACS5 year, geography 1600000 US0669112. Replaces earlier unclear countyproxy/approximation. Legacytarget was prose and differs byportrait; no new numericthreshold approved here. Watsonville environmentaljustice context is distinct from household income Gini.",
+    "evidence_path": "evidence/sc-census-extract.png",
+    "pdf_path": null,
+    "level_pct": null,
+    "scoring": null,
+    "confidence": "medium",
+    "geographic_scale": "city",
+    "evidence": {
+      "snapshot_path": "evidence/sc-census-extract.png",
+      "captured_at": "2026-10-24T01:31:17.815Z"
+    }
+  },
+  "field_diff": {
+    "name": {
+      "before": "Gini coefficient (income inequality)",
+      "after": "Income inequality (household Gini index)"
+    },
+    "value": {
+      "before": "0.483 (county-level)",
+      "after": 0.4936
+    },
+    "unit": {
+      "before": "",
+      "after": "Gini 0–1"
+    },
+    "year": {
+      "before": 2023,
+      "after": 2024
+    },
+    "target": {
+      "before": "Below 0.30 (CA Doughnut target)",
+      "after": null
+    },
+    "source": {
+      "before": "DataShare SCC; National Equity Atlas",
+      "after": "US Census Bureau ACS2024 Detailed Table B19083"
+    },
+    "source_url": {
+      "before": "https://www.datasharescc.org/indicators/index/view?indicatorId=288&localeId=281",
+      "after": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b19083.dat"
+    },
+    "geography": {
+      "before": "See source context",
+      "after": "city"
+    },
+    "status": {
+      "before": "legacy-source",
+      "after": "source-supported-observation"
+    },
+    "notes": {
+      "before": "Gini of 0.483 — well above the California Doughnut target of <0.30 (where 0 = perfect equality, 1 = all income to one person). California state index is 0.65. Racial Equity Index Inclusion Score: 54 (county) vs CA target of 100. Tech/university incomes vs service/agricultural worker wages create extreme polarization.",
+      "after": "Official B19083_E001=0.4936;90%MOE±0.0183. 2020–2024 ACS5 year, geography 1600000 US0669112. Replaces earlier unclear countyproxy/approximation. Legacytarget was prose and differs byportrait; no new numericthreshold approved here. Watsonville environmentaljustice context is distinct from household income Gini."
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/sc-census-extract.png"
+    },
+    "confidence": {
+      "before": null,
+      "after": "medium"
+    },
+    "geographic_scale": {
+      "before": null,
+      "after": "city"
+    },
+    "evidence": {
+      "before": null,
+      "after": {
+        "snapshot_path": "evidence/sc-census-extract.png",
+        "captured_at": "2026-10-24T01:31:17.815Z"
+      }
+    }
+  },
+  "reason": "Replace unspecified/approximate geography with exact primary ACSGini and explicitperiod.",
+  "source_support": [
+    {
+      "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b19083.dat",
+      "raw_path": "raw/acs5-gini2024.bin.gz",
+      "raw_sha256": "338f7a1191eaaf3913913e78c36aaa9d82f2b5c8faaf889be2e597b28869205e",
+      "raw_encoding": "gzip; original bytes round-trip exactly",
+      "captured_at": "2026-10-24T01:31:17.815Z",
+      "period": "2020–2024 ACS5 year",
+      "scale": "city",
+      "stored_sha256": "c5002dfc80371b532da1b97128d8780fbd0eeca51a14c5abb235d4def89f00d3",
+      "snapshot_path": "evidence/sc-census-extract.png",
+      "snapshot_sha256": "aa09836439b82e14d85a09c9864b2f1bfe6d37647682d95aa0140d7b0444c51e"
+    },
+    {
+      "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+      "raw_path": "raw/acs5-shells2024.bin.gz",
+      "raw_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+      "raw_encoding": "gzip; original bytes round-trip exactly",
+      "captured_at": "2026-10-24T01:31:51.961Z",
+      "period": null,
+      "scale": null,
+      "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0"
+    }
+  ],
+  "review_required": true
+}

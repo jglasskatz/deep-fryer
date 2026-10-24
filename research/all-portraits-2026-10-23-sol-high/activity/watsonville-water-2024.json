@@ -1,0 +1,8 @@
+{
+  "mode": "fetch",
+  "url": "https://watsonville.gov/DocumentCenter/View/26652/Watsonville-Water-Quality-Report-2024",
+  "stem": "watsonville-water-2024",
+  "captured_at": "2026-10-24T01:27:37.463Z",
+  "success": false,
+  "error": "Error: apiRequestContext.get: Client network socket disconnected before secure TLS connection was established (ECONNRESET)\nCall log:\n\u001b[2m  - → GET https://watsonville.gov/DocumentCenter/View/26652/Watsonville-Water-Quality-Report-2024\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n"
+}

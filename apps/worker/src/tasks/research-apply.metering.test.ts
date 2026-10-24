@@ -18,11 +18,18 @@ const script = vi.hoisted(() => ({
   research: [] as { prompt: string; orchestrate?: boolean; apiKey?: string }[],
   /** Every verifier (runSession) prompt, in order. */
   verifier: [] as string[],
+  verifierOptions: [] as { model?: string; apiKey?: string; orchestrate?: boolean; archivedExhibits?: { snapshot?: Buffer; pdf?: Buffer } }[],
   /** What a research session answers, by the start of its prompt; throws when an Error. */
   answers: {} as Record<string, string | Error>,
   /** What a verifier answers, by the indicator name in its prompt; a function may throw. */
   verdicts: {} as Record<string, () => { resultText: string; usage: SessionTokenUsage }>,
+  auditUsage: {} as Record<string, SessionTokenUsage>,
+  auditThrows: false,
 }));
+vi.mock('../research-audit.js', () => ({ auditResearchRun: vi.fn(async () => {
+  if (script.auditThrows) throw new Error('audit unavailable');
+  return script.auditUsage;
+}) }));
 
 vi.mock('../session.js', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../session.js')>();
@@ -35,8 +42,9 @@ vi.mock('../session.js', async (importOriginal) => {
       if (answer instanceof Error) throw answer;
       return { resultText: answer, succeeded: true, transcript: Buffer.from('t'), usage: { input_tokens: 1, output_tokens: 1 } };
     }),
-    runSession: vi.fn(async (input: { prompt: string }) => {
+    runSession: vi.fn(async (input: { prompt: string; model?: string; apiKey?: string; orchestrate?: boolean; archivedExhibits?: { snapshot?: Buffer; pdf?: Buffer } }) => {
       script.verifier.push(input.prompt);
+      script.verifierOptions.push(input);
       const name = Object.keys(script.verdicts).find((n) => input.prompt.includes(n));
       if (!name) throw new Error(`no scripted verdict for: ${input.prompt.slice(0, 80)}`);
       const { resultText, usage } = script.verdicts[name]!();
@@ -53,7 +61,7 @@ vi.mock('@deep-fryer/research', async (importOriginal) => {
       actual.deterministicChecks(raw, config, slug, async () => true),
   };
 });
-vi.mock('../storage.js', () => ({ tenantStorage: vi.fn(async () => ({})) }));
+vi.mock('../storage.js', () => ({ tenantStorage: vi.fn(async () => ({ get: vi.fn(async () => Buffer.from('captured exhibit')) })) }));
 vi.mock('../notify.js', () => ({ notifyRunFinished: vi.fn(async () => {}) }));
 
 const hasDb = Boolean(process.env.DATABASE_URL);
@@ -116,8 +124,11 @@ describe.skipIf(!hasDb)('researchApply session handling (Postgres, scripted sess
   beforeEach(() => {
     script.research.length = 0;
     script.verifier.length = 0;
+    script.verifierOptions.length = 0;
     script.answers = {};
     script.verdicts = {};
+    script.auditUsage = {};
+    script.auditThrows = false;
     // One session at a time, so "no further session starts" is observable.
     process.env.RESEARCH_SESSION_CONCURRENCY = '1';
   });
@@ -221,6 +232,87 @@ describe.skipIf(!hasDb)('researchApply session handling (Postgres, scripted sess
     expect((await rows()).map((r) => r.slug).sort()).toEqual(['energy', 'housing', 'region']);
     // The operator is told the value was not used.
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(/^RESEARCH_SESSION_CONCURRENCY="three" is not a whole number/));
+  });
+
+  it('passes independent archived exhibits to the verifier and honors a plan’s frozen models', async () => {
+    const { run } = await seed('plan');
+    const m = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    await m.getDb().update(m.researchRuns).set({ plan: { ...run.plan, strategy: 'deep', models: {
+      session_model: 'planned-researcher', subagent_model: 'planned-scout', verifier_model: 'planned-judge',
+    } } }).where(eq(m.researchRuns.id, run.id));
+    script.answers = { HOUSING: JSON.stringify([finding('cost-burdened-renters', 'Cost-burdened renters')]) };
+    script.verdicts = { 'Cost-burdened renters': () => ({ resultText: '{"content_supported":"pass"}', usage: opus(10, 0) }) };
+    const { researchApply } = await import('./research-apply.js');
+    await researchApply({ runId: run.id }, helpers);
+    expect(script.research[0]).toMatchObject({ model: 'planned-researcher', orchestrate: false });
+    expect(script.research[1]).toMatchObject({ model: 'planned-researcher', scoutModel: 'planned-scout' });
+    expect(script.verifierOptions).toHaveLength(1);
+    expect(script.verifierOptions[0]).toMatchObject({
+      model: 'planned-judge', orchestrate: false, archivedExhibits: { snapshot: Buffer.from('captured exhibit') },
+    });
+    expect(script.verifier[0]).toContain('archived-snapshot.png');
+    expect(script.verifier[0]).not.toContain('source-scout');
+    const { auditResearchRun } = await import('../research-audit.js');
+    expect(auditResearchRun).toHaveBeenLastCalledWith(expect.objectContaining({ id: run.id }), helpers, { apiKey: null, verifierModel: 'planned-judge' });
+  });
+
+  it('records audit spend without turning an independent audit failure into lost research', async () => {
+    const first = await seed('plan');
+    script.auditUsage = { 'audit:workflow:test': opus(321, 900) };
+    const { researchApply } = await import('./research-apply.js');
+    await researchApply({ runId: first.run.id }, helpers);
+    expect((await first.settledRun()).tokenUsage!['audit:workflow:test']).toEqual(opus(321, 900));
+    const second = await seed('plan');
+    script.auditThrows = true;
+    await researchApply({ runId: second.run.id }, helpers);
+    expect((await second.settledRun()).status).toBe('complete');
+  });
+
+  it('independently checks a narrative in the same verifier and flags a missing narrative verdict', async () => {
+    const payload = { ...finding('energy-burden', 'Energy burden'), narrative_draft: { context: 'Supported context', actions: [{ text: 'Apply for assistance', source_url: 'https://city.example/assistance', evidence: { snapshot_path: 'evidence/action.png', captured_at: '2026-10-23T12:00:00Z' } }] } };
+    script.answers = { ENERGY: JSON.stringify([payload]) };
+    script.verdicts = { 'Energy burden': () => ({ resultText: '{"content_supported":"pass"}', usage: opus(10, 0) }) };
+    const { run, rows, findingsOf } = await seed('plan');
+    const { researchApply } = await import('./research-apply.js');
+    await researchApply({ runId: run.id }, helpers);
+    expect(script.research).toHaveLength(3); // no extra hidden drafting session
+    expect(script.verifier).toHaveLength(1);
+    expect(script.verifier[0]).toContain('Apply for assistance');
+    expect(script.verifierOptions[0]!.archivedExhibits).toMatchObject({ additional: [{ filename: 'action-1-snapshot.png', body: Buffer.from('captured exhibit') }] });
+    const energy = (await rows()).find(row => row.slug === 'energy')!;
+    expect((await findingsOf(energy.id))[0]!.verification).toMatchObject({ content_supported: 'pass', narrative_supported: 'uncertain' });
+  });
+
+  it('executes and charges every dense-dimension session independently', async () => {
+    const { run, rows } = await seed('plan');
+    const m = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const housing = run.plan.sessions.find((s) => s.dimension_slug === 'housing')!;
+    const plan = { ...run.plan, sessions: [...run.plan.sessions, { ...housing, prompt: 'HOUSING-PART-2: remaining indicators.' }] };
+    await m.getDb().update(m.researchRuns).set({ plan }).where(eq(m.researchRuns.id, run.id));
+    const { researchApply } = await import('./research-apply.js');
+    await researchApply({ runId: run.id }, helpers);
+    expect(script.research.map((s) => s.prompt.split(':')[0])).toEqual(['REGION', 'HOUSING', 'ENERGY', 'HOUSING-PART-2']);
+    expect((await rows()).filter((row) => row.slug === 'housing')).toHaveLength(2);
+    expect(await m.researchSessionsUsed(m.getDb(), (await m.organizationForTenant(m.getDb(), run.tenantId))!.id, new Date(0))).toBe(plan.sessions.length);
+  });
+
+  it('records all unstarted dense-dimension parts after a key refusal', async () => {
+    const { orgKeyRejected } = await import('../org-key.js');
+    script.answers = { HOUSING: orgKeyRejected('billing_error', 'claude-sonnet-5', { input_tokens: 0, output_tokens: 0 }) };
+    const { run, rows } = await seed('organization_key');
+    const m = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const housing = run.plan.sessions.find((s) => s.dimension_slug === 'housing')!;
+    const plan = { ...run.plan, sessions: [...run.plan.sessions, { ...housing, prompt: 'HOUSING-PART-2: remaining indicators.' }] };
+    await m.getDb().update(m.researchRuns).set({ plan }).where(eq(m.researchRuns.id, run.id));
+    const { researchApply } = await import('./research-apply.js');
+    await researchApply({ runId: run.id }, helpers);
+    expect(script.research.map((s) => s.prompt.split(':')[0])).toEqual(['REGION', 'HOUSING']);
+    expect((await rows()).map((row) => [row.slug, row.status]).sort()).toEqual([
+      ['energy', 'failed'], ['housing', 'failed'], ['housing', 'failed'], ['region', 'complete'],
+    ]);
   });
 
   it('logs a model id the API did not find for the operator, once per run', async () => {

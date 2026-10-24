@@ -45,8 +45,11 @@ import {
   type SessionResult,
 } from '../session.js';
 import { tenantStorage } from '../storage.js';
+import { loadFindingExhibits } from '../archived-exhibits.js';
+import type { TenantStorage } from '../storage.js';
 import { notifyRunFinished } from '../notify.js';
 import { settledRunStatus } from './run-status.js';
+import { auditResearchRun } from '../research-audit.js';
 
 /**
  * Apply (SPEC.md §8): phase-0 region-context session first, its brief
@@ -191,6 +194,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
           // delegation note telling it to capture evidence — and it has no
           // capture tool, and writes a brief, not findings.
           orchestrate: false,
+          ...(plan.models ? { model: plan.models.session_model } : {}),
           ...keyOption,
         });
       } catch (err) {
@@ -258,6 +262,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
           prompt,
           allowedTools: spec.tool_allowlist,
           storage,
+          ...(plan.models ? { model: plan.models.session_model, scoutModel: plan.models.subagent_model } : {}),
           ...keyOption,
         });
       } catch (err) {
@@ -299,7 +304,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
       for (const raw of rawFindings) {
         const { payload, checks } = await deterministicChecks(raw, config, dimension.slug);
 
-        let verdict: { content_supported: ContentSupported; verifier_note?: string } | null;
+        let verdict: { content_supported: ContentSupported; verifier_note?: string; narrative_supported?: ContentSupported } | null;
         if (payload?.kind === 'indicator') {
           if (keyFailure) {
             // The key was refused (here or in a concurrent session): starting
@@ -307,7 +312,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
             verdict = { content_supported: 'uncertain', verifier_note: `verifier did not run: ${keyFailure.message}` };
           } else {
             try {
-              const verified = await runVerifier(payload, config.region.name, apiKey);
+              const verified = await runVerifier(payload, config.region.name, apiKey, storage, plan.models?.verifier_model);
               verifierUsage = mergeUsage(verifierUsage, verified.usage);
               verdict = verified.verdict;
               if (verified.failure) noteFailure(verified.failure);
@@ -337,6 +342,9 @@ export const researchApply: Task = async (rawPayload, helpers) => {
             ? String((raw as { indicator_slug: unknown }).indicator_slug)
             : 'unknown');
 
+        if (payload?.kind === 'indicator' && payload.narrative_draft && !verdict?.narrative_supported) {
+          verdict = { content_supported: verdict?.content_supported ?? 'uncertain', ...verdict, narrative_supported: 'uncertain' };
+        }
         await db.insert(findings).values({
           sessionId: row.id,
           dimensionId: dimension.id,
@@ -377,6 +385,15 @@ export const researchApply: Task = async (rawPayload, helpers) => {
     );
     if (poolError) throw (poolError as { error: unknown }).error;
     if (keyFailure) throw keyFailure;
+
+    // Independent post-run recommendations stay in the staff plane. They
+    // share the run's funding/model policy and report their own usage; an
+    // audit service/persistence failure must not discard completed research.
+    try {
+      Object.assign(usage, await auditResearchRun(run, helpers, { apiKey, verifierModel: plan.models?.verifier_model }));
+    } catch {
+      helpers.logger.warn(`run ${runId}: automatic audit could not finish; findings remain available for human review`);
+    }
 
     const settled = settledRunStatus(
       (
@@ -478,18 +495,27 @@ async function failPlannedSessions(db: DbExecutor, run: ResearchRun, message: st
     .update(researchSessions)
     .set({ status: 'failed', transcript, completedAt: now })
     .where(and(eq(researchSessions.runId, run.id), inArray(researchSessions.status, ['queued', 'running'])));
-  const started = new Set(
-    (
+  const started = new Map<string, number>();
+  for (const row of (
       await db
         .select({ kind: researchSessions.kind, dimensionId: researchSessions.dimensionId })
         .from(researchSessions)
         .where(eq(researchSessions.runId, run.id))
-    ).map((r) => `${r.kind}:${r.dimensionId ?? ''}`),
-  );
+    )) {
+    const key = `${row.kind}:${row.dimensionId ?? ''}`;
+    started.set(key, (started.get(key) ?? 0) + 1);
+  }
   const rows = run.plan.sessions.flatMap((spec) => {
     const dimensionId = spec.dimension_slug ? idBySlug.get(spec.dimension_slug) : undefined;
     if (spec.kind === 'dimension' && !dimensionId) return [];
-    if (started.has(`${spec.kind}:${dimensionId ?? ''}`)) return [];
+    // Dense dimensions have several planned sessions with the same slug.
+    // Consume one started row per spec, instead of collapsing them in a Set.
+    const key = `${spec.kind}:${dimensionId ?? ''}`;
+    const count = started.get(key) ?? 0;
+    if (count > 0) {
+      started.set(key, count - 1);
+      return [];
+    }
     return [
       {
         runId: run.id,
@@ -506,7 +532,7 @@ async function failPlannedSessions(db: DbExecutor, run: ResearchRun, message: st
 }
 
 /** A verifier's answer, as merged into a finding's verification. */
-type Verdict = { content_supported: ContentSupported; verifier_note?: string };
+type Verdict = { content_supported: ContentSupported; verifier_note?: string; narrative_supported?: ContentSupported };
 
 /**
  * One verifier session on one indicator finding: the verdict (null when the
@@ -528,11 +554,14 @@ async function runVerifier(
   payload: Extract<FindingPayload, { kind: 'indicator' }>,
   regionName: string,
   apiKey: string | null,
+  storage: TenantStorage,
+  plannedModel?: string,
 ): Promise<{
   verdict: Verdict | null;
   usage: SessionTokenUsage;
   failure?: { apiError?: string; apiErrorText?: string; usage: SessionTokenUsage };
 }> {
+  const archive = await loadFindingExhibits(storage, payload);
   const prompt = renderVerifierPrompt({
     indicator_name: payload.name,
     claimed_value: String(payload.value),
@@ -541,16 +570,21 @@ async function runVerifier(
     geography: `${regionName} (${payload.geographic_scale} scale)`,
     source_name: payload.source,
     source_url: payload.source_url,
+    archived_exhibits: archive.names,
+    archive_note: archive.note,
+    narrative_draft: payload.narrative_draft,
   });
   // The adversarial reviewer runs on the strongest model regardless of the
   // researcher's model — a constant, maximally-skeptical judge, so strategy
   // comparisons measure the researcher, never the leniency of its grader.
-  const model = process.env.VERIFIER_MODEL ?? 'claude-opus-5';
+  const model = plannedModel ?? process.env.VERIFIER_MODEL ?? 'claude-opus-5';
   let result: SessionResult;
   try {
     result = await runSession({
       prompt,
       allowedTools: VERIFIER_TOOLS,
+      archivedExhibits: archive.exhibits,
+      orchestrate: false,
       maxTurns: VERIFIER_MAX_TURNS,
       model,
       // Verifiers are part of the run's spend: the same key as its researchers,
@@ -573,6 +607,7 @@ async function runVerifier(
     const parsed = extractJson(result.resultText).value as {
       content_supported?: string;
       verifier_note?: string;
+      narrative_supported?: string;
     };
     if (
       parsed.content_supported === 'pass' ||
@@ -587,7 +622,13 @@ async function runVerifier(
       return {
         verdict: {
           content_supported: parsed.content_supported,
-          verifier_note: judgedBy ? `${parsed.verifier_note ?? ''}${judgedBy}`.trim() : parsed.verifier_note,
+          verifier_note: [parsed.verifier_note, judgedBy.trim(), archive.note].filter(Boolean).join(' ') || undefined,
+          ...(payload.narrative_draft ? {
+            narrative_supported: archive.note
+              ? 'uncertain' as const
+              : ['pass', 'fail', 'uncertain'].includes(parsed.narrative_supported ?? '')
+                ? parsed.narrative_supported as ContentSupported : 'uncertain' as const,
+          } : {}),
         },
         usage: result.usage,
       };
