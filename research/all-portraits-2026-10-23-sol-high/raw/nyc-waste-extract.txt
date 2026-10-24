@@ -1,0 +1,23 @@
+DSNY refuse collected — full-year coverage
+
+Researcher-generated faithful extract/derivation from archived source bytes. Original inputs, exact URLs and SHA-256 hashes are retained in this campaign. This exhibit is not a publisher-authored table.
+
+Period	Place	2005tons	2025tons	Reduction%	Rows each year
+CY	Bronx	556777.75	520903.27	6.443232	144/144
+CY	Brooklyn	1007523.97	946195.31	6.087067	216/216
+CY	Manhattan	657958.47	511771.70	22.218237	144/144
+CY	Queens	845618.91	727229.23	14.000359	168/168
+CY	Staten Island	246349.72	180042.94	26.915712	36/36
+CY	CITY	3314228.82	2886142.45	12.916621	708/708
+FY	Bronx	558195.81	525957.33	5.775479	144/144
+FY	Brooklyn	1017748.82	954501.64	6.214419	216/216
+FY	Manhattan	657350.14	514492.13	21.732407	144/144
+FY	Queens	869049.38	745799.17	14.182187	168/168
+FY	Staten Island	246473.66	187720.40	23.837541	36/36
+FY	CITY	3348817.81	2928470.67	12.552105	708/708
+
+Every year contains 12 months and unique month/borough/community-district records. The Bronx has 12 districts × 12 months = 144 rows. The prior Bronx calculation used only 132 rows and omitted January in both years.
+
+Full CY2005 total 556,777.75 minus January 43,355.90 = 513,421.85 tons. Full CY2025 total 520,903.27 minus January 42,199.80 = 478,703.47 tons. These exactly reproduce the prior incorrect inputs.
+
+This dataset measures DSNY refuse collected. It does not establish final landfill disposal or include all private commercial waste. Fiscal years run July–June; calendar years run January–December.

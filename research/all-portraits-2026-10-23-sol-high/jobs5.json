@@ -1,0 +1,17 @@
+[
+  [
+    "fetch",
+    "https://housingforhealthpartnership.org/Portals/29/HAP/pdf/2026%20Santa%20Cruz%20County%20PIT%20Report.pdf",
+    "sc-pit-2026-full"
+  ],
+  [
+    "fetch",
+    "https://housingforhealthpartnership.org/Portals/29/HAP/pdf/2026%20PIT%20Exec%20Summary.pdf",
+    "sc-pit-2026-summary"
+  ],
+  [
+    "page",
+    "https://housingforhealthpartnership.org/Home/LearningCenter/Point-in-Time(PIT)Counts.aspx",
+    "sc-pit-reports-correct"
+  ]
+]

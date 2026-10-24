@@ -1,0 +1,14 @@
+NYC reported protected land and water, 2023
+
+Reviewer-generated extract from frozen publisher bytes. This is a derived research exhibit, not a publisher-authored table. Original source URLs and SHA-256 bindings accompany each amendment.
+
+County	Reported total area (acres)	Protected land and water (acres)
+Bronx	30863	5646
+Kings	52820	12804
+New York	20528	2735
+Queens	80102	14071
+Richmond	37869	8118
+
+43,374 protected acres / 222,182 reported total acres × 100 = 19.52183345%, rounding to 19.5%.
+
+The publisher labels these percentages as county lands and waters protected. This aggregate is not the framework land-only share. No land-only 30% target or score is asserted. Protection categories also differ in management and ecological quality.

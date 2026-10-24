@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
+import { ActionSourceLinks } from '@/components/portrait/ActionSourceLinks';
 import { Thread } from '@/components/discussion/Thread';
 import { InvolvementForm } from '@/components/involvement/InvolvementForm';
 import { InvolvementLanguageNote, InvolvementListings } from '@/components/involvement/InvolvementListings';
@@ -241,7 +242,7 @@ export default async function DimensionDrilldownPage({
                 </h3>
                 <ul lang="en" className="mt-2 list-disc space-y-1 ps-5 text-sm">
                   {data.actions.map((action, i) => (
-                    <li key={i}>{action}</li>
+                    <li key={i}>{action}<ActionSourceLinks source={(() => { const source = data.action_sources?.find(item => item.text === action); return source ? { text: source.text, sourceHref: safeHref(source.source_url) ?? null, snapshotHref: evidenceUrl(tenant, source.evidence.snapshot_path), pdfHref: source.evidence.pdf_path ? evidenceUrl(tenant, source.evidence.pdf_path) : null } : undefined; })()} /></li>
                   ))}
                 </ul>
               </>
@@ -271,7 +272,7 @@ export default async function DimensionDrilldownPage({
             <h2 className="text-lg font-semibold">{m.dimension.whatYouCanDo}</h2>
             <ul lang="en" className="mt-3 list-disc space-y-1 ps-5 text-sm">
               {data.actions.map((action, i) => (
-                <li key={i}>{action}</li>
+                <li key={i}>{action}<ActionSourceLinks source={(() => { const source = data.action_sources?.find(item => item.text === action); return source ? { text: source.text, sourceHref: safeHref(source.source_url) ?? null, snapshotHref: evidenceUrl(tenant, source.evidence.snapshot_path), pdfHref: source.evidence.pdf_path ? evidenceUrl(tenant, source.evidence.pdf_path) : null } : undefined; })()} /></li>
               ))}
             </ul>
           </section>

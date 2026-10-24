@@ -1,0 +1,117 @@
+{
+  "id": "nyc:air-pollution:0",
+  "portrait": "nyc",
+  "dimension": "air-pollution",
+  "indicator_index": 0,
+  "kind": "replace",
+  "before": {
+    "name": "Annual mean PM2.5 concentration",
+    "unit": "µg/m³",
+    "year": 2024,
+    "value": 6.255051193,
+    "source": "NYC Open Data — 'Air Quality' dataset (dataset id c3uy-2p5r), DOHMH/NYCCAS-sourced indicator 'Fine particles (PM 2.5)', measure 'Annual mean' (indicator_id 1425), geo_type_name 'Citywide', time_period 2024",
+    "target": 5,
+    "scoring": {
+      "inputs": {
+        "scale": 5,
+        "value": 6.255051193,
+        "target": 5
+      },
+      "function": "lower_is_better",
+      "worked_math": "level_pct = (value − target) ⁄ scale × 100 = (6.255051193 − 5) ⁄ 5 × 100 = 1.255051193 ⁄ 5 × 100 = +25.1",
+      "threshold_ref": "air-pollution.pm25-annual"
+    },
+    "evidence": {
+      "captured_at": "2026-08-05T00:00:00Z",
+      "snapshot_path": "CAPTURE_FAILED — mcp__evidence__capture_evidence returned 'browser.newContext: Target page, context or browser has been closed' on 6 consecutive attempts across 3 distinct URLs (the Socrata dataset about_data page, the DOHMH Environment & Health Data Portal NYCCAS page, and the DOH air-quality health-topics page). This is a tool-side outage, not a source-access problem (the pages themselves were successfully read via WebFetch/API). No snapshot could be captured this session."
+    },
+    "level_pct": 25.1,
+    "confidence": "high",
+    "source_url": "https://data.cityofnewyork.us/Environment/Air-Quality/c3uy-2p5r/about_data",
+    "source_tier": 1,
+    "geographic_scale": "city",
+    "geography": "city",
+    "status": "published",
+    "evidence_path": null,
+    "pdf_path": null
+  },
+  "after": {
+    "name": "Annual mean PM2.5 concentration",
+    "unit": "µg/m³",
+    "year": 2024,
+    "value": 6.255051193,
+    "source": "NYC Open Data — 'Air Quality' dataset (dataset id c 3 uy-2 p 5 r), DOHMH/NYCCAS-sourced indicator 'Fine particles (PM 2.5)', measure 'Annual mean' (indicator_id 1425), geo_type_name 'Citywide', time_period 2024",
+    "target": 5,
+    "scoring": {
+      "inputs": {
+        "scale": 5,
+        "value": 6.255051193,
+        "target": 5
+      },
+      "function": "lower_is_better",
+      "worked_math": "level_pct = (value − target) ⁄ scale × 100 = (6.255051193 − 5) ⁄ 5 × 100 = 1.255051193 ⁄ 5 × 100 = +25.1",
+      "threshold_ref": "air-pollution.pm25-annual"
+    },
+    "evidence": {
+      "snapshot_path": "evidence/nyc-pm25-extract.png",
+      "captured_at": "2026-10-24T01:26:20.873Z"
+    },
+    "level_pct": 25.1,
+    "confidence": "high",
+    "source_url": "https://data.cityofnewyork.us/resource/c3uy-2p5r.json?name=Fine%20particles%20(PM%202.5)&measure=Annual%20mean&geo_type_name=Citywide&time_period=2024",
+    "source_tier": 1,
+    "geographic_scale": "city",
+    "geography": "city",
+    "status": "source-supported-draft",
+    "evidence_path": "evidence/nyc-pm25-extract.png",
+    "pdf_path": null,
+    "notes": "Exact DOHMH/NYCCAS citywide 2024 annual mean row archived. This closes an evidence-capture outage; the value and target are unchanged."
+  },
+  "field_diff": {
+    "source": {
+      "before": "NYC Open Data — 'Air Quality' dataset (dataset id c3uy-2p5r), DOHMH/NYCCAS-sourced indicator 'Fine particles (PM 2.5)', measure 'Annual mean' (indicator_id 1425), geo_type_name 'Citywide', time_period 2024",
+      "after": "NYC Open Data — 'Air Quality' dataset (dataset id c 3 uy-2 p 5 r), DOHMH/NYCCAS-sourced indicator 'Fine particles (PM 2.5)', measure 'Annual mean' (indicator_id 1425), geo_type_name 'Citywide', time_period 2024"
+    },
+    "evidence": {
+      "before": {
+        "captured_at": "2026-08-05T00:00:00Z",
+        "snapshot_path": "CAPTURE_FAILED — mcp__evidence__capture_evidence returned 'browser.newContext: Target page, context or browser has been closed' on 6 consecutive attempts across 3 distinct URLs (the Socrata dataset about_data page, the DOHMH Environment & Health Data Portal NYCCAS page, and the DOH air-quality health-topics page). This is a tool-side outage, not a source-access problem (the pages themselves were successfully read via WebFetch/API). No snapshot could be captured this session."
+      },
+      "after": {
+        "snapshot_path": "evidence/nyc-pm25-extract.png",
+        "captured_at": "2026-10-24T01:26:20.873Z"
+      }
+    },
+    "source_url": {
+      "before": "https://data.cityofnewyork.us/Environment/Air-Quality/c3uy-2p5r/about_data",
+      "after": "https://data.cityofnewyork.us/resource/c3uy-2p5r.json?name=Fine%20particles%20(PM%202.5)&measure=Annual%20mean&geo_type_name=Citywide&time_period=2024"
+    },
+    "status": {
+      "before": "published",
+      "after": "source-supported-draft"
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/nyc-pm25-extract.png"
+    },
+    "notes": {
+      "before": null,
+      "after": "Exact DOHMH/NYCCAS citywide 2024 annual mean row archived. This closes an evidence-capture outage; the value and target are unchanged."
+    }
+  },
+  "reason": "Missing source exhibit restored.",
+  "source_support": [
+    {
+      "url": "https://data.cityofnewyork.us/resource/c3uy-2p5r.json?name=Fine%20particles%20(PM%202.5)&measure=Annual%20mean&geo_type_name=Citywide&time_period=2024",
+      "raw_path": "raw/nyc-pm25-2024.json",
+      "raw_sha256": "0b337f6ca8aef27d3bda3fb8316993611ab49c28ee8d95a7168fa228fcf916f2",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:26:20.873Z",
+      "period": "calendar 2024",
+      "scale": "city",
+      "snapshot_path": "evidence/nyc-pm25-extract.png",
+      "snapshot_sha256": "9d6ec1af3cab0daae110a11e2db72bcd2b9231e3c39b7351db031453328e182a"
+    }
+  ],
+  "review_required": true
+}

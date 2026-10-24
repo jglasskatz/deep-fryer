@@ -68,6 +68,20 @@ emit a gap finding: which scales you tried, which tiers you searched, when,
 and the nearest data you found but rejected (and why). An honest gap is a
 valid, publishable result. Never substitute a non-compliant value.
 
+## Context and ways to get involved (drafts for staff)
+
+On the first indicator finding only, you may include `narrative_draft`: a
+short plain-language `context` grounded in this session's supported findings,
+and up to five `actions`. Each action has `text`, the exact official program
+or civic-participation `source_url`, and its own captured `evidence` from
+capture_evidence. Describe a real available way to participate or get help;
+do not invent programs, eligibility, opening hours, deadlines, or authority.
+If you cannot source an action, omit it. If every indicator is a gap, do not
+draft a narrative. These are proposals: staff must explicitly choose them
+before they can replace the portrait's existing context and actions.
+This work uses the same session and turn budget; prioritize sourced values
+and honest gaps before optional narrative drafts.
+
 ## Output
 
 Return ONLY a JSON array of finding objects conforming to the finding schema

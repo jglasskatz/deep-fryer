@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://data.cityofnewyork.us/api/views/ebb7-mvp5.json",
+  "stem": "dsny-metadata",
+  "captured_at": "2026-10-24T01:26:20.873Z",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "raw_path": "raw/dsny-metadata.json",
+  "sha256": "78ab86a96342ce705ba03ef38d807108f83a10b1f6801619879fc88ad3d61f6f",
+  "bytes": 27453,
+  "success": true
+}

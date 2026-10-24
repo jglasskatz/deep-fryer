@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/counties/totals/co-est2025-alldata.csv",
+  "stem": "census-county-pop-v2025",
+  "captured_at": "2026-10-24T01:32:20.760Z",
+  "status": 200,
+  "content_type": "text/csv",
+  "raw_path": "raw/census-county-pop-v2025.csv",
+  "sha256": "4f5a499d851e2cb48fd7a5405e5a9235453a8a66933657aacd10df0e264f35d5",
+  "bytes": 2071735,
+  "success": true
+}

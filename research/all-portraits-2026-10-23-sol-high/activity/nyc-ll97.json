@@ -1,0 +1,12 @@
+{
+  "mode": "page",
+  "url": "https://www.urbangreencouncil.org/what-we-do/explore-nyc-building-data-hub/local-law-97-progress/",
+  "stem": "nyc-ll97",
+  "captured_at": "2026-10-24T01:27:27.325Z",
+  "status": 200,
+  "raw_path": "raw/nyc-ll97.html",
+  "snapshot_path": "evidence/nyc-ll97.png",
+  "sha256": "35d7bda1573eaa86f43b79ed1ae7f747b70d788dc5558c15a5a6594b0ab0988e",
+  "bytes": 230806,
+  "success": true
+}

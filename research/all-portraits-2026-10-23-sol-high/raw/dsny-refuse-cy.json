@@ -1,0 +1,10 @@
+[{"borough":"Bronx","year":"200","tons":"556777.75","records":"144"}
+,{"borough":"Bronx","year":"202","tons":"520903.27","records":"144"}
+,{"borough":"Brooklyn","year":"200","tons":"1007523.97","records":"216"}
+,{"borough":"Brooklyn","year":"202","tons":"946195.31","records":"216"}
+,{"borough":"Manhattan","year":"200","tons":"657958.47","records":"144"}
+,{"borough":"Manhattan","year":"202","tons":"511771.70","records":"144"}
+,{"borough":"Queens","year":"200","tons":"845618.91","records":"168"}
+,{"borough":"Queens","year":"202","tons":"727229.23","records":"168"}
+,{"borough":"Staten Island","year":"200","tons":"246349.72","records":"36"}
+,{"borough":"Staten Island","year":"202","tons":"180042.94","records":"36"}]

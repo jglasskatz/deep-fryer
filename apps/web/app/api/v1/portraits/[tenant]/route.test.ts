@@ -20,6 +20,10 @@ vi.mock('@/lib/data', () => ({
   publicTenant: vi.fn(async (slug: string) => (slug === 'ithaca' ? { id: 't1', slug } : null)),
 }));
 vi.mock('@/lib/sample-data', () => ({ publicPortraitSampleData: vi.fn(async () => sample) }));
+vi.mock('@/lib/public-api-metadata', () => ({
+  publicApiMetadata: vi.fn(async () => ({ features: { emergency: false }, organization: null })),
+  absoluteEvidenceUrl: vi.fn((_slug: string, path: string) => path ? `https://example.org/${path}` : null),
+}));
 vi.mock('@/lib/progress', () => ({
   tenantProgress: vi.fn(async () => ({
     tenant: { slug: 'ithaca', name: 'City of Ithaca' },
@@ -57,5 +61,17 @@ describe('the open-data API’s sample_data flag', () => {
     const res = await GET(new Request('http://x/api/v1/portraits/nowhere'), params('nowhere'));
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ error: 'unknown portrait' });
+  });
+
+  it('exposes resolved flags and honors conditional reads without caching private portraits', async () => {
+    const { GET } = await import('./route');
+    const response = await GET(new Request('http://x/api/v1/portraits/ithaca'), params('ithaca'));
+    const etag = response.headers.get('etag')!;
+    expect((await response.json()).features).toEqual({ emergency: false });
+    const cached = await GET(new Request('http://x/api/v1/portraits/ithaca', { headers: { 'if-none-match': etag } }), params('ithaca'));
+    expect(cached.status).toBe(304);
+    const privateResponse = await GET(new Request('http://x/api/v1/portraits/nowhere', { headers: { 'if-none-match': '*' } }), params('nowhere'));
+    expect(privateResponse.status).toBe(404);
+    expect(privateResponse.headers.get('cache-control')).toBe('no-store');
   });
 });

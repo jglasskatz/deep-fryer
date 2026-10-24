@@ -1,0 +1,130 @@
+{
+  "id": "santa-cruz:income-work:0",
+  "portrait": "santa-cruz",
+  "dimension": "income-work",
+  "indicator_index": 0,
+  "kind": "replace",
+  "before": {
+    "name": "Poverty rate",
+    "value": "17% below poverty line",
+    "unit": "",
+    "year": 2020,
+    "target": "Below 10%",
+    "source": "U.S. Census Bureau QuickFacts",
+    "source_url": "https://www.census.gov/quickfacts/fact/table/santacruzcitycalifornia/INC110223",
+    "geography": "See source context",
+    "status": "legacy-source",
+    "notes": "17% of persons in poverty (Census QuickFacts, 2020). Median household income: $111,427 (2023). Extreme income polarization between tech/university workers and service sector. 5.5% of families in poverty. High cost of living drives poverty rate above national average despite high median income.",
+    "evidence_path": null,
+    "pdf_path": null
+  },
+  "after": {
+    "name": "Persons below the poverty line",
+    "value": 17.0,
+    "unit": "% of persons with poverty status determined",
+    "year": 2024,
+    "target": null,
+    "source": "US Census Bureau ACS2024 Detailed Table C17002",
+    "source_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-c17002.dat",
+    "geography": "city",
+    "status": "source-supported-observation",
+    "notes": "2020–2024 ACS5 year C17002: under 0.50+0.50–0.99 income/povertyratios (8878) /povertyuniverse(52096)×100=17.04161548%. Populationforwhompovertydetermined excludescertaininstitutional/groupquarters persons; not the full resident population. Primary CSV estimates/MOEs retained. Nocombinedpercentage MOEcalculated. Legacythresholdprose not newly reconfigured.",
+    "evidence_path": "evidence/sc-census-extract.png",
+    "pdf_path": null,
+    "level_pct": null,
+    "scoring": null,
+    "confidence": "medium",
+    "geographic_scale": "city",
+    "evidence": {
+      "snapshot_path": "evidence/sc-census-extract.png",
+      "captured_at": "2026-10-24T01:31:52.021Z"
+    }
+  },
+  "field_diff": {
+    "name": {
+      "before": "Poverty rate",
+      "after": "Persons below the poverty line"
+    },
+    "value": {
+      "before": "17% below poverty line",
+      "after": 17.0
+    },
+    "unit": {
+      "before": "",
+      "after": "% of persons with poverty status determined"
+    },
+    "year": {
+      "before": 2020,
+      "after": 2024
+    },
+    "target": {
+      "before": "Below 10%",
+      "after": null
+    },
+    "source": {
+      "before": "U.S. Census Bureau QuickFacts",
+      "after": "US Census Bureau ACS2024 Detailed Table C17002"
+    },
+    "source_url": {
+      "before": "https://www.census.gov/quickfacts/fact/table/santacruzcitycalifornia/INC110223",
+      "after": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-c17002.dat"
+    },
+    "geography": {
+      "before": "See source context",
+      "after": "city"
+    },
+    "status": {
+      "before": "legacy-source",
+      "after": "source-supported-observation"
+    },
+    "notes": {
+      "before": "17% of persons in poverty (Census QuickFacts, 2020). Median household income: $111,427 (2023). Extreme income polarization between tech/university workers and service sector. 5.5% of families in poverty. High cost of living drives poverty rate above national average despite high median income.",
+      "after": "2020–2024 ACS5 year C17002: under 0.50+0.50–0.99 income/povertyratios (8878) /povertyuniverse(52096)×100=17.04161548%. Populationforwhompovertydetermined excludescertaininstitutional/groupquarters persons; not the full resident population. Primary CSV estimates/MOEs retained. Nocombinedpercentage MOEcalculated. Legacythresholdprose not newly reconfigured."
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/sc-census-extract.png"
+    },
+    "confidence": {
+      "before": null,
+      "after": "medium"
+    },
+    "geographic_scale": {
+      "before": null,
+      "after": "city"
+    },
+    "evidence": {
+      "before": null,
+      "after": {
+        "snapshot_path": "evidence/sc-census-extract.png",
+        "captured_at": "2026-10-24T01:31:52.021Z"
+      }
+    }
+  },
+  "reason": "Refresh stale/combined poverty measurement using primary exact cityperiod.",
+  "source_support": [
+    {
+      "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-c17002.dat",
+      "raw_path": "raw/acs5-poverty2024.bin.gz",
+      "raw_sha256": "dc3dc675113683ec3ff2a0e29a840f43e03268151d7f14b922658d7306da5187",
+      "raw_encoding": "gzip; original bytes round-trip exactly",
+      "captured_at": "2026-10-24T01:31:52.021Z",
+      "period": "2020–2024 ACS5 year",
+      "scale": "city",
+      "stored_sha256": "6dc1d0e3945702d95eb5425b5fac23d5541e9f198ed2f8775dc3c74862647e4f",
+      "snapshot_path": "evidence/sc-census-extract.png",
+      "snapshot_sha256": "aa09836439b82e14d85a09c9864b2f1bfe6d37647682d95aa0140d7b0444c51e"
+    },
+    {
+      "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+      "raw_path": "raw/acs5-shells2024.bin.gz",
+      "raw_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+      "raw_encoding": "gzip; original bytes round-trip exactly",
+      "captured_at": "2026-10-24T01:31:51.961Z",
+      "period": null,
+      "scale": null,
+      "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0"
+    }
+  ],
+  "review_required": true
+}

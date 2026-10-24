@@ -1,0 +1,14 @@
+{
+  "mode": "fetch",
+  "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b25070.dat",
+  "stem": "acs5-rentburden2024",
+  "captured_at": "2026-10-24T01:41:43.950Z",
+  "status": 200,
+  "raw_path": "raw/acs5-rentburden2024.bin",
+  "sha256": "862ccc17d913305d11e6f802ce4518d76b30585ea0b05b251cd8cf21f8661386",
+  "bytes": 46466758,
+  "success": true,
+  "stored_path": "raw/acs5-rentburden2024.bin.gz",
+  "stored_sha256": "cf972ef7d65acc5e0a6693968f204e6092958e258798587d71b53930e2d14996",
+  "storage_encoding": "gzip; original bytes round-trip exactly"
+}

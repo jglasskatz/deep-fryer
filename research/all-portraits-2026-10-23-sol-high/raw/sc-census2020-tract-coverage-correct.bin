@@ -1,0 +1,670 @@
+{
+ "displayFieldName": "BASENAME",
+ "fieldAliases": {
+  "GEOID": "GEOID",
+  "POP100": "POP100",
+  "HU100": "HU100",
+  "AREALAND": "AREALAND",
+  "AREAWATER": "AREAWATER"
+ },
+ "fields": [
+  {
+   "name": "GEOID",
+   "type": "esriFieldTypeString",
+   "alias": "GEOID",
+   "length": 11
+  },
+  {
+   "name": "POP100",
+   "type": "esriFieldTypeDouble",
+   "alias": "POP100"
+  },
+  {
+   "name": "HU100",
+   "type": "esriFieldTypeDouble",
+   "alias": "HU100"
+  },
+  {
+   "name": "AREALAND",
+   "type": "esriFieldTypeDouble",
+   "alias": "AREALAND"
+  },
+  {
+   "name": "AREAWATER",
+   "type": "esriFieldTypeDouble",
+   "alias": "AREAWATER"
+  }
+ ],
+ "features": [
+  {
+   "attributes": {
+    "GEOID": "06087101002",
+    "POP100": 4771,
+    "HU100": 2331,
+    "AREALAND": 1215116,
+    "AREAWATER": 834526
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087121802",
+    "POP100": 2660,
+    "HU100": 1507,
+    "AREALAND": 988226,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087110102",
+    "POP100": 4629,
+    "HU100": 1567,
+    "AREALAND": 1094627,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087110601",
+    "POP100": 5322,
+    "HU100": 1542,
+    "AREALAND": 1730354,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087122205",
+    "POP100": 3205,
+    "HU100": 2140,
+    "AREALAND": 2677267,
+    "AREAWATER": 2066146
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087100801",
+    "POP100": 3956,
+    "HU100": 1631,
+    "AREALAND": 1132453,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087120901",
+    "POP100": 3450,
+    "HU100": 1528,
+    "AREALAND": 18372491,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087120902",
+    "POP100": 5231,
+    "HU100": 2013,
+    "AREALAND": 6474889,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087121601",
+    "POP100": 3455,
+    "HU100": 1922,
+    "AREALAND": 1171521,
+    "AREAWATER": 1165471
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087122401",
+    "POP100": 2956,
+    "HU100": 1042,
+    "AREALAND": 69996988,
+    "AREAWATER": 52281
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087121602",
+    "POP100": 2777,
+    "HU100": 1379,
+    "AREALAND": 882924,
+    "AREAWATER": 784189
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087110503",
+    "POP100": 3862,
+    "HU100": 906,
+    "AREALAND": 958946,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087110506",
+    "POP100": 3189,
+    "HU100": 911,
+    "AREALAND": 798198,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087110202",
+    "POP100": 4899,
+    "HU100": 1517,
+    "AREALAND": 2351625,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087110505",
+    "POP100": 4580,
+    "HU100": 1296,
+    "AREALAND": 1042808,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087110201",
+    "POP100": 2796,
+    "HU100": 744,
+    "AREALAND": 609672,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087110302",
+    "POP100": 2879,
+    "HU100": 763,
+    "AREALAND": 442380,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087110301",
+    "POP100": 4327,
+    "HU100": 1181,
+    "AREALAND": 743837,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087110401",
+    "POP100": 3681,
+    "HU100": 814,
+    "AREALAND": 3940737,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087121701",
+    "POP100": 4059,
+    "HU100": 2120,
+    "AREALAND": 1213469,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087121702",
+    "POP100": 3462,
+    "HU100": 1283,
+    "AREALAND": 1424533,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087110504",
+    "POP100": 2511,
+    "HU100": 594,
+    "AREALAND": 514491,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087110602",
+    "POP100": 2828,
+    "HU100": 708,
+    "AREALAND": 701268,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087122004",
+    "POP100": 2941,
+    "HU100": 1258,
+    "AREALAND": 3317209,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087101001",
+    "POP100": 4030,
+    "HU100": 1589,
+    "AREALAND": 969818,
+    "AREAWATER": 23920
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087110101",
+    "POP100": 2788,
+    "HU100": 914,
+    "AREALAND": 1357750,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087122204",
+    "POP100": 3025,
+    "HU100": 1197,
+    "AREALAND": 5969113,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087100802",
+    "POP100": 3010,
+    "HU100": 1510,
+    "AREALAND": 755009,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087121501",
+    "POP100": 2859,
+    "HU100": 1892,
+    "AREALAND": 1239672,
+    "AREAWATER": 790380
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087122402",
+    "POP100": 4280,
+    "HU100": 1747,
+    "AREALAND": 36229184,
+    "AREAWATER": 122600
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087121502",
+    "POP100": 2085,
+    "HU100": 873,
+    "AREALAND": 550183,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087122005",
+    "POP100": 3889,
+    "HU100": 1693,
+    "AREALAND": 2228685,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087121801",
+    "POP100": 2007,
+    "HU100": 1305,
+    "AREALAND": 787684,
+    "AREAWATER": 521221
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087110402",
+    "POP100": 4774,
+    "HU100": 1259,
+    "AREALAND": 2043363,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087100100",
+    "POP100": 2294,
+    "HU100": 844,
+    "AREALAND": 3278795,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087100600",
+    "POP100": 3358,
+    "HU100": 1386,
+    "AREALAND": 1049882,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087122100",
+    "POP100": 3315,
+    "HU100": 1950,
+    "AREALAND": 2261383,
+    "AREAWATER": 1566586
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087122500",
+    "POP100": 6717,
+    "HU100": 1634,
+    "AREALAND": 12168080,
+    "AREAWATER": 903743
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087100900",
+    "POP100": 4274,
+    "HU100": 2386,
+    "AREALAND": 1973981,
+    "AREAWATER": 736078
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087120301",
+    "POP100": 5019,
+    "HU100": 2208,
+    "AREALAND": 46530992,
+    "AREAWATER": 330392
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087120302",
+    "POP100": 3152,
+    "HU100": 1354,
+    "AREALAND": 6968834,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087121402",
+    "POP100": 4109,
+    "HU100": 1650,
+    "AREALAND": 1339456,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087122300",
+    "POP100": 3965,
+    "HU100": 2356,
+    "AREALAND": 41850483,
+    "AREAWATER": 4320963
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087120500",
+    "POP100": 6007,
+    "HU100": 2751,
+    "AREALAND": 146057929,
+    "AREAWATER": 28806
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087121100",
+    "POP100": 3041,
+    "HU100": 1291,
+    "AREALAND": 19147684,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087120800",
+    "POP100": 6157,
+    "HU100": 2589,
+    "AREALAND": 8780186,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087100500",
+    "POP100": 5490,
+    "HU100": 2248,
+    "AREALAND": 5721195,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087120600",
+    "POP100": 4735,
+    "HU100": 1976,
+    "AREALAND": 34488122,
+    "AREAWATER": 336609
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087100400",
+    "POP100": 8452,
+    "HU100": 440,
+    "AREALAND": 4206694,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087122002",
+    "POP100": 3548,
+    "HU100": 1473,
+    "AREALAND": 51679650,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087100200",
+    "POP100": 6825,
+    "HU100": 2792,
+    "AREALAND": 2401874,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087122202",
+    "POP100": 2235,
+    "HU100": 982,
+    "AREALAND": 2628052,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087123100",
+    "POP100": 2640,
+    "HU100": 825,
+    "AREALAND": 7679559,
+    "AREAWATER": 414012
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087122203",
+    "POP100": 3688,
+    "HU100": 1809,
+    "AREALAND": 2464815,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087121000",
+    "POP100": 3579,
+    "HU100": 1498,
+    "AREALAND": 74329438,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087123300",
+    "POP100": 1561,
+    "HU100": 483,
+    "AREALAND": 73087217,
+    "AREAWATER": 415920
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087122001",
+    "POP100": 5135,
+    "HU100": 2054,
+    "AREALAND": 31383984,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087110700",
+    "POP100": 3307,
+    "HU100": 894,
+    "AREALAND": 4316229,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087121300",
+    "POP100": 4210,
+    "HU100": 1737,
+    "AREALAND": 3918909,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087100300",
+    "POP100": 4020,
+    "HU100": 1491,
+    "AREALAND": 5805390,
+    "AREAWATER": 45778
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087100700",
+    "POP100": 2275,
+    "HU100": 1104,
+    "AREALAND": 881773,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087101100",
+    "POP100": 5501,
+    "HU100": 2453,
+    "AREALAND": 1915936,
+    "AREAWATER": 1155268
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087120200",
+    "POP100": 4680,
+    "HU100": 1945,
+    "AREALAND": 291485447,
+    "AREAWATER": 12756439
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087120400",
+    "POP100": 5411,
+    "HU100": 2463,
+    "AREALAND": 26878159,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087120700",
+    "POP100": 4567,
+    "HU100": 2126,
+    "AREALAND": 20951845,
+    "AREAWATER": 32681
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087121200",
+    "POP100": 6914,
+    "HU100": 2641,
+    "AREALAND": 32592373,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087121401",
+    "POP100": 2691,
+    "HU100": 1012,
+    "AREALAND": 1174593,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087121403",
+    "POP100": 3355,
+    "HU100": 1439,
+    "AREALAND": 1188672,
+    "AREAWATER": 0
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087101200",
+    "POP100": 3461,
+    "HU100": 1385,
+    "AREALAND": 4309483,
+    "AREAWATER": 1775974
+   }
+  },
+  {
+   "attributes": {
+    "GEOID": "06087990100",
+    "POP100": 0,
+    "HU100": 0,
+    "AREALAND": 0,
+    "AREAWATER": 388534247
+   }
+  }
+ ]
+}

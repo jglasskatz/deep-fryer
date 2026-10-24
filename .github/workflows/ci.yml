@@ -125,6 +125,7 @@ jobs:
           name: pages-validation-${{ github.sha }}-${{ github.run_attempt }}
           path: |
             test-results/pages
+            test-results/pages-ui
             dist/pages/release.json
           if-no-files-found: warn
       - name: Name this attempt's public artifact

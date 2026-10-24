@@ -33,7 +33,8 @@ export function isFlagged(v: FindingVerification): boolean {
     !v.recency_ok ||
     !v.scale_ok ||
     v.content_supported !== 'pass' ||
-    v.partial_output === true
+    v.partial_output === true ||
+    (v.narrative_supported !== undefined && v.narrative_supported !== 'pass')
   );
 }
 

@@ -304,12 +304,10 @@ function modalShare(items: string[]): number {
 // ---------------------------------------------------------------------------
 
 /**
- * Every framework indicator is intensive — a rate, share, or per-capita
- * figure. None are summable counts, so reconciliation is always a weighted
- * mean, never a sum. The denominator decides the weight, and where the
- * denominator is not a headcount the check is indicative rather than exact.
+ * Rates use a weighted mean; absolute counts sum. The denominator decides
+ * the operation and weight, and proxy denominators are indicative only.
  */
-export type Denominator = 'population' | 'households' | 'subpopulation' | 'non-additive';
+export type Denominator = 'population' | 'households' | 'subpopulation' | 'sum' | 'non-additive';
 
 /**
  * Indicators whose denominator is not total population. Anything absent
@@ -342,11 +340,9 @@ export const DENOMINATORS: Record<string, Denominator> = {
   // Planetary boundaries with no municipal decomposition at all.
   'aragonite-saturation': 'non-additive',
   'ods-phaseout-compliance': 'non-additive',
-  // Absolute counts (NYC custom indicators): boroughs sum to the city, they
-  // do not population-weight to it. Excluded until the instrument grows a
-  // sum-reconciliation mode.
-  'traffic-deaths': 'non-additive',
-  'new-affordable-homes-per-year': 'non-additive',
+  // Absolute counts (NYC custom indicators): boroughs sum to the city.
+  'traffic-deaths': 'sum',
+  'new-affordable-homes-per-year': 'sum',
 };
 
 /**
@@ -391,7 +387,7 @@ export function reconcileBoroughs(input: ReconciliationInput): ReconciliationRow
   for (const cityFinding of input.city) {
     if (cityFinding.payload.kind !== 'indicator') continue;
     const cityValue = cityFinding.payload.value;
-    if (typeof cityValue !== 'number') continue;
+    if (typeof cityValue !== 'number' || !Number.isFinite(cityValue)) continue;
 
     const slug = cityFinding.indicatorSlug;
     const denominator = DENOMINATORS[slug] ?? 'population';
@@ -404,17 +400,27 @@ export function reconcileBoroughs(input: ReconciliationInput): ReconciliationRow
       const match = b.findings.find((f) => f.indicatorSlug === slug);
       if (!match || match.payload.kind !== 'indicator') continue;
       const v = match.payload.value;
-      if (typeof v !== 'number') continue;
-      weighted += v * b.population;
-      weight += b.population;
+      if (typeof v !== 'number' || !Number.isFinite(v)) continue;
+      if (denominator === 'sum') {
+        // Regional/state/global figures cannot decompose municipal totals.
+        // Geographic truth within city/county labels remains the independent
+        // verifier's job; year and unit comparability are deterministic.
+        if (match.payload.geographic_scale !== 'city' && match.payload.geographic_scale !== 'county') continue;
+        if (match.payload.year !== cityFinding.payload.year || match.payload.unit !== cityFinding.payload.unit) continue;
+        weighted += v;
+      } else {
+        if (!Number.isFinite(b.population) || b.population <= 0) continue;
+        weighted += v * b.population;
+        weight += b.population;
+      }
       n += 1;
     }
-    if (n < 2 || weight === 0) continue;
+    if (n < 2 || (denominator === 'sum' ? n !== input.boroughs.length : weight === 0)) continue;
 
-    const impliedValue = weighted / weight;
+    const impliedValue = denominator === 'sum' ? weighted : weighted / weight;
     const divergencePct =
-      cityValue === 0 ? 0 : ((impliedValue - cityValue) / Math.abs(cityValue)) * 100;
-    const approximate = denominator !== 'population';
+      cityValue === 0 ? (impliedValue === 0 ? 0 : Infinity) : ((impliedValue - cityValue) / Math.abs(cityValue)) * 100;
+    const approximate = denominator !== 'population' && denominator !== 'sum';
     const tolerance = approximate ? APPROXIMATE_TOLERANCE_PCT : EXACT_TOLERANCE_PCT;
 
     rows.push({
@@ -543,8 +549,8 @@ export function scoreNegativeControls(
 
 /**
  * `source_tier` is written by the researcher and never checked: the verifier's
- * allowlist is WebFetch only (see VERIFIER_TOOLS), so by construction it can
- * refetch the cited page but can never discover the tier-1 source that was
+ * allowlist reads archives and cited pages but cannot search, so it can
+ * verify the claim but can never discover the tier-1 source that was
  * skipped. That makes tier compliance — the whole basis of the "NYC's own
  * data" claim — the one assertion the pipeline takes on trust.
  *
@@ -564,11 +570,14 @@ export function renderTierAuditPrompt(input: {
   tiers_block: string;
   region_name: string;
 }): string {
+  const firstTier = input.claimed_tier === 1;
   return `# Tier-compliance auditor
 
 A research agent accepted a tier-${input.claimed_tier} source for one indicator.
-Your job is to find out whether a source in a *higher* tier existed and was
-missed. You are not checking the number — another verifier does that.
+${firstTier
+  ? 'Your job is to verify the tier-1 attribution: the cited publisher must be the relevant primary authority for this region and indicator. There is no higher tier than tier 1.'
+  : 'Your job is to find out whether a source in a higher-priority tier existed and was missed.'}
+You are not checking the number — another verifier does that.
 
 ## The finding
 
@@ -584,23 +593,32 @@ ${input.tiers_block}
 
 ## Your job
 
-Search for a source in any tier below ${input.claimed_tier} that publishes this
+${firstTier
+  ? `Read the cited source and identify who actually produced the statistic, the
+geography it describes, and its construct/denominator. Check those against
+the region and tier ladder. A local-looking domain or a press release that
+repeats another publisher's data is not automatically a tier-1 primary source.
+Search the relevant authority's original release when attribution is unclear.
+Do not search for an impossible tier below 1. If the claim is misclassified,
+report the actual tier in found_tier and the attribution problem in note.`
+  : `Search for a source in any tier numbered below ${input.claimed_tier} that publishes this
 indicator for this region and year. Look specifically at the region's own
 statistical publications before anything else. Fetch what you find — do not
-judge from search snippets.
+judge from search snippets.`}
 
 Return ONLY:
 
 \`\`\`json
 {
   "higher_tier_source_existed": true | false,
+  "claimed_tier_supported": true | false | null,
   "found_tier": <integer or null>,
   "found_url": "<url or null>",
   "note": "one or two sentences on what you searched and what you found"
 }
 \`\`\`
 
-Answer \`false\` only after searching the higher tiers directly. A missed
-tier-1 source is the failure this audit exists to catch — do not give the
-researcher the benefit of the doubt.`;
+${firstTier
+  ? 'Set higher_tier_source_existed to false (there is no tier 0). Set claimed_tier_supported to false for a demonstrated attribution/construct mismatch, true for verified attribution, and null when the evidence is inconclusive. Do not interpret false on the higher-tier question as endorsement of the cited source.'
+  : 'Answer false on higher_tier_source_existed only after searching the higher tiers directly. A missed tier-1 source is the failure this audit exists to catch — do not give the researcher the benefit of the doubt. Set claimed_tier_supported to null unless you independently checked the accepted source’s classification.'}`;
 }

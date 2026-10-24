@@ -1,0 +1,12 @@
+{
+  "mode": "render",
+  "url": "calculations/reviewer-fixed-broadband-corrected.html",
+  "stem": "reviewer-fixed-broadband-corrected",
+  "captured_at": "2026-10-24T01:58:19.866Z",
+  "status": 200,
+  "raw_path": "raw/reviewer-fixed-broadband-corrected.html",
+  "snapshot_path": "evidence/reviewer-fixed-broadband-corrected.png",
+  "sha256": "03357aff3a9564acda8572812c0b1e45d9589f63e55496629513b355782880b5",
+  "bytes": 1536,
+  "success": true
+}

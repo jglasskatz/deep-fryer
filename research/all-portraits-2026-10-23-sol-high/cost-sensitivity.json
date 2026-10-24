@@ -1,0 +1,53 @@
+{
+  "campaign": "all-portraits-2026-10-23-sol-high",
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "high",
+  "budget_usd": null,
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "pricing_assumptions_inherited_from": "research/carmel-monterey-2026-10-23-sol-medium/pricing.json",
+  "pricing_checked_date_in_prior_campaign": "2026-10-23",
+  "rates": {
+    "gpt-6.1-sol": {
+      "input_per_million": 2,
+      "output_per_million": 10,
+      "source": "https://developers.openai.com/api/docs/models/gpt-6.1-sol"
+    }
+  },
+  "search_rate_assumption_per1000_calls": 10,
+  "search_price_url": "https://developers.openai.com/api/docs/pricing",
+  "allocation": "One shared researcher role/session spanning all11 portraits, counted once. Not11copies of the same work. Independent reviewer activity excluded until actually performed.",
+  "assumptions_note": "Uses the same low/base/high token quantities as the previous ledger, reinterpreted explicitly as TOTAL shared-session assumptions rather than per-portrait quantities. These are sensitivity scenarios, not measured usage, limits or invoices. High effort does not imply a discount or fixed token quantity. The19 web calls are only an assumed billable-search proxy; browser network requests are not separately priced. Price rates are dated inherited inputs, not newly verified live rates.",
+  "scenarios": [
+    {
+      "scenario": "low",
+      "assumed_shared_session_input_tokens": 500000,
+      "assumed_shared_session_output_tokens_including_reasoning": 30000,
+      "standard_token_usd": 1.3,
+      "fast_token_usd": 2.6,
+      "web_call_proxy_usd": 0.19,
+      "standard_total_usd": 1.49,
+      "fast_total_usd": 2.79
+    },
+    {
+      "scenario": "base",
+      "assumed_shared_session_input_tokens": 2000000,
+      "assumed_shared_session_output_tokens_including_reasoning": 80000,
+      "standard_token_usd": 4.8,
+      "fast_token_usd": 9.6,
+      "web_call_proxy_usd": 0.19,
+      "standard_total_usd": 4.99,
+      "fast_total_usd": 9.79
+    },
+    {
+      "scenario": "high",
+      "assumed_shared_session_input_tokens": 10000000,
+      "assumed_shared_session_output_tokens_including_reasoning": 250000,
+      "standard_token_usd": 22.5,
+      "fast_token_usd": 45.0,
+      "web_call_proxy_usd": 0.19,
+      "standard_total_usd": 22.69,
+      "fast_total_usd": 45.19
+    }
+  ]
+}

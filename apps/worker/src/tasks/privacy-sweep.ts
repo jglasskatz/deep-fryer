@@ -1,5 +1,5 @@
 import type { Task } from 'graphile-worker';
-import { getDb, pruneExpiredSignInRecords } from '@deep-fryer/db';
+import { getDb, pruneExpiredSignInRecords, pruneExpiredTranscripts } from '@deep-fryer/db';
 
 /**
  * PRIVACY_SWEEP_TASK (@deep-fryer/research), every quarter hour: delete the
@@ -17,6 +17,12 @@ export const privacySweep: Task = async (_payload, helpers) => {
   if (swept.signInRequests || swept.verificationTokens) {
     helpers.logger.info(
       `privacy_sweep: ${swept.signInRequests} sign-in request(s) past the limit's window, ${swept.verificationTokens} expired sign-in link(s) deleted`,
+    );
+  }
+  const transcripts = await pruneExpiredTranscripts(getDb());
+  if (transcripts.research || transcripts.policy) {
+    helpers.logger.info(
+      `privacy_sweep: expired transcripts cleared for ${transcripts.research} research session(s), ${transcripts.policy} policy analysis session(s); findings and usage retained`,
     );
   }
 };

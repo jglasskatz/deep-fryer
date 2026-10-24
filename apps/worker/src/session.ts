@@ -1,5 +1,5 @@
 import { gzipSync } from 'node:zlib';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
@@ -8,6 +8,7 @@ import {
   tool,
   type SDKAssistantMessageError,
   type SDKMessage,
+  type HookCallback,
 } from '@anthropic-ai/claude-agent-sdk';
 import { z } from 'zod';
 import {
@@ -23,6 +24,7 @@ import { DEFAULT_SESSION_MAX_TURNS, DEFAULT_SESSION_MODEL } from '@deep-fryer/re
 import { captureEvidence } from './evidence.js';
 import { rejectedKeyError } from './org-key.js';
 import type { TenantStorage } from './storage.js';
+import { ARCHIVED_PDF, ARCHIVED_SNAPSHOT, type ArchivedExhibits } from './archived-exhibits.js';
 
 // The fold the retry below uses, exported where the worker's callers look
 // for it; it lives in @deep-fryer/core because the measurement code folds
@@ -168,12 +170,13 @@ const DISPATCH_TOOLS = ['Agent', 'Task', 'TaskOutput'];
 
 /**
  * Built-in tools that reach the worker's own machine: the shell, the
- * filesystem, notebooks, background processes. No session ever needs them —
+ * filesystem, notebooks, background processes. Research never needs them —
  * every session's work is web research plus our in-process MCP tools — and
  * each one would let text the model read (a fetched page, a pasted policy
  * brief) steer it into the worker's environment. The `tools` option below
  * already leaves them out; listing them as disallowed as well means a
- * future change to the base tool set cannot quietly bring one back.
+ * future change to the base tool set cannot quietly bring one back. Only
+ * a verifier with archived exhibits may Read, guarded to its fixed files.
  */
 const LOCAL_MACHINE_TOOLS = [
   'Bash',
@@ -317,8 +320,12 @@ export async function runSession(input: {
    */
   allowedTools: string[];
   storage?: TenantStorage;
+  /** Archived bytes loaded by the worker, for an independent verifier only. */
+  archivedExhibits?: ArchivedExhibits;
   maxTurns?: number;
   model?: string;
+  /** A plan's explicit scout model; null disables scouts, undefined keeps legacy env defaults. */
+  scoutModel?: string | null;
   /**
    * Orchestrated mode (scouts via the dispatch tool, see SCOUT_MODEL). When
    * omitted it follows the research rule: on whenever RESEARCH_SUBAGENT_MODEL
@@ -377,7 +384,7 @@ export async function runSession(input: {
     });
   }
 
-  const scoutModel = SCOUT_MODEL();
+  const scoutModel = input.scoutModel === undefined ? SCOUT_MODEL() : input.scoutModel;
   const orchestrated =
     input.orchestrate !== false && Boolean(scoutModel) && input.allowedTools.includes('WebSearch');
 
@@ -392,10 +399,49 @@ export async function runSession(input: {
   // - `permissionMode: 'dontAsk'` denies anything not pre-approved instead of
   //   falling back to default-mode rules (which auto-approve file reads).
   // Orchestrated mode adds only DISPATCH_TOOLS + the scout definition.
-  const allowed = orchestrated ? [...input.allowedTools, ...DISPATCH_TOOLS] : input.allowedTools;
+  const hasArchive = Boolean(input.archivedExhibits?.pdf || input.archivedExhibits?.snapshot || input.archivedExhibits?.additional?.length);
+  // Even a stale/malicious plan cannot turn on general file reads. Read only
+  // exists when trusted archive bytes were supplied, and the hook below
+  // independently denies every file except the fixed copies in this workspace.
+  const scopedTools = input.allowedTools.filter((tool) => tool !== 'Read' || hasArchive);
+  const allowed = orchestrated ? [...scopedTools, ...DISPATCH_TOOLS] : scopedTools;
   const builtIn = allowed.filter((t) => !t.startsWith('mcp__'));
 
   try {
+    const archivePaths = new Set<string>();
+    const additional = input.archivedExhibits?.additional ?? [];
+    if (additional.length > 10 || additional.some(({ filename }) => !/^action-[1-5]-(?:snapshot\.png|source\.pdf)$/.test(filename))) {
+      throw new Error('invalid fixed action exhibit filename');
+    }
+    for (const [name, bytes] of [
+      [ARCHIVED_PDF, input.archivedExhibits?.pdf],
+      [ARCHIVED_SNAPSHOT, input.archivedExhibits?.snapshot],
+      ...additional.map(({ filename, body }) => [filename, body] as const),
+    ] as const) {
+      if (!bytes) continue;
+      const target = path.join(workspace, name);
+      await writeFile(target, bytes, { flag: 'wx', mode: 0o400 });
+      archivePaths.add(await realpath(target));
+    }
+    const guardArchiveRead: HookCallback = async (hook) => {
+      if (hook.hook_event_name !== 'PreToolUse' || hook.tool_name !== 'Read') return {};
+      const filePath = (hook.tool_input as { file_path?: unknown } | null)?.file_path;
+      let permitted = false;
+      if (typeof filePath === 'string') {
+        try {
+          // Resolve symlinks too. A prefix check would allow sibling sessions
+          // and filenames such as archived-snapshot.png/../../secret.
+          permitted = archivePaths.has(await realpath(path.resolve(workspace, filePath)));
+        } catch { /* nonexistent paths are denied */ }
+      }
+      return permitted ? {} : {
+        hookSpecificOutput: {
+          hookEventName: 'PreToolUse',
+          permissionDecision: 'deny',
+          permissionDecisionReason: 'Only this finding’s archived snapshot and PDF may be read.',
+        },
+      };
+    };
     try {
       const q = query({
         prompt: orchestrated ? input.prompt + DELEGATION_NOTE : input.prompt,
@@ -406,6 +452,7 @@ export async function runSession(input: {
           allowedTools: allowed,
           disallowedTools: LOCAL_MACHINE_TOOLS.filter((t) => !allowed.includes(t)),
           permissionMode: 'dontAsk',
+          ...(allowed.includes('Read') ? { hooks: { PreToolUse: [{ matcher: 'Read', hooks: [guardArchiveRead] }] } } : {}),
           env: sessionEnv(process.env, { apiKey: input.apiKey }),
           maxTurns: input.maxTurns ?? DEFAULT_SESSION_MAX_TURNS,
           // The raw API stream events, for SessionMeter: only a call's

@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://data.epa.gov/efservice/mv_tri_basic_download/st/NY/year/2024/JSON",
+  "stem": "nyc-tri-2024",
+  "captured_at": "2026-10-24T01:28:52.173Z",
+  "status": 200,
+  "content_type": "application/json",
+  "raw_path": "raw/nyc-tri-2024.json",
+  "sha256": "f8263a50d71d3b186310c5d07742ae5a9bd496e0efd5a041a3de606e09e84391",
+  "bytes": 4854244,
+  "success": true
+}

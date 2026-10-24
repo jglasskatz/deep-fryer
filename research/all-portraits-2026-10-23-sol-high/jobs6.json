@@ -1,0 +1,17 @@
+[
+  [
+    "fetch",
+    "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b19083.dat",
+    "acs5-gini2024"
+  ],
+  [
+    "fetch",
+    "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/1YRData/acsdt1y2024-b19083.dat",
+    "acs1-gini2024"
+  ],
+  [
+    "fetch",
+    "https://www.watsonville.gov/DocumentCenter/View/26652/Watsonville-Water-Quality-Report-2024",
+    "watsonville-water-2024-www"
+  ]
+]

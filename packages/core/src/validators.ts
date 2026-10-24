@@ -24,6 +24,21 @@ export const indicatorEvidenceSchema = z.object({
   captured_at: z.string(),
 });
 
+export const sourcedActionSchema = z.object({
+  text: z.string().trim().min(1).max(400),
+  source_url: z.string().url().regex(/^https:\/\//i),
+  evidence: indicatorEvidenceSchema.extend({
+    snapshot_path: z.string().regex(/^evidence\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.png$/),
+    pdf_path: z.string().regex(/^evidence\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.pdf$/).optional(),
+    captured_at: z.string().datetime({ offset: true }),
+  }),
+});
+
+export const narrativeDraftSchema = z.object({
+  context: z.string().trim().min(1).max(1200),
+  actions: z.array(sourcedActionSchema).max(5),
+});
+
 export const indicatorSchema = z.object({
   name: z.string(),
   value: z.union([z.number(), z.string(), z.null()]),
@@ -56,6 +71,7 @@ export const dimensionDataSchema = z.object({
   indicators: z.array(indicatorSchema),
   gaps: z.array(dimensionGapSchema).optional(),
   actions: z.array(z.string()),
+  action_sources: z.array(sourcedActionSchema).optional(),
   policy_spotlight: z.string().optional(),
   justice_spotlight: z.string().optional(),
 });
@@ -79,6 +95,7 @@ export const indicatorFindingPayloadSchema = z.object({
   confidence: confidenceSchema,
   geographic_scale: geographicScaleSchema,
   notes: z.string().optional(),
+  narrative_draft: narrativeDraftSchema.optional(),
 });
 
 // Public previews may expose a measured value without inventing a safe target.
@@ -151,6 +168,7 @@ export const thresholdOverridesConfigSchema = z.record(thresholdOverrideSchema);
 export const reviewPolicyConfigSchema = z.object({
   require_approval: z.enum(['all', 'none']),
   dual_review_on_edits: z.boolean(),
+  audit_apply: z.enum(['per_card', 'bulk']).default('per_card'),
   first_post_requires_approval: z.boolean(),
 });
 
@@ -177,6 +195,7 @@ export const featuresConfigSchema = z
     translation: z.boolean(),
     family_compare: z.boolean(),
     request_research: z.boolean(),
+    custom_pages: z.boolean(),
   })
   .partial()
   .strict();

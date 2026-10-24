@@ -1,0 +1,12 @@
+{
+  "mode": "render",
+  "url": "calculations/rentburden-extract.html",
+  "stem": "carmel-monterey-rentburden-extract",
+  "captured_at": "2026-10-24T01:45:19.829Z",
+  "status": 200,
+  "raw_path": "raw/carmel-monterey-rentburden-extract.html",
+  "snapshot_path": "evidence/carmel-monterey-rentburden-extract.png",
+  "sha256": "d44c42412af325e0c974366f51bf6c07270003843b69db000f413f694e42048b",
+  "bytes": 2555,
+  "success": true
+}

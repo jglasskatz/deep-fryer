@@ -1,0 +1,37 @@
+[
+  [
+    "fetch",
+    "https://data.cityofnewyork.us/resource/ebb7-mvp5.json?%24select=borough%2Csubstring%28month%2C0%2C4%29+as+year%2Csum%28refusetonscollected%29+as+tons%2Ccount%28%2A%29+as+records&%24where=%28month+between+%272005+%2F+01%27+and+%272005+%2F+12%27%29+OR+%28month+between+%272025+%2F+01%27+and+%272025+%2F+12%27%29&%24group=borough%2Csubstring%28month%2C0%2C4%29&%24order=borough%2Cyear",
+    "dsny-refuse-cy"
+  ],
+  [
+    "fetch",
+    "https://data.cityofnewyork.us/resource/ebb7-mvp5.json?%24select=borough%2Csum%28refusetonscollected%29+as+tons%2Ccount%28%2A%29+as+records&%24where=month+between+%272024+%2F+07%27+and+%272025+%2F+06%27&%24group=borough",
+    "dsny-refuse-fy"
+  ],
+  [
+    "fetch",
+    "https://data.cityofnewyork.us/resource/wq7q-htne.json?$limit=5000",
+    "nyc-ghg-full"
+  ],
+  [
+    "page",
+    "https://www.urbangreencouncil.org/what-we-do/explore-nyc-building-data-hub/local-law-97-progress/",
+    "nyc-ll97"
+  ],
+  [
+    "fetch",
+    "https://www2.census.gov/programs-surveys/acs/data/2024/1_year_geographic_comparison_tables/GCT1701.csv",
+    "poverty-2024-comparison"
+  ],
+  [
+    "fetch",
+    "https://api.censusreporter.org/1.0/data/show/acs2024_5yr?table_ids=B17001,B19083,B28002&geo_ids=16000US0669112,16000US0683668",
+    "sc-city-censusreporter-2024"
+  ],
+  [
+    "page",
+    "https://www.santacruzca.gov/Government/City-Departments/City-Manager/Homelessness-Response/News-and-Updates/Point-In-Time-Count-PIT",
+    "sc-pit-city-landing"
+  ]
+]

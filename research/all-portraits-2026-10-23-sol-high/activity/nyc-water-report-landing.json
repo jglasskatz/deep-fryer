@@ -1,0 +1,9 @@
+{
+  "mode": "page",
+  "url": "https://www.nyc.gov/site/dep/about/drinking-water-supply-quality-report.page",
+  "stem": "nyc-water-report-landing",
+  "captured_at": "2026-10-24T01:25:17.804Z",
+  "status": 403,
+  "success": false,
+  "error": "Error: HTTP 403"
+}

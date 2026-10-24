@@ -1,4 +1,5 @@
 import { DoughnutRenderer } from './doughnut-renderer.js';
+import { formatIndicatorValue } from './format.js';
 const collection = JSON.parse(document.getElementById('portrait-data').textContent);
 const portraits = new Map(collection.portraits.map(p => [p.slug, p]));
 const links = [...document.querySelectorAll('.portrait-switcher a')];
@@ -33,6 +34,7 @@ function selectPortrait(slug, restoreDimension = true) {
   const empty = document.getElementById('panel-empty');
   const mobilePanel = matchMedia('(max-width: 850px)');
   let selectedDimension = null;
+  let returnFocus = canvas;
   const dimensions = new Map(portrait.dimensions.map(d => [`${d.ring}:${d.name}`, d]));
   function resolve(hit) { return hit ? dimensions.get(`${hit.dim_type === 'inner' ? 'social' : 'ecological'}:${hit.dim_info.name}`) : null; }
   function hoverSummary(d, event) {
@@ -43,7 +45,7 @@ function selectPortrait(slug, restoreDimension = true) {
     add('strong', d.name);
     add('p', `${d.ring === 'social' ? 'Social foundation' : 'Ecological ceiling'}${d.level === null ? (d.indicators.some(i => i.kind === 'observation') ? ' · Unscored observation' : ' · Score unknown') : ''}`);
     for (const indicator of d.indicators) {
-      add('p', `${indicator.name}: ${indicator.value === null ? 'Data needed' : `${indicator.kind === 'observation' ? Number(indicator.value.toFixed(1)) : indicator.value} ${indicator.unit || ''}`} ${indicator.year ? `(${indicator.year})` : ''}`);
+      add('p', `${indicator.name}: ${formatIndicatorValue(indicator.kind === 'observation' && indicator.value !== null ? Number(indicator.value.toFixed(1)) : indicator.value, indicator.unit)} ${indicator.year ? `(${indicator.year})` : ''}`);
       add('small', `${collection.statuses[indicator.status]} · ${indicator.geography || 'See source context'}`);
       if (indicator.quality_flags?.length) add('small', indicator.quality_flags.join(' · '));
       if (indicator.source) add('small', `Source: ${indicator.source}`);
@@ -57,15 +59,23 @@ function selectPortrait(slug, restoreDimension = true) {
     tooltip.style.left = `${left}px`;
     tooltip.style.top = `${top}px`;
   }
-  function showDimension(d, focus = false) {
+  function showDimension(d, focus = false, trigger = null) {
+    if (trigger) returnFocus = trigger;
     tooltip.hidden = true;
     selectedDimension = d?.slug ?? null;
+    for (const link of content.querySelectorAll('.dimension-links a')) {
+      const active = d && link.hash === `#dim-${d.slug}`;
+      link.setAttribute('aria-expanded', String(Boolean(active)));
+      if (active) link.setAttribute('aria-current', 'true'); else link.removeAttribute('aria-current');
+    }
     const url = new URL(location.href);
     if (d) url.searchParams.set('dim', d.slug); else url.searchParams.delete('dim');
     url.hash = '';
     history.replaceState(null, '', url);
     if (!d) {
+      const restoreFocus = panel.contains(document.activeElement);
       panel.close();
+      if (restoreFocus) returnFocus?.focus({ preventScroll: true });
       empty.hidden = false;
       label.textContent = 'Hover for a summary. Select a segment to open its evidence beside the chart.';
       return;
@@ -84,7 +94,7 @@ function selectPortrait(slug, restoreDimension = true) {
       else panel.show();
     }
     panel.scrollTop = 0;
-    if (focus) heading.focus({ preventScroll: true });
+    if (focus || mobilePanel.matches) heading.focus({ preventScroll: true });
     window.scrollTo({ top: before, behavior: 'instant' });
     label.textContent = `${d.name} evidence is open. Hover other segments to compare.`;
   }
@@ -92,13 +102,12 @@ function selectPortrait(slug, restoreDimension = true) {
     renderer?.destroy();
     renderer = new DoughnutRenderer({ canvas, size: 800, pixelRatio: Math.min(3, window.devicePixelRatio || 1), donutScale: 1, textSize: 16,
       onHover: (hit, event) => hoverSummary(resolve(hit), event),
-      onSelect: hit => { showDimension(resolve(hit)); queueMicrotask(drawChart); },
+      onSelect: hit => { const dimension = resolve(hit); if (dimension) { showDimension(dimension, false, canvas); queueMicrotask(drawChart); } },
     });
     renderer.setColours(2, 1, '#883251', '#E096C6');
     renderer.setLevels(portrait.dimensions.map(d => ({ type: d.ring === 'social' ? 'inner' : 'outer', name: d.name, level: d.level ?? 'NaN', colour: d.slug === selectedDimension ? '#0066cc' : null })));
   }
   canvas.parentElement.addEventListener('mouseleave', () => { tooltip.hidden = true; });
-  canvas.addEventListener('mouseenter', drawChart);
   panel.querySelector('.panel-close').addEventListener('click', () => { showDimension(null); drawChart(); });
   panel.addEventListener('cancel', event => { event.preventDefault(); showDimension(null); drawChart(); });
   document.addEventListener('keydown', event => {
@@ -119,7 +128,7 @@ function selectPortrait(slug, restoreDimension = true) {
   for (const link of content.querySelectorAll('.dimension-links a')) link.addEventListener('click', event => {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
-    showDimension(portrait.dimensions.find(d => `#dim-${d.slug}` === link.hash), true);
+    showDimension(portrait.dimensions.find(d => `#dim-${d.slug}` === link.hash), true, link);
     drawChart();
   });
   const dimension = new URL(location.href).searchParams.get('dim');
@@ -152,7 +161,7 @@ for (const link of links) link.addEventListener('click', event => {
 });
 window.addEventListener('popstate', () => {
   const slug = new URL(location.href).searchParams.get('area') || collection.hub;
-  if (slug !== selected) selectPortrait(slug);
+  selectPortrait(portraits.has(slug) ? slug : collection.hub);
   restoreAnchor();
 });
 window.addEventListener('pagehide', () => renderer?.destroy(), { once: true });

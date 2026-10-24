@@ -132,6 +132,7 @@ describe('portraitPanelView', () => {
       indicators: [],
       gaps: [{ reason: 'No survey measures isolation at city scale.', scales: ['city', 'county'] }],
       actions: [],
+      actionSources: [],
       listings: null,
       moreListings: null,
     });
@@ -173,6 +174,20 @@ describe('portraitPanelView', () => {
       ['American Community Survey', null],
       ['American Community Survey', null],
       ['American Community Survey', 'http://example.org/report'],
+    ]);
+  });
+
+  it('retains archived action evidence while filtering unsafe live links', () => {
+    const evidence = { snapshot_path: 'actions/source.png', pdf_path: 'actions/source.pdf', captured_at: '2026-10-01T00:00:00Z' };
+    const view = portraitPanelView(dimension('housing', {
+      action_sources: [
+        { text: 'Attend a public meeting.', source_url: 'https://example.gov/meetings', evidence },
+        { text: 'Unsafe link.', source_url: 'javascript:alert(1)', evidence },
+      ],
+    }), options());
+    expect(view.actionSources).toEqual([
+      { text: 'Attend a public meeting.', sourceHref: 'https://example.gov/meetings', snapshotHref: '/evidence/santacruz/actions/source.png', pdfHref: '/evidence/santacruz/actions/source.pdf' },
+      { text: 'Unsafe link.', sourceHref: null, snapshotHref: '/evidence/santacruz/actions/source.png', pdfHref: '/evidence/santacruz/actions/source.pdf' },
     ]);
   });
 

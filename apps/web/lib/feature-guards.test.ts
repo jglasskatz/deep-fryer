@@ -26,6 +26,8 @@ const FEATURE_FOLDERS: { folder: string; feature: PortraitFeature; organization?
   { folder: 'app/[tenant]/admin/policy', feature: 'policy_analysis' },
   { folder: 'app/[tenant]/admin/involvement', feature: 'involvement' },
   { folder: 'app/[tenant]/admin/discussion', feature: 'discussion' },
+  { folder: 'app/[tenant]/pages', feature: 'custom_pages' },
+  { folder: 'app/[tenant]/admin/pages', feature: 'custom_pages' },
   { folder: 'app/o/[org]/compare', feature: 'family_compare', organization: true },
   { folder: 'app/o/[org]/insights', feature: 'family_compare', organization: true },
 ];
@@ -37,6 +39,7 @@ const ACTION_MODULES: { file: string; feature: PortraitFeature }[] = [
   { file: 'lib/discussion-actions.ts', feature: 'discussion' },
   { file: 'lib/policy-actions.ts', feature: 'policy_analysis' },
   { file: 'lib/insight-actions.ts', feature: 'request_research' },
+  { file: 'lib/custom-page-actions.ts', feature: 'custom_pages' },
 ];
 
 function entryFiles(dir: string): string[] {

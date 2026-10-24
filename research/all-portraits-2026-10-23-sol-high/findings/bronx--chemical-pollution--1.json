@@ -1,0 +1,150 @@
+{
+  "id": "bronx:chemical-pollution:1",
+  "portrait": "bronx",
+  "dimension": "chemical-pollution",
+  "indicator_index": 1,
+  "kind": "replace",
+  "before": {
+    "name": "Reduction in landfill-bound waste vs 2005",
+    "unit": "% reduction",
+    "year": 2025,
+    "value": 6.76,
+    "source": "NYC Department of Sanitation, DSNY Monthly Tonnage Data (NYC Open Data dataset ebb7-mvp5), aggregated via Socrata SoQL sum of refusetonscollected where borough='Bronx', grouped by calendar year",
+    "target": 90,
+    "scoring": {
+      "inputs": {
+        "scale": 90,
+        "value": 6.76,
+        "target": 90
+      },
+      "function": "higher_is_better",
+      "worked_math": "Baseline: Bronx DSNY-collected refuse ('landfill-bound' waste per OneNYC 0x30 / Zero Waste Act framing), CY2005 = sum of refusetonscollected across all Bronx community/sanitation districts, 132 district-month records = 513,421.85 tons. Current: CY2025 (most recent complete calendar year; data available through 2026-07) = same 132 district-month records = 478,703.47 tons. Reduction = (513,421.85 − 478,703.47) / 513,421.85 × 100 = 34,718.38 / 513,421.85 × 100 = 6.76%. level_pct = (90 − 6.76) / 90 × 100 = +92.49",
+      "threshold_ref": "chemical-pollution.landfill-reduction-vs-2005"
+    },
+    "evidence": {
+      "captured_at": "2026-08-05T00:00:00Z",
+      "snapshot_path": "CAPTURE_FAILED - evidence tool returned 'browser.newContext: Target page, context or browser has been closed' on every attempt (4 retries on this URL alone) — an infrastructure failure in this session, not a site-side block. No snapshot could be stored; flagging for reviewer to re-capture."
+    },
+    "level_pct": 92.49,
+    "confidence": "high",
+    "source_url": "https://data.cityofnewyork.us/City-Government/DSNY-Monthly-Tonnage-Data/ebb7-mvp5",
+    "source_tier": 1,
+    "geographic_scale": "county",
+    "geography": "county",
+    "status": "published",
+    "evidence_path": null,
+    "pdf_path": null
+  },
+  "after": {
+    "name": "Reduction in DSNY-collected refuse tonnage vs 2005 (disposal proxy)",
+    "unit": "% reduction",
+    "year": 2025,
+    "value": 6.44,
+    "source": "NYC Department of Sanitation — Monthly Tonnage Data",
+    "target": null,
+    "scoring": null,
+    "evidence": {
+      "snapshot_path": "evidence/nyc-waste-extract.png",
+      "captured_at": "2026-10-24T01:28:52.184Z"
+    },
+    "level_pct": null,
+    "confidence": "medium",
+    "source_url": "https://data.cityofnewyork.us/resource/ebb7-mvp5.json?%24select=month%2Cborough%2Ccommunitydistrict%2Crefusetonscollected&%24where=month+between+%272005+%2F+01%27+and+%272005+%2F+12%27+OR+month+between+%272025+%2F+01%27+and+%272025+%2F+12%27&%24order=month%2Cborough%2Ccommunitydistrict&%24limit=5000",
+    "source_tier": 1,
+    "geographic_scale": "county",
+    "geography": "county",
+    "status": "source-supported-observation",
+    "evidence_path": "evidence/nyc-waste-extract.png",
+    "pdf_path": null,
+    "notes": "CY2005:556777.75 tons; CY2025:520903.27 tons. 144/144 unique district-month records;12 months each. Fiscalyears run Jul–Jun; calendaryears Jan–Dec. The configured landfill-bound metric is not exact: DSNY refuse collected is a disposal proxy and excludes commercial/private collection. Existing 90% target is retained only as context; no proxy score asserted. Original Bronx calculation omitted January; full year reduction 6.44%."
+  },
+  "field_diff": {
+    "name": {
+      "before": "Reduction in landfill-bound waste vs 2005",
+      "after": "Reduction in DSNY-collected refuse tonnage vs 2005 (disposal proxy)"
+    },
+    "value": {
+      "before": 6.76,
+      "after": 6.44
+    },
+    "source": {
+      "before": "NYC Department of Sanitation, DSNY Monthly Tonnage Data (NYC Open Data dataset ebb7-mvp5), aggregated via Socrata SoQL sum of refusetonscollected where borough='Bronx', grouped by calendar year",
+      "after": "NYC Department of Sanitation — Monthly Tonnage Data"
+    },
+    "target": {
+      "before": 90,
+      "after": null
+    },
+    "scoring": {
+      "before": {
+        "inputs": {
+          "scale": 90,
+          "value": 6.76,
+          "target": 90
+        },
+        "function": "higher_is_better",
+        "worked_math": "Baseline: Bronx DSNY-collected refuse ('landfill-bound' waste per OneNYC 0x30 / Zero Waste Act framing), CY2005 = sum of refusetonscollected across all Bronx community/sanitation districts, 132 district-month records = 513,421.85 tons. Current: CY2025 (most recent complete calendar year; data available through 2026-07) = same 132 district-month records = 478,703.47 tons. Reduction = (513,421.85 − 478,703.47) / 513,421.85 × 100 = 34,718.38 / 513,421.85 × 100 = 6.76%. level_pct = (90 − 6.76) / 90 × 100 = +92.49",
+        "threshold_ref": "chemical-pollution.landfill-reduction-vs-2005"
+      },
+      "after": null
+    },
+    "evidence": {
+      "before": {
+        "captured_at": "2026-08-05T00:00:00Z",
+        "snapshot_path": "CAPTURE_FAILED - evidence tool returned 'browser.newContext: Target page, context or browser has been closed' on every attempt (4 retries on this URL alone) — an infrastructure failure in this session, not a site-side block. No snapshot could be stored; flagging for reviewer to re-capture."
+      },
+      "after": {
+        "snapshot_path": "evidence/nyc-waste-extract.png",
+        "captured_at": "2026-10-24T01:28:52.184Z"
+      }
+    },
+    "level_pct": {
+      "before": 92.49,
+      "after": null
+    },
+    "confidence": {
+      "before": "high",
+      "after": "medium"
+    },
+    "source_url": {
+      "before": "https://data.cityofnewyork.us/City-Government/DSNY-Monthly-Tonnage-Data/ebb7-mvp5",
+      "after": "https://data.cityofnewyork.us/resource/ebb7-mvp5.json?%24select=month%2Cborough%2Ccommunitydistrict%2Crefusetonscollected&%24where=month+between+%272005+%2F+01%27+and+%272005+%2F+12%27+OR+month+between+%272025+%2F+01%27+and+%272025+%2F+12%27&%24order=month%2Cborough%2Ccommunitydistrict&%24limit=5000"
+    },
+    "status": {
+      "before": "published",
+      "after": "source-supported-observation"
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/nyc-waste-extract.png"
+    },
+    "notes": {
+      "before": null,
+      "after": "CY2005:556777.75 tons; CY2025:520903.27 tons. 144/144 unique district-month records;12 months each. Fiscalyears run Jul–Jun; calendaryears Jan–Dec. The configured landfill-bound metric is not exact: DSNY refuse collected is a disposal proxy and excludes commercial/private collection. Existing 90% target is retained only as context; no proxy score asserted. Original Bronx calculation omitted January; full year reduction 6.44%."
+    }
+  },
+  "reason": "Restore missing archives and exact coverage; expose the refuse-collected versus landfill-disposed construct.",
+  "source_support": [
+    {
+      "url": "https://data.cityofnewyork.us/resource/ebb7-mvp5.json?%24select=month%2Cborough%2Ccommunitydistrict%2Crefusetonscollected&%24where=month+between+%272005+%2F+01%27+and+%272005+%2F+12%27+OR+month+between+%272025+%2F+01%27+and+%272025+%2F+12%27&%24order=month%2Cborough%2Ccommunitydistrict&%24limit=5000",
+      "raw_path": "raw/dsny-raw-cy.json",
+      "raw_sha256": "6526a4c9014c32037621bee09c8f7a8a7a4f4d4e94e0bb5a45e49960838126b2",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:28:52.184Z",
+      "period": "CY2005 vs CY2025",
+      "scale": "county",
+      "snapshot_path": "evidence/nyc-waste-extract.png",
+      "snapshot_sha256": "c03105e42ae283ae7689cf82926d3ccc44889835bf4c510702c90f9b3be38a11"
+    },
+    {
+      "url": "https://data.cityofnewyork.us/api/views/ebb7-mvp5.json",
+      "raw_path": "raw/dsny-metadata.json",
+      "raw_sha256": "78ab86a96342ce705ba03ef38d807108f83a10b1f6801619879fc88ad3d61f6f",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:26:20.873Z",
+      "period": null,
+      "scale": null
+    }
+  ],
+  "review_required": true
+}

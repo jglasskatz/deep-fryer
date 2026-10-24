@@ -1,0 +1,11 @@
+Bronx and Staten Island fixed broadband, 2023
+
+Reviewer-generated extract from frozen publisher bytes. This is a derived research exhibit, not a publisher-authored table. Original source URLs and SHA-256 bindings accompany each amendment.
+
+Borough	Fixed broadband	Cellular data only	No internet
+Bronx	63.3%	20.3%	7.1%
+Staten Island	76.5%	12.0%	6.3%
+
+Exact 2023 columns from Figure 4, Household Poverty and Internet Access Status, NYS Office of the State Comptroller Report 20-2025 (December 2024), printed page 5. The publisher attributes estimates to ACS one-year files and OSC analysis. The report generally defines broadband as fixed cable, fiber to the premises, or DSL and separates cellular-only service.
+
+These are related fixed-broadband observations, not estimates of broadband of any type. No target or score is applied. The generic broadband-access contract and its local target require a separate decision before a fixed-only score can be asserted.

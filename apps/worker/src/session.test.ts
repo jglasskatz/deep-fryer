@@ -20,6 +20,7 @@ const sdk = vi.hoisted(() => ({
    * with one successful result.
    */
   scripts: [] as { messages: unknown[]; throws?: Error }[],
+  inspect: undefined as undefined | ((args: { prompt: string; options: Record<string, unknown> }) => Promise<void>),
 }));
 vi.mock('@anthropic-ai/claude-agent-sdk', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@anthropic-ai/claude-agent-sdk')>()),
@@ -29,6 +30,7 @@ vi.mock('@anthropic-ai/claude-agent-sdk', async (importOriginal) => ({
       messages: [{ type: 'result', subtype: 'success', result: '{"ok":true}', usage: { input_tokens: 3, output_tokens: 2 } }],
     };
     return (async function* () {
+      await sdk.inspect?.(args);
       for (const message of script.messages) yield message;
       if (script.throws) throw script.throws;
     })();
@@ -62,6 +64,7 @@ describe('runSession containment', () => {
   };
   beforeEach(() => {
     sdk.calls.length = 0;
+    sdk.inspect = undefined;
     restore(testEnv);
   });
   afterEach(() => restore(saved));
@@ -127,6 +130,73 @@ describe('runSession containment', () => {
     });
     expect(options.tools).toEqual(['WebFetch']);
     expect(options.allowedTools).toEqual(['WebFetch', 'mcp__evidence__capture_evidence']);
+  });
+
+  it('permits a verifier to read only its own fixed archived exhibits, then deletes the workspace', async () => {
+    const { readFile, realpath, stat, symlink } = await import('node:fs/promises');
+    const path = await import('node:path');
+    let workspace = '';
+    sdk.inspect = async ({ options }) => {
+      workspace = options.cwd as string;
+      expect(await readFile(path.join(workspace, 'archived-snapshot.png'), 'utf8')).toBe('captured source');
+      expect(await readFile(path.join(workspace, 'archived-source.pdf'), 'utf8')).toBe('captured PDF');
+      expect((await stat(path.join(workspace, 'archived-snapshot.png'))).mode & 0o777).toBe(0o400);
+      const hooks = options.hooks as { PreToolUse: { matcher: string; hooks: ((input: unknown) => Promise<unknown>)[] }[] };
+      expect(hooks.PreToolUse[0]!.matcher).toBe('Read');
+      const guard = hooks.PreToolUse[0]!.hooks[0]!;
+      const read = (file_path: unknown) => guard({ hook_event_name: 'PreToolUse', tool_name: 'Read', tool_input: { file_path } });
+      expect(await read('archived-snapshot.png')).toEqual({});
+      expect(await read(path.join(workspace, 'archived-source.pdf'))).toEqual({});
+      for (const file of ['../other-session/archived-source.pdf', '/etc/passwd', '../../.env', 'missing.png', 42]) {
+        expect(await read(file)).toMatchObject({ hookSpecificOutput: { permissionDecision: 'deny' } });
+      }
+      // A path inside the workspace that points outside is still not an exhibit.
+      await symlink(await realpath(import.meta.dirname), path.join(workspace, 'worker'));
+      expect(await read('worker/session.ts')).toMatchObject({ hookSpecificOutput: { permissionDecision: 'deny' } });
+    };
+    const { options } = await optionsFor({
+      prompt: 'Verify independently.', allowedTools: ['WebFetch', 'Read'], orchestrate: false,
+      archivedExhibits: { snapshot: Buffer.from('captured source'), pdf: Buffer.from('captured PDF') },
+    });
+    expect(options.tools).toEqual(['WebFetch', 'Read']);
+    expect(options.disallowedTools).not.toContain('Read');
+    expect(options.disallowedTools).toEqual(expect.arrayContaining(['Bash', 'Write', 'Glob', 'Grep']));
+    await expect(stat(workspace)).rejects.toThrow();
+    sdk.inspect = undefined;
+  });
+
+  it('cannot enable arbitrary local reads by naming Read without archived bytes', async () => {
+    const { options } = await optionsFor({ prompt: 'p', allowedTools: ['WebFetch', 'Read'] });
+    expect(options.tools).toEqual(['WebFetch']);
+    expect(options.allowedTools).toEqual(['WebFetch']);
+    expect(options.disallowedTools).toContain('Read');
+  });
+
+  it('uses a frozen scout model, including explicit null, ahead of worker env defaults', async () => {
+    process.env.RESEARCH_SUBAGENT_MODEL = 'changed-worker-scout';
+    const standard = await optionsFor({ prompt: 'Research.', allowedTools: ['WebSearch'], scoutModel: null });
+    expect(standard.options).not.toHaveProperty('agents');
+    expect(standard.prompt).toBe('Research.');
+    const deep = await optionsFor({ prompt: 'Research.', allowedTools: ['WebSearch'], model: 'planned-researcher', scoutModel: 'planned-scout' });
+    expect(deep.options.model).toBe('planned-researcher');
+    expect(deep.options.agents).toMatchObject({ 'source-scout': { model: 'planned-scout' } });
+  });
+
+  it('confines additional action exhibits to fixed names in the same workspace', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const path = await import('node:path');
+    sdk.inspect = async ({ options }) => {
+      const workspace = options.cwd as string;
+      expect(await readFile(path.join(workspace, 'action-1-snapshot.png'), 'utf8')).toBe('action exhibit');
+      const hooks = options.hooks as { PreToolUse: { hooks: ((input: unknown) => Promise<unknown>)[] }[] };
+      expect(await hooks.PreToolUse[0]!.hooks[0]!({ hook_event_name: 'PreToolUse', tool_name: 'Read', tool_input: { file_path: 'action-1-snapshot.png' } })).toEqual({});
+    };
+    await optionsFor({ prompt: 'Verify an action.', allowedTools: ['Read'], archivedExhibits: { additional: [{ filename: 'action-1-snapshot.png', body: Buffer.from('action exhibit') }] } });
+    sdk.inspect = undefined;
+    const { runSession } = await import('./session.js');
+    const calls = sdk.calls.length;
+    await expect(runSession({ prompt: 'p', allowedTools: ['Read'], archivedExhibits: { additional: [{ filename: '../secret', body: Buffer.from('bad') }] } })).rejects.toThrow('invalid fixed action');
+    expect(sdk.calls).toHaveLength(calls);
   });
 });
 

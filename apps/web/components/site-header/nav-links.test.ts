@@ -36,6 +36,7 @@ describe('adminNavLinks', () => {
     ['policy_analysis', '/nyc/admin/policy'],
     ['emergency', '/nyc/admin/emergency'],
     ['involvement', '/nyc/admin/involvement'],
+    ['custom_pages', '/nyc/admin/pages'],
   ];
 
   it('shows only the core staff pages with every feature off', () => {
@@ -43,6 +44,8 @@ describe('adminNavLinks', () => {
       'Overview',
       'Review',
       'Research',
+      'Portrait content',
+      'Outreach contacts',
       'Members',
       'Settings',
       'Billing',
@@ -64,9 +67,12 @@ describe('adminNavLinks', () => {
       'Review',
       'Discussion',
       'Research',
+      'Portrait content',
+      'Outreach contacts',
       'Policy',
       'Emergency',
       'Get involved',
+      'Pages',
       'Members',
       'Settings',
       'Billing',

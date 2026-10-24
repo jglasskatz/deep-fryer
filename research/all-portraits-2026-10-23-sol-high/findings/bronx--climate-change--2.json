@@ -1,0 +1,109 @@
+{
+  "id": "bronx:climate-change:2",
+  "portrait": "bronx",
+  "dimension": "climate-change",
+  "indicator_index": 2,
+  "kind": "replace",
+  "before": {
+    "name": "LL97-covered buildings over their 2030 emissions cap",
+    "unit": "% of covered buildings",
+    "year": 2024,
+    "value": 57,
+    "source": "Urban Green Council — Local Law 97 Progress (NYC Building Data Hub)",
+    "target": 0,
+    "scoring": {
+      "inputs": {
+        "scale": 100,
+        "value": 57,
+        "target": 0
+      },
+      "function": "lower_is_better",
+      "worked_math": "level_pct = (57 − 0) ⁄ 100 × 100 = +57.0",
+      "threshold_ref": "climate-change.ll97-over-2030-cap-share"
+    },
+    "evidence": {
+      "captured_at": "2026-08-05T00:00:00Z",
+      "snapshot_path": "CAPTURE_FAILED — mcp__evidence__capture_evidence returned repeated 'browser.newContext: Target page, context or browser has been closed' errors on 3 attempts against this URL; no snapshot could be stored"
+    },
+    "level_pct": 57,
+    "confidence": "medium",
+    "source_url": "https://www.urbangreencouncil.org/what-we-do/explore-nyc-building-data-hub/local-law-97-progress/",
+    "source_tier": 3,
+    "geographic_scale": "regional",
+    "geography": "regional",
+    "status": "published",
+    "evidence_path": null,
+    "pdf_path": null
+  },
+  "after": {
+    "name": "LL97-covered buildings over their 2030 emissions cap",
+    "unit": "% of covered buildings",
+    "year": 2024,
+    "value": 57,
+    "source": "Urban Green Council — Local Law 97 Progress (NYC Building Data Hub)",
+    "target": 0,
+    "scoring": {
+      "inputs": {
+        "scale": 100,
+        "value": 57,
+        "target": 0
+      },
+      "function": "lower_is_better",
+      "worked_math": "level_pct = (57 − 0) ⁄ 100 × 100 = +57.0",
+      "threshold_ref": "climate-change.ll97-over-2030-cap-share"
+    },
+    "evidence": {
+      "snapshot_path": "evidence/nyc-ll97.png",
+      "captured_at": "2026-10-24T01:27:27.325Z"
+    },
+    "level_pct": 57,
+    "confidence": "medium",
+    "source_url": "https://www.urbangreencouncil.org/what-we-do/explore-nyc-building-data-hub/local-law-97-progress/",
+    "source_tier": 3,
+    "geographic_scale": "regional",
+    "geography": "regional",
+    "status": "source-supported-draft",
+    "evidence_path": "evidence/nyc-ll97.png",
+    "pdf_path": null,
+    "notes": "Urban Green Council January 2026 page uses 2024 benchmarking data:43% of covered buildings meet 2030 limits, so 57% are above. This is modeled future-cap exposure from 2024 energy use, not a 2024 legal violation rate. Citywide observation carried as regional proxy."
+  },
+  "field_diff": {
+    "evidence": {
+      "before": {
+        "captured_at": "2026-08-05T00:00:00Z",
+        "snapshot_path": "CAPTURE_FAILED — mcp__evidence__capture_evidence returned repeated 'browser.newContext: Target page, context or browser has been closed' errors on 3 attempts against this URL; no snapshot could be stored"
+      },
+      "after": {
+        "snapshot_path": "evidence/nyc-ll97.png",
+        "captured_at": "2026-10-24T01:27:27.325Z"
+      }
+    },
+    "status": {
+      "before": "published",
+      "after": "source-supported-draft"
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/nyc-ll97.png"
+    },
+    "notes": {
+      "before": null,
+      "after": "Urban Green Council January 2026 page uses 2024 benchmarking data:43% of covered buildings meet 2030 limits, so 57% are above. This is modeled future-cap exposure from 2024 energy use, not a 2024 legal violation rate. Citywide observation carried as regional proxy."
+    }
+  },
+  "reason": "Restore missing source exhibit and preserve estimate/projection type.",
+  "source_support": [
+    {
+      "url": "https://www.urbangreencouncil.org/what-we-do/explore-nyc-building-data-hub/local-law-97-progress/",
+      "raw_path": "raw/nyc-ll97.html",
+      "raw_sha256": "35d7bda1573eaa86f43b79ed1ae7f747b70d788dc5558c15a5a6594b0ab0988e",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:27:27.325Z",
+      "period": "2024 benchmarking;2030 caps",
+      "scale": "NYC citywide regional proxy",
+      "snapshot_path": "evidence/nyc-ll97.png",
+      "snapshot_sha256": "09440cdbf0c942dc760cbe2c647a1826a920ff0ca2e9e933696210a13971588f"
+    }
+  ],
+  "review_required": true
+}

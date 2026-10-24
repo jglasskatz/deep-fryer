@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { summarizeRunCosts } from '@deep-fryer/core';
 import { runWithSessions } from '@/lib/admin-data';
 import { getRole, roleAtLeast } from '@/lib/auth';
 
@@ -22,6 +23,7 @@ export async function GET(
     created_at: data.run.createdAt,
     completed_at: data.run.completedAt,
     token_usage: data.run.tokenUsage,
+    cost_summary: summarizeRunCosts(data.run.tokenUsage, data.sessions.map((s) => s.id)),
     sessions: data.sessions.map((s) => ({
       id: s.id,
       kind: s.kind,
@@ -31,5 +33,5 @@ export async function GET(
       completed_at: s.completedAt,
     })),
     findings_count: data.findings.length,
-  });
+  }, { headers: { 'cache-control': 'private, no-store' } });
 }

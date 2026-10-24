@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { ActionSourceLinks } from './ActionSourceLinks';
 import type { MouseEvent, Ref } from 'react';
 import { statusLabel } from '@/components/doughnut/Doughnut';
 import type { DoughnutLabels } from '@/lib/i18n/doughnut';
@@ -208,7 +209,7 @@ export function PortraitPanel({
               <h3 className="font-semibold">{d.whatYouCanDo}</h3>
               <ul lang="en" className="mt-2 list-disc space-y-1 ps-5 text-sm">
                 {view.actions.map((action, i) => (
-                  <li key={i}>{action}</li>
+                  <li key={i}>{action}<ActionSourceLinks source={view.actionSources?.find(source => source.text === action)} /></li>
                 ))}
               </ul>
             </div>

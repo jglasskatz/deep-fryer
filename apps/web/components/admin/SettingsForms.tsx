@@ -312,6 +312,14 @@ export function SettingsForms({
             />
             First discussion post from a new account requires approval
           </label>
+          <label className="block pt-2">
+            <span className="block font-medium">Apply machine-audit recommendations</span>
+            <select className={`${field} mt-1 min-h-11`} value={review.audit_apply ?? 'per_card'} onChange={event => setReview({ ...review, audit_apply: event.target.value as 'per_card' | 'bulk' })}>
+              <option value="per_card">Review and apply one dimension at a time</option>
+              <option value="bulk">Allow applying a reviewed run in bulk</option>
+            </select>
+            <span className="mt-1 block text-xs text-[color:var(--color-muted)]">Both modes show the proposed changes first. Applying an audit creates a draft or a research plan; publishing remains separate.</span>
+          </label>
           {status.review_policy ? <p className="text-xs">{status.review_policy}</p> : null}
           <SaveButton pending={isPending('review_policy')} />
         </form>

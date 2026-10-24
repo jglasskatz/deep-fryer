@@ -1,0 +1,22 @@
+[
+  [
+    "fetch",
+    "https://data.cityofnewyork.us/resource/ebb7-mvp5.json?%24select=month%2Cborough%2Ccommunitydistrict%2Crefusetonscollected&%24where=month+between+%272005+%2F+01%27+and+%272005+%2F+12%27+OR+month+between+%272025+%2F+01%27+and+%272025+%2F+12%27&%24order=month%2Cborough%2Ccommunitydistrict&%24limit=5000",
+    "dsny-raw-cy"
+  ],
+  [
+    "fetch",
+    "https://data.cityofnewyork.us/resource/ebb7-mvp5.json?%24select=month%2Cborough%2Ccommunitydistrict%2Crefusetonscollected&%24where=month+between+%272004+%2F+07%27+and+%272005+%2F+06%27+OR+month+between+%272024+%2F+07%27+and+%272025+%2F+06%27&%24order=month%2Cborough%2Ccommunitydistrict&%24limit=5000",
+    "dsny-raw-fy"
+  ],
+  [
+    "fetch",
+    "https://www.santacruzcountyca.gov/portals/0/county/CAO/press%20releases/2026/2026PITCount.08052026.pdf",
+    "sc-pit-2026-release"
+  ],
+  [
+    "fetch",
+    "https://data.epa.gov/efservice/mv_tri_basic_download/st/NY/year/2024/JSON",
+    "nyc-tri-2024"
+  ]
+]

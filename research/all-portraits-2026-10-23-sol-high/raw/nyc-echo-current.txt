@@ -1,0 +1,897 @@
+Skip to main content
+
+An official website of the United States government
+
+Here’s how you know
+Search
+Environmental Topics
+Laws & Regulations
+Report a Violation
+About EPA
+Search Options
+Cross Program
+»
+All Media Programs Facility Search
+Map All Facilities
+Corporate Compliance Screener
+ECHO Notify
+Air
+»
+Air Facility Search
+Map Air Facilities
+ECHO Clean Air Tracking Tool (ECATT)
+Wastewater/Stormwater/Biosolids (CWA)
+»
+Wastewater/Stormwater/Biosolids Facility Search
+Biosolids Facility Search
+Biosolids Annual Report Search
+Industrial Stormwater Facility Search
+Map Water Facilities
+Water Pollutant Loading Tool
+NPDES DMR Non-Receipt Status Search
+Quarterly NPDES Noncompliance Report Search
+NPDES Noncompliance Annual Report
+Hazardous Waste
+»
+Hazardous Waste Facility Search
+Map Hazardous Waste Facilities
+Drinking Water
+»
+Drinking Water System Search
+Analyze Trends
+Track Performance
+»
+EPA/State Dashboards (Air, Wastewater, Drinking Water, Hazardous Waste, Pesticides)
+NPDES DMR Non-Receipt Status Search
+State Review Framework Tracker Recommendations
+Archived Tools
+Data Visualization
+»
+Data Visualization Gallery
+PFAS Analytic Tools
+NPDES eRule Dashboards
+Benzene Fenceline Monitoring
+Pollution Analysis
+»
+Water Pollutant Loading Tool
+ECHO Clean Air Tracking Tool (ECATT)
+Find EPA Cases
+EPA Enforcement Case Search
+Advanced EPA Enforcement Case Search
+Data Services
+National Data Sets
+ECHO Exporter
+ECHO Web Services
+ECHO Map Services
+Quick Search Widget
+Help
+About the Data
+ECHO Video Tutorials
+Quick Start Guide
+ECHO Training
+How to ...
+»
+Report a Data Error
+Run Facility Searches
+»
+Facility Search Help
+Facility Search Criteria Help
+Search Results Help
+Enforcement Case Search Help
+Corporate Compliance Screener Help
+Use and Understand ECHO Reports
+»
+Air Pollutant Report Help
+Air Monitoring Station Report Help
+Biosolids Facility Report Help
+Detailed Facility Report Help
+Civil Enforcement Case Report Help
+Criminal Enforcement Case Report Help
+Effluent Charts Help
+Use ECHO EPA/State Dashboards
+»
+Air Dashboard Help
+Pesticide Dashboard Help
+State Comparative Maps Help
+General Information
+»
+What's New
+Known Data Problems
+ECHO Tool Guide
+Frequently Asked Questions
+ECHO Site Map
+Report A Violation
+Website Known Issues
+Join the ECHO Listserv
+Other Available Resources
+Get Access
+»
+Login and Access
+ 
+Contact Us
+Login
+Home  Detailed Facility Report
+Detailed Facility Report
+On this page
+Environmental Media
+Display all statutes
+Air
+Water
+Hazardous Waste
+Drinking Water
+Facility Summary
+Facility/System Characteristics
+Enforcement and Compliance
+Environmental Conditions
+Pollutants
+Community
+ Report Violation Report Data Error Data Dictionary Print Help
+Facility Summary
+NYC DEP KENSICO RESERVOIR
+20 WESTLAKE DR, VALHALLA, NY 10595
+FRS ID110013271547
+EPA Region02
+Latitude41.088056
+Longitude-73.777778
+Locational Data SourceNPDES
+IndustriesUtilities
+Indian CountryN
+Related Reports
+Enforcement Case Report
+CWA Pollutant Loading Report
+CWA DMR Exceedances Report
+View Envirofacts Reports
+Enforcement and Compliance Summary 
+Statute
+	
+Compliance Monitoring Activities (5 years)
+	
+Date of Last Compliance Monitoring Activity
+	
+Compliance Status
+	
+Qtrs with NC (of 12)
+	
+Qtrs with Significant Violation
+	
+Informal Enforcement Actions (5 years)
+	
+Formal Enforcement Actions (5 years)
+	
+Penalties from Formal Enforcement Actions (5 years)
+	
+EPA Cases (5 years)
+	
+Penalties from EPA Cases (5 years)
+
+CAA	1	03/29/2023	--	--	--	--	--	--	--	--
+CWA	--	--	No Violation Identified	0	0	--	--	--	--	--
+EPCRA	1	03/29/2023	--	--	--	--	--	--	--	--
+RCRA	--	08/08/2012	No Violation Identified	0	0	--	--	--	--	--
+SDWA	1	06/24/2024	Violation Identified	12	0	--	--	--	2	$1,050,000
+
+This table indicates an alleged violation subject to further evaluation. For information on any subsequent action, please see the enforcement and compliance section at the bottom of this page or contact EPA or the authorized co-regulator.
+
+Regulatory Information
+Clean Air Act (CAA)No Information
+Clean Water Act (CWA)Non-Major, Permit Terminated; Compliance Tracking Off (NY0274232), Non-Major, Permit Effective (NY0313696)
+Resource Conservation and Recovery Act (RCRA) Active VSQG, (NYR000094144)
+Safe Drinking Water Act (SDWA)OWNER: Local government, PRIMARY SERVICE AREA DESCRIPTION: Municipality, SOURCE: Surface water, TYPE: Community water system Permit Active (NY7003493), OWNER: Local government, PRIMARY SERVICE AREA DESCRIPTION: Municipality, SOURCE: Surface water, TYPE: Community water system Permit Active (NY7003493), OWNER: Local government, PRIMARY SERVICE AREA DESCRIPTION: Municipality, SOURCE: Surface water, TYPE: Community water system Permit Active (NY7003493), OWNER: Local government, PRIMARY SERVICE AREA DESCRIPTION: Municipality, SOURCE: Surface water, TYPE: Community water system Permit Active (NY7003493), OWNER: Local government, PRIMARY SERVICE AREA DESCRIPTION: Municipality, SOURCE: Surface water, TYPE: Community water system Permit Active (NY7003493)
+Other Regulatory Reports
+Air Emissions Inventory (EIS)No Information
+Greenhouse Gas Emissions (eGGRT)No Information
+Toxic Releases (TRI)No Information
+Compliance and Emissions Data Reporting Interface (CEDRI)No Information
+Go To Enforcement/Compliance Details
+Known Data Problems
+Facility/System Characteristics
+Facility/System Characteristics
+System
+	
+Statute
+	
+Identifier
+	
+Universe
+	
+Status
+	
+Areas
+	
+Permit Expiration Date
+	
+Indian Country
+	
+Latitude
+	
+Longitude
+
+FRS		110013271547					N	41.088056	-73.777778
+ICIS		3000031560					N	41.088056	-73.777778
+RMP	CAA	100000123653					N	41.090052	-73.760592
+ICIS-NPDES	CWA	NY0274232	Non-Major: NPDES Individual Permit	Terminated; Compliance Tracking Off		10/31/2013	N	41.088056	-73.777778
+ICIS-NPDES	CWA	NY0313696	Non-Major: NPDES Individual Permit	Effective		08/31/2031	N	41.087306	-73.775167
+RCRAInfo	RCRA	NYR000094144	VSQG	Active (H )			N	41.092646	-73.769737
+SDWIS	SDWA	NY7003493	OWNER: Local government, PRIMARY SERVICE AREA DESCRIPTION: Municipality, SOURCE: Surface water, TYPE: Community water system	Active	Population Served: 8271000		N		
+SDWIS	SDWA	NY7003493	OWNER: Local government, PRIMARY SERVICE AREA DESCRIPTION: Municipality, SOURCE: Surface water, TYPE: Community water system	Active	Population Served: 8271000		N		
+SDWIS	SDWA	NY7003493	OWNER: Local government, PRIMARY SERVICE AREA DESCRIPTION: Municipality, SOURCE: Surface water, TYPE: Community water system	Active	Population Served: 8271000		N		
+SDWIS	SDWA	NY7003493	OWNER: Local government, PRIMARY SERVICE AREA DESCRIPTION: Municipality, SOURCE: Surface water, TYPE: Community water system	Active	Population Served: 8271000		N		
+SDWIS	SDWA	NY7003493	OWNER: Local government, PRIMARY SERVICE AREA DESCRIPTION: Municipality, SOURCE: Surface water, TYPE: Community water system	Active	Population Served: 8271000		N		
+Facility Address
+System
+	
+Statute
+	
+Identifier
+	
+Facility Name
+	
+Facility Address
+	
+Facility County
+
+FRS		110013271547	NYC DEP KENSICO RESERVOIR	20 WESTLAKE DR, VALHALLA, NY 10595	Westchester County
+ICIS		3000031560	NEW YORK CITY-CATSKILL/DELAWARE SYSTEM	20 WESTLAKE DRIVE, VALHALLA, NY 10595	Westchester County
+RMP	CAA	100000123653	KENSICO (SHAFT 18)	KENSICO SOUTH EFFLUENT CHAMBER, VALHALLA, NY 10595	Westchester County
+ICIS-NPDES	CWA	NY0274232	KENSICO RESERVOIR AERATORS	20 WEST LAKE DR, VALHALLA, NY 10595	Westchester County
+ICIS-NPDES	CWA	NY0313696	KENSICO EASTVIEW CONNECTION - KENSICO CAMPUS	20 WESTLAKE DR, MOUNT PLEASANT, NY 10595	Westchester County
+RCRAInfo	RCRA	NYR000094144	NYC DEP - KENSICO DAM	22 W LAKE DR, VALHALLA, NY 10595	Westchester County
+SDWIS	SDWA	NY7003493	NEW YORK CITY SYSTEM	NY	
+SDWIS	SDWA	NY7003493	NEW YORK CITY SYSTEM	NY	
+SDWIS	SDWA	NY7003493	NEW YORK CITY SYSTEM	NY	
+SDWIS	SDWA	NY7003493	NEW YORK CITY SYSTEM	NY	
+SDWIS	SDWA	NY7003493	NEW YORK CITY SYSTEM	NY	
+Facility SIC Codes
+System
+	
+Identifier
+	
+SIC Code
+	
+SIC Description
+
+ICIS-NPDES	NY0274232	8999	Services
+ICIS-NPDES	NY0313696	4941	Water Supply
+Facility Industrial Effluent Guidelines
+Identifier
+	
+Effluent Guideline (40 CFR Part)
+	
+Effluent Guideline Description
+No data records returned
+Facility NAICS Codes
+System
+	
+Identifier
+	
+NAICS Code
+	
+NAICS Description
+
+RMP	100000123653	22131	Water Supply and Irrigation Systems
+ICIS-NPDES	NY0313696	221310	Water Supply and Irrigation Systems
+RCRAInfo	NYR000094144	22131	Water Supply and Irrigation Systems
+Facility Tribe Information
+Reservation Name
+	
+Tribe Name
+	
+EPA Tribal ID
+	
+Distance to Tribe (miles)
+No data records returned
+Enforcement and Compliance
+Compliance Monitoring History
+Select timeframe
+Last 5 Years
+Last 10 Years
+Statute
+	
+Source ID
+	
+System
+	
+Activity Type
+	
+Compliance Monitoring Type
+	
+Lead Agency
+	
+Date
+	
+Finding (if applicable)
+
+
+
+	
+	
+	
+	
+	
+	
+	
+
+CAA	100000123653	ICIS	Inspection/Evaluation	112(r)(7) Inspection	EPA	03/29/2023	
+EPCRA	3000031560	ICIS	Inspection/Evaluation	Chemical Inventory Audit	EPA	03/29/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	05/27/2026	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	05/19/2026	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	04/23/2026	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	04/14/2026	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	12/18/2025	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	12/11/2025	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	12/09/2025	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	12/04/2025	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	11/06/2025	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/29/2025	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/24/2025	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/21/2025	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/17/2025	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	09/30/2025	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	09/16/2025	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	09/11/2025	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	05/14/2025	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	05/07/2025	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	04/23/2025	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	04/16/2025	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	12/11/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	12/04/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	11/21/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	11/20/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	11/15/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	11/12/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/29/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/23/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/18/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/08/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	09/26/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	09/12/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	08/20/2024	
+SDWA	NY7003493	SDWIS		Site Inspection	State	06/24/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	05/22/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	05/15/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	04/16/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	04/10/2024	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	12/20/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	12/19/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	12/13/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	12/12/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	12/06/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	11/28/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	11/21/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	11/09/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	11/02/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	11/01/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/24/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/23/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/20/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/12/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/03/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	09/26/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	09/19/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	02/09/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	02/08/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	01/24/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	01/18/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	01/11/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	01/10/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	01/06/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	01/05/2023	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	11/15/2022	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	11/01/2022	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/21/2022	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/18/2022	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/12/2022	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	09/28/2022	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	09/20/2022	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	09/13/2022	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	12/21/2021	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	12/17/2021	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	12/16/2021	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	12/09/2021	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	12/08/2021	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	11/19/2021	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	11/18/2021	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	11/09/2021	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	11/04/2021	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	10/21/2021	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	09/30/2021	
+SDWA	NY7003493	SDWIS		Sanitary Survey, Complete	State	09/21/2021	
+
+Entries in italics are not included in ECHO's Compliance Monitoring Activity counts because they are not compliance monitoring strategy activities or because they are not counted as inspections within EPA’s Annual Results. 
+
+SDWA Sanitary Survey Results (5 Years)
+Source ID
+	
+Date
+	
+Type
+	
+Agency
+	
+Data Verification
+	
+Distribution
+	
+Management Operation
+	
+Finished Water Storage
+	
+Operator Compliance
+	
+Other Evaluation
+	
+Pumps
+	
+Security
+	
+Source
+	
+Financial
+	
+Treatment
+
+NY7003493	05/27/2026	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	05/19/2026	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	04/23/2026	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	04/14/2026	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	12/18/2025	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	12/11/2025	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	12/09/2025	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	12/04/2025	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	11/06/2025	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/29/2025	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/24/2025	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/21/2025	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/17/2025	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	09/30/2025	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	09/16/2025	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	09/11/2025	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	05/14/2025	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	05/07/2025	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	04/23/2025	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	04/16/2025	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	12/11/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	12/04/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	11/21/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	11/20/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	11/15/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	11/12/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/29/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/23/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/18/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/08/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	09/26/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	09/12/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	08/20/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	05/22/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	05/15/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	04/16/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	04/10/2024	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	12/20/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	12/19/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	12/13/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	12/12/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	12/06/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	11/28/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	11/21/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	11/09/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	11/02/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	N	N
+NY7003493	11/01/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/24/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/23/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/20/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/12/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/03/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	09/26/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	09/19/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	02/09/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	02/08/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	01/24/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	01/18/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	01/11/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	01/10/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	01/06/2023	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	01/05/2023	Sanitary Survey, Complete	State	N	N	Z	N	Z	Z	N	Z	N	Z	N
+NY7003493	11/15/2022	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	11/01/2022	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/21/2022	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/18/2022	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/12/2022	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	09/28/2022	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	09/20/2022	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	09/13/2022	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	12/21/2021	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	12/17/2021	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	12/16/2021	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	12/09/2021	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	12/08/2021	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	11/19/2021	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	11/18/2021	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	11/09/2021	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	11/04/2021	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	10/21/2021	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	09/30/2021	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+NY7003493	09/21/2021	Sanitary Survey, Complete	State	N	N	N	N	N	Z	N	N	N	Z	N
+Sanitary survey result codes:
+S = Significant Deficiencies
+M = Minor Deficiencies
+R = Recommendations Made
+N = No Deficiencies or Recommendations
+X = Not Evaluated
+Z = Not Applicable
+D = Sanitary Defect
+-- = Not Reported to EPA
+Compliance Summary Data
+Statute
+	
+Source ID
+	
+Current SNC/HPV
+	
+Current As Of
+	
+Qtrs with NC (of 12)
+	
+Data Last Refreshed
+
+CWA	NY0274232	No	06/30/2026	0	10/16/2026
+CWA	NY0313696	No	06/30/2026	0	10/16/2026
+RCRA	NYR000094144	No	10/17/2026	0	10/16/2026
+SDWA	NY7003493	No	06/30/2026	12	10/07/2026
+Download Data
+Three-Year Compliance History by Quarter
+Statute	Program/Pollutant/Violation Type	QTR 1	QTR 2	QTR 3	QTR 4	QTR 5	QTR 6	QTR 7	QTR 8	QTR 9	QTR 10	QTR 11	QTR 12	QTR 13+
+CWA (Source ID: NY0274232)	07/01-09/30/23	10/01-12/31/23	01/01-03/31/24	04/01-06/30/24	07/01-09/30/24	10/01-12/31/24	01/01-03/31/25	04/01-06/30/25	07/01-09/30/25	10/01-12/31/25	01/01-03/31/26	04/01-06/30/26	07/01-10/16/26
+	Facility-Level Status	Terminated Permit	Terminated Permit	Terminated Permit	Terminated Permit	Terminated Permit	Terminated Permit	Terminated Permit	Terminated Permit	Terminated Permit	Terminated Permit	Terminated Permit	Terminated Permit	Terminated Permit
+	Quarterly Noncompliance Report History													
+CWA (Source ID: NY0313696)	07/01-09/30/23	10/01-12/31/23	01/01-03/31/24	04/01-06/30/24	07/01-09/30/24	10/01-12/31/24	01/01-03/31/25	04/01-06/30/25	07/01-09/30/25	10/01-12/31/25	01/01-03/31/26	04/01-06/30/26	07/01-10/16/26
+	Facility-Level Status	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	Undetermined
+	Quarterly Noncompliance Report History													
+Statute	Program/Pollutant/Violation Type	QTR 1	QTR 2	QTR 3	QTR 4	QTR 5	QTR 6	QTR 7	QTR 8	QTR 9	QTR 10	QTR 11	QTR 12+
+RCRA (Source ID: NYR000094144)	10/01-12/31/23	01/01-03/31/24	04/01-06/30/24	07/01-09/30/24	10/01-12/31/24	01/01-03/31/25	04/01-06/30/25	07/01-09/30/25	10/01-12/31/25	01/01-03/31/26	04/01-06/30/26	07/01-09/30/26
+	Facility-Level Status	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified	No Violation Identified
+	Violation	Agency	
+Statute	Violation Type/Category	QTR 1	QTR 2	QTR 3	QTR 4	QTR 5	QTR 6	QTR 7	QTR 8	QTR 9	QTR 10	QTR 11	QTR 12	QTR 13*
+SDWA (Source ID: NY7003493)	07/01-09/30/23	10/01-12/31/23	01/01-03/31/24	04/01-06/30/24	07/01-09/30/24	10/01-12/31/24	01/01-03/31/25	04/01-06/30/25	07/01-09/30/25	10/01-12/31/25	01/01-03/31/26	04/01-06/30/26	07/01-09/30/26
+	Facility-Level Status	Violation-Addressed	Violation-Addressed	Violation-Addressed	Violation-Addressed	Violation-Addressed	Violation-Addressed	Violation-Addressed	Violation-Addressed	Violation-Addressed	Violation-Addressed	Violation-Addressed	Violation-Addressed	In Progress
+	Category	Violation Type	
+SDWA	TT	Long Term 2 Enhanced Surface Water Treatment Rule	02/01/2017												
+*Quarter 13 data is voluntarily entered and/or incomplete, and may not form a complete picture for that quarter. Read more
+SDWA Compliance Data Last Reported: 06/30/2026
+Informal Enforcement Actions
+Select timeframe
+Last 5 Years
+Last 10 Years
+Statute
+	
+System
+	
+Source ID
+	
+Type of Action
+	
+Lead Agency
+	
+Date
+No data records returned
+
+Entries in italics are not counted as "informal enforcement actions" in EPA policies pertaining to enforcement response tools.
+
+Formal Enforcement Actions
+Select timeframe
+Last 5 Years
+Last 10 Years
+Statute
+	
+System
+	
+Law/ Section
+	
+Source ID
+	
+Type of Action
+	
+Case No.
+	
+Lead Agency
+	
+Case Name
+	
+Issued/ Filed Date
+	
+Settlements/ Actions
+	
+Settlement/ Action Date
+	
+Federal Penalty Assessed
+	
+State/ Local Penalty Assessed
+	
+Penalty Amount Collected
+	
+SEP Value
+	
+Comp Action Cost
+
+SDWA	ICIS	1412/1414	SFDW/NY7003493	Judicial	
+02-2017-0010
+	EPA	The City of New York, et al. - Hillview	03/18/2019	2	
+06/10/2022
+05/15/2019
+	
+$0
+$1,000,000
+	
+--
+$50,000
+	
+--
+--
+	
+--
+--
+	
+$0
+$1,890,000,000
+
+SDWA	ICIS	1412/1414	SFDW/NY7003493	Administrative - Formal	
+02-2022-8004
+	EPA	City of New York et. al.	12/16/2021	1	
+12/16/2021
+	
+$0
+	
+$0
+	
+--
+	
+$0
+	
+$158,000
+SDWA Violations and Enforcement Actions (5 Years)
+Violations	Enforcement Actions
+
+Source ID
+	
+Noncompliance Period
+	
+Violation ID
+	
+Federal Rule
+	
+Contaminant
+	
+Category
+	
+Description
+	
+Measured Value
+	
+State MCL
+	
+Federal MCL
+	
+Status
+	
+Date
+	
+Category
+	
+Description
+	
+Agency
+
+NY7003493	02/01/2017 	#20170201	
+Long Term 2 Enhanced Surface Water Treatment Rule
+	Long Term 2 Enhanced Surface Water Treatment Rule	TT	Treatment Technique Violation	--	--	--	Addressed	
+05/15/2019
+	
+Formal
+	
+Federal Consent Decree/Judgement
+	
+EPA
+Environmental Conditions
+Watersheds
+12-Digit WBD HUC (RAD)
+	
+WBD Subwatershed Name (RAD)
+	
+State Water Body Name (ICIS)
+	
+Beach Closures Within Last Year
+	
+Beach Closures Within Last Two Years
+	
+Pollutants Potentially Related to Impairment
+	
+Watershed with ESA-listed Aquatic Species?
+
+020301020101	Kensico Reservoir	CLOVE BK, SUBTRIBS OF BRONX R	No	No	--	Yes
+Assessed Waters From Latest State Submission (ATTAINS)
+State
+	
+Report Cycle
+	
+Assessment Unit ID
+	
+Assessment Unit Name
+	
+Water Condition
+	
+Cause Groups Impaired
+	
+Drinking Water Use
+	
+Ecological Use
+	
+Fish Consumption Use
+	
+Recreation Use
+	
+Other Use
+
+NY	2022	NY1702-0113	Kensico Reservoir Tributaries	Unknown	--	Insufficient Information	Insufficient Information	--	Insufficient Information	--
+Air Quality Nonattainment Areas
+Pollutant
+	
+Within Nonattainment Status Area?
+	
+Nonattainment Status Applicable Standard(s)
+	
+Within Maintenance Status Area?
+	
+Maintenance Status Applicable Standard(s)
+
+Ozone	Yes	1-Hour Ozone (1979); 8-Hour Ozone (1997); 8-Hour Ozone (2008); 8-Hour Ozone (2015)	No	--
+Lead	No	--	No	--
+Particulate Matter	No	--	Yes	PM-2.5 (1997); PM-2.5 (2006)
+Carbon Monoxide	No	--	Yes	Carbon Monoxide (1971)
+Sulfur Dioxide	No	--	No	--
+Pollutants
+Toxics Release Inventory History of Reported Chemicals Released or Transferred in Pounds per Year at Site
+TRI Facility ID
+	
+Year
+	
+Air Emissions
+	
+Surface Water Discharges
+	
+Off-Site Transfers to POTWs
+	
+Underground Injections
+	
+Disposal to Land
+	
+Total On-Site Releases
+	
+Total Off-Site Transfers
+No data records returned
+Toxics Release Inventory Total Releases and Transfers in Pounds by Chemical and Year
+Chemical Name
+No data records returned
+DMR and TRI Multi-Year Loading Report
+CWA Discharge Monitoring Report (DMR) Pollutant Loadings
+NPDES ID
+	
+Description
+No data records returned
+SDWA Lead and Copper (5 Years)
+Source ID
+	
+Contaminant
+	
+Sample Dates
+	
+90th Percentile Sample Concentrations
+	
+Action Level
+	
+Health-Based Violations
+
+NY7003493	Lead	2024-01-01 - 2024-12-31	.01 mg/L	0.015 mg/L	--
+NY7003493	Lead	2023-01-01 - 2023-12-31	.011 mg/L
+NY7003493	Lead	2022-01-01 - 2022-12-31	.011 mg/L
+NY7003493	Lead	2022-01-01 - 2022-12-31	.011 mg/L
+NY7003493	Lead	2021-01-01 - 2021-12-31	.012 mg/L
+NY7003493	Copper	--	No data records returned.	1.3 mg/L
+Community
+Demographic Profile of Surrounding Area (1-Mile Radius)
+Select Demographic Profile Option:
+1-Mile Radius
+3-Mile Radius
+5-Mile Radius
+Estimated Drinking Water Service Area
+
+This section provides demographic information regarding the community surrounding the facility. ECHO compliance data alone are not sufficient to determine whether violations at a particular facility had negative impacts on public health or the environment. Statistics are based upon the 2024 American Community Survey (ACS) 5-year Summary and are accurate to the extent that the facility latitude and longitude listed below are correct. Census boundaries and demographic data for U.S. Territories are based on the "2020 Island Areas Demographic Profiles" from the U.S. Census Bureau. EPA’s spatial processing methodology considers the overlap between the selected radii and ACS census block groups in determining the demographics surrounding the facility. For more detail about this methodology, see the DFR Data Dictionary.
+
+General Statistics (ACS)
+
+Label
+
+Total Persons	3,543
+Population Density	1,258/sq.mi.
+Housing Units in Area	1,303
+Percent People of Color	19%
+Households in Area	1,209
+Households on Public Assistance	15
+Persons With Low Income	311
+Percent With Low Income	9%
+Geography
+
+Label
+
+Radius of Selected Area	1 mi.
+Center Latitude	41.088056
+Center Longitude	-73.777778
+Total Area	3.14 sq.mi.
+Land Area	90%
+Water Area	10%
+Income Breakdown (ACS) - Households (%)
+
+Label
+
+Less than $15,000	27 (2.23%)
+$15,000 - $25,000	37 (3.06%)
+$25,000 - $50,000	96 (7.94%)
+$50,000 - $75,000	89 (7.36%)
+Greater than $75,000	960 (79.4%)
+Age Breakdown (ACS) - Persons (%)
+
+Label
+
+Children 5 years and younger	259 (7%)
+Minors 17 years and younger	819 (23%)
+Adults 18 years and older	2,724 (77%)
+Seniors 65 years and older	871 (25%)
+Race Breakdown (ACS) - Persons (%)
+
+Label
+
+White	2,985 (84%)
+African-American	44 (1%)
+Hispanic-Origin	262 (7%)
+Asian	243 (7%)
+Hawaiian/Pacific Islander	0 (0%)
+American Indian	9 (0%)
+Other/Multiracial	162 (5%)
+Education Level (Persons 25 & older) (ACS) - Persons (%)
+
+Label
+
+Less than 9th Grade	99 (3.99%)
+9th through 12th Grade	67 (2.7%)
+High School Diploma	398 (16.04%)
+Some College/2-year	341 (13.74%)
+B.S./B.A. or More	1,365 (55.02%)
+ Top of Page
+Discover.
+Accessibility Statement
+Budget & Performance
+Contracting
+EPA www Web Snapshot
+Grants
+No FEAR Act Data
+Plain Writing
+Privacy and Security Notice
+Connect.
+Data
+Inspector General
+Jobs
+Newsroom
+Regulations.gov
+Subscribe
+USA.gov
+White House
+Ask.
+Contact EPA
+EPA Disclaimers
+Hotlines
+FOIA Requests
+Frequent Questions
+Follow.
+
+Last updated on May 13, 2024
+
+Data Refresh Information

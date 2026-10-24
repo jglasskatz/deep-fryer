@@ -6,9 +6,13 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { findingPayloadSchema, previewObservationSchema, resolveThreshold, computeScoring } from '../packages/core/src/index.ts';
 import { portraitFramework } from './portrait-framework.mjs';
+import { overlayBaseline } from './research-overlays.mjs';
 const read = p => readFileSync(p, 'utf8');
 const hash = s => createHash('sha256').update(s).digest('hex');
-const release = JSON.parse(read('site/data/portraits.json'));
+// Recheck the original campaign against the immutable baseline. The separate
+// research-overlays test checks every subsequent displayed field against its
+// exact reviewed amendment; neither layer can silently replace the other.
+const release = overlayBaseline();
 const catalog = JSON.parse(read('site/catalog.json'));
 const publicArchives = JSON.parse(read('site/data/evidence-manifest.json'));
 test('displayed research and profile remain bound to the independent review', () => {

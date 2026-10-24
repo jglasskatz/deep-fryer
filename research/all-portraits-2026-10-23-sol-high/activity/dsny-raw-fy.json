@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://data.cityofnewyork.us/resource/ebb7-mvp5.json?%24select=month%2Cborough%2Ccommunitydistrict%2Crefusetonscollected&%24where=month+between+%272004+%2F+07%27+and+%272005+%2F+06%27+OR+month+between+%272024+%2F+07%27+and+%272025+%2F+06%27&%24order=month%2Cborough%2Ccommunitydistrict&%24limit=5000",
+  "stem": "dsny-raw-fy",
+  "captured_at": "2026-10-24T01:28:52.187Z",
+  "status": 200,
+  "content_type": "application/json;charset=utf-8",
+  "raw_path": "raw/dsny-raw-fy.json",
+  "sha256": "4a6a2b54c537103f5b700dbf770176f2d8df544d10b1c96d1f2fd62c8801d554",
+  "bytes": 141964,
+  "success": true
+}

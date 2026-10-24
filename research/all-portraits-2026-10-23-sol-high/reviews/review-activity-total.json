@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "high",
+  "shared_agent_role_count": 1,
+  "allocation": "One shared research-reviewer agent spanning all 11 portraits, including its corrective authorship/self-check continuation. Count this role once, not 11 times and not again for the corrections. The different agent independently reviewing corrections is a separate role outside this log.",
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "completed_at": "2026-10-24T02:01:01.353838+00:00",
+  "components": {
+    "initial_independent_review": {
+      "schema_version": 1,
+      "reviewer": "gpt-6.1-sol",
+      "reasoning_effort": "high",
+      "completed_at": "2026-10-24T01:56:37.784910+00:00",
+      "actual_tokens": null,
+      "actual_billed_usd": null,
+      "counts": {
+        "amendment_verdicts": 36,
+        "retained_gap_reviews": 9,
+        "unique_raw_sources_hash_bound": 28,
+        "source_support_entries_checked": 70,
+        "existing_exhibits_visually_inspected": 16,
+        "evidence_manifest_entries_checked": 45,
+        "before_payloads_checked": 36,
+        "field_diff_records_checked": 35,
+        "independent_check_script_runs": 1,
+        "independent_checks": 334,
+        "expected_failed_evidence_checks": 2,
+        "public_web_tool_calls": 2,
+        "public_search_queries": 2,
+        "primary_pages_opened": 1,
+        "new_source_capture_jobs": 0,
+        "new_pdf_renders": 0,
+        "unique_archived_pdfs_text_extracted": 6,
+        "archived_pdf_text_extraction_calls": 7,
+        "subagents_spawned_by_reviewer": 0,
+        "database_writes": 0,
+        "github_operations": 0
+      },
+      "count_scope": "New independent review work only. Raw sources and screenshots were reused, not newly researched/captured. Search calls include two queries in one search tool call and one primary-page open. Counts are activity units usable for scenarios, not tokens or invoices.",
+      "unavailable_measurements": {
+        "total_tool_invocations": null,
+        "review_input_tokens": null,
+        "review_output_tokens": null,
+        "reason": "Session did not expose measured token usage, per-call billing or a complete tool meter."
+      },
+      "cost_scenario_rule": "Apply explicit user-visible token-per-review/search/read assumptions to these activity counts if estimating; label all such totals scenario assumptions. Never replace actual_tokens or actual_billed_usd null with scenario output."
+    },
+    "corrective_authorship_and_self_check": {
+      "schema_version": 1,
+      "role": "corrective author/self-check activity, separate from original independent review",
+      "actual_tokens": null,
+      "actual_billed_usd": null,
+      "completed_at": "2026-10-24T01:59:29.737586+00:00",
+      "counts": {
+        "corrected_amendments_authored": 5,
+        "new_local_HTML_extracts": 3,
+        "sandboxed_browser_launch_failures": 3,
+        "successful_installed_browser_render_jobs": 3,
+        "new_exhibits_visually_inspected": 3,
+        "new_primary_downloads": 0,
+        "checks": 36,
+        "database_writes": 0,
+        "github_operations": 0
+      },
+      "notes": "Installed Chromium required an allowed sandbox escalation after launch failure. No browser installation or publisher-source changes. Same-agent self-check is not independent approval."
+    }
+  },
+  "combined_counts": {
+    "independent_amendment_verdicts": 36,
+    "corrective_amendments_authored_for_another_reviewer": 5,
+    "retained_gaps_audited": 9,
+    "unique_primary_archives_reused": 28,
+    "initial_exhibits_visually_inspected": 16,
+    "corrected_exhibits_visually_inspected": 3,
+    "checks_total": 370,
+    "initial_passed_checks": 332,
+    "initial_expected_evidence_failures": 2,
+    "corrective_self_check_passed": 36,
+    "public_web_tool_calls": 2,
+    "search_queries": 2,
+    "primary_pages_opened": 1,
+    "new_primary_downloads": 0,
+    "successful_browser_render_jobs": 3,
+    "sandbox_browser_launch_failures": 3,
+    "browser_installations": 0,
+    "database_writes": 0,
+    "github_operations": 0
+  }
+}

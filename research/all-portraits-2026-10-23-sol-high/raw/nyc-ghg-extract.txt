@@ -1,0 +1,13 @@
+NYC community emissions and population vintage
+
+Researcher-generated faithful extract/derivation from archived source bytes. Original inputs, exact URLs and SHA-256 hashes are retained in this campaign. This exhibit is not a publisher-authored table.
+
+CY2005total tCO2e	CY2024total tCO2e	Reduction%
+64139720.6	47944551.47	25.249827998159383
+Population vintage	CY2024population	tCO2e/resident
+2024	8478072	5.6551243572831185
+2025	8596825	5.577006798440122
+
+NYC community inventory totals use 100-year global warming potentials. Borough displays are citywide regional proxies, not borough-specific emissions.
+
+For the 2024 inventory, 5.66 tCO2e/resident follows the Census Vintage 2024 denominator; 5.58 follows the revised Vintage 2025 denominator. The difference reflects a population revision. The full 85-row inventory and all five same-vintage county population rows are archived.

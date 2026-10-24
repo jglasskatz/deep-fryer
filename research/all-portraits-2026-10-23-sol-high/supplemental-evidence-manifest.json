@@ -1,0 +1,22 @@
+{
+  "raw/acs5-rentburden2024.bin.gz": {
+    "sha256": "cf972ef7d65acc5e0a6693968f204e6092958e258798587d71b53930e2d14996",
+    "bytes": 13234536,
+    "role": "raw_path"
+  },
+  "evidence/carmel-monterey-rentburden-extract.png": {
+    "sha256": "5503a4bc4b0db043712b5b718e8f950ae3d0699f9a58d945c8f30fd6e033c480",
+    "bytes": 242542,
+    "role": "snapshot_path"
+  },
+  "raw/acs5-shells2024.bin.gz": {
+    "sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0",
+    "bytes": 336902,
+    "role": "raw_path"
+  },
+  "raw/acs1-rentburden2024.bin": {
+    "sha256": "edf1abe1970b39c3cb9038f762fc203dcfea081e8f2ca6cb0f8c7a75c62cd770",
+    "bytes": 973896,
+    "role": "raw_path"
+  }
+}

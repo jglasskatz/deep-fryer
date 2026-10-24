@@ -1,0 +1,150 @@
+{
+  "id": "bronx:chemical-pollution:0",
+  "portrait": "bronx",
+  "dimension": "chemical-pollution",
+  "indicator_index": 0,
+  "kind": "replace",
+  "before": {
+    "name": "Toxic Release Inventory on-site releases per capita",
+    "unit": "lbs per resident per year",
+    "year": 2024,
+    "value": 0.000964,
+    "source": "EPA Toxics Release Inventory (TRI) Program — Envirofacts data service (TRI_FACILITY, TRI_REPORTING_FORM, TRI_RELEASE_QTY tables), reporting year 2024, cross-checked against all historically Bronx-registered facilities; population from NYS Dept. of Health Annual Population Estimates (Census Bureau-derived postcensal estimate)",
+    "target": 1,
+    "scoring": {
+      "inputs": {
+        "scale": 1,
+        "value": 0.000964,
+        "target": 1
+      },
+      "function": "lower_is_better",
+      "worked_math": "Numerator (Bronx County on-site TRI releases, reporting year 2024): checked all 27 facilities ever registered in Bronx County (FIPS 36005) in EPA's TRI_FACILITY master list; only 1 had an active RY2024 filing — SPRAGUE BRONX TERMINAL (10454CSTLL939E1), a Harlem River petroleum terminal. Per-chemical on-site releases (AIR FUG + AIR STACK + WATER, from TRI_RELEASE_QTY): 1,2,4-Trimethylbenzene 151.39+186.28+2.52=340.19 lbs; Polycyclic aromatic compounds 0+0.0019+0.0179=0.0198 lbs; Benzo[g,h,i]perylene 0+0.00004+0.00378=0.00382 lbs; Xylene (mixed isomers) 1015.53+0.01+0.01=1015.55 lbs; Naphthalene and Ethylbenzene were reported on Form A (short form; certifies releases below 500 lbs, no quantitative breakdown disclosed, treated as 0). Total = 340.19+0.0198+0.00382+1015.55 = 1,355.76 lbs. Denominator: Bronx County population, 2024 postcensal estimate (NYS DOH via data.ny.gov, Census Bureau-derived) = 1,406,052. Per capita = 1,355.76 / 1,406,052 = 0.000964 lbs/resident/year. level_pct = (0.000964 − 1) / 1 × 100 = −99.90",
+      "threshold_ref": "chemical-pollution.tri-releases-per-capita"
+    },
+    "evidence": {
+      "captured_at": "2026-08-05T00:00:00Z",
+      "snapshot_path": "CAPTURE_FAILED - evidence tool returned 'browser.newContext: Target page, context or browser has been closed' on every attempt (10 retries across 5 distinct URLs, including this one, the TRI_RELEASE_QTY endpoints, and the population source) — an infrastructure failure in this session, not a site-side block. No snapshot could be stored; flagging for reviewer to re-capture."
+    },
+    "level_pct": -99.9,
+    "confidence": "medium",
+    "source_url": "https://data.epa.gov/efservice/TRI_FACILITY/county_name/BRONX/state_abbr/NY/JSON",
+    "source_tier": 2,
+    "geographic_scale": "county",
+    "geography": "county",
+    "status": "published",
+    "evidence_path": null,
+    "pdf_path": null
+  },
+  "after": {
+    "name": "Quantified TRI Form R on-site releases per capita",
+    "unit": "lb per resident per year",
+    "year": 2024,
+    "value": 0.0009642343384170714,
+    "source": "US EPA TRI Basic Data Files 2024; US Census county population Vintage 2025",
+    "target": null,
+    "scoring": null,
+    "evidence": {
+      "snapshot_path": "evidence/nyc-tri-extract.png",
+      "captured_at": "2026-10-24T01:28:52.173Z"
+    },
+    "level_pct": null,
+    "confidence": "medium",
+    "source_url": "https://data.epa.gov/efservice/mv_tri_basic_download/st/NY/year/2024/JSON",
+    "source_tier": 2,
+    "geographic_scale": "county",
+    "geography": "county",
+    "status": "source-supported-observation",
+    "evidence_path": "evidence/nyc-tri-extract.png",
+    "pdf_path": null,
+    "notes": "EPA reportingyear 2024 quantified Form R releases 1355.76362 lb / July 1,2024 Census Vintage 2025 population 1406052. 2 Form A records have unquantified releases, not measured zeros. The configured total TRI-release metric therefore remains incompletely quantified. No score asserted for this qualified observed lowerbound. Reporting thresholds and coveredindustries restrict TRI coverage."
+  },
+  "field_diff": {
+    "name": {
+      "before": "Toxic Release Inventory on-site releases per capita",
+      "after": "Quantified TRI Form R on-site releases per capita"
+    },
+    "unit": {
+      "before": "lbs per resident per year",
+      "after": "lb per resident per year"
+    },
+    "value": {
+      "before": 0.000964,
+      "after": 0.0009642343384170714
+    },
+    "source": {
+      "before": "EPA Toxics Release Inventory (TRI) Program — Envirofacts data service (TRI_FACILITY, TRI_REPORTING_FORM, TRI_RELEASE_QTY tables), reporting year 2024, cross-checked against all historically Bronx-registered facilities; population from NYS Dept. of Health Annual Population Estimates (Census Bureau-derived postcensal estimate)",
+      "after": "US EPA TRI Basic Data Files 2024; US Census county population Vintage 2025"
+    },
+    "target": {
+      "before": 1,
+      "after": null
+    },
+    "scoring": {
+      "before": {
+        "inputs": {
+          "scale": 1,
+          "value": 0.000964,
+          "target": 1
+        },
+        "function": "lower_is_better",
+        "worked_math": "Numerator (Bronx County on-site TRI releases, reporting year 2024): checked all 27 facilities ever registered in Bronx County (FIPS 36005) in EPA's TRI_FACILITY master list; only 1 had an active RY2024 filing — SPRAGUE BRONX TERMINAL (10454CSTLL939E1), a Harlem River petroleum terminal. Per-chemical on-site releases (AIR FUG + AIR STACK + WATER, from TRI_RELEASE_QTY): 1,2,4-Trimethylbenzene 151.39+186.28+2.52=340.19 lbs; Polycyclic aromatic compounds 0+0.0019+0.0179=0.0198 lbs; Benzo[g,h,i]perylene 0+0.00004+0.00378=0.00382 lbs; Xylene (mixed isomers) 1015.53+0.01+0.01=1015.55 lbs; Naphthalene and Ethylbenzene were reported on Form A (short form; certifies releases below 500 lbs, no quantitative breakdown disclosed, treated as 0). Total = 340.19+0.0198+0.00382+1015.55 = 1,355.76 lbs. Denominator: Bronx County population, 2024 postcensal estimate (NYS DOH via data.ny.gov, Census Bureau-derived) = 1,406,052. Per capita = 1,355.76 / 1,406,052 = 0.000964 lbs/resident/year. level_pct = (0.000964 − 1) / 1 × 100 = −99.90",
+        "threshold_ref": "chemical-pollution.tri-releases-per-capita"
+      },
+      "after": null
+    },
+    "evidence": {
+      "before": {
+        "captured_at": "2026-08-05T00:00:00Z",
+        "snapshot_path": "CAPTURE_FAILED - evidence tool returned 'browser.newContext: Target page, context or browser has been closed' on every attempt (10 retries across 5 distinct URLs, including this one, the TRI_RELEASE_QTY endpoints, and the population source) — an infrastructure failure in this session, not a site-side block. No snapshot could be stored; flagging for reviewer to re-capture."
+      },
+      "after": {
+        "snapshot_path": "evidence/nyc-tri-extract.png",
+        "captured_at": "2026-10-24T01:28:52.173Z"
+      }
+    },
+    "level_pct": {
+      "before": -99.9,
+      "after": null
+    },
+    "source_url": {
+      "before": "https://data.epa.gov/efservice/TRI_FACILITY/county_name/BRONX/state_abbr/NY/JSON",
+      "after": "https://data.epa.gov/efservice/mv_tri_basic_download/st/NY/year/2024/JSON"
+    },
+    "status": {
+      "before": "published",
+      "after": "source-supported-observation"
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/nyc-tri-extract.png"
+    },
+    "notes": {
+      "before": null,
+      "after": "EPA reportingyear 2024 quantified Form R releases 1355.76362 lb / July 1,2024 Census Vintage 2025 population 1406052. 2 Form A records have unquantified releases, not measured zeros. The configured total TRI-release metric therefore remains incompletely quantified. No score asserted for this qualified observed lowerbound. Reporting thresholds and coveredindustries restrict TRI coverage."
+    }
+  },
+  "reason": "Correct denominator provenance and distinguish quantified releases from Form A missing quantities.",
+  "source_support": [
+    {
+      "url": "https://data.epa.gov/efservice/mv_tri_basic_download/st/NY/year/2024/JSON",
+      "raw_path": "raw/nyc-tri-2024.json",
+      "raw_sha256": "f8263a50d71d3b186310c5d07742ae5a9bd496e0efd5a041a3de606e09e84391",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:28:52.173Z",
+      "period": "reportingyear 2024",
+      "scale": "county",
+      "snapshot_path": "evidence/nyc-tri-extract.png",
+      "snapshot_sha256": "d2ec70e5a244b223fde7b833eb31a670e005ca1dba7e7efbe82d4384b9f7975b"
+    },
+    {
+      "url": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/counties/totals/co-est2025-alldata.csv",
+      "raw_path": "raw/census-county-pop-v2025.csv",
+      "raw_sha256": "4f5a499d851e2cb48fd7a5405e5a9235453a8a66933657aacd10df0e264f35d5",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:32:20.760Z",
+      "period": "July 1,2024; Vintage 2025",
+      "scale": "county"
+    }
+  ],
+  "review_required": true
+}

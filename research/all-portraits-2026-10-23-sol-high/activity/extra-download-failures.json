@@ -1,0 +1,19 @@
+{
+  "attempts": [
+    {
+      "url": "https://www.nyc.gov/assets/dep/downloads/pdf/water/drinking-water/drinking-water-supply-quality-report/2025-drinking-water-supply-quality-report.pdf",
+      "method": "curl sandbox",
+      "outcome": "DNSfailure"
+    },
+    {
+      "url": "https://www.nyc.gov/assets/dep/downloads/pdf/water/drinking-water/drinking-water-supply-quality-report/2025-drinking-water-supply-quality-report.pdf",
+      "method": "curl escalated",
+      "outcome": "HTTP403"
+    },
+    {
+      "url": "https://www.watsonville.gov/DocumentCenter/View/26652/Watsonville-Water-Quality-Report-2024",
+      "method": "curl --http1.1 escalated",
+      "outcome": "TLSsyscallfailure"
+    }
+  ]
+}

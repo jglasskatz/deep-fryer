@@ -11,6 +11,7 @@ import {
   scoreNegativeControls,
   scoreStrategy,
   sessionSpend,
+  renderTierAuditPrompt,
   type ScoredFinding,
 } from './measure.js';
 import { renderPlan } from './plan.js';
@@ -356,6 +357,40 @@ describe('reconcileBoroughs', () => {
     expect(rows[0]!.divergencePct).toBeGreaterThan(80);
   });
 
+  const countFamily = (values = [39, 63, 57, 33, 13], cityValue = 205) => ({
+    city: [indicatorFinding({ indicatorSlug: 'traffic-deaths', value: cityValue })],
+    boroughs: boroughs(values).map((borough, index) => ({
+      ...borough,
+      findings: [indicatorFinding({ indicatorSlug: 'traffic-deaths', tenantSlug: borough.tenantSlug, value: values[index]! })],
+    })),
+  });
+
+  it('reconciles absolute counts by their sum rather than a population-weighted mean', () => {
+    const rows = reconcileBoroughs(countFamily());
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ impliedValue: 205, cityValue: 205, denominator: 'sum', n: 5, approximate: false, divergencePct: 0, exceedsTolerance: false });
+    expect(reconcileBoroughs(countFamily([39, 63, 57, 33, 100]))[0]!.exceedsTolerance).toBe(true);
+  });
+
+  it('never reports an incomplete or incomparable borough sum as a city total', () => {
+    const missing = countFamily();
+    missing.boroughs[0]!.findings = [];
+    expect(reconcileBoroughs(missing)).toEqual([]);
+    const mismatched = countFamily();
+    const payload = mismatched.boroughs[0]!.findings[0]!.payload;
+    if (payload.kind !== 'indicator') throw new Error('test finding');
+    for (const change of [{ year: payload.year - 1 }, { unit: 'deaths per 100,000' }, { geographic_scale: 'regional' as const }]) {
+      const input = countFamily();
+      input.boroughs[0]!.findings[0]!.payload = { ...payload, ...change };
+      expect(reconcileBoroughs(input)).toEqual([]);
+    }
+  });
+
+  it('flags a nonzero borough total against a zero city count', () => {
+    expect(reconcileBoroughs(countFamily([0, 0, 0, 0, 1], 0))[0]).toMatchObject({ exceedsTolerance: true, divergencePct: Infinity });
+    expect(reconcileBoroughs(countFamily([0, 0, 0, 0, 0], 0))[0]).toMatchObject({ exceedsTolerance: false, divergencePct: 0 });
+  });
+
   it('skips non-additive indicators rather than inventing a decomposition', () => {
     const rows = reconcileBoroughs({
       city: [indicatorFinding({ indicatorSlug: 'aragonite-saturation', value: 2.9 })],
@@ -450,5 +485,19 @@ describe('slug maps track the framework', () => {
   it('leaves per-capita indicators on the population default', () => {
     expect(DENOMINATORS['pm25-annual']).toBeUndefined();
     expect(DENOMINATORS['ghg-per-capita']).toBeUndefined();
+  });
+});
+
+describe('tier audit prompts', () => {
+  const input = { indicator_name: 'Rent burden', claimed_value: '42', unit: '%', year: '2025', source_name: 'City office', source_url: 'https://city.example/statistics', tiers_block: '1: local primary; 2: state', region_name: 'City' };
+  it('audits tier-1 authority and construct without inventing an impossible higher tier', () => {
+    const prompt = renderTierAuditPrompt({ ...input, claimed_tier: 1 });
+    expect(prompt).toContain('There is no higher tier than tier 1');
+    expect(prompt).toContain('construct/denominator');
+    expect(prompt).toContain('claimed_tier_supported');
+    expect(prompt).not.toContain('Search for a source in any tier numbered below 1');
+  });
+  it('still searches higher-priority sources for lower-tier findings', () => {
+    expect(renderTierAuditPrompt({ ...input, claimed_tier: 3 })).toContain('Search for a source in any tier numbered below 3');
   });
 });

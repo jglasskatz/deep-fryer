@@ -1,0 +1,12 @@
+{
+  "mode": "page",
+  "url": "https://healthweb-back.health.ny.gov/environmental/water/drinking/violations/2025/new_york_city_compliance_report.htm",
+  "stem": "nyc-state-water-2025",
+  "captured_at": "2026-10-24T01:25:27.185Z",
+  "status": 200,
+  "raw_path": "raw/nyc-state-water-2025.html",
+  "snapshot_path": "evidence/nyc-state-water-2025.png",
+  "sha256": "36bee3097012520dc5141fb3e49e628b4188b2a84cca5bd2af02fb70a23f9fc2",
+  "bytes": 51102,
+  "success": true
+}

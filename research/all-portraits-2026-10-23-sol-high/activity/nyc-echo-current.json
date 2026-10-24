@@ -1,0 +1,12 @@
+{
+  "mode": "page",
+  "url": "https://echo.epa.gov/detailed-facility-report?fid=NY7003493&sys=SDWIS",
+  "stem": "nyc-echo-current",
+  "captured_at": "2026-10-24T01:25:56.817Z",
+  "status": 200,
+  "raw_path": "raw/nyc-echo-current.html",
+  "snapshot_path": "evidence/nyc-echo-current.png",
+  "sha256": "31f1ddac3173794b9059a135df44889ca772cc1578326781ce42296166efc41f",
+  "bytes": 603619,
+  "success": true
+}

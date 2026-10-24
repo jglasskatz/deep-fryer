@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "campaign": "all-portraits-2026-10-23-sol-high",
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "high",
+  "budget_usd": null,
+  "actual_tokens": null,
+  "actual_billed_usd": null,
+  "scope": "One shared researcher, one shared initial reviewer including corrective authorship, and a different independent reviewer of the five corrections. Each role counted once across all 11 portraits.",
+  "assumptions": {
+    "price_assumption_date": "2026-10-23",
+    "input_per_million_usd": 2,
+    "output_per_million_usd": 10,
+    "fast_multiplier": 2,
+    "web_tool_call_proxy_usd": 0.01,
+    "researcher_and_initial_reviewer": "Each role uses assumed low/base/high totals of 500k/2M/10M input and 30k/80k/250k output including reasoning tokens. These are sensitivity inputs, not measured usage or predictions.",
+    "independent_correction_reviewer": {
+      "assumed_tokens_by_scenario": {
+        "low": [
+          100000,
+          5000
+        ],
+        "base": [
+          250000,
+          10000
+        ],
+        "high": [
+          1000000,
+          30000
+        ]
+      },
+      "note": "Smaller assumed workload for checking five corrected amendments; no additional web calls. Only research review is allocated here; the same agent also did engineering, which is excluded."
+    },
+    "web_calls": {
+      "researcher": 19,
+      "reviewer_including_correction_authorship": 2,
+      "independent_correction_reviewer": 0
+    },
+    "limitations": [
+      "Session token telemetry and invoices are unavailable. Actual spend stays unknown.",
+      "Prices are dated assumptions inherited from the prior ledger, not freshly verified rates.",
+      "Browser requests and local renders have no separate price in this scenario.",
+      "Engineering, UI, orchestration, hosting and baseline SC/NYC research before this tracked campaign are excluded.",
+      "Cumulative totals combine prior tracked Carmel/Monterey research with this shared round; they are not the all-time cost of every portrait."
+    ]
+  },
+  "inputs": [
+    {
+      "path": "cost-sensitivity.json",
+      "sha256": "f88c86822230438d3202075760c1775fc51d422536f17615afdcb8786efe3161"
+    },
+    {
+      "path": "reviews/reviewer-cost-sensitivity.json",
+      "sha256": "7d481ddba45f26a59e8ca8019e4aa9c15be8d8a13e5ad91160643ed67ee91f9a"
+    },
+    {
+      "path": "reviews/corrections-independent-sol-high.json",
+      "sha256": "79c58321c6ecd268d214b3da174b9b8690908fa12b64b44a8584dc83065d31de"
+    },
+    {
+      "path": "baseline/portraits.json",
+      "sha256": "a5e318a6bc47afe632dbd1aab17ea354e68279af02ad2c59b18cd43011964d2b"
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario": "low",
+      "tier": "standard",
+      "role_usd": {
+        "researcher": 1.49,
+        "reviewer_including_correction_authorship": 1.32,
+        "independent_correction_reviewer": 0.25
+      },
+      "total_usd": 3.06,
+      "prior_tracked_usd": 14.53,
+      "cumulative_tracked_usd": 17.59
+    },
+    {
+      "scenario": "low",
+      "tier": "fast",
+      "role_usd": {
+        "researcher": 2.79,
+        "reviewer_including_correction_authorship": 2.62,
+        "independent_correction_reviewer": 0.5
+      },
+      "total_usd": 5.91,
+      "prior_tracked_usd": 25.19,
+      "cumulative_tracked_usd": 31.1
+    },
+    {
+      "scenario": "base",
+      "tier": "standard",
+      "role_usd": {
+        "researcher": 4.99,
+        "reviewer_including_correction_authorship": 4.82,
+        "independent_correction_reviewer": 0.6
+      },
+      "total_usd": 10.41,
+      "prior_tracked_usd": 43.23,
+      "cumulative_tracked_usd": 53.64
+    },
+    {
+      "scenario": "base",
+      "tier": "fast",
+      "role_usd": {
+        "researcher": 9.79,
+        "reviewer_including_correction_authorship": 9.62,
+        "independent_correction_reviewer": 1.2
+      },
+      "total_usd": 20.61,
+      "prior_tracked_usd": 82.59,
+      "cumulative_tracked_usd": 103.2
+    },
+    {
+      "scenario": "high",
+      "tier": "standard",
+      "role_usd": {
+        "researcher": 22.69,
+        "reviewer_including_correction_authorship": 22.52,
+        "independent_correction_reviewer": 2.3
+      },
+      "total_usd": 47.51,
+      "prior_tracked_usd": 188.37,
+      "cumulative_tracked_usd": 235.88
+    },
+    {
+      "scenario": "high",
+      "tier": "fast",
+      "role_usd": {
+        "researcher": 45.19,
+        "reviewer_including_correction_authorship": 45.02,
+        "independent_correction_reviewer": 4.6
+      },
+      "total_usd": 94.81,
+      "prior_tracked_usd": 372.87,
+      "cumulative_tracked_usd": 467.68
+    }
+  ]
+}

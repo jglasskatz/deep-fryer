@@ -1,0 +1,121 @@
+{
+  "id": "staten-island:networks:0",
+  "portrait": "staten-island",
+  "dimension": "networks",
+  "indicator_index": 0,
+  "kind": "replace",
+  "before": {
+    "name": "Households with a broadband subscription",
+    "unit": "% of households",
+    "year": 2023,
+    "value": 76.5,
+    "source": "NYS Office of the State Comptroller (OSC), \"Broadband Availability, Access and Affordability in New York City,\" Report 20-2025 (December 2024), Figure 4 — borough-level table citing U.S. Census Bureau American Community Survey 1-year files, 2023, OSC analysis",
+    "target": 100,
+    "scoring": {
+      "inputs": {
+        "scale": 100,
+        "value": 76.5,
+        "target": 100
+      },
+      "function": "higher_is_better",
+      "worked_math": "level_pct = (100 − 76.5) / 100 × 100 = +23.5",
+      "threshold_ref": "networks.broadband-access"
+    },
+    "evidence": {
+      "pdf_path": "evidence/ee506dff8b84.pdf",
+      "captured_at": "2026-08-05T18:37:33.313Z",
+      "snapshot_path": "evidence/ee506dff8b84.png"
+    },
+    "level_pct": 23.5,
+    "confidence": "medium",
+    "source_url": "https://www.osc.ny.gov/files/reports/pdf/report-20-2025.pdf",
+    "source_tier": 2,
+    "geographic_scale": "county",
+    "geography": "county",
+    "status": "published",
+    "evidence_path": "evidence/shared/87f5facc4b0932f21ecd4cef.png",
+    "pdf_path": "evidence/shared/e89455fc53fef9ac48a438f1.pdf"
+  },
+  "after": {
+    "name": "Households with fixed broadband (cable, fiber optic, or DSL)",
+    "unit": "% of households",
+    "year": 2023,
+    "value": 76.5,
+    "source": "NYS Office of the State Comptroller (OSC), \"Broadband Availability, Access and Affordability in New York City,\" Report 20-2025 (December 2024), Figure 4 — borough-level table citing U.S. Census Bureau American Community Survey 1-year files, 2023, OSC analysis",
+    "target": 100,
+    "scoring": {
+      "inputs": {
+        "scale": 100,
+        "value": 76.5,
+        "target": 100
+      },
+      "function": "higher_is_better",
+      "worked_math": "level_pct = (100 − 76.5) / 100 × 100 = +23.5",
+      "threshold_ref": "networks.broadband-access"
+    },
+    "evidence": {
+      "snapshot_path": "../../site/evidence/shared/87f5facc4b0932f21ecd4cef.png",
+      "captured_at": "2026-08-05T18:37:33.313Z",
+      "pdf_path": "../../site/evidence/shared/e89455fc53fef9ac48a438f1.pdf"
+    },
+    "level_pct": 23.5,
+    "confidence": "medium",
+    "source_url": "https://www.osc.ny.gov/files/reports/pdf/report-20-2025.pdf",
+    "source_tier": 2,
+    "geographic_scale": "county",
+    "geography": "county",
+    "status": "source-supported-draft",
+    "evidence_path": "../../site/evidence/shared/87f5facc4b0932f21ecd4cef.png",
+    "pdf_path": "../../site/evidence/shared/e89455fc53fef9ac48a438f1.pdf",
+    "notes": "Prior 63.3%(Bronx)/76.5%(Staten Island) figures refer to 2023 fixed broadband, notbroadband of ANY type. Official 2024 GCT2801 reports ANYbroadband 88.9%/94.0%, a differentconstruct andyear. Namecorrected; originalfixedvalue retained. Sourceoriginal OSC archive remainsloadbearing."
+  },
+  "field_diff": {
+    "name": {
+      "before": "Households with a broadband subscription",
+      "after": "Households with fixed broadband (cable, fiber optic, or DSL)"
+    },
+    "evidence": {
+      "before": {
+        "pdf_path": "evidence/ee506dff8b84.pdf",
+        "captured_at": "2026-08-05T18:37:33.313Z",
+        "snapshot_path": "evidence/ee506dff8b84.png"
+      },
+      "after": {
+        "snapshot_path": "../../site/evidence/shared/87f5facc4b0932f21ecd4cef.png",
+        "captured_at": "2026-08-05T18:37:33.313Z",
+        "pdf_path": "../../site/evidence/shared/e89455fc53fef9ac48a438f1.pdf"
+      }
+    },
+    "status": {
+      "before": "published",
+      "after": "source-supported-draft"
+    },
+    "evidence_path": {
+      "before": "evidence/shared/87f5facc4b0932f21ecd4cef.png",
+      "after": "../../site/evidence/shared/87f5facc4b0932f21ecd4cef.png"
+    },
+    "pdf_path": {
+      "before": "evidence/shared/e89455fc53fef9ac48a438f1.pdf",
+      "after": "../../site/evidence/shared/e89455fc53fef9ac48a438f1.pdf"
+    },
+    "notes": {
+      "before": null,
+      "after": "Prior 63.3%(Bronx)/76.5%(Staten Island) figures refer to 2023 fixed broadband, notbroadband of ANY type. Official 2024 GCT2801 reports ANYbroadband 88.9%/94.0%, a differentconstruct andyear. Namecorrected; originalfixedvalue retained. Sourceoriginal OSC archive remainsloadbearing."
+    }
+  },
+  "reason": "Correct fixed versus any broadband label; no invented improvement from incomparable measures.",
+  "source_support": [
+    {
+      "url": "https://www.osc.ny.gov/files/reports/pdf/report-20-2025.pdf",
+      "snapshot_path": "../../site/evidence/shared/87f5facc4b0932f21ecd4cef.png",
+      "snapshot_sha256": "87f5facc4b0932f21ecd4cef9e768df38d05a31aabfc1ab4d5f1881e295612b6",
+      "period": "2023 ACS1 yearfixed broadband",
+      "scale": "county",
+      "captured_at": "2026-08-05T18:37:33.313Z",
+      "raw_path": "../../site/evidence/shared/e89455fc53fef9ac48a438f1.pdf",
+      "raw_sha256": "e89455fc53fef9ac48a438f1a821ec55b9e4759b207149acf6c263aa894a7d61",
+      "pdf_path": "../../site/evidence/shared/e89455fc53fef9ac48a438f1.pdf"
+    }
+  ],
+  "review_required": true
+}

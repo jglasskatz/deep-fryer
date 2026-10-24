@@ -1,0 +1,12 @@
+{
+  "mode": "render",
+  "url": "calculations/reviewer-county-broadband-corrected.html",
+  "stem": "reviewer-county-broadband-corrected",
+  "captured_at": "2026-10-24T01:58:19.865Z",
+  "status": 200,
+  "raw_path": "raw/reviewer-county-broadband-corrected.html",
+  "snapshot_path": "evidence/reviewer-county-broadband-corrected.png",
+  "sha256": "cc47bd2adfc52e31b4879a97cef019d37d605f2295edc893627b92e45fc19b6f",
+  "bytes": 1517,
+  "success": true
+}

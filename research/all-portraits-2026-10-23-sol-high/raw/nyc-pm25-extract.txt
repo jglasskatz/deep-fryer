@@ -1,0 +1,21 @@
+NYC annual mean PM2.5 — 2024
+
+Researcher-generated faithful extract/derivation from archived source bytes. Original inputs, exact URLs and SHA-256 hashes are retained in this campaign. This exhibit is not a publisher-authored table.
+
+[
+  {
+    "unique_id": "979167",
+    "indicator_id": "1425",
+    "name": "Fine particles (PM 2.5)",
+    "measure": "Annual mean",
+    "measure_info": "mcg/m3",
+    "geo_type_name": "Citywide",
+    "geo_join_id": "1",
+    "geo_place_name": "New York City",
+    "time_period": "2024",
+    "start_date": "2024-01-01T00:00:00.000",
+    "data_value": "6.255051193"
+  }
+]
+
+Exact official citywide row; no new averaging. Target remains5µg/m³.

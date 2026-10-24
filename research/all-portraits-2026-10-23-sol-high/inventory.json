@@ -1,0 +1,1317 @@
+{
+  "baseline_sha256": "a5e318a6bc47afe632dbd1aab17ea354e68279af02ad2c59b18cd43011964d2b",
+  "all_11_inventory": [
+    {
+      "portrait": "santa-cruz",
+      "status": "legacy-source",
+      "dimension_count": 22,
+      "indicator_count": 22,
+      "issues": [
+        {
+          "dimension": "food",
+          "indicator_index": 0,
+          "name": "Food insecurity rate",
+          "value": "10\u201333% food insecure (varies by measure)",
+          "year": 2023,
+          "source_url": "https://www.datasharescc.org/indicators/index/view?indicatorId=2107&localeId=281",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "health",
+          "indicator_index": 0,
+          "name": "Uninsured rate",
+          "value": "3.73% uninsured (city, ages 18-64)",
+          "year": 2023,
+          "source_url": "https://datausa.io/profile/geo/santa-cruz-ca#:~:text=Uninsured%20People%20*%203.73%25",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "education",
+          "indicator_index": 0,
+          "name": "High school graduation rate",
+          "value": "93.45% (city average across 5 schools)",
+          "year": 2024,
+          "source_url": "https://www.usnews.com/education/best-high-schools/california/rankings/santa-cruz",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "income-work",
+          "indicator_index": 0,
+          "name": "Poverty rate",
+          "value": "17% below poverty line",
+          "year": 2020,
+          "source_url": "https://www.census.gov/quickfacts/fact/table/santacruzcitycalifornia/INC110223",
+          "flags": [
+            "missing-archive",
+            "older-than-five-year-policy",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "housing",
+          "indicator_index": 0,
+          "name": "Homelessness & housing cost burden",
+          "value": "1,850 unhoused; 19.5% cost-burdened (county)",
+          "year": 2024,
+          "source_url": "https://www.santacruzca.gov/files/assets/city/v/1/cmo/documents/homelessness/2024pitcount_executive-summary.pdf",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "water-sanitation",
+          "indicator_index": 0,
+          "name": "Drinking water quality",
+          "value": "Meets all EPA & state standards (detailed data pending)",
+          "year": 2024,
+          "source_url": "https://www.santacruzca.gov/files/assets/city/v/1/wt/documents/water-quality-reports/santa-cruz-water-department-wqr-2024-v2.pdf",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "energy",
+          "indicator_index": 0,
+          "name": "Electricity cost & renewables",
+          "value": "33.5\u00a2/kWh; 51% renewable grid",
+          "year": 2025,
+          "source_url": "https://www.energysage.com/local-data/electricity-cost/ca/santa-cruz-county/santa-cruz/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "social-equity",
+          "indicator_index": 0,
+          "name": "Gini coefficient (income inequality)",
+          "value": "0.483 (county-level)",
+          "year": 2023,
+          "source_url": "https://www.datasharescc.org/indicators/index/view?indicatorId=288&localeId=281",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "peace-justice",
+          "indicator_index": 0,
+          "name": "Violent crime rate per 100K",
+          "value": "357 per 100K residents",
+          "year": 2023,
+          "source_url": "https://www.datasharescc.org/indicators/index/view?indicatorId=522&localeId=281",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "political-voice",
+          "indicator_index": 0,
+          "name": "Voter participation",
+          "value": "75.5% voter participation (DataShare SCC)",
+          "year": 2023,
+          "source_url": "https://www.datasharescc.org/indicators/index/view?indicatorId=11303&localeId=281",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "gender-equality",
+          "indicator_index": 0,
+          "name": "Gender pay ratio",
+          "value": "Women earn 70% of men's median wage (full-time)",
+          "year": 2023,
+          "source_url": "https://www.neilsberg.com/insights/santa-cruz-ca-income-by-gender/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "networks",
+          "indicator_index": 0,
+          "name": "Broadband access & mobility",
+          "value": "~16,000 households lack internet; 38% drive alone",
+          "year": 2024,
+          "source_url": "https://www.datasharescc.org/indicators/index/view?indicatorId=2367&localeId=281&comparisonId=7127",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "climate-change",
+          "indicator_index": 0,
+          "name": "Per capita GHG emissions",
+          "value": "4.22 MT CO2e/person",
+          "year": 2019,
+          "source_url": "https://www.santacruzca.gov/government/city-departments/city-manager/climate-action-program/greenhouse-gas-emissions-inventories",
+          "flags": [
+            "older-than-five-year-policy",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "ocean-acidification",
+          "indicator_index": 0,
+          "name": "Coastal ocean pH",
+          "value": "Data monitored regionally",
+          "year": 2024,
+          "source_url": "https://www.mbari.org/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "chemical-pollution",
+          "indicator_index": 0,
+          "name": "Pesticide use",
+          "value": "Minimal in city (county: ~1M lbs/yr)",
+          "year": 2022,
+          "source_url": "https://www.cdpr.ca.gov/docs/dept/cac_focus/santa_cruz.htm",
+          "flags": [
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "nitrogen-phosphorus-loading",
+          "indicator_index": 0,
+          "name": "Nitrogen in groundwater",
+          "value": "Data not available at city level",
+          "year": null,
+          "source_url": "https://www.santacruzca.gov/Government/City-Departments/Water-Department/Where-Does-Our-Water-Come-From",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "freshwater-withdrawals",
+          "indicator_index": 0,
+          "name": "Water supply reliability",
+          "value": "95% surface water dependent",
+          "year": 2024,
+          "source_url": "https://www.santacruzca.gov/Government/City-Departments/Water-Department/Where-Does-Our-Water-Come-From",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "land-conversion",
+          "indicator_index": 0,
+          "name": "Protected land / open space",
+          "value": "~20% of city area",
+          "year": 2024,
+          "source_url": "https://www.santacruzca.gov/Government/City-Departments/Parks-Recreation/Parks-Beaches-Open-Spaces",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "biodiversity-loss",
+          "indicator_index": 0,
+          "name": "Endemic species and habitat health",
+          "value": "Global biodiversity hotspot",
+          "year": 2022,
+          "source_url": "https://www.rcdsantacruz.org/regional-conservation-investment-strategy-rcis",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "air-pollution",
+          "indicator_index": 0,
+          "name": "PM2.5 annual average",
+          "value": "6.5 \u00b5g/m\u00b3",
+          "year": 2019,
+          "source_url": "https://www.datasharescc.org/indicators/index/view?indicatorId=168&localeId=281&localeFilterId=7",
+          "flags": [
+            "missing-archive",
+            "older-than-five-year-policy",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "ozone-layer-depletion",
+          "indicator_index": 0,
+          "name": "Stratospheric ozone",
+          "value": "Global issue \u2014 recovering",
+          "year": 2024,
+          "source_url": "https://www.epa.gov/ozone-layer-protection",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "waste-materials",
+          "indicator_index": 0,
+          "name": "Landfill diversion rate",
+          "value": "~75% diverted (~25% to landfill)",
+          "year": 2024,
+          "source_url": "https://www.santacruzca.gov/Government/City-Departments/Public-Works/Resource-Recovery",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        }
+      ]
+    },
+    {
+      "portrait": "santa-cruz-county",
+      "status": "legacy-source",
+      "dimension_count": 22,
+      "indicator_count": 22,
+      "issues": [
+        {
+          "dimension": "food",
+          "indicator_index": 0,
+          "name": "Food insecurity rate",
+          "value": "~93,000 residents at risk (~40,900 households)",
+          "year": 2025,
+          "source_url": "https://news.ucsc.edu/2019/11/blum-foodinsecurity.html",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "health",
+          "indicator_index": 0,
+          "name": "Uninsured rate",
+          "value": "5.3% uninsured (county)",
+          "year": 2023,
+          "source_url": "https://datausa.io/profile/geo/santa-cruz-county-ca/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "education",
+          "indicator_index": 0,
+          "name": "HS graduation rate",
+          "value": "Varies: SC High 97% vs PVUSD 79%",
+          "year": 2024,
+          "source_url": "https://www.publicschoolreview.com/california/watsonville/high",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "income-work",
+          "indicator_index": 0,
+          "name": "Median household income",
+          "value": "$109,266 (county median)",
+          "year": 2023,
+          "source_url": "https://datausa.io/profile/geo/santa-cruz-county-ca/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "housing",
+          "indicator_index": 0,
+          "name": "Housing cost burden",
+          "value": "Highest per-capita homelessness nationally",
+          "year": 2024,
+          "source_url": "https://chpc.net/wp-content/uploads/2024/05/Santa-Cruz_Housing_Report.pdf",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "water-sanitation",
+          "indicator_index": 0,
+          "name": "Water quality",
+          "value": "Mixed: north good, south contaminated",
+          "year": 2024,
+          "source_url": "https://santacruzlocal.org/2026/03/01/county-residents-notified-of-erin-brockovich-chemical-in-drinking-water/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "energy",
+          "indicator_index": 0,
+          "name": "Electricity & renewables",
+          "value": "51% renewable grid; 3CE available",
+          "year": 2025,
+          "source_url": "https://3ce.org/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "social-equity",
+          "indicator_index": 0,
+          "name": "Gini coefficient",
+          "value": "0.50 (severe inequality threshold)",
+          "year": 2021,
+          "source_url": "https://www.datasharescc.org/indicators/index/view?indicatorId=288&localeId=281",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "peace-justice",
+          "indicator_index": 0,
+          "name": "Crime rates",
+          "value": "SC city: 6.3/1K violent; Watsonville improving",
+          "year": 2024,
+          "source_url": "https://www.neighborhoodscout.com/ca/santa-cruz/crime",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "political-voice",
+          "indicator_index": 0,
+          "name": "Voter turnout",
+          "value": "81.8% (Nov 2024 general)",
+          "year": 2024,
+          "source_url": "https://admin.cdn.sos.ca.gov/elections/sov/2024-general/sov/03-voter-participation-stats-by-county.pdf",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "gender-equality",
+          "indicator_index": 0,
+          "name": "Gender pay ratio",
+          "value": "Women earn 85 cents per $1 (county)",
+          "year": 2024,
+          "source_url": "https://www.datasharescc.org/tiles/index/display?alias=Womens_Wellbeing_SCCounty2024",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "networks",
+          "indicator_index": 0,
+          "name": "Broadband access",
+          "value": "C- grade; ~16,000 households lack internet",
+          "year": 2024,
+          "source_url": "https://equalaccesssantacruz.com/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "climate-change",
+          "indicator_index": 0,
+          "name": "Total GHG emissions",
+          "value": "394,748 MT CO2e (~2.56/capita est.)",
+          "year": 2018,
+          "source_url": "https://www.santacruzcountyca.gov/Portals/0/County/GSD/Commission%20on%20the%20Environment/Documents%20Library/Attachment%20B%20Santa%20Cruz%20County%20Draft%202018%20Community-wide%20GHG%20Inventory.pdf",
+          "flags": [
+            "older-than-five-year-policy",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "ocean-acidification",
+          "indicator_index": 0,
+          "name": "Coastal ocean pH",
+          "value": "Monitored regionally",
+          "year": 2024,
+          "source_url": "https://www.mbari.org/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "chemical-pollution",
+          "indicator_index": 0,
+          "name": "Pesticide use",
+          "value": "~1 million lbs/year, 67% fumigants",
+          "year": 2022,
+          "source_url": "https://www.cdpr.ca.gov/wp-content/uploads/2024/12/2022_santa_cruz_commodity.pdf",
+          "flags": [
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "nitrogen-phosphorus-loading",
+          "indicator_index": 0,
+          "name": "Groundwater nitrate (Pajaro Valley)",
+          "value": "87% from agricultural sources",
+          "year": 2015,
+          "source_url": "https://www.pvwater.org/",
+          "flags": [
+            "missing-archive",
+            "older-than-five-year-policy",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "freshwater-withdrawals",
+          "indicator_index": 0,
+          "name": "Groundwater overdraft",
+          "value": "Pajaro Valley basin overdrafted",
+          "year": 2024,
+          "source_url": "https://www.pvwater.org/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "land-conversion",
+          "indicator_index": 0,
+          "name": "Protected land",
+          "value": "32%",
+          "year": 2022,
+          "source_url": "https://www.rcdsantacruz.org/regional-conservation-investment-strategy-rcis",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "biodiversity-loss",
+          "indicator_index": 0,
+          "name": "Endemic species protection",
+          "value": "35 endemic species, 1,000+ native plants",
+          "year": 2022,
+          "source_url": "https://www.rcdsantacruz.org/regional-conservation-investment-strategy-rcis",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "air-pollution",
+          "indicator_index": 0,
+          "name": "PM2.5 annual average",
+          "value": "6.5 \u00b5g/m\u00b3",
+          "year": 2019,
+          "source_url": "https://www.datasharescc.org/indicators/index/view?indicatorId=168&localeId=281&localeFilterId=7",
+          "flags": [
+            "missing-archive",
+            "older-than-five-year-policy",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "ozone-layer-depletion",
+          "indicator_index": 0,
+          "name": "Stratospheric ozone",
+          "value": "Recovering globally",
+          "year": 2024,
+          "source_url": "https://www.epa.gov/ozone-layer-protection",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "waste-materials",
+          "indicator_index": 0,
+          "name": "Landfill diversion rate",
+          "value": "~75% diverted (~25% to landfill)",
+          "year": 2024,
+          "source_url": "https://cdi.santacruzcountyca.gov/PublicWorks/RecyclingSolidWaste.aspx",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        }
+      ]
+    },
+    {
+      "portrait": "watsonville",
+      "status": "legacy-source",
+      "dimension_count": 22,
+      "indicator_count": 22,
+      "issues": [
+        {
+          "dimension": "food",
+          "indicator_index": 0,
+          "name": "Food insecurity rate",
+          "value": "Higher than county avg (~1 in 3)",
+          "year": 2025,
+          "source_url": "https://news.ucsc.edu/2019/11/blum-foodinsecurity.html",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "health",
+          "indicator_index": 0,
+          "name": "Uninsured rate",
+          "value": "9.8% uninsured",
+          "year": 2023,
+          "source_url": "https://datausa.io/profile/geo/watsonville-ca/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "education",
+          "indicator_index": 0,
+          "name": "HS graduation rate",
+          "value": "79% (PVUSD district avg)",
+          "year": 2024,
+          "source_url": "https://www.publicschoolreview.com/california/watsonville/high",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "income-work",
+          "indicator_index": 0,
+          "name": "Poverty rate",
+          "value": "15.1% poverty; median income $74,785",
+          "year": 2023,
+          "source_url": "https://www.census.gov/quickfacts/fact/table/watsonvillecitycalifornia/HSG010223",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "housing",
+          "indicator_index": 0,
+          "name": "Housing cost burden",
+          "value": "Severe \u2014 rising homelessness",
+          "year": 2024,
+          "source_url": "https://santacruzlocal.org/2024/03/26/rising-homelessness-in-watsonville-prompts-new-strategies/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "water-sanitation",
+          "indicator_index": 0,
+          "name": "Nitrate in drinking water",
+          "value": "Contaminated groundwater source",
+          "year": 2024,
+          "source_url": "https://www.pvwater.org/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "energy",
+          "indicator_index": 0,
+          "name": "Electricity cost & renewables",
+          "value": "100% carbon-free electricity via 3CE",
+          "year": 2024,
+          "source_url": "https://3ce.org/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "social-equity",
+          "indicator_index": 0,
+          "name": "Environmental justice",
+          "value": "CalEnviroScreen flagged; Gini ~0.50",
+          "year": 2021,
+          "source_url": "https://oehha.ca.gov/calenviroscreen",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "peace-justice",
+          "indicator_index": 0,
+          "name": "Crime rate trend",
+          "value": "5.9 violent / 18.6 property per 1,000",
+          "year": 2024,
+          "source_url": "https://www.watsonville.gov/CivicAlerts.aspx?AID=2431",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "political-voice",
+          "indicator_index": 0,
+          "name": "Voter participation",
+          "value": "County: 81.8% (city-level TBD)",
+          "year": 2024,
+          "source_url": "https://www.watsonville.gov/2506/November-5-2024-Election",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "gender-equality",
+          "indicator_index": 0,
+          "name": "Gender pay ratio (est.)",
+          "value": "~0.85 (county-level estimate)",
+          "year": 2024,
+          "source_url": "https://calcivilrights.ca.gov/2024/03/12/on-equal-pay-day-civil-rights-department-releases-new-findings-on-pay-gaps-in-california/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "networks",
+          "indicator_index": 0,
+          "name": "Broadband access",
+          "value": "Significant digital divide",
+          "year": 2024,
+          "source_url": "https://patch.com/california/watsonville/digital-divide-how-wide-watsonville-area",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "climate-change",
+          "indicator_index": 0,
+          "name": "Total GHG emissions",
+          "value": "160,622 MT CO2e (~3.04/capita est.)",
+          "year": 2017,
+          "source_url": "https://www.watsonville.gov/DocumentCenter/View/17209/CAAP-2030-Executive-Summary-",
+          "flags": [
+            "older-than-five-year-policy",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "ocean-acidification",
+          "indicator_index": 0,
+          "name": "Coastal impacts",
+          "value": "Regional monitoring",
+          "year": 2024,
+          "source_url": "https://www.mbari.org/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "chemical-pollution",
+          "indicator_index": 0,
+          "name": "Pesticide use",
+          "value": "Epicenter of county's ~1M lbs/year",
+          "year": 2022,
+          "source_url": "https://www.cdpr.ca.gov/wp-content/uploads/2024/12/2022_santa_cruz_commodity.pdf",
+          "flags": [
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "nitrogen-phosphorus-loading",
+          "indicator_index": 0,
+          "name": "Groundwater nitrate",
+          "value": "87% from agriculture \u2014 severe",
+          "year": 2015,
+          "source_url": "https://www.pvwater.org/",
+          "flags": [
+            "missing-archive",
+            "older-than-five-year-policy",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "freshwater-withdrawals",
+          "indicator_index": 0,
+          "name": "Groundwater overdraft",
+          "value": "Critically overdrafted basin",
+          "year": 2024,
+          "source_url": "https://www.pvwater.org/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "land-conversion",
+          "indicator_index": 0,
+          "name": "Protected parkland",
+          "value": "~2.2% of city (143 acres in 26 parks)",
+          "year": 2024,
+          "source_url": "https://www.watsonville.gov/1207/City-Parks",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "biodiversity-loss",
+          "indicator_index": 0,
+          "name": "Habitat health",
+          "value": "Watsonville Slough at risk",
+          "year": 2024,
+          "source_url": "https://www.watsonvillewetlandswatch.org/",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "air-pollution",
+          "indicator_index": 0,
+          "name": "PM2.5 annual average",
+          "value": "~7-9 \u00b5g/m\u00b3 (est.)",
+          "year": 2019,
+          "source_url": "https://www.iqair.com/us/usa/california/watsonville",
+          "flags": [
+            "missing-archive",
+            "older-than-five-year-policy",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "ozone-layer-depletion",
+          "indicator_index": 0,
+          "name": "Stratospheric ozone",
+          "value": "Recovering globally",
+          "year": 2024,
+          "source_url": "https://www.epa.gov/ozone-layer-protection",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        },
+        {
+          "dimension": "waste-materials",
+          "indicator_index": 0,
+          "name": "Solid waste & diversion",
+          "value": "City-specific diversion rate not published",
+          "year": 2024,
+          "source_url": "https://www.watsonville.gov/1180/Solid-Waste-Division",
+          "flags": [
+            "missing-archive",
+            "unspecified-geography",
+            "untyped-value-or-combined-metrics"
+          ]
+        }
+      ]
+    },
+    {
+      "portrait": "nyc",
+      "status": "published",
+      "dimension_count": 21,
+      "indicator_count": 31,
+      "issues": [
+        {
+          "dimension": "energy",
+          "problem": "empty-dimension",
+          "priority": 1
+        },
+        {
+          "dimension": "chemical-pollution",
+          "indicator_index": 1,
+          "name": "Reduction in landfill-bound waste vs 2005",
+          "value": 12.55,
+          "year": 2025,
+          "source_url": "https://data.cityofnewyork.us/City-Government/DSNY-Monthly-Tonnage-Data/ebb7-mvp5",
+          "flags": [
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "nitrogen-phosphorus-loading",
+          "problem": "empty-dimension",
+          "priority": 1
+        },
+        {
+          "dimension": "biodiversity-loss",
+          "indicator_index": 0,
+          "name": "Land under durable conservation protection",
+          "value": 19.5,
+          "year": 2023,
+          "source_url": "https://www.protectadks.org/wp-content/uploads/2023/11/Protect-the-Adirondacks-30-by-30-Report-NYS-Counties-web.pdf",
+          "flags": [
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "air-pollution",
+          "indicator_index": 0,
+          "name": "Annual mean PM2.5 concentration",
+          "value": 6.255051193,
+          "year": 2024,
+          "source_url": "https://data.cityofnewyork.us/Environment/Air-Quality/c3uy-2p5r/about_data",
+          "flags": [
+            "missing-archive"
+          ]
+        }
+      ]
+    },
+    {
+      "portrait": "manhattan",
+      "status": "published",
+      "dimension_count": 21,
+      "indicator_count": 28,
+      "issues": [
+        {
+          "dimension": "energy",
+          "problem": "empty-dimension",
+          "priority": 1
+        },
+        {
+          "dimension": "nitrogen-phosphorus-loading",
+          "problem": "empty-dimension",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "portrait": "brooklyn",
+      "status": "published",
+      "dimension_count": 21,
+      "indicator_count": 30,
+      "issues": [
+        {
+          "dimension": "energy",
+          "problem": "empty-dimension",
+          "priority": 1
+        },
+        {
+          "dimension": "nitrogen-phosphorus-loading",
+          "problem": "empty-dimension",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "portrait": "queens",
+      "status": "published",
+      "dimension_count": 21,
+      "indicator_count": 28,
+      "issues": [
+        {
+          "dimension": "water-sanitation",
+          "indicator_index": 0,
+          "name": "Population served by water systems with no health-based violations",
+          "value": null,
+          "year": null,
+          "source_url": "",
+          "flags": [
+            "gap",
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "energy",
+          "problem": "empty-dimension",
+          "priority": 1
+        },
+        {
+          "dimension": "nitrogen-phosphorus-loading",
+          "problem": "empty-dimension",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "portrait": "bronx",
+      "status": "published",
+      "dimension_count": 21,
+      "indicator_count": 29,
+      "issues": [
+        {
+          "dimension": "food",
+          "indicator_index": 0,
+          "name": "Food insecurity rate",
+          "value": 20.2,
+          "year": 2022,
+          "source_url": "https://www.nyc.gov/assets/foodpolicy/downloads/pdf/NYC-Food-by-the-Numbers-2024.pdf",
+          "flags": [
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "energy",
+          "problem": "empty-dimension",
+          "priority": 1
+        },
+        {
+          "dimension": "climate-change",
+          "indicator_index": 0,
+          "name": "Community greenhouse gas emissions per capita",
+          "value": 5.66,
+          "year": 2024,
+          "source_url": "https://data.cityofnewyork.us/Environment/NYC-Greenhouse-Gas-Emissions-Inventory/wq7q-htne",
+          "flags": [
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "climate-change",
+          "indicator_index": 1,
+          "name": "Citywide GHG reduction vs 2005",
+          "value": 25.25,
+          "year": 2024,
+          "source_url": "https://data.cityofnewyork.us/Environment/NYC-Greenhouse-Gas-Emissions-Inventory/wq7q-htne",
+          "flags": [
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "climate-change",
+          "indicator_index": 2,
+          "name": "LL97-covered buildings over their 2030 emissions cap",
+          "value": 57,
+          "year": 2024,
+          "source_url": "https://www.urbangreencouncil.org/what-we-do/explore-nyc-building-data-hub/local-law-97-progress/",
+          "flags": [
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "ocean-acidification",
+          "indicator_index": 0,
+          "name": "Coastal aragonite saturation state (\u03a9)",
+          "value": 1.09,
+          "year": 2022,
+          "source_url": "https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2024.1398087/full",
+          "flags": [
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "chemical-pollution",
+          "indicator_index": 0,
+          "name": "Toxic Release Inventory on-site releases per capita",
+          "value": 0.000964,
+          "year": 2024,
+          "source_url": "https://data.epa.gov/efservice/TRI_FACILITY/county_name/BRONX/state_abbr/NY/JSON",
+          "flags": [
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "chemical-pollution",
+          "indicator_index": 1,
+          "name": "Reduction in landfill-bound waste vs 2005",
+          "value": 6.76,
+          "year": 2025,
+          "source_url": "https://data.cityofnewyork.us/City-Government/DSNY-Monthly-Tonnage-Data/ebb7-mvp5",
+          "flags": [
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "nitrogen-phosphorus-loading",
+          "problem": "empty-dimension",
+          "priority": 1
+        },
+        {
+          "dimension": "land-conversion",
+          "problem": "empty-dimension",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "portrait": "staten-island",
+      "status": "published",
+      "dimension_count": 21,
+      "indicator_count": 27,
+      "issues": [
+        {
+          "dimension": "energy",
+          "problem": "empty-dimension",
+          "priority": 1
+        },
+        {
+          "dimension": "ocean-acidification",
+          "problem": "empty-dimension",
+          "priority": 1
+        },
+        {
+          "dimension": "nitrogen-phosphorus-loading",
+          "problem": "empty-dimension",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "portrait": "carmel",
+      "status": "research-preview",
+      "dimension_count": 21,
+      "indicator_count": 24,
+      "issues": [
+        {
+          "dimension": "water-sanitation",
+          "indicator_index": 0,
+          "name": "Population served by water systems with no health-based violations",
+          "value": null,
+          "year": null,
+          "source_url": null,
+          "flags": [
+            "gap",
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "energy",
+          "indicator_index": 0,
+          "name": "Median energy burden of low-income households",
+          "value": null,
+          "year": null,
+          "source_url": null,
+          "flags": [
+            "gap",
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "housing",
+          "indicator_index": 0,
+          "name": "Renter-occupied housing units paying 30% or more of household income in gross rent",
+          "value": 55.7,
+          "year": 2024,
+          "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B25070&geo_ids=16000US0611250",
+          "flags": [
+            "contested-construct"
+          ]
+        },
+        {
+          "dimension": "climate-change",
+          "indicator_index": 0,
+          "name": "2019 community greenhouse-gas emissions per capita (City CAP core inventory)",
+          "value": 8.12,
+          "year": 2019,
+          "source_url": "https://ci.carmel.ca.us/sites/main/files/file-attachments/climate_adaptation_plan_appendixa_climate_action_plan_prefinal_042822_0.pdf?1677096044=",
+          "flags": [
+            "older-than-five-year-policy"
+          ]
+        },
+        {
+          "dimension": "nitrogen-phosphorus-loading",
+          "indicator_index": 0,
+          "name": "Nitrate concentration in local groundwater",
+          "value": null,
+          "year": null,
+          "source_url": null,
+          "flags": [
+            "gap",
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "freshwater-withdrawals",
+          "indicator_index": 0,
+          "name": "Residential water use",
+          "value": null,
+          "year": null,
+          "source_url": null,
+          "flags": [
+            "gap",
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "air-pollution",
+          "indicator_index": 0,
+          "name": "Annual mean PM2.5 (stale CHR county measure)",
+          "value": 8.8,
+          "year": 2020,
+          "source_url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv125_rawvalue&returnGeometry=false&f=pjson",
+          "flags": [
+            "older-than-five-year-policy"
+          ]
+        }
+      ]
+    },
+    {
+      "portrait": "monterey-county",
+      "status": "research-preview",
+      "dimension_count": 21,
+      "indicator_count": 24,
+      "issues": [
+        {
+          "dimension": "water-sanitation",
+          "indicator_index": 0,
+          "name": "Population served by water systems with no health-based violations",
+          "value": null,
+          "year": null,
+          "source_url": null,
+          "flags": [
+            "gap",
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "energy",
+          "indicator_index": 0,
+          "name": "Median energy burden of low-income households",
+          "value": null,
+          "year": null,
+          "source_url": null,
+          "flags": [
+            "gap",
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "housing",
+          "indicator_index": 0,
+          "name": "Renter-occupied units paying 30% or more of income in gross rent",
+          "value": 58,
+          "year": 2024,
+          "source_url": "https://api.censusreporter.org/1.0/data/show/latest?table_ids=B19083%2CB25070%2CB20017%2CB27001&geo_ids=05000US06053",
+          "flags": [
+            "contested-construct"
+          ]
+        },
+        {
+          "dimension": "climate-change",
+          "indicator_index": 0,
+          "name": "Community greenhouse gas emissions per capita",
+          "value": null,
+          "year": null,
+          "source_url": null,
+          "flags": [
+            "gap",
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "nitrogen-phosphorus-loading",
+          "indicator_index": 0,
+          "name": "Nitrate concentration in local groundwater",
+          "value": null,
+          "year": null,
+          "source_url": null,
+          "flags": [
+            "gap",
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "freshwater-withdrawals",
+          "indicator_index": 0,
+          "name": "Residential water use",
+          "value": null,
+          "year": null,
+          "source_url": null,
+          "flags": [
+            "gap",
+            "missing-archive"
+          ]
+        },
+        {
+          "dimension": "air-pollution",
+          "indicator_index": 0,
+          "name": "Annual mean PM2.5 (CHR county measure)",
+          "value": 8.8,
+          "year": 2020,
+          "source_url": "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/County_Health_Rankings_2025/FeatureServer/2/query?where=fipscode%3D%2706053%27&outFields=fipscode%2Ccounty%2Cstate%2Cyear%2Cv125_rawvalue&returnGeometry=false&f=pjson",
+          "flags": [
+            "older-than-five-year-policy"
+          ]
+        }
+      ]
+    }
+  ],
+  "cross_portrait_definition_risks": [
+    "Brooklyn water 0/2026, Queens gap, peers100/2024\u201325 same NYC system",
+    "Broadband fixed versus any subscription mixed",
+    "Water total per-capita demand versus residential consumption labels",
+    "Manhattan global aragonite versus other borough regional estuary bottom summer mean",
+    "Santa Cruz ozone retained while user prefers heat; replacement requires explicit profile decision",
+    "Carmel/County cost burden threshold strict over30 versus ACS published at-least30 bins"
+  ]
+}

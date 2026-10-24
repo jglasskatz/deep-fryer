@@ -1,0 +1,130 @@
+{
+  "id": "bronx:climate-change:0",
+  "portrait": "bronx",
+  "dimension": "climate-change",
+  "indicator_index": 0,
+  "kind": "replace",
+  "before": {
+    "name": "Community greenhouse gas emissions per capita",
+    "unit": "tCO2e per resident per year",
+    "year": 2024,
+    "value": 5.66,
+    "source": "NYC Greenhouse Gas Emissions Inventory (Mayor's Office of Climate & Environmental Justice, via NYC Open Data)",
+    "target": 2.5,
+    "scoring": {
+      "inputs": {
+        "scale": 2.5,
+        "value": 5.66,
+        "target": 2.5
+      },
+      "function": "lower_is_better",
+      "worked_math": "value = 47,944,551.47 tCO2e (2024 citywide total, Citywide-GPC inventory, 100-yr GWP, summed across all sectors/sources) ÷ 8,478,072 residents (DCP Vintage 2024 NYC population estimate, July 1 2024) = 5.655 ≈ 5.66 tCO2e/capita; level_pct = (5.66 − 2.5) ⁄ 2.5 × 100 = +126.4",
+      "threshold_ref": "climate-change.ghg-per-capita"
+    },
+    "evidence": {
+      "captured_at": "2026-08-05T00:00:00Z",
+      "snapshot_path": "CAPTURE_FAILED — mcp__evidence__capture_evidence returned repeated 'browser.newContext: Target page, context or browser has been closed' errors on 3 attempts against this URL; no snapshot could be stored"
+    },
+    "level_pct": 126.4,
+    "confidence": "high",
+    "source_url": "https://data.cityofnewyork.us/Environment/NYC-Greenhouse-Gas-Emissions-Inventory/wq7q-htne",
+    "source_tier": 1,
+    "geographic_scale": "regional",
+    "geography": "regional",
+    "status": "published",
+    "evidence_path": null,
+    "pdf_path": null
+  },
+  "after": {
+    "name": "Community greenhouse gas emissions per capita",
+    "unit": "t CO2 e per resident per year",
+    "year": 2024,
+    "value": 5.66,
+    "source": "NYC Greenhouse Gas Emissions Inventory (Mayor's Office of Climate & Environmental Justice, via NYC Open Data)",
+    "target": 2.5,
+    "scoring": {
+      "inputs": {
+        "scale": 2.5,
+        "value": 5.66,
+        "target": 2.5
+      },
+      "function": "lower_is_better",
+      "worked_math": "value = 47,944,551.47 tCO2e (2024 citywide total, Citywide-GPC inventory, 100-yr GWP, summed across all sectors/sources) ÷ 8,478,072 residents (DCP Vintage 2024 NYC population estimate, July 1 2024) = 5.655 ≈ 5.66 tCO2e/capita; level_pct = (5.66 − 2.5) ⁄ 2.5 × 100 = +126.4",
+      "threshold_ref": "climate-change.ghg-per-capita"
+    },
+    "evidence": {
+      "snapshot_path": "evidence/nyc-ghg-extract.png",
+      "captured_at": "2026-10-24T01:27:27.329Z"
+    },
+    "level_pct": 126.4,
+    "confidence": "high",
+    "source_url": "https://data.cityofnewyork.us/resource/wq7q-htne.json?$limit=5000",
+    "source_tier": 1,
+    "geographic_scale": "regional",
+    "geography": "NYC citywide regional proxy — not Bronx emissions",
+    "status": "source-supported-draft",
+    "evidence_path": "evidence/nyc-ghg-extract.png",
+    "pdf_path": null,
+    "notes": "Exact citywide inventory totals and the original Census Vintage 2024 denominator 8,478,072 independently reproduced from archived primary bytes. The newer Vintage 2025 revises 2024 population to 8,596,825, explaining alternate 5.58 city estimate. Borough value retained with its original vintage; not a Bronx-specific inventory."
+  },
+  "field_diff": {
+    "unit": {
+      "before": "tCO2e per resident per year",
+      "after": "t CO2 e per resident per year"
+    },
+    "evidence": {
+      "before": {
+        "captured_at": "2026-08-05T00:00:00Z",
+        "snapshot_path": "CAPTURE_FAILED — mcp__evidence__capture_evidence returned repeated 'browser.newContext: Target page, context or browser has been closed' errors on 3 attempts against this URL; no snapshot could be stored"
+      },
+      "after": {
+        "snapshot_path": "evidence/nyc-ghg-extract.png",
+        "captured_at": "2026-10-24T01:27:27.329Z"
+      }
+    },
+    "source_url": {
+      "before": "https://data.cityofnewyork.us/Environment/NYC-Greenhouse-Gas-Emissions-Inventory/wq7q-htne",
+      "after": "https://data.cityofnewyork.us/resource/wq7q-htne.json?$limit=5000"
+    },
+    "geography": {
+      "before": "regional",
+      "after": "NYC citywide regional proxy — not Bronx emissions"
+    },
+    "status": {
+      "before": "published",
+      "after": "source-supported-draft"
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/nyc-ghg-extract.png"
+    },
+    "notes": {
+      "before": null,
+      "after": "Exact citywide inventory totals and the original Census Vintage 2024 denominator 8,478,072 independently reproduced from archived primary bytes. The newer Vintage 2025 revises 2024 population to 8,596,825, explaining alternate 5.58 city estimate. Borough value retained with its original vintage; not a Bronx-specific inventory."
+    }
+  },
+  "reason": "Restore missing numeric evidence with the original population vintage explicit.",
+  "source_support": [
+    {
+      "url": "https://data.cityofnewyork.us/resource/wq7q-htne.json?$limit=5000",
+      "raw_path": "raw/nyc-ghg-full.json",
+      "raw_sha256": "c1037d86fe7af7b1ba2ca30c6ea5f5717d2ef452576e7c9da29a1ba76bacf41b",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:27:27.329Z",
+      "period": "CY2024;2005 baseline",
+      "scale": "citywide regional proxy",
+      "snapshot_path": "evidence/nyc-ghg-extract.png",
+      "snapshot_sha256": "ec53108458c950aac09274237f6b2d920ac3e6dc231a19267b47e3ba3587a468"
+    },
+    {
+      "url": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2024/counties/totals/co-est2024-alldata.csv",
+      "raw_path": "raw/census-county-pop-v2024.csv",
+      "raw_sha256": "abcc8720d669e793bbfdcd440eeec37a78db3b452adbe4ccd1eadf7c72b522b9",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:32:20.760Z",
+      "period": "July 1,2024; Vintage 2024",
+      "scale": "five NYCcounties"
+    }
+  ],
+  "review_required": true
+}

@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://www2.census.gov/programs-surveys/acs/data/2024/1_year_geographic_comparison_tables/GCT2801.csv",
+  "stem": "broadband-2024-comparison",
+  "captured_at": "2026-10-24T01:26:24.972Z",
+  "status": 200,
+  "content_type": "text/csv",
+  "raw_path": "raw/broadband-2024-comparison.csv",
+  "sha256": "65f8c5ac344a26d9d9b04cc272e1bf06fd8de8b5cfc0cf10993e94fd2060b031",
+  "bytes": 628436,
+  "success": true
+}

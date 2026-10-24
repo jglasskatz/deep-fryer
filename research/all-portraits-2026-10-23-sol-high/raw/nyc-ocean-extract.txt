@@ -1,0 +1,13 @@
+Western Long Island Sound aragonite — Table1
+
+Researcher-generated faithful extract/derivation from archived source bytes. Original inputs, exact URLs and SHA-256 hashes are retained in this campaign. This exhibit is not a publisher-authored table.
+
+Year	Hypoxic Area (km2)a	Hypoxic Duration (d)a	Housatonic River Discharge (m3 s-1)b	Average DIC (μmol kg-1)	Average TA (μmol kg-1)	Average DIC/TA	Average Ωar
+2020	163	43	17 ± 13	1909.7 ± 31.0	1933.3 ± 11.8	0.977 ± 0.014	0.88 ± 0.22
+2021	368	47	137 ± 118	1789.2 ± 34.8	1951.6 ± 18.6	0.914 ± 0.012	1.98 ± 0.23
+2022	225	57	15 ± 7	1927.9 ± 20.1	1999.5 ± 12.0	0.963 ± 0.000	1.09 ± 0.00
+1990-2021	538	52	–	–	–	–	–
+
+Barrett et al. (2024), Table 1: the 2022 July–September mean bottom-water aragonite saturation in western Long Island Sound, west of longitude −73°, is 1.09 ± 0.00.
+
+This is seasonal bottom-water regional context. It is not a citywide annual surface-ocean mean or a measurement at each borough coast.

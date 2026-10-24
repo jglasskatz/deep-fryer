@@ -1,0 +1,1859 @@
+ABOUT THE RESEARCHER
+Applied Survey Research (ASR) is a social research firm dedicated to helping people build
+better communities by collecting meaningful data, facilitating information-based planning,
+and developing custom strategies. The firm was founded in 1980 on the principle that
+community improvement, initiative sustainability, and program success are closely tied to
+assessment of needs, evaluation of community goals, and development of appropriate
+responses.
+
+
+Project Manager: Peter Connery
+
+
+Senior Data Analyst: James Connery, John Connery, Javari Fairclough, and Alex Werner
+
+
+Graphic Design and Layout: Jamie Norton, Single Chair Studio
+
+
+
+
+ABOUT THE HOUSING FOR HEALTH
+PARTNERSHIP
+Housing for Health Partnership (H4HP) serves as the federally designated Continuum of Care
+for Santa Cruz County and coordinates resources, programs and services focused on
+preventing and ending homelessness. H4HP is driven by its mission to ensure all residents
+within Santa Cruz County have stable, safe and healthy places to live.
+H4HP Project Lead: Sheryl Norteye
+
+
+
+
+www.appliedsurveyresearch.org              www.housingforhealthpartnership.org
+TABLE OF CONTENTS
+ACKNOWLEDGEMENTS ………………………………………………....................... 4
+INTRODUCTION ………………………………………………………………………………….. 5
+EXECUTIVE SUMMARY ……………………………………………………………………. 7
+POINT-IN-TIME COUNT ……………………………………………………………………                                                                    11
+   NUMBER AND CHARACTERISTICS OF PERSONS EXPERIENCING                                                             12
+   HOMELESSNESS IN SANTA CRUZ COUNTY ………..............................................
+
+   TOTAL HOMELESS POPULATION BY RACE AND ETHNICITY ……………...........                                               14
+HOMELESS SURVEY FINDINGS …………………………………………………… 15
+   GENDER IDENTITY AND SEXUAL ORIENTATION ………………………………………                                                         15
+   FOSTER CARE ……………………………......................................................................                  16
+   ONSET, AGE, AND DURATION OF HOMELESSNESS .......................................                               17
+   PLACE OF RESIDENCE ……………………………........................................................                         18
+   PRIOR LIVING ARRANGEMENTS …………………………….......................................                                   19
+   PRIMARY CAUSE OF HOMELESSNESS …………………………………………………….                                                            20
+   SUPPORT NEEDED TO OBTAIN PERMANENT HOUSING ………………………….                                                         20
+   GOVERNMENT BENEFITS ……………………………..................................................                              21
+   SERVICES AND PROGRAMS ……………………………..............................................                                22
+   EMPLOYMENT ……………………………......................................................................                   22
+   HEALTH CONDITIONS ..........................................................................................   23
+   DOMESTIC PARTNER VIOLENCE OR ABUSE ....................................................                        24
+   CRIMINAL JUSTICE SYSTEM ................................................................................       25
+   HUD DEFINED SPECIAL POPULATIONS ...........................................................                    26
+           HOUSEHOLDS EXPERIENCING CHRONIC HOMELESSNESS ...............                                           27
+           VETERANS EXPERIENCING HOMELESSNESS .........................................                           30
+           FAMILIES WITH CHILDREN EXPERIENCING HOMELESSNESS .............                                         31
+           UNACCOMPANIED CHILDREN AND TRANSITION-AGE YOUTH
+           EXPERIENCING HOMELESSNESS .............................................................                32
+CONCLUSION ………………………………………………………………………………………                                                                      33
+APPENDIX A: METHODOLOGY .............................................................                             34
+APPENDIX B: DEFINITIONS AND ABBREVIATIONS ………….. 42
+
+
+
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                                                         3
+ACKNOWLEDGEMENTS
+The considerable talents and efforts of many people helped ensure the success of this
+endeavor. The County of Santa Cruz and ASR thank county and public agency staff, community
+members, and community-based organizations for facilitating homeless outreach and peer
+enumeration. Their efforts in recruiting and organizing count workers, as well as distributing
+surveys, were instrumental. Finally, the County of Santa Cruz and ASR would like to thank
+survey respondents, whose experiences and needs are reflected throughout the findings of
+this report.
+
+
+SUPPORTERS
+ Abode Services                                     Nation's Finest
+ Association of Faith Communities of Santa          People First of Santa Cruz County
+ Cruz
+ City of Santa Cruz                                 Santa Cruz County Housing for Health
+ Community Action Board of Santa Cruz               Housing for Health Partnership Lived
+                                                    Expertise Action Board - LEAB
+ Encompass Community Services                       Housing for Health Partnership Youth Lived
+                                                    Expertise Action Board - YLEAB
+ Front St. Inc.                                     Santa Cruz County Regional Transportation
+                                                    Commission
+ Homeless Garden Project                            Santa Cruz Public Libraries
+ Housing Matters                                    Stepping Up Santa Cruz
+ Mental Health Client Action Network                United Way of Santa Cruz County
+ Monarch Services                                   University of California, Santa Cruz
+
+
+
+
+      Santa Cruz County 2026 Homelessness Point-in-Time Count                                    4
+INTRODUCTION
+The County of Santa Cruz typically conducts a Point-in-Time (PIT) Count of all persons
+experiencing homelessness annually during the last 10 days of January; this year on January
+29, 2026. PIT Counts approximate the number of persons experiencing homelessness in each
+community on a given day and collect information on persons and families residing in
+emergency shelters, transitional housing, and unsheltered situations including on the streets,
+in cars, abandoned properties, or other places not meant for human habitation. The federal
+government requires communities to conduct a PIT Count every two years; however, the
+County of Santa Cruz has elected to conduct the count annually.
+
+The PIT Count is the only source of point-in-time data reporting both sheltered and
+unsheltered homelessness nationwide. The U.S. Department of Housing and Urban
+Development (HUD) requires all jurisdictions receiving federal funding for housing and
+services for persons experiencing homelessness to conduct a PIT Count. The Housing for
+Health Partnership (H4HP) receives approximately $7.8 million annually in HUD Continuum of
+Care (CoC) funding, a key source of funding for the county’s housing and services programs for
+persons experiencing homelessness.
+
+The CoC reports the findings of its local PIT Count annually to HUD, though the unsheltered
+count component is required every other year. As part of the PIT Count, a survey is conducted
+to gather additional information about the demographics, experiences, and needs of people
+experiencing homelessness. The reported findings help the federal government better
+understand the nature and extent of homelessness nationwide. Data from the PIT Count and
+Survey help inform local strategic planning, capacity building, and advocacy campaigns to
+prevent and end homelessness.
+
+The County of Santa Cruz partnered with Applied Survey Research (ASR) to conduct the 2026
+Santa Cruz County Homeless PIT Count and Survey. ASR is a social research firm based in Santa
+Cruz County with extensive experience in homeless enumeration and needs assessment and
+has been the principal researcher for Santa Cruz County PIT counts and surveys since 2000.
+
+The Santa Cruz County Homeless PIT Count consists of six primary components:
+
+   1.    Point-in-time visual enumeration of unsheltered persons and families experiencing
+         homelessness, including those sleeping outdoors, on the street, or in parks, tents, or
+         vehicles.
+   2.    Point-in-time enumeration of persons and families experiencing homelessness in
+         temporary shelter, including emergency shelters or transitional housing facilities.
+   3.    A targeted street count of unaccompanied children and transition-age youth,
+         conducted at locations and times identified by local youth service providers and
+         advocates to improve outreach and increase the likelihood of identifying youth
+         experiencing homelessness who may not be captured through the general count.
+   4.    A targeted County Office of Education street count of students and their families,
+         conducted in partnership with the County Office of Education to identify students
+         and families experiencing homelessness who may be unsheltered or otherwise
+         difficult to reach during the general Point-in-Time Count.
+   5.    A sample-based survey of the characteristics of persons and families experiencing
+         homelessness in both sheltered and unsheltered locations.
+   6.    HMIS data from safe sleeping and safe parking programs were included to account
+         for individuals and households staying in designated safe sleeping sites or safe
+         parking locations on the night of the count.
+        Santa Cruz County 2026 Homelessness Point-in-Time Count                                   5
+The 2026 Santa Cruz County Homeless PIT Count was a comprehensive community effort.
+With the support of over 200 persons, including those experiencing homelessness,
+community volunteers, staff from the City of Santa Cruz and Santa Cruz County, and
+community-based organizations, the entire county was canvassed between the hours of 5:00
+a.m. and 10:00 a.m. on January 29, 2026. Specialized outreach teams canvassed more remote
+areas of the County. This effort yielded a peer-informed visual count of persons and
+families experiencing unsheltered homelessness. Shelters and transitional housing facilities
+reported the number of persons and families who occupied their facilities on the night of
+January 28, 2026. In addition, the 2026 count included data on unsheltered individuals
+participating in safe parking and safe sleeping programs throughout the County that were
+not counted in prior PIT counts. This represents a change in practice from prior PIT counts
+and contributed to an increase in the unsheltered count numbers in 2026.
+
+A supplemental count of unaccompanied children under the age of 18, and transition-age
+youth (TAY) between the ages of 18 to 24 was conducted in the afternoon of January 29, 2026.
+This specialized count was designed to improve the understanding of the scope of youth
+homelessness, as youth are frequently undercounted during the unsheltered morning count
+effort. Trained youth enumerators, some who currently or have previously experienced
+homelessness, conducted the count in specific areas where youth experiencing homelessness
+were known to congregate. The 2026 youth count included more intensive and robust
+outreach when compared to the 2025 count, likely contributing to an increase in the number
+of youth counted.
+
+In the weeks following the January 29 PIT count, an in-depth survey was administered to 374
+persons experiencing unsheltered and sheltered homelessness. The survey gathered basic
+demographic details and information on service needs and utilization.
+
+This report provides data on the number and characteristics of persons experiencing
+homelessness in Santa Cruz County on a single night in January 2026. Unstably-housed
+persons living without assistance in hotel/motels, doubled-up situations (living temporarily
+with family/friends due to lack of housing), or temporarily in a jail or hospital are not included
+in the PIT count. The report provides focused analysis on special populations, including
+chronically homeless persons, veterans, families, unaccompanied children under the age of 18,
+and TAY aged 18-24. To better understand the dynamics of homelessness over time, results
+from previous PIT counts are provided where available and applicable.
+
+The data presented in this report have five separate sources which are inter-related but
+distinct:
+
+   1.    Observation-only data of unsheltered individuals and families from PIT-day
+         canvassing.
+   2.    PIT-eve shelter and transitional housing occupancy and resident data sourced from
+         the Homeless Management Information System (HMIS).
+   3.    PIT-eve safe parking, safe sleeping occupancy, and client data sourced from HMIS.
+   4.    In-depth survey data from a representative sample of sheltered and unsheltered
+         individuals.
+   5.    Homeless Data Exchange (HDX) data, cross-referenced with the above sources. The
+         HDX is HUD's secure online reporting system used by Continuums of Care to submit
+         Point-in-Time Count, Housing Inventory Count, and other homelessness data
+         required for federal reporting.
+
+
+
+
+        Santa Cruz County 2026 Homelessness Point-in-Time Count                                 6
+Santa Cruz County 2026 Homelessness Point-in-Time Count   7
+Santa Cruz County 2026 Homelessness Point-in-Time Count   8
+Santa Cruz County 2026 Homelessness Point-in-Time Count   9
+Santa Cruz County 2026 Homelessness Point-in-Time Count   10
+POINT-IN-TIME COUNT
+The 2026 Santa Cruz County Homeless PIT Count and Survey includes data on unsheltered
+persons, including individuals participating in safe sleeping and safe parking programs,
+as well as persons in emergency shelters and transitional housing programs. The general
+street count was conducted on January 29, 2026, from approximately 5:00 AM to 10:00 AM,
+and covered all of Santa Cruz County. The shelter count, conducted the night of January
+28, 2026, included all persons occupying emergency shelters, transitional housing, and
+domestic violence shelters. The unsheltered count also included data from HMIS on
+participants in safe sleeping and safe parking programs throughout the County. The 2026
+count identified 1,648 people experiencing homelessness, including 1,290 unsheltered
+persons and 358 sheltered persons.
+
+
+
+
+      Santa Cruz County 2026 Homelessness Point-in-Time Count                         11
+NUMBER AND CHARACTERISTICS OF PERSONS
+EXPERIENCING HOMELESSNESS IN SANTA CRUZ
+COUNTY
+
+Figure 1: Total Number of Persons Experiencing Homelessness
+
+
+
+
+                   2,249          2,167          2,299
+    1,964                                                       1,804           1,850
+                                                                                               1,473             1,648
+
+
+
+
+    2015           2017            2019          2022            2023           2024           2025              2026
+
+
+Figure 2: Total Homeless Count Population, by Shelter Status
+
+                                            Sheltered        Unsheltered
+
+
+
+
+    69%                                          77%                                          76%
+                   80%            78%                           79%            80%                           78%
+
+
+
+
+    31%                                          23%                                          24%
+                   20%            22%                           21%            20%                           22%
+
+    2015           2017           2019           2022           2023          2024            2025          2026
+2015 n=1,964; 2017 n=2,249; 2019 n=2,167; 2022 n=2,299; 2023 n=1,804; 2024 n=1,850; 2025 n=1,473; 2026 n=1,648
+Note: The county did not conduct a PIT count in 2020 and 2021 due to COVID-19 related concerns.
+
+
+
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                                                   12
+Figure 3: Total Homeless Count Population, by Age
+
+
+
+
+                                                       25%              27%
+                                       11%                                              15%
+       7%              6%                                                                                9%
+
+ Less Than 18         18-24           25-34           35-44             45-54          55-64        65 Years or
+    Years                                                                                              More
+2026 n=1,648
+
+Adults ages 35–54 represented the largest share of people counted, with 25% ages 35–44
+and 27% ages 45–54.
+Figure 4: Total Homeless Population by Shelter Status and Jurisdiction
+
+                                          UNSHELTERED*            SHELTERED                       TOTAL
+                                                                                                           25-26 NET
+            JURISDICTION                  2025       2026        2025       2026      2025       2026
+                                                                                                            CHANGE
+
+ Total Incorporated                       924        1,032        351       358       1,275      1,390            9%
+
+    City of Capitola                       71          32          0            0       71        32          -55%
+
+    City of Santa Cruz*                    612        789         250       234        862       1,024            19%
+
+    City of Scotts Valley                   7          32          0            0        7        32              N/A
+
+    City of Watsonville*                  234         179         101        124       335        303         -10%
+ Total Unincorporated/
+                                          198         258          0            0      198        258         30%
+ Confidential Scattered Site**
+
+ Total                                    1,122      1,290        351       358       1,473      1,648            12%
+* Inclusion of HMIS safe parking and safe sleeping data in the 2026 unsheltered count contributed to a 124
+person increase in the City of Santa Cruz and a 2-person increase in the City of Watsonville. None of the other
+jurisdiction counts were impacted by this change.
+** Confidential/scattered site data are confidential due to privacy considerations.
+Note: Percentage change is not calculated for low numerical values because even small numerical
+differences can produce large percentage changes that may be misleading.
+
+
+
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                                               13
+TOTAL HOMELESS POPULATION BY RACE AND
+ETHNICITY
+Figure 5: Total Homeless Census Population, by Race
+
+
+              American Indian, Alaska Native, or Indigenous     1%
+   American Indian, Alaska Native, or Indigenous & Hispanic/
+                          Latina/e/o                            1%
+                                    Asian or Asian American     1%
+             Asian or Asian American & Hispanic/ Latina/e/o     <1%
+                         Black, African American, or African         6%
+   Black, African American, or African & Hispanic/ Latina/e/o   <1%
+                                        Hispanic/ Latina/e/o                                   43%
+                            Middle Eastern or North African     0%
+      Middle Eastern or North African & Hispanic/ Latina/e/o    0%
+                         Native Hawaiian or Pacific Islander    <1%
+   Native Hawaiian or Pacific Islander & Hispanic/ Latina/e/o   0%
+                                                      White                                  41%
+                                White & Hispanic/ Latina/e/o     4%
+                          Multi-Racial & Hispanic/ Latina/e/o   1%
+                      Multi-Racial (not Hispanic/ Latina/e/o)   2%
+
+2026 PIT Count n=1,648
+Note: Multiple response question. Percentages may not add up to 100 due to rounding.
+Note: In 2024, HUD changed how race and ethnicity are collected in the PIT Count; therefore, comparisons with
+previous years are not recommended.
+
+
+
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                                            14
+HOMELESS SURVEY
+FINDINGS
+This section provides an overview of the findings generated from the survey component
+of the 2026 Santa Cruz County Homeless Point-in-Time Count and Survey. Surveys were
+administered to a randomized sample of people experiencing homelessness between
+February 5 and March 13, 2026, resulting in 374 valid and complete surveys.
+Based on the 1,648-person PIT Count, a randomized survey process produced 374 valid
+responses. This sample yields a margin of error of ± 4% at a 95% confidence level when
+generalizing to the entire estimated homeless population in Santa Cruz County. In other
+words, if the survey were conducted again, we can be 95% certain that the results would
+be within four percentage points of the reported results.
+To respect respondent privacy and ensure the safety and comfort of those who
+participated, survey respondents were not required to complete all survey questions.
+Missing values were intentionally omitted from the survey results. Therefore, the total
+number of respondents for each question will not always equal the total number of
+surveys conducted. For more information regarding the survey methodology, please see
+Appendix A: Methodology.
+
+
+
+GENDER IDENTITY AND SEXUAL ORIENTATION
+Seventy-five percent (75%) of survey responses were reported in the Man/Boy category
+and 23% were reported in the Woman/Girl category. Three percent were reported as Data
+Not Collected. Approximately 90% of survey respondents identified as heterosexual when
+asked about their sexual orientation, a decrease from the previous year (92%).
+
+
+Figure 6: Gender *
+
+
+                75%
+
+
+
+
+                                                      23%
+
+                                                                                            3%
+
+             Man/Boy                             Woman/Girl                        Data Not Collected
+
+
+2026 n=374 respondents offering 379 responses
+Note: Multiple response question. Percentages may not add up to 100.
+*Note: Starting in 2026, gender categories are limited to binary man/boy or woman/girl classifications to align
+with updated U.S. Department of Housing and Urban Development (HUD) reporting requirements.
+
+
+
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                                              15
+Figure 7: Sexual Orientation
+
+       90%
+
+
+
+
+                          4%                2%                2%           2%            1%
+
+ Heterosexual         Bisexual           Lesbian              Gay        Queer          Other
+2026 n=374 respondents offering 382 responses
+Note: Multiple response question. Percentages may not add up to 100.
+
+
+
+
+ FOSTER CARE
+ In 2026, 11% of survey respondents in Santa Cruz County indicated a history of foster care
+ involvement, a decrease from 21% in 2025.
+
+ Figure 8: History of Foster Care
+ 0B
+
+
+
+
+         39%
+                               23%                    16%               21%
+                                                                                         11%
+
+         2022                  2023                  2024               2025            2026
+ 2022 n=314; 2023 n=391; 2024 n=370; 2025 n=425; 2026 n=363
+
+
+
+
+ SLEEPING ACCOMMODATIONS
+ Forty percent (40%) of survey respondents reported sleeping outdoors, 27% reported
+ sleeping in a tent, and 17% reported sleeping in a vehicle.
+
+
+ Figure 9: Survey Respondents by Sleeping Accommodations
+
+
+        40%
+                          27%
+                                             17%               10%             4%          2%
+
+      Outdoors/           Tent             Vehicle            Shelter    Motel/ Hotel   Abandoned
+       Streets                                                                           Building
+
+ 2026 n=371
+
+
+        Santa Cruz County 2026 Homelessness Point-in-Time Count                                16
+ONSET, AGE, AND DURATION OF HOMELESSNESS
+The percentage of survey respondents who were experiencing their first episode of
+homelessness increased from 40% in 2025 to 50% in 2026.
+
+
+Figure 10: First Time Experiencing Homelessness ("Yes" Respondents)
+
+
+                                                                                              50%
+                             40%                                        40%
+        27%                                         30%
+
+
+       2022                  2023                  2024                 2025                  2026
+
+2022 n=329; 2023 n=410; 2024 n=395; 2025 n=422; 2026 n=365
+
+Sixty-eight percent of survey respondents reported being over the age of 25 when they first
+experienced homelessness, and twelve percent of respondents were under the age of 18
+when they first experienced homelessness. Eighty-five percent of respondents reported
+that their current stint of homelessness has lasted a year or more.
+
+
+Figure 11: Age at First Experience of Homelessness
+
+
+
+           2025       2026
+
+                                                                     55%
+                                                             45%
+
+       21%                        21%      20%
+                12%                                                                    13%     13%
+
+
+
+     0-17 Years Old            18-24 Years Old               25-49 Years          50 Years or Older
+
+2025 n=423; 2026 n=364
+Note: Age groupings were revised in 2025 to reflect input and recommendations from the community.
+
+
+
+
+      Santa Cruz County 2026 Homelessness Point-in-Time Count                                        17
+ Figure 12: Duration of Current Episode of Homelessness
+
+
+
+
+       2024       2025       2026                                                       85% 85%
+
+                                                                                  66%
+
+
+
+
+                          9%                 12%                 9%
+     4% 3% 3%                  3% 3%               4% 5%              5% 4%
+
+  30 Days or Less         1-3 Months          4-6 Months         7-11 Months      1 Year or More
+
+ 2024 n=393; 2025 n=423; 2026 n=359
+
+
+PLACE OF RESIDENCE
+The percentage of survey respondents who indicated they were living in Santa Cruz
+County at the time they lost their housing increased from 78% in 2025 to 93% in 2026.
+Fifty-six percent of respondents indicated they had been living in northern Santa Cruz
+County at the time they became unhoused, 9% indicated living in the central part of the
+county, and 28% indicated living in south county prior to becoming homeless.
+
+
+Figure 13: Place of Residence at Time of Housing Loss
+
+
+                      93%
+      86%                                                        2024      2025    2026
+              78%
+
+
+
+
+                                              16%
+                                      10%
+                                                       5%             4%    6%
+                                                                                   2%
+
+     Santa Cruz County                Other CA County                   Out of State
+
+2024 n=388; 2025 n=426; 2026 n=368
+
+
+
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                              18
+Seventy percent of respondents indicated living in Santa Cruz County for at least 10 years
+before their current episode of homelessness, identical to 2025.
+
+
+Figure 14: Time Lived in Santa Cruz County Prior to Becoming Homeless
+
+    2024       2025      2026
+
+                                                                                     70% 70%
+                                                                               63%
+
+
+
+                             14% 12% 13%                  19%
+                                                                11% 12%
+    4% 7% 5%
+
+  Less Than 1 Year               1-4 Years                 5-9 Years           10 Years or More
+2024 n=362; 2025 n=426; 2026 n=364
+
+
+
+
+PRIOR LIVING ARRANGEMENTS
+In 2026, 40% of respondents reported living in a home rented or owned by themselves or
+a partner prior to experiencing homelessness, a slight decrease from 2025 (43%).
+Meanwhile, 31% reported living with friends or relatives, up slightly from 28% in 2025.
+
+Figure 15: Living Arrangements Prior to Experiencing Homelessness (Top Five
+Responses)
+
+           2024            2025               2026
+
+
+
+
+   43% 43%
+               40%
+                                       31%
+                                 28%
+                           25%
+
+                                                     9%   11%             9%
+                                                                7%                   5%      6%
+                                                                               2%                  2%   4%
+
+
+ A Home Owned or                With               Subsidized or           Jail/Prison       Motel/Hotel
+ Rented by You or         Friends/Relatives         Permanent
+    Your Partner                                 Supportive Housing
+
+2023 n=379; 2024 n=369; 2025 n=420; 2026 n=374
+
+
+
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                                    19
+PRIMARY CAUSE OF HOMELESSNESS
+Among survey respondents who answered this question, the most commonly selected
+primary cause of homelessness was substance use disorder (25%), followed by job loss
+(15%). Because respondents were asked to select one primary cause, these results should
+be interpreted as self-reported primary contributors rather than a full accounting of all
+factors contributing to someone's homelessness.
+
+Figure 16: Primary Cause of Homelessness 2026 (Top Five Responses)
+
+
+
+
+          25%
+                                  15%
+                                                            9%                       7%                6%
+
+
+ Substance Use Disorder         Lost Job         Landlord Raised Rent     Divorce/separation/       Eviction
+                                                                               break up
+
+2026 n=358
+Note: Beginning in 2025, respondents were asked to select only one response.
+
+
+
+SUPPORT NEEDED TO OBTAIN PERMANENT
+HOUSING
+An inability to afford rent (76%) was the most common response when survey
+respondents were asked what keeps them from obtaining permanent housing. Seventy
+percent (70%) of respondents reported that a job or an increase in income would
+support their ability to attain permanent housing, while 42% of respondents reported
+they needed money for moving costs to obtain permanent housing. Thirty-six percent
+(36%) cited limited housing availability as a barrier.
+
+
+Figure 17: Constraints to Obtaining Permanent Housing (Top Five Responses)
+
+
+
+         76%
+                                70%
+
+                                                      42%
+                                                                               36%
+                                                                                                 26%
+
+
+
+
+ Can't afford rent        No job/not            No money for            No housing               No
+                        enough income           moving costs             available          transportation
+2026 n=374 respondents offering 1311 responses;
+Note: Multiple responses allowed; percentages sum to >100
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                                         20
+GOVERNMENT BENEFITS
+In 2026, 83% of survey respondents indicated that they received some form of
+governmental benefit, consistent with 2025 (83%).
+
+The most common benefit was Medi-Cal/Medicare (70%, up from 67% in 2025).
+Additionally, 55% received food stamps (consistent with 55% in 2025). Seventeen percent
+(17%) of respondents reported not receiving governmental benefits.
+
+Figure 18: Government Benefits Received (Top Five Responses)
+
+                                                                                 2024        2025         2026
+
+         67% 70%
+                         53% 55% 55%
+   37%
+                                                                                                    28%
+                                                            19%                                           17% 17%
+                                               10% 14%            11% 7%         10% 10% 6%
+                                           *
+
+ Medi-Cal/Medicare       Food Stamps   General Assistance   Social Security       SSI/SSDI    No Government
+                                                                                                 Assistance
+2024 n=395 respondents offering 607 responses; 2025 n=426 respondents offering 736 responses; 2026 n=374
+respondents offering 663 responses
+Note: Multiple response question. Percentages may not add up to 100.
+* Note: General Assistance was added as a response option in 2025
+Twenty-one percent of survey respondents reported they weren’t receiving government
+benefits because of immigration issues, a slight decrease from 2025 (23%).
+
+Figure 19: Reasons for Not Receiving Government Benefits (Top Four Responses)
+
+                                                                              2024      2025         2026
+
+
+
+
+           23%     21%                                                                  20%
+     15%                         17%                        18%
+                                       10%     11%                 10%     11%                 11%    9%
+
+
+    Immigration issues         No permanent address           Don't have ID          Don't think I'm eligible
+2024 n=96 respondents offering 137 responses; 2025 n=124 respondents offering 169 responses; 2026 n=123
+respondents offering 156 responses
+Note: Multiple response question. Percentages may not add up to 100.
+
+
+
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                                              21
+SERVICES AND PROGRAMS
+Use of free meal services was the most common form of assistance received by survey
+respondents, increasing from 57% in 2025 to 68% in 2026. The second most frequently
+used form of assistance was health services (29%), followed by shelter day services (26%),
+hygiene services (22%) and emergency shelter (14%).
+
+
+Figure 20: Service Usage (Top Seven Responses)
+
+                                                                                       2024          2025      2026
+
+ 64%         68%
+       57%
+                                                                           39%
+                             29%                 26%
+                   20% 21%                                         22%
+                                     16%                     12%                 12% 14%             13%               13%
+                                           11%                                               *   *          8% 12%
+                                                       *
+
+  Free Meals       Health Services   Shelter Day           Hygiene         Emergency        Bus Passes      Mental Health
+                                      Services             Services         Shelter                           Services
+
+
+2024 n=364 respondents offering 743 responses; 2025 n=426 respondents offering 817 responses; 2026 n=374
+respondents offering 854 responses
+Note: Multiple response question. Percentages may not add up to 100.
+* Note: Hygiene Services were added as a response option in 2025
+
+
+
+EMPLOYMENT
+While the majority of survey respondents reported being unemployed (83%), 12% reported
+seasonal, sporadic, part-time or full-time work, and 5% reported a fixed income. Of those
+who were unemployed, 54% said they were looking for work, 21% said they were unable to
+work, and 25% replied they were not looking for work.
+
+
+Figure 21: Employment
+
+       2024        2025       2026
+                                                                                                 85%        83%
+                                                                                           74%
+
+
+
+       26%
+                   12%     12%
+                                                  *        3%         5%
+
+              Employed                             Fixed Income                             Unemployed
+
+2024 n=367; 2025 n=419; 2026 n=360
+* Note: Fixed Income was added as a response option in 2025. It is defined as a consistent, regular source of
+income that does not vary significantly over time, such as SSI, SSDI, veterans benefits, etc…
+
+
+
+
+        Santa Cruz County 2026 Homelessness Point-in-Time Count                                                   22
+Figure 22: Among Unemployed Respondents
+
+       2024       2025       2026
+
+
+       60%
+                 54%     54%
+
+                                                      30%                                              25%
+                                            21%                21%               19%         16%
+
+
+        Looking for work                       Unable to work                   Not looking for work
+
+2024 n=207; 2025 n=361; 2026 n=313
+
+
+HEALTH CONDITIONS
+Just under three-quarters (71%) of survey respondents reported at least one disabling
+condition. The percentage of respondents reporting a psychiatric or emotional condition
+decreased from 54% in 2025 to 52% in 2026, persons reporting a physical disability
+decreased from 43% in 2025 to 30% in 2026, and those suffering from a traumatic brain
+injury decreased from 24% in 2025 to 17% in 2026.
+
+
+Figure 23: Health Conditions
+
+                                                                                        2024            2025          2026
+
+
+       54% 52%
+                 46% 50% 45%          42%42%          43%
+ 37%
+                                33%             29%      30%   28% 25%
+                                                                         22%          24%
+                                                                                13%         17%
+                                                                                                   4% 1% 1%        0% 0% 1%
+
+ Psychiatric or Substance Use Post-Traumatic      Physical     Chronic Health   Traumatic           HIV/AIDS      Hepatitis B or
+  Emotional       Disorder    Stress Disorder     Disability     Condition      Brain Injury      Related Illness      C
+  Conditions                      (PTSD)                                           (TBI)
+
+
+2024 n=362-373; 2025 n=408-419; 2026 n=357-366
+Note: Multiple response question. Percentages may not add up to 100
+Note: Substance use disorder (SUD) is defined as a diagnosable mental disorder characterized by a problematic
+pattern of alcohol or drug use that leads to clinically significant impairment or distress, as evidenced by
+impaired control, social impairment, risky use, and/or pharmacological criteria such as tolerance or withdrawal.
+
+
+
+
+        Santa Cruz County 2026 Homelessness Point-in-Time Count                                                  23
+Over half (58%) of respondents indicated they received care at a free or community clinic,
+an increase from 2025 (33%). Thirty percent (30%) of respondents received care at a
+hospital emergency room, a decrease from 2025 (52%).
+
+
+Figure 24: Location of Health Care (Top Four Responses)
+
+                                                                          2024   2025        2026
+
+
+                 58%
+     51%                             52%
+
+           33%                             30%
+                              22%
+                                                        7%    9%    5%
+                                                                                 10%
+                                                                                        3%    4%
+
+ Free/Community Clinic           Hospital ER              Friend/Family           Urgent Care
+
+2024 n=368 respondents offering 402 responses; 2025 n=395; 2026 n=341
+Note: Beginning in 2025, respondents were asked to only select one answer.
+
+
+
+
+DOMESTIC VIOLENCE, INTIMATE
+PARTNER VIOLENCE, OR ABUSE.
+
+Eight percent (8%) of survey respondents indicated they were currently experiencing
+domestic/partner violence or abuse at the time of the survey, while 32% of survey
+respondents indicated they had experienced domestic violence at some point in their life.
+Three percent of respondents indicated domestic/partner violence or abuse was the
+cause of their homelessness.
+
+Figure 25: Currently Experiencing Domestic Violence
+
+
+                                Yes            No          Decline to State
+
+                 88%                                90%                                 87%
+
+
+
+
+                         8%                9%                                    8%
+       4%                                                                                       5%
+                                                              1%
+
+               2024                                 2025                               2026
+
+2024 n=381; 2025 n=426; 2026 n=374
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                                       24
+Figure 26: History of Domestic Violence
+
+                               Yes        No           Decline to State
+
+
+              58%                                                           62%
+                                                55%
+                                       43%
+      33%                                                            32%
+
+                        9%                                                         6%
+                                                        2%
+
+              2024                              2025                        2026
+2024 n=381; 2025 n=426; 2026 n=374
+
+
+
+
+CRIMINAL JUSTICE SYSTEM
+Twenty-two percent (22%) of survey respondents indicated they had spent at least one
+night in jail or prison over the last 12 months, a decrease from 31% in 2025. Eighteen
+percent of respondents indicated they were on probation or parole when they most
+recently became homeless, an increase from 13% in 2025. Criminal justice involvement can
+both contribute to housing instability and result from the conditions associated with
+unsheltered homelessness.
+
+Figure 27: Spent a Night in Jail or Prison in the Last 12 Months
+
+                                         Yes           No
+
+
+
+              76%                            69%                           78%
+
+
+              24%                              31%                         22%
+             2024                            2025                          2026
+2024 n=389; 2025 n=423; 2026 n=361
+
+Figure 28: On Probation or Parole When Homelessness Occurred
+
+                                          Yes          No
+
+
+
+              84%                              87%                          82%
+
+
+              16%                               13%                         18%
+              2024                             2025                        2026
+
+2024 n=339; 2025 n=418; 2026 n=354
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                          25
+HUD DEFINED SPECIAL POPULATIONS
+All In: The Federal Strategic Plan to Prevent and End Homelessness outlines national
+objectives and evaluative measures for ending homelessness among all populations in
+the United States.
+
+To address the diversity within the population experiencing homelessness, the federal
+government identifies four subpopulations with particular challenges or needs,
+including:
+     •    Persons experiencing chronic homelessness
+     •    Veterans and their families
+     •    Families with children
+     •    Unaccompanied children and transition-age youth.
+The following sections examine each of these four subpopulations as identified in Santa
+Cruz County during the 2026 Homeless Point-in-Time Count and Survey.
+
+
+HOUSEHOLDS EXPERIENCING CHRONIC HOMELESSNESS
+The U.S. Department of Housing and Urban Development (HUD) defines chronic
+homelessness as an individual with one or more disabling conditions, or a family with a
+head of household with a disabling condition, who has been continuously homeless for
+one year or more and/or has experienced four or more episodes totaling 12 months or
+more of homelessness within the past three years.
+
+Data from communities across the country show significant public costs associated with
+long-term homelessness among people with disabilities. Significant health care, criminal
+justice, and human service costs are incurred while persons remain homeless. In 2025,
+HUD reported that roughly 169,467 people were chronically homeless nationally.1 In 2026,
+993 persons were experiencing chronic homelessness in Santa Cruz County, representing
+60% of the total PIT population. This is an increase from 878 persons in 2025, though the
+share of the total PIT population remained approximately the same at 60%.
+
+
+
+
+1 U.S. Department of Housing and Urban Development. (2026). The 2025 Annual Assessment Report (AHAR) to Congress. Retrieved July
+
+2026 from https://www.huduser.gov/portal/sites/default/files/pdf/2025-AHAR-Part-1.pdf
+
+         Santa Cruz County 2026 Homelessness Point-in-Time Count                                                            26
+Figure 29: Total Number of Persons Experiencing Chronic Homelessness
+
+
+    Chronically Homeless Persons                    Chronically Homeless Families
+    Chronically Homeless Family Members
+                                                                      993
+                                     878
+     710
+
+
+
+
+                11   36                      8       21                      7       19
+
+            2024                           2025                             2026
+
+
+Approximately eighty-six percent (86%) of the chronically homeless population was
+unsheltered.
+
+Figure 30: Chronically Homeless Population by Shelter Status
+
+
+
+                           Unsheltered                    Sheltered
+
+                               21%                     15%                    14%
+       27%
+
+
+
+                              79%                      85%                    86%
+       73%
+
+
+
+       2023                   2024                    2025                    2026
+
+
+Figure 31: Number of Chronically Homeless Persons by Shelter Status
+
+
+                                                                                    2025-2026
+                           2024              2025                 2026
+                                                                                    % CHANGE
+
+     Sheltered             148                134                 135                     1%
+
+    Unsheltered            562               744                  858                  15%
+
+        Total               710              878                  993                  13%
+
+
+
+
+     Santa Cruz County 2026 Homelessness Point-in-Time Count                                    27
+PRIMARY CAUSE OF HOMELESSNESS AMONG THOSE
+EXPERIENCING CHRONIC HOMELESSNESS
+Substance use disorder (31%) and the loss of a job (14%) were the two most common
+responses people experiencing chronic homelessness gave as the primary cause of their
+homelessness.
+
+
+Figure 32: Primary Cause of Homelessness, Chronic, Non-Chronic, and All
+Respondent Comparison (Top Five responses) *
+
+          Chronic            Non-Chronic             All Respondents
+
+
+
+
+   31%
+                    25%
+          13%                 14% 18% 15%
+                                                        8% 12% 9%             7% 7% 7%                7% 2% 6%
+
+   Substance Use                    Lost Job           Landlord Raised         Divorce/               Mental Health
+     Disorder                                               Rent          Separation/Breakup             Issues
+Chronic Survey Respondent Population n=215; Non-Chronic Survey Respondent Population n=134; All Survey
+Respondent Population n=358
+* Note: Beginning in 2025, respondents were asked only to select one
+
+
+Figure 33: Health Conditions, Chronic, Non-Chronic, and All Respondent Comparison
+
+
+         Chronic             Non-Chronic               All Respondents
+
+  65%                 63%
+              52%                       54%
+                                  45%            42%
+                                                          38%
+        31%                                                       30%
+                                                                          24%
+                                               19%           17%             19% 22%      21%
+                                                                                                     17%
+                            15%
+                                                                                                7%
+                                                                                                            1% 1% 1%
+
+ Psychiatric or      Substance Use Post-Traumatic          Physical      Chronic Health Traumatic Brain   AIDS/HIV
+  Emotional            Disorder    Stress Disorder         Disability      Problems        Injury (TBI) Related Illness
+  Conditions                           (PTSD)
+
+
+Chronic n=210-215; Non-Chronic n=129-132; All Survey Respondent n=357-366
+Note: Multiple response question. Percentages may not add up to 100.
+
+
+
+
+        Santa Cruz County 2026 Homelessness Point-in-Time Count                                                28
+Figure 34: Government Assistance Received, Chronic, Non-Chronic, and All
+Respondent Comparison (Top Five Responses)
+
+         Chronic         Non-Chronic            All Respondents
+  75%
+     66%70%         59%   55%
+                       46%
+                                                                                         25%
+                                      13% 14% 14%                                  12%         17%
+                                                          7% 7% 7%     7% 5% 6%
+
+
+   Medi-Cal       Food Stamps          General             Social      SSI/SSDI        No
+    and/or                            Assistance          Security                Government
+   Medicare                                                                        Assistance
+
+Chronic n=215; Non-Chronic n=134; All Respondents n=374
+Note: Multiple response question. Percentages may not add up to 100.
+
+Twenty-four percent of people experiencing chronic homelessness reported they had
+spent a night in jail in the past year as compared to 15% of people experiencing non-
+chronic homelessness.
+
+
+Figure 35: Spent a Night in Jail in the Past Year, Chronic, Non-Chronic, and All
+Respondent Comparison
+
+       Chronic          Non-Chronic            All Respondents
+                                                                        85%
+                                                           76%                    78%
+
+
+
+
+           24%                        22%
+                        15%
+
+
+                        Yes                                              No
+
+Chronic n=212; Non-Chronic n=131; All Respondents n=361
+
+
+
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                                   29
+VETERANS EXPERIENCING HOMELESSNESS
+U.S. veterans experience conditions that place them at increased risk for homelessness.
+Veterans often face higher rates of PTSD, TBI, sexual assault, and substance use disorders
+than non-veterans, increasing their homelessness risk.
+
+The number of veterans experiencing homelessness remained relatively stable, increasing
+from 71 in 2025 to 75 in 2026. Seventy-seven percent of veterans were unsheltered.
+
+Figure 36: Total Number of Veterans Experiencing Homelessness
+
+
+
+
+                 72                                  71                     75
+
+
+               2024                              2025                      2026
+
+
+Figure 37: Veterans Experiencing Homelessness by Shelter Status
+
+
+                                    Unsheltered           Sheltered
+
+
+                 22%                             28%                       23%
+
+
+
+
+               78%                               72%                       77%
+
+
+
+
+               2024                              2025                      2026
+
+
+
+                                                                         2025-2026 %
+                            2024              2025               2026
+                                                                           CHANGE
+
+     Sheltered                16                20                17         -15%
+
+   Unsheltered               56                 51               58          14%
+
+       Total                 72                 71                75          6%
+2024 n=72; 2025 n=71; 2026 n=75
+
+
+
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                         30
+FAMILIES WITH CHILDREN EXPERIENCING HOMELESSNESS
+
+There was a decrease in families experiencing homelessness in Santa Cruz County, from
+52 families with 180 persons in 2025 to 49 families with 174 persons in 2026. In 2026, 97%
+of people in families experiencing homelessness in Santa Cruz County were sheltered.
+
+Figure 38: Total Number of Families with Children Experiencing Homelessness
+
+                    Number of Families                      Number of Persons
+
+
+
+
+              263
+                                      171                       180                     174
+      76                       52                     52                        49
+
+        2023                    2024                       2025                  2026
+
+
+
+Figure 39: Persons in Families by Shelter Status
+
+                              Unsheltered                  Sheltered
+
+
+
+
+        65%
+                                 94%                       94%                   97%
+
+
+        35%
+                                 6%                         6%                                 3%
+        2023                    2024                       2025                  2026
+
+
+
+
+                                                                                     2025-2026 %
+                       2023          2024           2025              2026
+                                                                                       CHANGE
+
+    Sheltered           172            161           169               169               0%
+
+   Unsheltered          91             10             11               5                -55%
+
+      Total            263             171           180              174               -3%
+
+
+
+
+      Santa Cruz County 2026 Homelessness Point-in-Time Count                                       31
+UNACCOMPANIED CHILDREN AND TRANSITION-AGE YOUTH
+EXPERIENCING HOMELESSNESS
+
+Unaccompanied children are defined as persons under the age of 18 who are not
+accompanied by a parent or guardian and, if they have children of their own, are not
+sleeping in the same place as their child(ren).
+
+Transition-age youth (TAY) are defined as persons between the ages of 18 and 24 who are
+not accompanied by a parent or guardian and, if they have children of their own, are not
+sleeping in the same place as their child(ren). There were 86 transition-age youth (TAY)
+experiencing homelessness in 2026, a large increase from 24 TAY in 2025. In 2026 there
+were three unaccompanied children under 18, a decrease from 8 in 2025. Ninety-two
+percent (92%) were unsheltered. In 2026, 55% of unaccompanied children and TAY were
+identified in the City of Santa Cruz (similar to 2025 at 53%), while 20% were identified in
+Watsonville (35% in 2025). This increase should be interpreted alongside the 2026 youth
+count methodology, which included more intensive outreach and targeted youth
+engagement efforts than the prior year.
+
+
+
+
+Figure 40: Total Number of Unaccompanied Children and Transition-Age Youth
+Experiencing Homelessness
+                 Unaccompanied Children                           Transition-Age Youth
+
+
+
+                     194
+                                                          24                                 86
+          0                                   8                                  3
+
+              2024                                 2025                               2026
+
+
+
+
+Figure 41: Transition-Age Youth by Shelter Status
+
+                             Sheltered                         Unsheltered
+
+
+
+
+                                                  78%
+              95%                                                                    92%
+
+
+
+               5%                                 22%
+                                                                                      8%
+              2024                                2025                            2026
+2026 Unsheltered Transition-Age Youth n=79; 2026 Sheltered Transition-Age Youth n=7
+
+
+
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                                    32
+CONCLUSION
+The 2026 Santa Cruz County PIT Count and Survey followed HUD-recommended
+practices. Outreach staff, volunteers, and persons with lived experience came together on
+January 29, 2026, to canvass the entire county for the PIT count. Data summarized in this
+report provide valuable insights into the unique and diverse experiences of homelessness
+in Santa Cruz County. A few highlights from the report include:
+
+The PIT Count identified a total of 1,648 persons experiencing homelessness in Santa Cruz
+County in 2026, an increase of 12% from the overall count conducted in 2025.
+   •    Total Count: 1,648 persons experiencing homelessness (a 12% increase from 2025).
+   •    Shelter Status: 78% unsheltered
+   •    First-Time Homelessness: 50% of survey respondents, a 10% increase from the
+        previous year.
+   •    Place of Origin: 93% were living in Santa Cruz County when they lost their housing
+        (up 15%).
+   •    Primary Causes: Substance use disorder (25%), job loss (15%).
+   •    Assistance Needs: Rent assistance (76%), job opportunities (70%), moving costs
+        (42%).
+   •    Health Conditions: 52% psychiatric/emotional; 45% SUD; 42% PTSD; HIV/AIDS-
+        related illness remained at 1%.
+   •    Time Lived in Santa Cruz County: 10 years or more (70%).
+   •    Special Populations: 993 chronically homeless (60% of PIT), 75 veterans, 174
+        persons in families, 89 children and TAY.
+
+The 2026 Santa Cruz County Homeless Count and Survey provides a comprehensive
+profile of those experiencing homelessness within the county. Data presented in this
+report fulfill federal reporting requirements for the CoC and will inform outreach, service
+planning, and policy decisions by local planning bodies.
+
+Santa Cruz County remains committed to preventing homelessness and rapidly moving
+those experiencing homelessness into permanent housing. Dissemination and
+evaluation of this report will help the CoC and County stakeholders refine solutions to
+end homelessness.
+
+
+
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                          33
+APPENDIX A: METHODOLOGY
+OVERVIEW
+The 2026 Santa Cruz County Homeless Count and Survey was performed using HUD-
+recommended practices and definitions of homelessness. The primary purpose of the
+count and survey was to produce a point-in-time estimate of persons and families
+experiencing homelessness in Santa Cruz County.
+
+
+COMPONENTS OF THE HOMELESS COUNT & SURVEY
+The 2026 PIT Count and Survey had six components:
+   •    General Street Count: A no-contact, visual observation-only count of unsheltered
+        persons and families experiencing homelessness on January 29, 2026, from
+        approximately 5:00 AM to 10:00 AM. The count included people sleeping in a public
+        or private place not designed for or ordinarily used as a regular sleeping
+        accommodation for human beings, including a car, park, abandoned building, bus
+        stations, or camping ground. The general street count was designed to take place
+        while shelter occupants were still indoors.
+   •    General Sheltered Count: A nighttime count of persons and families staying at
+        publicly and privately-operated shelters and transitional housing programs on the
+        night of January 28, 2026, the night before the general street count. Shelter data
+        were gathered either from Santa Cruz County’s Homeless Management
+        Information System (HMIS) or directly from the shelter provider.
+   •    Targeted Street Count of Unaccompanied Children and Transition-Age Youth:
+        A count of unaccompanied children and transition-age youth on January 29, 2026.
+        This count occurred from approximately 3:00 PM to 8:00 PM and was led by special
+        youth teams who canvassed areas where youth and young adults were known to
+        congregate. Upon completion, data from this targeted count was carefully
+        reviewed against the results from the general street count to ensure duplicate
+        counts were removed.
+   •    Targeted County Office of Education Street Count of Students and Their
+        Families: This count included previously identified unsheltered homeless students
+        and their families and was conducted by the Santa Cruz County Office of Education
+        (COE) for the night of January 28, 2026, in conjunction with participating school
+        districts. Demographic and geographic detail from the COE count was compared
+        to the general count data to identify and remove duplicate counts.
+   •    Survey: In-person interviews with 374 unique sheltered and unsheltered persons
+        experiencing homelessness were conducted by peer surveyors between February
+        5 and March 13, 2026. Data from the survey were used to refine the Point-in-Time
+        Count estimates, particularly for special populations, and provide a more
+        comprehensive understanding of the demographics and experiences of homeless
+        persons and families.
+   •    Safe Sleeping and Safe Parking HMIS Data: HMIS data from safe sleeping and
+        safe parking programs were included in the 2026 Point-in-Time Count to account
+        for individuals and households staying in designated safe sleeping sites or safe
+        parking locations on the night of the count.
+
+
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                         34
+THE PLANNING PROCESS
+To ensure the success and integrity of the count, The Housing for Health Partnership led
+the project with collaborations from other local jurisdictions and community-based
+organizations on community outreach, volunteer recruitment, logistical plans,
+methodological decisions, and interagency coordination efforts. ASR provided technical
+assistance for these aspects of the planning process.
+
+
+STREET COUNT METHODOLOGY
+
+DEFINITION
+For the purposes of this study, the HUD definition of unsheltered homeless persons was
+used:
+   •    An individual or family with a primary nighttime residence that is a public or
+        private place not designed for or ordinarily used as a regular sleeping
+        accommodation for human beings, including a car, park, abandoned building,
+        bus or train stations, airport, or camping ground.
+   •    Individuals participating in safe sleeping and safe parking programs are still
+        considered unsheltered even though they are connected with a supportive
+        services program.
+
+
+METHODOLOGICAL IMPROVEMENTS
+The 2026 street count methodology followed an established, HUD-approved approach
+commonly called a blitz method followed by a sample survey. This is the sixth year of using
+GPS-enabled smartphones in data collection, using an ESRI Survey 123 application (GPS-
+enabled mobile data collection tool) developed and customized by ASR to conform to
+HUD data collection requirements. Improvements were made in pre-planning efforts to
+deploy count teams both remotely and from deployment sites, wherever possible using
+an online GIS route planning tool integrated into the volunteer sign-up process.
+
+Outreach organizations, Santa Cruz County and City of Santa Cruz staff, along with
+community members and community-based organizations, selected areas for
+enumeration from an interactive GIS planning map tool that enabled planning for
+complete coverage of the county. Regions with known higher concentrations of people
+experiencing homelessness were prioritized for outreach staff and personnel with direct
+service experience
+
+
+VOLUNTEER AND GUIDE RECRUITMENT
+In 2026, over 200 outreach workers, community volunteers and homeless
+guides participated in the general street count.
+
+Special effort was made to recruit and involve individuals with lived experience of
+homelessness to serve as guides. Guides were paid $20 to participate in a PIT Count
+training, as well as $20 per hour worked on the day of the count.
+
+
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                          35
+Volunteers and guides were required to view a 20-minute training video before the count
+that covered:
+   •    Definition of homelessness,
+   •    Identification of persons experiencing homelessness,
+   •    Guidance on safely and respectfully conducting the count, using the smart
+        phone app, and accessing the smartphone app training video,
+   •    Using route maps to ensure full coverage of assigned areas,
+   •    Tips to identify vehicles in which persons may be residing and other information
+        to facilitate an accurate and safe count.
+
+
+SAFETY PRECAUTIONS
+Every effort was made to minimize potentially hazardous situations. Law enforcement
+agencies were notified of pending street count activity in their jurisdictions. Specialized
+teams with knowledge of specific encampments were assigned to census tracts with
+those encampments. Enumeration teams were advised to take every safety precaution
+possible, including bringing flashlights and maintaining a respectful distance from those
+they were counting.
+
+
+LOGISTICS OF ENUMERATION
+On the morning of the street count, teams of two or more persons deployed to enumerate
+census tracts in the county. Each team was composed of any combination of outreach
+workers, lived experience guides, program staff, and community volunteers. Each team
+had a lead and was provided with smart phone access information, and training and field
+observation tips and guidelines, including vehicle identification criteria at the deployment
+sites prior to the count. Teams were instructed to meet at one of the deployment sites
+before and after enumeration to sign in and pick up census tract maps and check receipt
+of data post count. Dispatch center volunteers verified that at least one person on each
+team had a cell phone available for their use during the count; the phone number was
+recorded on the volunteer deployment assignment sheet.
+
+All accessible streets, roads, parks, and highways in the enumerated tracts were traversed
+by foot or car. The Santa Cruz County Survey 123 smartphone app was used to record the
+number of homeless persons observed in addition to basic demographic and location
+information. Teams were asked to cover the entirety of their assigned areas.
+
+To ensure the privacy of persons experiencing homelessness was respected and
+enumeration teams remained safe, teams were directed to conduct observation-only
+counts and not have any contact with persons experiencing homelessness. When they
+encountered a structure or vehicle that they believed to be inhabited, teams could
+indicate that it was inhabited but that the number or the demographic detail (age and
+gender) of its inhabitants could not be determined. Only actively occupied places were
+eligible to be included in the count effort. Teams marked such locations as ‘occupied-
+unknown’ in the app, and survey data were used to estimate occupant characteristics.
+ASR uses count data on confirmed cases identified during the PIT to extrapolate data on
+gender and age to estimate the demographics of persons counted.
+
+
+
+
+       Santa Cruz County 2026 Homelessness Point-in-Time Count                           36
+COUNTY OFFICE OF EDUCATION COUNT
+In the days following the street count, representatives from several school districts called
+households known to have recently experienced homelessness to ascertain where they
+stayed on the night of count.
+
+This is a significant effort, as school districts may have hundreds of calls to make to ensure
+that families counted fit the HUD definition of homelessness and were, in fact,
+experiencing homelessness on the night of the count. COE data were reviewed against
+general count data to identify eligible students and families who met the HUD PIT
+definition and to remove duplicates. Any eligible unduplicated households were
+incorporated into the final PIT count totals.
+
+
+UNACCOMPANIED CHILDREN AND
+TRANSITION-AGE YOUTH STREET
+COUNT METHODOLOGY
+GOAL
+The goal of the 2026 unaccompanied children and transition-age youth (TAY) count was
+to accurately represent unaccompanied children and transition-age youth in the Point-
+in-Time Count. Because many children and TAY experiencing homelessness do not use
+homeless services, are unrecognizable to adult street count volunteers, and may be in
+unsheltered locations that are difficult to find, traditional street count efforts are not as
+effective in reaching youth. In this regard, HUD and the United States Interagency Council
+on Homelessness recommend that communities count youth at times when they can be
+seen rather than during traditional enumeration times.
+
+
+RESEARCH DESIGN
+Planning for the 2026 unaccompanied children and TAY count included homeless youth
+service providers and persons between the ages of 18 and 24, with lived experience of
+homelessness. Local service providers identified locations where unaccompanied children
+and TAY experiencing homelessness were known to congregate and recruited TAY
+experiencing or with lived experience of homelessness and knowledge of those areas to
+serve as guides for the count. Late afternoon and early evening were recommended by
+advocates as the best time to conduct the youth count. Youth workers were paid $20 per
+hour for time spent both in training and the actual count. Youth worked in teams of two
+to four, with teams coordinated and supervised by street outreach workers.
+
+This year, there were two points of emphasis for youth count teams. First, ensuring that
+all teams had enough participants to cover their assigned areas, and that those areas were
+best opportunities to count youth experiencing homelessness. Second, multiple
+gatherings were held for youth to come and be counted, using past outreach to
+encourage those youth to allow themselves to be included in the PIT results. These events
+had incentives such as pizza and giveaways to encourage youth to attend.
+STREET COUNT DE-DUPLICATION
+Data from the unaccompanied children and TAY count and general street count were
+compared and de-duplicated by assessing location, gender, and age.
+
+
+
+      Santa Cruz County 2026 Homelessness Point-in-Time Count                              37
+SHELTERED COUNT METHODOLOGY
+GOAL
+The goal of the sheltered count is to gain an accurate count of persons temporarily staying
+in shelters and transitional housing programs across Santa Cruz County.
+
+
+DEFINITION
+For the purposes of this study, the following HUD definition of sheltered homelessness for
+Point-in-Time Counts was used: persons and families living in a supervised publicly or
+privately operated shelter or transitional housing programs designated to provide a
+temporary living arrangement. Persons living in publicly-supported managed camps or
+safe parking programs are not considered sheltered under this definition.
+
+
+DATA COLLECTION
+To collect data on persons staying in shelters and transitional housing programs, ASR
+worked with BitFocus, the HMIS system administrator for Santa Cruz County, to collect
+data from all emergency shelters and transitional housing programs operating in the
+county. Data collected from the shelters and transitional housing programs included
+participants’ household status, age, gender, race and ethnicity, veteran status, duration
+and recurrence of homelessness, chronic homeless status, and health conditions. Data
+from shelters that do not participate in HMIS was collected using a web-based reporting
+system.
+
+HMIS data from safe sleeping and safe parking programs were incorporated into the 2026
+Point-in-Time Count methodology to identify individuals and households residing in
+designated safe sleeping sites and safe parking locations on the night of the count. These
+data were used to supplement the unsheltered count and provide a more complete
+representation of people experiencing homelessness in non-traditional shelter settings.
+
+
+CHALLENGES
+Point-in-Time Counts are “snapshots” that quantify the size of the homeless population in
+a specific area at a given point during the year. Hence, the count is not representative of
+fluctuations and compositional changes in the homeless population seasonally or over
+time.
+
+The methods employed in a non-intrusive visual homeless enumeration, while
+academically sound, have inherent biases and shortcomings. Even with the assistance of
+dedicated service providers, the methodology cannot guarantee 100% accuracy. It can be
+difficult to identify persons staying in dense vegetation or in locations that are hard to
+reach. Persons staying in vehicles take steps to minimize the visibility of their sleeping
+situation, making it another population that can be hard to identify. As enforcement
+agencies increase their sweeps, persons experiencing homelessness are forced to find
+sleeping locations that are increasingly hidden.
+
+
+
+
+      Santa Cruz County 2026 Homelessness Point-in-Time Count                           38
+SURVEY METHODOLOGY
+
+PLANNING AND IMPLEMENTATION
+The survey elicited information from respondents including gender, family status, military
+service, duration and recurrence of homelessness, nighttime accommodations, causes of
+homelessness, and access to services through open- and closed-ended, and multiple
+response questions.
+Surveys were conducted by peer survey workers with lived experience of homelessness.
+Survey workers completed training sessions facilitated by ASR. Potential surveyors had a
+comprehensive orientation that included project background information and detailed
+instruction on respondent eligibility, interviewing protocol, and confidentiality. Peer
+survey workers were compensated at a rate of $10 per completed survey.
+It was determined that survey data would be more easily obtained if an incentive was
+offered to respondents in appreciation for their time and participation. Gift cards were
+provided as an incentive for participating in the 2026 homeless survey because they are
+easy to distribute, have wide appeal, and could be provided within the project budget.
+
+
+SURVEY SAMPLING
+Based on a Point-in-Time Count estimate of 1,648 homeless persons, with a randomized
+survey sampling process, the 374 valid surveys represented a margin of error of +/-4%, with
+a 95% confidence level when generalizing the results of the survey to the estimated
+population of persons experiencing homelessness in Santa Cruz County.
+
+The 2026 survey was administered in shelters, transitional housing facilities, and outside.
+Survey quotas were created to ensure appropriate representation of persons and heads
+of families staying in emergency shelter and transitional housing residents.
+
+Strategic attempts were made to reach persons in a variety of geographic locations and
+demographic groups such as homeless unaccompanied children and TAY, minority
+ethnic groups, veterans, domestic violence survivors, and families. Quotas were used for
+geographic locations, unaccompanied children and transition-age youth, and shelter and
+transitional housing residents.
+
+To reduce implicit bias, during the recruitment and training of surveyors, every attempt
+was made to recruit capable persons who represented a broad range of experiences and
+backgrounds. Since 2009, the ASR survey methodology has prioritized a peer-to-peer
+approach to data collection by increasing the number of surveyors currently or recently
+experiencing homelessness. We prioritize surveyors who have experienced homelessness
+as they can better relate to and understand the population they are surveying.
+
+To increase randomization of respondents, survey workers were trained to employ an
+“every third encounter” approach. Survey workers were instructed to approach every third
+person they considered to be an eligible survey respondent. If the person declined to take
+the survey, the survey worker could approach the next eligible person they encountered.
+After completing a survey, the “every third encounter” approach was resumed.
+
+
+
+      Santa Cruz County 2026 Homelessness Point-in-Time Count                           39
+DATA COLLECTION
+Care was taken by interviewers to ensure respondents felt comfortable regardless of the
+location where the survey occurred. During the interviews, respondents were encouraged
+to be candid in their responses and were informed that their responses would be framed
+as general findings, kept confidential, and not traceable to any single individual.
+Participants received a $10 gift card for completing the survey.
+
+DATA ANALYSIS
+The survey requested respondents’ initials and date of birth to avoid duplication without
+compromising the respondents’ anonymity. Upon completion of the survey effort, an
+extensive verification process was conducted to eliminate potential duplicates. This
+process examined respondents’ date of birth, initials, gender, ethnicity, length of
+homelessness, and consistency in patterns of survey question responses. Outlier surveys
+were examined and eliminated if thought to be inauthentic.
+
+SURVEY DATA AND PIT COUNT DATA
+Survey data is used to extrapolate data on race and ethnicity for all persons, and to
+account for situations where PIT enumeration teams were unable to collect data on age
+and gender. That data is combined with data from HMIS on shelter and transitional
+housing participants to provide a complete demographic picture for all persons identified
+during the PIT count.
+
+SURVEY CHALLENGES AND LIMITATIONS
+The 2026 Santa Cruz County Homeless Survey strives to be a representative sample of the
+homeless experience through geographic and shelter-based quotas. Bias in respondent
+selection by surveyors is a major training theme and all attempts are made to minimize.
+The diversity of the homeless experience is significant and our ability to profile this can
+always be improved. The survey methods, though constantly evolving, are essentially the
+same over time so longitudinal data has good methodological consistency.
+
+
+The smaller the subpopulation, the harder it is to ensure it is accurately represented
+during the survey process. For example, finding families and youth and TAY experiencing
+homelessness presents a challenge and can lead to underrepresentation in the survey
+results. Locating and surveying persons who identify as transgender, have a sexual
+orientation other than heterosexual, are experiencing specific health conditions such as
+AIDS/HIV related illness and TBI, among others can be challenging and may not be fully
+represented in the survey process.
+
+
+There may be some variance in the information that persons experiencing homelessness
+self-reported. A peer interviewing methodology is believed to allow respondents to be
+more candid with their answers and help reduce uneasiness of revealing personal
+information.
+
+
+Jurisdictional counts should be interpreted with caution. Differences between
+jurisdictions may reflect variations in route coverage, encampment movement,
+enforcement activity, and shelter locations, rather than actual shifts in the geographic
+distribution of people experiencing homelessness.
+
+
+      Santa Cruz County 2026 Homelessness Point-in-Time Count                           40
+Two years ago, ASR transitioned from using paper surveys to administering surveys
+electronically. As a result of this shift, we observed changes in response patterns for certain
+questions. These percentage shifts may be attributed to differences in how respondents
+interact with electronic surveys compared to paper formats, including variations in
+accessibility and response behavior. This change in format should be considered when
+interpreting year-over-year comparisons. For example, in previous years, a question asking
+about the primary cause of homelessness was designed as a single response question, but
+many respondents would choose more than one answer on the paper version of the
+survey. However, using electronic version of the survey allowed the survey to accept only
+one answer.
+
+
+
+
+      Santa Cruz County 2026 Homelessness Point-in-Time Count                               41
+APPENDIX B: DEFINITIONS
+AND ABBREVIATIONS
+Chronic                   Defined by HUD as an unaccompanied individual or head of a family
+homelessness              household with a disabling condition who has either continuously
+                          experienced homelessness for a year or more or has experienced at
+                          least four episodes of homelessness totaling 12 months in the past
+                          three years.
+
+
+Continuum of Care         A Continuum of Care (CoC) is a regional or local planning body
+(CoC)                     recognized by the U.S. Department of Housing and Urban
+                          Development (HUD) that coordinates housing and supportive services
+                          for individuals and families experiencing homelessness. The CoC is
+                          responsible for assessing local needs, managing a coordinated entry
+                          system, overseeing data collection through the Homeless
+                          Management Information System (HMIS), and applying for federal
+                          funding to support homelessness response programs.
+
+
+Disabling condition       Defined by HUD as a physical, mental, or emotional impairment,
+                          including an impairment caused by alcohol or drug abuse, post-
+                          traumatic stress disorder, or brain injury that is expected to be long-
+                          term and impacts the individual’s ability to live independently; a
+                          developmental disability; or HIV/AIDS.
+
+
+Emergency shelter         Temporary accommodation for persons experiencing homelessness,
+                          either in a shelter facility or through the use of stabilization rooms.
+                          Emergency shelter is short-term, usually for 180 days or fewer.
+                          Domestic violence shelters are typically considered a type of
+                          emergency shelter, as they provide safe, immediate housing for
+                          survivors and their children.
+
+
+Family                    A household with at least one adult and one child under the age of 18.
+
+
+Fixed Income              Regular income received from non-employment sources, including
+                          Social Security, SSI, SSDI, veterans' benefits, pensions, and other
+                          retirement or disability benefits.
+
+
+Housing for Health        The Housing for Health Partnership (H4HP) is the HUD-designated
+Partnership (H4HP)        Continuum of Care for Santa Cruz County. It coordinates the regional
+                          homelessness response, manages data and housing referrals, and
+                          allocates federal and state funding in partnership with local
+                          governments, service providers, and community members.
+
+
+Homeless Data             The Homeless Data Exchange (HDX) is a web-based platform
+Exchange (HDX)            developed by the U.S. Department of Housing and Urban
+                          Development (HUD) for Continuums of Care (CoCs) to submit data on
+                          homelessness. It is used to report critical information such as Point-in-
+                          Time (PIT) counts, Housing Inventory Counts (HIC), System
+                          Performance Measures, and Longitudinal Systems Analysis (LSA) data.
+                          HDX supports national and local efforts to track homelessness trends,
+                          evaluate program performance, and inform funding decisions.
+
+    Santa Cruz County 2026 Homelessness Point-in-Time Count                                     42
+                            The HEARTH Act, enacted in 2009, reauthorized and revised the
+HEARTH Act
+                            McKinney-Vento Homeless Assistance Act to strengthen the federal
+                            response to homelessness. Administered by the U.S. Department of
+                            Housing and Urban Development (HUD), the HEARTH Act emphasizes
+                            prevention, rapid rehousing, and coordinated community systems. It
+                            consolidated funding streams, introduced performance-based
+                            measures, and established Continuums of Care (CoCs) as the lead
+                            entities responsible for coordinating local homelessness response
+                            systems.
+
+
+HMIS                        The Homeless Management Information System (HMIS) is a federally
+                            mandated, secure database used by Continuums of Care (CoCs) to
+                            collect and manage data on individuals and families experiencing
+                            homelessness. HMIS tracks client interactions with housing and
+                            service programs, supports coordinated entry, and generates required
+                            reports for the U.S. Department of Housing and Urban Development
+                            (HUD), including Point-in-Time counts, System Performance
+                            Measures, and funding applications.
+
+
+HUD                         Abbreviation for the U.S. Department of Housing and Urban
+                            Development.
+
+
+Persons Experiencing        Under the Category 1 definition of homelessness in the HEARTH Act,
+Homelessness                includes persons and families living in a supervised publicly or
+                            privately operated shelter designated to provide temporary living
+                            arrangements, or with a primary nighttime residence that is a public
+                            or private place not designed for or ordinarily used as a regular
+                            sleeping accommodation for human beings, including a car, park,
+                            abandoned building, bus or train station, airport, or camping ground.
+
+
+PIT                         The Point-in-Time (PIT) Count is an annual survey conducted by
+                            Continuums of Care (CoCs) to estimate the number of people
+                            experiencing homelessness on a single night in January. Required by
+                            the U.S. Department of Housing and Urban Development (HUD), the
+                            PIT Count includes both sheltered and unsheltered populations and
+                            provides critical data for understanding local trends, informing policy,
+                            and securing federal funding.
+
+
+Safe Parking                A program that provides designated parking locations where
+                            individuals and families experiencing homelessness can safely reside
+                            in their vehicles overnight, often with access to supportive services
+                            and resources.
+Safe Sleeping               A program that provides designated, supervised locations where
+                            individuals and families experiencing homelessness can safely sleep in
+                            tents, vehicles, or other approved temporary sleeping arrangements,
+                            often with access to services and case management.
+Sheltered homeless          Persons who are living in emergency shelters or transitional housing
+persons                     programs.
+
+
+Single individual           An unaccompanied adult over the age of 18.
+
+
+
+
+      Santa Cruz County 2026 Homelessness Point-in-Time Count                                    43
+Substance Use             A diagnosable mental disorder characterized by a problematic pattern
+Disorder (SUD)            of alcohol or drug use that leads to clinically significant impairment or
+                          distress, as evidenced by impaired control, social impairment, risky
+                          use, and/or pharmacological criteria such as tolerance or withdrawal.
+
+
+Transition-age youth      Young people between the ages of 18 and 24 years old who are not
+(TAY)                     accompanied by a parent or guardian.
+
+
+Transitional housing      Housing in which homeless Persons may live up to 24 months and
+                          receive supportive services that enable them to live more
+                          independently. Supportive services, which help promote residential
+                          stability, increased skill level or income, and greater self-
+                          determination, may be provided by the organization managing the
+                          housing, or coordinated by that organization and provided by other
+                          public or private agencies. Transitional housing can be provided in
+                          one structure or several structures at one site, or in multiple structures
+                          at scattered sites.
+
+
+Unaccompanied             Children under the age of 18 who are not accompanied by a parent or
+children                  guardian and are not a parent presenting with or sleeping in the
+                          same place as their own child(ren).
+
+
+Unsheltered               Persons who are living on the streets, in abandoned buildings, storage
+homeless persons          structures, vehicles, encampments, or any other place unfit for human
+                          habitation.
+
+
+
+
+    Santa Cruz County 2026 Homelessness Point-in-Time Count                                     44
+

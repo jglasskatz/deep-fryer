@@ -1,0 +1,126 @@
+{
+  "id": "santa-cruz:networks:0",
+  "portrait": "santa-cruz",
+  "dimension": "networks",
+  "indicator_index": 0,
+  "kind": "replace",
+  "before": {
+    "name": "Broadband access & mobility",
+    "value": "~16,000 households lack internet; 38% drive alone",
+    "unit": "",
+    "year": 2024,
+    "target": "Universal broadband; reduce single-occupancy driving",
+    "source": "Equal Access Santa Cruz; DataShare SCC; CA Broadband Report Card",
+    "source_url": "https://www.datasharescc.org/indicators/index/view?indicatorId=2367&localeId=281&comparisonId=7127",
+    "geography": "See source context",
+    "status": "legacy-source",
+    "notes": "~16,000 households without adequate internet (C- on CA Broadband Report Card). Equal Access SC provides $15/mo internet. $10M state grant for rural fiber. 38% of commuters drive alone (DataShare SCC) — lower than national average but opportunity for improvement via transit and bike infrastructure.",
+    "evidence_path": null,
+    "pdf_path": null
+  },
+  "after": {
+    "name": "Households with broadband internet of any type",
+    "value": 95.5,
+    "unit": "% of households",
+    "year": 2024,
+    "target": null,
+    "source": "US Census Bureau ACS2024 B28002/GCT2801",
+    "source_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b28002.dat",
+    "geography": "city",
+    "status": "source-supported-observation",
+    "notes": "2020–2024 ACS5 year. B28002_E004 Broadband of ANY type 20739/B28002_E001 households 21713×100=95.51420808%. Includescellular-only subscriptions; not fixed cable/fiber/DSL. Doesnotmeasureprice, quality, speed orcommuting. Legacycombinedmobilityclaims notsubstantiatedbythisinternettable.",
+    "evidence_path": "evidence/sc-census-extract.png",
+    "pdf_path": null,
+    "level_pct": null,
+    "scoring": null,
+    "confidence": "medium",
+    "geographic_scale": "city",
+    "evidence": {
+      "snapshot_path": "evidence/sc-census-extract.png",
+      "captured_at": "2026-10-24T01:31:52.403Z"
+    }
+  },
+  "field_diff": {
+    "name": {
+      "before": "Broadband access & mobility",
+      "after": "Households with broadband internet of any type"
+    },
+    "value": {
+      "before": "~16,000 households lack internet; 38% drive alone",
+      "after": 95.5
+    },
+    "unit": {
+      "before": "",
+      "after": "% of households"
+    },
+    "target": {
+      "before": "Universal broadband; reduce single-occupancy driving",
+      "after": null
+    },
+    "source": {
+      "before": "Equal Access Santa Cruz; DataShare SCC; CA Broadband Report Card",
+      "after": "US Census Bureau ACS2024 B28002/GCT2801"
+    },
+    "source_url": {
+      "before": "https://www.datasharescc.org/indicators/index/view?indicatorId=2367&localeId=281&comparisonId=7127",
+      "after": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b28002.dat"
+    },
+    "geography": {
+      "before": "See source context",
+      "after": "city"
+    },
+    "status": {
+      "before": "legacy-source",
+      "after": "source-supported-observation"
+    },
+    "notes": {
+      "before": "~16,000 households without adequate internet (C- on CA Broadband Report Card). Equal Access SC provides $15/mo internet. $10M state grant for rural fiber. 38% of commuters drive alone (DataShare SCC) — lower than national average but opportunity for improvement via transit and bike infrastructure.",
+      "after": "2020–2024 ACS5 year. B28002_E004 Broadband of ANY type 20739/B28002_E001 households 21713×100=95.51420808%. Includescellular-only subscriptions; not fixed cable/fiber/DSL. Doesnotmeasureprice, quality, speed orcommuting. Legacycombinedmobilityclaims notsubstantiatedbythisinternettable."
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/sc-census-extract.png"
+    },
+    "confidence": {
+      "before": null,
+      "after": "medium"
+    },
+    "geographic_scale": {
+      "before": null,
+      "after": "city"
+    },
+    "evidence": {
+      "before": null,
+      "after": {
+        "snapshot_path": "evidence/sc-census-extract.png",
+        "captured_at": "2026-10-24T01:31:52.403Z"
+      }
+    }
+  },
+  "reason": "Replace vague digitaldivide/countclaims with exact typed subscriptionmeasure and retainedscope limitations.",
+  "source_support": [
+    {
+      "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b28002.dat",
+      "raw_path": "raw/acs5-broadband2024.bin.gz",
+      "raw_sha256": "12446ff0691b8818f5908cdc398817361772c5b3078c506d0409adc9c841840b",
+      "raw_encoding": "gzip; original bytes round-trip exactly",
+      "captured_at": "2026-10-24T01:31:52.403Z",
+      "period": "2020–2024 ACS5 year",
+      "scale": "city",
+      "stored_sha256": "59028b167c65c1755422af36458bce1ec5227bfb324574982d61d7de8c9f140c",
+      "snapshot_path": "evidence/sc-census-extract.png",
+      "snapshot_sha256": "aa09836439b82e14d85a09c9864b2f1bfe6d37647682d95aa0140d7b0444c51e"
+    },
+    {
+      "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+      "raw_path": "raw/acs5-shells2024.bin.gz",
+      "raw_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+      "raw_encoding": "gzip; original bytes round-trip exactly",
+      "captured_at": "2026-10-24T01:31:51.961Z",
+      "period": null,
+      "scale": null,
+      "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0"
+    }
+  ],
+  "review_required": true
+}

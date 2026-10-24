@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { frameworkDimension } from '@deep-fryer/contract';
+import { summarizeRunCosts } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { NewRunForm } from '@/components/admin/NewRunForm';
 import { tenantDimensions, tenantRuns } from '@/lib/admin-data';
@@ -75,6 +77,7 @@ export default async function ResearchPage({
               id: dimension.id,
               name: published?.data.name ?? latest?.data.name ?? dimension.slug,
               ring: dimension.ring,
+              indicatorCount: frameworkDimension(dimension.slug, dimension.canonicalSlug)?.indicators.length ?? latest?.data.indicators.length ?? 0,
             }))}
           />
         </div>
@@ -101,12 +104,8 @@ export default async function ResearchPage({
                 </tr>
               ) : (
                 runs.map((run) => {
-                  const tokens = run.tokenUsage
-                    ? Object.values(run.tokenUsage).reduce(
-                        (a, u) => a + u.input_tokens + u.output_tokens,
-                        0,
-                      )
-                    : null;
+                  const cost = summarizeRunCosts(run.tokenUsage);
+                  const tokens = cost.sessions.length ? cost.sessions.reduce((total, session) => total + session.input_tokens + session.output_tokens + session.cache_read_tokens + session.cache_write_tokens, 0) : null;
                   return (
                     <tr key={run.id} className="border-b">
                       <td className="py-2 pr-4">
@@ -121,7 +120,7 @@ export default async function ResearchPage({
                       <td className="py-2 pr-4">
                         {run.createdAt.toISOString().slice(0, 16).replace('T', ' ')}
                       </td>
-                      <td className="py-2 pr-4">{tokens ? tokens.toLocaleString() : '—'}</td>
+                      <td className="py-2 pr-4">{tokens === null ? '—' : tokens.toLocaleString('en-US')}{cost.coverage === 'partial' ? ' (partial)' : ''}</td>
                     </tr>
                   );
                 })

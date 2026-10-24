@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://www.santacruzcountyca.gov/portals/0/county/CAO/press%20releases/2026/2026PITCount.08052026.pdf",
+  "stem": "sc-pit-2026-release",
+  "captured_at": "2026-10-24T01:28:52.185Z",
+  "status": 200,
+  "content_type": "application/pdf",
+  "raw_path": "raw/sc-pit-2026-release.pdf",
+  "sha256": "492d9fcbbb2d49c2bf9c5945b9fbcf396bddc948e86f7d67d25c6f80edee5015",
+  "bytes": 215880,
+  "success": true
+}

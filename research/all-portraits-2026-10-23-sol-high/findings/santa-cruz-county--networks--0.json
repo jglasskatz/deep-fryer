@@ -1,0 +1,125 @@
+{
+  "id": "santa-cruz-county:networks:0",
+  "portrait": "santa-cruz-county",
+  "dimension": "networks",
+  "indicator_index": 0,
+  "kind": "replace",
+  "before": {
+    "name": "Broadband access",
+    "value": "C- grade; ~16,000 households lack internet",
+    "unit": "",
+    "year": 2024,
+    "target": "Universal broadband access",
+    "source": "CA Broadband Report Card; Equal Access SC",
+    "source_url": "https://equalaccesssantacruz.com/",
+    "geography": "See source context",
+    "status": "legacy-source",
+    "notes": "15,745 students without broadband. Equal Access SC provides $15/mo internet. $500K county grant to Cruzio. $10M state grant for rural fiber. Digital divide worst in south county and rural areas.",
+    "evidence_path": null,
+    "pdf_path": null
+  },
+  "after": {
+    "name": "Households with broadband internet of any type",
+    "value": 94.9,
+    "unit": "% of households",
+    "year": 2024,
+    "target": null,
+    "source": "US Census Bureau ACS2024 B28002/GCT2801",
+    "source_url": "https://www2.census.gov/programs-surveys/acs/data/2024/1_year_geographic_comparison_tables/GCT2801.csv",
+    "geography": "county",
+    "status": "source-supported-observation",
+    "notes": "2024 ACS1 year. GCT2801 estimate 94.9%;90%MOE+/-1.1. Includescellular-only subscriptions; not fixed cable/fiber/DSL. Doesnotmeasureprice, quality, speed orcommuting. Legacycombinedmobilityclaims notsubstantiatedbythisinternettable.",
+    "evidence_path": "evidence/sc-census-extract.png",
+    "pdf_path": null,
+    "level_pct": null,
+    "scoring": null,
+    "confidence": "medium",
+    "geographic_scale": "county",
+    "evidence": {
+      "snapshot_path": "evidence/sc-census-extract.png",
+      "captured_at": "2026-10-24T01:26:24.972Z"
+    }
+  },
+  "field_diff": {
+    "name": {
+      "before": "Broadband access",
+      "after": "Households with broadband internet of any type"
+    },
+    "value": {
+      "before": "C- grade; ~16,000 households lack internet",
+      "after": 94.9
+    },
+    "unit": {
+      "before": "",
+      "after": "% of households"
+    },
+    "target": {
+      "before": "Universal broadband access",
+      "after": null
+    },
+    "source": {
+      "before": "CA Broadband Report Card; Equal Access SC",
+      "after": "US Census Bureau ACS2024 B28002/GCT2801"
+    },
+    "source_url": {
+      "before": "https://equalaccesssantacruz.com/",
+      "after": "https://www2.census.gov/programs-surveys/acs/data/2024/1_year_geographic_comparison_tables/GCT2801.csv"
+    },
+    "geography": {
+      "before": "See source context",
+      "after": "county"
+    },
+    "status": {
+      "before": "legacy-source",
+      "after": "source-supported-observation"
+    },
+    "notes": {
+      "before": "15,745 students without broadband. Equal Access SC provides $15/mo internet. $500K county grant to Cruzio. $10M state grant for rural fiber. Digital divide worst in south county and rural areas.",
+      "after": "2024 ACS1 year. GCT2801 estimate 94.9%;90%MOE+/-1.1. Includescellular-only subscriptions; not fixed cable/fiber/DSL. Doesnotmeasureprice, quality, speed orcommuting. Legacycombinedmobilityclaims notsubstantiatedbythisinternettable."
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/sc-census-extract.png"
+    },
+    "confidence": {
+      "before": null,
+      "after": "medium"
+    },
+    "geographic_scale": {
+      "before": null,
+      "after": "county"
+    },
+    "evidence": {
+      "before": null,
+      "after": {
+        "snapshot_path": "evidence/sc-census-extract.png",
+        "captured_at": "2026-10-24T01:26:24.972Z"
+      }
+    }
+  },
+  "reason": "Replace vague digitaldivide/countclaims with exact typed subscriptionmeasure and retainedscope limitations.",
+  "source_support": [
+    {
+      "url": "https://www2.census.gov/programs-surveys/acs/data/2024/1_year_geographic_comparison_tables/GCT2801.csv",
+      "raw_path": "raw/broadband-2024-comparison.csv",
+      "raw_sha256": "65f8c5ac344a26d9d9b04cc272e1bf06fd8de8b5cfc0cf10993e94fd2060b031",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:26:24.972Z",
+      "period": "2024 ACS1 year",
+      "scale": "county",
+      "snapshot_path": "evidence/sc-census-extract.png",
+      "snapshot_sha256": "aa09836439b82e14d85a09c9864b2f1bfe6d37647682d95aa0140d7b0444c51e"
+    },
+    {
+      "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/documentation/ACS20245YR_Table_Shells.txt",
+      "raw_path": "raw/acs5-shells2024.bin.gz",
+      "raw_sha256": "5b46f4af873744a415c4974204010db976e2a61ff916674732f81c496a6b517d",
+      "raw_encoding": "gzip; original bytes round-trip exactly",
+      "captured_at": "2026-10-24T01:31:51.961Z",
+      "period": null,
+      "scale": null,
+      "stored_sha256": "d0b2d25eaaebfe4802642e1be1f0df6ca5586e9664671cc57cabe12dfa2090a0"
+    }
+  ],
+  "review_required": true
+}

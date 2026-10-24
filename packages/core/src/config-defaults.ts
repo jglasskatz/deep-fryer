@@ -12,6 +12,7 @@ import type {
 export const defaultReviewPolicy: ReviewPolicyConfig = {
   require_approval: 'all',
   dual_review_on_edits: false,
+  audit_apply: 'per_card',
   first_post_requires_approval: false,
 };
 
@@ -22,6 +23,7 @@ export const defaultRetention: RetentionConfig = {
 /** Everything beyond core starts off (SPEC-v7 §3); owners turn features on in settings. */
 export const defaultFeatures: FeaturesConfig = {
   emergency: false,
+  custom_pages: false,
   policy_analysis: false,
   involvement: false,
   discussion: false,

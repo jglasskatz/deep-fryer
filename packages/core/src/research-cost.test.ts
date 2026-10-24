@@ -8,6 +8,7 @@ import {
   formatCostRange,
   formatTypicalCost,
   researchRunSessions,
+  dimensionResearchSessions,
 } from './research-cost.js';
 
 /** The numbers docs/research-cost.md states; this file and the document must agree. */
@@ -39,6 +40,11 @@ describe('estimateRunCost', () => {
   it('refuses a run of no or partial dimensions', () => {
     expect(() => researchRunSessions(0)).toThrow(RangeError);
     expect(() => researchRunSessions(1.5)).toThrow(RangeError);
+  });
+
+  it('uses bounded sessions for dense custom dimensions', () => {
+    expect([0, 1, 3, 4, 6, 7].map(dimensionResearchSessions)).toEqual([1, 1, 1, 2, 2, 3]);
+    for (const count of [-1, 0.5, NaN, Infinity]) expect(() => dimensionResearchSessions(count)).toThrow(RangeError);
   });
 
   it('prices the NYC family (six portraits, 132 sessions) at about $240', () => {

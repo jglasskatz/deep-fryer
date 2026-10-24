@@ -1,0 +1,12 @@
+{
+  "mode": "render",
+  "url": "calculations/nyc-waste-extract.html",
+  "stem": "nyc-waste-extract",
+  "captured_at": "2026-10-24T01:40:47.046Z",
+  "status": 200,
+  "raw_path": "raw/nyc-waste-extract.html",
+  "snapshot_path": "evidence/nyc-waste-extract.png",
+  "sha256": "31d1be6dd2907b0e3a2d169c5cef8bfe4216b0289110b5b4c32c0f5aaf09a155",
+  "bytes": 2765,
+  "success": true
+}

@@ -1,0 +1,1021 @@
+{
+  "id" : "ebb7-mvp5",
+  "name" : "DSNY Monthly Tonnage Data",
+  "assetType" : "dataset",
+  "attribution" : "Department of Sanitation (DSNY)",
+  "averageRating" : 0,
+  "category" : "City Government",
+  "createdAt" : 1385138489,
+  "description" : "DSNY Monthly Tonnage Data provides monthly collection tonnages that the Department of Sanitation collects from NYC residences and institutions. For more information about DSNY collection services, see: https://www.nyc.gov/site/dsny/collection/residents.page.",
+  "diciBackend" : false,
+  "displayType" : "table",
+  "downloadCount" : 13147,
+  "hideFromCatalog" : false,
+  "hideFromDataJson" : false,
+  "locked" : false,
+  "newBackend" : true,
+  "numberOfComments" : 0,
+  "oid" : 41512412,
+  "provenance" : "official",
+  "publicationAppendEnabled" : false,
+  "publicationDate" : 1754419839,
+  "publicationGroup" : 1368033,
+  "publicationStage" : "published",
+  "rowClass" : "",
+  "rowsUpdatedAt" : 1791567061,
+  "rowsUpdatedBy" : "5fuc-pqz2",
+  "tableId" : 20006709,
+  "totalTimesRated" : 0,
+  "viewCount" : 64065,
+  "viewLastModified" : 1791567055,
+  "viewType" : "tabular",
+  "approvals" : [ {
+    "reviewedAt" : 1565289392,
+    "reviewedAutomatically" : true,
+    "state" : "approved",
+    "submissionId" : 7025617,
+    "submissionObject" : "public_audience_request",
+    "submissionOutcome" : "change_audience",
+    "submittedAt" : 1565289392,
+    "targetAudience" : "public",
+    "workflowId" : 2285,
+    "submissionDetails" : {
+      "permissionType" : "READ"
+    },
+    "submissionOutcomeApplication" : {
+      "failureCount" : 0,
+      "status" : "success"
+    },
+    "submitter" : {
+      "id" : "5fuc-pqz2",
+      "displayName" : "NYC OpenData"
+    }
+  } ],
+  "clientContext" : {
+    "clientContextVariables" : [ ],
+    "inheritedVariables" : { }
+  },
+  "columns" : [ {
+    "id" : 615477254,
+    "name" : "MONTH",
+    "dataTypeName" : "text",
+    "description" : "Year and Month",
+    "fieldName" : "month",
+    "position" : 1,
+    "renderTypeName" : "text",
+    "tableColumnId" : 16489167,
+    "width" : 160,
+    "cachedContents" : {
+      "non_null" : "25296",
+      "largest" : "2026 / 09",
+      "null" : "0",
+      "top" : [ {
+        "item" : "2007 / 07",
+        "count" : "59"
+      }, {
+        "item" : "2021 / 09",
+        "count" : "59"
+      }, {
+        "item" : "1999 / 04",
+        "count" : "59"
+      }, {
+        "item" : "2014 / 06",
+        "count" : "59"
+      }, {
+        "item" : "1992 / 04",
+        "count" : "59"
+      }, {
+        "item" : "1994 / 02",
+        "count" : "59"
+      }, {
+        "item" : "2008 / 06",
+        "count" : "59"
+      }, {
+        "item" : "1999 / 07",
+        "count" : "59"
+      }, {
+        "item" : "2015 / 05",
+        "count" : "59"
+      }, {
+        "item" : "2019 / 04",
+        "count" : "59"
+      }, {
+        "item" : "2021 / 10",
+        "count" : "59"
+      }, {
+        "item" : "2017 / 08",
+        "count" : "59"
+      }, {
+        "item" : "1995 / 07",
+        "count" : "59"
+      }, {
+        "item" : "2015 / 06",
+        "count" : "59"
+      }, {
+        "item" : "2018 / 03",
+        "count" : "59"
+      }, {
+        "item" : "2003 / 01",
+        "count" : "59"
+      }, {
+        "item" : "1997 / 07",
+        "count" : "59"
+      }, {
+        "item" : "2007 / 08",
+        "count" : "59"
+      }, {
+        "item" : "2010 / 11",
+        "count" : "59"
+      }, {
+        "item" : "2023 / 11",
+        "count" : "59"
+      } ],
+      "smallest" : "1990 / 01",
+      "count" : "25296",
+      "cardinality" : "25296"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 615477255,
+    "name" : "BOROUGH",
+    "dataTypeName" : "text",
+    "description" : "One of the 5 boroughs within NYC",
+    "fieldName" : "borough",
+    "position" : 2,
+    "renderTypeName" : "text",
+    "tableColumnId" : 16489168,
+    "width" : 184,
+    "cachedContents" : {
+      "non_null" : "25296",
+      "largest" : "Staten Island",
+      "null" : "0",
+      "top" : [ {
+        "item" : "Brooklyn",
+        "count" : "7659"
+      }, {
+        "item" : "Queens",
+        "count" : "6004"
+      }, {
+        "item" : "Manhattan",
+        "count" : "5197"
+      }, {
+        "item" : "Bronx",
+        "count" : "5127"
+      }, {
+        "item" : "Staten Island",
+        "count" : "1309"
+      } ],
+      "smallest" : "Bronx",
+      "count" : "25296",
+      "cardinality" : "25296"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 615477256,
+    "name" : "COMMUNITYDISTRICT",
+    "dataTypeName" : "text",
+    "description" : "One of NYC's 59 community districts which correspond to Sanitation districts. ",
+    "fieldName" : "communitydistrict",
+    "position" : 3,
+    "renderTypeName" : "text",
+    "tableColumnId" : 16489169,
+    "width" : 189,
+    "cachedContents" : {
+      "non_null" : "25296",
+      "largest" : "18",
+      "null" : "0",
+      "top" : [ {
+        "item" : "03",
+        "count" : "2147"
+      }, {
+        "item" : "01",
+        "count" : "2146"
+      }, {
+        "item" : "02",
+        "count" : "2146"
+      }, {
+        "item" : "10",
+        "count" : "1723"
+      }, {
+        "item" : "11",
+        "count" : "1723"
+      }, {
+        "item" : "12",
+        "count" : "1721"
+      }, {
+        "item" : "08",
+        "count" : "1718"
+      }, {
+        "item" : "07",
+        "count" : "1718"
+      }, {
+        "item" : "06",
+        "count" : "1717"
+      }, {
+        "item" : "09",
+        "count" : "1711"
+      }, {
+        "item" : "05",
+        "count" : "1711"
+      }, {
+        "item" : "04",
+        "count" : "1709"
+      }, {
+        "item" : "13",
+        "count" : "856"
+      }, {
+        "item" : "14",
+        "count" : "855"
+      }, {
+        "item" : "15",
+        "count" : "424"
+      }, {
+        "item" : "17",
+        "count" : "424"
+      }, {
+        "item" : "16",
+        "count" : "424"
+      }, {
+        "item" : "18",
+        "count" : "423"
+      } ],
+      "smallest" : "01",
+      "count" : "25296",
+      "cardinality" : "25296"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 615477257,
+    "name" : "REFUSETONSCOLLECTED",
+    "dataTypeName" : "number",
+    "description" : "Tons of trash or refuse collected per month from NYC residences and institutions serviced by the NYC Department of Sanitation. This indicator includes the following DSNY refuse codes:  1 (Refuse, H/H Collection-Curbside), 2 (Refuse, Bulk-Residential), 14 (Refuse, EZ Pack Collection), 15 (Refuse, HFC Collection), 24 (Refuse, RO/RO-AFF Collection), 25 (Refuse, RO/RO-AFF Bulk), 26 (Refuse, RO/RO-AFF Miscellaneous), 80 (Refuse, Housing Authority Trucks), 81 (Refuse, School Trucks), and 96 (Refuse, Passover Refuse). See Column Information tab in the data dictionary for additional notes.",
+    "fieldName" : "refusetonscollected",
+    "position" : 4,
+    "renderTypeName" : "number",
+    "tableColumnId" : 16489170,
+    "width" : 201,
+    "cachedContents" : {
+      "non_null" : "25296",
+      "largest" : "10413.89",
+      "null" : "0",
+      "top" : [ {
+        "item" : "2872.5",
+        "count" : "4"
+      }, {
+        "item" : "5342.4",
+        "count" : "3"
+      }, {
+        "item" : "4224.1",
+        "count" : "3"
+      }, {
+        "item" : "3334.7",
+        "count" : "3"
+      }, {
+        "item" : "3582.66",
+        "count" : "3"
+      }, {
+        "item" : "5030.3",
+        "count" : "3"
+      }, {
+        "item" : "3226.4",
+        "count" : "3"
+      }, {
+        "item" : "4996.7",
+        "count" : "3"
+      }, {
+        "item" : "3405.54",
+        "count" : "3"
+      }, {
+        "item" : "2950.8",
+        "count" : "3"
+      }, {
+        "item" : "3229.5",
+        "count" : "3"
+      }, {
+        "item" : "3616.8",
+        "count" : "3"
+      }, {
+        "item" : "3605.85",
+        "count" : "3"
+      }, {
+        "item" : "3326.82",
+        "count" : "3"
+      }, {
+        "item" : "4221.27",
+        "count" : "3"
+      }, {
+        "item" : "5423.5",
+        "count" : "3"
+      }, {
+        "item" : "3311.2",
+        "count" : "3"
+      }, {
+        "item" : "3454.11",
+        "count" : "3"
+      }, {
+        "item" : "2407.3",
+        "count" : "3"
+      }, {
+        "item" : "3816.2",
+        "count" : "3"
+      } ],
+      "smallest" : "8.4",
+      "count" : "25296",
+      "cardinality" : "25296"
+    },
+    "format" : {
+      "precisionStyle" : "standard",
+      "noCommas" : "true",
+      "precision" : "1",
+      "align" : "left"
+    }
+  }, {
+    "id" : 615477258,
+    "name" : "PAPERTONSCOLLECTED",
+    "dataTypeName" : "number",
+    "description" : "Tons of source-separated recyclable paper collected per month from NYC residences and institutions serviced by the NYC Department of Sanitation. This indicator includes the following DSNY paper codes: 27 ( Paper, News/Mags/Corrug RO/RO - AFF), 31 (Paper, Newspaper / Magazines / Corrugated), 32 (Paper, News / Mags / Corrug - Intensive), 38 (Paper, News / Mags / Corrug EZ Pack), 48 (Paper, School Truck Paper), and 97 (Paper, Passover Paper). See Column Information tab in the data dictionary for additional notes.",
+    "fieldName" : "papertonscollected",
+    "position" : 5,
+    "renderTypeName" : "number",
+    "tableColumnId" : 16489171,
+    "width" : 201,
+    "cachedContents" : {
+      "non_null" : "22862",
+      "largest" : "2129.67",
+      "null" : "2434",
+      "top" : [ {
+        "item" : "207.28",
+        "count" : "5"
+      }, {
+        "item" : "211.07",
+        "count" : "4"
+      }, {
+        "item" : "301.57",
+        "count" : "4"
+      }, {
+        "item" : "550.82",
+        "count" : "4"
+      }, {
+        "item" : "353.38",
+        "count" : "4"
+      }, {
+        "item" : "262.72",
+        "count" : "4"
+      }, {
+        "item" : "231.5",
+        "count" : "4"
+      }, {
+        "item" : "332.69",
+        "count" : "4"
+      }, {
+        "item" : "239.96",
+        "count" : "4"
+      }, {
+        "item" : "288.52",
+        "count" : "4"
+      }, {
+        "item" : "277.98",
+        "count" : "4"
+      }, {
+        "item" : "182.5",
+        "count" : "4"
+      }, {
+        "item" : "527.63",
+        "count" : "4"
+      }, {
+        "item" : "156.2",
+        "count" : "4"
+      }, {
+        "item" : "285.13",
+        "count" : "4"
+      }, {
+        "item" : "331.2",
+        "count" : "4"
+      }, {
+        "item" : "508.48",
+        "count" : "4"
+      }, {
+        "item" : "273.87",
+        "count" : "4"
+      }, {
+        "item" : "229.32",
+        "count" : "4"
+      }, {
+        "item" : "403.81",
+        "count" : "4"
+      } ],
+      "smallest" : "0",
+      "count" : "25296",
+      "cardinality" : "25296"
+    },
+    "format" : {
+      "precisionStyle" : "standard",
+      "noCommas" : "true",
+      "precision" : "1",
+      "align" : "left"
+    }
+  }, {
+    "id" : 615477259,
+    "name" : "MGPTONSCOLLECTED",
+    "dataTypeName" : "number",
+    "description" : "Tons of source-separated recyclable metal, glass, plastic, and beverage cartons (MGP) collected per month from NYC residences and institutions serviced by the NYC Department of Sanitation. This indicator includes the following DSNY MGP codes: 28 (MGP, RO/RO-AFF Metal Bulk), 29 ( MGP, RO/RO - AFF Metal/Glass/Plastic), 33 (MGP, Metal / Glass / Plastic), 37 (MGP, Metal Bulk), 39 (MGP, Metal / Glass / Plastic EZ Pack), 78 (MGP, School Truck Metal / Glass / Plastic), and 98 (MGP, Passover Metal/Glass/Plastic). See Column Information tab in the data dictionary for additional notes.",
+    "fieldName" : "mgptonscollected",
+    "position" : 6,
+    "renderTypeName" : "number",
+    "tableColumnId" : 16489172,
+    "width" : 191,
+    "cachedContents" : {
+      "non_null" : "23219",
+      "largest" : "1254.57",
+      "null" : "2077",
+      "top" : [ {
+        "item" : "332.01",
+        "count" : "5"
+      }, {
+        "item" : "349.87",
+        "count" : "5"
+      }, {
+        "item" : "401.78",
+        "count" : "4"
+      }, {
+        "item" : "217.99",
+        "count" : "4"
+      }, {
+        "item" : "284.25",
+        "count" : "4"
+      }, {
+        "item" : "204.43",
+        "count" : "4"
+      }, {
+        "item" : "303.9",
+        "count" : "4"
+      }, {
+        "item" : "307.26",
+        "count" : "4"
+      }, {
+        "item" : "251.57",
+        "count" : "4"
+      }, {
+        "item" : "321.44",
+        "count" : "4"
+      }, {
+        "item" : "366.03",
+        "count" : "4"
+      }, {
+        "item" : "385.56",
+        "count" : "4"
+      }, {
+        "item" : "225.74",
+        "count" : "4"
+      }, {
+        "item" : "387.55",
+        "count" : "4"
+      }, {
+        "item" : "192.68",
+        "count" : "4"
+      }, {
+        "item" : "177.26",
+        "count" : "4"
+      }, {
+        "item" : "176.72",
+        "count" : "4"
+      }, {
+        "item" : "342.4",
+        "count" : "4"
+      }, {
+        "item" : "128.97",
+        "count" : "4"
+      }, {
+        "item" : "164.91",
+        "count" : "4"
+      } ],
+      "smallest" : "0",
+      "count" : "25296",
+      "cardinality" : "25296"
+    },
+    "format" : {
+      "precisionStyle" : "standard",
+      "noCommas" : "true",
+      "precision" : "1",
+      "align" : "left"
+    }
+  }, {
+    "id" : 615477260,
+    "name" : "RESORGANICSTONS",
+    "dataTypeName" : "number",
+    "description" : "Tons of source-separated residential organics collected per month from NYC residences serviced by the NYC Department of Sanitation. This indicator includes the following DSNY organics code: 45 (Organics, Residential Food Waste). To calculate the monthly tonnage for all organics collected by DSNY, combine the following columns: RESORGANICSTONS, SCHOOLORGANICTONS, LEAVESORGANICTONS, XMASTREETONS, and OTHERORGANICSTONS. See Column Information tab in the data dictionary for additional notes.",
+    "fieldName" : "resorganicstons",
+    "position" : 7,
+    "renderTypeName" : "number",
+    "tableColumnId" : 67339650,
+    "width" : 189,
+    "cachedContents" : {
+      "non_null" : "3744",
+      "largest" : "785.47",
+      "null" : "21552",
+      "top" : [ {
+        "item" : "20.35",
+        "count" : "5"
+      }, {
+        "item" : "12.37",
+        "count" : "4"
+      }, {
+        "item" : "78.48",
+        "count" : "4"
+      }, {
+        "item" : "101.09",
+        "count" : "3"
+      }, {
+        "item" : "40.86",
+        "count" : "3"
+      }, {
+        "item" : "61.71",
+        "count" : "3"
+      }, {
+        "item" : "24.92",
+        "count" : "3"
+      }, {
+        "item" : "17.54",
+        "count" : "3"
+      }, {
+        "item" : "19.81",
+        "count" : "3"
+      }, {
+        "item" : "23.91",
+        "count" : "3"
+      }, {
+        "item" : "30.13",
+        "count" : "3"
+      }, {
+        "item" : "38.34",
+        "count" : "3"
+      }, {
+        "item" : "10.94",
+        "count" : "3"
+      }, {
+        "item" : "70.44",
+        "count" : "3"
+      }, {
+        "item" : "15.65",
+        "count" : "3"
+      }, {
+        "item" : "18",
+        "count" : "3"
+      }, {
+        "item" : "4.8",
+        "count" : "3"
+      }, {
+        "item" : "16.07",
+        "count" : "3"
+      }, {
+        "item" : "25.19",
+        "count" : "3"
+      }, {
+        "item" : "10.25",
+        "count" : "2"
+      } ],
+      "smallest" : "0.35",
+      "count" : "25296",
+      "cardinality" : "25296"
+    },
+    "format" : {
+      "precisionStyle" : "standard",
+      "precision" : "1",
+      "align" : "left"
+    }
+  }, {
+    "id" : 615477261,
+    "name" : "SCHOOLORGANICTONS",
+    "dataTypeName" : "number",
+    "description" : "Tons of source-separated organics collected per month from NYC schools serviced by the NYC Department of Sanitation. For the sake of efficiency, in addition to school organics, DSNY also collects in the same truck, smart composting bins that are not on dedicated basket routes. This indicator includes the following DSNY organics code: 46 (Organics, School Food Waste). To calculate the monthly tonnage for all organics collected by DSNY, combine the following columns: RESORGANICSTONS, SCHOOLORGANICTONS, LEAVESORGANICTONS, XMASTREETONS, and OTHERORGANICSTONS. See Column Information tab in the data dictionary for additional notes.",
+    "fieldName" : "schoolorganictons",
+    "position" : 8,
+    "renderTypeName" : "number",
+    "tableColumnId" : 67339657,
+    "width" : 191,
+    "cachedContents" : {
+      "non_null" : "2689",
+      "largest" : "265.72",
+      "null" : "22607",
+      "top" : [ {
+        "item" : "24.99",
+        "count" : "6"
+      }, {
+        "item" : "29.1",
+        "count" : "6"
+      }, {
+        "item" : "23.42",
+        "count" : "5"
+      }, {
+        "item" : "26.9",
+        "count" : "4"
+      }, {
+        "item" : "36.29",
+        "count" : "4"
+      }, {
+        "item" : "32.51",
+        "count" : "4"
+      }, {
+        "item" : "30.26",
+        "count" : "3"
+      }, {
+        "item" : "28.3",
+        "count" : "3"
+      }, {
+        "item" : "30.4",
+        "count" : "3"
+      }, {
+        "item" : "14.56",
+        "count" : "3"
+      }, {
+        "item" : "27.32",
+        "count" : "3"
+      }, {
+        "item" : "28.26",
+        "count" : "3"
+      }, {
+        "item" : "24.68",
+        "count" : "3"
+      }, {
+        "item" : "30.11",
+        "count" : "3"
+      }, {
+        "item" : "21.34",
+        "count" : "3"
+      }, {
+        "item" : "22.43",
+        "count" : "3"
+      }, {
+        "item" : "20.56",
+        "count" : "3"
+      }, {
+        "item" : "21.98",
+        "count" : "3"
+      }, {
+        "item" : "19.79",
+        "count" : "3"
+      }, {
+        "item" : "21.18",
+        "count" : "3"
+      } ],
+      "smallest" : "0.1",
+      "count" : "25296",
+      "cardinality" : "25296"
+    },
+    "format" : {
+      "precisionStyle" : "standard",
+      "precision" : "1",
+      "align" : "left"
+    }
+  }, {
+    "id" : 615477262,
+    "name" : "LEAVESORGANICTONS",
+    "dataTypeName" : "number",
+    "description" : "Tons of source-separated leaves collected per month from NYC residences and institutions by the NYC Department of Sanitation. Since the citywide expansion of curbside organics in October of 2024, DSNY no longer needs to separately collect this material. This indicator includes the following DSNY organics code: 52 (Organics, Leaves - Recycling). To calculate the monthly tonnage for all organics collected by DSNY, combine the following columns: RESORGANICSTONS, SCHOOLORGANICTONS, LEAVESORGANICTONS, XMASTREETONS, and OTHERORGANICSTONS. See Column Information tab in the data dictionary for additional notes.",
+    "fieldName" : "leavesorganictons",
+    "position" : 9,
+    "renderTypeName" : "number",
+    "tableColumnId" : 67339658,
+    "width" : 190,
+    "cachedContents" : {
+      "non_null" : "881",
+      "largest" : "1857.31",
+      "null" : "24415",
+      "top" : [ {
+        "item" : "8.64",
+        "count" : "16"
+      }, {
+        "item" : "17.28",
+        "count" : "6"
+      }, {
+        "item" : "6",
+        "count" : "3"
+      }, {
+        "item" : "1",
+        "count" : "3"
+      }, {
+        "item" : "5",
+        "count" : "3"
+      }, {
+        "item" : "11.52",
+        "count" : "3"
+      }, {
+        "item" : "14.4",
+        "count" : "3"
+      }, {
+        "item" : "10",
+        "count" : "2"
+      }, {
+        "item" : "6.59",
+        "count" : "2"
+      }, {
+        "item" : "11.59",
+        "count" : "2"
+      }, {
+        "item" : "5.38",
+        "count" : "2"
+      }, {
+        "item" : "8.47",
+        "count" : "2"
+      }, {
+        "item" : "6.02",
+        "count" : "2"
+      }, {
+        "item" : "4.5",
+        "count" : "2"
+      }, {
+        "item" : "3.41",
+        "count" : "2"
+      }, {
+        "item" : "2.14",
+        "count" : "2"
+      }, {
+        "item" : "4.32",
+        "count" : "2"
+      }, {
+        "item" : "4.78",
+        "count" : "2"
+      }, {
+        "item" : "1.15",
+        "count" : "2"
+      }, {
+        "item" : "5.07",
+        "count" : "2"
+      } ],
+      "smallest" : "0.57",
+      "count" : "25296",
+      "cardinality" : "25296"
+    },
+    "format" : {
+      "precisionStyle" : "standard",
+      "precision" : "1",
+      "align" : "left"
+    }
+  }, {
+    "id" : 615477263,
+    "name" : "XMASTREETONS",
+    "dataTypeName" : "number",
+    "description" : "Tons of Christmas trees collected curbside by DSNY from NYC residents in January. Within DSNY, the code for Christmas Trees is 54.",
+    "fieldName" : "xmastreetons",
+    "position" : 10,
+    "renderTypeName" : "number",
+    "tableColumnId" : 67339659,
+    "width" : 192,
+    "cachedContents" : {
+      "non_null" : "1685",
+      "largest" : "186",
+      "null" : "23611",
+      "top" : [ {
+        "item" : "13.5",
+        "count" : "21"
+      }, {
+        "item" : "10.8",
+        "count" : "18"
+      }, {
+        "item" : "18",
+        "count" : "18"
+      }, {
+        "item" : "16.8",
+        "count" : "18"
+      }, {
+        "item" : "4.6",
+        "count" : "15"
+      }, {
+        "item" : "21.6",
+        "count" : "14"
+      }, {
+        "item" : "14.4",
+        "count" : "13"
+      }, {
+        "item" : "3.4",
+        "count" : "13"
+      }, {
+        "item" : "4.5",
+        "count" : "13"
+      }, {
+        "item" : "2.1",
+        "count" : "12"
+      }, {
+        "item" : "7.6",
+        "count" : "12"
+      }, {
+        "item" : "10",
+        "count" : "11"
+      }, {
+        "item" : "11.7",
+        "count" : "11"
+      }, {
+        "item" : "12.9",
+        "count" : "11"
+      }, {
+        "item" : "31.2",
+        "count" : "11"
+      }, {
+        "item" : "9.8",
+        "count" : "10"
+      }, {
+        "item" : "6.2",
+        "count" : "10"
+      }, {
+        "item" : "36",
+        "count" : "10"
+      }, {
+        "item" : "7.2",
+        "count" : "9"
+      }, {
+        "item" : "7.5",
+        "count" : "9"
+      } ],
+      "smallest" : "0.4",
+      "count" : "25296",
+      "cardinality" : "25296"
+    },
+    "format" : {
+      "precisionStyle" : "standard",
+      "precision" : "1",
+      "align" : "left"
+    }
+  }, {
+    "id" : 615477265,
+    "name" : "OTHERORGANICSTONS",
+    "dataTypeName" : "number",
+    "description" : "Tons of other organic material collected per month through other DSNY operations. This indicator includes the following DSNY organics codes: 30 (Organics, RO/RO - AFF ORGANICS), 47 (Organics, Lot Cleaning Organics), 51 (Organics, Green Market Food Waste - Recycling), 53 (Organics, Yard Waste - Recycling), 55 (Organics, Wood Chips - Recycling), 67 (Organics, ERD Down Trees), 89 (Organics, Baskets Organics). To calculate the monthly tonnage for all organics collected by DSNY, combine the following columns: RESORGANICSTONS, SCHOOLORGANICTONS, LEAVESORGANICTONS, XMASTREETONS, and OTHERORGANICSTONS. See Column Information tab in the data dictionary for additional notes.",
+    "fieldName" : "otherorganicstons",
+    "position" : 11,
+    "renderTypeName" : "number",
+    "tableColumnId" : 160703336,
+    "width" : 212,
+    "cachedContents" : {
+      "non_null" : "1318",
+      "largest" : "490.55",
+      "null" : "23978",
+      "top" : [ {
+        "item" : "10",
+        "count" : "6"
+      }, {
+        "item" : "0.18",
+        "count" : "6"
+      }, {
+        "item" : "0.2",
+        "count" : "5"
+      }, {
+        "item" : "1.07",
+        "count" : "5"
+      }, {
+        "item" : "0.21",
+        "count" : "4"
+      }, {
+        "item" : "12.01",
+        "count" : "4"
+      }, {
+        "item" : "6.1",
+        "count" : "4"
+      }, {
+        "item" : "1.31",
+        "count" : "4"
+      }, {
+        "item" : "1.92",
+        "count" : "4"
+      }, {
+        "item" : "0.1",
+        "count" : "4"
+      }, {
+        "item" : "0.3",
+        "count" : "4"
+      }, {
+        "item" : "0.54",
+        "count" : "4"
+      }, {
+        "item" : "1",
+        "count" : "4"
+      }, {
+        "item" : "11.3",
+        "count" : "4"
+      }, {
+        "item" : "1.51",
+        "count" : "4"
+      }, {
+        "item" : "0.4",
+        "count" : "4"
+      }, {
+        "item" : "0.67",
+        "count" : "4"
+      }, {
+        "item" : "6.89",
+        "count" : "4"
+      }, {
+        "item" : "0.51",
+        "count" : "3"
+      }, {
+        "item" : "0.5",
+        "count" : "3"
+      } ],
+      "smallest" : "0",
+      "count" : "25296",
+      "cardinality" : "25296"
+    },
+    "format" : {
+      "precision" : "1"
+    }
+  }, {
+    "id" : 615477264,
+    "name" : "BOROUGH_ID",
+    "dataTypeName" : "text",
+    "description" : "ID used to identify NYC boroughs. 1 = Manhattan; 2 = Bronx; 3 = Brooklyn; 4 = Queens; 5 = Staten Island",
+    "fieldName" : "borough_id",
+    "position" : 12,
+    "renderTypeName" : "text",
+    "tableColumnId" : 16489173,
+    "width" : 152,
+    "cachedContents" : {
+      "non_null" : "25296",
+      "largest" : "5",
+      "null" : "0",
+      "top" : [ {
+        "item" : "3",
+        "count" : "7659"
+      }, {
+        "item" : "4",
+        "count" : "6004"
+      }, {
+        "item" : "1",
+        "count" : "5197"
+      }, {
+        "item" : "2",
+        "count" : "5127"
+      }, {
+        "item" : "5",
+        "count" : "1309"
+      } ],
+      "smallest" : "1",
+      "count" : "25296",
+      "cardinality" : "25296"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  } ],
+  "grants" : [ {
+    "inherited" : false,
+    "type" : "viewer",
+    "flags" : [ "public" ]
+  } ],
+  "metadata" : {
+    "rdfSubject" : "0",
+    "rdfClass" : "",
+    "attachments" : [ {
+      "filename" : "DSNY_Monthly_Tonnage_Data_Data_Dictionary-2026-04-16.xlsx",
+      "assetId" : "b9c2fb92-d30a-43a9-b259-3b9f9d69a1f6",
+      "name" : "DSNY_Monthly_Tonnage_Data_Data_Dictionary-2026-04-16.xlsx"
+    } ],
+    "custom_fields" : {
+      "Update" : {
+        "Automation" : "Yes",
+        "Update Frequency Details" : "This dataset runs the first of every month to bring in the previous month’s data.\t",
+        "Date Made Public" : "2/12/2014",
+        "Update Frequency" : "Monthly",
+        "Data Change Frequency" : "Monthly"
+      },
+      "Dataset Information" : {
+        "Agency" : "Department of Sanitation (DSNY)"
+      }
+    },
+    "rowLabel" : "DSNY Monthly Tonnage by District",
+    "availableDisplayTypes" : [ "table", "fatrow", "page" ],
+    "renderTypeConfig" : {
+      "visible" : {
+        "table" : true
+      }
+    }
+  },
+  "owner" : {
+    "id" : "5fuc-pqz2",
+    "displayName" : "NYC OpenData",
+    "profileImageUrlLarge" : "/api/users/5fuc-pqz2/profile_images/LARGE",
+    "profileImageUrlMedium" : "/api/users/5fuc-pqz2/profile_images/THUMB",
+    "profileImageUrlSmall" : "/api/users/5fuc-pqz2/profile_images/TINY",
+    "screenName" : "NYC OpenData",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula", "mayBeStoriesCoOwner" ]
+  },
+  "query" : { },
+  "rights" : [ "read" ],
+  "tableAuthor" : {
+    "id" : "5fuc-pqz2",
+    "displayName" : "NYC OpenData",
+    "profileImageUrlLarge" : "/api/users/5fuc-pqz2/profile_images/LARGE",
+    "profileImageUrlMedium" : "/api/users/5fuc-pqz2/profile_images/THUMB",
+    "profileImageUrlSmall" : "/api/users/5fuc-pqz2/profile_images/TINY",
+    "screenName" : "NYC OpenData",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula", "mayBeStoriesCoOwner" ]
+  },
+  "tags" : [ "sanitation", "dsny", "tonnage", "monthly", "trash", "recycling", "paper", "metal", "glass", "plastic", "organics", "residential", "schools" ],
+  "flags" : [ "default", "ownerMayBeContacted", "restorable", "restorePossibleForType" ]
+}

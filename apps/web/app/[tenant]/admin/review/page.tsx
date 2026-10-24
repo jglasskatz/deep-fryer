@@ -1,6 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
+import { formatIndicatorValue } from '@deep-fryer/core';
+import { safeHref } from '@/lib/safe-url';
+import { machineApprovalSummary, reviewedDrafts } from '@/lib/machine-audit-data';
+import { ApproveUnflagged } from '@/components/admin/ApproveUnflagged';
+import { PublishReviewed } from '@/components/admin/PublishReviewed';
 import { ReviewCard } from '@/components/admin/ReviewCard';
 import { requireAdminPage } from '@/lib/admin-guard';
 import { adminPageMetadata } from '@/lib/page-meta';
@@ -32,6 +37,8 @@ export default async function ReviewQueuePage({
 
   const { reviewableRuns, selectedRun, cards, failedRuns } = await reviewQueue(ctx.tenant.id, run);
 
+  const [bulkAudits, drafts] = await Promise.all([selectedRun ? machineApprovalSummary(ctx.tenant.id, selectedRun.id) : null, reviewedDrafts(ctx.tenant.id)]);
+
   return (
     <>
       <SiteHeader variant="admin" tenant={{ slug: ctx.tenant.slug, name: ctx.tenant.name }} />
@@ -42,6 +49,18 @@ export default async function ReviewQueuePage({
           </Link>
         </p>
         <h1 className="mt-2 text-2xl font-bold">Review queue</h1>
+        <PublishReviewed tenantSlug={tenant} drafts={drafts} />
+        {bulkAudits?.enabled && selectedRun ? <section className="mt-6 rounded-lg border border-black/15 p-4" aria-label="Apply machine-approved findings">
+          <h2 className="font-semibold">Apply machine-approved findings</h2>
+          {bulkAudits.open > 0 ? <p className="mt-2 text-sm">{bulkAudits.open} dimensions still require individual review. Resolve their flags before applying recommendations in bulk.</p> : <ApproveUnflagged key={selectedRun.id} mode="machine" tenantSlug={tenant} runId={selectedRun.id} findings={bulkAudits.findings} dimensions={bulkAudits.dimensions} sample={bulkAudits.sample.map(finding => ({
+            id: finding.id, label: finding.payload.kind === 'indicator' ? finding.payload.name : finding.indicatorSlug,
+            value: finding.payload.kind === 'indicator' ? `${formatIndicatorValue(finding.payload.value, finding.payload.unit)} (${finding.payload.year})` : '',
+            source: finding.payload.kind === 'indicator' ? finding.payload.source : '',
+            sourceHref: finding.payload.kind === 'indicator' ? safeHref(finding.payload.source_url) ?? null : null,
+            reviewHref: `/${tenant}/admin/review?run=${selectedRun.id}#review-${finding.dimensionId}`,
+          }))} />}
+          {bulkAudits.open === 0 && bulkAudits.findings === 0 ? <p className="mt-2 text-sm">No pending findings are eligible for bulk approval.</p> : null}
+        </section> : null}
 
         {reviewableRuns.length === 0 ? (
           <p className="mt-6 text-sm text-[color:var(--color-muted)]">
@@ -94,6 +113,7 @@ export default async function ReviewQueuePage({
                     indicatorSlug: f.indicatorSlug,
                     payload: f.payload,
                     verification: f.verification,
+                    audits: f.audits,
                   }))}
                   approvedVersionNum={card.approvedVersionNum}
                   sessionId={card.sessionId}

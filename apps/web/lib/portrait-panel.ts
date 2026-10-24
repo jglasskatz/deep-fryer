@@ -1,3 +1,4 @@
+import type { ActionSourceView } from '@/components/portrait/ActionSourceLinks';
 import 'server-only';
 import {
   formatIndicatorValue,
@@ -104,6 +105,7 @@ export interface PortraitPanelView {
   gaps: PanelGap[];
   /** The dimension's curated short actions ("What you can do", research text). Core: always present. */
   actions: string[];
+  actionSources?: ActionSourceView[];
   /**
    * The first PANEL_LISTING_LIMIT published involvement listings for this
    * dimension (its own, then those for every dimension), or null when the
@@ -204,6 +206,7 @@ export function portraitPanelView(
     indicators: data.indicators.map((ind) => panelIndicator(ind, m, evidenceUrl)),
     gaps: (data.gaps ?? []).map((g) => ({ reason: g.reason, scales: g.scales_tried.map((s) => scaleLabel(m, s)) })),
     actions: data.actions.filter(hasText),
+    actionSources: (data.action_sources ?? []).map(action => ({ text: action.text, sourceHref: safeHref(action.source_url) ?? null, snapshotHref: evidenceUrl(action.evidence.snapshot_path), pdfHref: action.evidence.pdf_path ? evidenceUrl(action.evidence.pdf_path) : null })),
     listings: all && all.slice(0, PANEL_LISTING_LIMIT),
     moreListings: more > 0 ? { count: more, label: fmtPlural(locale, m.portrait.moreListings, more) } : null,
   };

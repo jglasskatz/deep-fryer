@@ -27,6 +27,7 @@ import { publishVersionFor } from './publish';
 import { createPlannedRun } from './research';
 import { action, UserError } from './action-result';
 import { userDb } from './db';
+import { configValueIn } from './admin-data';
 
 async function dimensionInTenantOrThrow(db: DbExecutor, tenantId: string, dimensionId: string) {
   const [dimension] = await db
@@ -66,9 +67,10 @@ async function appendResearchVersion(
   dimension: Dimension,
   runId: string,
   payloads: FindingPayload[],
+  includeNarrative = false,
 ): Promise<{ version: DimensionVersion; data: DimensionData }> {
   const base = await latestVersion(db, dimension.id);
-  const data = researchVersionData(base?.data, dimension.slug, payloads);
+  const data = researchVersionData(base?.data, dimension.slug, payloads, includeNarrative);
   const auth = await getAuth();
   const version = await appendDimensionVersion(db, {
     dimensionId: dimension.id,
@@ -94,10 +96,13 @@ export const approveFindings = action(async (input: {
   runId: string;
   dimensionId: string;
   publish?: boolean;
+  includeNarrative?: boolean;
 }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
   return userDb(async (db) => {
     await lockRunApprovals(db, input.runId);
+    const [run] = await db.select().from(researchRuns).where(and(eq(researchRuns.id, input.runId), eq(researchRuns.tenantId, tenant.id)));
+    if (!run || !runSettled(run)) throw new UserError('Only a finished run in this portrait can be reviewed.');
     const dimension = await dimensionInTenantOrThrow(db, tenant.id, input.dimensionId);
 
     // In the order they were recorded, as the draft doughnut reads them: the
@@ -111,12 +116,16 @@ export const approveFindings = action(async (input: {
       )
       .orderBy(findings.createdAt, findings.id);
     if (runFindings.length === 0) throw new UserError('No findings for this dimension in this run.');
+    if (input.includeNarrative && runFindings.some(({ finding }) => finding.payload.kind === 'indicator' && finding.payload.narrative_draft && finding.verification?.narrative_supported !== 'pass')) {
+      throw new UserError('The drafted narrative and actions need source verification before inclusion. Edit them manually or request research.');
+    }
 
     const { version, data } = await appendResearchVersion(
       db,
       dimension,
       input.runId,
       runFindings.map(({ finding }) => finding.payload),
+      input.includeNarrative ?? false,
     );
 
     await audit(
@@ -331,9 +340,10 @@ export const flagGap = action(async (input: {
       db,
     );
 
-    await publishVersionFor(db, tenant, version.id);
+    const requiresSecondReview = (await configValueIn(db, tenant.id, 'review_policy'))?.dual_review_on_edits === true;
+    if (!requiresSecondReview) await publishVersionFor(db, tenant, version.id);
     revalidatePath(`/${input.tenantSlug}/admin/review`);
     revalidatePath(`/${input.tenantSlug}/admin/draft`);
-    return { versionId: version.id };
+    return { versionId: version.id, versionNum: version.versionNum, published: !requiresSecondReview, requiresSecondReview };
   });
 });

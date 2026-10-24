@@ -1,0 +1,144 @@
+{
+  "id": "nyc:biodiversity-loss:0",
+  "portrait": "nyc",
+  "dimension": "biodiversity-loss",
+  "indicator_index": 0,
+  "kind": "replace",
+  "before": {
+    "name": "Land under durable conservation protection",
+    "unit": "% of jurisdiction land area",
+    "year": 2023,
+    "value": 19.5,
+    "source": "Protect the Adirondacks!, \"20% in 2023: An Assessment of the New York State 30 by 30 Act\" (Nov. 2023) — Appendix county tables for Bronx, Kings, New York, Queens, and Richmond Counties",
+    "target": 30,
+    "scoring": {
+      "inputs": {
+        "scale": 30,
+        "value": 19.5,
+        "target": 30
+      },
+      "function": "higher_is_better",
+      "worked_math": "Citywide protected acreage = sum of 5 county totals: Bronx 5,646 + Kings 12,804 + New York 2,735 + Queens 14,071 + Richmond 8,118 = 43,374 acres. Citywide total area = 30,863 + 52,820 + 20,528 + 80,102 + 37,869 = 222,182 acres. Share = 43,374 / 222,182 × 100 = 19.523% ≈ 19.5%. level_pct = (target − value) / scale × 100 = (30 − 19.5) / 30 × 100 = +35.0",
+      "threshold_ref": "biodiversity-loss.protected-land-share"
+    },
+    "evidence": {
+      "captured_at": "2026-08-05T00:00:00Z",
+      "snapshot_path": "CAPTURE_FAILED: mcp__evidence__capture_evidence returned 'browser.newContext: Target page, context or browser has been closed' on 7 consecutive attempts across 3 distinct URLs (report landing page, PDF, and an unrelated control URL nyc.gov), indicating a session-level evidence-capture tool outage rather than a site-specific block. No snapshot or PDF archive could be stored this session."
+    },
+    "level_pct": 35,
+    "confidence": "low",
+    "source_url": "https://www.protectadks.org/wp-content/uploads/2023/11/Protect-the-Adirondacks-30-by-30-Report-NYS-Counties-web.pdf",
+    "source_tier": 3,
+    "geographic_scale": "city",
+    "geography": "city",
+    "status": "published",
+    "evidence_path": null,
+    "pdf_path": null
+  },
+  "after": {
+    "name": "Land and water under reported conservation protection",
+    "unit": "% of total land and water area",
+    "year": 2023,
+    "value": 19.5,
+    "source": "Protect the Adirondacks — NYSCounties 30 by 30 report 2023",
+    "target": null,
+    "scoring": null,
+    "evidence": {
+      "snapshot_path": "evidence/nyc-conservation-extract.png",
+      "captured_at": "2026-10-24T01:26:20.873Z",
+      "pdf_path": "raw/nyc-protected-2023.pdf"
+    },
+    "level_pct": null,
+    "confidence": "medium",
+    "source_url": "https://www.protectadks.org/wp-content/uploads/2023/11/Protect-the-Adirondacks-30-by-30-Report-NYS-Counties-web.pdf",
+    "source_tier": 3,
+    "geographic_scale": "city",
+    "geography": "city",
+    "status": "source-supported-observation",
+    "evidence_path": "evidence/nyc-conservation-extract.png",
+    "pdf_path": "raw/nyc-protected-2023.pdf",
+    "notes": "Report county tables include land ANDwater;19.5% is numerically reproducible for that scope. The framework land-only measure remains a gap and 30% land-only target is not applied. Mixed protectioncategories do not independently establish equivalent biodiversityquality."
+  },
+  "field_diff": {
+    "name": {
+      "before": "Land under durable conservation protection",
+      "after": "Land and water under reported conservation protection"
+    },
+    "unit": {
+      "before": "% of jurisdiction land area",
+      "after": "% of total land and water area"
+    },
+    "source": {
+      "before": "Protect the Adirondacks!, \"20% in 2023: An Assessment of the New York State 30 by 30 Act\" (Nov. 2023) — Appendix county tables for Bronx, Kings, New York, Queens, and Richmond Counties",
+      "after": "Protect the Adirondacks — NYSCounties 30 by 30 report 2023"
+    },
+    "target": {
+      "before": 30,
+      "after": null
+    },
+    "scoring": {
+      "before": {
+        "inputs": {
+          "scale": 30,
+          "value": 19.5,
+          "target": 30
+        },
+        "function": "higher_is_better",
+        "worked_math": "Citywide protected acreage = sum of 5 county totals: Bronx 5,646 + Kings 12,804 + New York 2,735 + Queens 14,071 + Richmond 8,118 = 43,374 acres. Citywide total area = 30,863 + 52,820 + 20,528 + 80,102 + 37,869 = 222,182 acres. Share = 43,374 / 222,182 × 100 = 19.523% ≈ 19.5%. level_pct = (target − value) / scale × 100 = (30 − 19.5) / 30 × 100 = +35.0",
+        "threshold_ref": "biodiversity-loss.protected-land-share"
+      },
+      "after": null
+    },
+    "evidence": {
+      "before": {
+        "captured_at": "2026-08-05T00:00:00Z",
+        "snapshot_path": "CAPTURE_FAILED: mcp__evidence__capture_evidence returned 'browser.newContext: Target page, context or browser has been closed' on 7 consecutive attempts across 3 distinct URLs (report landing page, PDF, and an unrelated control URL nyc.gov), indicating a session-level evidence-capture tool outage rather than a site-specific block. No snapshot or PDF archive could be stored this session."
+      },
+      "after": {
+        "snapshot_path": "evidence/nyc-conservation-extract.png",
+        "captured_at": "2026-10-24T01:26:20.873Z",
+        "pdf_path": "raw/nyc-protected-2023.pdf"
+      }
+    },
+    "level_pct": {
+      "before": 35,
+      "after": null
+    },
+    "confidence": {
+      "before": "low",
+      "after": "medium"
+    },
+    "status": {
+      "before": "published",
+      "after": "source-supported-observation"
+    },
+    "evidence_path": {
+      "before": null,
+      "after": "evidence/nyc-conservation-extract.png"
+    },
+    "pdf_path": {
+      "before": null,
+      "after": "raw/nyc-protected-2023.pdf"
+    },
+    "notes": {
+      "before": null,
+      "after": "Report county tables include land ANDwater;19.5% is numerically reproducible for that scope. The framework land-only measure remains a gap and 30% land-only target is not applied. Mixed protectioncategories do not independently establish equivalent biodiversityquality."
+    }
+  },
+  "reason": "Archive the report and correct the land/water denominator construct.",
+  "source_support": [
+    {
+      "url": "https://www.protectadks.org/wp-content/uploads/2023/11/Protect-the-Adirondacks-30-by-30-Report-NYS-Counties-web.pdf",
+      "raw_path": "raw/nyc-protected-2023.pdf",
+      "raw_sha256": "c9b6ff50f9eff4442e5e875cd78c50cfb5daacdec4e7c351dad109ce382b38dd",
+      "raw_encoding": "identity",
+      "captured_at": "2026-10-24T01:26:20.873Z",
+      "period": "2023",
+      "scale": "five NYCcounties",
+      "snapshot_path": "evidence/nyc-conservation-extract.png",
+      "pdf_path": "raw/nyc-protected-2023.pdf",
+      "snapshot_sha256": "2a8a39a7c81bcebdb2e9bce2d1f23a0c151e75fbea10fd97528125069feba6b5"
+    }
+  ],
+  "review_required": true
+}

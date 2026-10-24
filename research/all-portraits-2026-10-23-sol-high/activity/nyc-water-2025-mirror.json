@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://home4.nyc.gov/assets/dep/downloads/pdf/water/drinking-water/drinking-water-supply-quality-report/2025-drinking-water-supply-quality-report.pdf",
+  "stem": "nyc-water-2025-mirror",
+  "captured_at": "2026-10-24T01:25:37.629Z",
+  "status": 200,
+  "content_type": "application/pdf",
+  "raw_path": "raw/nyc-water-2025-mirror.pdf",
+  "sha256": "b08c91a50768fbfced4be715c61b485d61a56cb61afe80b0bb2ce29d3f252dff",
+  "bytes": 18403074,
+  "success": true
+}

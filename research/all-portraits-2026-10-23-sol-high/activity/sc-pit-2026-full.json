@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://housingforhealthpartnership.org/Portals/29/HAP/pdf/2026%20Santa%20Cruz%20County%20PIT%20Report.pdf",
+  "stem": "sc-pit-2026-full",
+  "captured_at": "2026-10-24T01:29:36.285Z",
+  "status": 200,
+  "content_type": "application/pdf",
+  "raw_path": "raw/sc-pit-2026-full.pdf",
+  "sha256": "bcc4066636e61288f2a997b957bbabe6add5080390e4b36bbddfec1f55c680a7",
+  "bytes": 5654739,
+  "success": true
+}

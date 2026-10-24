@@ -5,6 +5,7 @@ import {
   dimensions,
   dimensionVersions,
   findings,
+  findingAudits,
   researchRuns,
   researchSessions,
   type DbExecutor,
@@ -13,6 +14,7 @@ import {
   type ResearchFunding,
   type ResearchRun,
 } from '@deep-fryer/db';
+import type { ReviewAudit } from '@deep-fryer/core';
 import { systemDb, userDb } from './db';
 import { deploymentResearchKeyConfigured, supportEmail } from './env';
 import {
@@ -29,7 +31,7 @@ import { TtlCache } from './ttl-cache';
 export interface ReviewCardData {
   dimension: Dimension;
   dimensionName: string;
-  findings: Finding[];
+  findings: (Finding & { audits: ReviewAudit[] })[];
   sessionId: string | null;
   /** Set when this run's findings were already approved into a version. */
   approvedVersionNum: number | null;
@@ -137,6 +139,15 @@ async function reviewCards(db: DbExecutor, selectedRun: ResearchRun): Promise<Re
     ? await db.select().from(findings).where(inArray(findings.sessionId, sessionIds))
     : [];
 
+  const auditRows = runFindings.length
+    ? await db.select().from(findingAudits).where(inArray(findingAudits.findingId, runFindings.map(finding => finding.id)))
+    : [];
+  const withAudits: ReviewCardData['findings'] = runFindings.map(finding => ({ ...finding, audits: auditRows.filter(audit => audit.findingId === finding.id).map(audit => ({
+    id: audit.id, findingId: audit.findingId, source: audit.source, disposition: audit.disposition,
+    reason: audit.reason, correction: audit.correction, appliedAt: audit.appliedAt?.toISOString() ?? null,
+    appliedVersionId: audit.appliedVersionId, appliedRunId: audit.appliedRunId,
+  })) }));
+
   const dimensionIds = [...new Set(runFindings.map((f) => f.dimensionId))];
   const dims = dimensionIds.length
     ? await db.select().from(dimensions).where(inArray(dimensions.id, dimensionIds))
@@ -179,7 +190,7 @@ async function reviewCards(db: DbExecutor, selectedRun: ResearchRun): Promise<Re
       return {
         dimension,
         dimensionName: nameByDim.get(dimId) ?? dimension.slug,
-        findings: runFindings.filter((f) => f.dimensionId === dimId),
+        findings: withAudits.filter((f) => f.dimensionId === dimId),
         sessionId: sessionByDim.get(dimId) ?? null,
         approvedVersionNum: approvedByDim.get(dimId) ?? null,
       };

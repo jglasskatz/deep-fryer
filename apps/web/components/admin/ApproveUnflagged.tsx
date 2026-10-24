@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState } from 'react';
 import { approveUnflaggedFindings } from '@/lib/review-actions';
+import { applyMachineApproved } from '@/lib/machine-audit-actions';
 import { unwrap } from '@/lib/action-result';
 import { useAction } from '@/lib/use-action';
 
@@ -49,6 +50,7 @@ export function ApproveUnflagged({
   findings,
   dimensions,
   sample,
+  mode = 'unflagged',
 }: {
   tenantSlug: string;
   runId: string;
@@ -57,6 +59,7 @@ export function ApproveUnflagged({
   dimensions: number;
   /** The findings to spot-check first (lib/draft-portrait.ts spotCheckSample). */
   sample: SpotCheckItem[];
+  mode?: 'unflagged' | 'machine';
 }) {
   const { run, pending, error } = useAction();
   const [confirming, setConfirming] = useState(false);
@@ -71,8 +74,8 @@ export function ApproveUnflagged({
   const approve = () =>
     run(
       async () => {
-        const result = unwrap(
-          await approveUnflaggedFindings({
+        const result = unwrap<{ findings: number; versions: unknown[] }>(
+          await (mode === 'machine' ? applyMachineApproved : approveUnflaggedFindings)({
             tenantSlug,
             runId,
             expectedFindings: findings,
@@ -150,7 +153,7 @@ export function ApproveUnflagged({
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"
-              className="rounded bg-black px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+              className="min-h-11 rounded bg-black px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
               disabled={pending || !checked}
               onClick={approve}
             >
@@ -158,7 +161,7 @@ export function ApproveUnflagged({
             </button>
             <button
               type="button"
-              className="rounded border px-3 py-1.5 text-xs hover:bg-black/5 disabled:opacity-50"
+              className="min-h-11 rounded border px-3 py-1.5 text-xs hover:bg-black/5 disabled:opacity-50"
               disabled={pending}
               onClick={() => {
                 setConfirming(false);
@@ -175,7 +178,7 @@ export function ApproveUnflagged({
         <button
           ref={openRef}
           type="button"
-          className="mt-2 rounded bg-black px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+          className="mt-2 min-h-11 rounded bg-black px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
           disabled={pending}
           onClick={() => {
             setOutcome(null);
@@ -183,7 +186,7 @@ export function ApproveUnflagged({
             requestAnimationFrame(() => confirmRef.current?.focus());
           }}
         >
-          Approve all unflagged ({plural(findings, 'finding')})
+          {mode === 'machine' ? 'Apply machine-approved findings' : 'Approve all unflagged'} ({plural(findings, 'finding')})
         </button>
       )}
       {error ? (

@@ -1,0 +1,12 @@
+{
+  "mode": "fetch",
+  "url": "https://home4.nyc.gov/assets/foodpolicy/downloads/pdf/NYC-Food-by-the-Numbers-2024.pdf",
+  "stem": "bronx-food-2024-report",
+  "captured_at": "2026-10-24T01:26:23.503Z",
+  "status": 200,
+  "content_type": "application/pdf",
+  "raw_path": "raw/bronx-food-2024-report.pdf",
+  "sha256": "7caf285beb326d5141cc62b9903c9579ceba41e651b718dfb672ac83ab3bc336",
+  "bytes": 4053782,
+  "success": true
+}

@@ -1,0 +1,12 @@
+{
+  "mode": "page",
+  "url": "https://housingforhealthpartnership.org/Home/LearningCenter/Point-in-Time(PIT)Counts.aspx",
+  "stem": "sc-pit-reports-correct",
+  "captured_at": "2026-10-24T01:29:36.301Z",
+  "status": 200,
+  "raw_path": "raw/sc-pit-reports-correct.html",
+  "snapshot_path": "evidence/sc-pit-reports-correct.png",
+  "sha256": "97f4f76f200ddc3627038cc3056e7da316f3532a0c9458e96b344d989db1893a",
+  "bytes": 63123,
+  "success": true
+}
