@@ -19,7 +19,7 @@
     "@deep-fryer/db": "workspace:*",
     "@deep-fryer/research": "workspace:^",
     "@fontsource-variable/inter": "5.2.8",
-    "drizzle-orm": "^0.36.4",
+    "drizzle-orm": "^0.45.4",
     "graphile-worker": "^0.16.6",
     "next": "^15.5.27",
     "next-auth": "5.0.0-beta.32",
