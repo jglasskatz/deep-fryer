@@ -120,6 +120,10 @@ export function reviewedOverlayRelease() {
         dimension.context = 'Locally extreme heat exposure, shown without a numeric safety target. County measurements are labeled as proxies when displayed for a city.';
         dimension.actions = []; // Retire inherited ozone-specific refrigerant advice.
         rendered.indicator_slug = 'extreme-heat-days';
+        // Keep the scientific qualifications visible; the profile migration
+        // instruction is fulfilled above and belongs in provenance, not reader copy.
+        rendered.notes = rendered.notes.replace(' Integration requires an explicit local-extreme-heat-v1 profile replacing the legacy ozone dimension for these three portraits only.', '');
+        rendered.unscored_reason = 'No safe annual-day target was established for this heat-exposure measure.';
         portrait.provenance.framework_profile = framework.profile;
         portrait.provenance.framework_profile_sha256 = framework.sha256;
       }

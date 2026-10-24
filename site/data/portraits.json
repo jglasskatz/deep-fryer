@@ -726,7 +726,7 @@
               "source_url": "https://eji.cdc.gov/Documents/Data/2024/2024_CSV/EJI_2024_California_CSV.zip",
               "geography": "Santa Cruz County proxy — not city limits",
               "status": "source-supported-observation",
-              "notes": "CDC EJI 2024 reports tract means of locally extreme heat days during 2018–2022, defined using a local 95th-percentile maximum-temperature threshold. Population-weighted county mean: 14.757709506983256 days/year across 69 EJI tracts. Census 2020 coverage was independently checked; the omitted tract has zero population and zero land area. No safe annual-day target was established, so target, score and wedge must remain null. For Santa Cruz city and Watsonville, this is explicitly a Santa Cruz County proxy, not a city-limit observation. Integration requires an explicit local-extreme-heat-v1 profile replacing the legacy ozone dimension for these three portraits only.",
+              "notes": "CDC EJI 2024 reports tract means of locally extreme heat days during 2018–2022, defined using a local 95th-percentile maximum-temperature threshold. Population-weighted county mean: 14.757709506983256 days/year across 69 EJI tracts. Census 2020 coverage was independently checked; the omitted tract has zero population and zero land area. No safe annual-day target was established, so target, score and wedge must remain null. For Santa Cruz city and Watsonville, this is explicitly a Santa Cruz County proxy, not a city-limit observation.",
               "evidence_path": "evidence/shared/97185a82e531e0bc88326d1e.png",
               "pdf_path": null,
               "level_pct": null,
@@ -747,7 +747,7 @@
                 }
               ],
               "kind": "observation",
-              "unscored_reason": "CDC EJI 2024 reports tract means of locally extreme heat days during 2018–2022, defined using a local 95th-percentile maximum-temperature threshold. Population-weighted county mean: 14.757709506983256 days/year across 69 EJI tracts. Census 2020 coverage was independently checked; the omitted tract has zero population and zero land area. No safe annual-day target was established, so target, score and wedge must remain null. For Santa Cruz city and Watsonville, this is explicitly a Santa Cruz County proxy, not a city-limit observation. Integration requires an explicit local-extreme-heat-v1 profile replacing the legacy ozone dimension for these three portraits only.",
+              "unscored_reason": "No safe annual-day target was established for this heat-exposure measure.",
               "research_review": {
                 "campaign": "all-portraits-2026-10-23-sol-high",
                 "amendment_id": "santa-cruz:ozone-layer-depletion:0",
@@ -1480,7 +1480,7 @@
               "source_url": "https://eji.cdc.gov/Documents/Data/2024/2024_CSV/EJI_2024_California_CSV.zip",
               "geography": "county",
               "status": "source-supported-observation",
-              "notes": "CDC EJI 2024 reports tract means of locally extreme heat days during 2018–2022, defined using a local 95th-percentile maximum-temperature threshold. Population-weighted county mean: 14.757709506983256 days/year across 69 EJI tracts. Census 2020 coverage was independently checked; the omitted tract has zero population and zero land area. No safe annual-day target was established, so target, score and wedge must remain null. For Santa Cruz city and Watsonville, this is explicitly a Santa Cruz County proxy, not a city-limit observation. Integration requires an explicit local-extreme-heat-v1 profile replacing the legacy ozone dimension for these three portraits only.",
+              "notes": "CDC EJI 2024 reports tract means of locally extreme heat days during 2018–2022, defined using a local 95th-percentile maximum-temperature threshold. Population-weighted county mean: 14.757709506983256 days/year across 69 EJI tracts. Census 2020 coverage was independently checked; the omitted tract has zero population and zero land area. No safe annual-day target was established, so target, score and wedge must remain null. For Santa Cruz city and Watsonville, this is explicitly a Santa Cruz County proxy, not a city-limit observation.",
               "evidence_path": "evidence/shared/97185a82e531e0bc88326d1e.png",
               "pdf_path": null,
               "level_pct": null,
@@ -1501,7 +1501,7 @@
                 }
               ],
               "kind": "observation",
-              "unscored_reason": "CDC EJI 2024 reports tract means of locally extreme heat days during 2018–2022, defined using a local 95th-percentile maximum-temperature threshold. Population-weighted county mean: 14.757709506983256 days/year across 69 EJI tracts. Census 2020 coverage was independently checked; the omitted tract has zero population and zero land area. No safe annual-day target was established, so target, score and wedge must remain null. For Santa Cruz city and Watsonville, this is explicitly a Santa Cruz County proxy, not a city-limit observation. Integration requires an explicit local-extreme-heat-v1 profile replacing the legacy ozone dimension for these three portraits only.",
+              "unscored_reason": "No safe annual-day target was established for this heat-exposure measure.",
               "research_review": {
                 "campaign": "all-portraits-2026-10-23-sol-high",
                 "amendment_id": "santa-cruz-county:ozone-layer-depletion:0",
@@ -2275,7 +2275,7 @@
               "source_url": "https://eji.cdc.gov/Documents/Data/2024/2024_CSV/EJI_2024_California_CSV.zip",
               "geography": "Santa Cruz County proxy — not city limits",
               "status": "source-supported-observation",
-              "notes": "CDC EJI 2024 reports tract means of locally extreme heat days during 2018–2022, defined using a local 95th-percentile maximum-temperature threshold. Population-weighted county mean: 14.757709506983256 days/year across 69 EJI tracts. Census 2020 coverage was independently checked; the omitted tract has zero population and zero land area. No safe annual-day target was established, so target, score and wedge must remain null. For Santa Cruz city and Watsonville, this is explicitly a Santa Cruz County proxy, not a city-limit observation. Integration requires an explicit local-extreme-heat-v1 profile replacing the legacy ozone dimension for these three portraits only.",
+              "notes": "CDC EJI 2024 reports tract means of locally extreme heat days during 2018–2022, defined using a local 95th-percentile maximum-temperature threshold. Population-weighted county mean: 14.757709506983256 days/year across 69 EJI tracts. Census 2020 coverage was independently checked; the omitted tract has zero population and zero land area. No safe annual-day target was established, so target, score and wedge must remain null. For Santa Cruz city and Watsonville, this is explicitly a Santa Cruz County proxy, not a city-limit observation.",
               "evidence_path": "evidence/shared/97185a82e531e0bc88326d1e.png",
               "pdf_path": null,
               "level_pct": null,
@@ -2296,7 +2296,7 @@
                 }
               ],
               "kind": "observation",
-              "unscored_reason": "CDC EJI 2024 reports tract means of locally extreme heat days during 2018–2022, defined using a local 95th-percentile maximum-temperature threshold. Population-weighted county mean: 14.757709506983256 days/year across 69 EJI tracts. Census 2020 coverage was independently checked; the omitted tract has zero population and zero land area. No safe annual-day target was established, so target, score and wedge must remain null. For Santa Cruz city and Watsonville, this is explicitly a Santa Cruz County proxy, not a city-limit observation. Integration requires an explicit local-extreme-heat-v1 profile replacing the legacy ozone dimension for these three portraits only.",
+              "unscored_reason": "No safe annual-day target was established for this heat-exposure measure.",
               "research_review": {
                 "campaign": "all-portraits-2026-10-23-sol-high",
                 "amendment_id": "watsonville:ozone-layer-depletion:0",
