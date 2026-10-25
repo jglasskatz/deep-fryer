@@ -42,6 +42,7 @@ try {
   for (const portrait of release.portraits) {
     await page.goto(`${origin}${portrait.slug}/`, { waitUntil: 'networkidle' });
     assert.equal(await page.getByRole('heading', { level: 1 }).innerText(), portrait.name);
+    assert.doesNotMatch((await page.locator('.notice').allTextContents()).join(' '), /Sol 6|Luna|GPT-|high effort|medium effort/i);
     assert.equal(await page.locator('.indicator').count(), portrait.dimensions.reduce((n, d) => n + d.indicators.length, 0));
     assert.equal(await page.locator('.dimension').count(), portrait.dimensions.length);
     assert.equal(await page.getByRole('heading', { name: 'Possible actions', exact: true }).count(), 0);
@@ -100,6 +101,7 @@ try {
     assert.equal(new URL(page.url()).pathname, `/deep-fryer/${hub}/`);
     assert.equal(new URL(page.url()).searchParams.get('area'), target);
     assert.equal(await page.getByRole('heading', { level: 1 }).innerText(), portrait.name);
+    assert.doesNotMatch((await page.locator('.notice').allTextContents()).join(' '), /Sol 6|Luna|GPT-|high effort|medium effort/i);
     assert.equal(await page.locator('.indicator').count(), portrait.dimensions.reduce((n, d) => n + d.indicators.length, 0));
     assert.equal(await page.locator('.portrait-switcher [aria-current="page"]').getAttribute('data-portrait'), target);
     await page.reload({ waitUntil: 'networkidle' });
