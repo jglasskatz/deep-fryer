@@ -132,11 +132,9 @@ export function reviewedOverlayRelease() {
   }
   release.research_overlay = { campaign: overlayConfig.campaign, baseline_sha256: overlayConfig.baseline_sha256,
     config_sha256: hash(readFileSync(configPath)), reviews: overlayConfig.reviews, applied: records, human_approval: false };
-  if (overlayConfig.cost_ledger) {
-    const costs = JSON.parse(bound(overlayConfig.cost_ledger.path, overlayConfig.cost_ledger.sha256).bytes);
-    if (costs.actual_tokens !== null || costs.actual_billed_usd !== null) throw new Error('Session research has no actual billing telemetry');
-    release.cost_scenarios.shared_campaigns = [...(release.cost_scenarios.shared_campaigns ?? []), costs];
-  }
+  // Campaign accounting is internal bookkeeping, never part of the public
+  // portrait or its downloadable data. Preserve the frozen input for review.
+  delete release.cost_scenarios;
   release.captured_at = overlayConfig.generated_at ?? release.captured_at;
   cached = { release, assets: [...assets] };
   return structuredClone(release);

@@ -13,9 +13,5 @@
       "sha256": "79c58321c6ecd268d214b3da174b9b8690908fa12b64b44a8584dc83065d31de"
     }
   ],
-  "generated_at": "2026-10-24T02:15:00.000Z",
-  "cost_ledger": {
-    "path": "cost-ledger.json",
-    "sha256": "a27f06540108c57ceae6327add17091fc243f411023568dc668cce92e6a821c7"
-  }
+  "generated_at": "2026-10-24T02:15:00.000Z"
 }

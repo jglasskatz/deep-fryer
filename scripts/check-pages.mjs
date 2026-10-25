@@ -32,6 +32,9 @@ try {
   await page.goto(origin, { waitUntil: 'networkidle' });
   const release = await (await page.request.get(`${origin}data/portraits.json`)).json();
   assert.equal(await page.locator('.card').count(), release.portraits.length);
+  assert.equal(Object.hasOwn(release, 'cost_scenarios'), false, 'Public download excludes internal research accounting');
+  assert.equal(await page.getByRole('heading', { name: 'Research costs', exact: true }).count(), 0);
+  assert.equal(await page.locator('a[href*="api/docs/pricing"]').count(), 0);
   await mkdir('/private/tmp/deep-fryer-pages', { recursive: true }).catch(() => {});
   const screenshots = process.env.CI ? path.resolve('test-results/pages') : '/private/tmp/deep-fryer-pages';
   await mkdir(screenshots, { recursive: true });
@@ -39,8 +42,11 @@ try {
   for (const portrait of release.portraits) {
     await page.goto(`${origin}${portrait.slug}/`, { waitUntil: 'networkidle' });
     assert.equal(await page.getByRole('heading', { level: 1 }).innerText(), portrait.name);
+    assert.doesNotMatch((await page.locator('.notice').allTextContents()).join(' '), /Sol 6|Luna|GPT-|high effort|medium effort/i);
     assert.equal(await page.locator('.indicator').count(), portrait.dimensions.reduce((n, d) => n + d.indicators.length, 0));
     assert.equal(await page.locator('.dimension').count(), portrait.dimensions.length);
+    assert.equal(await page.getByRole('heading', { name: 'Possible actions', exact: true }).count(), 0);
+    assert.equal(await page.getByRole('heading', { name: 'Ways to get involved', exact: true }).count(), portrait.dimensions.filter(d => d.actions?.length).length);
     assert.ok(await page.locator('canvas').evaluate(canvas => canvas.width > 0 && canvas.height > 0));
     if (portrait.slug === 'carmel') {
       assert.match((await page.locator('.notice').allTextContents()).join(' '), /does not approve the amendments/);
@@ -95,6 +101,7 @@ try {
     assert.equal(new URL(page.url()).pathname, `/deep-fryer/${hub}/`);
     assert.equal(new URL(page.url()).searchParams.get('area'), target);
     assert.equal(await page.getByRole('heading', { level: 1 }).innerText(), portrait.name);
+    assert.doesNotMatch((await page.locator('.notice').allTextContents()).join(' '), /Sol 6|Luna|GPT-|high effort|medium effort/i);
     assert.equal(await page.locator('.indicator').count(), portrait.dimensions.reduce((n, d) => n + d.indicators.length, 0));
     assert.equal(await page.locator('.portrait-switcher [aria-current="page"]').getAttribute('data-portrait'), target);
     await page.reload({ waitUntil: 'networkidle' });
