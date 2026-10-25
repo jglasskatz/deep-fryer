@@ -187,8 +187,7 @@ for (const slug of ['carmel', 'monterey-county']) {
       ...(campaignMetadata.baseline ? { baseline_campaign: campaignMetadata.baseline } : {}), reviewer: 'gpt-6.1-sol', hashes, framework_profile: profile.profile, framework_profile_sha256: profile.sha256,
       ...(reviewManifest ? { review_manifest_sha256: digest(JSON.stringify(reviewManifest)), reviewed_at: reviewManifest.reviewed_at } : {}), approved: false }, dimensions });
 }
-const ledger = JSON.parse(await readFile(path.join(campaign, 'cost-ledger.json'), 'utf8'));
-const data = { schema_version: 1, captured_at: new Date().toISOString(), portraits, cost_scenarios: ledger };
+const data = { schema_version: 1, captured_at: new Date().toISOString(), portraits };
 await writeFile(path.join(destination, 'data/portraits.json'), JSON.stringify(data, null, 2) + '\n');
 await writeFile(path.join(destination, 'data/evidence-manifest.json'), JSON.stringify(artifacts, null, 2) + '\n');
 console.log(JSON.stringify({ portraits: portraits.length, evidence_files: Object.keys(artifacts).length, evidence_bytes: Object.values(artifacts).reduce((n, artifact) => n + artifact.bytes, 0) }));

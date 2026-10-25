@@ -77,3 +77,11 @@ test('local heat observations replace ozone only in the two authorized previews 
   forged.portraits.find(p => p.slug === 'carmel').provenance.framework_profile = 'default';
   assert.throws(() => validateRelease(forged), /framework provenance/);
 });
+
+// A public-data download must not quietly restore the removed cost section.
+test('public snapshots exclude internal research accounting', () => {
+  assert.equal(Object.hasOwn(release, 'cost_scenarios'), false);
+  const leaked = structuredClone(release);
+  leaked.cost_scenarios = { actual_billed_usd: 123 };
+  assert.throws(() => validateRelease(leaked), /content-bound/);
+});
