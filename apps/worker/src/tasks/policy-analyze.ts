@@ -1,3 +1,5 @@
+import { gatePolicyGraphEvidence, readPolicyEvaluationContext, policyGraphMatchesScope } from '@deep-fryer/core';
+import { retrievedPolicyEvidence } from '../policy-evidence.js';
 import type { Task } from 'graphile-worker';
 import type { ZodError } from 'zod';
 import { and, eq, inArray, lt, sql } from 'drizzle-orm';
@@ -259,7 +261,21 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
       );
     }
 
-    const projections = projectDimensions(published, parsed.data.impacts);
+    const requestedScope = readPolicyEvaluationContext(analysis.brief);
+    if (requestedScope && (!parsed.data.impact_graph || !policyGraphMatchesScope(parsed.data.impact_graph, requestedScope))) {
+      throw new AnalysisFailure('The evaluation did not return a cross-slice graph with the requested mode, geography, cutoff, horizon and comparator. No result was accepted.');
+    }
+    // Model-declared provenance is not trusted: bind citations to actual tool receipts.
+    if (parsed.data.impact_graph) {
+      const gated = gatePolicyGraphEvidence(parsed.data.impact_graph, retrievedPolicyEvidence(session.transcript));
+      parsed.data.impact_graph = gated.graph;
+      // Legacy impacts have no receipt-level provenance; do not render a second, ungated claim channel.
+      parsed.data.impacts = [];
+      parsed.data.summary = (`AI research draft; retrieved excerpts are not independent claim verification. ${gated.downgraded} pathways lack matched retrieved evidence. ` + parsed.data.summary).slice(0, POLICY_OUTPUT_LIMITS.summaryChars);
+      if (gated.downgraded) fitted.adjustments.push(`${gated.downgraded} cross-slice pathways lacked matched retrieved evidence and were kept as unverified hypotheses with unknown direction and no effect size.`);
+    }
+    // Graph-backed analyses use directional/native-unit evidence, never fabricated wedge sizes.
+    const projections = parsed.data.impact_graph ? [] : projectDimensions(published, parsed.data.impacts);
     await db
       .update(policyAnalyses)
       .set({
@@ -582,6 +598,7 @@ export interface PolicyNotice {
   impacts: number;
   /** Indicator-level projections re-scored against published data. */
   quantified: number;
+  graphMode?: 'retrospective' | 'prospective';
 }
 
 /** Pure: the email to the person who started the analysis. */
@@ -603,8 +620,8 @@ export function composePolicyEmail(n: PolicyNotice, appUrl: string): ComposedEma
   return {
     subject: `Policy analysis ready — ${title}`,
     text: [
-      `The policy analysis “${title}” for ${n.tenantName} is ready: ${n.impacts} projected impact${n.impacts === 1 ? '' : 's'} on the doughnut's dimensions, ${n.quantified} quantified against published indicators.`,
-      'It is a projection drafted with AI assistance for staff review — not a measurement — and nothing from it is published.',
+      n.graphMode ? `The policy analysis “${title}” for ${n.tenantName} is ready: ${n.impacts} cross-slice pathways in a ${n.graphMode} evidence graph, including explicit unknowns.` : `The policy analysis “${title}” for ${n.tenantName} is ready: ${n.impacts} projected impact${n.impacts === 1 ? '' : 's'} on the doughnut's dimensions, ${n.quantified} quantified against published indicators.`,
+      n.graphMode ? 'This is an AI research draft, not human-approved. Source retrieval is not independent verification or proof of causality; nothing is published.' : 'It is a projection drafted with AI assistance for staff review — not a measurement — and nothing from it is published.',
       `Open it: ${link}`,
     ].join('\n\n'),
   };
@@ -642,7 +659,8 @@ export async function notifyPolicyRequester(analysisId: string): Promise<void> {
         title: row.title,
         status: row.status,
         error: row.error,
-        impacts: (row.result?.impacts ?? []).filter((i) => i.direction !== 'none').length,
+        impacts: row.result?.impact_graph?.edges.length ?? (row.result?.impacts ?? []).filter((i) => i.direction !== 'none').length,
+        graphMode: row.result?.impact_graph?.mode,
         quantified: (row.projections ?? []).reduce((n, p) => n + p.indicator_changes.length, 0),
       },
       process.env.APP_URL ?? 'http://localhost:3000',

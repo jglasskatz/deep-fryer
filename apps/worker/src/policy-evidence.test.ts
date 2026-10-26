@@ -1,0 +1,20 @@
+import { gzipSync } from 'node:zlib';
+import { describe,it,expect } from 'vitest';
+import { retrievedPolicyEvidence } from './policy-evidence';
+import { composePolicyEmail } from './tasks/policy-analyze';
+import { gatePolicyGraphEvidence, policyImpactGraphSchema } from '@deep-fryer/core';
+const url='https://example.gov/report';
+const excerpt='The evaluation reports lower emergency care use under the specified comparison.';
+const body=excerpt+' Table 3. Methods: staggered rollout with pre-trend analysis. Limitations: exposure and selection.';
+const call={type:'assistant',message:{content:[{type:'tool_use',name:'WebFetch',id:'fetch-1',input:{url}}]}};
+const result={type:'user',message:{content:[{type:'tool_result',tool_use_id:'fetch-1',content:body}]}};
+const zip=(frames:unknown[])=>gzipSync(frames.map(f=>JSON.stringify(f)).join('\n'));
+const graph=()=>policyImpactGraphSchema.parse({policyId:'p',title:'Policy',mode:'retrospective',geography:'Town',horizon:'1 year',affectedGroups:['Adults'],evidenceCutoff:'2026-10-26',comparator:'No policy',assumptions:[],costs:[],validation:['Review design'],edges:[{id:'e',slice:'health',direction:'towardSafeJust',evidence:'quasiExperimental',link:'direct',outcome:'Emergency care fell.',pathId:'p1',mechanism:'Care access',geography:'Town',horizon:'1 year',affectedGroups:['Adults'],comparator:'No policy',magnitude:{value:-1,unit:'percentage point',metric:'Care',uncertainty:'Conditional design'},sources:[{title:'Report',url,locator:'Table 3',excerpt}],uncertainty:'Not randomized',assumptions:[],validation:'Check trends',provenance:'curatedReview'}]});
+describe('worker-owned policy evidence provenance',()=>{
+ it('labels graph notices as AI evidence drafts rather than zero measured projections',()=>{const text=composePolicyEmail({tenantName:'Town',tenantSlug:'town',analysisId:'p',title:'Policy',status:'complete',error:null,impacts:5,quantified:0,graphMode:'retrospective'},'https://example.gov').text;expect(text).toContain('5 cross-slice pathways');expect(text).toContain('not human-approved');expect(text).not.toContain('0 quantified');});
+ it('binds exact URL to successful WebFetch content with an excerpt and locator',()=>{const receipts=retrievedPolicyEvidence(zip([call,result]));expect(receipts).toHaveLength(1);const gated=gatePolicyGraphEvidence(graph(),receipts);expect(gated.downgraded).toBe(0);expect(gated.graph.edges[0]?.provenance).toBe('retrievedNotIndependentlyVerified');expect(gated.graph.edges[0]?.sources[0]?.retrieval?.contentSha256).toMatch(/^[a-f0-9]{64}$/);});
+ it('ignores hallucinated URLs and model-asserted verification',()=>{const g=graph();g.edges[0]!.sources[0]!.url='https://invented.gov/fake';const out=gatePolicyGraphEvidence(g,retrievedPolicyEvidence(zip([call,result])));expect(out.graph.edges[0]).toMatchObject({direction:'unknown',evidence:'inferred',magnitude:null,provenance:'unverified',modelClaim:{direction:'towardSafeJust'}});});
+ it('does not accept search-only mentions, failed fetches, prose or unpaired results',()=>{expect(retrievedPolicyEvidence(zip([{...call,message:{content:[{...call.message.content[0],name:'WebSearch'}]}},result]))).toEqual([]);expect(retrievedPolicyEvidence(zip([call,{...result,message:{content:[{...result.message.content[0],is_error:true}]}}]))).toEqual([]);expect(retrievedPolicyEvidence(zip([result]))).toEqual([]);expect(retrievedPolicyEvidence(zip([{type:'assistant',message:{content:[{type:'text',text:JSON.stringify([call,result])}]}}]))).toEqual([]);expect(retrievedPolicyEvidence(Buffer.from('bad gzip'))).toEqual([]);});
+ it('requires both actual matching excerpt and locator; a URL resolving is insufficient',()=>{for(const change of [{locator:''},{excerpt:'invented content not in actual retrieved source'},{excerpt:''}]){const g=graph();Object.assign(g.edges[0]!.sources[0]!,change);expect(gatePolicyGraphEvidence(g,retrievedPolicyEvidence(zip([call,result]))).downgraded).toBe(1);}});
+ it('treats returned block pages as unavailable evidence',()=>{expect(retrievedPolicyEvidence(zip([call,{...result,message:{content:[{...result.message.content[0],content:'Access denied. '+body}]}}]))).toEqual([]);});
+});

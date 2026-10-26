@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { formatIndicatorValue } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
+import { PolicyImpactGraph } from '@/components/policy/PolicyImpactGraph';
 import { AnalysisStatus } from '@/components/policy/AnalysisStatus';
 import { CancelAnalysisButton } from '@/components/policy/CancelAnalysisButton';
 import { DirectionLabel, PolicyDoughnut } from '@/components/policy/PolicyDoughnut';
@@ -161,12 +162,10 @@ export default async function PolicyAnalysisPage({
               aria-label="About this analysis"
             >
               <p className="font-semibold">
-                Projection, not measurement — drafted with AI assistance for staff review.
+                {result.impact_graph?.mode === 'retrospective' ? 'Retrospective evidence synthesis, not automatic causal proof' : 'Projection, not measurement'} — drafted with AI assistance for staff review.
               </p>
               <p className="mt-1">
-                Check each rationale and its sources before relying on it. Quantified projections
-                are re-scored with the same thresholds as the published portrait, so the two are
-                comparable; nothing here is published.
+                {result.impact_graph ? 'Check each mechanism, source excerpt and study design. Retrieved content is not independent claim verification or proof of causality. Unknown directions and unverified model claims are retained explicitly; no graph magnitude changes wedge size.' : 'Check each rationale and its sources before relying on it. Quantified projections are re-scored with the same thresholds as the published portrait.'} Nothing here is published.
               </p>
               {adjustments.length ? (
                 <>
@@ -189,7 +188,7 @@ export default async function PolicyAnalysisPage({
               </p>
             </section>
 
-            <section className="mt-8" aria-labelledby="doughnut-heading">
+            {result.impact_graph ? <PolicyImpactGraph value={result.impact_graph} /> : <section className="mt-8" aria-labelledby="doughnut-heading">
               <h2 id="doughnut-heading" className="text-lg font-semibold">
                 The doughnut, today and with this policy
               </h2>
@@ -215,7 +214,7 @@ export default async function PolicyAnalysisPage({
                   </p>
                 )}
               </div>
-            </section>
+            </section>}
 
             <section className="mt-8" aria-labelledby="impacts-heading">
               <h2 id="impacts-heading" className="text-lg font-semibold">
@@ -223,7 +222,7 @@ export default async function PolicyAnalysisPage({
               </h2>
               {groups.length === 0 ? (
                 <p className="mt-2 text-sm text-[color:var(--color-muted)]">
-                  The analysis found no impact on any of the doughnut&apos;s dimensions.
+                  {result.impact_graph ? 'Cross-slice evidence is listed above; no additional legacy projections were supplied.' : 'No impacts were supplied. This does not establish that the policy has no effect.'}
                 </p>
               ) : (
                 <div className="mt-3 overflow-x-auto">

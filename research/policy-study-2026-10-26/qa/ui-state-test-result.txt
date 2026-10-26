@@ -1,0 +1,1 @@
+PASS: dependency-free JavaScript state test. Initial10 cases;21 ring segments/options;NYC5;SC5;quasi-experimental4;SC causal lens empty state;all21 dimension filters match data;reset restores10. This is a DOM-stub logic test, not a browser layout/accessibility verification.

@@ -2,7 +2,7 @@
 
 import { useId, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { POLICY_ANALYSIS_SESSIONS } from '@deep-fryer/core';
+import { POLICY_ANALYSIS_SESSIONS, type PolicyEvaluationContext } from '@deep-fryer/core';
 import { createPolicyAnalysis } from '@/lib/policy-actions';
 import { POLICY_LIMITS, briefLength } from '@/lib/policy-limits';
 import { useAction } from '@/lib/use-action';
@@ -44,6 +44,8 @@ export function NewPolicyForm({
   const [sourceUrl, setSourceUrl] = useState(initial?.sourceUrl ?? '');
   const [brief, setBrief] = useState(initial?.brief ?? '');
 
+  const [scope, setScope] = useState<PolicyEvaluationContext>({mode:'prospective',geography:tenantSlug,evidenceCutoff:new Date().toISOString().slice(0,10),horizon:'1–3 years after implementation',comparator:'No policy / continuation of current practice',affectedGroups:''});
+  const scopeField = (key: keyof PolicyEvaluationContext, value: string) => setScope(previous => ({...previous,[key]:value}));
   const chars = briefLength(brief);
   const over = chars - POLICY_LIMITS.briefMax;
 
@@ -51,7 +53,7 @@ export function NewPolicyForm({
     e.preventDefault();
     run(async () => {
       const { id: analysisId } = unwrap(
-        await createPolicyAnalysis({ tenantSlug, title, brief, sourceUrl }),
+        await createPolicyAnalysis({ tenantSlug, title, brief, sourceUrl, evaluationContext: scope }),
       );
       router.push(`/${tenantSlug}/admin/policy/${analysisId}`);
     });
@@ -68,8 +70,9 @@ export function NewPolicyForm({
         New analysis
       </h2>
       <p className="mt-1 text-xs text-[color:var(--color-muted)]">
-        The brief is analyzed once, in one session with web search for sources. The result is a
-        projection for staff review: it is never published.
+        The brief is analyzed once using the existing research provider and web sources. Retrospective
+        evidence and conditional forecasts stay distinct. Results are drafts for staff review, never published.
+        The research budget and provider configuration below still apply.
       </p>
       {initial ? (
         <p className="mt-2 text-sm">
@@ -112,6 +115,15 @@ export function NewPolicyForm({
         </div>
       </div>
 
+      <fieldset className="mt-4 grid gap-3 sm:grid-cols-2">
+        <legend className="mb-2 text-sm font-semibold">Evaluation scope</legend>
+        <label className="text-sm">Mode<select className={field} value={scope.mode} onChange={e=>scopeField('mode',e.target.value)}><option value="retrospective">Past policy — evaluate outcome evidence</option><option value="prospective">Proposed policy — conditional scenario</option></select></label>
+        <label className="text-sm">Geography<input className={field} required maxLength={300} value={scope.geography} onChange={e=>scopeField('geography',e.target.value)}/></label>
+        <label className="text-sm">Evidence cutoff<input className={field} type="date" required value={scope.evidenceCutoff} onChange={e=>scopeField('evidenceCutoff',e.target.value)}/></label>
+        <label className="text-sm">Outcome horizon<input className={field} required maxLength={300} value={scope.horizon} onChange={e=>scopeField('horizon',e.target.value)}/></label>
+        <label className="text-sm">No-policy comparator<input className={field} required maxLength={600} value={scope.comparator} onChange={e=>scopeField('comparator',e.target.value)}/></label>
+        <label className="text-sm">Affected groups<input className={field} required maxLength={600} placeholder="Exposed groups, beneficiaries and those bearing costs" value={scope.affectedGroups} onChange={e=>scopeField('affectedGroups',e.target.value)}/></label>
+      </fieldset>
       <div className="mt-3">
         <label htmlFor={`${id}-brief`} className="text-sm font-medium">
           Policy brief

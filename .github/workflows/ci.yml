@@ -126,6 +126,7 @@ jobs:
           path: |
             test-results/pages
             test-results/pages-ui
+            test-results/policy-evaluator
             dist/pages/release.json
           if-no-files-found: warn
       - name: Name this attempt's public artifact

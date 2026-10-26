@@ -5,6 +5,9 @@ import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import {
   POLICY_ANALYSIS_SESSIONS,
+  policyEvaluationBrief,
+  policyEvaluationContextSchema,
+  type PolicyEvaluationContext,
   standing,
   type ResearchQuotaCheck,
 } from '@deep-fryer/core';
@@ -45,6 +48,7 @@ const L = POLICY_LIMITS;
 const blankToUndefined = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? undefined : v);
 
 const inputSchema = z.object({
+  evaluationContext: policyEvaluationContextSchema.optional(),
   title: z
     .string()
     .trim()
@@ -106,11 +110,13 @@ const CANCELLED = 'Cancelled before it started. It was not counted against your 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const createPolicyAnalysis = action(
-  async (input: { tenantSlug: string; title: string; brief: string; sourceUrl?: string }) => {
+  async (input: { tenantSlug: string; title: string; brief: string; sourceUrl?: string; evaluationContext?: PolicyEvaluationContext }) => {
     // Off means gone (SPEC-v7 §3.3): with policy analysis off for this
     // portrait, a forged request cannot start one.
     const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'policy_analysis');
     const fields = parseInput(input);
+    const storedBrief = fields.evaluationContext ? policyEvaluationBrief(fields.brief, fields.evaluationContext) : fields.brief;
+    if (storedBrief.length > L.briefMax) throw new UserError(`The brief including evaluation scope exceeds ${L.briefMax} characters. Shorten the policy text.`);
     const auth = await getAuth();
 
     // The transaction below enqueues in SQL, which needs graphile-worker's
@@ -154,7 +160,7 @@ export const createPolicyAnalysis = action(
         .values({
           tenantId: tenant.id,
           title: fields.title,
-          brief: fields.brief,
+          brief: storedBrief,
           sourceUrl: fields.sourceUrl ?? null,
           status: 'queued',
           funding: gate.funding,
