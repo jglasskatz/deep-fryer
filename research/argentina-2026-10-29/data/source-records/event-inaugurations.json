@@ -1,0 +1,14 @@
+{
+  "id": "event-inaugurations",
+  "url": "https://www.argentina.gob.ar/node/48921",
+  "resolved_url": "https://www.argentina.gob.ar/node/48921",
+  "path": "raw/event-inaugurations.html",
+  "publisher": "Argentina government",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:48:47.779872+00:00",
+  "sha256": "b4288212b63cde1ec3ebb2fe1a6d937fb49ac4114ca2509f701533cff5630239",
+  "bytes": 40252,
+  "content_type": "text/html; charset=utf-8",
+  "http_last_modified": null,
+  "title": "event inaugurations"
+}

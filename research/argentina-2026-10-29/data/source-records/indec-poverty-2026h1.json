@@ -1,0 +1,14 @@
+{
+  "id": "indec-poverty-2026h1",
+  "url": "https://www.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_09_2670733F4C4D.pdf",
+  "resolved_url": "https://www.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_09_2670733F4C4D.pdf",
+  "path": "raw/indec-poverty-2026h1.pdf",
+  "publisher": "INDEC",
+  "release_date": "2026-09-24",
+  "retrieved_at": "2026-10-28T11:41:29.482365+00:00",
+  "sha256": "d944f84c823adef010319057fe15fa05ea54292669efb44cc5caf5ef8b230340",
+  "bytes": 1942178,
+  "content_type": "application/pdf",
+  "http_last_modified": "Thu, 24 Sep 2026 18:21:04 GMT",
+  "title": "INDEC poverty and indigence in 31 urban agglomerations, H1 2026, Table 1 p.5"
+}

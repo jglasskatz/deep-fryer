@@ -1,0 +1,15 @@
+{
+  "id": "gcb-national-v2025-site",
+  "url": "https://globalcarbonbudget.org/download/2345/?tmstv=1762815968",
+  "resolved_url": "https://globalcarbonbudget.org/download/2345/?tmstv=1762815968",
+  "path": "raw/gcb-national-v2025-site.xlsx",
+  "publisher": "Global Carbon Project",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:48:47.319279+00:00",
+  "sha256": "a0edc6560fb0c0d974eff994b146ad1be87c79f158831732692c688a46ec55c0",
+  "bytes": 739007,
+  "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "http_last_modified": null,
+  "title": "Global Carbon Budget 2025 national fossil carbon workbook, publisher-site preliminary vintage",
+  "version_note": "Prepublication GCB 2025 publisher-site workbook, retrieved exact bytes; differs from ICOS final v 1.0. Do not silently splice vintages."
+}

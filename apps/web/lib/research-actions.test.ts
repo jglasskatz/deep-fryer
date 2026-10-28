@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { publishInvolvementTestDimensions } from './test-involvement-dimensions';
 
 /**
  * "Build my doughnut" and the research gate with an organization's own API
@@ -172,6 +173,8 @@ describe.skipIf(!hasDb)('buildDoughnut and the organization-key gate', () => {
     const { eq, sql } = await import('drizzle-orm');
     const { tenant } = await portrait({ allowance: 0, withKey: true });
     await setPortraitFeatures(tenant.id, { policy_analysis: true });
+    // Exercise the funding gate with a valid published policy baseline.
+    await publishInvolvementTestDimensions(tenant.id, ['housing']);
 
     const res = await createPolicyAnalysis({
       tenantSlug: tenant.slug,
@@ -204,6 +207,8 @@ describe.skipIf(!hasDb)('buildDoughnut and the organization-key gate', () => {
     const { eq } = await import('drizzle-orm');
     const { org, tenant, runs } = await portrait({ allowance: 30, withKey: true });
     await setPortraitFeatures(tenant.id, { policy_analysis: true });
+    // Exercise the funding gate with a valid published policy baseline.
+    await publishInvolvementTestDimensions(tenant.id, ['housing']);
     delete process.env.DF_SECRETS_KEY;
     try {
       // What /start shows before the click…
@@ -254,6 +259,8 @@ describe.skipIf(!hasDb)('buildDoughnut and the organization-key gate', () => {
     const onPlan = await portrait({ allowance: 30, withKey: false });
     const onKey = await portrait({ allowance: 30, withKey: true });
     await setPortraitFeatures(onPlan.tenant.id, { policy_analysis: true });
+    // Other fixtures stay unpublished to retain the initial-build coverage.
+    await publishInvolvementTestDimensions(onPlan.tenant.id, ['housing']);
     for (const value of [undefined, '', 'false', 'TRUE']) {
       if (value === undefined) delete process.env.DF_RESEARCH_KEY_CONFIGURED;
       else process.env.DF_RESEARCH_KEY_CONFIGURED = value;

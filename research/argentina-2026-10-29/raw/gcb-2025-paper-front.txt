@@ -1,0 +1,137 @@
+Earth Syst. Sci. Data, 18, 3211–3288, 2026
+https://doi.org/10.5194/essd-18-3211-2026
+© Author(s) 2026. This work is distributed under
+the Creative Commons Attribution 4.0 License.
+
+
+
+
+                                  Global Carbon Budget 2025
+              Pierre Friedlingstein1,2 , Michael O’Sullivan1 , Matthew W. Jones3 , Robbie M. Andrew4 ,
+        Dorothee C. E. Bakker5 , Judith Hauck6,7 , Peter Landschützer8 , Corinne Le Quéré3 , Hongmei Li9,10 ,
+       Ingrid T. Luijkx11 , Glen P. Peters4 , Wouter Peters11,12 , Julia Pongratz13,10 , Clemens Schwingshackl13 ,
+       Stephen Sitch1 , Josep G. Canadell14 , Philippe Ciais15 , Kjetil Aas4 , Simone R. Alin16 , Peter Anthoni17 ,
+      Leticia Barbero18 , Nicholas R. Bates19,20 , Nicolas Bellouin21 , Alice Benoit-Cattin22 , Carla F. Berghoff23 ,
+       Raffaele Bernardello24 , Laurent Bopp2 , Ida Bagus Mandhara Brasika1,25 , Matthew A. Chamberlain26 ,
+      Naveen Chandra27 , Frédéric Chevallier15 , Louise P. Chini28 , Nathan O. Collier29 , Thomas H. Colligan30 ,
+      Margot Cronin31 , Laique M. Djeutchouang32,33,34 , Xinyu Dou35 , Matt P. Enright19,20 , Kazutaka Enyo36 ,
+               Michael Erb37,38 , Wiley Evans39 , Richard A. Feely16 , Liang Feng40,41 , Daniel J. Ford1 ,
+        Adrianna Foster42 , Filippa Fransner43,44 , Thomas Gasser45 , Marion Gehlen15 , Thanos Gkritzalis8 ,
+              Jefferson Goncalves De Souza1 , Giacomo Grassi46 , Luke Gregor47,48 , Nicolas Gruber47 ,
+               Bertrand Guenet49 , Özgür Gürses6 , Kirsty Harrington50 , Ian Harris51 , Jens Heinke52 ,
+           George C. Hurtt28 , Yosuke Iida36 , Tatiana Ilyina53,9,10 , Akihiko Ito54 , Andrew R. Jacobson55,56 ,
+         Atul K. Jain57 , Tereza Jarníková3 , Annika Jersild38 , Fei Jiang58 , Steve D. Jones8 , Etsushi Kato59 ,
+      Ralph F. Keeling60 , Kees Klein Goldewijk61 , Jürgen Knauer62 , Yawen Kong63,64 , Jan Ivar Korsbakken4 ,
+            Charles Koven65 , Taro Kunimitsu4 , Xin Lan55,56 , Junjie Liu66,67 , Zhiqiang Liu68 , Zhu Liu69 ,
+         Claire Lo Monaco70 , Lei Ma28 , Gregg Marland37,38 , Patrick C. McGuire71 , Galen A. McKinley72 ,
+          Joe R. Melton73 , Natalie Monacci74 , Erwan Monier75,76 , Eric J. Morgan60 , David R. Munro55,56 ,
+          Jens D. Müller77 , Shin-Ichiro Nakaoka78 , Lorna R. Nayagam78 , Yosuke Niwa78 , Tobias Nutzel13 ,
+         Are Olsen43,44 , Abdirahman M. Omar79,44 , Naiqing Pan80 , Sudhanshu Pandey66 , Denis Pierrot81 ,
+            Zhangcai Qin82 , Pierre Regnier83 , Gregor Rehder84 , Laure Resplandy85 , Alizée Roobaert8 ,
+                Thais M. Rosan1 , Christian Rödenbeck86 , Jörg Schwinger44,79 , Ingunn Skjelvan79,44 ,
+        T. Luke Smallman40,41 , Victoria Spada87 , Mohanan G. Sreeush6 , Qing Sun88 , Adrienne J. Sutton16 ,
+         Colm Sweeney56 , Didier Swingedouw89 , Roland Séférian90 , Shintaro Takao78 , Hiroaki Tatebe91,92 ,
+        Hanqin Tian80 , Xiangjun Tian93,94 , Bronte Tilbrook26,95 , Hiroyuki Tsujino96 , Francesco Tubiello97 ,
+        Erik van Ooijen26 , Guido R. van der Werf11 , Sebastiaan J. van de Velde98,99 , Anthony P. Walker100 ,
+                Rik Wanninkhof81 , Xiaojuan Yang100 , Wenping Yuan101 , Xu Yue102 , and Jiye Zeng78
+               1 Faculty of Environment, Science and Economy, University of Exeter, Exeter, EX4 4QF, UK
+        2 Laboratoire de Météorologie Dynamique, Institut Pierre-Simon Laplace, CNRS, École Normale Supérieure,
+
+                         Université PSL, Sorbonne Université, École Polytechnique, Paris, France
+        3 Tyndall Centre for Climate Change Research, School of Environmental Sciences, University of East Anglia,
+
+                                     Norwich Research Park, Norwich NR4 7TJ, UK
+                         4 CICERO Center for International Climate Research, Oslo 0349, Norway
+                  5 School of Environmental Sciences, University of East Anglia, Norwich NR4 7TJ, UK
+           6 Alfred-Wegener-Institut, Helmholtz-Zentrum für Polar- und Meeresforschung, Am Handelshafen 12,
+
+                                              27570 Bremerhaven, Germany
+                        7 FB02 Biology/Chemistry Bremen, Universität Bremen, Bremen, Germany
+                       8 Flanders Marine Institute (VLIZ), Jacobsenstraat 1, 8400, Ostend, Belgium
+                     9 Helmholtz-Zentrum Hereon, Max-Planck-Straße 1, 21502 Geesthacht, Germany
+                   10 Max Planck Institute for Meteorology, Bundesstraße 53, 20146 Hamburg, Germany
+      11 Environmental Sciences Group, Wageningen University, P.O. Box 47, 6700AA, Wageningen, the Netherlands
+                   12 Centre for Isotope Research, University of Groningen, Groningen, the Netherlands
+                  13 Ludwig-Maximilians-Universität München, Luisenstr. 37, 80333 München, Germany
+                            14 CSIRO Oceans and Atmosphere, Canberra, ACT 2101, Australia
+              15 Laboratoire des Sciences du Climat et de l’Environnement, LSCE/IPSL, CEA-CNRS-UVSQ,
+
+                                  Université Paris-Saclay, 91198 Gif-sur-Yvette, France
+
+
+Published by Copernicus Publications.
+3212                                                                  P. Friedlingstein et al.: Global Carbon Budget 2025
+
+             16 National Oceanic and Atmospheric Administration, Pacific Marine Environmental Laboratory
+
+                           (NOAA/PMEL), 7600 Sand Point Way NE, Seattle, WA 98115, USA
+             17 Karlsruhe Institute of Technology, Institute of Meteorology and Climate Research/Atmospheric
+
+                           Environmental Research, 82467 Garmisch-Partenkirchen, Germany
+           18 Rosenstiel School of Marine Atmospheric and Earth Science, Cooperative Institute for Marine and
+
+            Atmospheric Studies (CIMAS), University of Miami, 4600 Rickenbacker Causeway, Miami, FL, USA
+                                      19 Arizona State University, Tempe, Arizona, AZ 85287-5502, USA
+                20 Bermuda Institute of Ocean Sciences (BIOS), 17 Biological Lane, St. Georges, GE01, Bermuda
+                              21 Department of Meteorology, University of Reading, Reading, RG6 6BB, UK
+                                        22 Marine and Freshwater Research Institute, Reykjavik, Iceland
+              23 Instituto Nacional de Investigación y Desarrollo Pesquero (INIDEP), Paseo Victoria Ocampo No 1,
+
+                                                      B7602HSA, Mar del Plata, Argentina
+                                             24 Barcelona Supercomputing Center, Barcelona, Spain
+                25 Faculty of Marine Science and Fisheries, Udayana University, Denpasar, Bali, 80361, Indonesia
+                               26 CSIRO Environment, Castray Esplanade, Hobart, Tasmania 7004, Australia
+                                27 Research Institute for Global Change, JAMSTEC, 3173-25 Showa-machi,
+
+                                                     Kanazawa, Yokohama, 236-0001, Japan
+                 28 Department of Geographical Sciences, University of Maryland, College Park, MD 20742, USA
+        29 Computer Science and Engineering Division, Oak Ridge National Laboratory, Oak Ridge, TN 37831, USA
+          30 Earth System Science Interdisciplinary Center, University of Maryland, College Park, MD 20740, USA
+                                    31 Marine Institute, Rinville, Oranmore, Co Galway H91 R673, Ireland
+                           32 School for Climate Studies, Stellenbosch University, Private Bag X1, Matieland,
+
+                                                        Stellenbosch, 7602, South Africa
+               33 Southern Ocean Carbon – Climate Observatory, CSIR, Rosebank, Cape Town, 7700, South Africa
+                                34 Engr. Computer Science, University of California, Davis, CA 95616, USA
+                        35 Department of Earth System Science, Stanford University, Stanford, CA 94305, USA
+                      36 Japan Meteorological Agency, 3-6-9 Toranomon, Minato City, Tokyo, 105-8431, Japan
+                    37 Research Institute for Environment, Energy, and Economics, Appalachian State University,
+
+                                                          Boone, North Carolina, USA
+                       38 Department of Geological and Environmental Sciences, Appalachian State University,
+
+                                                          Boone, North Carolina, USA
+                              39 Hakai Institute, 1713 Hyacinthe Bay Rd, Heriot Bay, BC, V0P 1H0, Canada
+                    40 National Centre for Earth Observation, University of Edinburgh, Edinburgh, EH9 3FE, UK
+                               41 School of Geosciences, University of Edinburgh, Edinburgh, EH9 3FE, UK
+                      42 Climate and Global Dynamics Laboratory, National Center for Atmospheric Research,
+
+                                                            Boulder, CO 80305, USA
+                           43 Geophysical Institute, University of Bergen, Allégaten 70, 5007 Bergen, Norway
+                                           44 Bjerknes Centre for Climate Research, Bergen, Norway
+           45 International Institute for Applied Systems Analysis (IIASA), Schlossplatz 1, 2361 Laxenburg, Austria
+                                      46 European Commission, Joint Research Centre (JRC), Ispra, Italy
+       47 Environmental Physics Group, Institute of Biogeochemistry and Pollutant Dynamics and Center for Climate
+
+                                         Systems Modeling (C2SM), ETH Zürich, Zurich, Switzerland
+                                             48 Swiss Data Science Center, 8050 Zurich, Switzerland
+          49 Laboratoire de Géologie, Ecole Normale Supérieure, CNRS UMR 8538, Institut Pierre-Simon Laplace,
+
+                                                     PSL Research University, Paris, France
+                        50 Smith School for Enterprise and the Environment, University of Oxford, Oxford, UK
+           51 NCAS-Climate, Climatic Research Unit, School of Environmental Sciences, University of East Anglia,
+
+                                                 Norwich Research Park, Norwich, NR4 7TJ, UK
+                    52 Potsdam Institute for Climate Impact Research (PIK), member of the Leibniz Association,
+
+                                                  P.O. Box 60 12 03, 14412 Potsdam, Germany
+                                     53 Universität Hamburg, Bundesstraße 55, 20146 Hamburg, Germany
+                       54 Graduate School of Agricultural and Life Sciences, University of Tokyo, Tokyo, Japan
+         55 Cooperative Institute for Research in Environmental Sciences (CIRES), University of Colorado Boulder,
+
+                                                            Boulder, CO 80305, USA
+
+
+
+Earth Syst. Sci. Data, 18, 3211–3288, 2026                                    https://doi.org/10.5194/essd-18-3211-2026
+

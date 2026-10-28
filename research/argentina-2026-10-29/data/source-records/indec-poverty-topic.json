@@ -1,0 +1,14 @@
+{
+  "id": "indec-poverty-topic",
+  "url": "https://www.indec.gob.ar/indec/web/Nivel3-Tema-4--46",
+  "resolved_url": "https://www.indec.gob.ar/indec/web/Nivel3-Tema-4--46",
+  "path": "raw/indec-poverty-topic.html",
+  "publisher": "INDEC",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:09.945414+00:00",
+  "sha256": "c361cd141f17e3712efcb763bc2e63e4bb8ee3a9b166c5fac591266b23e601c1",
+  "bytes": 37469,
+  "content_type": "text/html; charset=utf-8",
+  "http_last_modified": null,
+  "title": "indec poverty topic"
+}

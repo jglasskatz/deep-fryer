@@ -1,0 +1,14 @@
+{
+  "id": "indec-poverty-fragment",
+  "url": "https://www.indec.gob.ar/Nivel4/Tema/4/46/152",
+  "resolved_url": "https://www.indec.gob.ar/Nivel4/Tema/4/46/152",
+  "path": "raw/indec-poverty-fragment.html",
+  "publisher": "INDEC",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:40:47.249359+00:00",
+  "sha256": "8b897050cd3530210945c2497f0533fe3133732ba5d55673bd2c7d1e710b772b",
+  "bytes": 16708,
+  "content_type": "text/html; charset=utf-8",
+  "http_last_modified": null,
+  "title": "INDEC income poverty: historical series and methodology notices"
+}

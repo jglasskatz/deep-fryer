@@ -1,0 +1,14 @@
+{
+  "id": "indec-cpi-fragment",
+  "url": "https://www.indec.gob.ar/Nivel4/Tema/3/5/31",
+  "resolved_url": "https://www.indec.gob.ar/Nivel4/Tema/3/5/31",
+  "path": "raw/indec-cpi-fragment.html",
+  "publisher": "INDEC",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:40:47.064889+00:00",
+  "sha256": "fe91a6e4fef718a907bc34f3f70252277d573efeee799c58fe06265be546904a",
+  "bytes": 23266,
+  "content_type": "text/html; charset=utf-8",
+  "http_last_modified": null,
+  "title": "indec cpi fragment"
+}

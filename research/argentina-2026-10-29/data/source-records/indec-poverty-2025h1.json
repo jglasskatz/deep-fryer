@@ -1,0 +1,14 @@
+{
+  "id": "indec-poverty-2025h1",
+  "url": "https://www.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_09_25D162CC7BFB.pdf",
+  "resolved_url": "https://www.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_09_25D162CC7BFB.pdf",
+  "path": "raw/indec-poverty-2025h1.pdf",
+  "publisher": "INDEC",
+  "release_date": "2025-09-25",
+  "retrieved_at": "2026-10-28T11:38:12.888477+00:00",
+  "sha256": "fa5739f54ec56a775b1791fcbd9823323cd51e628d70daf14391982337f30066",
+  "bytes": 1546210,
+  "content_type": "application/pdf",
+  "http_last_modified": "Thu, 25 Sep 2025 17:48:30 GMT",
+  "title": "indec poverty 2025 h 1"
+}

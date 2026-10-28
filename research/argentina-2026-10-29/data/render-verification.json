@@ -1,0 +1,37 @@
+{
+  "status": "desktop-and-mobile-rendered-no-page-overflow",
+  "results": [
+    {
+      "paper": "argentina-working-paper",
+      "suffix": "desktop",
+      "viewport": 1240,
+      "documentWidth": 1240,
+      "title": "Argentina before and after December 2023",
+      "headings": 9
+    },
+    {
+      "paper": "argentina-working-paper",
+      "suffix": "mobile",
+      "viewport": 390,
+      "documentWidth": 390,
+      "title": "Argentina before and after December 2023",
+      "headings": 9
+    },
+    {
+      "paper": "methods-paper",
+      "suffix": "desktop",
+      "viewport": 1240,
+      "documentWidth": 1240,
+      "title": "Building a defensible longitudinal Doughnut",
+      "headings": 11
+    },
+    {
+      "paper": "methods-paper",
+      "suffix": "mobile",
+      "viewport": 390,
+      "documentWidth": 390,
+      "title": "Building a defensible longitudinal Doughnut",
+      "headings": 11
+    }
+  ]
+}

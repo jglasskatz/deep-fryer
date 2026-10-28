@@ -13,7 +13,6 @@ import { selectedSlugFrom } from '@/components/portrait/selection';
 import { dimensionLabel, scaleLabel } from './i18n/content';
 import { fmtPlural } from './i18n/format';
 import type { Messages } from './i18n/messages/en';
-import { frameworkSlugOf } from './policy';
 import type { PublishedDimension } from './portrait';
 import { safeHref } from './safe-url';
 
@@ -195,7 +194,7 @@ export function portraitPanelView(
   const data = dim.data;
   // Listings and submissions are keyed by framework slug; a renamed or
   // custom dimension maps onto one the same way the dimension page does.
-  const all = listings === null ? null : listingsForDimension(listings, frameworkSlugOf(dim)).map(panelListing);
+  const all = listings === null ? null : listingsForDimension(listings, dim.slug).map(panelListing);
   const more = all ? all.length - PANEL_LISTING_LIMIT : 0;
   return {
     slug: dim.slug,

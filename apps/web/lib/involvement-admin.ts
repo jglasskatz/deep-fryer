@@ -1,6 +1,5 @@
 import 'server-only';
 import { and, asc, count, desc, eq, sql } from 'drizzle-orm';
-import { framework } from '@deep-fryer/contract';
 import {
   DEFAULT_EMERGENCY_TIME_ZONE,
   INVOLVEMENT_LIMITS,
@@ -19,6 +18,7 @@ import {
   type Tenant,
 } from '@deep-fryer/db';
 import { userDb } from './db';
+import { involvementDimensionOptionsIn } from './involvement-dimensions';
 
 /**
  * Staff reads for getting involved (SPEC-v6 §4.3): the submission review
@@ -57,7 +57,7 @@ export function asSubmissionStatus(value: string | string[] | undefined): Submis
 export interface SubmissionView {
   id: string;
   kind: InvolvementSubmissionKind;
-  /** Framework dimension slug, or null for "several / not sure". */
+  /** Local dimension slug, or null for "several / not sure". */
   dimensionSlug: string | null;
   orgName: string | null;
   about: string | null;
@@ -93,6 +93,7 @@ export interface InvolvementAdminView {
    * for a submission that arrived at 10:14 PM local time.
    */
   timeZone: string;
+  dimensionOptions: { slug: string; name: string }[];
 }
 
 const submissionColumns = {
@@ -153,7 +154,8 @@ export async function involvementAdminView(tenant: Tenant, status: SubmissionSta
       .where(eq(involvementListings.tenantId, tenant.id))
       .orderBy(asc(involvementListings.displayOrder), asc(involvementListings.name));
     const timeZone = await portraitTimeZone(db, tenant.id);
-    return { status, counts, submissions, listings, timeZone };
+    const dimensionOptions = await involvementDimensionOptionsIn(db, tenant.id);
+    return { status, counts, submissions, listings, timeZone, dimensionOptions };
   });
 }
 
@@ -172,8 +174,6 @@ export async function countNewSubmissions(tenantId: string): Promise<number> {
 }
 
 // ---- Approving: the listing form's starting point ------------------------------------------
-
-const FRAMEWORK_SLUGS = new Set(framework.dimensions.map((d) => d.slug));
 
 /**
  * Cut text to at most `max` characters for a listing field, preferring a
@@ -227,7 +227,7 @@ export function listingDraftFromSubmission(sub: SubmissionForListing): Involveme
     url: website && httpsUrlSchema.safeParse(website).success ? website : null,
     phone: null,
     kind,
-    dimension_slugs: sub.dimensionSlug && FRAMEWORK_SLUGS.has(sub.dimensionSlug) ? [sub.dimensionSlug] : [],
+    dimension_slugs: sub.dimensionSlug ? [sub.dimensionSlug] : [],
     source_url: null,
     display_order: 0,
     published: false,

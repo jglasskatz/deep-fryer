@@ -1,0 +1,139 @@
+[
+  {
+    "id": "macri-election",
+    "date": "2015-11-22",
+    "category": "election",
+    "label": "Presidential runoff election 2015",
+    "source_id": "event-election2015-consular",
+    "source_locator": "Argentina foreign ministry historical country brief states Macri won runoff held22November2015; historical election date, not present-office claim",
+    "causal_status": "chronology only; not an estimated treatment effect"
+  },
+  {
+    "id": "macri-inauguration",
+    "date": "2015-12-10",
+    "category": "inauguration",
+    "label": "Mauricio Macri takes office",
+    "source_id": "event-inaugurations",
+    "source_locator": "Official roster of presidents and ministers",
+    "causal_status": "chronology only; not an estimated treatment effect"
+  },
+  {
+    "id": "imf2018",
+    "date": "2018-06-20",
+    "category": "policy",
+    "label": "IMF Stand-By Arrangement approved",
+    "source_id": "event-imf-bcra",
+    "source_locator": "Official agreement history, 2010–2019 table",
+    "causal_status": "chronology only; not an estimated treatment effect"
+  },
+  {
+    "id": "fernandez-inauguration",
+    "date": "2019-12-10",
+    "category": "inauguration",
+    "label": "Alberto Fernández takes office",
+    "source_id": "event-inaugurations",
+    "source_locator": "Official roster of presidents and ministers",
+    "causal_status": "chronology only; not an estimated treatment effect"
+  },
+  {
+    "id": "covid-isolation",
+    "date": "2020-03-20",
+    "category": "context",
+    "label": "COVID-19 mandatory isolation begins (Decree 297/2020)",
+    "source_id": "event-covid-arca",
+    "source_locator": "Articles1 and12, publication20March2020",
+    "causal_status": "chronology only; not an estimated treatment effect"
+  },
+  {
+    "id": "drought2023",
+    "date": "2023-02-01",
+    "date_end": "2023-02-28",
+    "category": "context",
+    "label": "Severe drought documented in February 2023",
+    "source_id": "event-drought",
+    "source_locator": "SMN February2023 drought bulletin record; published2023-03-01",
+    "date_precision": "month; report period, not shock onset",
+    "causal_status": "chronology only; not an estimated treatment effect"
+  },
+  {
+    "id": "milei-election",
+    "date": "2023-11-19",
+    "category": "election",
+    "label": "Presidential runoff election 2023",
+    "source_id": "event-election2023-act",
+    "source_locator": "Official Neuquen election certification, first-page record states election held19November2023; no national vote totals inferred from district result",
+    "causal_status": "chronology only; not an estimated treatment effect"
+  },
+  {
+    "id": "milei-inauguration",
+    "date": "2023-12-10",
+    "category": "inauguration",
+    "label": "Javier Milei takes office",
+    "source_id": "event-milei-inauguration",
+    "source_locator": "Chamber of Deputies inauguration record10December2023",
+    "causal_status": "chronology only; not an estimated treatment effect"
+  },
+  {
+    "id": "fx-reset2023",
+    "date": "2023-12-12",
+    "category": "policy",
+    "label": "New monetary/exchange framework; official exchange rate 800 pesos/USD announced",
+    "source_id": "event-bcra2023",
+    "source_locator": "BCRA announcement12December2023; policy adoption, not estimated effect",
+    "causal_status": "chronology only; not an estimated treatment effect"
+  },
+  {
+    "id": "dnu70",
+    "date": "2023-12-21",
+    "category": "policy",
+    "label": "Decree 70/2023 published: economic emergency and regulatory changes",
+    "source_id": "event-dnu70-arca",
+    "source_locator": "Emission20December, official publication21December2023; subsequent judicial/legal changes not assumed away",
+    "causal_status": "chronology only; not an estimated treatment effect"
+  },
+  {
+    "id": "ley-bases",
+    "date": "2024-07-08",
+    "category": "policy",
+    "label": "Law 27,742 (Ley Bases) published",
+    "source_id": "event-bases-normativa",
+    "source_locator": "Official text; administration/emergency, investment incentives and labour provisions; publication date distinct from passage",
+    "causal_status": "chronology only; not an estimated treatment effect"
+  },
+  {
+    "id": "imf2025",
+    "date": "2025-04-11",
+    "category": "policy",
+    "label": "New IMF Extended Fund Facility agreement",
+    "source_id": "event-imf-bcra",
+    "source_locator": "Official agreement history table,2025-04-11 Extended Fund Facility",
+    "causal_status": "chronology only; not an estimated treatment effect"
+  },
+  {
+    "id": "fx-bands2025",
+    "date": "2025-04-11",
+    "category": "policy",
+    "label": "BCRA announces exchange liberalization and floating bands",
+    "source_id": "event-bcra2025-bands",
+    "source_locator": "Phase3 announcement dated11April2025; adoption date, not outcome effect",
+    "causal_status": "chronology only; not an estimated treatment effect"
+  },
+  {
+    "id": "monetary2026-announcement",
+    "date": "2025-12-15",
+    "category": "policy",
+    "label": "BCRA announces monetary programme and band-indexation rule for 2026",
+    "source_id": "event-bcra2026-plan",
+    "source_locator": "Official press note15December2025, monetary programme2026; announcement separate from effective date",
+    "causal_status": "chronology only; not an estimated treatment effect"
+  },
+  {
+    "id": "band-indexation2026",
+    "date": "2026-01-01",
+    "category": "policy",
+    "label": "Inflation-linked exchange-band adjustment rule takes effect",
+    "source_id": "event-bcra-bands-regime",
+    "source_locator": "Regime description: from1January2026 band drift uses latest monthly INDEC inflation(T−2); future band table not imported as observations",
+    "causal_status": "chronology only; not an estimated treatment effect"
+  }
+]

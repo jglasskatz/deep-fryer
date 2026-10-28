@@ -1,0 +1,14 @@
+{
+  "id": "indec-poverty-2026h1-tables",
+  "url": "https://www.indec.gob.ar/ftp/cuadros/sociedad/cuadros_informe_pobreza_09_26.xls",
+  "resolved_url": "https://www.indec.gob.ar/ftp/cuadros/sociedad/cuadros_informe_pobreza_09_26.xls",
+  "path": "raw/indec-poverty-2026h1-tables.xls",
+  "publisher": "INDEC",
+  "release_date": "2026-09-24",
+  "retrieved_at": "2026-10-28T11:41:27.219879+00:00",
+  "sha256": "d6fe78610628a8c3c4397d9fb2ce35da98b458dff4af2c78ec9e70208bdaea59",
+  "bytes": 399360,
+  "content_type": "application/vnd.ms-excel",
+  "http_last_modified": "Thu, 24 Sep 2026 19:03:50 GMT",
+  "title": "INDEC poverty and indigence, historical tables H2 2016–H1 2026"
+}

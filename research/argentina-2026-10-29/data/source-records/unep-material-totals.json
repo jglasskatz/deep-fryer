@@ -1,0 +1,14 @@
+{
+  "id": "unep-material-totals",
+  "url": "https://unep-irp-resourcepanel.resource-use.global/mfa-totals-ratios",
+  "resolved_url": "https://unep-irp-resourcepanel.resource-use.global/mfa-totals-ratios",
+  "path": "raw/unep-material-totals.html",
+  "publisher": "UNEP International Resource Panel",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:48:50.701204+00:00",
+  "sha256": "d651ebf414728ff4aab4cc042d93d4576c0595804ff1b5434f459530b506f704",
+  "bytes": 46249,
+  "content_type": null,
+  "http_last_modified": null,
+  "title": "unep material totals"
+}

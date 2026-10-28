@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { onOneConnection } from '../test/one-connection';
 import { setPortraitFeatures } from './test-features';
 import { markPortraitPublic } from './test-portraits';
+import { publishInvolvementTestDimensions } from './test-involvement-dimensions';
 import { issueFormToken } from './form-token';
 import type { InvolvementField, SubmitInvolvementInput } from './involvement-actions';
 
@@ -87,7 +88,7 @@ describe('submitInvolvement', () => {
       expect(
         await submit({ fields: { ...fields, email: 'not an email', website: 'javascript:alert(1)', phone: 'call me' } }),
       ).toEqual({ status: 'invalid', fields: ['website', 'email', 'phone'] });
-      expect(await submit({ fields: { ...fields, dimension_slug: 'vibes', kind: 'advert' } })).toEqual({
+      expect(await submit({ fields: { ...fields, dimension_slug: '../vibes', kind: 'advert' } })).toEqual({
         status: 'invalid',
         fields: ['kind', 'dimension_slug'],
       });
@@ -112,6 +113,7 @@ describe('submitInvolvement', () => {
       await setPortraitFeatures(tenant.id, { involvement: true });
       // Public, as its first publish would make it (migration 0015): anonymous visitors only reach public portraits.
       await markPortraitPublic(tenant.id);
+      await publishInvolvementTestDimensions(tenant.id);
       created.push({ tenantId: tenant.id, organizationId: tenant.organizationId });
       return tenant;
     }

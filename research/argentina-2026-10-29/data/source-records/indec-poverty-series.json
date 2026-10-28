@@ -1,0 +1,14 @@
+{
+  "id": "indec-poverty-series",
+  "url": "https://www.indec.gob.ar/indec/web/Nivel4-Tema-4-46-152",
+  "resolved_url": "https://www.indec.gob.ar/indec/web/Nivel4-Tema-4-46-152",
+  "path": "raw/indec-poverty-series.html",
+  "publisher": "INDEC",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:09.959680+00:00",
+  "sha256": "84696061721e2c0ff4133b4fc15074659cd31692b15547377b6574d7e514cfc0",
+  "bytes": 37472,
+  "content_type": "text/html; charset=utf-8",
+  "http_last_modified": null,
+  "title": "indec poverty series"
+}

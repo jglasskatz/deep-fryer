@@ -1,0 +1,15 @@
+{
+  "id": "wdi-water-stress",
+  "url": "https://api.worldbank.org/v2/country/ARG/indicator/ER.H2O.FWST.ZS?format=json&per_page=100&date=2013:2026",
+  "resolved_url": "https://api.worldbank.org/v2/country/ARG/indicator/ER.H2O.FWST.ZS?format=json&per_page=100&date=2013:2026",
+  "path": "raw/wdi-ER.H2O.FWST.ZS.json",
+  "publisher": "World Bank / FAO AQUASTAT",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:42:50.351227+00:00",
+  "sha256": "e208b00901a8f52bf70b1fe69288b5553c43b9aa640a16ee8aa5f94cf3297e3d",
+  "bytes": 3724,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 11:42:50 GMT",
+  "title": "WDI Argentina: Level of water stress: freshwater withdrawal as a proportion of available freshwater resources",
+  "dataset_last_updated": "2026-10-08"
+}

@@ -1,0 +1,1991 @@
+Informes técnicos / Vol. 9, n° 237   ISSN 2545-6636
+
+
+
+
+Condiciones de vida
+Vol. 9, n° 21
+
+
+Incidencia de la pobreza y la indigencia
+en 31 aglomerados urbanos
+Primer semestre de 2025
+                                                                                Índice                                                                                                    Pág.
+Informes técnicos. Vol. 9, nº 237
+ISSN 2545-6636
+                                                                                Resumen ejecutivo. ...................................................................................... 3
+Condiciones de vida. Vol. 9, nº 21                                              Introducción .................................................................................................. 4
+                                                                                Cuadros
+Incidencia de la pobreza y la indigencia en 31                                  Cuadro 1. Pobreza e indigencia. Total 31 aglomerados urbanos................ 5
+aglomerados urbanos. Primer semestre de 2025                                    Cuadro 2.1 Brecha de la indigencia. Total 31 aglomerados urbanos............ 7
+ISSN 2545-6660
+                                                                                Cuadro 2.2 Brecha de la pobreza. Total 31 aglomerados urbanos. .............. 7
+Instituto Nacional de Estadística y Censos (INDEC)                              Cuadro 3.1 Población por condición de pobreza según grupos de edad.
+                                                                                Primer semestre de 2025. ............................................................................ 8
+                                                                                Cuadro 3.2 Población por grupos de edad según condición de pobreza.
+Dirección: Marco Lavagna                                                        Primer semestre de 2025. ............................................................................ 8
+Dirección Técnica: Pedro Ignacio Lines                                          Cuadro 3.3 Población de 0 a 17 años por condición de pobreza según
+                                                                                grupos de edad. Primer semestre de 2025................................................... 8
+Dirección General de Difusión y Comunicación: María Silvina Viazzi
+                                                                                Cuadro 3.4 Población de 0 a 17 años por grupos de edad según condición
+Coordinación de Producción Gráfica y Editorial: Marcelo Costanzo                de pobreza. Primer semestre de 2025.......................................................... 8
+                                                                                Cuadro 4.1 Pobreza e indigencia por regiones estadísticas y total 31
+                                                                                aglomerados urbanos, en porcentajes. Primer semestre de 2025............... 9
+Este informe técnico fue producido por los equipos de trabajo de:               Cuadro 4.2 Pobreza e indigencia por regiones estadísticas y total 31
+                                                                                aglomerados urbanos. Primer semestre de 2025. ......................................10
+Dirección Nacional de Estadísticas de Condiciones de Vida
+                                                                                Cuadro 4.3 Pobreza en hogares y personas. Regiones estadísticas y total
+Alejandra Clemente                                                              31 aglomerados urbanos............................................................................11
+Dirección de Encuesta Permanente de Hogares                                     Cuadro 4.4 Indigencia en hogares y personas. Regiones estadísticas y
+Sandra Duclós                                                                   total 31 aglomerados urbanos. ...................................................................12
+                                                                                Cuadro 5. Evolución de indicadores seleccionados. Total 31 aglomerados
+                                                                                urbanos. Primer semestre 2024-primer semestre 2025.............................13
+                                                                                Cuadro 5.1 Evolución de indicadores seleccionados. Región Gran Buenos
+                                                                                Aires. Primer semestre 2024-primer semestre 2025..................................13
+                  Queda hecho el depósito que fija la Ley 11.723                Cuadro 5.2 Evolución de indicadores seleccionados. Región Cuyo.
+                                                                                Primer semestre 2024-primer semestre 2025............................................14
+          Esta publicación utiliza una licencia Creative Commons.
+                                                                                Cuadro 5.3 Evolución de indicadores seleccionados. Región Noreste.
+          Se permite su reproducción con atribución de la fuente.
+                                                                                Primer semestre 2024-primer semestre 2025............................................15
+                                                                                Cuadro 5.4 Evolución de indicadores seleccionados. Región Noroeste.
+                                                                                Primer semestre 2024-primer semestre 2025............................................16
+Buenos Aires, septiembre de 2025
+                                                                                Cuadro 5.5 Evolución de indicadores seleccionados. Región Pampeana.
+                                                                                Primer semestre 2024-primer semestre 2025............................................18
+
+Signos convencionales:                                                          Cuadro 5.6 Evolución de indicadores seleccionados. Región Patagonia.
+                                                                                Primer semestre 2024-primer semestre 2025............................................21
+*      Dato provisorio                                                          Gráficos
+e
+       Dato estimado por extrapolación, proyección                              Gráfico 1. Resultados del primer semestre de 2025..................................... 5
+i      Dato estimado por imputación
+                                                                                Gráfico 2. Incidencia de la pobreza y de la indigencia en los hogares y
+u      Dato de calidad inferior al estándar                                     variaciones del ingreso total familiar (ITF), la canasta básica alimentaria
+-      Cero absoluto                                                            (CBA) y la canasta básica total (CBT). Total 31 aglomerados urbanos.
+.      Dato no registrado                                                       Primer semestre 2023-primer semestre 2025.............................................. 6
+...    Dato no disponible a la fecha de presentación de los resultados          Gráfico 3. Incidencia de la pobreza y de la indigencia en las personas y
+///    Dato que no corresponde presentar                                        variaciones del ingreso total familiar (ITF), la canasta básica alimentaria
+                                                                                (CBA) y la canasta básica total (CBT). Total 31 aglomerados urbanos.
+s      Dato confidencial por aplicación de las reglas del secreto estadístico   Primer semestre 2023-primer semestre 2025.............................................. 6
+                                                                                Anexo metodológico.................................................................................23
+                       Publicaciones del INDEC                                  Metodología general de cálculo de línea de pobreza y
+    Las publicaciones editadas por el Instituto Nacional de Estadística y       línea de indigencia......................................................................................23
+    Censos pueden ser consultadas en www.indec.gob.ar y en el Centro                   ¿Qué se entiende por línea de indigencia?..........................................23
+    Estadístico de Servicios, ubicado en Av. Presidente Julio A. Roca 609
+    C1067ABB, Ciudad Autónoma de Buenos Aires, Argentina. El horario                   ¿Qué se entiende por línea de pobreza?. ............................................24
+    de atención al público es de 9:30 a 16:00.                                         Canastas regionales............................................................................25
+    También pueden solicitarse al teléfono (54-11) 5031-4632                           Composición de las canastas básicas alimentarias regionales
+    Correo electrónico: ces@indec.gob.ar                                               del adulto equivalente. ........................................................................26
+    Sitio web: www.indec.gob.ar                X: @INDECArgentina               Definiciones. .............................................................................................26
+    Facebook: /INDECArgentina                  Instagram: @indecargentina       Aspectos metodológicos generales. .......................................................26
+    Spotify: /INDECArgentina
+                                                                                       Características de la muestra..............................................................26
+    Calendario anual anticipado de informes:
+                                                                                       Cálculo y ajuste de factores de expansión...........................................27
+    www.indec.gob.ar/indec/web/Calendario-Fecha-0
+                                                                                       Acerca de las proyecciones de población............................................28
+
+                                                      INDECArgentina
+            Condiciones de vida                                                                  Buenos Aires, 25 septiembre de 2025
+
+
+
+  Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos
+  Resumen ejecutivo del primer semestre de 2025
+
+
+
+
+10,2                                                        Universo de la Encuesta
+                                                            Permanente de Hogares
+
+
+      millones de hogares                                                                               29,9
+                                                                                              millones de personas
+             Total EPH                                                                             Total EPH
+
+                                                              3,85 miembros
+En situación de pobreza 24,1%                                                                    31,6% En situación de pobreza
+                                                            Tamaño promedio del hogar
+
+
+
+  2,5                                                                                                                    9,5
+                                                                   $671.492
+                                                           Ingreso total familiar promedio
+
+millones de hogares                                              $1.065.691                                millones de personas
+                                                                Canasta básica total
+                                                                promedio del hogar
+
+
+
+
+Hogares que no llegan a cubrir con
+sus ingresos la canasta básica
+alimentaria                                                   3,63 miembros
+                                       5,6%
+                                                           Tamaño promedio del hogar
+                                                                                               6,9%
+                                                                   $281.313
+En situación de indigencia                                 Ingreso total familiar promedio             En situación de indigencia
+      566 mil hogares                                                                                   2,1 millones de personas
+                                                                  $452.742
+                                                           Canasta básica alimentaria
+                                                              promedio del hogar
+
+Hogares que no llegan a cubrir con
+sus ingresos la canasta básica total
+
+
+ Pobres no indigentes
+                                       18,5%                                                 24,7% Pobres no indigentes
+ 1,9 millones de hogares                                                                            7,4 millones de personas
+
+
+
+
+   75,9%                                                                                                               68,4%
+                  Hogares no pobres                                                Personas no pobres
+                7,7 millones de hogares                                          20,4 millones de personas
+
+  Nota: los totales por suma pueden no coincidir por redondeo de las cifras parciales.
+  Fuente: INDEC, Encuesta Permanente de Hogares.
+                    Principales resultados de la incidencia de la pobreza y la indigencia
+
+                    Los resultados del primer semestre de 2025 correspondientes al total de aglomerados urbanos
+                    registraron que:
+
+
+                    El porcentaje de hogares por debajo de la línea de pobreza (LP) alcanzó el 24,1%; en ellos reside el
+                    31,6% de las personas. Dentro de este conjunto, el 5,6% de los hogares están por debajo de la línea de
+
+
+Incidencia
+                    indigencia (LI), que incluyen al 6,9% de las personas. Esto implica que, para el universo de los 31
+                    aglomerados urbanos de la EPH, por debajo de la LP se encuentran 2.456.090 hogares, que incluyen a
+                    9.451.018 personas; y, dentro de ese conjunto, 565.821 hogares se encuentran por debajo de la LI, lo
+                    que representa 2.051.984 personas indigentes.
+
+
+                    Con respecto al segundo semestre de 2024, la incidencia de la pobreza registró un descenso tanto en
+
+
+Evolución
+                    los hogares como en las personas, de 4,5 y 6,5 puntos porcentuales (p.p.), respectivamente. En el caso
+                    de la indigencia, mostró una disminución de 0,8 p.p. en los hogares y de 1,3 p.p. en las personas.
+
+                    A nivel regional se observó una disminución de la pobreza y la indigencia en todas las regiones.
+
+
+
+                    Dado que la incidencia de la pobreza y la indigencia resultan de la capacidad de los hogares de acceder
+
+
+
+
+Ingresos-canastas
+                    a la canasta básica alimentaria (CBA) y a la canasta básica total (CBT) mediante sus ingresos monetarios,
+                    se observó que, con respecto al semestre anterior:
+                         En promedio, el ingreso total familiar aumentó 26,3%.
+                         Las canastas regionales promedio aumentaron 13,2% (CBA) y 12,3% (CBT).
+                    Los ingresos en el período estudiado aumentaron a un nivel superior tanto con respecto a la CBT como
+                    a la CBA. Así, ambas tasas, pobreza e indigencia, presentan una disminución en el presente semestre, en
+                    relación al semestre anterior.1
+
+
+                    Teniendo en cuenta que la brecha de la pobreza es la distancia entre los ingresos y las canastas de los
+                    hogares pobres, se observó que:
+                       La brecha de la pobreza de los hogares se ubicó en 37,0% (cuadro 2.2).
+Brecha                 El ingreso total familiar promedio de los hogares pobres fue de $671.492, mientras que la CBT
+                       promedio del mismo grupo de hogares alcanzó $1.065.691.
+                       La distancia entre los ingresos de los hogares pobres y la CBT se mantuvo sin cambios respecto del
+                       segundo semestre de 2024.
+
+
+
+
+Grupos de edad
+                    En cuanto a los grupos de edad según condición de pobreza, se destaca que 45,4% de las personas de 0
+                    a 14 años formaron parte de hogares bajo la línea de pobreza (cuadro 3.2).
+
+                    El porcentaje total de personas bajo la línea de pobreza para los grupos de 15 a 29 años y de 30 a 64 años
+                    fue de 37,0% y 27,7%, respectivamente. En la población de 65 años y más, el 10,8% de las personas se
+                    ubicó bajo la LP.
+
+                    Las mayores incidencias de la pobreza en personas se observaron en las regiones Noreste (NEA), 39,0%; y
+                    Cuyo, 33,8%. Las menores, por su parte, se registraron en las regiones Patagonia, 27,0%; y Pampeana,
+
+
+Regiones
+                    30,5% (cuadro 4.1).
+
+                    En los aglomerados de 500.000 y más habitantes se observó un descenso de la pobreza de 6,0 p.p., con
+                    respecto al segundo semestre de 2024. Mientras que en los aglomerados de menos de 500.000, la reduc-
+                    ción fue de 8,8 p.p., entre los mismos períodos.
+
+
+
+
+1
+  Para ampliar la información sobre la evolución de las canastas regionales y los ingresos de los hogares para el total 31 aglomerados urbanos, ver
+los gráficos 2 y 3 y cuadro 5; y para los datos por aglomerado, ver los cuadros del punto 5 de este mismo informe.
+
+
+                       4/31
+
+                      4/28
+           Condiciones de vida                                                        Buenos Aires, 25 de septiembre de 2025
+
+
+
+Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos
+Primer semestre de 2025
+
+
+Cuadro 1.             Pobreza e indigencia. Total 31 aglomerados urbanos
+
+ Indicador              1° semestre 2023      2° semestre 2023         1° semestre 2024       2° semestre 2024      1° semestre 2025
+
+ Pobreza
+   Hogares                   29,6                  31,8                    42,5                   28,6                    24,1
+   Personas                  40,1                  41,7                    52,9                   38,1                    31,6
+ Indigencia
+   Hogares                    6,8                   8,7                    13,6                       6,4                  5,6
+   Personas                   9,3                  11,9                    18,1                       8,2                  6,9
+Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+Gráfico 1.            Resultados del primer semestre de 2025
+
+
+                      Incidencia de pobreza e indigencia. Hogares                         Incidencia de pobreza e indigencia. Personas
+
+                                           Total de pobres 24,1%                                             Total de pobres 31,6%
+
+                                             Pobres                                                            Pobres
+                                           indigentes                                                        indigentes
+                                              5,6%                                                              6,9%
+
+                                                          Pobres no
+                                                          indigentes
+                                                            18,5%                                                           Pobres no
+                                                                                                                            indigentes
+                                                                                                                              24,7%
+
+
+
+
+                       No pobres                                                          No pobres
+                         75,9%                                                              68,4%
+
+
+                      Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+                      La población total de los 31 aglomerados es de 29.895.129 y está constituida en 10.173.723 hogares.
+
+
+                      Los porcentajes presentados en el cuadro 1 indican que, durante el primer semestre de 2025, se en-
+                      cuentran por debajo de la LP 2.456.090 hogares, los cuales incluyen a 9.451.018 personas. En conjunto,
+                      565.821 hogares se encuentran, a su vez, bajo la LI, e incluyen a 2.051.984 personas indigentes.
+
+
+
+
+   Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos                                                      5/28
+ Gráfico 2.                 Incidencia de la pobreza y de la indigencia en los hogares y variaciones del ingreso total familiar (ITF), la
+                            canasta básica alimentaria (CBA) y la canasta básica total (CBT). Total 31 aglomerados urbanos.
+                            Primer semestre 2023-primer semestre 2025
+             60,0
+                                                                                                                                            120,0
+
+             50,0
+                                                                                42,5                                                        100,0
+
+             40,0
+                                                                                                                                            80,0
+                                                     31,8
+Porcentaje
+
+                                                                                                                                                    Variaciones
+                           29,6                                                                    28,6
+             30,0
+  Tasas                                                                         28,9                                         24,1           60,0
+
+
+             20,0
+                                                                                                                                            40,0
+                                                     23,1                                           22,2
+                           22,8
+
+             10,0                                                                                                             18,5
+                                                                                13,6                                                        20,0
+                                                      8,7
+                           6,8                                                                      6,4                       5,6
+              0,0                                                                                                                           0,0
+                     1° semestre 2023        2° semestre 2023              1° semestre 2024   2° semestre 2024        1° semestre 2025
+                           Total pobres indigentes (hogares)                                  Total pobres no indigentes (hogares)
+                           Total pobres (hogares)                                             Variación de la suma del ITF
+                           Variación de la suma del ITF del estrato bajo                      Variación de la CBT
+                           Variación de la CBA
+
+                            Nota: el estrato bajo está conformado por los deciles 1 a 4 (ver “Definiciones” en el Anexo metodológico del presente
+                            informe técnico). Las variaciones de las canastas corresponden a promedios regionales.
+                            Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+ Gráfico 3.                 Incidencia de la pobreza y de la indigencia en las personas y variaciones del ingreso total familiar (ITF), la
+                            canasta básica alimentaria (CBA) y la canasta básica total (CBT). Total 31 aglomerados urbanos.
+                            Primer semestre 2023-primer semestre 2025
+             60,0
+                                                                                 52,9                                                         120,0
+
+             50,0
+                                                                                                                                              100,0
+                                                     41,7
+                          40,1                                                   34,8
+             40,0
+                                                                                                     38,1
+                                                                                                                                              80,0
+                                                                                                                                  31,6
+
+                                                                                                                                                           Variaciones
+Porcentaje
+             30,0
+  Tasas                   30,8                       29,8                                                                                     60,0
+
+                                                                                                      29,9
+             20,0
+                                                                                                                                              40,0
+                                                                                                                                  24,7
+
+                                                                                 18,1
+             10,0                                                                                                                             20,0
+                                                     11,9
+                           9,3                                                                        8,2
+                                                                                                                                  6,9
+              0,0                                                                                                                             0,0
+                     1° semestre 2023         2° semestre 2023             1° semestre 2024    2° semestre 2024          1° semestre 2025
+                             Pobres indigentes (personas)                                       Pobres no indigentes (personas)
+                             Total pobres (personas)                                            Variación de la suma del ITF
+                             Variación de la suma del ITF del estrato bajo                      Variación de la CBT
+                             Variación de la CBA
+
+                            Nota: el estrato bajo está conformado por los deciles 1 a 4 (ver “Definiciones” en el Anexo metodológico del presente
+                            informe técnico). Las variaciones de las canastas corresponden a promedios regionales.
+                            Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+              6/28
+Cuadro 2.1          Brecha de la indigencia. Total 31 aglomerados urbanos
+
+                                                                                                         1º semestre de 2025
+
+                     Incidencia de la indigencia en hogares                                   %                      5,6
+                     Tamaño promedio del hogar indigente en personas                                                 3,63
+                     Tamaño promedio del hogar indigente en adulto equivalente                                       2,93
+                     Canasta básica alimentaria promedio del hogar indigente (a)              $                452.742
+                     Ingreso total familiar promedio del hogar indigente (b)                  $                281.313
+                     Brecha monetaria promedio de los hogares indigentes (b-a)                $               -171.429
+                     Brecha porcentual promedio de los hogares indigentes (b-a)/a             %                     37,9
+                    Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+Cuadro 2.2          Brecha de la pobreza. Total 31 aglomerados urbanos
+
+                                                                                                        1º semestre de 2025
+
+                     Incidencia de la pobreza en hogares                                      %                      24,1
+                     Tamaño promedio del hogar pobre en personas                                                       3,85
+                     Tamaño promedio del hogar pobre en adulto equivalente                                             3,11
+                     Canasta básica total promedio del hogar pobre (a)                         $              1.065.691
+                     Ingreso total familiar promedio del hogar pobre (b)                       $               671.492
+                     Brecha monetaria promedio de los hogares pobres (b-a)                     $               -394.199
+                     Brecha porcentual promedio de los hogares pobres (b-a)/a                 %                      37,0
+
+                     Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+                   Los valores expuestos significan que, en promedio, los hogares indigentes tienen una distancia de
+                   $171.429 entre sus ingresos y el valor de la LI. En términos porcentuales, esto implica que sus ingresos,
+                   en promedio, se encuentran 37,9% por debajo de la LI. En el caso de los hogares pobres, la distancia se
+                   refiere a la LP y es de $394.199, lo que implica una brecha de 37,0%.
+
+
+
+
+ Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos                                             7/28
+Cuadro 3.1    Población por condición de pobreza según grupos de edad. Primer semestre de 2025
+
+                                                                                Pobres
+                Grupos de edad            Total              Pobres           Pobres no             Total de          No pobres
+                                                           indigentes         indigentes            pobres
+                                                                                  %
+               Total                     100,0               100,0               100,0               100,0              100,0
+                0-14                      22,4                32,7                32,0                32,2               17,9
+                15-29                     22,4                26,4                26,2                26,2               20,7
+                30-64                     42,7                37,9                37,1                37,3               45,1
+                65 y más                  12,5                 2,9                 4,6                 4,3               16,3
+              Nota: en algunos casos, la suma de los porcentajes de población puede no coincidir con el porcentaje total, debido a
+              que los valores están redondeados a un decimal.
+              Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+Cuadro 3.2    Población por grupos de edad según condición de pobreza. Primer semestre de 2025
+
+                                                                                Pobres
+                Grupos de edad            Total              Pobres           Pobres no             Total de          No pobres
+                                                           indigentes         indigentes            pobres
+                                                                                  %
+               Total                     100,0                 6,9               24,7                31,6                68,4
+                0-14                     100,0                10,0               35,4                45,4                54,6
+                15-29                    100,0                 8,1               28,9                37,0                63,0
+                30-64                    100,0                 6,1               21,6                27,7                72,3
+                65 y más                 100,0                 1,6                9,2                10,8                89,2
+              Nota: en algunos casos, la suma de los porcentajes de población puede no coincidir con el porcentaje total, debido a
+              que los valores están redondeados a un decimal.
+              Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+Cuadro 3.3    Población de 0 a 17 años por condición de pobreza según grupos de edad. Primer semestre de 2025
+
+                                                                                Pobres
+                Grupos de edad            Total              Pobres           Pobres no             Total de          No pobres
+                                                           indigentes         indigentes            pobres
+                                                                                  %
+               Total                     100,0               100,0               100,0               100,0              100,0
+                0-5                       23,1                19,3                21,6                21,1               24,8
+                6-11                      37,8                38,2                38,7                38,6               37,2
+                12-17                     39,1                42,5                39,8                40,4               38,0
+              Nota: en algunos casos, la suma de los porcentajes de población puede no coincidir con el porcentaje total, debido a
+              que los valores están redondeados a un decimal.
+              Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+Cuadro 3.4    Población de 0 a 17 años por grupos de edad según condición de pobreza. Primer semestre de 2025
+
+                                                                                Pobres
+                Grupos de edad            Total              Pobres           Pobres no             Total de          No pobres
+                                                           indigentes         indigentes            pobres
+                                                                                  %
+               Total                     100,0                10,2               35,9                46,1                53,9
+                0-5                      100,0                 8,5               33,5                42,1                57,9
+                6-11                     100,0                10,3               36,7                47,0                53,0
+                12-17                    100,0                11,1               36,5                47,6                52,4
+              Nota: en algunos casos, la suma de los porcentajes de población puede no coincidir con el porcentaje total, debido a
+              que los valores están redondeados a un decimal.
+              Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+       8/28
+                        Se presenta a continuación la proporción de hogares y personas pobres e indigentes relevados por la
+                        Encuesta Permanente de Hogares (EPH) para cada región estadística, el conjunto de aglomerados de
+                        500.000 y más habitantes, el conjunto de aglomerados de menos de 500.000 habitantes y cada uno de los
+                        31 aglomerados urbanos.
+
+
+Cuadro 4.1              Pobreza e indigencia por regiones estadísticas y total 31 aglomerados urbanos, en porcentajes.
+                        Primer semestre de 2025
+
+                                                                                     Pobreza                                        Indigencia
+                      Área geográfica
+                                                                             Hogares              Personas            Hogares                Personas
+                                                                                                                  %
+ Total 31 aglomerados urbanos (2)                                             24,1                   31,6               5,6                       6,9
+  Aglomerados del interior                                                    23,5                   31,7               4,6                       5,8
+  Regiones
+    Gran Buenos Aires                                                         24,7                   31,5               6,4                       7,8
+     Ciudad Autónoma de Buenos Aires                                          11,3                   15,1 (1)           3,3 (1)                   3,5 (1)
+     Partidos del GBA                                                         28,8                   35,3               7,3                       8,8
+    Cuyo                                                                      25,3                   33,8               3,9                       4,5
+     Gran Mendoza                                                             25,3                   33,5               3,9 (1)                   4,7 (1)
+                                                                                                                              (1)
+     Gran San Juan                                                            26,3                   36,0               4,7                       5,2 (1)
+                                                                                                                              (1)
+     Gran San Luis                                                            23,1                   30,3               2,4                       2,5 (1)
+    Noreste                                                                   30,2                   39,0               7,2                       8,5
+     Corrientes                                                               25,4                   37,4               4,8 (1)                   6,5 (1)
+                                                                                                                              (1)
+     Formosa                                                                  24,0                   28,3               2,5                       2,7 (1)
+     Gran Resistencia                                                         39,1                   48,1              12,6                      15,5 (1)
+     Posadas                                                                  29,8                   38,1               6,8 (1)                   6,8 (1)
+    Noroeste                                                                  24,0                   31,2               3,7                       4,4
+     Gran Catamarca                                                           26,2                   34,0               5,8 (1)                   7,3 (1)
+                                                                                                                              (1)
+     Gran Tucumán-Tafí Viejo                                                  24,3                   30,8               3,7                       4,1 (1)
+                                                                                                                              (1)
+     Jujuy-Palpalá                                                            24,7                   31,2               4,4                       4,6 (1)
+                                                                                                                              (1)
+     La Rioja                                                                 22,2                   32,4               2,0                       2,9 (1)
+                                                                                                                              (1)
+     Salta                                                                    23,0                   29,5               3,7                       4,1 (1)
+                                                                                     (1)                    (1)               (1)
+     Santiago del Estero-La Banda                                             23,9                   32,5               3,0                       4,7 (1)
+    Pampeana                                                                  22,0                   30,5               4,9                       6,4
+     Bahía Blanca-Cerri                                                       17,1                   23,5 (1)           5,9 (1)                   7,4 (1)
+                                                                                                                              (1)
+     Concordia                                                                38,5                   49,2               9,5                      12,3 (1)
+                                                                                                                              (1)
+     Gran Córdoba                                                             20,6                   29,5               3,7                       4,7
+     Gran La Plata                                                            25,1                   35,2               4,7 (1)                   8,0 (1)
+     Gran Rosario                                                             21,7                   28,1               6,0                       6,2
+     Gran Paraná                                                              21,6                   29,9               4,4 (1)                   6,1 (1)
+                                                                                                                              (1)
+     Gran Santa Fe                                                            26,5                   35,8               4,6                       6,3 (1)
+                                                                                     (1)                    (1)               (1)
+     Mar del Plata                                                            18,4                   27,5               4,3                       6,4 (1)
+                                                                                                                              (1)
+     Río Cuarto                                                               18,3                   24,4               2,7                       3,6 (1)
+                                                                                     (1)                    (1)               (1)
+     Santa Rosa-Toay                                                          18,9                   25,6               6,7                       9,7 (1)
+                                                                                                                              (1)
+     San Nicolás-Villa Constitución                                           24,1                   34,5               6,3                       8,7 (1)
+    Patagonia                                                                 20,3                   27,0               3,2                       3,8
+     Comodoro Rivadavia-Rada Tilly                                            20,3                   26,9               3,5 (1)                   3,6 (1)
+     Neuquén-Plottier                                                         21,0                   26,0               4,1                       4,6 (1)
+     Río Gallegos                                                             23,7                   32,3               2,8 (1)                   3,4 (1)
+     Ushuaia-Río Grande                                                       16,3                   22,3               2,5 (1)                   3,4 (1)
+                                                                                                                              (1)
+     Rawson-Trelew                                                            21,8                   30,1               3,0                       3,5 (1)
+                                                                                                                              (1)
+     Viedma-Carmen de Patagones                                               18,3                   26,7               1,8                       3,3 (1)
+  Total aglomerados de 500.000 y más habitantes                               24,1                   31,4               5,7                       7,0
+  Total aglomerados de menos de 500.000 habitantes                            24,2                   32,4               4,9                       6,2
+                        (1)
+                              Coeficiente de variación (CV) mayor al 16%.
+                        (2)
+                              Se detallan límite inferior (Li) y límite superior (Ls) de los intervalos de confianza para el total 31 aglomerados urbanos.
+                        Hogares pobres: Li 23,0 - Ls 25,3. Personas pobres: Li 30,1 - Ls 33,1.
+                        Hogares indigentes: Li 5,0 - Ls 6,1. Personas indigentes: Li 6,1 - Ls 7,7.
+                        Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+  Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos                                                                              9/28
+Cuadro 4.2              Pobreza e indigencia por regiones estadísticas y total 31 aglomerados urbanos.
+                        Primer semestre de 2025
+
+                                                                             Total                         Pobreza                        Indigencia
+                      Área geográfica
+                                                                   Hogares       Personas        Hogares           Personas          Hogares          Personas
+
+
+ Total 31 aglomerados urbanos                                      10.173.723    29.895.129      2.456.090         9.451.018          565.821         2.051.984
+  Aglomerados del interior                                          4.741.645    13.779.747      1.112.637         4.371.285          218.908          792.395
+  Regiones
+    Gran Buenos Aires                                               5.432.078    16.115.382      1.343.453         5.079.733          346.913         1.259.589
+     Ciudad Autónoma de Buenos Aires                                1.260.057        3.006.087    142.364 (1)        452.785 (1)       41.907 (1)      104.711 (1)
+     Partidos del GBA                                               4.172.021    13.109.295      1.201.089         4.626.948          305.006         1.154.878
+    Cuyo                                                              600.459        1.874.531    151.689            634.525           23.278           85.242
+     Gran Mendoza                                                     345.697        1.063.050      87.496           356.620           13.319 (1)       49.590 (1)
+                                                                                                                                                (1)
+     Gran San Juan                                                    168.757         558.706       44.360           201.361            7.876           29.323 (1)
+                                                                                                                                                (1)
+     Gran San Luis                                                     86.005         252.775       19.833            76.544            2.083            6.329 (1)
+    Noreste                                                           478.007        1.479.719    144.519            577.580           34.185          125.897
+                                                                                                                                                (1)
+     Corrientes                                                       126.929         394.221       32.234           147.276            6.074           25.656 (1)
+                                                                                                                                                (1)
+     Formosa                                                           80.701         265.562       19.375            75.215            1.985            7.128 (1)
+     Gran Resistencia                                                 133.119         426.988       52.005           205.541           16.758 (1)       66.338 (1)
+                                                                                                             (1)               (1)              (1)
+     Posadas                                                          137.258         392.948       40.905           149.548            9.368           26.775 (1)
+    Noroeste                                                          857.424        2.858.132    205.583            891.542           31.738          126.092
+                                                                                                             (1)                                (1)
+     Gran Catamarca                                                    70.328         234.955       18.410            79.812            4.070           17.130 (1)
+                                                                                                                                                (1)
+     Gran Tucumán-Tafí Viejo                                          283.598         928.709       68.961           286.047           10.462           38.021 (1)
+                                                                                                             (1)               (1)              (1)
+     Jujuy-Palpalá                                                    111.194         362.846       27.430           113.362            4.904           16.856 (1)
+     La Rioja                                                          75.604         239.737       16.751            77.566            1.517 (1)        6.955 (1)
+                                                                                                                                                (1)
+     Salta                                                            186.935         672.289       43.072           198.399            6.889           27.529 (1)
+                                                                                                             (1)               (1)              (1)
+     Santiago del Estero-La Banda                                     129.765         419.596       30.959           136.356            3.896           19.601 (1)
+    Pampeana                                                        2.394.574        6.428.647    527.368          1.960.668          116.479          411.877
+     Bahía Blanca-Cerri                                               131.850         322.718       22.553 (1)        75.714 (1)        7.730 (1)       23.797 (1)
+                                                                                                                                                (1)
+     Concordia                                                         53.855         166.552       20.746            81.920            5.131           20.533 (1)
+     Gran Córdoba                                                     603.195        1.608.807    124.442            473.869           22.156 (1)       74.814 (1)
+                                                                                                                                                (1)
+     Gran La Plata                                                    349.274         941.511       87.570           331.287           16.317           75.423 (1)
+     Gran Rosario                                                     518.214        1.359.830    112.700            381.724           31.063           84.648 (1)
+                                                                                                                               (1)              (1)
+     Gran Paraná                                                       99.807         288.171       21.605            86.097            4.372           17.616 (1)
+                                                                                                                                                (1)
+     Gran Santa Fe                                                    197.748         554.055       52.404           198.310            9.123           34.922 (1)
+     Mar del Plata                                                    245.065         668.422       45.104 (1)       183.532 (1)       10.618 (1)       43.088 (1)
+                                                                                                                                                (1)
+     Río Cuarto                                                        71.672         184.366       13.084            44.912            1.918            6.686 (1)
+                                                                                                             (1)               (1)              (1)
+     Santa Rosa-Toay                                                   52.312         133.753        9.873            34.224            3.521           13.002 (1)
+     San Nicolás-Villa Constitución                                    71.582         200.462       17.287            69.079            4.530 (1)       17.348 (1)
+    Patagonia                                                         411.181        1.138.718      83.478           306.970           13.228           43.287
+     Comodoro Rivadavia-Rada Tilly                                     83.528         258.065       16.970            69.340 (1)        2.958 (1)        9.343 (1)
+     Neuquén-Plottier                                                 118.216         326.002       24.855            84.841            4.803 (1)       14.933 (1)
+                                                                                                                               (1)              (1)
+     Río Gallegos                                                      48.276         133.166       11.444            42.976            1.335            4.589 (1)
+                                                                                                                               (1)              (1)
+     Ushuaia-Río Grande                                                67.789         181.457       11.046            40.488            1.718            6.243 (1)
+     Rawson-Trelew                                                     59.423         153.205       12.945            46.164            1.791 (1)        5.333 (1)
+                                                                                                             (1)               (1)              (1)
+     Viedma-Carmen de Patagones                                        33.949          86.823        6.218            23.161              623            2.846 (1)
+  Total aglomerados de 500.000 y más habitantes                     8.330.561    24.470.761      2.009.562         7.690.882          474.736         1.716.947
+  Total aglomerados de menos de 500.000 habitantes                  1.843.162        5.424.368    446.528          1.760.136           91.085          335.037
+                        (1)
+                              Coeficiente de variación (CV) mayor al 16%.
+                        Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+       10/28
+Cuadro 4.3              Pobreza en hogares y personas. Regiones estadísticas y total 31 aglomerados urbanos
+
+                                                          1° semestre 2024        2° semestre 2024            1° semestre 2025
+              Área geográfica
+                                                  Hogares          Personas   Hogares       Personas   Hogares         Personas
+
+
+ Total 31 aglomerados urbanos                      42,5              52,9      28,6          38,1      24,1              31,6
+  Aglomerados del interior                         42,1              53,0      29,4          39,0      23,5              31,7
+  Regiones
+    Gran Buenos Aires                              42,9              52,8      28,0          37,3      24,7              31,5
+     Ciudad Autónoma de Buenos Aires               19,8              23,1      11,7          16,7      11,3              15,1 (1)
+     Partidos del GBA                              50,1              59,7      32,9          42,1      28,8              35,3
+    Cuyo                                           41,6              52,3      32,5          41,9      25,3              33,8
+     Gran Mendoza                                  42,0              52,9      32,6          42,2      25,3              33,5
+     Gran San Juan                                 39,6              50,5      33,3          42,3      26,3              36,0
+     Gran San Luis                                 43,8              53,8      30,8          39,7      23,1              30,3
+    Noreste                                        52,2              62,9      37,1          47,0      30,2              39,0
+     Corrientes                                    41,2              52,3      27,0          36,0      25,4              37,4
+     Formosa                                       57,0              67,6      36,8          46,2      24,0              28,3
+     Gran Resistencia                              65,8              76,2      50,3          60,8      39,1              48,1
+     Posadas                                       45,6              55,9      33,5          43,4      29,8              38,1
+    Noroeste                                       47,2              57,0      33,3          42,8      24,0              31,2
+     Gran Catamarca                                46,1              55,9      36,2          45,8      26,2              34,0
+     Gran Tucumán-Tafí Viejo                       45,7              55,8      32,3          40,8      24,3              30,8
+     Jujuy-Palpalá                                 46,3              55,7      31,0          40,0      24,7              31,2
+     La Rioja                                      55,4              66,4      35,3          46,0      22,2              32,4
+     Salta                                         44,3              52,2      32,0          41,2      23,0              29,5
+                                                                                                              (1)
+     Santiago del Estero-La Banda                  51,8              64,0      37,3          48,6      23,9              32,5 (1)
+    Pampeana                                       38,8              49,9      26,1          35,6      22,0              30,5
+     Bahía Blanca-Cerri                            34,6              44,4      19,4          25,5      17,1              23,5 (1)
+     Concordia                                     54,8              65,8      43,9          57,1      38,5              49,2
+     Gran Córdoba                                  36,2              49,5      25,2          35,5      20,6              29,5
+     Gran La Plata                                 39,9              51,2      29,5          37,3      25,1              35,2
+     Gran Rosario                                  37,1              46,8      23,8          32,4      21,7              28,1
+     Gran Paraná                                   36,5              46,7      30,6          38,5      21,6              29,9
+     Gran Santa Fe                                 48,4              59,8      31,2          43,4      26,5              35,8
+     Mar del Plata                                 38,1              46,2      20,5          28,9      18,4 (1)          27,5 (1)
+     Río Cuarto                                    44,2              54,3      27,5          37,5      18,3              24,4
+     Santa Rosa-Toay                               31,3              40,0      24,0          32,1      18,9 (1)          25,6 (1)
+     San Nicolás-Villa Constitución                44,4              55,2      32,5          44,3      24,1              34,5
+    Patagonia                                      39,4              49,1      26,2          33,5      20,3              27,0
+     Comodoro Rivadavia-Rada Tilly                 41,9              51,5      28,4          34,7      20,3              26,9
+     Neuquén-Plottier                              33,6              40,4      24,7          32,0      21,0              26,0
+     Río Gallegos                                  45,3              53,8      23,8          30,0      23,7              32,3
+     Ushuaia-Río Grande                            36,7              48,6      25,0          31,8      16,3              22,3
+     Rawson-Trelew                                 43,4              55,5      28,1          36,8      21,8              30,1
+     Viedma-Carmen de Patagones                    43,7              56,7      28,1          39,4      18,3              26,7
+  Total aglomerados de 500.000 y más
+                                                   41,9              52,2      28,0          37,4      24,1              31,4
+  habitantes
+  Total aglomerados de menos de
+                                                   45,2              56,0      31,6          41,2      24,2              32,4
+  500.000 habitantes
+                        (1)
+                              Coeficiente de variación (CV) mayor al 16%.
+                        Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+  Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos                                                   11/28
+Cuadro 4.4               Indigencia en hogares y personas. Regiones estadísticas y total 31 aglomerados urbanos
+
+                                                                            1° semestre 2024            2° semestre 2024            1° semestre 2025
+                               Área geográfica
+                                                                            Hogares Personas           Hogares      Personas       Hogares       Personas
+
+
+Total 31 aglomerados urbanos                                                 13,6         18,1          6,4            8,2           5,6           6,9
+  Aglomerados del interior                                                   12,1         16,2          6,0            7,8           4,6           5,8
+  Regiones
+   Gran Buenos Aires                                                         14,8         19,8          6,7            8,6           6,4           7,8
+     Ciudad Autónoma de Buenos Aires                                          6,4          7,5 (1)      2,1 (1)        2,4 (1)       3,3 (1)       3,5 (1)
+     Partidos del GBA                                                        17,5         22,7          8,1           10,1           7,3           8,8
+   Cuyo                                                                       9,9         13,5          5,0            6,5           3,9           4,5
+     Gran Mendoza                                                            10,2         13,8          5,4 (1)        6,7 (1)       3,9 (1)       4,7 (1)
+                                                                                                              (1)            (1)           (1)
+     Gran San Juan                                                           10,5         14,7          5,2            7,0           4,7           5,2 (1)
+                                                                                                              (1)            (1)           (1)
+     Gran San Luis                                                            7,5          9,8          3,4            4,3           2,4           2,5 (1)
+   Noreste                                                                   17,7         23,2          9,5           11,6           7,2           8,5
+                                                                                                              (1)            (1)           (1)
+     Corrientes                                                              10,2         13,4          5,6            6,7           4,8           6,5 (1)
+                                                                                                              (1)            (1)           (1)
+     Formosa                                                                 16,2         19,8          6,3            7,5           2,5           2,7 (1)
+     Gran Resistencia                                                        30,1         38,6         18,4           22,4          12,6          15,5 (1)
+                                                                                                              (1)            (1)           (1)
+     Posadas                                                                 12,8         18,3          6,4            7,7           6,8           6,8 (1)
+   Noroeste                                                                  13,9         17,2          6,6            8,1           3,7           4,4
+     Gran Catamarca                                                          13,3         16,9          8,1            9,6           5,8 (1)       7,3 (1)
+                                                                                                                             (1)           (1)
+     Gran Tucumán-Tafí Viejo                                                 14,1         16,6          6,2            7,3           3,7           4,1 (1)
+                                                                                                              (1)            (1)           (1)
+     Jujuy-Palpalá                                                           12,5         15,3          6,8            9,8           4,4           4,6 (1)
+     La Rioja                                                                11,5         15,0          4,4 (1)        5,4 (1)       2,0 (1)       2,9 (1)
+                                                                                                                             (1)           (1)
+     Salta                                                                   14,2         16,5          6,3            7,1           3,7           4,1 (1)
+                                                                                                 (1)          (1)            (1)           (1)
+     Santiago del Estero-La Banda                                            16,2   (1)
+                                                                                          22,9          8,1           11,1           3,0           4,7 (1)
+   Pampeana                                                                  11,4         15,9          5,7            7,7           4,9           6,4
+     Bahía Blanca-Cerri                                                      10,1         13,9          2,9 (1)        3,7 (1)       5,9 (1)       7,4 (1)
+                                                                                                              (1)            (1)           (1)
+     Concordia                                                               19,9         26,4          9,0           13,9           9,5          12,3 (1)
+     Gran Córdoba                                                             8,4         12,8          6,0            8,6           3,7 (1)       4,7
+                                                                                                              (1)            (1)
+     Gran La Plata                                                           13,9         18,3          6,4            7,3           4,7 (1)       8,0 (1)
+                                                                                                              (1)            (1)
+     Gran Rosario                                                            13,6         18,2          6,4            8,5           6,0           6,2
+                                                                                                 (1)          (1)            (1)           (1)
+     Gran Paraná                                                              9,0   (1)
+                                                                                          11,7          6,5            8,7           4,4           6,1 (1)
+                                                                                                              (1)            (1)           (1)
+     Gran Santa Fe                                                           12,1         16,4          5,0            7,9           4,6           6,3 (1)
+     Mar del Plata                                                            9,4         12,9 (1)      2,5 (1)        3,3 (1)       4,3 (1)       6,4 (1)
+                                                                                                              (1)            (1)           (1)
+     Río Cuarto                                                              10,5         14,4          3,9            5,9           2,7           3,6 (1)
+                                                                                                 (1)          (1)            (1)           (1)
+     Santa Rosa-Toay                                                         10,5   (1)
+                                                                                          17,0          7,8           10,4           6,7           9,7 (1)
+     San Nicolás-Villa Constitución                                          16,2         22,1          8,6           11,9           6,3 (1)       8,7 (1)
+   Patagonia                                                                  8,9         11,1          4,0            4,5           3,2           3,8
+     Comodoro Rivadavia-Rada Tilly                                            8,9 (1)     10,3 (1)      3,3 (1)        3,4 (1)       3,5 (1)       3,6 (1)
+     Neuquén-Plottier                                                         9,9         11,6 (1)      3,6 (1)        3,3 (1)       4,1           4,6 (1)
+                                                                                                 (1)          (1)            (1)           (1)
+     Río Gallegos                                                             8,3   (1)
+                                                                                          10,0          3,4            3,6           2,8           3,4 (1)
+                                                                                                 (1)          (1)            (1)           (1)
+     Ushuaia-Río Grande                                                       7,5   (1)
+                                                                                          10,5          3,7            5,1           2,5           3,4 (1)
+     Rawson-Trelew                                                           10,1         13,1          6,1 (1)        7,2 (1)       3,0 (1)       3,5 (1)
+                                                                                                 (1)          (1)            (1)           (1)
+     Viedma-Carmen de Patagones                                               7,5         10,8          4,6            7,0           1,8           3,3 (1)
+  Total aglomerados de 500.000 y más habitantes                              13,7         18,3          6,3            8,2           5,7           7,0
+  Total aglomerados de menos de 500.000 habitantes                           13,0         17,3          6,6            8,5           4,9           6,2
+                        (1)
+                              Coeficiente de variación (CV) mayor al 16%.
+                        Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+      12/28
+                                                           A continuación se presentan indicadores semestrales seleccionados para el total y cada uno de los aglo-
+                                                           merados urbanos de las distintas regiones (cuadros 5 a 5.6). El objetivo de estos es contextualizar y
+                                                           facilitar la lectura de los resultados principales, ya que contienen información sobre la evolución de las
+                                                           canastas regionales, los ingresos de los hogares y las tasas de empleo.
+
+                                Cuadro 5.                  Evolución de indicadores seleccionados. Total 31 aglometrados urbanos. Primer semestre 2024-primer semestre 2025
+
+                                                                                                                                                                                          Variaciones %
+                                                                                                                        1° semestre         2° semestre        1° semestre            con        con respecto
+                                                                                                                            2024                2024               2025           respecto al       a igual
+                                                                                                                                                                                   semestre      semestre del
+                                                                                                                                                                                    anterior     año anterior
+                 Canastas           Canasta básica alimentaria                                                             107.497,60          131.356,37          148.644,47           13,2         38,3
+                 regionales                                                                                       $
+                 promedio (1)       Canasta básica total                                                                   236.923,44          300.290,13          337.082,50           12,3         42,3
+
+
+                 Ingresos
+                                                  Suma del ingreso total familiar                                     7.755.682.227      12.761.574.757     16.116.171.744              26,3        107,8
+                                                  Suma de los ingresos laborales                              Miles   6.011.227.357      9.906.949.710      12.598.810.561              27,2        109,6
+                                    Hogares
+                                                  Suma de los ingresos no laborales                           de $    1.744.454.870      2.854.625.047       3.517.361.182              23,2        101,6
+                                                                                                        (2)
+                                                  Suma del ingreso total familiar del estrato bajo                    1.629.551.237      2.711.586.859       3.355.369.442              23,7        105,9
+                                                  Media del ingreso per cápita familiar                                    263.028             430.266            541.948               26,0        106,0
+                                    Personas      Media del ingreso por adulto equivalente                        $        323.272             529.198            665.222               25,7        105,8
+                                                  Media del ingreso de la ocupación principal                              412.726             660.285            866.875               31,3        110,0
+                 Tasa de empleo                                                                                   %             44,6                45,3               44,5             -1,8         -0,2
+           (1)
+               Por adulto equivalente.
+           (2)
+               El estrato bajo está conformado por los deciles 1 a 4 (ver “Definiciones” en el Anexo metodológico del presente informe técnico).
+           Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+                                Cuadro 5.1                 Evolución de indicadores seleccionados. Región Gran Buenos Aires. Primer semestre 2024-primer semestre 2025
+
+                                                                                                                                                                                         Variaciones %
+                                                                                                                        1° semestre           2° semestre       1° semestre           con       con respecto
+                                                                                                                            2024                  2024              2025          respecto al      a igual
+                                                                                                                                                                                   semestre     semestre del
+                                                                                                                                                                                    anterior    año anterior
+      Canastas                  Canasta básica alimentaria                                                                  114.336,70          139.108,07         157.804,08           13,4        38,0
+                                                                                                              $
+      promedio (1)              Canasta básica total                                                                        248.855,86          313.788,67         352.804,27           12,4        41,8
+      Ciudad Autónoma de Buenos Aires
+      Ingresos
+                                               Suma del ingreso total familiar                                        1.434.192.302        2.338.674.091     2.600.382.951              11,2        81,3
+                                               Suma de los ingresos laborales                             Miles       1.162.617.782        1.829.516.230     2.099.541.332              14,8        80,6
+                                 Hogares
+                                               Suma de los ingresos no laborales                          de $          271.574.520         509.157.861        500.841.619              -1,6        84,4
+                                               Suma del ingreso total familiar del estrato bajo (2)                     262.282.427         463.009.918        517.149.729              11,7        97,2
+                                               Media del ingreso per cápita familiar                                        483.041             785.814            872.945              11,1        80,7
+                                 Personas      Media del ingreso por adulto equivalente                       $             589.016             970.992          1.074.488              10,7        82,4
+                                               Media del ingreso de la ocupación principal                                  668.287            1.062.467         1.312.562              23,5        96,4
+      Tasa de empleo                                                                                          %                  50,9                52,7               51,0            -3,2         0,2
+      Partidos del GBA
+      Ingresos
+                                               Suma del ingreso total familiar                                        3.094.320.541        5.108.942.973     6.707.161.847              31,3       116,8
+                                               Suma de los ingresos laborales                             Miles       2.445.844.753        4.107.889.755     5.395.177.852              31,3       120,6
+                                 Hogares
+                                               Suma de los ingresos no laborales                          de $          648.475.788        1.001.053.219     1.311.983.995              31,1       102,3
+                                                                                                  (2)
+                                               Suma del ingreso total familiar del estrato bajo                         619.471.741        1.109.772.391     1.298.745.354              17,0       109,7
+                                               Media del ingreso per cápita familiar                                        240.259             393.190            514.942              31,0       114,3
+                                 Personas      Media del ingreso por adulto equivalente                       $             295.891             482.773            631.282              30,8       113,3
+                                               Media del ingreso de la ocupación principal                                  397.517             623.601            856.261              37,3       115,4
+      Tasa de empleo                                                                                          %                  43,3                44,4               43,4            -2,3         0,2
+(1)
+    Por adulto equivalente.
+(2)
+    El estrato bajo está conformado por los deciles 1 a 4 (ver “Definiciones” en el Anexo metodológico del presente informe técnico).
+Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+                                  Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos                                                                            13/28
+                     Cuadro 5.2             Evolución de indicadores seleccionados. Región Cuyo. Primer semestre 2024-primer semestre 2025
+
+                                                                                                                                                                Variaciones %
+                                                                                                          1° semestre      2° semestre     1° semestre                 con respecto
+                                                                                                                                                          con respecto
+                                                                                                              2024             2024            2025                       a igual
+                                                                                                                                                           al semestre
+                                                                                                                                                                       semestre del
+                                                                                                                                                             anterior
+                                                                                                                                                                       año anterior
+
+      Canastas            Canasta básica alimentaria                                                         101.224,74      123.866,36      140.381,61       13,3         38,7
+                                                                                                  $
+      promedio (1)        Canasta básica total                                                               234.529,77      297.380,25      334.902,95       12,6         42,8
+
+      Gran Mendoza
+
+      Ingresos
+
+                                        Suma del ingreso total familiar                                  232.954.038      400.646.941     493.852.519         23,3        112,0
+
+                                        Suma de los ingresos laborales                           Miles 173.557.118        303.996.121     372.654.055         22,6        114,7
+                           Hogares
+                                        Suma de los ingresos no laborales                        de $   59.396.920        96.650.820      121.198.463         25,4        104,0
+
+                                        Suma del ingreso total familiar del estrato bajo (2)             57.925.713       97.128.822      121.164.284         24,7        109,2
+
+                                        Media del ingreso per cápita familiar                               221.474          380.926         465.612          22,2        110,2
+
+                           Personas     Media del ingreso por adulto equivalente                  $         274.164          469.019         570.788          21,7        108,2
+
+                                        Media del ingreso de la ocupación principal                         323.339          545.284         691.555          26,8        113,9
+
+      Tasa de empleo                                                                              %              47,0             46,2            46,6         0,9         -0,9
+
+      Gran San Juan
+
+      Ingresos
+
+                                        Suma del ingreso total familiar                                  117.522.605      174.218.526     221.981.833         27,4         88,9
+
+                                        Suma de los ingresos laborales                           Miles   85.090.094       121.310.807     155.987.552         28,6         83,3
+                           Hogares
+                                        Suma de los ingresos no laborales                        de $    32.432.511       52.907.719       65.994.281         24,7        103,5
+                                                                                           (2)
+                                        Suma del ingreso total familiar del estrato bajo                 29.025.993       44.053.705       63.976.876         45,2        120,4
+
+                                        Media del ingreso per cápita familiar                               212.127          313.148         397.614          27,0         87,4
+
+                           Personas     Media del ingreso por adulto equivalente                  $         262.242          391.224         494.190          26,3         88,4
+
+                                        Media del ingreso de la ocupación principal                         331.820          462.089         617.478          33,6         86,1
+
+      Tasa de empleo                                                                              %              43,0             43,9            43,2        -1,6          0,5
+
+      Gran San Luis
+
+      Ingresos
+
+                                        Suma del ingreso total familiar                                  56.223.836       85.098.131      117.115.648         37,6        108,3
+
+                                        Suma de los ingresos laborales                           Miles   43.275.767       64.016.729       91.689.283         43,2        111,9
+                           Hogares
+                                        Suma de los ingresos no laborales                        de $    12.948.068       21.081.402       25.426.365         20,6         96,4
+                                                                                           (2)
+                                        Suma del ingreso total familiar del estrato bajo                 14.443.013       22.775.427       29.097.039         27,8        101,5
+
+                                        Media del ingreso per cápita familiar                               226.350          339.613         463.551          36,5        104,8
+
+                           Personas     Media del ingreso por adulto equivalente                  $         277.130          419.324         568.052          35,5        105,0
+
+                                        Media del ingreso de la ocupación principal                         380.958          558.930         749.153          34,0         96,6
+
+      Tasa de empleo                                                                              %              43,2             44,8            45,1         0,7          4,4
+(1)
+  Por adulto equivalente.
+(2)
+  El estrato bajo está conformado por los deciles 1 a 4 (ver “Definiciones” en el Anexo metodológico del presente informe técnico).
+Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+                           14/28
+                     Cuadro 5.3             Evolución de indicadores seleccionados. Región Noreste. Primer semestre 2024-primer semestre 2025
+
+                                                                                                                                                             Variaciones %
+                                                                                                          1° semestre    2° semestre      1° semestre       con     con respecto
+                                                                                                              2024           2024             2025      respecto al    a igual
+                                                                                                                                                         semestre semestre del
+                                                                                                                                                          anterior  año anterior
+      Canastas            Canasta básica alimentaria                                                       101.565,29      123.766,61      140.186,02       13,3        38,0
+                                                                                                  $
+      promedio (1)        Canasta básica total                                                             206.782,45      261.241,43      293.567,50       12,4        42,0
+      Corrientes
+      Ingresos
+                                        Suma del ingreso total familiar                                  79.609.656     119.446.480     145.234.438         21,6        82,4
+                                        Suma de los ingresos laborales                           Miles   54.630.012     81.668.837       99.396.900         21,7        81,9
+                           Hogares
+                                        Suma de los ingresos no laborales                        de $    24.979.644     37.777.643       45.837.537         21,3        83,5
+                                        Suma del ingreso total familiar del estrato bajo (2)             21.324.093     34.576.519       42.691.513         23,5       100,2
+                                        Media del ingreso per cápita familiar                              203.511         304.237         368.409          21,1        81,0
+                           Personas     Media del ingreso por adulto equivalente                  $        251.497         373.455         456.110          22,1        81,4
+                                        Media del ingreso de la ocupación principal                        304.940         458.756         590.398          28,7        93,6
+      Tasa de empleo                                                                              %             40,5            42,4            38,8        -8,5        -4,2
+      Formosa
+      Ingresos
+                                        Suma del ingreso total familiar                                  40.500.462     69.108.957       97.939.900         41,7       141,8
+                                        Suma de los ingresos laborales                           Miles   26.320.434     45.593.944       64.533.335         41,5       145,2
+                           Hogares
+                                        Suma de los ingresos no laborales                        de $    14.180.028     23.515.013       33.406.565         42,1       135,6
+                                                                                           (2)
+                                        Suma del ingreso total familiar del estrato bajo                 11.550.885     19.094.793       26.317.186         37,8       127,8
+                                        Media del ingreso per cápita familiar                              153.956         261.400         368.802          41,1       139,6
+                           Personas     Media del ingreso por adulto equivalente                  $        190.855         323.183         453.137          40,2       137,4
+                                        Media del ingreso de la ocupación principal                        236.881         409.185         568.940          39,0       140,2
+      Tasa de empleo                                                                              %             39,8            39,7            38,1        -4,0        -4,3
+      Gran Resistencia
+      Ingresos
+                                        Suma del ingreso total familiar                                  56.723.697     96.071.066      135.587.597         41,1       139,0
+                                        Suma de los ingresos laborales                           Miles   38.398.938     67.672.465       96.905.910         43,2       152,4
+                           Hogares
+                                        Suma de los ingresos no laborales                        de $    18.324.759     28.398.601       38.681.687         36,2       111,1
+                                        Suma del ingreso total familiar del estrato bajo (2)             13.508.940     23.324.739       31.402.661         34,6       132,5
+                                        Media del ingreso per cápita familiar                              134.339         226.966         318.841          40,5       137,3
+                           Personas     Media del ingreso por adulto equivalente                  $        164.895         281.077         394.022          40,2       139,0
+                                        Media del ingreso de la ocupación principal                        212.788         374.163         524.204          40,1       146,4
+      Tasa de empleo                                                                              %             41,4            40,5            39,5        -2,5        -4,6
+      Posadas
+      Ingresos
+                                        Suma del ingreso total familiar                                  78.999.674     127.436.609     164.304.129         28,9       108,0
+                                        Suma de los ingresos laborales                           Miles   55.223.666     91.941.756      121.058.474         31,7       119,2
+                           Hogares
+                                        Suma de los ingresos no laborales                        de $    23.776.007     35.494.853       43.245.655         21,8        81,9
+                                                                                           (2)
+                                        Suma del ingreso total familiar del estrato bajo                 18.762.392     31.523.795       36.651.400         16,3        95,3
+                                        Media del ingreso per cápita familiar                              203.273         329.442         418.132          26,9       105,7
+                           Personas     Media del ingreso por adulto equivalente                  $        251.541         406.691         518.412          27,5       106,1
+                                        Media del ingreso de la ocupación principal                        276.344         495.182         636.704          28,6       130,4
+      Tasa de empleo                                                                              %             45,7            44,6            43,2        -3,1        -5,5
+(1)
+  Por adulto equivalente.
+(2)
+  El estrato bajo está conformado por los deciles 1 a 4 (ver “Definiciones” en el Anexo metodológico del presente informe técnico).
+Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+                       Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos                                                               15/28
+               Cuadro 5.4             Evolución de indicadores seleccionados. Región Noroeste. Primer semestre 2024-primer semestre 2025
+
+                                                                                                                                                          Variaciones %
+                                                                                                    1° semestre      2° semestre     1° semestre                 con respecto
+                                                                                                                                                    con respecto
+                                                                                                        2024             2024            2025                       a igual
+                                                                                                                                                     al semestre
+                                                                                                                                                                 semestre del
+                                                                                                                                                       anterior
+                                                                                                                                                                 año anterior
+
+Canastas            Canasta básica alimentaria                                                          98.637,48      120.836,78      136.160,70       12,7         38,0
+                                                                                            $
+promedio (1)        Canasta básica total                                                               199.051,98      253.028,63      282.412,95       11,6         41,9
+
+Gran Catamarca
+
+Ingresos
+
+                                  Suma del ingreso total familiar                                  41.712.203       68.395.283       90.959.200         33,0        118,1
+
+                                  Suma de los ingresos laborales                           Miles   30.323.430       49.795.193       67.608.937         35,8        123,0
+                     Hogares
+                                  Suma de los ingresos no laborales                        de $    11.388.773       18.600.090       23.350.263         25,5        105,0
+
+                                  Suma del ingreso total familiar del estrato bajo (2)             10.572.860       16.990.459       22.168.002         30,5        109,7
+
+                                  Media del ingreso per cápita familiar                               179.648          292.624         388.439          32,7        116,2
+
+                     Personas     Media del ingreso por adulto equivalente                  $         222.062          357.404         478.023          33,7        115,3
+
+                                  Media del ingreso de la ocupación principal                         272.240          460.059         620.322          34,8        127,9
+
+Tasa de empleo                                                                              %              43,2             41,7            42,0         0,7         -2,8
+
+Gran Tucumán-Tafí Viejo
+
+Ingresos
+
+                                  Suma del ingreso total familiar                                  171.819.395      282.089.244     368.939.769         30,8        114,7
+
+                                  Suma de los ingresos laborales                           Miles 121.512.692        202.973.109     277.393.880         36,7        128,3
+                     Hogares
+                                  Suma de los ingresos no laborales                        de $   50.306.703        79.116.135       91.545.889         15,7         82,0
+                                                                                     (2)
+                                  Suma del ingreso total familiar del estrato bajo                 42.706.062       71.721.106       93.078.550         29,8        118,0
+
+                                  Media del ingreso per cápita familiar                               186.518          304.750         397.607          30,5        113,2
+
+                     Personas     Media del ingreso por adulto equivalente                  $         232.027          379.596         489.591          29,0        111,0
+
+                                  Media del ingreso de la ocupación principal                         288.087          433.688         603.019          39,0        109,3
+
+Tasa de empleo                                                                              %              42,1             44,9            44,2        -1,6          5,0
+
+Jujuy-Palpalá
+
+Ingresos
+
+                                  Suma del ingreso total familiar                                  68.078.054       113.552.057     150.211.658         32,3        120,6
+
+                                  Suma de los ingresos laborales                           Miles   49.950.921       83.034.172      112.020.180         34,9        124,3
+                     Hogares
+                                  Suma de los ingresos no laborales                        de $    18.127.133       30.517.885       38.191.479         25,1        110,7
+
+                                  Suma del ingreso total familiar del estrato bajo (2)             16.768.201       28.425.344       36.586.588         28,7        118,2
+
+                                  Media del ingreso per cápita familiar                               189.324          314.326         415.537          32,2        119,5
+
+                     Personas     Media del ingreso por adulto equivalente                  $         232.878          383.483         507.794          32,4        118,1
+
+                                  Media del ingreso de la ocupación principal                         275.534          460.852         578.337          25,5        109,9
+
+Tasa de empleo                                                                              %              46,0             44,9            47,4         5,6          3,0
+                                                                                                                                                               (continuación)
+
+
+
+
+                     16/28
+                 Cuadro 5.4               (conclusión)
+
+
+                                                                                                                                                         Variaciones %
+                                                                                                       1° semestre    2° semestre    1° semestre                con respecto
+                                                                                                                                                   con respecto
+                                                                                                           2024           2024           2025                      a igual
+                                                                                                                                                    al semestre
+                                                                                                                                                                semestre del
+                                                                                                                                                      anterior
+                                                                                                                                                                año anterior
+
+      La Rioja
+
+      Ingresos
+
+                                     Suma del ingreso total familiar                                  36.194.071     59.566.018      80.707.928        35,5        123,0
+
+                                     Suma de los ingresos laborales                           Miles   26.614.456     43.740.113      60.125.317        37,5        125,9
+                        Hogares
+                                     Suma de los ingresos no laborales                        de $      9.579.615    15.825.905      20.582.611        30,1        114,9
+                                                                                        (2)
+                                     Suma del ingreso total familiar del estrato bajo                 10.814.321     18.947.053      26.434.180        39,5        144,4
+
+                                     Media del ingreso per cápita familiar                               153.271        250.393        336.939         34,6        119,8
+
+                        Personas     Media del ingreso por adulto equivalente                  $         189.009        307.140        412.959         34,5        118,5
+
+                                     Media del ingreso de la ocupación principal                         240.748        372.654        498.973         33,9        107,3
+
+      Tasa de empleo                                                                           %              43,1           44,8           43,5       -2,9          0,9
+
+      Salta
+
+      Ingresos
+
+                                     Suma del ingreso total familiar                                  134.013.293    217.045.758    280.675.655        29,3        109,4
+
+                                     Suma de los ingresos laborales                           Miles 100.996.272      156.234.361    207.320.098        32,7        105,3
+                        Hogares
+                                     Suma de los ingresos no laborales                        de $   33.017.021      60.811.397      73.355.556        20,6        122,2
+
+                                     Suma del ingreso total familiar del estrato bajo (2)             30.037.072     54.412.599      70.642.179        29,8        135,2
+
+                                     Media del ingreso per cápita familiar                               201.596        325.531        417.627         28,3        107,2
+
+                        Personas     Media del ingreso por adulto equivalente                  $         249.688        399.874        515.679         29,0        106,5
+
+                                     Media del ingreso de la ocupación principal                         331.865        510.476        722.434         41,5        117,7
+
+      Tasa de empleo                                                                           %              43,1           43,6           42,4       -2,8         -1,6
+
+      Santiago del Estero-La Banda
+
+      Ingresos
+
+                                     Suma del ingreso total familiar                                  67.668.591     111.681.709    166.973.578        49,5        146,8
+
+                                     Suma de los ingresos laborales                           Miles   48.212.846     74.451.971     119.219.328        60,1        147,3
+                        Hogares
+                                     Suma de los ingresos no laborales                        de $    19.455.745     37.229.738      47.754.250        28,3        145,5
+
+                                     Suma del ingreso total familiar del estrato bajo (2)             17.593.502     29.183.731      43.796.600        50,1        148,9
+
+                                     Media del ingreso per cápita familiar                               162.561        267.211        397.939         48,9        144,8
+
+                        Personas     Media del ingreso por adulto equivalente                  $         200.541        329.622        491.849         49,2        145,3
+
+                                     Media del ingreso de la ocupación principal                         232.339        386.470        546.880         41,5        135,4
+
+      Tasa de empleo                                                                           %              44,2           42,2           42,2        0,0         -4,5
+(1)
+  Por adulto equivalente.
+(2)
+  El estrato bajo está conformado por los deciles 1 a 4 (ver “Definiciones” en el Anexo metodológico del presente informe técnico).
+Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+                   Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos                                                               17/28
+               Cuadro 5.5             Evolución de indicadores seleccionados. Región Pampeana. Primer semestre 2024-primer semestre 2025
+
+
+                                                                                                                                                          Variaciones %
+                                                                                                    1° semestre      2° semestre     1° semestre                 con respecto
+                                                                                                                                                    con respecto
+                                                                                                        2024             2024            2025                       a igual
+                                                                                                                                                     al semestre
+                                                                                                                                                                 semestre del
+                                                                                                                                                       anterior
+                                                                                                                                                                 año anterior
+Canastas            Canasta básica alimentaria                                                         112.679,77      137.406,55      155.508,73       13,2         38,0
+                                                                                            $
+promedio (1)        Canasta básica total                                                               244.849,43      309.949,13      347.671,27       12,2         42,0
+Bahía Blanca-Cerri
+Ingresos
+                                  Suma del ingreso total familiar                                  93.578.427       157.907.389     194.236.690         23,0        107,6
+                                  Suma de los ingresos laborales                           Miles   71.862.150       120.508.374     144.175.596         19,6        100,6
+                     Hogares
+                                  Suma de los ingresos no laborales                        de $    21.716.277       37.399.015       50.061.094         33,9        130,5
+                                                                                     (2)
+                                  Suma del ingreso total familiar del estrato bajo                 19.774.175       37.232.984       43.216.423         16,1        118,5
+                                  Media del ingreso per cápita familiar                               292.714          491.013         608.355          23,9        107,8
+                     Personas     Media del ingreso por adulto equivalente                  $         360.675          604.154         749.689          24,1        107,9
+                                  Media del ingreso de la ocupación principal                         439.492          724.375         882.993          21,9        100,9
+Tasa de empleo                                                                              %              45,5             45,3            44,4        -2,0         -2,4
+Concordia
+Ingresos
+                                  Suma del ingreso total familiar                                  30.210.769       48.263.135       61.014.784         26,4        102,0
+                                  Suma de los ingresos laborales                           Miles   21.815.181       35.427.641       44.300.271         25,0        103,1
+                     Hogares
+                                  Suma de los ingresos no laborales                        de $      8.395.588      12.835.494       16.714.513         30,2         99,1
+                                  Suma del ingreso total familiar del estrato bajo (2)               7.631.084      12.951.829       15.298.032         18,1        100,5
+                                  Media del ingreso per cápita familiar                               182.772          291.779         369.064          26,5        101,9
+                     Personas     Media del ingreso por adulto equivalente                  $         226.371          358.707         453.670          26,5        100,4
+                                  Media del ingreso de la ocupación principal                         312.538          479.725         646.611          34,8        106,9
+Tasa de empleo                                                                              %              38,4             40,8            37,3        -8,6         -2,9
+Gran Córdoba
+Ingresos
+                                  Suma del ingreso total familiar                                  415.766.725      681.457.862     882.924.779         29,6        112,4
+                                  Suma de los ingresos laborales                           Miles 301.068.731        500.886.578     653.843.124         30,5        117,2
+                     Hogares
+                                  Suma de los ingresos no laborales                        de $ 114.697.995         180.571.284     229.081.655         26,9         99,7
+                                                                                     (2)
+                                  Suma del ingreso total familiar del estrato bajo                 104.494.107      167.124.387     215.407.686         28,9        106,1
+                                  Media del ingreso per cápita familiar                               260.218          425.360         550.436          29,4        111,5
+                     Personas     Media del ingreso por adulto equivalente                  $         320.425          523.133         676.818          29,4        111,2
+                                  Media del ingreso de la ocupación principal                         366.850          614.107         803.958          30,9        119,2
+Tasa de empleo                                                                              %              46,3             46,2            45,9        -0,6         -0,9
+Gran La Plata
+Ingresos
+                                  Suma del ingreso total familiar                                  259.258.477      419.125.686     492.992.149         17,6         90,2
+                                  Suma de los ingresos laborales                           Miles 195.611.048        308.395.417     354.908.198         15,1         81,4
+                     Hogares
+                                  Suma de los ingresos no laborales                        de $   63.647.429        110.730.269     138.083.952         24,7        117,0
+                                  Suma del ingreso total familiar del estrato bajo (2)             51.144.076       84.610.326      113.229.935         33,8        121,4
+                                  Media del ingreso per cápita familiar                               278.628          448.888         524.358          16,8         88,2
+                     Personas     Media del ingreso por adulto equivalente                  $         344.359          546.200         640.830          17,3         86,1
+                                  Media del ingreso de la ocupación principal                         389.811          626.684         726.545          15,9         86,4
+Tasa de empleo                                                                              %              46,5             45,8            44,3        -3,3         -4,7
+
+                                                                                                                                                               (continuación)
+
+
+
+
+                     18/28
+           Cuadro 5.5              (continuación)
+
+                                                                                                                                                   Variaciones %
+                                                                                                 1° semestre    2° semestre    1° semestre                con respecto
+                                                                                                                                             con respecto
+                                                                                                     2024           2024           2025                      a igual
+                                                                                                                                              al semestre
+                                                                                                                                                          semestre del
+                                                                                                                                                anterior
+                                                                                                                                                          año anterior
+
+Gran Rosario
+Ingresos
+                               Suma del ingreso total familiar                                  382.316.528    637.464.936    769.880.523        20,8        101,4
+                               Suma de los ingresos laborales                           Miles 291.281.998      499.140.323    609.571.375        22,1        109,3
+                    Hogares
+                               Suma de los ingresos no laborales                        de $   91.034.530      138.324.614    160.309.148        15,9         76,1
+                                                                                  (2)
+                               Suma del ingreso total familiar del estrato bajo                 77.063.216     138.882.009    158.545.457        14,2        105,7
+                               Media del ingreso per cápita familiar                               283.972        470.832        571.511         21,4        101,3
+                    Personas   Media del ingreso por adulto equivalente                  $         348.818        580.140        697.670         20,3        100,0
+                               Media del ingreso de la ocupación principal                         421.188        709.029        847.818         19,6        101,3
+Tasa de empleo                                                                           %              46,5           47,4           47,7        0,6          2,6
+Gran Paraná
+Ingresos
+                               Suma del ingreso total familiar                                  74.027.401     113.237.509    138.854.402        22,6         87,6
+                               Suma de los ingresos laborales                           Miles   54.780.385     80.615.912     101.763.129        26,2         85,8
+                    Hogares
+                               Suma de los ingresos no laborales                        de $    19.247.016     32.621.597      37.091.274        13,7         92,7
+                                                                                  (2)
+                               Suma del ingreso total familiar del estrato bajo                 17.981.927     25.478.736      33.946.500        33,2         88,8
+                               Media del ingreso per cápita familiar                               258.785        395.581        482.982         22,1         86,6
+                    Personas   Media del ingreso por adulto equivalente                  $         318.715        490.702        592.648         20,8         85,9
+                               Media del ingreso de la ocupación principal                         390.893        603.989        736.380         21,9         88,4
+Tasa de empleo                                                                           %              44,1           43,6           42,9       -1,6          -2,7
+Gran Santa Fe
+Ingresos
+                               Suma del ingreso total familiar                                  125.847.488    215.044.972    286.758.232        33,3        127,9
+                               Suma de los ingresos laborales                           Miles   95.889.697     169.570.107    217.764.118        28,4        127,1
+                    Hogares
+                               Suma de los ingresos no laborales                        de $    29.957.791     45.474.865      68.994.114        51,7        130,3
+                               Suma del ingreso total familiar del estrato bajo (2)             29.297.888     53.136.757      61.254.611        15,3        109,1
+                               Media del ingreso per cápita familiar                               229.089        389.923        517.766         32,8        126,0
+                    Personas   Media del ingreso por adulto equivalente                  $         280.845        475.788        640.916         34,7        128,2
+                               Media del ingreso de la ocupación principal                         362.987        622.067        820.813         31,9        126,1
+Tasa de empleo                                                                           %              41,8           42,0           41,4       -1,4          -1,0
+Mar del Plata
+Ingresos
+                               Suma del ingreso total familiar                                  176.529.137    285.757.267    381.565.582        33,5        116,1
+                               Suma de los ingresos laborales                           Miles 138.751.617      225.493.306    293.743.763        30,3        111,7
+                    Hogares
+                               Suma de los ingresos no laborales                        de $   37.777.520      60.263.961      87.821.818        45,7        132,5
+                                                                                  (2)
+                               Suma del ingreso total familiar del estrato bajo                 38.152.651     71.039.227      85.537.141        20,4        124,2
+                               Media del ingreso per cápita familiar                               267.242        430.234        577.072         34,1        115,9
+                    Personas   Media del ingreso por adulto equivalente                  $         325.553        530.334        701.563         32,3        115,5
+                               Media del ingreso de la ocupación principal                         439.636        676.909        941.267         39,1        114,1
+Tasa de empleo                                                                           %              46,5           46,4           46,1       -0,6          -0,9
+
+                                                                                                                                                        (continuación)
+
+
+
+
+                Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos                                                            19/28
+                   Cuadro 5.5               (conclusión)
+
+                                                                                                                                                          Variaciones %
+                                                                                                        1° semestre    2° semestre    1° semestre                con respecto
+                                                                                                                                                    con respecto
+                                                                                                            2024           2024           2025                      a igual
+                                                                                                                                                     al semestre
+                                                                                                                                                                 semestre del
+                                                                                                                                                       anterior
+                                                                                                                                                                 año anterior
+
+      Río Cuarto
+
+      Ingresos
+
+                                       Suma del ingreso total familiar                                  45.038.043    81.867.860     106.983.679        30,7        137,5
+
+                                       Suma de los ingresos laborales                           Miles   32.901.311    60.681.412      80.915.153        33,3        145,9
+                         Hogares
+                                       Suma de los ingresos no laborales                        de $    12.136.733    21.186.448      26.068.526        23,0        114,8
+                                                                                          (2)
+                                       Suma del ingreso total familiar del estrato bajo                 10.737.017    18.186.235      24.607.142        35,3        129,2
+
+                                       Media del ingreso per cápita familiar                              246.605       448.869         580.843         29,4        135,5
+
+                         Personas      Media del ingreso por adulto equivalente                  $        306.155       558.725         722.413         29,3        136,0
+
+                                       Media del ingreso de la ocupación principal                        399.048       679.477         883.540         30,0        121,4
+
+      Tasa de empleo                                                                             %             43,9          44,6            45,2        1,3          3,0
+
+      Santa Rosa-Toay
+
+      Ingresos
+
+                                       Suma del ingreso total familiar                                  40.578.129    66.274.682      95.626.069        44,3        135,7
+
+                                       Suma de los ingresos laborales                           Miles   30.096.632    48.439.375      70.155.419        44,8        133,1
+                         Hogares
+                                       Suma de los ingresos no laborales                        de $    10.481.497    17.835.307      25.470.651        42,8        143,0
+                                                                                          (2)
+                                       Suma del ingreso total familiar del estrato bajo                  8.008.283    13.645.033      17.335.172        27,0        116,5
+
+                                       Media del ingreso per cápita familiar                              306.757       498.059         716.397         43,8        133,5
+
+                         Personas      Media del ingreso por adulto equivalente                  $        376.436       615.102         887.178         44,2        135,7
+
+                                       Media del ingreso de la ocupación principal                        436.189       720.234         999.898         38,8        129,2
+
+      Tasa de empleo                                                                             %             44,9          45,6            44,7       -2,0         -0,4
+
+      San Nicolás-Villa Constitución
+
+      Ingresos
+
+                                       Suma del ingreso total familiar                                  47.880.153    80.066.084     105.450.597        31,7        120,2
+
+                                       Suma de los ingresos laborales                           Miles   32.990.883    56.785.791      75.923.686        33,7        130,1
+                         Hogares
+                                       Suma de los ingresos no laborales                        de $    14.889.270    23.280.293      29.526.911        26,8         98,3
+
+                                       Suma del ingreso total familiar del estrato bajo (2)              9.829.706    17.672.187      22.692.343        28,4        130,9
+
+                                       Media del ingreso per cápita familiar                              240.995       401.394         528.230         31,6        119,2
+
+                         Personas      Media del ingreso por adulto equivalente                  $        301.441       498.220         653.657         31,2        116,8
+
+                                       Media del ingreso de la ocupación principal                        396.964       670.824         859.378         28,1        116,5
+
+      Tasa de empleo                                                                             %             37,9          39,5            38,4       -2,8          1,3
+(1)
+  Por adulto equivalente.
+(2)
+  El estrato bajo está conformado por los deciles 1 a 4 (ver “Definiciones” en el Anexo metodológico del presente informe técnico).
+Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+                         20/28
+               Cuadro 5.6              Evolución de indicadores seleccionados. Región Patagonia. Primer semestre 2024-primer semestre 2025
+
+                                                                                                                                                          Variaciones %
+                                                                                                    1° semestre      2° semestre     1° semestre                 con respecto
+                                                                                                                                                    con respecto
+                                                                                                        2024             2024            2025                       a igual
+                                                                                                                                                     al semestre
+                                                                                                                                                                 semestre del
+                                                                                                                                                       anterior
+                                                                                                                                                                 año anterior
+
+Canastas            Canasta básica alimentaria                                                         116.541,60      143.153,81      161.825,66       13,0          38,9
+                                                                                            $
+promedio (1)        Canasta básica total                                                               287.471,17      366.352,69      411.136,06       12,2          43,0
+
+Comodoro Rivadavia-Rada Tilly
+
+Ingresos
+
+                                  Suma del ingreso total familiar                                  79.865.770       140.934.858     164.050.564         16,4         105,4
+
+                                  Suma de los ingresos laborales                           Miles   64.813.639       112.529.932     136.004.544         20,9         109,8
+                     Hogares
+                                  Suma de los ingresos no laborales                        de $    15.052.131        28.404.926      28.046.020         -1,3          86,3
+
+                                  Suma del ingreso total familiar del estrato bajo (2)             17.975.316        28.655.733      39.088.300         36,4         117,5
+
+                                  Media del ingreso per cápita familiar                               315.542          552.694         639.055          15,6         102,5
+
+                     Personas     Media del ingreso por adulto equivalente                  $         378.014          662.098         767.235          15,9         103,0
+
+                                  Media del ingreso de la ocupación principal                         629.206         1.049.760       1.233.723         17,5          96,1
+
+Tasa de empleo                                                                              %              39,1             39,2            40,4         3,1           3,3
+
+Neuquén-Plottier
+
+Ingresos
+
+                                  Suma del ingreso total familiar                                  114.762.589      180.590.195     239.580.894         32,7         108,8
+
+                                  Suma de los ingresos laborales                           Miles   94.139.417       148.444.248     193.411.622         30,3         105,5
+                     Hogares
+                                  Suma de los ingresos no laborales                        de $    20.623.172        32.145.947      46.169.272         43,6         123,9
+
+                                  Suma del ingreso total familiar del estrato bajo (2)             22.761.322        38.507.368      48.287.078         25,4         112,1
+
+                                  Media del ingreso per cápita familiar                               356.824          559.272         742.854          32,8         108,2
+
+                     Personas     Media del ingreso por adulto equivalente                  $         436.848          683.470         913.847          33,7         109,2
+
+                                  Media del ingreso de la ocupación principal                         575.134          937.171        1.302.911         39,0         126,5
+
+Tasa de empleo                                                                              %              46,4             45,8            44,5        -2,8          -4,1
+
+Río Gallegos
+
+Ingresos
+
+                                  Suma del ingreso total familiar                                  35.272.108        68.832.841      83.339.606         21,1         136,3
+
+                                  Suma de los ingresos laborales                           Miles   26.923.188        53.298.123      59.971.325         12,5         122,7
+                     Hogares
+                                  Suma de los ingresos no laborales                        de $      8.348.920       15.534.718      23.368.281         50,4         179,9
+                                                                                     (2)
+                                  Suma del ingreso total familiar del estrato bajo                   8.312.971       16.239.728      19.778.208         21,8         137,9
+
+                                  Media del ingreso per cápita familiar                               271.949          522.090         626.741          20,0         130,5
+
+                     Personas     Media del ingreso por adulto equivalente                  $         331.622          635.792         764.434          20,2         130,5
+
+                                  Media del ingreso de la ocupación principal                         441.808          853.110         929.187           8,9         110,3
+
+Tasa de empleo                                                                              %              43,8             42,6            42,8         0,5          -2,3
+
+
+                                                                                                                                                               (continuación)
+
+
+
+
+                 Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos                                                                  21/28
+                 Cuadro 5.6            (conclusión)
+
+                                                                                                                                                       Variaciones %
+                                                                                                    1° semestre     2° semestre    1° semestre                con respecto
+                                                                                                                                                 con respecto
+                                                                                                        2024            2024           2025                      a igual
+                                                                                                                                                  al semestre
+                                                                                                                                                              semestre del
+                                                                                                                                                    anterior
+                                                                                                                                                              año anterior
+
+      Ushuaia-Río Grande
+
+      Ingresos
+
+                                   Suma del ingreso total familiar                                  59.791.791    102.106.063     140.443.281        37,5        134,9
+
+                                   Suma de los ingresos laborales                           Miles   49.262.900    85.100.690      116.924.452        37,4        137,3
+                       Hogares
+                                   Suma de los ingresos no laborales                        de $    10.528.891    17.005.373       23.518.829        38,3        123,4
+
+                                   Suma del ingreso total familiar del estrato bajo (2)             14.018.577    22.135.697       33.003.333        49,1        135,4
+
+                                   Media del ingreso per cápita familiar                              337.317        569.350         774.855         36,1        129,7
+
+                       Personas    Media del ingreso por adulto equivalente                  $        405.024        682.606         925.279         35,6        128,5
+
+                                   Media del ingreso de la ocupación principal                        569.089        924.678        1.252.671        35,5        120,1
+
+      Tasa de empleo                                                                         %             46,0           46,7            46,8        0,2          1,7
+
+      Rawson-Trelew
+
+      Ingresos
+
+                                   Suma del ingreso total familiar                                  42.203.053    72.532.534      100.382.649        38,4        137,9
+
+                                   Suma de los ingresos laborales                           Miles   31.568.198    52.286.904       71.194.282        36,2        125,5
+                       Hogares
+                                   Suma de los ingresos no laborales                        de $    10.634.855    20.245.630       29.188.367        44,2        174,5
+                                                                                      (2)
+                                   Suma del ingreso total familiar del estrato bajo                  9.347.823    17.017.432       22.449.091        31,9        140,2
+
+                                   Media del ingreso per cápita familiar                              278.449        477.097         655.410         37,4        135,4
+
+                       Personas    Media del ingreso por adulto equivalente                  $        339.353        587.634         810.979         38,0        139,0
+
+                                   Media del ingreso de la ocupación principal                        463.740        787.130         999.948         27,0        115,6
+
+      Tasa de empleo                                                                         %             42,5           41,2            41,7        1,2         -1,9
+
+      Viedma-Carmen de Patagones
+
+      Ingresos
+
+                                   Suma del ingreso total familiar                                  22.223.218    38.137.040       50.058.614        31,3        125,3
+
+                                   Suma de los ingresos laborales                           Miles   14.901.199    25.510.015       33.608.072        31,7        125,5
+                       Hogares
+                                   Suma de los ingresos no laborales                        de $     7.322.019    12.627.025       16.450.542        30,3        124,7
+
+                                   Suma del ingreso total familiar del estrato bajo (2)              6.233.886    10.590.632       14.867.724        40,4        138,5
+
+                                   Media del ingreso per cápita familiar                              258.097        441.442         576.559         30,6        123,4
+
+                       Personas    Media del ingreso por adulto equivalente                  $        319.797        548.418         715.022         30,4        123,6
+
+                                   Media del ingreso de la ocupación principal                        398.958        692.494         895.090         29,3        124,4
+
+      Tasa de empleo                                                                         %             41,3           38,7            40,8        5,4         -1,2
+(1)
+  Por adulto equivalente.
+(2)
+  El estrato bajo está conformado por los deciles 1 a 4 (ver “Definiciones” en el Anexo metodológico del presente informe técnico).
+Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+                       22/28
+Anexo metodológico
+                        La EPH es un programa nacional de producción sistemática y permanente de indicadores sociales que lle-
+                        va a cabo el INDEC conjuntamente con las direcciones provinciales de estadística (DPE). Tiene por objeto
+                        relevar las características sociodemográficas y socioeconómicas de la población.
+                        Con relación a la medición de la pobreza, es necesario tener presente que la información que se difunde está
+                        producida con la metodología de cálculo de la pobreza que se ha estado utilizando desde 1992, es decir,
+                        con una valorización de la canasta básica alimentaria (CBA) y de la canasta básica total (CBT) comparada
+                        con los ingresos de los hogares relevados por la EPH. Desde 2016, la medición introdujo la actualización de
+                        la línea de indigencia y de pobreza con base en la composición de la CBA resultante de la Encuesta Nacional
+                        de Gastos de los Hogares (ENGHo) 1996/97. Dicha composición fue validada, en términos de la estructura
+                        alimentaria, con el patrón de consumo que surge de la ENGHo 2004/05. La relación entre la CBA y la CBT se
+                        deriva, a su vez, de esta última (2004/05).1
+
+
+Metodología general de cálculo de línea de pobreza y línea de indigencia
+¿Qué se entiende por línea de indigencia?
+
+                        El concepto de línea de indigencia (LI) procura establecer si los hogares cuentan con ingresos suficientes
+                        como para cubrir una canasta de alimentos capaz de satisfacer un umbral mínimo de necesidades energéti-
+                        cas y proteicas. De esta manera, los hogares que no superan ese umbral o línea son considerados indigentes.
+                        El procedimiento parte de utilizar una canasta básica de alimentos de costo mínimo (CBA) determinada
+                        en función de los hábitos de consumo de la población definida como población de referencia, con base
+                        en los resultados de la Encuesta de Gastos e Ingresos de los Hogares (ENGHo) de 1996/97 validada con
+                        la ENGHo de 2004/05.
+                        Asimismo, el procedimiento en uso toma en cuenta los requerimientos normativos kilocalóricos y pro-
+                        teicos imprescindibles para esa población (según “Composición de las canastas básicas alimentarias
+                        regionales del adulto equivalente” presentadas más adelante).
+                        Una vez establecidos los componentes de la CBA, se los valoriza con los precios relevados por el Índice
+                        de precios al consumidor (IPC) para cada período de medición.
+                        Dado que los requerimientos nutricionales son diferentes según la edad, el sexo y la actividad de las
+                        personas, es necesario hacer una adecuación que refleje las características de cada individuo en relación
+                        con esas variables, para lo cual se toma como unidad de referencia al varón adulto, de 30 a 60 años, con
+                        actividad moderada. A esta unidad de referencia se la denomina “adulto equivalente” y se le asigna un
+                        valor igual a uno.
+                        La tabla de equivalencias de las necesidades energéticas y unidades consumidoras, en términos de adulto
+                        equivalente, es la siguiente:
+
+                                     Edad                          Mujeres                         Varones
+                                Menor de 1 año                       0,35                           0,35
+                                    1 año                            0,37                           0,37
+                                    2 años                           0,46                           0,46
+                                    3 años                           0,51                           0,51
+                                    4 años                           0,55                           0,55
+                                    5 años                           0,60                           0,60
+                                    6 años                           0,64                           0,64
+                                    7 años                           0,66                           0,66
+                                    8 años                           0,68                           0,68
+                                    9 años                           0,69                           0,69
+                                   10 años                           0,70                           0,79
+                                   11 años                           0,72                           0,82
+                                   12 años                           0,74                           0,85
+                                   13 años                           0,76                           0,90
+                                   14 años                           0,76                           0,96
+                                   15 años                           0,77                           1,00
+                                   16 años                           0,77                           1,03
+                                   17 años                           0,77                           1,04
+                                 18 a 29 años                        0,76                           1,02
+                                 30 a 45 años                        0,77                           1,00
+                                 46 a 60 años                        0,76                           1,00
+                                 61 a 75 años                        0,67                           0,83
+                                Más de 75 años                       0,63                           0,74
+                         Fuente: INDEC, “Actualización de la metodología oficial de cálculo de las líneas de pobreza”,
+                         presentado en el Taller Regional de Medición de la Pobreza, Buenos Aires, noviembre de 2003.
+
+
+1
+ Para más detalle: INDEC (2016). La medición de la pobreza y la indigencia en la Argentina. Metodología n° 22. http://www.indec.gob.ar/ftp/cua-
+dros/sociedad/EPH_metodologia_22_pobreza.pdf
+
+
+
+    Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos                                                          23/28
+                 Se presentan a continuación dos ejemplos de cómo se determina la cantidad de unidades de referencia
+                 (adultos equivalentes) para cada caso.
+
+
+                 Ejemplos
+                 – Un hogar de tres miembros, compuesto por una mujer de 35 años, su hijo de 18 y su madre de 61:
+                 La mujer equivale a 0,77 de adulto equivalente.
+                 El hijo equivale a 1,02 de adulto equivalente.
+                 La madre equivale a 0,67 de adulto equivalente.
+                 En total, el hogar suma 2,46 unidades de referencia o adultos equivalentes.
+
+                 – Otro hogar de cinco miembros, constituido por una pareja (ambos de cuarenta años) y tres hijos de
+                 cinco, tres y un año cumplidos:
+                 El varón equivale a 1,00 adulto equivalente.
+                 La mujer equivale a 0,77 de adulto equivalente.
+                 El hijo de 5 años equivale a 0,60 de adulto equivalente.
+                 El hijo de 3 años equivale a 0,51 de adulto equivalente.
+                 El hijo de 1 año equivale a 0,37 de adulto equivalente.
+                 En total, el hogar suma 3,25 unidades de referencia o adultos equivalentes.
+
+
+                 La composición de cada hogar en adultos equivalentes determina un valor de CBA específico para ese
+                 hogar. Por ejemplo, si en un mes el valor de la CBA para el adulto equivalente fue de $160.393,45 (valor
+                 de referencia de la CBA para la región GBA en marzo de 2025), el valor de la CBA para el caso del primer
+                 hogar surge de multiplicar el costo de la CBA para el adulto equivalente por la cantidad de adultos
+                 equivalentes que conforman el hogar, es decir: $160.393,45 * 2,46 = $394.567,89. La CBA del segundo
+                 hogar vale $160.393,45 * 3,25 = $521.278,71. Por último, se compara este valor específico de cada CBA
+                 con el ingreso total familiar del hogar. Si el ingreso es inferior al valor de la canasta, se considera que el
+                 hogar y los individuos que lo componen se hallan por debajo de la “línea de indigencia” ese mes.
+                 Siguiendo con los ejemplos, si ese mes el primer hogar tuviera un ingreso total familiar de $350.000, sería
+                 considerado indigente; pero no lo sería si el ingreso fuera de $430.000 (valor superior a $394.567,89,
+                 que es el valor de la CBA para ese hogar). En el caso del segundo hogar, si su ingreso total familiar del
+                 mes fuera de $480.000 (valor inferior a $521.278,71), sería considerado indigente. Si ambos hogares
+                 tuvieran un ingreso total familiar de $500.000, solo el segundo sería considerado indigente, ya que con
+                 el mismo ingreso debe alimentar a más personas (en rigor, a más adultos equivalentes).
+
+
+¿Qué se entiende por línea de pobreza?
+                 La medición de la pobreza con el método de la línea de pobreza (LP) consiste en establecer, a partir de
+                 los ingresos de los hogares, si estos tienen capacidad de satisfacer –por medio de la compra de bienes
+                 y servicios– un conjunto de necesidades alimentarias y no alimentarias consideradas esenciales.
+                 Para calcular la línea de pobreza es necesario contar con el valor de la CBA y ampliarlo con la inclusión
+                 de bienes y servicios no alimentarios (vestimenta, transporte, educación, salud, etc.), con el fin de
+                 obtener el valor de la CBT.
+                 Para ampliar o expandir el valor de la CBA se utiliza el coeficiente de Engel (CdE), definido como la
+                 relación entre los gastos alimentarios y los gastos totales observados en la población de referencia (en
+                 este caso, la que surge de la ENGHo 2004-05).
+
+                                        Coeficiente de Engel = Gastos alimentarios / Gastos totales
+
+                 En cada período, el CdE se actualiza por el cambio en el precio relativo de los alimentos respecto de
+                 los demás bienes y servicios. De esta forma, se actualizan los montos de gasto alimentario y total del
+                 período base, considerando la misma relación de cantidades de consumo. Para esto se toman los precios
+                 relevados por el IPC, tomando en cuenta la estructura de gastos específica de la población de referencia.
+                 Para expandir el valor de la CBA, se multiplica su valor por la inversa del coeficiente de Engel.
+
+                                                CBT = CBA * inversa del coeficiente de Engel
+
+                 Por ejemplo, si en un mes el valor de la inversa del coeficiente de Engel fue de 2,22 y la CBA de $160.393,45
+                 (valor de referencia de la CBA para la región GBA en marzo de 2025), entonces: $160.393,45 (CBA) * 2,22
+                 (inversa del CdE) = $356.073,46 (la CBT para un adulto equivalente). Por último, se compara el valor de la
+                 CBT de cada hogar con el ingreso total familiar de dicho hogar. Si el ingreso es inferior al valor de la CBT, se
+                 considera que el hogar y los individuos que lo componen se hallan por debajo de la línea de pobreza; de lo
+                 contrario, se encontrarán en el grupo de hogares y personas no pobres.
+
+
+
+
+     24/28
+                     Retomando los ejemplos, la línea de pobreza correspondiente al primer hogar (es decir, su CBT) es de
+                     $875.940,71, por lo que el hogar y sus integrantes serán considerados pobres si ese mes su ingreso total
+                     familiar es inferior a ese valor. En el caso del segundo hogar, la línea de pobreza corresponde al valor de
+                     $1.157.238,75.
+                     Obsérvese que si ambos hogares tuvieran un mismo ingreso total familiar de $1.000.000, solo el segundo
+                     sería considerado como pobre, o ubicado por debajo de la línea de pobreza, ya que con los mismos recursos
+                     debe satisfacer las necesidades de más personas (o, más precisamente, de más adultos equivalentes).
+
+
+Canastas regionales
+                     En este informe también se incorpora otro desarrollo metodológico consistente en la composición
+                     y valorización de la CBA para cada una de las regiones, de acuerdo con los hábitos de consumo
+                     específicos relevados en la ENGHo.
+                     Los valores de la CBA y de la CBT para el adulto equivalente y de la inversa del coeficiente de Engel
+                     utilizados se presentan a continuación:
+
+
+
+
+                     Serie canasta básica alimentaria. Línea de indigencia
+
+                                                                           2025
+           Región
+                               Enero           Febrero           Marzo                Abril        Mayo             Junio
+                                                                           Pesos
+ Gran Buenos Aires         146.726,23        151.491,17       160.393,45           162.553,77   161.903,21       163.756,66
+ Cuyo                      130.240,23        134.350,03       142.976,21           145.123,26   144.198,65       145.401,29
+ Noreste                   129.910,49        134.516,03       142.598,50           144.576,30   144.207,13       145.307,68
+ Noroeste                  126.271,15        130.336,68       138.383,68           140.662,19   140.202,37       141.108,10
+ Pampeana                  144.722,37        149.129,95       158.306,61           160.535,13   159.544,76       160.813,56
+ Patagonia                 150.638,94        155.674,99       164.774,47           166.551,88   165.845,40       167.468,30
+
+
+
+
+                     Serie inversa del coeficiente de Engel
+
+
+                                                                           2025
+           Región
+                               Enero           Febrero           Marzo                Abril        Mayo             Junio
+
+
+ Gran Buenos Aires             2,28              2,26               2,22               2,21         2,22             2,23
+ Cuyo                          2,43              2,41               2,37               2,36         2,37             2,38
+ Noreste                       2,13              2,12               2,08               2,07         2,08             2,09
+ Noroeste                      2,11              2,10               2,06               2,05         2,06             2,07
+ Pampeana                      2,28              2,26               2,22               2,21         2,22             2,23
+ Patagonia                     2,59              2,57               2,52               2,51         2,52             2,54
+
+
+
+
+                     Serie canasta básica total. Línea de pobreza
+
+
+                                                                           2025
+           Región
+                               Enero           Febrero           Marzo                Abril        Mayo             Junio
+                                                                           Pesos
+ Gran Buenos Aires         334.535,80       342.370,04        356.073,46           359.243,83   359.425,13       365.177,35
+ Cuyo                      316.483,76       323.783,57        338.853,62           342.490,89   341.750,80       346.055,07
+ Noreste                   276.709,34       285.173,98        296.604,88           299.272,94   299.950,83       303.693,05
+ Noroeste                  266.432,13       273.707,03        285.070,38           288.357,49   288.816,88       292.093,77
+ Pampeana                  329.967,00       337.033,69        351.440,67           354.782,64   354.189,37       358.614,24
+ Patagonia                 390.154,85       400.084,72        415.231,66           418.045,22   417.930,41       425.369,48
+
+                     Fuente: INDEC, Encuesta Permanente de Hogares.
+
+
+
+  Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos                                              25/28
+Composición de las canastas básicas alimentarias regionales del adulto equivalente
+
+                      En la elaboración de la CBA, se consideraron los hábitos alimentarios de cada región y se conformaron
+                      distintas canastas regionales para cada una de ellas. Estas canastas son las siguientes:
+
+
+
+                      Composición de las CBA regionales (mensuales)
+                      Gramos o centímetros cúbicos por mes, por unidad de consumo o adulto equivalente
+
+                                                                                     Regiones
+                                  Gran Buenos
+                                                      Pampeana            Noroeste              Noreste         Cuyo            Patagonia
+                                     Aires
+
+
+ Harinas y cereales                  11.610             11.880             12.300               12.090         12.300             11.700
+ Carnes y fiambres                    6.600              6.810              6.720                6.630          6.660              6.780
+ Aceites y grasas                     1.260              1.170              1.110                1.200          1.140              1.200
+ Lácteos y huevos                    10.170              9.210              8.040                5.820          6.390              5.580
+ Frutas                               4.950              5.880              6.030                6.180          5.970              6.120
+ Verduras                            12.750             13.830             13.710               13.230         13.470             13.770
+ Legumbres                              240                240                240                  300            240                240
+ Azúcar y dulces                      1.560              1.500              1.500                1.440          1.500              1.470
+ Bebidas                              4.530              4.980              5.610                4.500          5.340              4.020
+ Infusiones                             540                660                420                  810            450                510
+ Condimentos y otros productos          300                330                270                  300            330                360
+                       Fuente: INDEC, “Actualización de la metodología oficial de cálculo de las líneas de pobreza”, presentado en el Taller
+                       Regional de Medición de la Pobreza, Buenos Aires, noviembre de 2003.
+
+
+Definiciones
+                       Ingreso total familiar: se obtiene sumando el ingreso individual de todas las personas que integran el hogar,
+                       como así también los montos correspondientes al hogar que no son atribuibles a un miembro en particular.
+                       Ingreso per cápita familiar: se obtiene dividiendo el ingreso total familiar por la totalidad de los
+                       componentes del hogar.
+                       Ingreso por adulto equivalente: se obtiene dividiendo el ingreso total familiar por el coeficiente de adulto
+                       equivalente total del hogar (ver “Metodología general de cálculo de línea de pobreza y línea de indigencia”
+                       en el presente Anexo metodológico).
+                       Estrato bajo: comprende los deciles 1 a 4 de hogares según el ingreso per cápita familiar.
+                       Tasa de empleo: se calcula como porcentaje entre la población ocupada y la población total de referencia
+                       (ver “Definiciones básicas” en el Anexo metodológico del informe técnico Mercado de trabajo. Tasas e
+                       indicadores socioeconómicos).
+
+
+Aspectos metodológicos generales
+
+Características de la muestra
+                       La EPH se basa en una muestra probabilística, estratificada, en dos etapas de selección. Dicha muestra
+                       está distribuida a lo largo del período respecto del cual se brinda información (el trimestre). El relevamiento
+                       se desarrolla a lo largo de todo el año.
+                       El tamaño de muestra de este semestre es de 52.700 viviendas. Como en toda encuesta por muestreo,
+                       los resultados obtenidos son valores que estiman el verdadero valor de cada tasa y tienen asociado
+                       un error, cuya cuantía también se estima, lo que permite conocer la confiabilidad de las estimaciones.
+                       Estos resultados indican el nivel probable alcanzado por cada tasa a partir de la muestra, admitiéndose
+                       oscilaciones de este nivel, en más y en menos, con un grado de confianza conocido.
+                       La encuesta produce estimaciones trimestrales y, en este caso, semestrales válidas para:
+                           • Cada uno de los 31 aglomerados urbanos.
+                           • Total de 31 aglomerados agrupados.
+                           • Aglomerados del interior: todos los aglomerados excluido el aglomerado Gran Buenos Aires.
+                           • Conjunto de aglomerados agrupados en 6 regiones estadísticas:
+                                 - Región Gran Buenos Aires: integrada por Ciudad Autónoma de Buenos Aires y Partidos del
+                                   Gran Buenos Aires.
+                                 - Región Cuyo: integrada por Gran Mendoza, Gran San Juan y Gran San Luis.
+
+
+
+
+      26/28
+                               - Región Noreste (NEA): integrada por Corrientes, Formosa, Gran Resistencia y Posadas.
+                               - Región Noroeste (NOA): integrada por Gran Catamarca, Gran Tucumán-Tafí Viejo, Jujuy-Palpalá,
+                                 La Rioja, Salta y Santiago del Estero-La Banda.
+                               - Región Pampeana: integrada por Bahía Blanca-Cerri, Concordia, Gran Córdoba, Gran La Plata,
+                                 Gran Rosario, Gran Paraná, Gran Santa Fe, Mar del Plata, Río Cuarto, San Nicolás-Villa
+                                 Constitución y Santa Rosa-Toay.
+                               - Región Patagonia: integrada por Comodoro Rivadavia-Rada Tilly, Neuquén-Plottier, Rawson-
+                                 Trelew, Río Gallegos, Ushuaia-Río Grande y Viedma-Carmen de Patagones.
+                        • Conjunto de aglomerados con 500.000 y más habitantes: Gran Buenos Aires, Gran Córdoba, Gran
+                        La Plata, Mar del Plata, Gran Mendoza, Gran Rosario, Gran Tucumán-Tafí Viejo, Salta, Santa Fe y
+                        Gran San Juan.
+                        • Conjunto de aglomerados con menos de 500.000 habitantes: Bahía Blanca-Cerri, Gran Paraná,
+                        Posadas, Gran Resistencia, Comodoro Rivadavia-Rada Tilly, Corrientes, Concordia, Formosa, Neu-
+                        quén-Plottier, Santiago del Estero-La Banda, Jujuy-Palpalá, Río Gallegos, Gran Catamarca, La Rioja,
+                        Gran San Luis, Santa Rosa-Toay, Ushuaia-Río Grande, Río Cuarto, San Nicolás-Villa Constitución,
+                        Rawson-Trelew y Viedma-Carmen de Patagones.
+
+Cálculo y ajuste de factores de expansión
+                    Los censos de población constituyen el marco de referencia para las encuestas a hogares. A partir del
+                    Censo Nacional de Población, Hogares y Viviendas 2010, se seleccionó una muestra de áreas geográficas,
+                    según el fraccionamiento territorial y cartográfico del Censo. Ese conjunto de áreas seleccionadas,
+                    siguiendo procedimientos probabilísticos, constituye una muestra maestra, que se denominó Muestra
+                    Maestra Urbana de Viviendas de la República Argentina (MMUVRA). Las áreas geográficas que la
+                    componen son, en general, radios censales o agrupamientos de radios censales.
+                    La MMUVRA es el marco del que se seleccionan las muestras para las encuestas a hogares durante todo
+                    el período intercensal. La cantidad de áreas que se seleccionan para los 31 aglomerados urbanos de
+                    la EPH permite diseñar muestras cuyos dominios de estimación sean las poblaciones urbanas de esos
+                    aglomerados. Al determinar la cantidad de áreas a seleccionar se tienen en cuenta los niveles de precisión
+                    requeridos para poder construir series de la tasa de desempleo.
+                    Para cada una de las áreas seleccionadas, se construyó un listado exhaustivo de las viviendas particu-
+                    lares, es decir, de las unidades de selección de la etapa final del muestreo de la EPH. Las muestras de
+                    viviendas a encuestar cada trimestre en cada aglomerado EPH se seleccionan de los listados de viviendas
+                    de las áreas de la MMUVRA.
+
+
+Selección de las áreas de la MMUVRA en los aglomerados EPH
+
+                    Las áreas son las unidades de muestreo en esta segunda etapa. Son radios censales o agrupamientos de
+                    radios para asegurar un número mínimo de viviendas en las áreas (200 viviendas). El método por el que se
+                    seleccionan es el del muestreo estratificado con probabilidad de selección proporcional a la cantidad de
+                    viviendas particulares del área (PPS).
+
+
+Selección de las viviendas en las áreas seleccionadas
+
+                    En la tercera etapa, se seleccionan las viviendas a encuestar entre las viviendas particulares listadas
+                    en cada área, mediante el muestreo sistemático de conglomerados de viviendas contiguas (dos o tres
+                    conglomerados, según el aglomerado). Los listados de viviendas se ordenan geográficamente previamente
+                    a la selección, lo que constituye una estratificación geográfica implícita.
+
+
+Ponderación de la muestra de la EPH
+
+                    Como en la mayoría de las encuestas probabilísticas, el cálculo de los factores de expansión se realiza en
+                    las siguientes etapas:
+                    - cálculo de los factores de expansión de diseño
+                    - ajuste de los factores utilizando proyecciones de población
+                    Dado que en cada aglomerado la muestra EPH tiene un diseño bietápico, el factor de expansión de diseño
+                    de una vivienda i, perteneciente a un área k, en un aglomerado h, será:
+
+                    Fhi = F1hk * F2hki
+
+                    donde F1hk es el factor de expansión del área k dentro del aglomerado h, y F2hki es el factor de expansión
+                    de la vivienda i dentro del área k, en el aglomerado h.
+                    Una vez finalizado el relevamiento trimestral, se ajustan los factores de diseño para realizar las correccio-
+                    nes por no respuesta (no respuesta a nivel de hogares, o sea, los hogares que no aceptan ser encuestados
+                    o, por algún motivo, no pueden ser encuestados).
+
+
+
+
+  Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos                                               27/28
+                  Este ajuste es una simple reponderación a nivel de estrato de selección –o de agrupamiento de estratos
+                  de selección, en caso de haber pocas áreas en alguno de ellos, en algún aglomerado–, multiplicando
+                  por un factor de corrección por no respuesta FCNRhr, que depende del aglomerado h y el estrato de
+                  reponderación r correspondiente.
+
+                  FCNRhr = VEhr / VRhr
+
+                  Siendo:
+                  VEhr las viviendas habitadas en el estrato de reponderación r del aglomerado h,
+                  VRhr las viviendas con algún hogar que haya respondido la encuesta, en el estrato de reponderación co-
+                  rrespondiente del aglomerado h.
+                  El factor final de diseño, corregido por no respuesta, en un área k de un aglomerado h, es entonces:
+
+                  Dhk = FCNRhk . Fhk
+
+                  Finalmente, se realiza un ajuste de los factores utilizando las proyecciones de población que provee la
+                  Dirección Nacional de Estadísticas Poblacionales.
+
+Cálculo de coeficientes de variación y errores estándar
+
+                  Al analizar las estimaciones provenientes de una muestra, se debe tener presente que estas están afec-
+                  tadas por el llamado error muestral y que es importante conocer aproximadamente la magnitud de esos
+                  errores. Una medida de estos errores está dada por el desvío estándar (DS).
+                  Con el desvío estándar, el usuario puede construir un intervalo numérico que tiene un determinado nivel
+                  de confianza, medido en términos de probabilidad, de contener el valor verdadero que se desea estimar.
+                  La teoría del muestreo indica que, con una confianza del 90%, el intervalo comprendido entre la estima-
+                  ción menos 1,64 veces el desvío estándar y la estimación más 1,64 veces el desvío estándar contiene el
+                  valor verdadero que se desea estimar.
+                  Es por eso que a este intervalo se lo denomina “intervalo de confianza del 90%”.
+                  Cabe aclarar que se pueden construir otros intervalos de confianza:
+
+                  Estimación +/- 1 vez el desvío estándar = intervalo de confianza del 67%
+                  Estimación +/- 2 veces el desvío estándar = intervalo de confianza del 95%
+                  Estimación +/- 3 veces el desvío estándar = intervalo de confianza del 99%
+
+                  Además, con el desvío estándar se puede calcular el coeficiente de variación (CV), efectuando el cociente
+                  entre el desvío estándar de una estimación y esa estimación:
+
+                  CV = DS / Estimación
+
+                  El coeficiente de variación brinda una idea de la precisión de la estimación, o sea, la relación entre el
+                  desvío estándar y el valor a estimar. Cuanto más pequeño es el coeficiente de variación, más precisa es
+                  la estimación. Si bien corresponde al usuario determinar si un dato con cierto coeficiente de variación le
+                  es útil o no para su objetivo, de acuerdo con el grado de precisión requerido, se advierte que cifras con
+                  coeficiente de variación superiores al 16% deben ser tratadas con cautela.
+                  Aquellas estimaciones que tengan asociados coeficientes de variación entre el 16% y el 25% deberían ser
+                  consideradas con cuidado, ya que la precisión es baja. Asimismo, las estimaciones que tengan asociados
+                  coeficientes de variación que superen el 25% deberían ser consideradas como no confiables.
+
+
+Acerca de las proyecciones de población
+                  Las estimaciones de población residente en viviendas particulares de los aglomerados que cubre la En-
+                  cuesta Permanente de Hogares (EPH) han sido elaboradas ajustándolas a las proyecciones de población
+                  nacional y provinciales obtenidas a partir del Censo Nacional de Población, Hogares y Viviendas 2010.
+                  Las estimaciones de población de los aglomerados EPH se ajustan a las áreas correspondientes a los
+                  dominios que conforman la actual MMUVRA para dichos aglomerados
+
+
+                  Enlaces
+                  Desde aquí se pueden descargar los cuadros del informe técnico Incidencia de la pobreza y de la indigencia
+                  en 31 aglomerados urbanos. Primer semestre de 2025:
+                  http://www.indec.gob.ar/ftp/cuadros/sociedad/cuadros_informe_pobreza_09_25.xls
+                  Las estimaciones de las tasas de pobreza e indigencia en 31 aglomerados urbanos y según grupos de edad,
+                  y sus respectivos coeficientes de variación e intervalos de confianza al 90%, se encuentran disponibles en:
+                  https://www.indec.gob.ar/ftp/cuadros/sociedad/coeficientes_variacion_pobreza_09_25.xlsx
+
+
+
+      28/28
+

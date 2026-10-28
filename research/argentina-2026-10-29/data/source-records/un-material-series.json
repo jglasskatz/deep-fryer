@@ -1,0 +1,14 @@
+{
+  "id": "un-material-series",
+  "url": "https://unstats.un.org/SDGAPI/v1/sdg/Series/Data?seriesCode=EN_MAT_FTPRPC&areaCode=32&pageSize=1000",
+  "resolved_url": "https://unstats.un.org/SDGAPI/v1/sdg/Series/Data?seriesCode=EN_MAT_FTPRPC&areaCode=32&pageSize=1000",
+  "path": "raw/un-material-series.json",
+  "publisher": "UN Statistics Division / UNEP",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:41:35.052340+00:00",
+  "sha256": "3c46060d4a4d07a2e102825e78e373b03a9502dcb78ec8cfcee0d3687fedc4b2",
+  "bytes": 2476,
+  "content_type": "application/json; charset=utf-8",
+  "http_last_modified": null,
+  "title": "un material series"
+}

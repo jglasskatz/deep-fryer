@@ -66,6 +66,10 @@ describe.skipIf(!hasDb)('policyAnalyze with an organization key (Postgres, mocke
       .update(m.tenantConfig)
       .set({ value: { policy_analysis: true } })
       .where(and(eq(m.tenantConfig.tenantId, tenant.id), eq(m.tenantConfig.key, 'features')));
+    const [dimension]=await db.select().from(m.dimensions).where(eq(m.dimensions.tenantId,tenant.id)).limit(1);
+    const latest=(await m.latestVersion(db,dimension!.id))!;
+    const published=await m.appendDimensionVersion(db,{dimensionId:dimension!.id,status:'published',origin:'import',publishedAt:new Date(),data:latest.data,vizLevel:null});
+    await db.update(m.dimensions).set({publishedVersionId:published.id}).where(eq(m.dimensions.id,dimension!.id));
     if (withKey) {
       await m.upsertOrganizationApiKey(db, {
         organizationId: tenant.organizationId,

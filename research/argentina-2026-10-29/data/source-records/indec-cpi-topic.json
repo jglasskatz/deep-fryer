@@ -1,0 +1,14 @@
+{
+  "id": "indec-cpi-topic",
+  "url": "https://www.indec.gob.ar/indec/web/Nivel4-Tema-3-5-31",
+  "resolved_url": "https://www.indec.gob.ar/indec/web/Nivel4-Tema-3-5-31",
+  "path": "raw/indec-cpi-topic.html",
+  "publisher": "INDEC",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:09.952235+00:00",
+  "sha256": "5b2afc002f1165e63769d1fc38109b4b72e45eb273ca3be22c464bb3c6ad1636",
+  "bytes": 37470,
+  "content_type": "text/html; charset=utf-8",
+  "http_last_modified": null,
+  "title": "indec cpi topic"
+}

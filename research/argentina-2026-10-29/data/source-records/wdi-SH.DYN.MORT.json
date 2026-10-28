@@ -1,0 +1,15 @@
+{
+  "id": "wdi-SH.DYN.MORT",
+  "url": "https://api.worldbank.org/v2/country/ARG/indicator/SH.DYN.MORT?format=json&per_page=100&date=2013:2026",
+  "resolved_url": "https://api.worldbank.org/v2/country/ARG/indicator/SH.DYN.MORT?format=json&per_page=100&date=2013:2026",
+  "path": "raw/wdi-SH.DYN.MORT.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:05.120553+00:00",
+  "sha256": "afa903f82a540e500b75356130c6c5afa28822afb977b0a7b545f9b17887b83a",
+  "bytes": 2999,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 11:38:05 GMT",
+  "title": "WDI Argentina: Mortality rate, under-5 (per 1,000 live births)",
+  "dataset_last_updated": "2026-10-08"
+}

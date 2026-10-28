@@ -1,0 +1,14 @@
+{
+  "id": "event-drought",
+  "url": "https://repositorio.smn.gob.ar/handle/20.500.12160/2370",
+  "resolved_url": "https://repositorio.smn.gob.ar/handle/20.500.12160/2370",
+  "path": "raw/event-drought.html",
+  "publisher": "Servicio Meteorologico Nacional",
+  "release_date": "2023-03-01",
+  "retrieved_at": "2026-10-28T11:44:28.620612+00:00",
+  "sha256": "40c3d5f6a46abb87cd63923398dc3cd8f675571c4c9d59b7eff6fd0c120d8605",
+  "bytes": 55310,
+  "content_type": "text/html;charset=utf-8",
+  "http_last_modified": null,
+  "title": "event drought"
+}

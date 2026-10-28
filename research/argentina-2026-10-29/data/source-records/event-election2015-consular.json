@@ -1,0 +1,14 @@
+{
+  "id": "event-election2015-consular",
+  "url": "https://esuec.cancilleria.gob.ar/es/argentina-en-breve",
+  "resolved_url": "https://esuec.cancilleria.gob.ar/es/argentina-en-breve",
+  "path": "raw/event-election2015-consular.html",
+  "publisher": "Argentina foreign ministry / Embassy in Sweden",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T12:04:50.040367+00:00",
+  "sha256": "551a96162cc014f3df9297338d8870b3287f6197417d61647334832af74db8ab",
+  "bytes": 51830,
+  "content_type": "text/html; charset=utf-8",
+  "http_last_modified": null,
+  "title": "Argentina foreign ministry: historical country brief confirming 2015 runoff date"
+}

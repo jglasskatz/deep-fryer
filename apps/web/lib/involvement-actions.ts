@@ -10,6 +10,7 @@ import { userDb } from './db';
 import { portraitFeaturesIn } from './features';
 import { verifyFormToken } from './form-token';
 import { getLocale } from './i18n/server';
+import { validInvolvementDimensionsIn } from './involvement-dimensions';
 
 /**
  * The public "put your organization forward" form (SPEC-v6 §4.2). No
@@ -148,6 +149,9 @@ export async function submitInvolvement(input: SubmitInvolvementInput): Promise<
       // connection while this one is held, and a burst of submissions would
       // leave every connection waiting on another (lib/features.ts).
       if (!(await portraitFeaturesIn(db, tenant.id)).involvement) return { status: 'failed' };
+      if (data.dimension_slug && !(await validInvolvementDimensionsIn(db, tenant.id, [data.dimension_slug], true))) {
+        return { status: 'invalid', fields: ['dimension_slug'] };
+      }
 
       // 5. Rate limits, under transaction-scoped advisory locks (released at
       //    commit or rollback; see LOCK_ADDRESS).

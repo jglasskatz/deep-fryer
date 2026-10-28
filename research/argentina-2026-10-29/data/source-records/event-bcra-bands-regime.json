@@ -1,0 +1,14 @@
+{
+  "id": "event-bcra-bands-regime",
+  "url": "https://www.bcra.gob.ar/regimen-de-bandas-cambiarias/",
+  "resolved_url": "https://www.bcra.gob.ar/regimen-de-bandas-cambiarias/",
+  "path": "raw/event-bcra-bands-regime.html",
+  "publisher": "BCRA",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T12:09:45.334639+00:00",
+  "sha256": "952141d9efa3d1cdf5263e54fc5c178936346795a2e5b646e3b9c71d54abb798",
+  "bytes": 74272,
+  "content_type": "text/html; charset=UTF-8",
+  "http_last_modified": null,
+  "title": "BCRA: exchange-band regime and January 2026 update"
+}

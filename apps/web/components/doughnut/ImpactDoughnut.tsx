@@ -83,19 +83,22 @@ export function ImpactDoughnut({
   ariaLabel,
   size = 560,
   anchorPrefix = 'impact-',
+  autoPlay = true,
 }: {
   dimensions: ImpactDimension[];
   labels: ImpactDoughnutLabels;
   ariaLabel: string;
   size?: number;
   anchorPrefix?: string;
+  /** Policy comparisons can start static; emergency callers retain their existing default. */
+  autoPlay?: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<DoughnutRenderer | null>(null);
   const prefersReduced = useSyncExternalStore(subscribeReducedMotion, reducedMotion, () => false);
   const [playing, setPlaying] = useState<boolean | null>(null);
-  const [state, setState] = useState<'now' | 'alternate'>('alternate');
-  const isPlaying = playing ?? !prefersReduced;
+  const [state, setState] = useState<'now' | 'alternate'>(autoPlay ? 'alternate' : 'now');
+  const isPlaying = playing ?? (autoPlay && !prefersReduced);
 
   const ordered = useMemo(
     () => ({
@@ -163,7 +166,7 @@ export function ImpactDoughnut({
   }, [isPlaying]);
 
   const button = (pressed: boolean) =>
-    `rounded px-2.5 py-1 text-xs ${pressed ? 'bg-black text-white' : 'border border-black/20 hover:bg-black/5'}`;
+    `min-h-11 rounded px-3 py-2 text-sm ${pressed ? 'bg-black text-white' : 'border border-black/20 hover:bg-black/5'}`;
 
   return (
     <div className="w-full" style={{ maxWidth: size }}>

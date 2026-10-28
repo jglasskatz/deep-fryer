@@ -1,0 +1,15 @@
+{
+  "id": "wdi-IT.NET.USER.ZS",
+  "url": "https://api.worldbank.org/v2/country/ARG/indicator/IT.NET.USER.ZS?format=json&per_page=100&date=2013:2026",
+  "resolved_url": "https://api.worldbank.org/v2/country/ARG/indicator/IT.NET.USER.ZS?format=json&per_page=100&date=2013:2026",
+  "path": "raw/wdi-IT.NET.USER.ZS.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:05.576463+00:00",
+  "sha256": "be9057e359d562a4722d9a4fd4270db7441997d9b779266b78869f69c6d1a6b6",
+  "bytes": 3153,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 11:38:05 GMT",
+  "title": "WDI Argentina: Individuals using the Internet (% of population)",
+  "dataset_last_updated": "2026-10-08"
+}

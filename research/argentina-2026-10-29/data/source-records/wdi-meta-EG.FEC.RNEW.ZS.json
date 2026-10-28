@@ -1,0 +1,14 @@
+{
+  "id": "wdi-meta-EG.FEC.RNEW.ZS",
+  "url": "https://api.worldbank.org/v2/indicator/EG.FEC.RNEW.ZS?format=json",
+  "resolved_url": "https://api.worldbank.org/v2/indicator/EG.FEC.RNEW.ZS?format=json",
+  "path": "raw/wdi-meta-EG.FEC.RNEW.ZS.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:07.660657+00:00",
+  "sha256": "a402de31aaa77141eba34f5d65ab0013e05d8e0b792c61be9f4c5f857028bc99",
+  "bytes": 710,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 07:33:16 GMT",
+  "title": "WDI indicator metadata: Renewable energy consumption (% of total final energy consumption)"
+}

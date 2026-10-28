@@ -1,0 +1,115 @@
+{
+  "scope": "Source model outputs, not empirical policy evaluation",
+  "records": [
+    {
+      "indicator_id": "material_footprint",
+      "year": 2020,
+      "value": 15.3567,
+      "epistemic_type": "projection-contaminated accounting estimate",
+      "source_id": "unep-material-argentina-export",
+      "source_locator": "CSV flow code=MF/cap, column=2020",
+      "method_source_id": "unep-material-methods",
+      "method_locator": "Technical Annex2024 printedp6 andpp34–35",
+      "use_restriction": "Reference only; do not classify as measured post-policy outcome or use for GDP/policy correlations."
+    },
+    {
+      "indicator_id": "material_footprint",
+      "year": 2021,
+      "value": 15.587,
+      "epistemic_type": "projection-contaminated accounting estimate",
+      "source_id": "unep-material-argentina-export",
+      "source_locator": "CSV flow code=MF/cap, column=2021",
+      "method_source_id": "unep-material-methods",
+      "method_locator": "Technical Annex2024 printedp6 andpp34–35",
+      "use_restriction": "Reference only; do not classify as measured post-policy outcome or use for GDP/policy correlations."
+    },
+    {
+      "indicator_id": "material_footprint",
+      "year": 2022,
+      "value": 16.1785,
+      "epistemic_type": "projection-contaminated accounting estimate",
+      "source_id": "unep-material-argentina-export",
+      "source_locator": "CSV flow code=MF/cap, column=2022",
+      "method_source_id": "unep-material-methods",
+      "method_locator": "Technical Annex2024 printedp6 andpp34–35",
+      "use_restriction": "Reference only; do not classify as measured post-policy outcome or use for GDP/policy correlations."
+    },
+    {
+      "indicator_id": "material_footprint",
+      "year": 2023,
+      "value": 16.3294,
+      "epistemic_type": "projection-contaminated accounting estimate",
+      "source_id": "unep-material-argentina-export",
+      "source_locator": "CSV flow code=MF/cap, column=2023",
+      "method_source_id": "unep-material-methods",
+      "method_locator": "Technical Annex2024 printedp6 andpp34–35",
+      "use_restriction": "Reference only; do not classify as measured post-policy outcome or use for GDP/policy correlations."
+    },
+    {
+      "indicator_id": "material_footprint",
+      "year": 2024,
+      "value": 16.5131,
+      "epistemic_type": "projection-contaminated accounting estimate",
+      "source_id": "unep-material-argentina-export",
+      "source_locator": "CSV flow code=MF/cap, column=2024",
+      "method_source_id": "unep-material-methods",
+      "method_locator": "Technical Annex2024 printedp6 andpp34–35",
+      "use_restriction": "Reference only; do not classify as measured post-policy outcome or use for GDP/policy correlations."
+    },
+    {
+      "indicator_id": "domestic_material_consumption",
+      "year": 2020,
+      "value": 18.0512,
+      "epistemic_type": "projection-contaminated accounting estimate",
+      "source_id": "unep-material-argentina-export",
+      "source_locator": "CSV flow code=DMC/cap, column=2020",
+      "method_source_id": "unep-material-methods",
+      "method_locator": "Technical Annex2024 printedp6 andpp34–35",
+      "use_restriction": "Reference only; do not classify as measured post-policy outcome or use for GDP/policy correlations."
+    },
+    {
+      "indicator_id": "domestic_material_consumption",
+      "year": 2021,
+      "value": 18.914,
+      "epistemic_type": "projection-contaminated accounting estimate",
+      "source_id": "unep-material-argentina-export",
+      "source_locator": "CSV flow code=DMC/cap, column=2021",
+      "method_source_id": "unep-material-methods",
+      "method_locator": "Technical Annex2024 printedp6 andpp34–35",
+      "use_restriction": "Reference only; do not classify as measured post-policy outcome or use for GDP/policy correlations."
+    },
+    {
+      "indicator_id": "domestic_material_consumption",
+      "year": 2022,
+      "value": 19.2844,
+      "epistemic_type": "projection-contaminated accounting estimate",
+      "source_id": "unep-material-argentina-export",
+      "source_locator": "CSV flow code=DMC/cap, column=2022",
+      "method_source_id": "unep-material-methods",
+      "method_locator": "Technical Annex2024 printedp6 andpp34–35",
+      "use_restriction": "Reference only; do not classify as measured post-policy outcome or use for GDP/policy correlations."
+    },
+    {
+      "indicator_id": "domestic_material_consumption",
+      "year": 2023,
+      "value": 19.5501,
+      "epistemic_type": "projection-contaminated accounting estimate",
+      "source_id": "unep-material-argentina-export",
+      "source_locator": "CSV flow code=DMC/cap, column=2023",
+      "method_source_id": "unep-material-methods",
+      "method_locator": "Technical Annex2024 printedp6 andpp34–35",
+      "use_restriction": "Reference only; do not classify as measured post-policy outcome or use for GDP/policy correlations."
+    },
+    {
+      "indicator_id": "domestic_material_consumption",
+      "year": 2024,
+      "value": 19.8084,
+      "epistemic_type": "projection-contaminated accounting estimate",
+      "source_id": "unep-material-argentina-export",
+      "source_locator": "CSV flow code=DMC/cap, column=2024",
+      "method_source_id": "unep-material-methods",
+      "method_locator": "Technical Annex2024 printedp6 andpp34–35",
+      "use_restriction": "Reference only; do not classify as measured post-policy outcome or use for GDP/policy correlations."
+    }
+  ]
+}

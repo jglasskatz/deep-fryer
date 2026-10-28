@@ -1,0 +1,14 @@
+{
+  "id": "event-bcra2026-plan",
+  "url": "https://www.bcra.gob.ar/archivos/Pdfs/Noticias/fase-remonetizacion-2026.pdf",
+  "resolved_url": "https://www.bcra.gob.ar/archivos/Pdfs/Noticias/fase-remonetizacion-2026.pdf",
+  "path": "raw/event-bcra2026-plan.pdf",
+  "publisher": "BCRA",
+  "release_date": "2025-12-15",
+  "retrieved_at": "2026-10-28T12:09:44.791958+00:00",
+  "sha256": "81ef9f8f7a4627feeeef2e7d144d971ec01a52417ef4474816dd24948e6882af",
+  "bytes": 209753,
+  "content_type": "application/pdf",
+  "http_last_modified": "Mon, 15 Dec 2025 18:30:14 GMT",
+  "title": "BCRA: monetary programme 2026 announcement, 15 December 2025"
+}

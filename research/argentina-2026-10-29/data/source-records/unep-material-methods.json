@@ -1,0 +1,14 @@
+{
+  "id": "unep-material-methods",
+  "url": "https://www.resourcepanel.org/sites/default/files/technical_annex_for_global_material_flows_database_-_vers_4_june_2024.pdf",
+  "resolved_url": "https://www.resourcepanel.org/sites/default/files/technical_annex_for_global_material_flows_database_-_vers_4_june_2024.pdf",
+  "path": "raw/unep-material-methods.pdf",
+  "publisher": "UNEP International Resource Panel",
+  "release_date": "2024-06-04",
+  "retrieved_at": "2026-10-28T11:49:22.169610+00:00",
+  "sha256": "a7a707901e6311237623d51aa78f1cf948f449fc3308dcff23127f401948e3d7",
+  "bytes": 944005,
+  "content_type": "application/pdf",
+  "http_last_modified": null,
+  "title": "UNEP IRP: Technical Annex for Global Material Flows Database, 2024 edition"
+}

@@ -1,0 +1,938 @@
+                                                                                 eprints@whiterose.ac.uk
+                                                                            https://eprints.whiterose.ac.uk
+                                                      Universities of Leeds, Sheffield and York
+
+
+Deposited via The University of Leeds.
+
+White Rose Research Online URL for this paper:
+https://eprints.whiterose.ac.uk/id/eprint/180834/
+
+Version: Accepted Version
+
+Article:
+Fanning, AL, O’Neill, DW, Hickel, J et al. (2022) The social shortfall and ecological
+overshoot of nations. Nature Sustainability, 5 (1). pp. 26-36.
+
+https://doi.org/10.1038/s41893-021-00799-z
+
+
+
+© The Author(s), under exclusive licence to Springer Nature Limited 2021. This is an
+author produced version of a paper published in Nature Sustainability. Uploaded in
+accordance with the publisher's self-archiving policy.
+
+
+
+
+Reuse
+Items deposited in White Rose Research Online are protected by copyright, with all rights reserved unless
+indicated otherwise. They may be downloaded and/or printed for private study, or other acts as permitted by
+national copyright laws. The publisher or other rights holders may allow further reproduction and re-use of
+the full text version. This is indicated by the licence information on the White Rose Research Online record
+for the item.
+
+Takedown
+If you consider content in White Rose Research Online to be in breach of UK law, please notify us by
+emailing eprints@whiterose.ac.uk including the URL of the record and the reason for the withdrawal request.
+            The Social Shortfall and Ecological Overshoot of Nations
+
+               Andrew L. Fanning1, 2*, Daniel W. O’Neill1, Jason Hickel3, 4, and Nicolas Roux5
+
+
+1
+    Sustainability Research Institute, School of Earth and Environment, University of Leeds, Leeds, UK.
+2
+    Doughnut Economics Action Lab, Oxford, UK.
+3
+ Institute of Environmental Science and Technology, Autonomous University of Barcelona,
+Barcelona, Spain.
+4
+    International Inequalities Institute, London School of Economics, London, UK.
+5
+ Institute of Social Ecology, Department of Economics and Social Sciences, University of Natural
+Resources and Life Sciences, Vienna, Austria.
+
+* Corresponding author: a.l.fanning@leeds.ac.uk
+
+
+
+
+                                                     1
+Previous research has shown that no country currently meets the basic needs of its residents at a
+level of resource use that could be sustainably extended to all people globally. Using the
+doughnut-shaped “Safe and Just Space” framework, we analyse the historical dynamics of 11
+social indicators and 6 biophysical indicators across more than 140 countries, from 1992 to 2015.
+We find that countries tend to transgress biophysical boundaries faster than they achieve social
+thresholds. The number of countries overshooting biophysical boundaries increased over the
+period from 32–55% to 50–66%, depending on the indicator. At the same time, the number of
+countries achieving social thresholds increased for 5 social indicators (in particular life expectancy
+and educational enrolment), decreased for 2 indicators (social support and equality), and showed
+little change for the remaining 4 indicators. We also calculate “business-as-usual” projections to
+2050, which suggest deep transformations are needed to safeguard human and planetary health.
+Current trends will only deepen the ecological crisis, while failing to eliminate social shortfalls.
+
+Introduction
+The doughnut-shaped Safe and Just Space framework (also called “the Doughnut of social and
+planetary boundaries”) has received widespread attention as a holistic tool for envisioning human
+development on a stable and resilient planet1,2. However, despite the urgent need to define, and
+move toward, a safe and just future3, little is known about the pathways of countries over time with
+respect to the multi-dimensional social and ecological goals of the Doughnut. This article advances
+integrated global sustainability research by assessing whether any countries have lived within the
+Doughnut in recent decades, or are on track to do so in the future, based on current trends.
+
+The Doughnut combines two core concepts: (i) an ecological ceiling that avoids critical planetary
+degradation, which is informed by the planetary boundaries framework for Earth-system stability4,
+and (ii) a sufficient social foundation that avoids critical human deprivation, which is closely aligned
+with the 12 social priorities of the Sustainable Development Goals (SDGs)5. The Doughnut visualises
+the goal of meeting the needs of all people within the means of the living planet6.
+
+Empirical research that combines social and biophysical indicators in the Doughnut framework is
+maturing, and the framework has been applied to evaluate the performance of cities7,8, regions9,10,
+countries2,11,12, and the world as a whole1,6. In general, places that do well in terms of social
+achievement use resources at unsustainable levels, while places that use resources sustainably do
+not reach a sufficient social foundation2.
+
+A large body of empirical research finds diminishing returns in social performance as resource use
+increases, and this finding holds across different social indicators or baskets of indicators, such as life
+satisfaction, life expectancy, or composite indices, together with CO2 emissions13,14, energy use15–17,
+ecological footprint18–20, and others2,21. Modellers have described the impact on planetary
+boundaries of achieving the SDGs22, the socioeconomic effects of CO2 mitigation pathways23,24, and
+the energy requirements of meeting a set of basic needs25,26. However, these studies either do not
+disaggregate from the global to the national scale, or they do not include multiple planetary
+boundaries and social indicators. To date, O’Neill et al.2 provide the only global cross-country
+analysis of the level of resource use associated with achieving minimum social thresholds using the
+Safe and Just Space framework, but their study is limited to a single year.
+
+There is an emerging view that achieving social thresholds without overshooting biophysical
+boundaries requires a dual focus on curbing excessive affluence and consumption by the rich, while
+avoiding critical human deprivation among the least well-off27–29. A better understanding of country
+trajectories with respect to the Doughnut could provide insights into the type of action needed to
+transform unsustainable systems of social and technical provisioning30.
+
+                                                    2
+Biophysical boundaries and social thresholds
+We gathered historical data from 1992 to 2015, and analysed national performance on 6
+consumption-based environmental indicators (relative to downscaled biophysical boundaries) and
+11 social indicators (relative to social thresholds) for over 140 countries (Table 1). We also used
+these data to estimate dynamic statistical forecasting models within each country, which act as
+empirical constraints on a simple “business-as-usual” projection of current trends for each social and
+biophysical indicator, out to the year 2050.
+
+The 11 social indicators include two measures of human well-being (self-reported life satisfaction
+and life expectancy), and nine need satisfiers (nutrition, sanitation, income poverty, access to
+energy, education, social support, democratic quality, equality, and employment). To assess social
+performance over time, we compared these indicators to the minimum threshold values identified
+by O’Neill et al.2, with some adjustments and caveats (Table 1; see Methods). Since the social
+support indicator series does not begin until 2005, only ten indicators were considered in total for
+cross-country comparisons over the 1992–2015 analysis period.
+
+We compared three downscaled planetary boundaries (climate change, biogeochemical flows, and
+land-system change) to environmental footprint indicators at the country scale. Following O’Neill et
+al.’s2 analysis, we also included two separate footprint measures (ecological footprint and material
+footprint), and analysed these with respect to their suggested globally sustainable levels. Since the
+biogeochemical flows boundary is measured with two indicators (nitrogen and phosphorus), we
+analysed six biophysical indicators with respect to downscaled boundaries at the national scale
+(Table 1). All six indicators are consumption-based footprint measures that account for international
+trade, as well as changes in population over time. No suitable time series data were available for the
+blue water footprint at the country scale (although there are estimates available at the global
+scale31).
+
+Results
+At the global scale, we find that billions of people currently live in countries that do not achieve most
+of the social thresholds in our analysis, and yet humanity is collectively overshooting 6 of the 7
+global biophysical boundaries (Figure 1). We find that humanity is closer to reaching the social
+thresholds than it was in the early 1990s (with the notable exceptions of equality and democratic
+quality), but significant shortfalls remain. At the same time, global resource use has overshot two
+additional boundaries (material footprint and blue water) and extended significantly further beyond
+the ecological ceiling over the 1992–2015 period, especially with respect to material footprint and
+CO2 emissions.
+
+National progress towards the Doughnut. At the national scale, we find that the average country
+has achieved one additional social threshold at the cost of transgressing one more biophysical
+boundary over the 1992–2015 period (Supplementary Figure 1). Most countries are currently failing
+to achieve the majority of social thresholds (~4 out of 10 achieved, on average), and they are also
+failing to stay within the majority of the biophysical boundaries (~2 out of 6 respected). Fewer social
+thresholds were being achieved during the early 1990s (~3 out of 10, on average), but more
+biophysical boundaries were being respected (~3 out of 6). Taken together, these historical results
+show poor progress from the perspective of the Doughnut’s “Safe and Just Space”, especially given
+that the achievement of social thresholds cannot be substituted for the transgression of biophysical
+boundaries in this framework.
+
+There are more countries transgressing boundaries across all six biophysical indicators compared to
+the early 1990s (Table 1). CO2 emissions show the biggest change over the historical period: the
+
+                                                   3
+number of countries overshooting their share of this cumulative boundary increased from 47 in 1992
+to 74 in 2015 (an 18 percentage point increase). The proportion of countries overshooting the per
+capita boundaries for land-system change, ecological footprint, and material footprint increased by
+~15 percentage points. Meanwhile, the proportion of countries overshooting the phosphorus and
+nitrogen boundaries increased by less (3 and 8 percentage points, respectively), but these indicators
+already showed a majority of countries in overshoot at the beginning of the analysis period.
+
+We find mixed results from a social perspective, although some improvements have been made
+(Table 1). The number of countries achieving the social thresholds increased for five of the 11
+indicators, it was stable for four indicators, and it declined for two indicators. At the beginning of the
+1990s, only two social thresholds (access to energy and employment) had been relatively widely
+achieved (i.e. by close to half of the countries we analysed). An additional two social thresholds (life
+expectancy and nutrition) were being achieved by about half of the countries in 2015. However,
+there are still seven basic needs that most countries are currently falling short on. Less than 30% of
+countries achieve the thresholds for life satisfaction, democratic quality, social support, and equality,
+and performance on these indicators has either stagnated or declined over the analysis period
+(depending on the indicator).
+
+Number of boundaries transgressed and thresholds achieved over time. We categorise countries
+by the number of social thresholds that they achieve (high, middle, or low shortfall) versus the
+number of biophysical boundaries they transgress (low or high overshoot). We then track their
+movement over time, from 1992 to 2015. We find that no country has met the basic needs of its
+residents at a sustainable level of resource use over this period. Moreover, countries tend to
+transgress most (or all) of the biophysical boundaries before achieving a significant number of social
+thresholds (Figure 2).
+
+Nearly half of the 26 countries that moved significantly over time in Figure 2 have moved out of the
+High Social Shortfall and Low Ecological Overshoot group since the early 1990s (orange circles
+outside the bottom-left section). However, most of these countries moved into the High Ecological
+Overshoot group, while none of them achieve more than half of the social thresholds. China and
+Peru are good examples. Meanwhile, most of the countries that were in either the High or Middle
+Social Shortfall groups during the early 1990s (brown and blue circles in Figure 2) have improved
+social performance, but they were already in the High Ecological Overshoot group. Mexico and
+Hungary are good examples. Costa Rica is noteworthy for consistently transforming resources into
+social achievement more efficiently than any other country, although it also follows the general
+trend of increasing transgression of biophysical boundaries over time.
+
+The countries that moved relatively little in Figure 2 (N = 65) are overwhelmingly in either the High
+Social Shortfall and Low Ecological Overshoot group, such as India and Nigeria (bottom-left), or in
+the Low Social Shortfall and High Ecological Overshoot group, such as Germany and the United
+States (top-right).
+
+Extent of ecological overshoot and social shortfall over time. The results in Figure 2, which show
+the number of social thresholds achieved and biophysical boundaries transgressed, do not show the
+extent of ecological overshoot or social shortfall. Figure 3 shows the changing extent of social
+shortfall and ecological overshoot by comparing an index of average shortfall to an index of average
+overshoot for each country. The calculations build on an approach developed by Hickel32 (see
+Methods).
+
+
+
+
+                                                    4
+Importantly, the average indices that we present are not intended to suggest that a country can
+trade-off individual social or biophysical goals against one another. Within the Safe and Just Space
+framework, these goals are seen as non-substitutable (better education does not mean we can have
+inadequate nutrition; mitigating climate change does not mean we can ignore land-system change).
+However, the indices provide a helpful way to visualise the average extent of shortfall and overshoot
+across countries and over time (see Supplementary Figures 2 and 3 for the extent of overshoot for
+each biophysical indicator and the extent of shortfall for each social indicator, respectively).
+
+We find significant changes in the extent of social shortfall and ecological overshoot, notably among
+country groups with little change in the absolute number of social thresholds achieved and
+biophysical boundaries transgressed. Wealthy countries in the Low Social Shortfall and High
+Ecological Overshoot group (purple circles in Figure 3) increase the extent of ecological overshoot
+over the 1992–2015 period (from 3.0 times beyond fair shares of the ecological ceiling at the
+beginning of the period to 3.5 times beyond at the end, on average), and they show little change in
+the extent of social shortfall over the same period (from 1.7% below the social foundation to 1.4%,
+on average).
+
+Meanwhile, countries in the High Social Shortfall and Low Ecological Overshoot group (orange circles
+in Figure 3) show an increase in ecological overshoot (from 6% beyond fair shares of the ecological
+ceiling at the beginning of the period to 19% beyond at the end, on average), and a welcome
+reduction in social shortfall over the same period (from 43% to 33% below the social foundation, on
+average). However, this group of countries is still overshooting the ecological ceiling faster than they
+are reaching the social foundation.
+
+Although there are no countries that eliminate social shortfalls without overshooting biophysical
+boundaries, the results in Figure 3 do reveal several countries with promising trajectories, such as
+Costa Rica, Jordan, Albania, and Mauritius. Our results also show the alarming extent and lack of
+progress in reducing the level of resource use needed to live within fair shares of planetary
+boundaries by many wealthy countries, such as Australia, Canada, the United States, and Norway.
+Overall, countries tend to follow a path of transgressing biophysical boundaries before achieving
+social thresholds (Figure 2), and a path of escalating ecological overshoot that yields diminishing
+returns in reducing social shortfall (Figure 3).
+
+“Business-as-usual” projections based on historical trends. Figure 4 shows our national historical
+findings together with “business-as-usual” projections and likely prediction intervals for each
+biophysical and social indicator between 2016 and 2050. We use the term “likely” to signify a 66%
+chance of the result occurring, based on historical trends. These values were estimated using the
+best-fit model from two established non-linear methods in statistical time-series analysis:
+exponential smoothing and auto-regressive integrated moving averages (ARIMA). These dynamic
+statistical forecasting methods account for patterns within the data over time, and give more weight
+to recent data, thereby offering a more nuanced approach to estimate empirical time trends
+compared to linear models, such as ordinary least squares (OLS) regression. The estimation
+procedure is described in detail in the Methods.
+
+For the biophysical indicators, the business-as-usual projections suggest even fewer countries are
+likely to respect biophysical boundaries in 2050 compared to today (Figure 4a). If current trends
+continue, more than 100 countries (out of 147) would overshoot their share of the cumulative CO2
+emissions boundary by 2050, which is more than twice the number of countries in climate overshoot
+compared to the early 1990s.
+
+
+
+                                                   5
+Meanwhile, the number of countries that overshoot the per capita boundaries for land-system
+change, ecological footprint, and material footprint is projected to increase by roughly 10–15
+percentage points in 2050 compared to today (and roughly 25 percentage points compared to 1992).
+The overshoot trends for the nutrient boundaries (nitrogen and phosphorus) are less concerning by
+comparison. In fact, the number of countries overshooting the phosphorus boundary is projected to
+remain stable (in line with results showing phosphorus use declining in many high-income
+countries33).
+
+For the social indicators, the business-as-usual projections suggest that the number of social
+thresholds achieved by at least 50% of countries would likely increase from 4 out of 11 in 2015 to 7
+out of 11 by 2050, based on historical trends (Figure 4b). However, we find that less than one-third
+of countries would be likely to achieve the remaining four social thresholds (life satisfaction, social
+support, democratic quality, and equality).
+
+Although these projected levels of social performance suggest that much of humanity would likely
+remain below the social foundation in 2050, our projections may still be optimistic as they are based
+on within-country historical trends, which do not consider the potential social disruption from the
+negative impacts of ecological overshoot. Such disruption could include increased morbidity,
+mortality, and migration due to extreme climate events; shifts in the geographic range and
+transmissibility of infectious diseases; and increased poverty given that climate change
+disproportionately affects the world’s poorest and most vulnerable people34. Moreover, although
+countries may overshoot biophysical boundaries for some time (e.g. by running down stocks of
+natural capital), the degradation of planetary health cannot continue indefinitely35,36.
+
+Overall, our findings suggest deep transformations are needed in all countries to reverse current
+trends and move towards the Doughnut of social and planetary boundaries. In high-income
+countries such as Germany, there is an urgent need to radically reduce levels of resource use
+without adversely affecting relatively high levels of social performance (Figure 5a). Middle-income
+countries such as China face the dual challenge of needing to accelerate improvements in social
+performance, while simultaneously scaling back resource use to be within biophysical boundaries
+(Figure 5b). In low-income countries such as Nepal, resource use could generally be increased and
+remain within most biophysical boundaries, but there is an urgent need to accelerate improvements
+in social performance to avoid critical human deprivation (Figure 5c).
+
+Discussion
+Overall, we find no evidence that any country is currently moving towards the doughnut-shaped
+“Safe and Just Space”. Current trends will likely deepen the climate and ecological crisis, while failing
+to eliminate social shortfalls. Despite decades of sustainable development rhetoric, countries with
+high levels of social achievement have levels of resource use far beyond anything that could be
+sustainably extended to all people, and their extent of ecological overshoot has generally been
+increasing. Although low-income countries have shown progress in reducing social shortfalls, they
+have generally been transgressing biophysical boundaries faster than they have been achieving
+social thresholds. The slow rate of social progress is coupled with ecological overshoot at the global
+scale, which is already overwhelming the regenerative capacity of the biosphere35 and exposing
+humanity to a high risk of destabilising the Earth-system4.
+
+Previous research has shown the unsustainability of current development trajectories18,37. Where
+the Doughnut provides new insights is that it contains plural and non-substitutable goals for which
+absolute (not relative) performance matters, both socially and ecologically. Building on the
+Doughnut, our analysis shows that past, current, and business-as-usual future levels of resource use
+
+                                                    6
+associated with meeting basic needs are too high. To meet the needs of all people within planetary
+boundaries, current relationships between social performance and biophysical resource use must be
+radically transformed in all countries, albeit in different country-specific ways depending on the
+extent of social shortfalls and ecological overshoot2,21,38.
+
+For wealthy countries with high ecological overshoot, resource use needs to be dramatically reduced
+to get within fair shares of biophysical boundaries — a transition that is unlikely to be accomplished
+with efficiency improvements alone39. It may also require post-growth and degrowth policies that
+redesign current growth-dependent economic systems, and reduce the overconsumption of
+resources directly40,41. Simulation models have shown that it is possible for wealthy countries to
+improve social outcomes without growth by reducing inequality and prioritising social
+provisioning16,24. Given our finding that current trends in collective social indicators, such as social
+support, democratic quality, and equality, are most in need of transformation, and given that these
+social indicators are only weakly coupled to resource use2, there is broad scope to improve them by
+transforming provisioning systems in non-materialistic ways (e.g. by distributing income more fairly
+and universalising access to basic goods and services). However, a growing body of research shows
+that such transformations must confront powerful industries and other vested interests that benefit
+from the unequal and extractive status quo both within and across countries42–44.
+
+For countries with high social shortfalls, a focus on meeting basic needs is required, with an
+emphasis on capacity-building and sovereign economic development47. Nutrition, sanitation, and
+income poverty deserve priority attention, as the number of countries that achieve the thresholds
+for these three social indicators is projected to slow in the coming decades, based on current trends.
+For nutrition, evidence suggests current relationships could be transformed by practicing sustainable
+farming methods, which would improve livelihoods in the process45. In addition, regulating water
+use by industrial agriculture could be aligned with investments in water supply and sanitation,
+thereby addressing water scarcity while contributing to better health outcomes46. For income
+poverty, the World Bank estimates a global poverty gap of 21% at $5.50 a day (2011 PPP) in 2015,
+which translates to $3.1 trillion (2011 PPP) to lift everyone above this threshold. This amount
+represents less than 3% of total global income. In other words, a small shift in the flow of global
+income from rich to poor, such as ensuring fairer wages and prices for producers, could alleviate
+extreme poverty without the need for additional global growth.
+
+An important limitation of our analysis is that the statistical forecasting models we have applied are
+constrained by historical data, and thus our projections only show what is probable, given current
+relationships. In other words, the projections assume current provisioning systems and policies, and
+do not take into account the types of radical transformations that have been suggested by
+degrowth41,48 and post-growth6,49 scholars (see Methods for a discussion of limitations).
+
+While important advances have recently been made in the development of ecological
+macroeconomic models24,50, to date there is still no national model that explores the interconnected
+relationships between the plural social and biophysical objectives of the Doughnut. A more systemic
+perspective is needed to explore and compare plausible scenarios that move countries towards a
+safe and just space. Current trajectories are either dangerously unsustainable for the biosphere, or
+strikingly insufficient for human well-being — or both.
+
+Methods
+This section summarises how we collect, analyse, and track national biophysical indicators with
+respect to biophysical boundaries, and national social indicators with respect to social thresholds.
+
+
+                                                   7
+We provide a more complete discussion of indicator-specific methods for each biophysical and social
+indicator in the Supplementary Information.
+
+Theoretical framework. Following O’Neill et al.2, the theoretical framework that we adopt in our
+analysis integrates Daly’s Ends–Means Spectrum51 with human needs theory52, and includes the
+emerging concept of “provisioning systems” as a conceptual intermediary between Earth-system
+processes and social outcomes2,30,44,53. A provisioning system can be defined as a set of related
+elements that work together in the transformation of resources to satisfy a foreseen human need,
+such as nutrition, access to energy, or social support44.
+
+This framework postulates that some of the observed variation in international performance can be
+explained by differences in the set of underlying provisioning systems, and recognises that these
+complex systems can be transformed (with or without intent). For example, different forms of
+transportation infrastructure (tracks for trains and trams, versus roads for private cars) can help
+satisfy particular needs with very different levels of energy use, land use patterns, public transit
+opportunities, and ultimately, resource use lock-ins30,54.
+
+Time series data. We collected available national time series data for population, social
+performance, and environmental footprints from a number of global databases, such as the World
+Bank’s World Development Indicators, the Eora Multi-Regional Input-Output (MRIO) database55, and
+other sources (see Supplementary Information Tables 1 and 2 for data sources). Countries with an
+average population below 1 million people were not included in our analysis, as they tend to have
+relatively sparse data coverage and/or be highly trade-dependent countries that are not well-
+modelled in global input–output databases. Years with missing data were linearly interpolated (see
+Supplementary Information for details on the individual biophysical and social indicators).
+
+For comparability and continuity, we aimed to collect the data for our global time series analysis
+from the same sources that O’Neill et al.2 used in their global cross-sectional study. That being said,
+this criterion could not be fully met for some of the indicators (i.e. nitrogen, phosphorus, and life
+expectancy) due to inadequate or non-existent time series coverage. As a result, data for these
+indicators were collected from alternative sources. No suitable time series data were available for
+the blue water footprint, so this indicator was not included in our national analysis. Although all of
+the data used in our analysis measure progress over time at the national scale, we acknowledge that
+measurements undertaken based on different models, data sources, and system boundaries can
+generate inconsistencies and may not be fully comparable. The multi-dimensional nature of the
+Doughnut of social and planetary boundaries makes this unavoidable to some degree, based on
+current data availability at least.
+
+In the results presented in this study, we analyse time series data for 148 countries, although not all
+indicators were available for all countries (see Figure 4). The first year considered in our analysis is
+1992, which is regarded as less uncertain in global input–output databases than years prior to 1992,
+largely due to structural changes to the global economic system caused by the dissolution of the
+Soviet Union.
+
+Downscaling planetary boundaries. There are different ways to downscale planetary boundaries
+based on alternative views of distributive fairness56. Common approaches to downscale planetary
+boundaries to the national scale include methods based on different sharing principles, including
+equality, sovereignty, and capability to reduce environmental pressure, among others57. Following
+O’Neill et al.2 and Hickel58, we apply equality-based shares of each planetary boundary throughout
+our analysis, which spans the 1992–2050 period. This choice is motivated by our research question,
+
+
+                                                   8
+which asks whether any countries have historically met the basic needs of their residents at a level
+of resource use that could be sustainably extended to all people on the planet, and/or whether any
+are on track to do so in the future, based on current trends. Our calculations take into account
+United Nations population projections under a medium fertility scenario59.
+
+We downscale four planetary boundary variables (climate change, phosphorus, nitrogen, and land-
+system change). Following Hickel58, the climate change boundary is downscaled using an equality-
+based cumulative approach, which takes into account the safe carbon budget associated with
+historical CO2 emissions over the 1850–1988 period that caused the global atmospheric
+concentration of CO2 to overshoot the 350 ppm boundary. The remaining planetary boundaries are
+downscaled to annual per capita equivalents, following the same methods as O’Neill et al.2
+
+Biophysical boundaries that account for changes in population over time were then compared to
+consumption-based footprint indicators that account for international trade. For CO2 emissions, we
+calculated cumulative historical CO2 emissions from 1850 to 2015 for each country and compared
+these country-level cumulative CO2 emissions to national fair shares of the safe carbon budget on a
+yearly basis. For biogeochemical flows (nitrogen and phosphorus), in the absence of a reliable
+consumption-based time series at the national scale, we calculated consumption-based proxy time
+series for both indicators by mapping territorial N and P fertiliser use data from Bouwman et al.33 to
+trade coefficients derived from Oita et al.’s60 data available in the Eora global MRIO database. For
+land-system change, we obtained national data series that measure the consumption-based
+allocation of human appropriation of net primary productivity (HANPP) to final agricultural and
+forestry products, where international trade is accounted for using physical bilateral trade
+matrices61. The resulting indicator is called embodied human appropriation of net primary
+production (eHANPP).
+
+In addition, we include two further consumption-based footprint indicators (ecological footprint and
+material footprint) and analyse these with respect to their suggested maximum sustainable levels
+per capita, accounting for changes in population over time. We acknowledge that these biophysical
+indicators partially overlap. For instance, the ecological footprint and material footprint both include
+fossil energy as a component, thus overlapping with each other and with the climate change
+indicator. However, this basket of indicators captures different notions of absolute sustainability:
+planetary boundaries aim to avoid tipping points in the Earth-system, the ecological footprint
+measures how much of the regenerative capacity of the biosphere is occupied by human demand,
+and the material footprint is a mass-based proxy of overall resource use62.
+
+In total, six biophysical indicators are investigated, over the historical 1992–2015 period, and with
+projections out to 2050. The projections are based on within-country time series relationships
+observed over the historical 1992–2015 period. See Supplementary Information for additional
+details on each biophysical indicator, and Supplementary Table 1 for data sources.
+
+Establishing social thresholds. We base our selection of social indicators and thresholds on O’Neill
+et al.’s2 study, which operationalises the doughnut-shaped “Safe and Just Space” framework1,11,63 at
+the national scale. O’Neill et al.’s framework classifies life satisfaction and life expectancy as
+measures of well-being2,14, while the other nine social indicators are classified as need satisfiers. This
+classification is consistent with the basic needs approach27,52, and also reflects empirical results
+indicating that the more need satisfiers a country achieves, the happier and healthier its residents
+generally are2.
+
+
+
+
+                                                    9
+With the exception of two indicators (life expectancy and income poverty), we use the same
+threshold values for the social indicators as O’Neill et al.2. For life expectancy, we use overall life
+expectancy, rather than “healthy life expectancy”, as the latter indicator was not available for our
+time series analysis. We use a life expectancy threshold of 74 years, compared to 65 healthy years,
+based on the observation that life expectancy is 9 years higher than healthy life expectancy on
+average.
+
+For income poverty, we use the percentage of the population living on less than the World Bank’s
+poverty line of $5.50 per day at 2011 PPP international prices (following Edward and Sumner64),
+rather than the extreme poverty line of $1.90 per day used by O’Neill et al.2, as the latter has been
+criticised for being too low to be considered a minimum standard32. The World Bank’s approach to
+measuring poverty is limited, however, in that it does not tell us whether people have access to the
+context-specific forms of provisioning that are necessary to meet basic needs in a given country65.
+What ultimately matters is people’s income vis-à-vis the costs of satisfying basic needs, and these
+costs vary substantially across countries and over time due to local factors such as climate, price
+controls, and levels of public provisioning (see Allen66 for a review). There are alternative approaches
+to measuring poverty, which define the costs of country-specific baskets of essential goods and
+services67,68, but no suitable data were available for our time series analysis.
+
+In total, we include 11 social indicators, with projections of social outcomes (relative to social
+thresholds) out to 2050. The projections are based on within-country time series relationships
+observed over the historical 1992–2015 period. The two self-reported indicators included in our
+analysis are available for either fewer countries (life satisfaction) or zero countries (social support) in
+the earlier 1992–2004 period. For these two indicators, we considered the larger country sample
+available over the 2005–2015 period for all summary comparisons by indicator. See Supplementary
+Information for additional details on each social indicator, and Supplementary Table 2 for data
+sources.
+
+Comparing biophysical indicators with respect to boundaries and social indicators with respect to
+thresholds. Within our results throughout the main text (and in the accompanying Supplementary
+Data), biophysical indicators are presented relative to the biophysical boundary, while social
+indicators are presented relative to the social threshold. In each case, we follow the same
+normalisation procedure employed by O’Neill et al.2, which involves dividing the indicator value by
+the given boundary or threshold.
+
+In the case of the biophysical indicators, which have an absolute zero, the value for a given country is
+calculated directly: the normalised biophysical data for a given year t are given by 𝑥𝑡′ = 𝑥𝑡 ÷ 𝑥𝑡∗ ,
+where 𝑥𝑡 is the biophysical indicator in year t, and 𝑥𝑡∗ is the biophysical boundary in year t. Note that
+the per capita biophysical boundaries change over time in absolute terms (i.e. as population grows).
+
+In the case of the social indicators, which do not have a clear absolute zero, the lowest value
+observed for a given indicator over the 1992–2015 period is assigned the value of zero, while the
+social threshold is assigned the value of one. This normalisation procedure preserves the social
+threshold in absolute terms (it is always one, regardless of the data), and it also allows the
+differences between countries to be visualised more clearly in the Doughnut plots. In mathematical
+terms, the normalised social data for a given year t are given by 𝑦𝑡′ = (𝑦𝑡 − 𝑦𝑚𝑖𝑛 ) ÷ (𝑦 ∗ − 𝑦𝑚𝑖𝑛 ),
+where 𝑦𝑡 is the social indicator in year t, 𝑦 ∗ is the social threshold (which does not change over
+time), and 𝑦𝑚𝑖𝑛 is the lowest value for the social indicator observed over the analysis period.
+
+
+
+
+                                                    10
+Calculating the average extent of social shortfall and ecological overshoot. We calculated the
+extent of social shortfall and ecological overshoot for each country over time using simple average-
+based indices. Our approach builds on the methods developed by Hickel32 for a single year, although
+our calculation procedure is slightly different.
+
+To measure the extent of social shortfall, we subtract each normaIised social ratio from the
+threshold value (i.e. one), and set any negative values to zero (given that scores below zero indicate
+no shortfall). The index of social shortfall is then calculated as the unweighted average of the
+transformed values (where zero represents no social shortfall).
+
+To measure the extent of ecological overshoot, we follow a mirrored version of the same procedure.
+We subtract the boundary value (i.e. one) from each normalised biophysical ratio, and set any
+negative values to zero (given that scores below zero indicate no overshoot). The index of ecological
+overshoot is then calculated as the unweighted average of the transformed values (where zero
+represents no ecological overshoot). Our method differs from Hickel32 in that we only measure the
+extent of overshoot (whereas Hickel32 also measures “undershoot”).
+
+We acknowledge that creating aggregate measures of performance across non-substitutable goals,
+such as those contained in the Doughnut, is not fully consistent with the Safe and Just Space
+framework. Our measures of average shortfall and average overshoot allow for compensation within
+each social and biophysical index. By presenting these measures, we are not suggesting that it would
+be acceptable in practice to trade off individual goals against one another. The indices are presented
+simply to summarise the overall extent of social shortfall and ecological overshoot across countries
+and over time, which is hard to visualise otherwise. Importantly, we do calculate separate indices of
+social shortfall and ecological overshoot, in recognition that countries cannot compensate high social
+shortfalls for low ecological overshoot (or vice versa) within a “strong sustainability” framework69,
+such as the Doughnut.
+
+Projecting “business-as-usual” trends. We projected “business-as-usual” trends for each biophysical
+and social indicator for each country based on historical observations over the 1992–2015 period.
+For each indicator in each country, we used the best-fitting estimate of two distinct dynamic
+statistical forecasting models: (1) an ExponenTial Smoothing (ETS) state space model, and (2) an
+Auto-Regressive Integrated Moving Average (ARIMA) model. We followed a three-step process
+enabled by the forecast package in R70, described in detail by Hyndman and Athanasopoulos71.
+
+First, for each country we estimated ETS models for each of the 17 time series indicators in our
+analysis (11 social and 6 biophysical). Projections based on ETS methods are weighted averages of
+past observations, with the weights decaying exponentially so more recent observations are
+weighted more highly than observations in the distant past71. Following Hyndman and Khandakar70,
+we used an automated algorithm to select the best-fitting combination of ETS parameters for each
+indicator by minimising Akaike’s Information Criterion, corrected for small sample bias (AICc).
+
+Second, we estimated ARIMA models for each indicator within each country following a similar
+procedure. Projections based on ARIMA methods aim to describe the autocorrelations in the data
+through combinations of the order of the autoregressive part (p), degree of differencing needed for
+stationarity (d), and the order of the moving average part (q), often called an ARIMA(p, d, q)
+model71. Following Hyndman and Khandakar70, we used an automated algorithm that selects the
+best-fitting combination of the p, d, and q parameters for each indicator by minimising AICc.
+
+Although AICc is useful for selecting between models in the same class, it cannot be used to compare
+between ETS and ARIMA models because the maximum likelihood estimation is computed in
+
+                                                  11
+different ways across model classes71. We therefore selected the best-fitting ETS or ARIMA model for
+each of the indicators for each country based on a time series cross-validation algorithm that
+minimises mean standard error (as described by Hyndman and Athanasopoulos, Section 3.471). In
+each case, the best-fitting model was used to project point estimates out to 2050 together with 66%
+prediction intervals. Overall, these methods were used to compare more than 100,000 combinations
+of parameters to select the set of best-fit estimates for projecting business-as-usual trends in the
+social and biophysical indicators for 148 countries.
+
+Limitations. Our statistical forecasting models are based on individual indicator trends that are
+constrained by historical data, and thus our analysis only shows what is likely given historical trends.
+Moreover, the dynamic statistical projections of individual indicators do not imply causal
+relationships. The links between biophysical resource use and social outcomes can be seen to run
+both ways, and our theoretical framework recognises that the relationships are mediated by
+dynamic and complex provisioning systems that can be restructured, intentionally or otherwise.
+
+Our study does not attempt to characterise different types of provisioning systems or their effects
+on the relationships between resource use and social outcomes — these are complex and often
+context-specific challenges to incorporate across time and space. However, we do quantify the levels
+of resource use and social outcomes associated with business-as-usual trends, thus giving an
+indication of what could happen if recent trajectories continued.
+
+Finally, our analysis is inevitably limited by the quality and availability of time series data (see
+Supplementary Information for descriptions of each biophysical and social indicator). Moreover, our
+selection of countries as the unit of analysis does not capture the wide disparities in resource use
+and social performance that occur within countries17 (with the partial exception of the income
+equality indicator derived from the Gini Index). Similarly, countries are not isolated units — they are
+deeply interconnected through history, power, and international structures — but our cross-country
+analysis does not fully reflect these rich interconnections. That being said, all of the biophysical
+indicators in our analysis account for the upstream environmental burdens that arise from producing
+the goods that are consumed in a country, no matter where in the world those burdens take place
+(i.e. we use environmental footprints). A possible next step for future research would be to account
+for the upstream social burdens on communities and workers that arise worldwide from the
+consumption in a given country (i.e. social footprints), but substantial data gaps remain8,72.
+
+Data availability. The data produced in the analysis are included in the Supplementary Information
+accompanying this article. The data are also available via an interactive website
+(https://goodlife.leeds.ac.uk), which allows users to query the dataset, generate visualisations, and
+produce Doughnut plots similar to Fig. 5 for all countries.
+
+Code availability. The R code used to generate the results is available from A.L.F. upon reasonable
+request.
+
+Acknowledgements
+We are grateful to K. Raworth, J.K. Steinberger, and M. Wackernagel for their kind reviews and
+constructive comments on earlier drafts. A.L.F. was supported by the European Union's Horizon
+2020 research and innovation programme under Marie Skłodowska-Curie grant agreement No.
+752358. N.R. was supported by the European Union's Horizon 2020 research and innovation
+programme under Marie Skłodowska-Curie grant agreement No. 765408. This research was further
+supported by funding from Research England’s QR Strategic Priorities Fund, and an ESRC Impact
+Acceleration Account.
+
+
+                                                   12
+Author contributions
+A.L.F. and D.W.O. designed the study. A.L.F. and N.R. assembled the data. A.L.F., D.W.O., J.H., and
+N.R. performed the analysis and wrote the manuscript.
+
+Competing interests
+The authors declare no competing interests.
+
+
+
+
+                                                 13
+Tables
+ Table 1. Country Performance with Respect to Social Thresholds and Biophysical Boundaries (1992–2015)
+ Indicator                     N        Threshold / Boundary        Unit                             1992       2015
+ Social                                                                                              Countries above
+                                                                                                       threshold, %
+ Life Satisfaction             45                   6.5             [0–10] Cantril ladder            (22)         21
+                             (119)                                  scale
+ Life Expectancy              147                  74               Years                             18           47
+ Nutrition                    137                 2700              Kilocalories per person           40           64
+                                                                    per day
+ Sanitation                   137                   95              % with access to                  25           35
+                                                                    improved sanitation
+ Income Poverty               114                   95              % who earn above                  29           33
+                                                                    $5.50 per day
+ Access to Energy             131                   95              % with access to                  47           60
+                                                                    electricity
+ Secondary Education          129                   95              % enrolment in                    16           42
+                                                                    secondary school
+ Social Support              (118)                  90              % with friends or family         (39)          28
+                                                                    they can depend on
+ Democratic Quality           144                    7              [0-10] scale                      29           28
+ Equality                     125                   70              [0-100] scale                     21           15
+                                                                    (Gini Index of 0.3)
+ Employment                   148                   94              % of labour force                 50           49
+                                                                    employed
+ Biophysical                                 1992          2015                                      Countries within
+                                                                                                       boundary, %
+ CO2 Emissions                147        Population share of        Mt CO2 year-1                     68          50
+                                        cumulative emissions
+ Phosphorus                   136           1.1          0.8        kg P year-1                       47           44
+ Nitrogen                     136           11.3         8.4        kg N year-1                       45           38
+ Land-System Change           142           3.3          2.4        t C year-1                        61           47
+ Ecological Footprint         145           2.1          1.7        gha                               51           34
+ Material Footprint           147           9.1          6.9        t year-1                          61           47
+ N is the number of countries considered. The social indicators for Life Satisfaction and Social Support have observations
+ for a large number of countries only from 2005 onwards (2005 values in parentheses), and therefore a shorter time
+ period (2005–2015) is used for all cross-country summary comparisons. The biophysical boundaries shown are global
+ per capita values in 1992 and 2015 – they decline over time due to population growth, except for the CO2 emissions
+ boundary, which is calculated based on each country’s population-weighted share of the 770 Gt of cumulative global
+ CO2 emitted from 1850 to 1988 (the year that the 350 ppm CO2 boundary was crossed). See Supplementary Information
+ for additional details and the data sources for each social and biophysical indicator.
+
+
+
+
+                                                            14
+Figures
+
+
+
+
+Figure 1. Global performance relative to the Doughnut’s “Safe and Just Space” in 1992 and 2015,
+based on the biophysical boundaries and social thresholds measured in this study. Dark green
+circles show the ecological ceiling and social foundation, which encompass the Doughnut of social
+and planetary boundaries. The blue wedges show average population-weighted social performance
+relative to each social threshold. The green wedges show total resource use relative to each global
+biophysical boundary, starting from the outer edge of the social foundation. Red wedges show
+shortfalls below social thresholds, or overshoot beyond biophysical boundaries. Grey wedges show
+indicators with missing data.
+
+
+
+
+                                                 15
+Figure 1. Number of social thresholds achieved versus number of biophysical boundaries
+transgressed by countries over time, 1992–2015. Country performance is divided into six sections
+based on the average number of social thresholds achieved (high, middle, and low shortfall) and the
+average number of biophysical boundaries transgressed (low and high overshoot). Circles indicate
+performance at the end of the analysis period (in 2011–2015) and are sized according to population.
+Country paths are shown in 5-year average increments. Countries are colour-coded relative to their
+performance at the start of the analysis period (in 1992–1995) clockwise from top right: Low
+Shortfall–High Overshoot (purple); Middle Shortfall–High Overshoot (blue); High Shortfall–High
+Overshoot (brown); High Shortfall–Low Overshoot (orange); Middle Shortfall–Low Overshoot
+(green). Only countries with data for all six biophysical indicators and at least 9 of the 10 social
+indicators are shown (N = 91). Ideally, countries would be in the Doughnut located in the top-left
+corner.
+
+
+
+
+                                                 16
+Figure 2. Extent of shortfall below the social foundation versus extent of overshoot beyond the
+ecological ceiling across countries, 1992–2015. Circles indicate performance at the end of the
+analysis period (in 2011–2015) and are sized according to population. Country paths are shown in 5-
+year average increments. Countries are grouped and colour-coded as per Figure 2, i.e. relative to
+their performance at the start of the analysis period (in 1992–1995). Only countries with data for all
+six biophysical indicators and at least 9 of the 10 social indicators are shown (N = 91). Ideally,
+countries would be in the Doughnut located at (0, 0) in the top-left corner.
+
+
+
+
+                                                  17
+Figure 4. Historical trends (1992–2015) and projected “business-as-usual” trends (2016–2050) in
+country performance with respect to biophysical boundaries and social thresholds. a The historical
+percentage of countries with resource use within each biophysical boundary (black lines), and
+projected “business-as-usual” trends (green lines). b The historical percentage of countries with
+social performance that reaches each social threshold (black lines), and “business-as-usual”
+projections (blue lines). 66% (likely) prediction intervals are shown in a lighter tint. See Table 1 for
+additional detail on the indicators, including their respective biophysical boundaries and social
+thresholds, and Supplementary Data for country-level results.
+
+
+
+
+                                                   18
+Figure 5. National performance relative to a “Safe and Just Space” for three countries in 1992,
+2015, and with projections for 2050 based on business-as-usual trends for each social and
+biophysical indicator. a Germany, b China, and c Nepal. Colours are used as per Figure 1. The
+business-as-usual values are calculated for each indicator using the median estimate of the best-
+fitting ARIMA or exponential smoothing model, based on national historical trends (see Methods).
+
+
+
+
+                                                19
+ References
+
+1.   Raworth, K. A Doughnut for the Anthropocene: humanity’s compass in the 21st century. The
+     Lancet Planetary Health 1, e48–e49 (2017).
+2.   O’Neill, D. W., Fanning, A. L., Lamb, W. F. & Steinberger, J. K. A good life for all within planetary
+     boundaries. Nature Sustainability 1, 88–95 (2018).
+3.   Rockström, J. et al. Identifying a Safe and Just Corridor for People and the Planet. Earth’s Future 9,
+     e2020EF001866 (2021).
+4.   Steffen, W. et al. Planetary boundaries: Guiding human development on a changing planet.
+     Science 347, 1259855 (2015).
+5.   UNGA. Transforming Our World: The 2030 Agenda for Sustainable Development.
+     http://www.un.org/ga/search/view_doc.asp?symbol=A/RES/70/1&Lang=E (2015).
+6.   Raworth, K. Doughnut Economics: Seven Ways to Think Like a 21st-Century Economist. (Random
+     House Business, 2017).
+7.   Hoornweg, D., Hosseini, M., Kennedy, C. & Behdadi, A. An urban approach to planetary
+     boundaries. Ambio; Stockholm 45, 567–580 (2016).
+8.   Fanning, A. L. et al. Creating City Portraits: A methodological Guide from the Thriving Cities
+     Initiative. http://doughnuteconomics.org/Creating-City-Portraits-Methodology.pdf (2020).
+9.   Cooper, G. S. & Dearing, J. A. Modelling future safe and just operating spaces in regional social-
+     ecological systems. Science of The Total Environment 651, 2105–2117 (2019).
+10. Turner, R. et al. Towards a Sustainable Cornwall: State of the Doughnut. 73
+    https://www.exeter.ac.uk/esi/research/projects/impact-towardsasustainablecornwall/ (2020).
+11. Cole, M. J., Bailey, R. M. & New, M. G. Tracking sustainable development with a national
+    barometer for South Africa using a downscaled “safe and just space” framework. PNAS 111,
+    E4399–E4408 (2014).
+12. Roy, A. & Pramanick, K. Safe and Just Operating Space for India. in Handbook of Environmental
+    Materials Management (ed. Hussain, C. M.) 1–32 (Springer International Publishing, 2020).
+    doi:10.1007/978-3-319-58538-3_210-1.
+13. Lamb, W. F. et al. Transitions in pathways of human development and carbon emissions. Environ.
+    Res. Lett. 9, 014011 (2014).
+14. Fanning, A. L. & O’Neill, D. W. The Wellbeing–Consumption paradox: Happiness, health, income,
+    and carbon emissions in growing versus non-growing economies. Journal of Cleaner Production
+    212, 810–821 (2019).
+15. Oswald, Y., Owen, A. & Steinberger, J. K. Large inequality in international and intranational energy
+    footprints between income groups and across consumption categories. Nature Energy 5, 231–239
+    (2020).
+16. Vogel, J., Steinberger, J. K., O’Neill, D. W., Lamb, W. F. & Krishnakumar, J. Socio-economic
+    conditions for satisfying human needs at low energy use: An international analysis of social
+    provisioning. Global Environmental Change 102287 (2021) doi:10.1016/j.gloenvcha.2021.102287.
+
+
+
+
+                                                      20
+17. Baltruszewicz, M. et al. Household final energy footprints in Nepal, Vietnam and Zambia:
+    composition, inequality and links to well-being. Environ. Res. Lett. 16, 025011 (2021).
+18. Wackernagel, M., Hanscom, L. & Lin, D. Making the Sustainable Development Goals Consistent
+    with Sustainability. Front. Energy Res. 5, (2017).
+19. Knight, K. W. & Rosa, E. A. The environmental efficiency of well-being: A cross-national analysis.
+    Social Science Research 40, 931–949 (2011).
+20. Abdallah, S., Thompson, S., Michaelson, J., Marks, N. & Steuer, N. The Happy Planet Index 2.0:
+    Why good lives don’t have to cost the Earth. http://www.neweconomics.org/publications/happy-
+    planet-index-20 (2009).
+21. Steinberger, J. K., Lamb, W. F. & Sakai, M. Your money or your life? The carbon-development
+    paradox. Environ. Res. Lett. 15, 044016 (2020).
+22. Randers, J. et al. Achieving the 17 Sustainable Development Goals within 9 planetary boundaries.
+    Global Sustainability 2, (2019).
+23. Riahi, K. et al. The Shared Socioeconomic Pathways and their energy, land use, and greenhouse
+    gas emissions implications: An overview. Global Environmental Change 42, 153–168 (2017).
+24. D’Alessandro, S., Cieplinski, A., Distefano, T. & Dittmer, K. Feasible alternatives to green growth.
+    Nature Sustainability 3, 329–335 (2020).
+25. Millward-Hopkins, J., Steinberger, J. K., Rao, N. D. & Oswald, Y. Providing decent living with
+    minimum energy: A global scenario. Global Environmental Change 65, 102168 (2020).
+26. Rao, N. D., Min, J. & Mastrucci, A. Energy requirements for decent living in India, Brazil and South
+    Africa. Nature Energy 4, 1025–1032 (2019).
+27. Gough, I. Defining floors and ceilings: the contribution of human needs theory. Sustainability:
+    Science, Practice and Policy 16, 208–219 (2020).
+28. Wiedmann, T., Lenzen, M., Keyßer, L. T. & Steinberger, J. K. Scientists’ warning on affluence.
+    Nature Communications 11, 3107 (2020).
+29. Oswald, Y., Steinberger, J. K., Ivanova, D. & Millward-Hopkins, J. Global redistribution of income
+    and household energy footprints: a computational thought experiment. Global Sustainability 4,
+    (2021).
+30. Brand-Correa, L. I., Mattioli, G., Lamb, W. F. & Steinberger, J. K. Understanding (and tackling) need
+    satisfier escalation. Sustainability: Science, Practice and Policy 16, 309–325 (2020).
+31. Ritchie, H. & Roser, M. Water Use and Stress. Our World in Data (2017).
+32. Hickel, J. Is it possible to achieve a good life for all within planetary boundaries? Third World
+    Quarterly 40, 18–35 (2019).
+33. Bouwman, A. F. et al. Lessons from temporal and spatial patterns in global use of N and P
+    fertilizer on cropland. Scientific Reports 7, 40366 (2017).
+34. Hoegh-Guldberg, O. et al. Impacts of 1.5C Global Warming on Natural and Human Systems. in
+    Global Warming of 1.5°C (Intergovernmental Panel on Climate Change, 2018).
+35. Wackernagel, M. et al. The importance of resource security for poverty eradication. Nature
+    Sustainability 1–8 (2021) doi:10.1038/s41893-021-00708-4.
+
+
+                                                     21
+36. Whitmee, S. et al. Safeguarding human health in the Anthropocene epoch: report of The
+    Rockefeller Foundation–Lancet Commission on planetary health. The Lancet 386, 1973–2028
+    (2015).
+37. Steffen, W. et al. Trajectories of the Earth System in the Anthropocene. PNAS 115, 8252–8259
+    (2018).
+38. Roberts, J. T. et al. Four agendas for research and policy on emissions mitigation and well-being.
+    Global Sustainability 3, (2020).
+39. Hickel, J. & Kallis, G. Is Green Growth Possible? New Political Economy 25, 469–486 (2020).
+40. Stratford, B. & O’Neill, D. W. The UK’s path to a doughnut-shaped recovery.
+    http://www.leeds.ac.uk/info/130600/policy_leeds/970/the_path_to_a_doughnut_shaped_recov
+    ery (2020).
+41. Hickel, J. Less is More: How degrowth will save the world. (Penguin Random House, 2021).
+42. Pirgmaier, E. & Steinberger, J. K. Roots, Riots, and Radical Change—A Road Less Travelled for
+    Ecological Economics. Sustainability 11, 2001 (2019).
+43. Stratford, B. The Threat of Rent Extraction in a Resource-constrained Future. Ecological
+    Economics 169, 106524 (2020).
+44. Fanning, A. L., O’Neill, D. W. & Büchs, M. Provisioning systems for a good life within planetary
+    boundaries. Global Environmental Change 64, 102135 (2020).
+45. Willett, W. et al. Food in the Anthropocene: the EAT–Lancet Commission on healthy diets from
+    sustainable food systems. The Lancet 393, 447–492 (2019).
+46. Sachs, J. D. et al. Six Transformations to achieve the Sustainable Development Goals. Nature
+    Sustainability 2, 805–814 (2019).
+47. Hickel, J., Sullivan, D. & Zoomkawala, H. Plunder in the Post-Colonial Era: Quantifying Drain from
+    the Global South Through Unequal Exchange, 1960–2018. New Political Economy 0, 1–18 (2021).
+48. Kallis, G. et al. Research on Degrowth. Annu. Rev. Environ. Resour. 43, 4.1-4.26 (2018).
+49. Jackson, T. The Post-growth Challenge: Secular Stagnation, Inequality and the Limits to Growth.
+    Ecological Economics 156, 236–246 (2019).
+50. Hardt, L. & O’Neill, D. W. Ecological Macroeconomic Models: Assessing Current Developments.
+    Ecological Economics 134, 198–211 (2017).
+51. Daly, H. E. Toward a steady-state economy. (WHFreeman, 1973).
+52. Doyal, L. & Gough, I. A Theory of Human Need. (Red Globe Press, 1991).
+53. Gough, I. Universal Basic Services: A Theoretical and Moral Framework. The Political Quarterly 90,
+    534–542 (2019).
+54. Mattioli, G., Roberts, C., Steinberger, J. K. & Brown, A. The political economy of car dependence:
+    A systems of provision approach. Energy Research & Social Science 66, 101486 (2020).
+55. Lenzen, M., Moran, D., Kanemoto, K. & Geschke, A. Building Eora: A Global Multi-Region Input–
+    Output Database at High Country and Sector Resolution. Economic Systems Research 25, 20–49
+    (2013).
+
+
+
+                                                    22
+56. Lucas, P. L., Wilting, H. C., Hof, A. F. & van Vuuren, D. P. Allocating planetary boundaries to large
+    economies: Distributional consequences of alternative perspectives on distributive fairness.
+    Global Environmental Change 60, 102017 (2020).
+57. Wugt Larsen, F. & Lung, T. Is Europe living within the limits of our planet?
+    https://www.eea.europa.eu/publications/is-europe-living-within-the-planets-limits (2020).
+58. Hickel, J. Quantifying national responsibility for climate breakdown: an equality-based attribution
+    approach for carbon dioxide emissions in excess of the planetary boundary. The Lancet Planetary
+    Health 4, e399–e404 (2020).
+59. UN Population Division. World Population Prospects 2019. https://population.un.org/wpp/
+    (2020).
+60. Oita, A. et al. Substantial nitrogen pollution embedded in international trade. Nature Geoscience
+    9, 111–115 (2016).
+61. Roux, N., Kastner, T., Erb, K.-H. & Haberl, H. Does agricultural trade reduce pressure on land
+    ecosystems? Decomposing drivers of the embodied human appropriation of net primary
+    production. Ecological Economics 181, 106915 (2021).
+62. Galli, A. et al. Questioning the Ecological Footprint. Ecological Indicators 69, 224–232 (2016).
+63. Dearing, J. A. et al. Safe and just operating spaces for regional social-ecological systems. Global
+    Environmental Change 28, 227–238 (2014).
+64. Edward, P. & Sumner, A. Global Inequality and Global Poverty Since the Cold War: How robust is
+    the optimistic narrative? in Sustainable Development Goals and Income Inequality (Edward Elgar
+    Publishing, 2017).
+65. Reddy, S. G. & Pogge, T. How Not to Count the Poor. Inititative for Policy Dialogue Working Paper
+    Series (2009) doi:10.7916/D8P274ZS.
+66. Allen, R. C. Poverty and the Labor Market: Today and Yesterday. Annual Review of Economics 12,
+    107–134 (2020).
+67. Moatsos, M. Global Absolute Poverty: Behind the Veil of Dollars. Journal of Globalization and
+    Development 7, (2016).
+68. Allen, R. C. Absolute Poverty: When Necessity Displaces Desire. American Economic Review 107,
+    3690–3721 (2017).
+69. Ekins, P., Simon, S., Deutsch, L., Folke, C. & De Groot, R. A framework for the practical application
+    of the concepts of critical natural capital and strong sustainability. Ecological Economics 44, 165–
+    185 (2003).
+70. Hyndman, R. J. & Khandakar, Y. Automatic Time Series Forecasting: The forecast Package for R.
+    Journal of Statistical Software 27, 1–22 (2008).
+71. Hyndman, R. J. & Athanasopoulos, G. Forecasting: Principles and Practice. (OTexts, 2019).
+72. Wiedmann, T. & Lenzen, M. Environmental and social footprints of international trade. Nature
+    Geoscience 11, 314–321 (2018).
+
+
+
+
+                                                     23
+

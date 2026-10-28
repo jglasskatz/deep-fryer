@@ -1,0 +1,14 @@
+{
+  "id": "unep-material-app",
+  "url": "https://unep-irp-resourcepanel.resource-use.global/",
+  "resolved_url": "https://unep-irp-resourcepanel.resource-use.global/",
+  "path": "raw/unep-material-app.html",
+  "publisher": "UNEP International Resource Panel",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:44:29.247225+00:00",
+  "sha256": "e3e83a44159194415b5ad9727d1ff502de615cdaf7065598b2e9b00634a4b3f5",
+  "bytes": 44753,
+  "content_type": null,
+  "http_last_modified": null,
+  "title": "unep material app"
+}

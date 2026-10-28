@@ -1,0 +1,15 @@
+{
+  "id": "wdi-EG.ELC.ACCS.ZS",
+  "url": "https://api.worldbank.org/v2/country/ARG/indicator/EG.ELC.ACCS.ZS?format=json&per_page=100&date=2013:2026",
+  "resolved_url": "https://api.worldbank.org/v2/country/ARG/indicator/EG.ELC.ACCS.ZS?format=json&per_page=100&date=2013:2026",
+  "path": "raw/wdi-EG.ELC.ACCS.ZS.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:05.162592+00:00",
+  "sha256": "924d7a922d0681d2f9761a7d3e6b646090fd1c953da8ac1c3f13a68557d0d986",
+  "bytes": 2931,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 11:38:05 GMT",
+  "title": "WDI Argentina: Access to electricity (% of population)",
+  "dataset_last_updated": "2026-10-08"
+}

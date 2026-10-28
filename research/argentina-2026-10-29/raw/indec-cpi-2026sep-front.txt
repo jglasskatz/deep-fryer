@@ -1,0 +1,210 @@
+    Informes técnicos / Vol. 10, n° 250   ISSN 2545-6636
+
+
+
+
+Índices de precios
+Vol. 10, n° 31
+
+
+
+
+Índice de precios
+al consumidor (IPC)
+Septiembre de 2026
+Informes técnicos. Vol. 10, nº 250                                                 Índice                                                                                                           Pág.
+ISSN 2545-6636
+Índices de precios. Vol. 10, nº 31                                                 Resumen ejecutivo............................................................................................3
+
+ISSN 2545-6725
+                                                                                   Cuadros
+Índice de precios al consumidor.                                                   Cuadro 1. Variaciones de septiembre con respecto al mes anterior, según
+Cobertura nacional                                                                 divisiones. Total nacional y regiones . ................................................................5
+                                                                                   Cuadro 2. Variaciones de septiembre con respecto a diciembre de 2025,
+Septiembre de 2026                                                                 según divisiones. Total nacional y regiones........................................................6
+                                                                                   Cuadro 3. Variaciones de septiembre con respecto al mismo mes de 2025,
+Instituto Nacional de Estadística y Censos                                         según divisiones. Total nacional y regiones........................................................6
+                                                                                   Cuadro 4. Variaciones de septiembre con respecto al mes anterior, según
+Dirección: Pedro Ignacio Lines                                                     bienes y servicios. Total nacional y regiones......................................................7
+Dirección Técnica: Carolina Andrea Plat                                            Cuadro 5. Variaciones de septiembre con respecto a diciembre de 2025,
+Dirección General de Difusión y Comunicación: Sandra Fernández Gallo               según bienes y servicios. Total nacional y regiones............................................7
+                                                                                   Cuadro 6. Variaciones de septiembre con respecto al mismo mes de 2025,
+Dirección de Comunicación: Gonzalo Grandis
+                                                                                   según bienes y servicios. Total nacional y regiones............................................7
+Coordinación de Producción Gráfica y Editorial: Marcelo Costanzo
+                                                                                   Cuadro 7. Incidencia de las divisiones en las variaciones del nivel general
+                                                                                   del IPC, según regiones. Resultados con respecto al mes anterior. ....................8
+Este informe técnico fue producido por los equipos de trabajo de:                  Cuadro 8. Incidencia acumulada de las divisiones en las variaciones del
+                                                                                   nivel general del IPC, según regiones. Resultados con respecto a
+Dirección Nacional de Estadísticas de Precios
+                                                                                   diciembre de 2025............................................................................................8
+Josefina Rim
+                                                                                   Cuadro 9. Incidencia acumulada de las divisiones en las variaciones del
+Dirección de Índices de Precios de Consumo                                         nivel general del IPC, según regiones. Resultados con respecto al
+Gustavo Federico Martin                                                            mismo mes de 2025 . .......................................................................................9
+
+Coordinación de Índices de Precios de Consumo                                      Cuadro 10. Incidencia de los bienes y servicios en las variaciones del
+Marcela Almeida                                                                    nivel general del IPC, según regiones. Resultados con respecto al
+                                                                                   mes anterior......................................................................................................9
+Direcciones Provinciales de Estadística integrantes del SEN                        Cuadro 11. Incidencia acumulada de los bienes y servicios en las
+                                                                                   variaciones del nivel general del IPC, según regiones. Resultados respecto
+                    Esta publicación utiliza una licencia Creative Commons.        a diciembre de 2025. ........................................................................................9
+                    Se permite su reproducción con atribución de la fuente.        Cuadro 12. Incidencia acumulada de los bienes y servicios en las
+                                                                                   variaciones del nivel general del IPC, según regiones. Resultados con
+                                                                                   respecto al mismo mes de 2025. ....................................................................10
+Buenos Aires, octubre de 2026
+                                                                                   Cuadro 13. Variaciones de septiembre con respecto al mes anterior, según
+                                                                                   categorías. Total nacional y regiones. ..............................................................10
+                                                                                   Cuadro 14. Variaciones de septiembre con respecto a diciembre de 2025
+Signos convencionales:                                                             según categorías. Total nacional y regiones.....................................................10
+
+*      Dato provisorio                                                             Cuadro 15. Variaciones de septiembre con respecto al mismo mes de 2025,
+                                                                                   según categorías. Total nacional y regiones.....................................................11
+e
+       Dato estimado por extrapolación, proyección
+i      Dato estimado por imputación                                                Cuadro 16. Incidencia de las categorías en las variaciones del nivel general
+u      Dato de calidad inferior al estándar                                        del IPC, según regiones. Resultados con respecto al mes anterior. ..................11
+-      Cero absoluto                                                               Cuadro 17. Incidencia acumulada de las categorías en las variaciones del
+.      Dato no registrado                                                          nivel general del IPC, según regiones. Resultados con respecto a
+                                                                                   diciembre de 2025..........................................................................................11
+...    Dato no disponible a la fecha de presentación de los resultados
+///    Dato que no corresponde presentar                                           Cuadro 18. Incidencia acumulada de las categorías en las variaciones del
+                                                                                   nivel general del IPC, según regiones. Resultados con respecto al
+s      Dato confidencial por aplicación de las reglas del secreto estadístico
+                                                                                   mismo mes de 2025. ......................................................................................12
+                                                                                   Cuadro 19. Precios al consumidor de una selección de alimentos, bebidas y
+                                                                                   otros artículos de la canasta del IPC, según regiones.......................................12
+
+                         Publicaciones del INDEC                                   Cuadro 20. Precios al consumidor de una selección de alimentos, bebidas y
+                                                                                   otros artículos para el GBA. .............................................................................13
+    Las publicaciones editadas por el Instituto Nacional de Estadística y Censos
+    pueden ser consultadas en www.indec.gob.ar y en el Centro Estadístico de       Cuadro 21. Variaciones de septiembre con respecto al mes anterior, según
+    Servicios, ubicado en Av. Presidente Julio A. Roca 609 C1067ABB, Ciudad        principales aperturas regionales......................................................................15
+    Autónoma de Buenos Aires, Argentina. El horario de atención al público es      Cuadro 22. Variaciones de septiembre con respecto a diciembre de 2025,
+    de 9:30 a 16:00.                                                               según principales aperturas regionales. ..........................................................16
+    También pueden solicitarse al teléfono (54-11) 5031-4632                       Cuadro 23. Variaciones de septiembre con respecto al mismo mes de 2025,
+    Correo electrónico: ces@indec.gob.ar                                           según principales aperturas regionales. ..........................................................17
+    Sitio web: www.indec.gob.ar                 X: @INDECArgentina                 Breve nota metodológica..............................................................................18
+    Facebook: /INDECArgentina                   Instagram: @indecargentina         Cobertura del IPC nacional. ..........................................................................18
+    Spotify: /INDECArgentina
+                                                                                   Características del relevamiento de precios. ..............................................19
+    Calendario anual anticipado de informes:
+    http://www.indec.gob.ar/indec/web/Calendario-Fecha-0                           Principales aperturas regionales. ................................................................19
+                                                                                   Enlaces a más detalles. ................................................................................20
+
+                                                INDECArgentina
+                                     Índices de precios
+                                                                                                                                                                                    Buenos Aires, 13 de octubre de 2026
+
+
+
+Índice de precios al consumidor
+Resumen ejecutivo. Septiembre de 2026
+
+                               Variación % mensual                                                  Variación % interanual                                                                       Variación % acumulada
+                                  Total nacional                                                        Total nacional                                                                                Total nacional
+
+
+                                          1,9                                                                   33,4                                                                                          23,6
+                                    Septiembre de 2026                                                       Septiembre de 2026                                                                              Septiembre de 2026
+
+
+                                Variaciones mensuales del nivel general del IPC por divisiones. Total nacional. Septiembre de 2026
+                                                      ,
+                                                    ua s y
+                                                  ag ga les
+                                              d a, ad, stib
+                                                        u
+                                          ien icid b
+                                       Viv lectr com              ció
+                                                                      n
+                                          e tros             u ca                     n                                a s
+                                                                                   ció
+
+
+
+
+    Variación por divisiones
+                                             o           E d                                                       bid
+                                                                               nica                             be
+                                                                                                              y     s
+                                4                                           mu              lud
+                                                                                                            s ca
+                                                                                                                                                      ios                                                                        as
+                                                                          Co              Sa             nto óli                                     r               ión             to to                                    lic
+                                                                                                       me lcoh                                s y va              ac              ien ien                                  hó               tir
+                                                                                                   l i
+                                                                                                  A oa                                      ne cios            cre ltura        am enim                               alc
+                                                                                                                                                                                                                          o               es
+                                                                                                      n                                 i e
+                                                                                                                                       B ervi                e
+                                                                                                                                                            R cu            i p
+                                                                                                                                                                           u t r                                     as              ev
+                                        3,1                 3,0                                                                                                          Eq man oga                      e                        sd
+                                                                                                                                          s                   y
+                                                                                                                                                                           y el h                    ort        e bid aco       da ado                           s
+                                                                                                                                                                                                  sp           B tab        e n                                te
+                                3                                                                                                                                             d              r an                 y       Pr calz                           an
+                                                                                                                                                                                                                                                          ur les
+                                                                                                                                                                                           T
+                                                                           2,5            2,4
+                                                                                                                                                                                                                            y                         t
+                                                                                                                                                                                                                                                    s e a
+                                                                                                                                                                                                                                                  Re hot
+                                                                                                                                                                                                                                                    y
+                                                                                                  2,0                 1,9               1,9                 1,9
+                                2
+                                                                                                                                                                             1,6               1,5             1,4                  1,4
+                                                                                                                                                                                                                                                    1,1
+
+
+
+                                                                                                                       NIVEL GENERAL
+                                1
+
+
+
+
+                                0
+                               %
+Fuente: INDEC, Dirección Nacional de Estadísticas de Precios. Dirección de Índices de Precios de Consumo.
+
+
+
+
+                                                  El nivel general del Índice de precios al consumidor registró un alza mensual de 1,9% en septiembre
+                                                  de 2026 y acumuló en el año una variación de 23,6%.
+
+
+
+
+     Destacados del mes
+                                                  A nivel de las categorías, los precios del IPC Núcleo (1,7%) tuvieron subas vinculadas a Comidas
+                                                  fuera del hogar y Productos farmacéuticos. Los principales aumentos en los precios Estacionales
+                                                  (2,9%) se registraron en Verduras, tubérculos y legumbres; y en los precios Regulados (2,3%) en
+                                                  Gas1, Electricidad2 y Gastos de prepagas.
+
+                                                  La división de mayor aumento en el mes fue Vivienda, agua, electricidad, gas y otros
+                                                  combustibles (3,1%), seguida por Educación (3,0%).
+                                                  Las dos divisiones que registraron las menores variaciones a nivel nacional fueron Restaurantes y
+                                                  hoteles (1,1%) y Prendas de vestir y calzado (1,4%).
+
+                                                  Alimentos y bebidas no alcohólicas fue la división con mayor incidencia en la variación mensual
+                                                  en las regiones, a excepción de la región GBA cuya mayor incidencia correspondió a Vivienda,
+                                                  agua, electricidad, gas y otros combustibles.
+
+1
+  Res. 720/2026 (METROGAS), Res. 721/2026 (LITORAL GAS), Res. 722/2026 (GAS DEL CENTRO), Res. 723/2026 (GAS CUYANA), Res. 724/2026 (NATURGY BAN), Res. 725/2026
+(NATURGY NOA), Res. 726/2026 (GAS NEA), Res. 727/2026 (CAMUZZI PAMPEANA) y Res. 728/2026 (CAMUZZI SUR).
+2
+  Dec. 943/2025 del Poder Ejecutivo Nacional; Res. 109/2026, Res. 187/2026 y Res. 190/2026 de la Secretaría de Energía del Ministerio de Economía de la Nación; Res. 534/2026 del
+Ente Nacional Regulador del Gas y la Electricidad (EDENOR, GBA); Res. 535/2026 del Ente Nacional Regulador del Gas y la Electricidad (EDESUR, GBA); Disp. 4/2025 de la SSTyPE del
+Ministerio de Economía de la Nación; Res. 489/2026 y Res. 585/2026 del Ministerio de Infraestructura y Servicios Públicos de la Provincia de Buenos Aires (MIYSPGP);
+RESOC-2026-129-GDEBA-OCEBA y RESOC-2026-156-GDEBA-OCEBA (Buenos Aires); Res. Ministerial 269/2026 (Catamarca); Res. SECHEEP 12270/2026 (Chaco); Res. General
+ERSeP 25/2026 (Córdoba); Res. DPEC 1018/2026 y Res. EPRE 19/2026 (Corrientes); Res. EPRE 140/2026 (Entre Ríos); Res. 121/2026 y Res. 122/2026 (Formosa); Res. 297
+SUSEPU/2026 (Jujuy); Res. 39/2026 (La Pampa); Res. EPRE 189/2026 (Mendoza); Res. ENRESP 1510/2026 (Salta); Res. EPRE 80/2026 (San Juan); Res. CRPEE 330-2026 (San Luis);
+Dec. 943/2025 del Poder Ejecutivo Nacional, Res. 238/2026 de la Secretaría de Energía del Ministerio de Economía de la Nación y Res. 1702/2024 del Ministerio de Desarrollo Productivo
+(Santa Fe); Res. ENRESE 84/2026 (Santiago del Estero); Res. 190/2026 de la Secretaría de Energía del Ministerio de Economía de la Nación (Ushuaia y Río Grande, Tierra del Fuego); y
+Res. ERSEPT 596/2026 y Res. 656/2026 (Tucumán).
+Fuente: INDEC, Dirección Nacional de Estadísticas de Precios. Dirección de Índices de Precios de Consumo.
+

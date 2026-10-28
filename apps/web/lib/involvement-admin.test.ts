@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { markPortraitPublic } from './test-portraits';
+import { publishInvolvementTestDimensions } from './test-involvement-dimensions';
 import { INVOLVEMENT_LIMITS, involvementListingInputSchema } from '@deep-fryer/core';
 import {
   asSubmissionStatus,
@@ -86,10 +87,10 @@ describe('listingDraftFromSubmission', () => {
     expect(involvementListingInputSchema.safeParse(draft).success).toBe(true);
   });
 
-  it('drops a website that is not https, and a dimension the framework does not know', () => {
+  it('drops an insecure website but preserves the exact selected dimension for explicit staff correction', () => {
     const draft = listingDraftFromSubmission({ ...organization, website: 'http://insecure.example.org', dimensionSlug: 'vibes' });
     expect(draft.url).toBeNull();
-    expect(draft.dimension_slugs).toEqual([]);
+    expect(draft.dimension_slugs).toEqual(['vibes']);
   });
 
   it('leaves a suggestion for staff to name and classify', () => {
@@ -123,6 +124,7 @@ describe.skipIf(!hasDb)('involvement admin reads under row-level security', () =
     ({ tenant } = await m.provisionTenant(db, { slug: uniq(), name: 'Queue City' }));
     // Public, as its first publish would make it (migration 0015): anonymous visitors only reach public portraits.
     await markPortraitPublic(tenant.id);
+      await publishInvolvementTestDimensions(tenant.id);
     cleanup.tenantId = tenant.id;
     cleanup.organizationId = tenant.organizationId;
     for (const role of ['editor', 'moderator', 'outsider'] as const) {
