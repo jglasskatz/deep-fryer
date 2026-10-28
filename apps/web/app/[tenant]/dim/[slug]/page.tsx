@@ -13,7 +13,6 @@ import { getAuth, getRole, roleAtLeast } from '@/lib/auth';
 import { issueFormToken } from '@/lib/form-token';
 import { formDimensionOptions, involvementView, isFrameworkDimension } from '@/lib/involvement';
 import { portraitFeatures } from '@/lib/features';
-import { frameworkSlugOf } from '@/lib/policy';
 import { safeHref } from '@/lib/safe-url';
 import { DEFAULT_EMERGENCY_TIME_ZONE, formatIndicatorValue, listingsForDimension } from '@deep-fryer/core';
 import { dimensionLabel, scaleLabel } from '@/lib/i18n/content';
@@ -80,11 +79,9 @@ export default async function DimensionDrilldownPage({
   if (!dim) notFound();
   const data = dim.data;
 
-  // Listings and submissions are keyed by framework slug; a portrait's own
-  // dimension (renamed, or custom with a canonical_slug) maps to one the
-  // same way the policy analysis does.
-  const frameworkSlug = frameworkSlugOf(dim);
-  const listings = involvement ? listingsForDimension(involvement.listings, frameworkSlug) : [];
+  // Local dimension addresses are preserved, including custom dimensions.
+  const localSlug = dim.slug;
+  const listings = involvement ? listingsForDimension(involvement.listings, localSlug) : [];
   // The form needs somewhere to store what it sends: not offered on the
   // bundled demo portrait (no database).
   const formToken = involvement ? issueFormToken(tenant) : null;
@@ -258,7 +255,7 @@ export default async function DimensionDrilldownPage({
                     token={formToken}
                     labels={m.involvement}
                     dimensions={formDimensionOptions(m, portrait.dimensions)}
-                    defaultDimension={isFrameworkDimension(frameworkSlug) ? frameworkSlug : null}
+                    defaultDimension={isFrameworkDimension(localSlug) ? localSlug : null}
                   />
                 </div>
               </details>

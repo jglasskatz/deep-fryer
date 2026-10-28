@@ -1,0 +1,14 @@
+{
+  "id": "native-forest-topic",
+  "url": "https://www.argentina.gob.ar/ambiente/bosques/umsef",
+  "resolved_url": "https://www.argentina.gob.ar/ambiente/bosques/umsef",
+  "path": "raw/native-forest-topic.html",
+  "publisher": "Argentina environmental authority",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:40:47.537636+00:00",
+  "sha256": "dec4f9fb45881a5235e76af6355dab51b3723d03d276a5fc17a817b2d4887970",
+  "bytes": 37401,
+  "content_type": "text/html; charset=utf-8",
+  "http_last_modified": null,
+  "title": "native forest topic"
+}

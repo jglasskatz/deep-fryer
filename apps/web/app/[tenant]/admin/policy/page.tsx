@@ -10,6 +10,7 @@ import { billingSummary, keyFundedSessionsNote, previewResearchSpend, type Billi
 import { getPolicyAnalysis, listPolicyAnalyses } from '@/lib/policy';
 import { requireFeature } from '@/lib/features';
 import { safeHref } from '@/lib/safe-url';
+import { getPortrait } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,10 +65,11 @@ export default async function PolicyPage({
   await requireFeature(tenant, 'policy_analysis');
   const { from } = await searchParams;
   const ctx = await requireAdminPage(tenant, 'editor', `/${tenant}/admin/policy`);
-  const [analyses, billing, previous] = await Promise.all([
+  const [analyses, billing, previous, portrait] = await Promise.all([
     listPolicyAnalyses(ctx.tenant.id),
     billingSummary(ctx.tenant.organizationId),
     typeof from === 'string' ? getPolicyAnalysis(ctx.tenant.id, from) : null,
+    getPortrait(tenant),
   ]);
   // The meter is the plan's allowance (plan-funded sessions only); what ran on the organization's own key is named
   // under it, in the same words as on the billing page and the org hub (lib/billing.ts keyFundedSessionsNote).
@@ -116,7 +118,7 @@ export default async function PolicyPage({
             // Remount when the prefill source changes, so the fields take the new values.
             key={previous?.id ?? 'blank'}
             tenantSlug={tenant}
-            blockedReason={blockedReason(billing)}
+            blockedReason={portrait?.dimensions.length ? blockedReason(billing) : 'Publish at least one dimension before starting a policy analysis. An analysis needs a published baseline.'}
             initial={
               previous
                 ? { title: previous.title, sourceUrl: previous.sourceUrl ?? '', brief: previous.brief }

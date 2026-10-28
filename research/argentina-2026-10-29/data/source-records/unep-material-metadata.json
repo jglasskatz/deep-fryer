@@ -1,0 +1,14 @@
+{
+  "id": "unep-material-metadata",
+  "url": "https://sdgs.unep.org/article/sdg-indicator-841",
+  "resolved_url": "https://sdgs.unep.org/article/sdg-indicator-841",
+  "path": "raw/unep-material-metadata.html",
+  "publisher": "UNEP",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:40:45.433664+00:00",
+  "sha256": "4af2a270c278ff011efe8e2eb2c6683a38d62aa38c233bc9e74fdfbda144a6b2",
+  "bytes": 26673,
+  "content_type": "text/html; charset=UTF-8",
+  "http_last_modified": null,
+  "title": "unep material metadata"
+}

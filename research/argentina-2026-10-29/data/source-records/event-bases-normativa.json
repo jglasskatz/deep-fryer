@@ -1,0 +1,14 @@
+{
+  "id": "event-bases-normativa",
+  "url": "https://www.argentina.gob.ar/normativa/nacional/ley-27742-401266/texto",
+  "resolved_url": "https://www.argentina.gob.ar/normativa/nacional/ley-27742-401266/texto",
+  "path": "raw/event-bases-normativa.html",
+  "publisher": "Argentina official legislation archive",
+  "release_date": "2024-07-08",
+  "retrieved_at": "2026-10-28T11:48:08.035489+00:00",
+  "sha256": "fe5d4001f5dcec466a03688f4fe715f144f7ffd70b9c2b5f343276a25f3f261a",
+  "bytes": 326610,
+  "content_type": "text/html; charset=utf-8",
+  "http_last_modified": null,
+  "title": "Official legislation text: Law 27,742 (Ley Bases)"
+}

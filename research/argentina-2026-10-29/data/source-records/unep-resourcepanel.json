@@ -1,0 +1,14 @@
+{
+  "id": "unep-resourcepanel",
+  "url": "https://www.resourcepanel.org/global-material-flows-database",
+  "resolved_url": "https://www.resourcepanel.org/global-material-flows-database",
+  "path": "raw/unep-resourcepanel.html",
+  "publisher": "UNEP International Resource Panel",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:44:27.685258+00:00",
+  "sha256": "3a197ba61666e195133ffbf17d13dd339f4ac801efe45cbb6b5180a1ce3ad568",
+  "bytes": 27935,
+  "content_type": "text/html; charset=utf-8",
+  "http_last_modified": null,
+  "title": "unep resourcepanel"
+}

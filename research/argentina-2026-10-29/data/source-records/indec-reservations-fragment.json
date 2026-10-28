@@ -1,0 +1,14 @@
+{
+  "id": "indec-reservations-fragment",
+  "url": "https://www.indec.gob.ar/Institucional/Indec/InformacionDeArchivo/2",
+  "resolved_url": "https://www.indec.gob.ar/Institucional/Indec/InformacionDeArchivo/2",
+  "path": "raw/indec-reservations-fragment.html",
+  "publisher": "INDEC",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:42:53.134732+00:00",
+  "sha256": "cd9803804c7c158c4e726db651b4b9f6dd899fd0e73a385e72f2362f59333c24",
+  "bytes": 181882,
+  "content_type": "text/html; charset=utf-8",
+  "http_last_modified": null,
+  "title": "indec reservations fragment"
+}

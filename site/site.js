@@ -1,5 +1,6 @@
 import { DoughnutRenderer } from './doughnut-renderer.js';
 import { formatIndicatorValue } from './format.js';
+import { dimensionState, dimensionStatus } from './portrait-presentation.js';
 const collection = JSON.parse(document.getElementById('portrait-data').textContent);
 const portraits = new Map(collection.portraits.map(p => [p.slug, p]));
 const links = [...document.querySelectorAll('.portrait-switcher a')];
@@ -33,6 +34,9 @@ function selectPortrait(slug, restoreDimension = true) {
   const panel = document.getElementById('detail-panel');
   const empty = document.getElementById('panel-empty');
   const mobilePanel = matchMedia('(max-width: 850px)');
+  const canHover = matchMedia('(hover: hover) and (pointer: fine)');
+  const idleCopy = () => canHover.matches ? 'Hover for a summary. Select a segment or dimension to read its evidence.' : 'Tap a segment or choose a dimension below to read its evidence.';
+  label.textContent = idleCopy();
   let selectedDimension = null;
   let returnFocus = canvas;
   const dimensions = new Map(portrait.dimensions.map(d => [`${d.ring}:${d.name}`, d]));
@@ -43,15 +47,16 @@ function selectPortrait(slug, restoreDimension = true) {
     tooltip.replaceChildren();
     const add = (tag, text) => { const node = document.createElement(tag); node.textContent = text; tooltip.append(node); };
     add('strong', d.name);
-    add('p', `${d.ring === 'social' ? 'Social foundation' : 'Ecological ceiling'}${d.level === null ? (d.indicators.some(i => i.kind === 'observation') ? ' · Unscored observation' : ' · Score unknown') : ''}`);
-    for (const indicator of d.indicators) {
+    add('p', `${d.ring === 'social' ? 'Social foundation' : 'Ecological ceiling'} · ${dimensionStatus(d)}`);
+    for (const indicator of d.indicators.slice(0, 2)) {
       add('p', `${indicator.name}: ${formatIndicatorValue(indicator.kind === 'observation' && indicator.value !== null ? Number(indicator.value.toFixed(1)) : indicator.value, indicator.unit)} ${indicator.year ? `(${indicator.year})` : ''}`);
       add('small', `${collection.statuses[indicator.status]} · ${indicator.geography || 'See source context'}`);
       if (indicator.quality_flags?.length) add('small', indicator.quality_flags.join(' · '));
       if (indicator.source) add('small', `Source: ${indicator.source}`);
     }
-    if (!d.indicators.length) add('p', 'No published measurement available.');
-    add('p', 'Click to keep the evidence open beside the chart.');
+    if (d.indicators.length > 2) add('p', `${d.indicators.length - 2} more measures in the evidence panel.`);
+    if (!d.indicators.length) add('p', 'No acceptable measurement available.');
+    add('p', mobilePanel.matches ? 'Select to open the evidence.' : 'Select to keep the evidence beside the chart.');
     tooltip.hidden = false;
     const rect = canvas.getBoundingClientRect();
     const left = Math.max(0, Math.min(event.clientX - rect.left + 14, rect.width - tooltip.offsetWidth));
@@ -77,7 +82,7 @@ function selectPortrait(slug, restoreDimension = true) {
       panel.close();
       if (restoreFocus) returnFocus?.focus({ preventScroll: true });
       empty.hidden = false;
-      label.textContent = 'Hover for a summary. Select a segment to open its evidence beside the chart.';
+      label.textContent = idleCopy();
       return;
     }
     const article = document.getElementById(`dim-${d.slug}`).cloneNode(true);
@@ -96,7 +101,7 @@ function selectPortrait(slug, restoreDimension = true) {
     panel.scrollTop = 0;
     if (focus || mobilePanel.matches) heading.focus({ preventScroll: true });
     window.scrollTo({ top: before, behavior: 'instant' });
-    label.textContent = `${d.name} evidence is open. Hover other segments to compare.`;
+    label.textContent = `${d.name} evidence is open.${canHover.matches ? ' Hover other segments to compare.' : ' Close the evidence to choose another dimension.'}`;
   }
   function drawChart() {
     renderer?.destroy();
@@ -105,7 +110,7 @@ function selectPortrait(slug, restoreDimension = true) {
       onSelect: hit => { const dimension = resolve(hit); if (dimension) { showDimension(dimension, false, canvas); queueMicrotask(drawChart); } },
     });
     renderer.setColours(2, 1, '#883251', '#E096C6');
-    renderer.setLevels(portrait.dimensions.map(d => ({ type: d.ring === 'social' ? 'inner' : 'outer', name: d.name, level: d.level ?? 'NaN', colour: d.slug === selectedDimension ? '#0066cc' : null })));
+    renderer.setLevels(portrait.dimensions.map(d => ({ type: d.ring === 'social' ? 'inner' : 'outer', name: d.name, level: d.level ?? 'NaN', colour: d.slug === selectedDimension ? '#0066cc' : dimensionState(d) === 'unscored' ? '#6d7188' : null })));
   }
   canvas.parentElement.addEventListener('mouseleave', () => { tooltip.hidden = true; });
   panel.querySelector('.panel-close').addEventListener('click', () => { showDimension(null); drawChart(); });

@@ -1,0 +1,15 @@
+{
+  "id": "unep-material-argentina-export",
+  "url": "https://unep-irp-resourcepanel.resource-use.global/mfa-totals-ratios/export?countries%5B0%5D=ARG032&flowTypes%5B0%5D=MF%2Fcap&flowTypes%5B1%5D=DMC%2Fcap",
+  "resolved_url": "https://unep-irp-resourcepanel.resource-use.global/mfa-totals-ratios/export?countries%5B0%5D=ARG032&flowTypes%5B0%5D=MF%2Fcap&flowTypes%5B1%5D=DMC%2Fcap",
+  "path": "raw/unep-material-argentina-export.csv",
+  "publisher": "UNEP International Resource Panel",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:48:06.960284+00:00",
+  "sha256": "01c5d739948119a36f42cb2df058cd5eff5c2ce52022eea3f915566149917f8f",
+  "bytes": 1659,
+  "content_type": null,
+  "http_last_modified": null,
+  "format_note": "Publisher export is CSV despite requested filename suffix.",
+  "title": "UNEP IRP Global Material Flows Database, Argentina MF/cap and DMC/cap export"
+}

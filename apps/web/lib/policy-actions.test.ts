@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { onOneConnection } from '../test/one-connection';
+import { publishInvolvementTestDimensions } from './test-involvement-dimensions';
 
 /**
  * createPolicyAnalysis and cancelPolicyAnalysis — the research quota gate
@@ -69,6 +70,7 @@ describe.skipIf(!hasDb)('createPolicyAnalysis', () => {
     // New portraits start with every feature off (SPEC-v7 §3); these actions sit behind policy_analysis.
     const { setPortraitFeatures } = await import('./test-features');
     await setPortraitFeatures(tenant.id, { policy_analysis: true });
+    await publishInvolvementTestDimensions(tenant.id,['housing']);
     if (allowance !== null) {
       const { givePlan } = await import('./test-plans');
       await givePlan(org.id, { researchSessions: allowance });
@@ -113,6 +115,15 @@ describe.skipIf(!hasDb)('createPolicyAnalysis', () => {
       .from(m.auditLog)
       .where(and(eq(m.auditLog.tenantId, tenantId), eq(m.auditLog.entity, 'policy_analysis')));
   }
+
+  it('refuses an empty baseline before reserving a session or inserting an analysis',async()=>{
+    const {tenant,org}=await portrait(1);const m=await import('@deep-fryer/db');const {eq}=await import('drizzle-orm');
+    await m.getDb().update(m.dimensions).set({archivedAt:new Date()}).where(eq(m.dimensions.tenantId,tenant.id));
+    const result=await (await import('./policy-actions')).createPolicyAnalysis({tenantSlug:tenant.slug,title:'No measured baseline',brief:BRIEF});
+    expect(result).toMatchObject({ok:false,error:expect.stringContaining('published baseline')});
+    expect(await analysesOf(tenant.id)).toEqual([]);
+    expect(await m.researchSessionsUsed(m.getDb(),org.id,new Date(0))).toBe(0);
+  });
 
   it('queues an analysis and its job together within the allowance, then refuses what would exceed it', async () => {
     const { createPolicyAnalysis } = await import('./policy-actions');

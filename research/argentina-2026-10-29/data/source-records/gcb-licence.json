@@ -1,0 +1,14 @@
+{
+  "id": "gcb-licence",
+  "url": "https://data.icos-cp.eu/licence",
+  "resolved_url": "https://data.icos-cp.eu/licence",
+  "path": "raw/gcb-licence.html",
+  "publisher": "ICOS",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:42:51.439391+00:00",
+  "sha256": "463f281c6b5e684947fc30db75165ed2ee2ed158b38e71c30d6d99b72bb008ab",
+  "bytes": 59950,
+  "content_type": "text/html; charset=UTF-8",
+  "http_last_modified": null,
+  "title": "gcb licence"
+}

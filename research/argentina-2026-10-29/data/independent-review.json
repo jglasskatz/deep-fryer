@@ -1,0 +1,42 @@
+{
+  "review_date": "2026-10-29",
+  "status": "independent-checks-completed-for-descriptive-working-manuscripts",
+  "review_type": "Automated independent source review plus visual inspection; not journal peer review or human publication approval.",
+  "checks": [
+    "82 source archive SHA-256 checks",
+    "221 WDI and complementary employment/equality rows rejoined to producer records",
+    "52 carbon rows independently recomputed from archived workbook and population",
+    "INDEC H1 2026 poverty, indigence, 90% intervals and producer-owned year-on-year significance statement checked against report pp.4\u20135",
+    "Four Fanning thresholds and distinction from original global-minimum normalization checked",
+    "UNEP annex projection inputs from 2020 and correlation cutoff 2019 checked",
+    "All 18 PDF pages visually inspected; public and policy interfaces checked on desktop, 390px and 320px"
+  ],
+  "corrections": [
+    "Explicit preliminary GCB vintage and accessed-workbook limitation",
+    "GDP per person distinguished from household real income",
+    "Latest confidence intervals, provisional status and exact-period significance statement retained in explorer",
+    "Source identifiers preserved verbatim in locators",
+    "Figure labels enlarged and short methods table kept together"
+  ],
+  "limits": [
+    "No causal policy-effect identification",
+    "Four social sectors only; no national ecological quota",
+    "Urban H2 inequality and urban poverty survey coverage",
+    "Unresolved electricity revision interpretation",
+    "Current ecological reporting gaps and projected material inputs retained"
+  ],
+  "reviewed_files": {
+    "data/portrait-series.json": "e2775be4d8e51c2fc4141bce3f0e03a1f0a1f62c51ced971ab6a0e37d9df8c7b",
+    "argentina-working-paper.html": "748fe305ed224e71040b61b2883c6b64846c9437d0e57eb394cb95c43beb488d",
+    "methods-paper.html": "d43cb0af898ef380ea7f55a095257b2b313ccac33808dbe6c185ff6a32a92e5a",
+    "scripts/build_dataset.py": "107f9e5914c5128f4f8be7ce0806f5d87a2986413ee7e6b3e88a5061915fc4f4",
+    "scripts/write_papers.py": "2eac2b5d12f03dd98ad0c4d650cffefba27883ad9d007d39f324d0d9e8a147dd",
+    "scripts/plot_figures.py": "c3305ff0717c2987d1b6e5744ad1978cc36c5c88fd740b080337913c9619eee5",
+    "scripts/print-papers.mjs": "4474d2402bd4aaa7ec99eb889c30a28de96151bca7422db722f90809ac60ecc4",
+    "figures/ecological-evidence.svg": "466daed2174655c5eddeb0aa5c3b00d2a0bcd173a6b79c6956e7815456238029",
+    "figures/partial-social-doughnuts.svg": "549bb11dd83d40ba04a41584aaf370226ec984add22692f2ee8eaaa24165fc17",
+    "figures/poverty-history.svg": "7ec7586395f90f00e5b4942c59ce02d4f8fe2c1f4f4e98d8c56507093635aaef",
+    "papers/argentina-working-paper.pdf": "a5a72af1690f0263d896fd64cf1666b578e023fd4e3226d9c5cebdd05fb7c16f",
+    "papers/methods-paper.pdf": "dcbbb0c62625b7494d80b857f0bf26bb240a099f22e4a8cab090841c320d7cbd"
+  }
+}

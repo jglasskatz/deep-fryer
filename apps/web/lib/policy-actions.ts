@@ -5,6 +5,7 @@ import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import {
   POLICY_ANALYSIS_SESSIONS,
+  POLICY_NO_BASELINE,
   standing,
   type ResearchQuotaCheck,
 } from '@deep-fryer/core';
@@ -12,6 +13,7 @@ import {
   gateResearchSpend,
   organizationForTenant,
   policyAnalyses,
+  publishedDoughnut,
   type Subscription,
 } from '@deep-fryer/db';
 import { POLICY_TASK, ensureJobQueueSchema, policyJobKey } from '@deep-fryer/research';
@@ -141,6 +143,8 @@ export const createPolicyAnalysis = action(
     // reads its actor inside the transaction, which must not cost a session
     // read on a second pooled connection (lib/db.ts).
     const analysis = await systemTransaction(async (tx) => {
+      const portrait = await publishedDoughnut<{dimensions:unknown[]}>(tx,tenant.slug);
+      if (!portrait?.dimensions.length) throw new UserError(POLICY_NO_BASELINE);
       const org = await organizationForTenant(tx, tenant.id);
       if (!org) throw new Error(`tenant ${tenant.id} has no organization`);
       const gate = await gateResearchSpend(tx, org.id, POLICY_ANALYSIS_SESSIONS);

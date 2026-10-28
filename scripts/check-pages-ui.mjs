@@ -31,7 +31,9 @@ try {
   assert.equal(await links.count(), 21);
   assert.equal(await page.locator('.dimension-groups h3').allTextContents().then(headings => headings.join(', ')), 'Social foundation, Ecological ceiling');
   assert.ok(await links.evaluateAll(nodes => nodes.every(node => node.getBoundingClientRect().height >= 44)), 'Every text control meets the 44px touch target');
-  assert.equal(await page.locator('.status-legend li').count(), 4);
+  assert.equal(await page.locator('.status-legend li').count(), 5);
+  assert.match(await page.locator('.status-legend').innerText(), /Slate: value available, no score/);
+  assert.match(await page.locator('.status-legend').innerText(), /Grey: data needed/);
   const health = page.getByRole('link', { name: 'Health', exact: true });
   await health.focus();
   await page.keyboard.press('Enter');

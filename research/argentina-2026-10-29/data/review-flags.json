@@ -1,0 +1,62 @@
+[
+  {
+    "id": "poverty-full-decade",
+    "issue": "Comparable poverty does not span 2013–2023",
+    "disposition": "Retain missing 2013–H1 2016; use restarted H2 2016 onward. Do not fill with another institution or quarter.",
+    "status": "documented-gap"
+  },
+  {
+    "id": "geographic-coverage",
+    "issue": "Country-labelled Gini is urban second-semester EPHC-S2",
+    "disposition": "Corrected indicator geography/frequency; mixed-coverage warning for partial portrait.",
+    "status": "resolved-in-data"
+  },
+  {
+    "id": "survey-exclusions",
+    "issue": "H2 2019 and H2 2020 omit specific agglomerations",
+    "disposition": "Coverage flags/comparability groups prevent unqualified continuous comparisons.",
+    "status": "resolved-in-data"
+  },
+  {
+    "id": "poverty-latest-significance",
+    "issue": "Latest poverty point estimate rises year-on-year without significant change",
+    "disposition": "Producer statement and 90% intervals cited. Root independently inspected archived report pp 4–5.",
+    "status": "independently-checked-by-root"
+  },
+  {
+    "id": "electricity2024",
+    "issue": "WDI electricity access declines to 98.4%; reason not resolved",
+    "disposition": "Retain value and explicitly state measurement/revision versus substantive interpretation is unresolved.",
+    "status": "open-interpretive-gap"
+  },
+  {
+    "id": "material-projected-inputs",
+    "issue": "UNEP 2020+ values contain projected inputs and built-in GDP relationships",
+    "disposition": "Exclude 2020+ from main empirical series; preserve separately labelled model outputs.",
+    "status": "resolved-in-data"
+  },
+  {
+    "id": "gcb-vintage",
+    "issue": "Publisher preliminary and ICOS finalv 1 are distinct",
+    "disposition": "Use exact successfully archived publisher-site vintage; do not claim finalv 1 values or splice.",
+    "status": "resolved-in-data"
+  },
+  {
+    "id": "benchmark-normalization",
+    "issue": "Original authors subtract historical global minimum; modern ratio does not",
+    "disposition": "Label modern computation as adaptation; keep original normalized references separate.",
+    "status": "resolved-in-methods"
+  },
+  {
+    "id": "ecological-national-quota",
+    "issue": "Annual national planetary ceilings not established",
+    "disposition": "Ecological series stay in native units with null targets.",
+    "status": "documented-gap"
+  },
+  {
+    "id": "policy-attribution",
+    "issue": "Before/after history has no identified counterfactual",
+    "disposition": "Chronology-only event status; no numeric empirical policy effects or causal assertions.",
+    "status": "documented-design-limit"
+  }
+]

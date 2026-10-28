@@ -243,12 +243,12 @@ describe('portraitPanelView', () => {
     expect(portraitPanelView(dimension('housing'), options()).moreListings).toBeNull();
   });
 
-  it('keys listings by framework slug, so a renamed portrait dimension finds its framework listings', () => {
+  it('keys listings by the actual local slug without borrowing another dimension’s listings', () => {
     const view = portraitPanelView(
       dimension('homes-for-all', { name: 'Homes for All' }, { canonical_slug: 'housing' }),
-      options({ listings: [listing({})] }),
+      options({ listings: [listing({ id: 'canonical' }), listing({ id: 'local', dimension_slugs: ['homes-for-all'] })] }),
     );
-    expect(view.listings?.map((l) => l.id)).toEqual(['l1']);
+    expect(view.listings?.map((l) => l.id)).toEqual(['local']);
     // The renamed dimension keeps its own (published) name.
     expect(view.name).toBe('Homes for All');
   });

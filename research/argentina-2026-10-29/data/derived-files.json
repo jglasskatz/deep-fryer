@@ -1,0 +1,50 @@
+[
+  {
+    "path": "raw/fanning2021-paper.txt",
+    "sha256": "1d0bf3013e7dfa56456bde909387171ed75cfe92acf00aa5c3e818aae5f6d005",
+    "derived_from_source_id": "fanning2021-paper",
+    "method": "pdftotext -layout; selected front/date pages where filename indicates; convenience reading aid, not independent evidence"
+  },
+  {
+    "path": "raw/gcb-2025-paper-dates.txt",
+    "sha256": "8e700b8425e6e7211ff46e0eca0f3087cd07a8f596b37ca1f89218b28988262b",
+    "derived_from_source_id": "gcb-2025-paper",
+    "method": "pdftotext -layout; selected front/date pages where filename indicates; convenience reading aid, not independent evidence"
+  },
+  {
+    "path": "raw/gcb-2025-paper-front.txt",
+    "sha256": "e9fbda50cf5d65ab9f46942d2aa77811c43c8991e9317ee686b088bc128a4153",
+    "derived_from_source_id": "gcb-2025-paper",
+    "method": "pdftotext -layout; selected front/date pages where filename indicates; convenience reading aid, not independent evidence"
+  },
+  {
+    "path": "raw/indec-cpi-2026sep-front.txt",
+    "sha256": "a1f2c1794367a98487eec01097df8b3e5140754ea13efe4738173a33a7ee01d8",
+    "derived_from_source_id": "indec-cpi-2026sep",
+    "method": "pdftotext -layout; selected front/date pages where filename indicates; convenience reading aid, not independent evidence"
+  },
+  {
+    "path": "raw/indec-poverty-2025h1.txt",
+    "sha256": "d19a45de3dc201353e79ccd83f365536f58e43027f7bc6c870442f94272af738",
+    "derived_from_source_id": "indec-poverty-2025h1",
+    "method": "pdftotext -layout; selected front/date pages where filename indicates; convenience reading aid, not independent evidence"
+  },
+  {
+    "path": "raw/indec-poverty-2026h1.txt",
+    "sha256": "51fb43c00dcd34a2c96fa076f57046272c1bd326e4492c49f309276e4b8f2aff",
+    "derived_from_source_id": "indec-poverty-2026h1",
+    "method": "pdftotext -layout; selected front/date pages where filename indicates; convenience reading aid, not independent evidence"
+  },
+  {
+    "path": "raw/native-forest-2024.txt",
+    "sha256": "e5194792c58bca583b439248c12730b01b64ee3770b06558cad34c3c0dd3624e",
+    "derived_from_source_id": "native-forest-2024",
+    "method": "pdftotext -layout; selected front/date pages where filename indicates; convenience reading aid, not independent evidence"
+  },
+  {
+    "path": "raw/unep-material-methods.txt",
+    "sha256": "9d6acfd549375d213a51e6bba223e9330d2879977cb3c3b02311889bd1e9b3db",
+    "derived_from_source_id": "unep-material-methods",
+    "method": "pdftotext -layout; selected front/date pages where filename indicates; convenience reading aid, not independent evidence"
+  }
+]

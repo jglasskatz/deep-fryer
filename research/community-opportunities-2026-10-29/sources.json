@@ -1,0 +1,57 @@
+[
+  {
+    "id": "monterey-food-bank",
+    "url": "https://foodbankformontereycounty.org/donate/volunteer/",
+    "resolved_url": "https://foodbankformontereycounty.org/donate/volunteer/",
+    "retrieved_at": "2026-10-29",
+    "path": "evidence/monterey-food-bank.html",
+    "sha256": "db57647c65d29e4bba19377c231d03c1396212b1678fed6874e23315f66e11b1",
+    "bytes": 101527,
+    "publisher_role": "organizer or public authority",
+    "use": "source for participation options; current schedules and eligibility require organizer confirmation"
+  },
+  {
+    "id": "carmel-boards",
+    "url": "https://ci.carmel.ca.us/boards-commissions",
+    "resolved_url": "https://ci.carmel.ca.us/boards-commissions",
+    "retrieved_at": "2026-10-29",
+    "path": "evidence/carmel-boards.html",
+    "sha256": "fdc70f0961e3e73f85aaab86b6d95db0e19a491121761339f1f9224a1e38c16f",
+    "bytes": 137222,
+    "publisher_role": "organizer or public authority",
+    "use": "source for participation options; current schedules and eligibility require organizer confirmation"
+  },
+  {
+    "id": "carmel-residents",
+    "url": "https://www.carmelresidents.org/volunteer",
+    "resolved_url": "https://www.carmelresidents.org/volunteer",
+    "retrieved_at": "2026-10-29",
+    "path": "evidence/carmel-residents.html",
+    "sha256": "3d12cf480c418728922eb9413ec8e98045f4cac1d138e96ec707ba19576744eb",
+    "bytes": 38632,
+    "publisher_role": "organizer or public authority",
+    "use": "source for participation options; current schedules and eligibility require organizer confirmation"
+  },
+  {
+    "id": "monterey-conservation",
+    "url": "https://www.rcdmonterey.org/volunteering-and-internships",
+    "resolved_url": "https://www.rcdmonterey.org/volunteering-and-internships",
+    "retrieved_at": "2026-10-29",
+    "path": "evidence/monterey-conservation.html",
+    "sha256": "8c91d4222398a6bfac9a9677247d9555c74ed2ba87425cd4f63ee971ef893009",
+    "bytes": 42724,
+    "publisher_role": "organizer or public authority",
+    "use": "source for participation options; current schedules and eligibility require organizer confirmation"
+  },
+  {
+    "id": "monterey-boards",
+    "url": "https://apps.co.monterey.ca.us/bccsite",
+    "resolved_url": "https://apps.co.monterey.ca.us/bccsite",
+    "retrieved_at": "2026-10-29",
+    "path": "evidence/monterey-boards.html",
+    "sha256": "9e868524b98b940c5427d5b291ae9847cfb795b2ef09f7f55e6310c6b91a89e3",
+    "bytes": 31096,
+    "publisher_role": "organizer or public authority",
+    "use": "source for participation options; current schedules and eligibility require organizer confirmation"
+  }
+]

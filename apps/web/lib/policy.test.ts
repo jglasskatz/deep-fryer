@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { DimensionProjection, PolicyAnalysisOutput, PolicyImpact } from '@deep-fryer/core';
+import { freezePolicyPortrait, type DimensionProjection, type PolicyAnalysisOutput, type PolicyImpact } from '@deep-fryer/core';
 import { impactDoughnut, impactGroups, impactsChartLabel, impactsSummary } from './policy';
 import type { PublishedDimension } from './portrait';
 
@@ -18,6 +18,8 @@ function published(slug: string, ring: 'social' | 'ecological', viz: number | nu
 
 function projection(over: Partial<DimensionProjection> & { dimension_slug: string }): DimensionProjection {
   return {
+    epistemic_type: 'modeled-estimate',
+    baseline: {version_num:2,indicators:[]},
     direction: 'improves',
     current_viz: null,
     projected_viz: null,
@@ -60,6 +62,30 @@ describe('impactDoughnut', () => {
     expect(republished).toEqual([]);
   });
 
+  it('retains the analysis baseline even after same-wedge republication and suppresses legacy guesses', () => {
+    const d=published('housing','social',80,7);
+    const p=projection({dimension_slug:'housing',current_viz:80,projected_viz:60,baseline:{version_num:1,indicators:[]}});
+    const result=impactDoughnut([d],[p]);
+    expect(result.republished).toEqual(['Housing']);expect(result.dimensions[0]!.current).toBe(80);
+    const changed=impactDoughnut([{...d,viz_level:45}],[p]);expect(changed.dimensions[0]!.current).toBe(45);
+    const legacy=impactDoughnut([{...d,viz_level:45},published('energy','social',70,8)],[{...p,current_viz:123.3,projected_viz:103.3,baseline:undefined,epistemic_type:undefined}]);
+    expect(legacy.baselineComplete).toBe(false);expect(legacy.dimensions.map(d=>d.current)).toEqual([45,70]);
+    expect(legacy.dimensions[0]!.alternate).toBeNull();expect(legacy.dimensions[0]!.highlight).toBe('improves');
+  });
+
+  it('freezes the complete chart through unaffected republishes, removals and additions', () => {
+    const original=[published('housing','social',80,1),published('energy','social',45,2)];
+    const baseline=freezePolicyPortrait(original,'2026-10-29T00:00:00Z');
+    const projections=[projection({dimension_slug:'housing',current_viz:80,projected_viz:60})];
+    const before=impactDoughnut(original,projections,baseline);
+    const changed=[{...original[0]!,version_num:3,viz_level:10},published('food','social',90,4)];
+    const after=impactDoughnut(changed,projections,baseline);
+    expect(after.baselineComplete).toBe(true);expect(after.dimensions).toEqual(before.dimensions);
+    expect(after.dimensions.map(d=>d.slug)).toEqual(['housing','energy']);
+    expect(after.republished).toEqual(['Published housing','Published energy']);
+    expect(impactDoughnut(changed,projections).baselineComplete).toBe(false);
+  });
+
   it('notes dimensions republished since the analysis ran', () => {
     const { republished } = impactDoughnut(portrait, [
       projection({ dimension_slug: 'housing', current_viz: 110, projected_viz: 90 }),
@@ -75,7 +101,7 @@ describe('impactDoughnut', () => {
       projection({ dimension_slug: 'air-pollution', direction: 'improves', current_viz: 40 }),
     ]);
     // True when paused or static for reduced motion, not only while flashing.
-    expect(impactsChartLabel('Manhattan')).toBe("Manhattan's doughnut, today and with this policy");
+    expect(impactsChartLabel('Manhattan')).toBe("Manhattan's doughnut, analysis baseline and modeled policy scenario");
     expect(impactsChartLabel('Manhattan')).not.toMatch(/alternat/);
 
     const projections = [
@@ -174,6 +200,13 @@ describe('impactGroups', () => {
       ['housing', 'Housing', 'mixed'],
       ['air-pollution', 'Air Pollution', 'improves'],
     ]);
+  });
+
+  it('retains an arithmetic consistency warning beside a quantified estimate',()=>{
+    const warning=`“${RENT}”: the stated direction conflicts with its threshold arithmetic; direction marked mixed`;
+    const p={...projections[0]!,unquantified_reasons:[warning]};
+    const row=impactGroups(result,[p]).find(g=>g.slug==='housing')!.rows[0]!;
+    expect(row.change?.projected_value).toBe(46);expect(row.warnings).toEqual([warning]);expect(row.unquantified).toEqual([]);
   });
 
   it('matches each impact to its re-scored change, or explains why it stayed direction-only', () => {

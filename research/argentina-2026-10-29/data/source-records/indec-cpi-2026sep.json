@@ -1,0 +1,14 @@
+{
+  "id": "indec-cpi-2026sep",
+  "url": "https://www.indec.gob.ar/uploads/informesdeprensa/ipc_10_268C45A9444C.pdf",
+  "resolved_url": "https://www.indec.gob.ar/uploads/informesdeprensa/ipc_10_268C45A9444C.pdf",
+  "path": "raw/indec-cpi-2026sep.pdf",
+  "publisher": "INDEC",
+  "release_date": "2026-10-13",
+  "retrieved_at": "2026-10-28T11:41:32.519416+00:00",
+  "sha256": "974b06e98c0344c60bf1d6d69b4f4b375d2b31ed5a9681b2045a0168303e7fda",
+  "bytes": 5057936,
+  "content_type": "application/pdf",
+  "http_last_modified": "Tue, 13 Oct 2026 18:21:00 GMT",
+  "title": "INDEC national consumer price index, September 2026 technical report"
+}

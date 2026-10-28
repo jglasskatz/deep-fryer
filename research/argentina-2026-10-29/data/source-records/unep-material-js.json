@@ -1,0 +1,14 @@
+{
+  "id": "unep-material-js",
+  "url": "https://unep-irp-resourcepanel.resource-use.global/build/assets/app-DRRXXLri.js",
+  "resolved_url": "https://unep-irp-resourcepanel.resource-use.global/build/assets/app-DRRXXLri.js",
+  "path": "raw/unep-material-app.js",
+  "publisher": "UNEP International Resource Panel",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:48:50.823680+00:00",
+  "sha256": "cec503a7e5c102368418d7848fb7e42edea2638c288413f2e614f00a8f49a152",
+  "bytes": 450343,
+  "content_type": null,
+  "http_last_modified": null,
+  "title": "unep material js"
+}

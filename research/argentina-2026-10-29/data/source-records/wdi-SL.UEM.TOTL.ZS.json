@@ -1,0 +1,15 @@
+{
+  "id": "wdi-SL.UEM.TOTL.ZS",
+  "url": "https://api.worldbank.org/v2/country/ARG/indicator/SL.UEM.TOTL.ZS?format=json&per_page=100&date=2013:2026",
+  "resolved_url": "https://api.worldbank.org/v2/country/ARG/indicator/SL.UEM.TOTL.ZS?format=json&per_page=100&date=2013:2026",
+  "path": "raw/wdi-SL.UEM.TOTL.ZS.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:05.730488+00:00",
+  "sha256": "5faa163c4a7e2c350a030c9a0187b443999bdbdb6f9d7c1afefdecfaa3bff1c0",
+  "bytes": 3313,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 11:38:05 GMT",
+  "title": "WDI Argentina: Unemployment, total (% of total labor force) (modeled ILO estimate)",
+  "dataset_last_updated": "2026-10-08"
+}

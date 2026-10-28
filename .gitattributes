@@ -8,5 +8,7 @@ site/evidence/**/*.jpeg binary
 # publisher encodings/CRLF and copied source fields intact; review the portable
 # derivations, findings and SHA-256 manifests rather than enormous data diffs.
 research/**/raw/** binary
+research/**/evidence/** binary
+research/**/figures/*.svg -whitespace
 research/**/*.csv binary
 research/**/source-extract.html binary

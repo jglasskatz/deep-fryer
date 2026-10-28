@@ -1,0 +1,14 @@
+{
+  "id": "wdi-meta-EN.ATM.PM25.MC.M3",
+  "url": "https://api.worldbank.org/v2/indicator/EN.ATM.PM25.MC.M3?format=json",
+  "resolved_url": "https://api.worldbank.org/v2/indicator/EN.ATM.PM25.MC.M3?format=json",
+  "path": "raw/wdi-meta-EN.ATM.PM25.MC.M3.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:07.695839+00:00",
+  "sha256": "c6a8abe3aa5bbdaa57df11d1375b4d98d82cfc5f3ee02af04f1e9e3f8d2651aa",
+  "bytes": 1195,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 11:38:07 GMT",
+  "title": "WDI indicator metadata: PM2.5 air pollution, mean annual exposure (micrograms per cubic meter)"
+}

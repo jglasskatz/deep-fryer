@@ -1,0 +1,14 @@
+{
+  "id": "event-imf-bcra",
+  "url": "https://www.bcra.gob.ar/historial-acuerdos-argentina-fmi/",
+  "resolved_url": "https://www.bcra.gob.ar/historial-acuerdos-argentina-fmi/",
+  "path": "raw/event-imf-bcra.html",
+  "publisher": "BCRA",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:48:11.312711+00:00",
+  "sha256": "d3b8b5328cb1783bcc07a8f3a702ac325bb0bc15e678970b54f8cd928d080684",
+  "bytes": 78092,
+  "content_type": "text/html; charset=UTF-8",
+  "http_last_modified": null,
+  "title": "BCRA: history of Argentina agreements with the IMF"
+}

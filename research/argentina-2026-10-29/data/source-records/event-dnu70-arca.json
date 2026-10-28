@@ -1,0 +1,14 @@
+{
+  "id": "event-dnu70-arca",
+  "url": "https://biblioteca.afip.gob.ar/dcp/DEC_C_000070_2023_12_20",
+  "resolved_url": "https://biblioteca.afip.gob.ar/dcp/DEC_C_000070_2023_12_20",
+  "path": "raw/event-dnu70-arca.html",
+  "publisher": "ARCA / official legislation archive",
+  "release_date": "2023-12-21",
+  "retrieved_at": "2026-10-28T11:48:13.475091+00:00",
+  "sha256": "1e2fc61ca59ac038b961de787e86d8b91e3898aca8de9ec70356720c48cfe1ce",
+  "bytes": 549043,
+  "content_type": "text/html",
+  "http_last_modified": null,
+  "title": "Official legislation archive: Decree 70/2023"
+}

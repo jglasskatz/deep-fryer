@@ -1,0 +1,94 @@
+[
+  {
+    "id": "poverty-latest",
+    "claim": "H1 2026 poverty 32.3%, indigence 7.5%, in 31 urban agglomerations, provisional.",
+    "sources": [
+      "indec-poverty-2026h1"
+    ],
+    "locator": "Printed p 5 Table 1",
+    "review": "independently checked by root against archived PDF"
+  },
+  {
+    "id": "poverty-latest-ci",
+    "claim": "Poverty 90% CI H1 2026[30.8,33.7], H1 2025[30.1,33.1].",
+    "sources": [
+      "indec-poverty-2026h1"
+    ],
+    "locator": "Printed p 5 Table 1",
+    "review": "independently checked by root against archived PDF"
+  },
+  {
+    "id": "poverty-significance",
+    "claim": "INDEC reports no significant change relative to same semester of preceding year.",
+    "sources": [
+      "indec-poverty-2026h1"
+    ],
+    "locator": "Printed p 4, Evolucion",
+    "review": "independently checked by root against archived PDF"
+  },
+  {
+    "id": "capabilities-decade",
+    "claim": "Life expectancy 75.829\u219277.395 years; under 5 mortality 12.7\u21929.7; internet 59.9000\u219289.2290%, 2013\u21922023.",
+    "sources": [
+      "wdi-SP.DYN.LE00.IN",
+      "wdi-SH.DYN.MORT",
+      "wdi-IT.NET.USER.ZS"
+    ],
+    "locator": "JSON date 2013/date 2023 records",
+    "review": "Independently checked within the documented review scope; see independent-review.json."
+  },
+  {
+    "id": "gdp-decade",
+    "claim": "Real GDP per capita 13946.0951\u219212993.0929 constant 2015 USD, 2013\u21922023;13287.1160 in 2025.",
+    "sources": [
+      "wdi-NY.GDP.PCAP.KD"
+    ],
+    "locator": "JSON date 2013/date 2023/date 2025",
+    "review": "Independently checked within the documented review scope; see independent-review.json."
+  },
+  {
+    "id": "gini-domain",
+    "claim": "Argentina PIP income survey coverage is urban and survey acronymEPHC-S2.",
+    "sources": [
+      "pip-argentina-all"
+    ],
+    "locator": "reporting_level/survey_coverage/survey_acronym fields",
+    "review": "Independently checked within the documented review scope; see independent-review.json."
+  },
+  {
+    "id": "carbon-accounts",
+    "claim": "Territorial Argentina 2023=48.6918679749768 MtC;2024=46.686482195308 MtC; consumption 2023=50.6730637162627 MtC; CO2 conversion 3.664.",
+    "sources": [
+      "gcb-national-v2025-site"
+    ],
+    "locator": "Territorial Emissions I 186/I 187; Consumption Emissions I 43; headers conversion",
+    "review": "extracted from source; independent synthesis review pending"
+  },
+  {
+    "id": "material-exclusion",
+    "claim": "UNEP methods warn of projected inputs from 2020 and last correlation-analysis year 2019.",
+    "sources": [
+      "unep-material-methods"
+    ],
+    "locator": "Printed p 6 andpp 34\u201335",
+    "review": "source methods inspected; independent synthesis review pending"
+  },
+  {
+    "id": "fixed-benchmarks",
+    "claim": "Fixed published benchmarks life 74 years, electricity 95%, employment 94%, equality 70.",
+    "sources": [
+      "fanning2021-paper"
+    ],
+    "locator": "Table 1; social normalization Methods printed authorp 10",
+    "review": "source inspected; independent synthesis review pending"
+  },
+  {
+    "id": "global-national-scope",
+    "claim": "2025 global Doughnut monitor 2000\u20132022 is not an Argentina annual panel; national environmental footprint comparison concerns 2017.",
+    "sources": [
+      "fanning2025-paper"
+    ],
+    "locator": "Methods and country-cluster comparison",
+    "review": "source inspected; independent synthesis review pending"
+  }
+]

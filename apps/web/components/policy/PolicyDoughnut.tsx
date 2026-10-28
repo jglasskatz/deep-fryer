@@ -12,8 +12,8 @@ import type { ImpactDirection } from '@deep-fryer/core';
 // The motion button names its action ("Pause animation") and nothing else
 // reports its state; `showing` puts the frame on screen into words.
 const LABELS: ImpactDoughnutLabels = {
-  now: 'Today',
-  alternate: 'With this policy',
+  now: 'Analysis baseline',
+  alternate: 'Modeled scenario',
   play: 'Play animation',
   pause: 'Pause animation',
   controls: 'Doughnut view',
@@ -44,14 +44,16 @@ export function PolicyDoughnut({
   dimensions,
   ariaLabel,
   summary,
+  baselineComplete = true,
 }: {
   dimensions: ImpactDimension[];
   ariaLabel: string;
   summary: string;
+  baselineComplete?: boolean;
 }) {
   return (
     <figure className="flex flex-col items-center gap-4">
-      <ImpactDoughnut dimensions={dimensions} labels={LABELS} ariaLabel={ariaLabel} size={520} />
+      <ImpactDoughnut dimensions={dimensions} labels={baselineComplete ? LABELS : { ...LABELS, now: 'Current context (legacy)' }} ariaLabel={ariaLabel} size={520} autoPlay={false} />
       <figcaption className="w-full max-w-xl text-center text-sm">{summary}</figcaption>
       <div className="w-full max-w-xl text-sm">
         <h3 className="sr-only">Colour key</h3>
@@ -66,10 +68,9 @@ export function PolicyDoughnut({
           ))}
         </ul>
         <p className="mt-2 text-center text-xs text-[color:var(--color-muted)]">
-          In “With this policy”, every impacted dimension’s name (and its wedge, where it has one)
+          In “Modeled scenario”, every impacted dimension’s name (and its wedge, where it has one)
           takes its direction’s colour. A wedge changes size only where the analysis quantified one
-          of its published indicators; the rest are direction only. Gray wedges have no published
-          data.
+          of its published indicators; the rest are direction only. Gray wedges have no usable score. Direction colors describe the model’s claims, not measured policy effects.
         </p>
       </div>
     </figure>

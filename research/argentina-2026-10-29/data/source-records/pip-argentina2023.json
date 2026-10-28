@@ -1,0 +1,14 @@
+{
+  "id": "pip-argentina2023",
+  "url": "https://api.worldbank.org/pip/v1/pip?country=ARG&year=2023&welfare_type=income&fill_gaps=false",
+  "resolved_url": "https://api.worldbank.org/pip/v1/pip?country=ARG&year=2023&welfare_type=income&fill_gaps=false",
+  "path": "raw/pip-argentina2023.json",
+  "publisher": "World Bank Poverty and Inequality Platform",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:49:20.141993+00:00",
+  "sha256": "022a0026177ddb4d3a7206f8862a9cdde59a7add709382f33a6f543b30e630d7",
+  "bytes": 905,
+  "content_type": "application/json",
+  "http_last_modified": null,
+  "title": "pip argentina 2023"
+}

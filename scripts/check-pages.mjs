@@ -31,6 +31,7 @@ try {
   page.on('response', response => { if (response.url().startsWith(origin) && response.status() >= 400) failures.push(`${response.status()} ${response.url()}`); });
   await page.goto(origin, { waitUntil: 'networkidle' });
   const release = await (await page.request.get(`${origin}data/portraits.json`)).json();
+  const involvement = JSON.parse(await readFile('site/data/involvement.json', 'utf8')).listings;
   assert.equal(await page.locator('.card').count(), release.portraits.length);
   assert.equal(Object.hasOwn(release, 'cost_scenarios'), false, 'Public download excludes internal research accounting');
   assert.equal(await page.getByRole('heading', { name: 'Research costs', exact: true }).count(), 0);
@@ -46,7 +47,14 @@ try {
     assert.equal(await page.locator('.indicator').count(), portrait.dimensions.reduce((n, d) => n + d.indicators.length, 0));
     assert.equal(await page.locator('.dimension').count(), portrait.dimensions.length);
     assert.equal(await page.getByRole('heading', { name: 'Possible actions', exact: true }).count(), 0);
-    assert.equal(await page.getByRole('heading', { name: 'Ways to get involved', exact: true }).count(), portrait.dimensions.filter(d => d.actions?.length).length);
+    assert.equal(await page.getByRole('heading', { name: 'Ways to get involved', exact: true }).count(), portrait.dimensions.filter(d => d.actions?.length || involvement.some(item => item.portrait_slug === portrait.slug && item.dimension_slugs.includes(d.slug))).length);
+    for (const item of involvement.filter(item => item.portrait_slug === portrait.slug)) {
+      for (const dimension of item.dimension_slugs) {
+        const opportunity = page.locator(`#dim-${dimension} .opportunities li`).filter({ has: page.getByRole('link', { name: `${item.name} ↗`, exact: true }) });
+        assert.equal(await opportunity.count(), 1, `${portrait.slug}/${dimension}: ${item.id}`);
+        assert.ok((await opportunity.textContent()).includes(item.checked_at));
+      }
+    }
     assert.ok(await page.locator('canvas').evaluate(canvas => canvas.width > 0 && canvas.height > 0));
     if (portrait.slug === 'carmel') {
       assert.match((await page.locator('.notice').allTextContents()).join(' '), /does not approve the amendments/);
@@ -126,7 +134,8 @@ try {
   await page.goto(`${origin}carmel/?area=monterey-county&dim=extreme-heat`, { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#panel-heading').innerText(), 'Extreme Heat');
   assert.match(await page.locator('#detail-panel').innerText(), /Observed · no scoring target/);
-  assert.match(await page.locator('#detail-panel').innerText(), /Unscored:/);
+  assert.match(await page.locator('#detail-panel').innerText(), /Unscored observation/);
+  assert.match(await page.locator('#detail-panel').innerText(), /Value available, but no defensible scoring target/);
   assert.equal(await page.locator('#detail-panel').getByText('Scoring calculation', { exact: true }).count(), 0);
   assert.equal(await page.locator('a[href="#dim-ozone-depletion"]').count(), 0);
   await page.screenshot({ path: path.join(screenshots, 'extreme-heat-observation.png') });

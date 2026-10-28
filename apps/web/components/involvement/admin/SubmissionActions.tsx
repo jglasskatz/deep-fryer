@@ -32,11 +32,13 @@ const DECISION_COPY = {
 
 export function SubmissionActions({
   tenantSlug,
+  dimensionOptions,
   submissionId,
   status,
   draft,
 }: {
   tenantSlug: string;
+  dimensionOptions: {slug:string;name:string}[];
   submissionId: string;
   status: 'new' | 'approved' | 'declined' | 'spam';
   /** The listing form's starting values (listingDraftFromSubmission). */
@@ -118,6 +120,7 @@ export function SubmissionActions({
             </p>
             <ListingForm
               tenantSlug={tenantSlug}
+              dimensionOptions={dimensionOptions}
               approve={{ submissionId, draft }}
               onCancel={() => setOpen(null)}
             />

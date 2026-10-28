@@ -15,6 +15,7 @@ import { audit } from './audit';
 import { getAuth } from './auth';
 import { requireTenantRoleWithFeature } from './features';
 import { userDb } from './db';
+import { validInvolvementDimensionsIn } from './involvement-dimensions';
 
 /**
  * Staff curation of getting involved (SPEC-v6 §4.3): the listings residents
@@ -80,6 +81,10 @@ const duplicateName = (name: string) =>
  * exact; this check also ignores case, because "Food Bank" and "food bank"
  * side by side would read to residents as the same thing listed twice.
  */
+async function assertDimensions(db: DbExecutor, tenantId: string, slugs: string[]) {
+  if (!(await validInvolvementDimensionsIn(db, tenantId, slugs))) throw new UserError('Choose active dimensions from this portrait. Archived and other-portrait dimensions cannot be selected.');
+}
+
 async function assertNameFree(db: DbExecutor, tenantId: string, name: string, exceptId?: string) {
   const [clash] = await db
     .select({ id: involvementListings.id })
@@ -122,6 +127,7 @@ export const saveListing = action(
     if (!input.id) {
       const listingInput = involvementListingInputSchema.parse(input.listing);
       const id = await userDb(async (db) => {
+        await assertDimensions(db, tenant.id, listingInput.dimension_slugs);
         await assertNameFree(db, tenant.id, listingInput.name);
         const [row] = await db
           .insert(involvementListings)
@@ -145,6 +151,7 @@ export const saveListing = action(
         .from(involvementListings)
         .where(and(eq(involvementListings.id, id), eq(involvementListings.tenantId, tenant.id)));
       if (!before) throw new UserError('Unknown listing.');
+      if (JSON.stringify(listingInput.dimension_slugs) !== JSON.stringify(before.dimensionSlugs)) await assertDimensions(db, tenant.id, listingInput.dimension_slugs);
       await assertNameFree(db, tenant.id, listingInput.name, before.id);
       const linkChanged = (listingInput.url ?? null) !== (before.url ?? null);
       const [after] = await db
@@ -196,6 +203,11 @@ export const setListingPublished = action(
     const id = idSchema.parse(input.id);
     const published = z.boolean().parse(input.published);
     await userDb(async (db) => {
+      if (published) {
+        const [existing] = await db.select().from(involvementListings).where(and(eq(involvementListings.id, id), eq(involvementListings.tenantId, tenant.id)));
+        if (!existing) throw new UserError('Unknown listing.');
+        await assertDimensions(db, tenant.id, existing.dimensionSlugs);
+      }
       const [row] = await db
         .update(involvementListings)
         .set({ published, updatedAt: new Date() })
@@ -286,6 +298,7 @@ export const approveSubmission = action(
       if (submission.status !== 'new') {
         throw new UserError(`This submission was already ${STATUS_WORDS[submission.status]}.`);
       }
+      await assertDimensions(db, tenant.id, listingInput.dimension_slugs);
       await assertNameFree(db, tenant.id, listingInput.name);
       const [listing] = await db
         .insert(involvementListings)

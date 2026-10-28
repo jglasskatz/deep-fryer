@@ -1,0 +1,14 @@
+{
+  "id": "wdi-meta-water-stress",
+  "url": "https://api.worldbank.org/v2/indicator/ER.H2O.FWST.ZS?format=json",
+  "resolved_url": "https://api.worldbank.org/v2/indicator/ER.H2O.FWST.ZS?format=json",
+  "path": "raw/wdi-meta-ER.H2O.FWST.ZS.json",
+  "publisher": "World Bank / FAO AQUASTAT",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:42:50.822150+00:00",
+  "sha256": "93f80a0eaba7806ea1727788513110db3ca8b12978bae13ac311a37ddd1ccbe9",
+  "bytes": 1074,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 01:44:29 GMT",
+  "title": "WDI indicator metadata: Level of water stress: freshwater withdrawal as a proportion of available freshwater resources"
+}

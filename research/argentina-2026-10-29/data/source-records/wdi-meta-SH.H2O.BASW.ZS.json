@@ -1,0 +1,14 @@
+{
+  "id": "wdi-meta-SH.H2O.BASW.ZS",
+  "url": "https://api.worldbank.org/v2/indicator/SH.H2O.BASW.ZS?format=json",
+  "resolved_url": "https://api.worldbank.org/v2/indicator/SH.H2O.BASW.ZS?format=json",
+  "path": "raw/wdi-meta-SH.H2O.BASW.ZS.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:07.100788+00:00",
+  "sha256": "41c3627f1979d7347fc12ed8f67bf2bddb25df38ecf7d9cef0ece39f0bbe6591",
+  "bytes": 1267,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 08:24:51 GMT",
+  "title": "WDI indicator metadata: People using at least basic drinking water services (% of population)"
+}

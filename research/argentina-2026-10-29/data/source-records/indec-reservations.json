@@ -1,0 +1,14 @@
+{
+  "id": "indec-reservations",
+  "url": "https://www.indec.gob.ar/indec/web/Institucional-Indec-InformacionDeArchivo-2",
+  "resolved_url": "https://www.indec.gob.ar/indec/web/Institucional-Indec-InformacionDeArchivo-2",
+  "path": "raw/indec-reservations.html",
+  "publisher": "INDEC",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:10.232499+00:00",
+  "sha256": "5fbb8dda7545f3e119e4a6c3168a5eeb9791c7fa62f0f43a30dc5a1d9d208f76",
+  "bytes": 37494,
+  "content_type": "text/html; charset=utf-8",
+  "http_last_modified": null,
+  "title": "indec reservations"
+}

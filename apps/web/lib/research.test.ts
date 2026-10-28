@@ -107,6 +107,28 @@ describe.skipIf(!hasDb)('applyRun — the research quota gate', () => {
 });
 
 describe.skipIf(!hasDb)('createPlannedRun', () => {
+  it('plans exactly the edited indicator list even with a framework reference', async () => {
+    const m=await import('@deep-fryer/db'); const {eq}=await import('drizzle-orm');const db=m.getDb();
+    const {tenant,dimensions}=await m.provisionTenant(db,{slug:uniq(),name:'Locally adapted framework'});
+    const dimension=dimensions.find(d=>d.slug==='housing')!;
+    try {
+      const original=await m.latestVersion(db,dimension.dimensionId);
+      const data={name:'Local housing measures',icon:'',description:'',context:'',actions:[],...original?.data,
+        indicators:[{name:'Locally defined count',unit:'households',value:null,year:null,target:null,source:'',source_url:'',confidence:'low' as const,geographic_scale:'city' as const}]};
+      await m.appendDimensionVersion(db,{dimensionId:dimension.dimensionId,status:'draft',origin:'human',changeNote:'Use locally defined measures.',data,vizLevel:null});
+      const planned=await (await import('./research')).createPlannedRun({tenantId:tenant.id,dimensionIds:[dimension.dimensionId]});
+      const sessions=planned.run.plan.sessions.filter(s=>s.kind==='dimension');
+      expect(sessions).toHaveLength(1);
+      expect(sessions[0]!.prompt).toContain('Locally defined count');
+      expect(sessions[0]!.prompt).not.toContain('Rent-burdened renter households');
+      await m.appendDimensionVersion(db,{dimensionId:dimension.dimensionId,status:'draft',origin:'human',changeNote:'Remove all unsupported measures.',data:{...data,indicators:[]},vizLevel:null});
+      const empty=await (await import('./research')).createPlannedRun({tenantId:tenant.id,dimensionIds:[dimension.dimensionId]});
+      expect(empty.run.plan.sessions.map(s=>s.prompt).join('\n')).not.toContain('Rent-burdened renter households');
+    } finally {
+      await db.delete(m.tenants).where(eq(m.tenants.id,tenant.id));await db.delete(m.organizations).where(eq(m.organizations.id,tenant.organizationId));
+    }
+  });
+
   it('plans a run on its own transaction, reading the portrait config there too', async () => {
     // Planning used to read the config through tenantConfigMap — a second
     // userDb transaction on another pooled connection, while its own held

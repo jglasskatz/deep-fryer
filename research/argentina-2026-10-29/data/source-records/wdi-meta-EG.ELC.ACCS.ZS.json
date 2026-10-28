@@ -1,0 +1,14 @@
+{
+  "id": "wdi-meta-EG.ELC.ACCS.ZS",
+  "url": "https://api.worldbank.org/v2/indicator/EG.ELC.ACCS.ZS?format=json",
+  "resolved_url": "https://api.worldbank.org/v2/indicator/EG.ELC.ACCS.ZS?format=json",
+  "path": "raw/wdi-meta-EG.ELC.ACCS.ZS.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:05.202404+00:00",
+  "sha256": "b97baf3b8af89e755fb51e00bf690940fddff51d8af3dbf32849662ece66559b",
+  "bytes": 812,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Tue, 27 Oct 2026 11:58:49 GMT",
+  "title": "WDI indicator metadata: Access to electricity (% of population)"
+}

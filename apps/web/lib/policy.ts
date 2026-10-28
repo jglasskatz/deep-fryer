@@ -8,6 +8,7 @@ import {
   type ImpactDirection,
   type PolicyAnalysisOutput,
   type PolicyImpact,
+  type PolicyPortraitBaseline,
   type SessionTokenUsage,
   type UnmovedWedgeReason,
 } from '@deep-fryer/core';
@@ -157,47 +158,59 @@ const DIRECTION_HIGHLIGHT: Record<ImpactDirection, ImpactDimension['highlight']>
   none: null,
 };
 
+/** Older analyses lack sufficient unit/source/baseline provenance for a wedge.
+ * Keep their text and reasons readable, but do not imply a verified scenario.
+ */
+export function safePolicyProjection(p: DimensionProjection): DimensionProjection {
+  if (p.epistemic_type === 'modeled-estimate' && p.baseline) return p;
+  return { ...p, projected_viz: null, indicator_changes: [],
+    unquantified_reasons: [...p.unquantified_reasons, 'Legacy estimate: units, sources and analysis baseline were not verified; shown as direction only.'] };
+}
+
 // ---- The flashing doughnut ----------------------------------------------------
 
 export interface PolicyDoughnut {
+  /** False for legacy rows that never captured complete original geometry. */
+  baselineComplete: boolean;
   /** Every published dimension, in portrait order, with its projected state. */
   dimensions: ImpactDimension[];
   /**
-   * Names of projected dimensions whose published level has changed since
-   * the analysis ran: "today" is drawn from the portrait as published now,
-   * while projected sizes were re-scored against the data published then.
+   * Original dimensions now removed or republished. New analyses draw both
+   * states entirely from the complete captured portrait, regardless.
    */
   republished: string[];
 }
 
 /**
- * The doughnut for an analysis: every published dimension appears, sized by
- * its published viz_level today; in the "with this policy" state it takes
- * the projected viz_level when an impact was quantified and the direction's
- * highlight colour whenever it has an impact — so direction-only impacts
- * still flash.
+ * New analyses retain every original published dimension, name, ring, order
+ * and measured level in both states. Only a sourced modeled impact changes
+ * the alternate size. Legacy rows explicitly report incomplete geometry.
  */
 export function impactDoughnut(
   published: PublishedDimension[],
   projections: DimensionProjection[],
+  baseline?: PolicyPortraitBaseline,
 ): PolicyDoughnut {
-  const bySlug = new Map(projections.map((p) => [p.dimension_slug, p]));
+  const bySlug = new Map(projections.map(p => [p.dimension_slug, safePolicyProjection(p)]));
   const republished: string[] = [];
-  const dimensions = published.map((d): ImpactDimension => {
-    const slug = frameworkSlugOf(d);
-    const p = bySlug.get(slug);
-    const name = frameworkDimension(d.slug, d.canonical_slug)?.name ?? d.data.name;
-    if (p && !sameLevel(p.current_viz, d.viz_level)) republished.push(name);
-    return {
-      slug,
-      ring: d.ring,
-      name,
-      current: d.viz_level,
-      alternate: p?.projected_viz ?? null,
-      highlight: p ? DIRECTION_HIGHLIGHT[p.direction] : null,
-    };
+  const current = new Map(published.map(d=>[d.slug,d]));
+  const original = baseline?.dimensions;
+  const geometry = original ?? published.map(d=>({slug:d.slug,name:frameworkDimension(d.slug,d.canonical_slug)?.name ?? d.data.name,
+    ring:d.ring,display_order:d.display_order,viz_level:d.viz_level,version_num:d.version_num,indicators:d.data.indicators}));
+  const dimensions = geometry.map((d): ImpactDimension => {
+    const p = bySlug.get(d.slug);
+    const now = current.get(d.slug);
+    if (original) {
+      if (!now || (d.version_num !== null && d.version_num !== now.version_num) || JSON.stringify(d.indicators) !== JSON.stringify(now.data.indicators)) republished.push(d.name);
+    } else if (p && (!sameLevel(p.current_viz,d.viz_level) || (p.baseline && (
+      (p.baseline.version_num !== null && p.baseline.version_num !== d.version_num) ||
+      JSON.stringify(p.baseline.indicators) !== JSON.stringify(d.indicators)
+    )))) republished.push(d.name);
+    return {slug:d.slug,ring:d.ring,name:d.name,
+      current:d.viz_level,
+      alternate:p?.projected_viz ?? null,highlight:p ? DIRECTION_HIGHLIGHT[p.direction] : null};
   });
-  return { dimensions, republished };
+  return { dimensions, republished, baselineComplete: original !== undefined };
 }
 
 /** viz_level round-trips through a `real` column; compare to display precision. */
@@ -227,9 +240,10 @@ export function wedgeOutcome(p: DimensionProjection | undefined): WedgeOutcome |
 export async function policyDoughnut(
   tenantSlug: string,
   projections: DimensionProjection[],
+  baseline?: PolicyPortraitBaseline,
 ): Promise<PolicyDoughnut> {
   const portrait = await getPortrait(tenantSlug);
-  return impactDoughnut(portrait?.dimensions ?? [], projections);
+  return impactDoughnut(portrait?.dimensions ?? [], projections, baseline);
 }
 
 function list(names: string[]): string {
@@ -244,7 +258,7 @@ function list(names: string[]): string {
  * visible caption.
  */
 export function impactsChartLabel(tenantName: string): string {
-  return `${tenantName}'s doughnut, today and with this policy`;
+  return `${tenantName}'s doughnut, analysis baseline and modeled policy scenario`;
 }
 
 /**
@@ -274,7 +288,7 @@ export function impactsSummary(
   if (worsens.length) parts.push(`Worsens: ${list(worsens)}.`);
   if (mixed.length) parts.push(`Mixed: ${list(mixed)}.`);
 
-  const bySlug = new Map(projections.map((p) => [p.dimension_slug, p]));
+  const bySlug = new Map(projections.map(p => [p.dimension_slug, safePolicyProjection(p)]));
   const quantified = dims.filter((d) => d.alternate !== null);
   const byOutcome = new Map<WedgeOutcome | 'republished', string[]>();
   for (const d of quantified) {
@@ -291,7 +305,7 @@ export function impactsSummary(
   say('display_range', 'stays', 'stay', ' at the edge of the chart: beyond its range now and with this policy.');
   say('too_small', 'changes', 'change', ' by less than one step on the chart.');
   say('unmoved', 'keeps', 'keep', ' the same size.');
-  say('republished', 'was', 'were', ' republished since: today’s size and the projected one come from different data.');
+  say('republished', 'was', 'were', ' republished since: the chart retains the analysis baseline rather than mixing it with newer measurements.');
 
   const directionOnly = improves.length + worsens.length + mixed.length - quantified.length;
   if (!quantified.length) parts.push('No impact was quantified, so wedges change colour but not size.');
@@ -313,6 +327,8 @@ export interface ImpactRow {
    * impact was quantified, or never named an indicator in the first place.
    */
   unquantified: string[];
+  /** Consistency warnings that still matter when a numerical change was retained. */
+  warnings?: string[];
 }
 
 export interface ImpactGroup {
@@ -343,7 +359,7 @@ export function impactGroups(
   result: PolicyAnalysisOutput,
   projections: DimensionProjection[],
 ): ImpactGroup[] {
-  const bySlug = new Map(projections.map((p) => [p.dimension_slug, p]));
+  const bySlug = new Map(projections.map(p => [p.dimension_slug, safePolicyProjection(p)]));
   const grouped = new Map<string, PolicyImpact[]>();
   for (const impact of result.impacts) {
     grouped.set(impact.dimension_slug, [...(grouped.get(impact.dimension_slug) ?? []), impact]);
@@ -354,7 +370,7 @@ export function impactGroups(
       const p = bySlug.get(slug);
       return {
         slug,
-        name: dimensionName(slug),
+        name: result.portrait_baseline?.dimensions.find(d=>d.slug===slug)?.name ?? dimensionName(slug),
         direction: p?.direction ?? 'none',
         currentViz: p?.current_viz ?? null,
         projectedViz: p?.projected_viz ?? null,
@@ -378,10 +394,10 @@ function impactRow(impact: PolicyImpact, p: DimensionProjection | undefined): Im
     p?.indicator_changes.find(
       (c) => c.indicator === impact.indicator && c.projected_value === impact.projected_value,
     ) ?? null;
-  if (change) return { impact, change, unquantified: [] };
   // Reasons are stored per dimension; keep the ones about this indicator
   // (they quote its name) plus the dimension-wide ones (which quote nothing).
   const reasons = p?.unquantified_reasons ?? [];
   const relevant = reasons.filter((r) => r.includes(`“${impact.indicator}”`) || !r.includes('“'));
+  if (change) return { impact, change, unquantified: [], warnings: relevant };
   return { impact, change: null, unquantified: relevant.length ? relevant : reasons };
 }

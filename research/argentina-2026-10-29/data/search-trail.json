@@ -1,0 +1,98 @@
+{
+  "search_date_local": "2026-10-29",
+  "timezone": "Pacific/Auckland",
+  "scope": "Decisive discovery searches and follow-up source selection; official API and SPA endpoint queries are preserved exactly in sources.json. This is not a claim to reproduce every incidental search result.",
+  "source_order": [
+    "Official statistical producer/data table/API",
+    "Original peer-reviewed study and author-deposited materials",
+    "Secondary reporting for source discovery only; never numerical evidence in final bundle"
+  ],
+  "queries": [
+    {
+      "query": "site.indec.gob.ar pobreza primer semestre 2026 28.2 segundo semestre 2025 2024",
+      "decision": "Locate latest official poverty release; secondary previews used only for discovery."
+    },
+    {
+      "query": "site.indec.gob.ar/uploads/informesdeprensa/eph_pobreza_09_26",
+      "decision": "Resolve exact latest technical report; official SPA fragment supplied final PDF/XLS links."
+    },
+    {
+      "query": "site.indec.gob.ar \"Encuesta Permanente de Hogares\" \"2007\" \"2015\" \"reservas\"",
+      "decision": "Establish publication break and official historical-statistics reservations."
+    },
+    {
+      "query": "Global Carbon Budget 2025 national fossil CO2 emissions dataset consumption Argentina 2024",
+      "decision": "Locate producer workbook, metadata and original paper; use successful publisher-site vintage."
+    },
+    {
+      "query": "site.unep.org Argentina material footprint data SDG 8.4.1 2024 2023",
+      "decision": "Assess consumption-based material coverage; UN SDG endpoint returned zero Argentina records."
+    },
+    {
+      "query": "site.resourcepanel.org \"Global Material Flows\" \"download\"",
+      "decision": "Find authoritative material-flow portal; direct country CSV export recovered."
+    },
+    {
+      "query": "site.argentina.gob.ar \"2024\" \"bosques nativos\" \"pérdida\"",
+      "decision": "Locate official native-forest monitoring; supplementary infographic archived, not substituted for FAO forest-stock concept."
+    },
+    {
+      "query": "site.boletinoficial.gob.ar decreto 70 2023 ley 27742 bases 2024",
+      "decision": "Locate primary policy texts; alternative official legislation archives used after Boletin timeouts."
+    },
+    {
+      "query": "Fanning 2021 social shortfall ecological overshoot 1.6 tonnes 7.2 material footprint thresholds data download",
+      "decision": "Check original national thresholds and identify cumulative-carbon versus annual-flow distinction."
+    },
+    {
+      "query": "site.nature.com s41893-021-00799-z data availability",
+      "decision": "Find original historical and BAU sheets; author-deposited manuscript and workbook archived."
+    },
+    {
+      "query": "site.nature.com s41586-025-09385-1 methods thresholds",
+      "decision": "Check global versus national 2017 scale; not used as annual Argentina time series."
+    },
+    {
+      "query": "site.pip.worldbank.org Argentina urban national coverage Gini",
+      "decision": "Establish inequality survey coverage; primary PIP API confirms urban EPHC-S2."
+    },
+    {
+      "query": "site.argentina.gob.ar \"19 de noviembre de 2023\" \"resultados\"",
+      "decision": "Separate 2023 election from inauguration; certified electoral act archived."
+    },
+    {
+      "query": "site.cancilleria.gob.ar \"22 de noviembre de 2015\" \"elecciones\"",
+      "decision": "Separate 2015 election from inauguration; official historical consular record archived."
+    },
+    {
+      "query": "site.bcra.gob.ar \"11 de abril de 2025\" \"bandas\"",
+      "decision": "Document post 2024 exchange reform and agreement chronology."
+    },
+    {
+      "query": "site.bcra.gob.ar \"2026\" \"bandas\" \"diciembre\"",
+      "decision": "Separate December 2025 announcement from January 2026 rule date; forward numerical band projections not imported."
+    }
+  ],
+  "network_limits": [
+    {
+      "endpoint": "Boletin Oficial primary text pages",
+      "result": "Repeated urllib timeouts",
+      "resolution": "Official ARCA/Argentina normativa text archives used."
+    },
+    {
+      "endpoint": "ICOS national finalv1 workbook download",
+      "result": "Licence HTML returned, not an XLSX",
+      "resolution": "Access HTML identified; successful GCB publisher-site preliminary workbook used and vintage disclosed."
+    },
+    {
+      "endpoint": "UNSD SDG material-footprint Argentina query",
+      "result": "Zero rows for Argentina in retrieved response",
+      "resolution": "UNEP IRP primary country export and methods inspected instead."
+    },
+    {
+      "endpoint": "Electoral2015 PDF path",
+      "result": "404",
+      "resolution": "Official Foreign Ministry historical record confirms election date."
+    }
+  ]
+}
