@@ -1,3 +1,5 @@
+import { gatePolicyGraphEvidence, policyGraphEvidenceSummary, readPolicyEvaluationContext, policyGraphMatchesScope } from '@deep-fryer/core';
+import { retrievedPolicyEvidence } from '../policy-evidence.js';
 import type { Task } from 'graphile-worker';
 import type { ZodError } from 'zod';
 import { and, eq, inArray, lt, sql } from 'drizzle-orm';
@@ -193,10 +195,11 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
     // The public read path: exactly the dimensions and indicators residents
     // see, keyed by their actual local addresses. Framework references do
     // not alias a custom heat dimension to an unrelated framework topic.
+    const requestedScope = readPolicyEvaluationContext(analysis.brief);
     const portrait = await publishedDoughnut<PublishedPortraitDimensions>(db, tenant.slug);
     const published: PublishedDimensionInput[] = (portrait?.dimensions ?? []).map(d => ({ slug: d.slug, viz_level: d.viz_level, data: d.data, version_num: d.version_num, ring:d.ring, display_order:d.display_order }));
-    if (!published.length) throw new AnalysisFailure(`${POLICY_NO_BASELINE} This analysis was not counted against your research sessions.`);
-    const portraitBaseline = freezePolicyPortrait(published);
+    if (!requestedScope && !published.length) throw new AnalysisFailure(`${POLICY_NO_BASELINE} This analysis was not counted against your research sessions.`);
+    const portraitBaseline = requestedScope ? undefined : freezePolicyPortrait(published);
 
     const prompt = policyAnalysisPrompt({
       regionName,
@@ -204,6 +207,7 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
       brief: analysis.brief,
       sourceUrl: analysis.sourceUrl,
       dimensions: published,
+      graphMode: requestedScope?.mode,
     });
     // Not orchestrated: a policy prompt ends with its own output contract,
     // and research's delegation note must not follow it.
@@ -262,7 +266,26 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
       );
     }
 
-    const projections = projectDimensions(published, parsed.data.impacts);
+    if (requestedScope && (!parsed.data.impact_graph || !policyGraphMatchesScope(parsed.data.impact_graph, requestedScope))) {
+      throw new AnalysisFailure('The evaluation did not return a cross-slice graph with the requested mode, geography, cutoff, horizon, comparator and affected groups. No result was accepted.');
+    }
+    if (!requestedScope && parsed.data.impact_graph) {
+      delete parsed.data.impact_graph;
+      fitted.adjustments.push('Unrequested graph omitted; the requested portrait comparison is retained.');
+    }
+    // Model-declared provenance is not trusted: bind citations to actual tool receipts.
+    if (parsed.data.impact_graph) {
+      const gated = gatePolicyGraphEvidence(parsed.data.impact_graph, retrievedPolicyEvidence(session.transcript));
+      parsed.data.impact_graph = gated.graph;
+      // Legacy impacts have no receipt-level provenance; do not render a second, ungated claim channel.
+      parsed.data.impacts = [];
+      parsed.data.assumptions = [];
+      parsed.data.risks = [];
+      parsed.data.summary = policyGraphEvidenceSummary(gated.graph).slice(0, POLICY_OUTPUT_LIMITS.summaryChars);
+      if (gated.downgraded) fitted.adjustments.push(`${gated.downgraded} cross-slice pathways lacked matched source text or matching scope and were kept as unverified hypotheses with unknown direction and no effect size.`);
+    }
+    // Graph-backed analyses use directional/native-unit evidence, never fabricated wedge sizes.
+    const projections = parsed.data.impact_graph ? [] : projectDimensions(published, parsed.data.impacts);
     await db
       .update(policyAnalyses)
       .set({
@@ -586,6 +609,7 @@ export interface PolicyNotice {
   impacts: number;
   /** Indicator-level projections re-scored against published data. */
   quantified: number;
+  graphMode?: 'retrospective' | 'prospective';
 }
 
 /** Pure: the email to the person who started the analysis. */
@@ -607,8 +631,8 @@ export function composePolicyEmail(n: PolicyNotice, appUrl: string): ComposedEma
   return {
     subject: `Policy analysis ready — ${title}`,
     text: [
-      `The policy analysis “${title}” for ${n.tenantName} is ready: ${n.impacts} projected impact${n.impacts === 1 ? '' : 's'} on the doughnut's dimensions, ${n.quantified} quantified against published indicators.`,
-      'It is a projection drafted with AI assistance for staff review — not a measurement — and nothing from it is published.',
+      n.graphMode ? `The policy analysis “${title}” for ${n.tenantName} is ready: ${n.impacts} cross-slice pathways in a ${n.graphMode} evidence graph, including explicit unknowns.` : `The policy analysis “${title}” for ${n.tenantName} is ready: ${n.impacts} projected impact${n.impacts === 1 ? '' : 's'} on the doughnut's dimensions, ${n.quantified} quantified against published indicators.`,
+      n.graphMode ? 'This is an AI research draft, not human-approved. Source retrieval is not independent verification or proof of causality; nothing is published.' : 'It is a projection drafted with AI assistance for staff review — not a measurement — and nothing from it is published.',
       `Open it: ${link}`,
     ].join('\n\n'),
   };
@@ -646,7 +670,8 @@ export async function notifyPolicyRequester(analysisId: string): Promise<void> {
         title: row.title,
         status: row.status,
         error: row.error,
-        impacts: (row.result?.impacts ?? []).filter((i) => i.direction !== 'none').length,
+        impacts: row.result?.impact_graph?.edges.length ?? (row.result?.impacts ?? []).filter((i) => i.direction !== 'none').length,
+        graphMode: row.result?.impact_graph?.mode,
         quantified: (row.projections ?? []).reduce((n, p) => n + p.indicator_changes.length, 0),
       },
       process.env.APP_URL ?? 'http://localhost:3000',
@@ -656,3 +681,4 @@ export async function notifyPolicyRequester(analysisId: string): Promise<void> {
     console.error(`[notify] policy analysis ${analysisId}: ${err instanceof Error ? err.message : err}`);
   }
 }
+

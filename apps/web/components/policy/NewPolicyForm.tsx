@@ -2,7 +2,7 @@
 
 import { useId, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { POLICY_ANALYSIS_SESSIONS } from '@deep-fryer/core';
+import { POLICY_ANALYSIS_SESSIONS, POLICY_NO_BASELINE, readPolicyEvaluationContext, type PolicyEvaluationContext } from '@deep-fryer/core';
 import { createPolicyAnalysis } from '@/lib/policy-actions';
 import { POLICY_LIMITS, briefLength } from '@/lib/policy-limits';
 import { useAction } from '@/lib/use-action';
@@ -30,20 +30,28 @@ const sessions = `${POLICY_ANALYSIS_SESSIONS} research session${POLICY_ANALYSIS_
 export function NewPolicyForm({
   tenantSlug,
   blockedReason,
+  hasPublishedBaseline = true,
   initial,
 }: {
   tenantSlug: string;
   /** Why no analysis can start right now (plan standing or allowance), from the page. */
   blockedReason: string | null;
+  hasPublishedBaseline?: boolean;
   initial?: { title: string; sourceUrl: string; brief: string };
 }) {
+  const initialScope = initial ? readPolicyEvaluationContext(initial.brief) : null;
+  const initialBrief = initialScope && initial ? initial.brief.split('\n\nPolicy text:\n').slice(1).join('\n\nPolicy text:\n') : initial?.brief;
   const id = useId();
   const router = useRouter();
   const { run, pending, error } = useAction();
   const [title, setTitle] = useState(initial?.title ?? '');
   const [sourceUrl, setSourceUrl] = useState(initial?.sourceUrl ?? '');
-  const [brief, setBrief] = useState(initial?.brief ?? '');
+  const [brief, setBrief] = useState(initialBrief ?? '');
 
+  const [analysisMode, setAnalysisMode] = useState<'baseline' | 'retrospective' | 'prospective'>(initialScope?.mode ?? 'baseline');
+  const [scope, setScope] = useState<PolicyEvaluationContext>(initialScope ?? {mode:'prospective',geography:tenantSlug,evidenceCutoff:new Date().toISOString().slice(0,10),horizon:'1–3 years after implementation',comparator:'No policy / continuation of current practice',affectedGroups:''});
+  const scopeField = (key: keyof PolicyEvaluationContext, value: string) => setScope(previous => ({...previous,[key]:value}));
+  const modeBlockedReason = blockedReason ?? (analysisMode === 'baseline' && !hasPublishedBaseline ? POLICY_NO_BASELINE : null);
   const chars = briefLength(brief);
   const over = chars - POLICY_LIMITS.briefMax;
 
@@ -51,7 +59,7 @@ export function NewPolicyForm({
     e.preventDefault();
     run(async () => {
       const { id: analysisId } = unwrap(
-        await createPolicyAnalysis({ tenantSlug, title, brief, sourceUrl }),
+        await createPolicyAnalysis({ tenantSlug, title, brief, sourceUrl, evaluationContext: analysisMode === 'baseline' ? undefined : {...scope, mode: analysisMode} }),
       );
       router.push(`/${tenantSlug}/admin/policy/${analysisId}`);
     });
@@ -68,8 +76,9 @@ export function NewPolicyForm({
         New analysis
       </h2>
       <p className="mt-1 text-xs text-[color:var(--color-muted)]">
-        The brief is analyzed once, in one session with web search for sources. The result is a
-        projection for staff review: it is never published.
+        The brief is analyzed once using the existing research provider and web sources. Retrospective
+        evidence and conditional forecasts stay distinct. Results are drafts for staff review, never published.
+        The research budget and provider configuration below still apply.
       </p>
       {initial ? (
         <p className="mt-2 text-sm">
@@ -112,6 +121,22 @@ export function NewPolicyForm({
         </div>
       </div>
 
+      <label className="mt-4 block text-sm">Analysis type
+        <select className={field} value={analysisMode} onChange={e => setAnalysisMode(e.target.value as typeof analysisMode)}>
+          <option value="baseline">Modeled comparison with the published portrait</option>
+          <option value="retrospective">Past policy — evidence graph</option>
+          <option value="prospective">Proposed policy — conditional evidence graph</option>
+        </select>
+      </label>
+      <p className="mt-2 text-sm">Portrait comparisons retain the published baseline and local dimensions. Evidence graphs use canonical Doughnut categories, not custom portrait scores, and do not require a published baseline.</p>
+      {analysisMode !== 'baseline' && <fieldset className="mt-4 grid gap-3 sm:grid-cols-2">
+        <legend className="mb-2 text-sm font-semibold">Evaluation scope</legend>
+        <label className="text-sm">Geography<input className={field} required maxLength={300} value={scope.geography} onChange={e=>scopeField('geography',e.target.value)}/></label>
+        <label className="text-sm">Evidence cutoff<input className={field} type="date" required value={scope.evidenceCutoff} onChange={e=>scopeField('evidenceCutoff',e.target.value)}/></label>
+        <label className="text-sm">Outcome horizon<input className={field} required maxLength={300} value={scope.horizon} onChange={e=>scopeField('horizon',e.target.value)}/></label>
+        <label className="text-sm">No-policy comparator<input className={field} required maxLength={600} value={scope.comparator} onChange={e=>scopeField('comparator',e.target.value)}/></label>
+        <label className="text-sm">Affected groups<input className={field} required maxLength={600} placeholder="Exposed groups, beneficiaries and those bearing costs" value={scope.affectedGroups} onChange={e=>scopeField('affectedGroups',e.target.value)}/></label>
+      </fieldset>}
       <div className="mt-3">
         <label htmlFor={`${id}-brief`} className="text-sm font-medium">
           Policy brief
@@ -144,7 +169,7 @@ export function NewPolicyForm({
 
       {/* Known at render, not a reaction to input — so not an alert (the allowance
           section above already announces a billing problem). */}
-      {blockedReason ? <p className="mt-3 text-sm text-red-900">{blockedReason}</p> : null}
+      {modeBlockedReason ? <p className="mt-3 text-sm text-red-900">{modeBlockedReason}</p> : null}
       {error ? (
         <p role="alert" className="mt-3 text-sm text-red-700">
           {error}
@@ -153,10 +178,11 @@ export function NewPolicyForm({
       <button
         type="submit"
         className="mt-3 rounded bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-        disabled={pending || over > 0 || blockedReason !== null}
+        disabled={pending || over > 0 || modeBlockedReason !== null}
       >
         {pending ? 'Starting…' : `Analyze — uses ${sessions}`}
       </button>
     </form>
   );
 }
+

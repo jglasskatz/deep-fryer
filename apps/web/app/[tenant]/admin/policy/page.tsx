@@ -118,7 +118,8 @@ export default async function PolicyPage({
             // Remount when the prefill source changes, so the fields take the new values.
             key={previous?.id ?? 'blank'}
             tenantSlug={tenant}
-            blockedReason={portrait?.dimensions.length ? blockedReason(billing) : 'Publish at least one dimension before starting a policy analysis. An analysis needs a published baseline.'}
+            blockedReason={blockedReason(billing)}
+            hasPublishedBaseline={Boolean(portrait?.dimensions.length)}
             initial={
               previous
                 ? { title: previous.title, sourceUrl: previous.sourceUrl ?? '', brief: previous.brief }
@@ -183,3 +184,4 @@ export default async function PolicyPage({
     </>
   );
 }
+

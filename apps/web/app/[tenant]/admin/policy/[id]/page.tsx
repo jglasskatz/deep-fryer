@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
+import { PolicyImpactGraph } from '@/components/policy/PolicyImpactGraph';
 import { AnalysisStatus } from '@/components/policy/AnalysisStatus';
 import { CancelAnalysisButton } from '@/components/policy/CancelAnalysisButton';
 import { PolicyDoughnut } from '@/components/policy/PolicyDoughnut';
@@ -150,17 +151,17 @@ export default async function PolicyAnalysisPage({
           </section>
         ) : null}
 
-        {result && doughnut ? (
+        {result && (result.impact_graph || doughnut) ? (
           <>
             <aside
               className="mt-6 rounded border-2 border-amber-500 p-4 text-sm"
               aria-label="About this analysis"
             >
               <p className="font-semibold">
-                Modeled scenario — not a measured policy effect.
+                {result.impact_graph ? 'Evidence graph — AI-classified claims, not independently verified policy effects.' : 'Modeled scenario — not a measured policy effect.'}
               </p>
               <p className="mt-1">
-                Check each rationale, time horizon and source before relying on an estimate. Qualified projections use the analysis baseline’s fixed thresholds. Missing units, dates or evidence remain direction-only. This comparison does not establish causation; nothing here is published.
+                {result.impact_graph ? 'Review each claim, source excerpt, study design and scope. Source text matching is not independent validation; graph categories do not represent custom portrait scores. Nothing here is published.' : 'Check each rationale, time horizon and source before relying on an estimate. Qualified projections use the analysis baseline’s fixed thresholds. Missing units, dates or evidence remain direction-only. This comparison does not establish causation; nothing here is published.'}
               </p>
               {adjustments.length ? (
                 <>
@@ -183,7 +184,7 @@ export default async function PolicyAnalysisPage({
               </p>
             </section>
 
-            <section className="mt-8" aria-labelledby="doughnut-heading">
+            {result.impact_graph ? <PolicyImpactGraph value={result.impact_graph} /> : doughnut ? <section className="mt-8" aria-labelledby="doughnut-heading">
               <h2 id="doughnut-heading" className="text-lg font-semibold">
                 {doughnut.baselineComplete ? 'Compare the analysis baseline and modeled scenario' : 'Legacy comparison — incomplete baseline'}
               </h2>
@@ -210,7 +211,7 @@ export default async function PolicyAnalysisPage({
                   </p>
                 )}
               </div>
-            </section>
+            </section> : null}
 
             <section className="mt-8" aria-labelledby="impacts-heading">
               <h2 id="impacts-heading" className="text-lg font-semibold">
@@ -218,7 +219,7 @@ export default async function PolicyAnalysisPage({
               </h2>
               {groups.length === 0 ? (
                 <p className="mt-2 text-sm text-[color:var(--color-muted)]">
-                  The analysis found no impact on any of the doughnut&apos;s dimensions.
+                  {result.impact_graph ? 'Cross-slice evidence is listed above; no additional legacy projections were supplied.' : 'No impacts were supplied. This does not establish that the policy has no effect.'}
                 </p>
               ) : (
                 <PolicyImpactCards groups={groups} onDoughnut={[...onDoughnut]} />
@@ -280,3 +281,4 @@ function TextList({ heading, items }: { heading: string; items: string[] }) {
     </section>
   );
 }
+

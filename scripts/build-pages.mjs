@@ -1,5 +1,5 @@
 import { buildResearchPages } from './build-research-pages.mjs';
-import { readFile, writeFile, mkdir, copyFile, rm, realpath } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, copyFile, cp, rm, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import ts from 'typescript';
@@ -46,7 +46,7 @@ function portraitBadge(portrait) {
   return portrait.research_update ? '<span class="tag research-preview">Updated research preview</span>' : `<span class="tag ${h(portrait.status)}">${h(status[portrait.status])}</span>`;
 }
 function shell(title, prefix, body, data) {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Explore social and ecological wellbeing through evidence-backed doughnut portraits."><title>${h(title)} · deep-fryer</title><link rel="stylesheet" href="${prefix}assets/site.css"></head><body><a class="skip" href="#main">Skip to content</a><header><a class="brand" href="${prefix}"><span aria-hidden="true">◉</span> deep-fryer</a><nav><a href="${prefix}#portraits">Portraits</a><a href="${prefix}#method">Method</a><a href="https://github.com/jglasskatz/deep-fryer">Source code ↗</a></nav></header><main id="main">${body}</main><footer>Built with deep-fryer · <a href="${prefix}data/portraits.json">Download this data snapshot</a> · <a href="${prefix}data/evidence-manifest.json">Evidence checksums</a><p>Snapshot captured ${h(release.captured_at)}. Source years vary by indicator.</p></footer>${data ? `<script id="portrait-data" type="application/json">${JSON.stringify(data).replaceAll('<', '\\u003c')}</script><script type="module" src="${prefix}assets/site.js"></script>` : ''}</body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Explore social and ecological wellbeing through evidence-backed doughnut portraits."><title>${h(title)} · deep-fryer</title><link rel="stylesheet" href="${prefix}assets/site.css"></head><body><a class="skip" href="#main">Skip to content</a><header><a class="brand" href="${prefix}"><span aria-hidden="true">◉</span> deep-fryer</a><nav><a href="${prefix}#portraits">Portraits</a><a href="${prefix}policies/">Policy evidence</a><a href="${prefix}#method">Method</a><a href="https://github.com/jglasskatz/deep-fryer">Source code ↗</a></nav></header><main id="main">${body}</main><footer>Built with deep-fryer · <a href="${prefix}data/portraits.json">Download this data snapshot</a> · <a href="${prefix}data/evidence-manifest.json">Evidence checksums</a><p>Snapshot captured ${h(release.captured_at)}. Source years vary by indicator.</p></footer>${data ? `<script id="portrait-data" type="application/json">${JSON.stringify(data).replaceAll('<', '\\u003c')}</script><script type="module" src="${prefix}assets/site.js"></script>` : ''}</body></html>`;
 }
 const groups = [...new Set(release.portraits.map(p => p.group))];
 const cards = groups.map(group => `<section><h2>${h(group)}</h2><div class="cards">${release.portraits.filter(p => p.group === group).map(p => `<a class="card" href="${p.slug}/">${portraitBadge(p)}<h3>${h(p.name)}</h3><p>${h(regionSummary(p))}</p><span class="card-link">Explore portrait →</span></a>`).join('')}</div></section>`).join('');
@@ -119,7 +119,12 @@ for (const portrait of release.portraits) {
 }
 await writeFile(path.join(output, '404.html'), shell('Page not found', './', '<h1>Page not found</h1><p><a href="./">Return to the portrait collection</a>.</p>'));
 await writeFile(path.join(output, 'release.json'), JSON.stringify({ schema_version: 1, snapshot_sha256: createHash('sha256').update(text).digest('hex'), commit: process.env.GITHUB_SHA ?? null, portraits: release.portraits.map(p => p.slug), evidence_files: requiredAssets.size }, null, 2));
+
+// Retrospective evidence stays separate from portrait scores and policy projections.
+await cp(path.join(source, 'policy-view'), path.join(output, 'policies'), { recursive: true, errorOnExist: true, force: false });
+
 console.log(`Built ${release.portraits.length} portraits with ${requiredAssets.size} checked evidence files in dist/pages.`);
 
 const research = await buildResearchPages(output);
 console.log(`Built Argentina research with ${research.indicators} indicators and ${research.sources} verified source archives.`);
+

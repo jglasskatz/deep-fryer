@@ -79,3 +79,18 @@ The deployed artifact contains only `dist/pages`, never the repository root. `re
 After deployment, verify the home page, `/santa-cruz/`, `/nyc/`, `/carmel/`, `/monterey-county/`, an archived screenshot and `release.json`. Confirm the deployed commit is the expected release and that the preview labels survived.
 
 To roll back, revert the release commit on `main` through a reviewed PR; CI rebuilds and redeploys the prior content. Avoid force-pushing history or bypassing failed checks. The **Run workflow** control can redeploy the checked current `main` snapshot without changing data. Re-run from the current revision when dependencies or evidence change; an old approval does not authorize modified findings.
+
+## NYC and Santa Cruz policy evidence study (draft)
+
+`site/policy-view/` is an additive, portable retrospective evidence atlas, copied
+to `/policies/` by the static builder. Its policy outcomes retain native units,
+periods, jurisdictions and causal limitations. Conceptual Doughnut slice links
+are not new portrait scores and do not update `site/data/portraits.json`. The staff analyzer offers the existing modeled portrait comparison plus explicit retrospective and prospective evidence-graph modes. Graph modes do not resize portrait wedges or assert custom-dimension mappings. Source-text matches are not claim validation. City, county, water-service and regional outcomes must remain distinct.
+
+The artifact is a research draft, not a publication approval. Keel architecture
+and principle checks are code checks, not independent verification of every
+statistical claim. Missing source archives or unresolved claims remain explicit.
+No database approval, paid research call or deployment is needed to review the
+local artifact. Run `node --test scripts/policy-study.test.mjs` for its structural
+checks, in addition to the normal Pages and Keel checks above.
+

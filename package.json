@@ -21,8 +21,8 @@
     "provision:nyc": "tsx scripts/provision-nyc.ts",
     "pages:snapshot": "node --env-file=.env.local --import tsx scripts/snapshot-pages.ts",
     "pages:build": "node scripts/build-pages.mjs",
-    "pages:test": "node --import tsx --test scripts/campaign-snapshot.test.mjs scripts/preview-observation.test.mjs scripts/pages-contract.test.mjs scripts/keel-path.test.mjs scripts/estimate-research-costs.test.mjs scripts/research-overlays.test.mjs scripts/portrait-presentation.test.mjs scripts/public-involvement.test.mjs scripts/longitudinal-research.test.mjs",
-    "pages:check": "node scripts/check-pages.mjs && node scripts/check-pages-ui.mjs && node scripts/check-public-design.mjs && node scripts/check-longitudinal-ui.mjs",
+    "pages:test": "node --import tsx --test scripts/campaign-snapshot.test.mjs scripts/preview-observation.test.mjs scripts/pages-contract.test.mjs scripts/keel-path.test.mjs scripts/estimate-research-costs.test.mjs scripts/research-overlays.test.mjs scripts/portrait-presentation.test.mjs scripts/public-involvement.test.mjs scripts/longitudinal-research.test.mjs scripts/policy-study.test.mjs scripts/policy-evaluator.test.mjs scripts/policy-mode-wiring.test.mjs",
+    "pages:check": "node scripts/check-pages.mjs && node scripts/check-pages-ui.mjs && node scripts/check-public-design.mjs && node scripts/check-longitudinal-ui.mjs && node scripts/check-policy-evaluator-ui.mjs",
     "pages:amend": "node scripts/apply-research-overlays.mjs"
   },
   "dependencies": {

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A source-traceable study of public policies in New York City and Santa Cruz through the Doughnut framework. Observed outcomes, causal estimates, and evidence gaps stay distinct.">
+  <title>Policy Evidence Atlas · Deep Fryer</title>
+  <link rel="stylesheet" href="policy-view.css">
+  <script defer src="policy-data.js"></script>
+  <script defer src="policy-view.js"></script>
+  <link rel="stylesheet" href="policy-evaluator.css">
+  <script defer src="impact-graph.js"></script>
+  <script defer src="impact-engine.js"></script>
+  <script defer src="policy-evaluator.js"></script>
+</head>
+<body>
+  <a class="skip" href="#explore">Skip to policy explorer</a>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Deep Fryer policy atlas"><span aria-hidden="true">◉</span> deep fryer</a>
+    <span class="header-label">POLICY EVIDENCE ATLAS <b>01</b></span>
+    <a class="text-link" href="#method">How to read this <span aria-hidden="true">↗</span></a>
+  </header>
+  <main id="top">
+    <section class="hero" aria-labelledby="title">
+      <div>
+        <p class="eyebrow">NEW YORK CITY × SANTA CRUZ</p>
+        <h1 id="title">Policy, inside<br>the <em>Doughnut.</em></h1>
+      </div>
+      <div class="hero-copy">
+        <p class="lead">What changed.<br>What we can actually claim.</p>
+        <p>Real policies, mapped to social foundations and ecological pressures. Explore the evidence without turning unlike outcomes into a single score.</p>
+        <div class="hero-meta"><span><strong id="total-policies">10</strong> policy cases</span><span><strong>2</strong> places</span><span>As of <strong>26 Oct 2026</strong></span></div>
+      </div>
+    </section>
+    <section class="boundary-note" aria-label="Study boundaries"><span class="note-mark" aria-hidden="true">!</span><p><strong>A policy map, not a performance ranking.</strong> Santa Cruz cases span city, unincorporated county, water-service, and regional boundaries. Slice mappings show relevance—not measured movement toward a threshold.</p></section>
+
+    <section class="evaluator" id="evaluator" aria-labelledby="evaluator-heading">
+      <div class="section-heading"><div><p class="eyebrow">POLICY → MECHANISMS → MULTIPLE SLICES</p><h2 id="evaluator-heading">Evaluate a policy.</h2></div><a class="text-link" href="impact-graph.json" download>Impact graph JSON ↓</a></div>
+      <p class="evaluator-intro">Look up a past policy or build a conditional scenario. Follow <strong>directional arrows</strong> across the Doughnut, with observed results, causal estimates and hypotheses kept separate. No invented total score.</p>
+      <div class="evaluation-tabs" role="group" aria-label="Evaluation mode"><button type="button" data-evaluation-mode="retrospective" aria-pressed="true">Look up a past policy</button><button type="button" data-evaluation-mode="prospective" aria-pressed="false">Explore a proposed policy</button></div>
+      <div id="historical-controls"><div class="evaluation-controls"><label>Policy name, topic or known source URL<input id="lookup-query" type="search" placeholder="Try school meals, water, housing…" autocomplete="off"></label><label>Curated policy<select id="policy-lookup"></select></label></div><p id="lookup-count" class="evaluation-note" aria-live="polite"></p></div>
+      <form id="scenario-form" hidden><div class="scenario-fields">
+        <label>Policy title<input id="scenario-policy" required maxlength="200" placeholder="Describe your proposed policy"></label><label>Closest mechanism analog<select id="scenario-analog"></select></label>
+        <label class="wide">Policy text<textarea id="scenario-text" rows="3" maxlength="15000" placeholder="Paste the proposed policy. This remains in your browser and export; no agent is running here."></textarea></label>
+        <label class="wide">Source URL (optional; not fetched)<input id="scenario-url" type="url" pattern="https://.*" placeholder="https://…"></label>
+        <label>Geography<input id="scenario-geography" required placeholder="City / service area and boundary"></label><label>Affected groups<input id="scenario-group" required placeholder="Who is exposed, who pays, who may lose?"></label>
+        <label>Outcome horizon<input id="scenario-horizon" required placeholder="For example: 1–3 years after rollout"></label><label>Evidence cutoff<input id="scenario-date" type="date" value="2026-10-26" min="2026-10-26" required></label>
+        <label class="wide">No-policy comparator<input id="scenario-comparator" required placeholder="What would happen without this policy?"></label>
+        <label class="wide">Your mechanism / transfer assumption<textarea id="scenario-assumption" rows="3" required placeholder="Why should the selected analog apply here? State exposure, uptake and key differences. All displayed scenario directions will depend on this assumption."></textarea></label>
+      </div><button class="scenario-submit" type="submit">Build conditional impact map →</button><p id="scenario-error" role="alert"></p><p class="evaluation-note">This is a deterministic, editable-in-input analogy, not a calibrated forecast. Native effect sizes are deliberately not transferred. Unknowns stay unknown; null findings become unknown in a new context. A later cutoff does not add newer research to this fixed collection.</p></form>
+      <aside class="agent-status"><strong>Agent status: not connected in this private preview.</strong><p>Curated lookup and guided scenarios work locally. Arbitrary URL/text research requires the repository’s authenticated policy-analysis worker, provider configuration and authorized research budget. This page makes no paid calls, does not fetch pasted links, and never invents an agent result.</p></aside>
+      <div id="evaluation-output" aria-live="polite">
+        <div class="evaluation-header"><p class="eyebrow" id="evaluation-kind"></p><h3 id="evaluation-title"></h3><p id="evaluation-scope"></p><p><strong>Comparator:</strong> <span id="evaluation-comparator"></span></p></div>
+        <div class="evaluation-grid"><aside class="evaluation-map"><div id="impact-doughnut"></div><div class="evaluation-legend"><span class="direction-chip towardSafeJust">→ Toward safe & just</span><span class="direction-chip away">← Away</span><span class="direction-chip mixed">↔ Mixed</span><span class="direction-chip unknown">? Unknown</span><span class="direction-chip noDemonstratedChange">≈ No demonstrated change</span></div><h4>Read the radial direction</h4><p><strong>Social foundation (inner):</strong> progress points outward from deprivation.<br><strong>Ecological ceiling (outer):</strong> progress points inward from overshoot.</p><p>The safe-and-just band lies between the two rings. Fixed-length arrows, equal wedges. Dashed arrows include mechanism inference. A dot means no reviewed pathway, not no effect. Direction applies only to the named outcome and comparator—not threshold attainment.</p><p>AI-curated and source-checked, not human-approved. Each card retains study design, native units, uncertainty, scope and a shared-path ID. Do not sum linked outcomes or unlike units.</p><button type="button" id="export-evaluation" class="scenario-submit">Export this evaluation ↓</button></aside><div id="impact-details"></div></div>
+        <div class="evaluation-bottom"><h4>Assumptions & interpretation</h4><ul id="evaluation-assumptions"></ul><h4>Costs, distribution & tradeoffs</h4><ul id="evaluation-costs"></ul><h4>How to validate</h4><ol id="evaluation-validation"></ol></div>
+      </div>
+    </section>
+    <section id="explore" aria-labelledby="explore-title">
+      <div class="section-heading"><div><p class="eyebrow">01 / EXPLORE THE EVIDENCE</p><h2 id="explore-title">Start with a place. Follow a slice.</h2></div><a class="text-link" href="policy-data.json" download>Download evidence JSON <span aria-hidden="true">↓</span></a></div>
+      <div class="toolbar">
+        <div class="place-tabs" role="group" aria-label="Filter by place"><button type="button" data-city="all" aria-pressed="true">Both places</button><button type="button" data-city="nyc" aria-pressed="false">New York City</button><button type="button" data-city="santa-cruz" aria-pressed="false">Santa Cruz</button></div>
+        <label class="evidence-select">Evidence lens <select id="evidence-filter"><option value="all">All evidence</option><option value="causal">Quasi-experimental estimates</option><option value="descriptive">Observational / descriptive / accounting</option></select></label>
+      </div>
+      <div class="atlas-grid">
+        <aside class="map-panel" aria-labelledby="map-title">
+          <div class="map-header"><h3 id="map-title">The Doughnut, as an index</h3><button type="button" id="reset-slice" class="reset">All slices ↺</button></div>
+          <div id="doughnut"></div>
+          <div class="ring-key"><span><i class="key-dot eco"></i> Ecological ceiling · outer</span><span><i class="key-dot social"></i> Social foundation · inner</span></div>
+          <p class="geometry-note">Equal segments are navigation. Color indicates a reviewed policy mapping—not impact size, direction, or threshold attainment. Pale segments are not covered in this case set.</p>
+          <label class="slice-label" for="slice-filter">Choose a Doughnut dimension</label>
+          <select id="slice-filter"><option value="all">All 21 dimensions</option></select>
+          <p id="slice-description" class="slice-description">Select any ring segment or choose a dimension above. A policy may connect to more than one slice.</p>
+          <div class="map-foot"><span class="mini-mark">↗</span><p><strong>Keep the chain visible.</strong><br>Policy → mechanism → outcome → evidence → limits.</p></div>
+        </aside>
+        <div class="results-panel">
+          <div class="results-heading"><div><p class="eyebrow" id="results-context">BOTH PLACES / ALL DIMENSIONS</p><h3 id="results-title">Policy evidence</h3></div><span id="results-count" class="count-pill"></span></div>
+          <div id="results" aria-live="polite" aria-atomic="false"></div>
+        </div>
+      </div>
+    </section>
+    <section class="method-section" id="method" aria-labelledby="method-title">
+      <div class="method-intro"><p class="eyebrow">02 / INTERPRET WITH CARE</p><h2 id="method-title">A useful claim keeps<br>its conditions attached.</h2><p>This is a purposive, exploratory case study—not a systematic review, a city ranking, or an estimate of total Doughnut performance.</p></div>
+      <div class="method-grid">
+        <article><span class="method-number">01</span><h3>Separate observation<br>from attribution</h3><p>Administrative counts and before–after changes describe what happened. Quasi-experimental estimates attempt to identify what the policy changed under explicit assumptions. Models and accounting have different meanings again.</p></article>
+        <article><span class="method-number">02</span><h3>Keep the denominator<br>and geography</h3><p>A service-area demand reduction is not a citywide ecological score. Permits are not completed homes. A product emissions factor is not the same as real-world avoided emissions.</p></article>
+        <article><span class="method-number">03</span><h3>Keep inconvenient<br>evidence in view</h3><p>Null, mixed, adverse, and contested findings remain visible. Costs and distribution matter. A plausible mechanism does not establish an impact on a Doughnut indicator or planetary boundary.</p></article>
+      </div>
+      <div class="ai-note"><div class="ai-monogram">AI<br>×<br>evidence</div><div><h3>AI helps organize the evidence. It does not certify the effect.</h3><p>This companion view demonstrates an evidence-provenance and constrained-interpretation workflow: preserve sources, distinguish claim types, and disclose gaps. It is not evidence that AI itself improves policy outcomes.</p><p class="small">Research draft — not publication-approved. Independent checks cover headline claims, not every contextual detail; source archives are incomplete. The map uses the canonical 21-dimension framework, not a city portrait’s full local dimension roster. Research cutoff: 26 October 2026. Evidence tiers describe research design, not source verification or factual confidence. Missing reviewed evidence does not imply no policy effect.</p></div></div>
+      <div class="downloads"><a class="button" href="policy-evidence-figure.pdf" download>Download paper figure <span aria-hidden="true">↓</span></a><a class="text-link" href="policy-data.json" download>Inspect structured evidence ↗</a></div>
+    </section>
+  </main>
+  <footer><a class="brand" href="#top"><span aria-hidden="true">◉</span> deep fryer</a><p>Local evidence. Explicit boundaries. No synthetic impact score.</p><a href="#top">Back to top ↑</a></footer>
+</body>
+</html>
+
