@@ -1,0 +1,14 @@
+{
+  "id": "indec-poverty-method",
+  "url": "https://www.indec.gob.ar/ftp/cuadros/sociedad/EPH_metodologia_22_pobreza.pdf",
+  "resolved_url": "https://www.indec.gob.ar/ftp/cuadros/sociedad/EPH_metodologia_22_pobreza.pdf",
+  "path": "raw/indec-poverty-method.pdf",
+  "publisher": "INDEC",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:41:29.523707+00:00",
+  "sha256": "9881625ced5f3ddeee5b54d0cb31c21838fb855287548c4878b67d5bcfc36a10",
+  "bytes": 2047228,
+  "content_type": "application/pdf",
+  "http_last_modified": "Mon, 02 Jul 2018 20:28:30 GMT",
+  "title": "indec poverty method"
+}

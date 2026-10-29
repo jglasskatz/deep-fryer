@@ -9,7 +9,7 @@ import { parseEmergencyConfig } from './emergency';
 import { hasDatabase } from './env';
 import { dimensionLabel } from './i18n/content';
 import type { Messages } from './i18n/messages/en';
-import { frameworkSlugOf } from './policy';
+import { involvementDimensionSlugsIn } from './involvement-dimensions';
 import type { PublishedDimension } from './portrait';
 
 /**
@@ -74,8 +74,14 @@ export const involvementView = cache(async (tenantSlug: string): Promise<Involve
       .select({ value: tenantConfig.value })
       .from(tenantConfig)
       .where(and(eq(tenantConfig.tenantId, tenant.id), eq(tenantConfig.key, 'emergency')));
+    const active = new Set(await involvementDimensionSlugsIn(db, tenant.id, true));
+    const visible = rows.flatMap(row => {
+      if (row.dimensionSlugs.length === 0) return [listingView(row)];
+      const selected = row.dimensionSlugs.filter(slug => active.has(slug));
+      return selected.length ? [{ ...listingView(row), dimension_slugs: selected }] : [];
+    });
     return {
-      listings: rows.map(listingView),
+      listings: visible,
       timeZone: parseEmergencyConfig(config?.value).config.time_zone,
     };
   });
@@ -89,7 +95,7 @@ export async function publishedListings(tenantSlug: string): Promise<Involvement
 // ---- Grouping for the Get involved page --------------------------------------
 
 export interface DimensionListings<L> {
-  /** Framework dimension slug. */
+  /** Actual local dimension address. */
   slug: string;
   listings: L[];
 }
@@ -114,7 +120,9 @@ const FRAMEWORK_ORDER = new Map(framework.dimensions.map((d, i) => [d.slug, i]))
 export function groupListingsByDimension<L extends Pick<InvolvementListingView, 'dimension_slugs'>>(
   listings: L[],
   only: string | null = null,
+  dimensionOrder: string[] = [...FRAMEWORK_ORDER.keys()],
 ): { dimensions: DimensionListings<L>[]; general: L[] } {
+  const order = new Map(dimensionOrder.map((slug, index) => [slug, index]));
   const bySlug = new Map<string, L[]>();
   const general: L[] = [];
   for (const listing of listings) {
@@ -123,35 +131,29 @@ export function groupListingsByDimension<L extends Pick<InvolvementListingView, 
       continue;
     }
     for (const slug of new Set(listing.dimension_slugs)) {
-      if (!FRAMEWORK_ORDER.has(slug) || (only !== null && slug !== only)) continue;
+      if (!order.has(slug) || (only !== null && slug !== only)) continue;
       const group = bySlug.get(slug) ?? [];
       group.push(listing);
       bySlug.set(slug, group);
     }
   }
   const dimensions = [...bySlug.entries()]
-    .sort(([a], [b]) => FRAMEWORK_ORDER.get(a)! - FRAMEWORK_ORDER.get(b)!)
+    .sort(([a], [b]) => order.get(a)! - order.get(b)!)
     .map(([slug, group]) => ({ slug, listings: group }));
   return { dimensions, general };
 }
 
 // ---- The form's dimension choices -------------------------------------------
 
-/**
- * The dimensions the submission form offers: the portrait's published ones,
- * in the doughnut's order, each named in the reader's language and valued
- * by its framework slug (what a submission stores and the schema accepts).
- * A custom dimension with no framework counterpart is left out — a
- * submission could not name it — and two portrait dimensions mapped onto
- * one framework dimension are offered once.
- */
+/** Published local dimensions in portrait order. Framework references supply
+ * scoring metadata, never substitute addresses or hide custom dimensions. */
 export function formDimensionOptions(m: Messages, dimensions: PublishedDimension[]): { slug: string; name: string }[] {
   const seen = new Set<string>();
   return [...dimensions]
     .sort((a, b) => a.display_order - b.display_order)
     .flatMap((d) => {
-      const slug = frameworkSlugOf(d);
-      if (!FRAMEWORK_ORDER.has(slug) || seen.has(slug)) return [];
+      const slug = d.slug;
+      if (seen.has(slug)) return [];
       seen.add(slug);
       return [{ slug, name: dimensionLabel(m, d.slug, d.data.name) }];
     });
@@ -160,4 +162,9 @@ export function formDimensionOptions(m: Messages, dimensions: PublishedDimension
 /** Whether a slug names one of the framework's dimensions (a valid ?dim= filter or form value). */
 export function isFrameworkDimension(slug: string | null | undefined): slug is string {
   return typeof slug === 'string' && FRAMEWORK_ORDER.has(slug);
+}
+
+/** Scope a URL filter to this portrait's actual published addresses. */
+export function isPortraitDimension(slug: unknown, dimensions: Pick<PublishedDimension, 'slug'>[]): slug is string {
+  return typeof slug === 'string' && dimensions.some(d => d.slug === slug);
 }

@@ -18,3 +18,4 @@ describe('worker-owned policy evidence provenance',()=>{
  it('requires both actual matching excerpt and locator; a URL resolving is insufficient',()=>{for(const change of [{locator:''},{excerpt:'invented content not in actual retrieved source'},{excerpt:''}]){const g=graph();Object.assign(g.edges[0]!.sources[0]!,change);expect(gatePolicyGraphEvidence(g,retrievedPolicyEvidence(zip([call,result]))).downgraded).toBe(1);}});
  it('treats returned block pages as unavailable evidence',()=>{expect(retrievedPolicyEvidence(zip([call,{...result,message:{content:[{...result.message.content[0],content:'Access denied. '+body}]}}]))).toEqual([]);});
 });
+

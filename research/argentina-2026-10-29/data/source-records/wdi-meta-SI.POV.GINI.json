@@ -1,0 +1,14 @@
+{
+  "id": "wdi-meta-SI.POV.GINI",
+  "url": "https://api.worldbank.org/v2/indicator/SI.POV.GINI?format=json",
+  "resolved_url": "https://api.worldbank.org/v2/indicator/SI.POV.GINI?format=json",
+  "path": "raw/wdi-meta-SI.POV.GINI.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:05.997662+00:00",
+  "sha256": "e377bf82b38024748153880ff90c0106a0ef0fd8cb04761146cc60a2609cab3d",
+  "bytes": 1494,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Tue, 27 Oct 2026 17:34:33 GMT",
+  "title": "WDI indicator metadata: Gini index"
+}

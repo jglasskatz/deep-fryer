@@ -1,0 +1,14 @@
+{
+  "id": "event-bcra2023",
+  "url": "https://www.bcra.gob.ar/noticias/nuevo-marco-de-politica-monetaria-y-cambiaria/",
+  "resolved_url": "https://www.bcra.gob.ar/noticias/nuevo-marco-de-politica-monetaria-y-cambiaria/",
+  "path": "raw/event-bcra2023.html",
+  "publisher": "BCRA",
+  "release_date": "2023-12-12",
+  "retrieved_at": "2026-10-28T11:44:31.950352+00:00",
+  "sha256": "110ac564bb66d3c741390ed8f095aec2bdb5e10096194ffcd2b21fd13aa3e418",
+  "bytes": 78349,
+  "content_type": "text/html; charset=UTF-8",
+  "http_last_modified": null,
+  "title": "BCRA: new monetary and exchange policy framework, 12 December 2023"
+}

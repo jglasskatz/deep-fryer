@@ -1,0 +1,14 @@
+{
+  "id": "indec-spa-js",
+  "url": "https://www.indec.gob.ar/Scripts/single-page.js",
+  "resolved_url": "https://www.indec.gob.ar/Scripts/single-page.js",
+  "path": "raw/indec-single-page.js",
+  "publisher": "INDEC",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:40:46.528084+00:00",
+  "sha256": "22f9be3eb20df7a20404fe55ef4e2669101e91f60007567b88cb21851412c2aa",
+  "bytes": 15363,
+  "content_type": "application/javascript",
+  "http_last_modified": "Thu, 01 Jul 2021 18:46:50 GMT",
+  "title": "indec spa js"
+}

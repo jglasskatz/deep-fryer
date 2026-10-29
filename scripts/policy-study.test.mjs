@@ -55,3 +55,4 @@ test('relative linked assets exist and render scripts parse', () => {
   assert.match(read('policy-view.css'), /prefers-reduced-motion/);
   assert.match(html, /aria-|<label/);
 });
+

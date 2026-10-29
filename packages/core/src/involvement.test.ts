@@ -19,6 +19,9 @@ const submission = {
 };
 
 describe('getting involved', () => {
+  it('admits actual local addresses for tenant validation, without canonical aliases', () => {
+    expect(involvementListingInputSchema.safeParse({name:'Heat help',description:'Local cooling center',kind:'services',dimension_slugs:['extreme-heat','local-shade']}).success).toBe(true);
+  });
   it('accepts an organization and stores empty optional fields as null', () => {
     const v = involvementSubmissionInputSchema.parse(submission);
     expect(v.website).toBeNull();
@@ -34,8 +37,8 @@ describe('getting involved', () => {
     expect(idea.success).toBe(true);
   });
 
-  it('refuses unknown dimensions, bad emails, and non-web websites', () => {
-    expect(involvementSubmissionInputSchema.safeParse({ ...submission, dimension_slug: 'mars' }).success).toBe(false);
+  it('refuses malformed dimension addresses, bad emails, and non-web websites', () => {
+    expect(involvementSubmissionInputSchema.safeParse({ ...submission, dimension_slug: '../mars' }).success).toBe(false);
     expect(involvementSubmissionInputSchema.safeParse({ ...submission, email: 'not-an-email' }).success).toBe(false);
     expect(involvementSubmissionInputSchema.safeParse({ ...submission, website: 'javascript:alert(1)' }).success).toBe(false);
     // An organization's own site may still be http; staff convert it before it goes public.

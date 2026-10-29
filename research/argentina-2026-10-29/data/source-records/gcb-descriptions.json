@@ -1,0 +1,14 @@
+{
+  "id": "gcb-descriptions",
+  "url": "https://globalcarbonbudget.org/download/2454/?tmstv=1762956990",
+  "resolved_url": "https://globalcarbonbudget.org/download/2454/?tmstv=1762956990",
+  "path": "raw/gcb-descriptions.pdf",
+  "publisher": "Global Carbon Project",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:48:49.138170+00:00",
+  "sha256": "111913632dc0aa5e91f79ca52bbe7d9af4b0a6bcae9380439bcc2e4721f5a71f",
+  "bytes": 86942,
+  "content_type": "application/pdf",
+  "http_last_modified": null,
+  "title": "gcb descriptions"
+}

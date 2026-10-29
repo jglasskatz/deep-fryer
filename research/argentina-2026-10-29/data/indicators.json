@@ -1,0 +1,474 @@
+[
+  {
+    "id": "life_expectancy",
+    "label": "Life expectancy at birth",
+    "dimension": "social",
+    "unit": "years",
+    "direction": "higher",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": 74,
+    "target_rationale": "Fixed published analytical benchmark from Fanning et al. Table 1 (2021 online / 2022 issue), held invariant for this partial adaptation; not an Argentine statutory target or proof that every resident has adequate provision.",
+    "comparability_notes": "UN population estimates; not healthy life expectancy. Historical revisions retained in this single WDI vintage.",
+    "target_source_id": "fanning2021-paper"
+  },
+  {
+    "id": "under5_mortality",
+    "label": "Under-five mortality",
+    "dimension": "social",
+    "unit": "deaths per 1,000 live births",
+    "direction": "lower",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "UN Inter-agency Group for Child Mortality Estimation model estimates, not annual census counts."
+  },
+  {
+    "id": "electricity_access",
+    "label": "Access to electricity",
+    "dimension": "social",
+    "unit": "%",
+    "direction": "higher",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": 95,
+    "target_rationale": "Fixed published analytical benchmark from Fanning et al. Table 1 (2021 online / 2022 issue), held invariant for this partial adaptation; not an Argentine statutory target or proof that every resident has adequate provision.",
+    "comparability_notes": "WDI/Tracking SDG7 estimates. Basic access is not affordability, reliability, or clean cooking. The 2024 decline is retained and must not automatically be attributed to policy.",
+    "target_source_id": "fanning2021-paper"
+  },
+  {
+    "id": "internet_use",
+    "label": "Individuals using the Internet",
+    "dimension": "social",
+    "unit": "%",
+    "direction": "higher",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "ITU estimates and surveys; use/access is not quality or affordability."
+  },
+  {
+    "id": "unemployment",
+    "label": "Unemployment, ILO modelled estimate",
+    "dimension": "social",
+    "unit": "%",
+    "direction": "lower",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "ILO-modelled unemployed share of labour force; not total-population joblessness or formal employment. Do not splice with quarterly INDEC EPH unemployment."
+  },
+  {
+    "id": "gdp_per_capita",
+    "label": "Real GDP per capita",
+    "dimension": "context",
+    "unit": "constant 2015 US$",
+    "direction": "context",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "National-accounts estimates; GDP is context, not a Doughnut social outcome or a distribution measure."
+  },
+  {
+    "id": "basic_water",
+    "label": "At least basic drinking-water services",
+    "dimension": "social",
+    "unit": "%",
+    "direction": "higher",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "WHO/UNICEF JMP WDI series returned Argentina data only through 2016. Do not carry forward or confuse basic with safely managed water."
+  },
+  {
+    "id": "basic_sanitation",
+    "label": "At least basic sanitation services",
+    "dimension": "social",
+    "unit": "%",
+    "direction": "higher",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "WHO/UNICEF JMP WDI series returned Argentina data only through 2016. Basic is not safely managed sanitation or sewer network connection."
+  },
+  {
+    "id": "forest_area",
+    "label": "Forest area as share of land",
+    "dimension": "ecological",
+    "unit": "% of land area",
+    "direction": "higher",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "FAO forest-stock estimates; not biodiversity, primary forest integrity, native-forest loss, or share of original biome cover. National annual estimates may include interpolation by producer."
+  },
+  {
+    "id": "pm25",
+    "label": "PM2.5 mean annual population-weighted exposure",
+    "dimension": "ecological",
+    "unit": "µg/m³",
+    "direction": "lower",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "Modelled national population-weighted exposure; no post-2023 observation in this vintage. A health indicator, not a national allocation of the planetary aerosol boundary."
+  },
+  {
+    "id": "renewable_energy",
+    "label": "Renewables in total final energy consumption",
+    "dimension": "ecological",
+    "unit": "% of total final energy",
+    "direction": "higher",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "WDI series returned data through 2021 only; not renewable electricity share."
+  },
+  {
+    "id": "water_stress",
+    "label": "Freshwater withdrawal relative to available resources",
+    "dimension": "ecological",
+    "unit": "% of available freshwater resources",
+    "direction": "lower",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "FAO AQUASTAT national SDG6.4.2 aggregate. Identical source values 2013–2022 do not establish annual unchanged local water stress; masks seasonal/subnational scarcity and is not consumption footprint."
+  },
+  {
+    "id": "employment",
+    "label": "Labour force employed (100 − unemployment)",
+    "dimension": "social",
+    "unit": "%",
+    "direction": "higher",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": 94,
+    "target_rationale": "Fixed published analytical benchmark from Fanning et al. Table 1 (2021 online / 2022 issue), held invariant for this partial adaptation; not an Argentine statutory target or proof that every resident has adequate provision.",
+    "comparability_notes": "Derived 100 minus ILO-modelled unemployed share; excludes people outside the labour force and does not measure job quality, hours, or informality.",
+    "target_source_id": "fanning2021-paper"
+  },
+  {
+    "id": "gini",
+    "label": "Gini index, urban second-semester survey",
+    "dimension": "social",
+    "unit": "points (0–100)",
+    "direction": "lower",
+    "frequency": "semester",
+    "geography": {
+      "id": "ARG-PIP-URBAN",
+      "name": "Argentina: urban income survey",
+      "level": "urban-survey-domain",
+      "coverage": "World Bank PIP reporting_level=urban; EPHC-S2 second-semester income surveys. Not a nationally representative rural+urban distribution."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "WDI reporting year is tied to EPHC-S2 in PIP, not an annual-average distribution. WDI rounded Gini retained; PIP is used to establish coverage/period. 2015 is missing and 2013–2015 INDEC statistics carry official reservations."
+  },
+  {
+    "id": "equality",
+    "label": "Income equality (100 − urban Gini)",
+    "dimension": "social",
+    "unit": "points (0–100)",
+    "direction": "higher",
+    "frequency": "semester",
+    "geography": {
+      "id": "ARG-PIP-URBAN",
+      "name": "Argentina: urban income survey",
+      "level": "urban-survey-domain",
+      "coverage": "World Bank PIP reporting_level=urban; EPHC-S2 second-semester income surveys. Not a nationally representative rural+urban distribution."
+    },
+    "epistemic_type": "estimate",
+    "target": 70,
+    "target_rationale": "Fixed published analytical benchmark from Fanning et al. Table 1 (2021 online / 2022 issue), held invariant for this partial adaptation; not an Argentine statutory target or proof that every resident has adequate provision.",
+    "comparability_notes": "WDI reporting year is tied to EPHC-S2 in PIP, not an annual-average distribution. WDI rounded Gini retained; PIP is used to establish coverage/period. 2015 is missing and 2013–2015 INDEC statistics carry official reservations.",
+    "target_source_id": "fanning2021-paper"
+  },
+  {
+    "id": "poverty",
+    "label": "People below the national income poverty line, EPH urban sample",
+    "dimension": "social",
+    "unit": "%",
+    "direction": "lower",
+    "frequency": "semester",
+    "geography": {
+      "id": "ARG-EPH31",
+      "name": "Argentina: EPH urban survey",
+      "level": "urban-survey-domain",
+      "coverage": "31 urban agglomerations; not the whole national population. H2 2019 excludes Gran Resistencia; H2 2020 excludes Ushuaia–Rio Grande."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "Monetary household-basket poverty/indigence; survey estimates, not a multidimensional poverty measure. Comparable historical publication restarts H2 2016; H2 2023 overlaps 21 days of Milei administration. Latest H1 2026 is provisional."
+  },
+  {
+    "id": "indigence",
+    "label": "People below the food-basket indigence line, EPH urban sample",
+    "dimension": "social",
+    "unit": "%",
+    "direction": "lower",
+    "frequency": "semester",
+    "geography": {
+      "id": "ARG-EPH31",
+      "name": "Argentina: EPH urban survey",
+      "level": "urban-survey-domain",
+      "coverage": "31 urban agglomerations; not the whole national population. H2 2019 excludes Gran Resistencia; H2 2020 excludes Ushuaia–Rio Grande."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "Monetary household-basket poverty/indigence; survey estimates, not a multidimensional poverty measure. Comparable historical publication restarts H2 2016; H2 2023 overlaps 21 days of Milei administration. Latest H1 2026 is provisional."
+  },
+  {
+    "id": "cpi_monthly",
+    "label": "National CPI, month-on-month change",
+    "dimension": "context",
+    "unit": "%",
+    "direction": "context",
+    "frequency": "monthly",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "National CPI with December 2016=100 base. Earlier IPC-GBA/IPCNu series are not spliced. A declining inflation rate does not mean prices fall. December 2023 combines two administrations."
+  },
+  {
+    "id": "cpi_yoy",
+    "label": "National CPI, year-on-year change",
+    "dimension": "context",
+    "unit": "%",
+    "direction": "context",
+    "frequency": "monthly",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "National CPI with December 2016=100 base. Earlier IPC-GBA/IPCNu series are not spliced. A declining inflation rate does not mean prices fall. December 2023 combines two administrations."
+  },
+  {
+    "id": "cpi_annual",
+    "label": "National CPI, December-to-December inflation",
+    "dimension": "context",
+    "unit": "%",
+    "direction": "context",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "December year-on-year CPI, not annual-average inflation. 2026 has no completed annual December period as of retrieval."
+  },
+  {
+    "id": "co2_territorial",
+    "label": "Territorial fossil and cement CO₂",
+    "dimension": "ecological",
+    "unit": "Mt CO₂ per year",
+    "direction": "lower",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "GCB 2025 preliminary publisher-site vintage; primary workbook MtC multiplied by exact producer factor 3.664. Excludes land-use-change CO₂ and non-CO₂ greenhouse gases. Territorial and consumption accounting are distinct; consumption 2024+ not provided. No national planetary quota assigned."
+  },
+  {
+    "id": "co2_territorial_per_capita",
+    "label": "Territorial fossil and cement CO₂ per person",
+    "dimension": "ecological",
+    "unit": "t CO₂ per person per year",
+    "direction": "lower",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "GCB 2025 preliminary publisher-site vintage; primary workbook MtC multiplied by exact producer factor 3.664. Then divided by same-vintage WDI population; not a publisher-native per-capita series. Excludes land-use-change CO₂ and non-CO₂ greenhouse gases. Territorial and consumption accounting are distinct; consumption 2024+ not provided. No national planetary quota assigned."
+  },
+  {
+    "id": "co2_consumption",
+    "label": "Consumption-based fossil and cement CO₂",
+    "dimension": "ecological",
+    "unit": "Mt CO₂ per year",
+    "direction": "lower",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "GCB 2025 preliminary publisher-site vintage; primary workbook MtC multiplied by exact producer factor 3.664. Excludes land-use-change CO₂ and non-CO₂ greenhouse gases. Territorial and consumption accounting are distinct; consumption 2024+ not provided. No national planetary quota assigned."
+  },
+  {
+    "id": "co2_consumption_per_capita",
+    "label": "Consumption-based fossil and cement CO₂ per person",
+    "dimension": "ecological",
+    "unit": "t CO₂ per person per year",
+    "direction": "lower",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "GCB 2025 preliminary publisher-site vintage; primary workbook MtC multiplied by exact producer factor 3.664. Then divided by same-vintage WDI population; not a publisher-native per-capita series. Excludes land-use-change CO₂ and non-CO₂ greenhouse gases. Territorial and consumption accounting are distinct; consumption 2024+ not provided. No national planetary quota assigned."
+  },
+  {
+    "id": "material_footprint",
+    "label": "Material footprint per person",
+    "dimension": "ecological",
+    "unit": "tonnes per person per year",
+    "direction": "lower",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "UNEP IRP Global Material Flows Database; estimated accounts. MF allocates global upstream extraction to final demand; DMC is domestic extraction+physical imports−exports. Linked 2024 technical annex p 6 says projections enter from 2020 and last year suitable for correlation analysis is 2019; 2020–2024 values retained only in modeled-reference.json, never promoted to measured history."
+  },
+  {
+    "id": "domestic_material_consumption",
+    "label": "Domestic material consumption per person",
+    "dimension": "ecological",
+    "unit": "tonnes per person per year",
+    "direction": "lower",
+    "frequency": "annual",
+    "geography": {
+      "id": "ARG",
+      "name": "Argentina",
+      "level": "country",
+      "coverage": "National territory/population, according to each producer definition."
+    },
+    "epistemic_type": "estimate",
+    "target": null,
+    "target_rationale": null,
+    "comparability_notes": "UNEP IRP Global Material Flows Database; estimated accounts. MF allocates global upstream extraction to final demand; DMC is domestic extraction+physical imports−exports. Linked 2024 technical annex p 6 says projections enter from 2020 and last year suitable for correlation analysis is 2019; 2020–2024 values retained only in modeled-reference.json, never promoted to measured history."
+  }
+]

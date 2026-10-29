@@ -1,0 +1,15 @@
+{
+  "id": "wdi-SP.DYN.LE00.IN",
+  "url": "https://api.worldbank.org/v2/country/ARG/indicator/SP.DYN.LE00.IN?format=json&per_page=100&date=2013:2026",
+  "resolved_url": "https://api.worldbank.org/v2/country/ARG/indicator/SP.DYN.LE00.IN?format=json&per_page=100&date=2013:2026",
+  "path": "raw/wdi-SP.DYN.LE00.IN.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:04.741104+00:00",
+  "sha256": "4c3a51a15a0f39b8f1c7b81ba0dc315d2cc7b881bd3587daba1706b88535a5e7",
+  "bytes": 2960,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 11:37:05 GMT",
+  "title": "WDI Argentina: Life expectancy at birth, total (years)",
+  "dataset_last_updated": "2026-10-08"
+}

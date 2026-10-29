@@ -1,0 +1,14 @@
+{
+  "id": "wdi-meta-IT.NET.USER.ZS",
+  "url": "https://api.worldbank.org/v2/indicator/IT.NET.USER.ZS?format=json",
+  "resolved_url": "https://api.worldbank.org/v2/indicator/IT.NET.USER.ZS?format=json",
+  "path": "raw/wdi-meta-IT.NET.USER.ZS.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:05.526794+00:00",
+  "sha256": "6e6fc76f94bda17bd30c3303f1e8965698c93d344c26a556ea6ee18a86c3cc32",
+  "bytes": 629,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Tue, 27 Oct 2026 19:40:43 GMT",
+  "title": "WDI indicator metadata: Individuals using the Internet (% of population)"
+}

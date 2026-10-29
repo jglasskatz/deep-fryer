@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { framework } from '@deep-fryer/contract';
 import {
   INVOLVEMENT_LIMITS,
   type InvolvementKind,
@@ -10,7 +9,7 @@ import {
 } from '@deep-fryer/core';
 import { approveSubmission, saveListing } from '@/lib/involvement-admin-actions';
 import { useAction } from '@/lib/use-action';
-import { KIND_OPTIONS, RINGS } from './labels';
+import { KIND_OPTIONS } from './labels';
 
 /**
  * The one listing form on /{tenant}/admin/involvement (English, like every
@@ -110,11 +109,13 @@ function fromDraft(d: InvolvementListingInput): FormState {
 
 export function ListingForm({
   tenantSlug,
+  dimensionOptions,
   listing,
   approve,
   onCancel,
 }: {
   tenantSlug: string;
+  dimensionOptions: { slug: string; name: string }[];
   listing?: ListingFormListing;
   approve?: { submissionId: string; draft: InvolvementListingInput };
   /** Shown as a Cancel button beside Save (the approve form closes back to the submission). */
@@ -233,38 +234,12 @@ export function ListingForm({
           Leave all unchecked for a listing that serves every dimension: it then appears on every dimension page, after
           the listings made for that dimension.
         </p>
-        <div className="mt-2 grid gap-4 sm:grid-cols-2">
-          {RINGS.map(({ ring, title }) => (
-            <div key={ring}>
-              <p className="text-xs font-medium text-[color:var(--color-muted)]">{title}</p>
-              <ul className="mt-1 space-y-1">
-                {framework.dimensions
-                  .filter((d) => d.ring === ring)
-                  .map((d) => {
-                    const id = `${prefix}-dim-${d.slug}`;
-                    return (
-                      <li key={d.slug} className="flex items-center gap-2 text-sm">
-                        <input
-                          id={id}
-                          type="checkbox"
-                          checked={s.dimensions.includes(d.slug)}
-                          onChange={(e) =>
-                            set({
-                              ...s,
-                              dimensions: e.target.checked
-                                ? [...s.dimensions, d.slug]
-                                : s.dimensions.filter((slug) => slug !== d.slug),
-                            })
-                          }
-                        />
-                        <label htmlFor={id}>{d.name}</label>
-                      </li>
-                    );
-                  })}
-              </ul>
-            </div>
-          ))}
-        </div>
+        <ul className="mt-2 grid gap-x-4 sm:grid-cols-2">
+          {[...dimensionOptions, ...s.dimensions.filter(slug => !dimensionOptions.some(d => d.slug === slug)).map(slug => ({slug, name: `${slug} (no longer active — remove to save)`}))].map(d => {
+            const id = `${prefix}-dim-${d.slug}`;
+            return <li key={d.slug}><label htmlFor={id} className="flex min-h-11 items-center gap-2 text-sm"><input id={id} type="checkbox" className="shrink-0" checked={s.dimensions.includes(d.slug)} onChange={e => set({...s,dimensions:e.target.checked?[...s.dimensions,d.slug]:s.dimensions.filter(slug=>slug!==d.slug)})}/><span>{d.name}</span></label></li>;
+          })}
+        </ul>
       </fieldset>
       <label className={label}>
         <span className="font-medium">Source page</span>
@@ -333,10 +308,12 @@ export function ListingForm({
  */
 export function ListingEditDetails({
   tenantSlug,
+  dimensionOptions,
   listing,
   version,
 }: {
   tenantSlug: string;
+  dimensionOptions: { slug: string; name: string }[];
   listing: ListingFormListing;
   version: number;
 }) {
@@ -346,7 +323,7 @@ export function ListingEditDetails({
       <summary className="cursor-pointer text-sm underline">Edit</summary>
       {open ? (
         <div className="mt-3">
-          <ListingForm key={version} tenantSlug={tenantSlug} listing={listing} />
+          <ListingForm key={version} tenantSlug={tenantSlug} dimensionOptions={dimensionOptions} listing={listing} />
         </div>
       ) : null}
     </details>

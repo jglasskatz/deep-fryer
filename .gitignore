@@ -37,11 +37,15 @@ yarn-error.log*
 coverage/
 .nyc_output/
 test-results/
+output/
+research/**/data/.manifest.lock
 keel-verification.json
 
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+__pycache__/
+*.py[cod]
 
 # Local evidence copies (dev fallback for tenant storage)
 apps/web/public/evidence/

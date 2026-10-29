@@ -16,9 +16,8 @@ import {
   formDimensionOptions,
   groupListingsByDimension,
   involvementView,
-  isFrameworkDimension,
+  isPortraitDimension,
 } from '@/lib/involvement';
-import { frameworkSlugOf } from '@/lib/policy';
 import type { PublishedDimension } from '@/lib/portrait';
 import { portraitFeatures } from '@/lib/features';
 import { safeHref } from '@/lib/safe-url';
@@ -43,7 +42,7 @@ export async function generateMetadata({ params }: { params: Promise<{ tenant: s
  * forward; and, second, the organizations working on the portrait's data
  * (research outreach contacts), when any are published.
  *
- * The dimension filter is a row of links (`?dim=<framework slug>`), so it
+ * The dimension filter is a row of links (`?dim=<portrait dimension slug>`), so it
  * works without script and with one tap on a phone; the current choice is
  * marked aria-current. An unknown `dim` is ignored (everything is shown).
  */
@@ -71,16 +70,17 @@ export default async function OutreachPage({
 
   const listings = involvement?.listings ?? [];
   const timeZone = involvement?.timeZone ?? DEFAULT_EMERGENCY_TIME_ZONE;
-  const selected = typeof dimRaw === 'string' && isFrameworkDimension(dimRaw) ? dimRaw : null;
-  const everything = groupListingsByDimension(listings);
-  const shown = groupListingsByDimension(listings, selected);
+  const selected = typeof dimRaw === 'string' && isPortraitDimension(dimRaw, portrait.dimensions) ? dimRaw : null;
+  const order = portrait.dimensions.map(d => d.slug);
+  const everything = groupListingsByDimension(listings, null, order);
+  const shown = groupListingsByDimension(listings, selected, order);
 
   // Headings name each dimension as this portrait publishes it (in the
   // reader's language) and link to its page; a dimension the portrait has
   // not published still gets the framework's name, without a link.
   const published = new Map<string, PublishedDimension>();
   for (const d of portrait.dimensions) {
-    const slug = frameworkSlugOf(d);
+    const slug = d.slug;
     if (!published.has(slug)) published.set(slug, d);
   }
   const nameOf = (slug: string) => {

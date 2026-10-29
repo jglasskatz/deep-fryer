@@ -1,0 +1,14 @@
+{
+  "id": "wdi-meta-EN.GHG.CO2.PC.CE.AR5",
+  "url": "https://api.worldbank.org/v2/indicator/EN.GHG.CO2.PC.CE.AR5?format=json",
+  "resolved_url": "https://api.worldbank.org/v2/indicator/EN.GHG.CO2.PC.CE.AR5?format=json",
+  "path": "raw/wdi-meta-EN.GHG.CO2.PC.CE.AR5.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:07.086543+00:00",
+  "sha256": "53014d01bf92914b341953a5c2b0d3ff2790624d279f8040b29c4d9715ec4415",
+  "bytes": 1111,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 03:10:27 GMT",
+  "title": "WDI indicator metadata: Carbon dioxide (CO2) emissions excluding LULUCF per capita (t CO2e/capita)"
+}

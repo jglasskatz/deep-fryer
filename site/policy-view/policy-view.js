@@ -69,3 +69,4 @@
   el('total-policies').textContent=data.policies.length;
   render();
 })();
+

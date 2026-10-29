@@ -1,0 +1,14 @@
+{
+  "id": "unep-material-argentina",
+  "url": "https://unep-irp-resourcepanel.resource-use.global/mfa-totals-ratios?countries%5B0%5D=ARG032&flowTypes%5B0%5D=MF%2Fcap&flowTypes%5B1%5D=DMC%2Fcap",
+  "resolved_url": "https://unep-irp-resourcepanel.resource-use.global/mfa-totals-ratios?countries%5B0%5D=ARG032&flowTypes%5B0%5D=MF%2Fcap&flowTypes%5B1%5D=DMC%2Fcap",
+  "path": "raw/unep-material-argentina.html",
+  "publisher": "UNEP International Resource Panel",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:48:07.566429+00:00",
+  "sha256": "aaefee18188f95a94a251b75a9300ddcd0686b7ca1137ee6f32725df32838d23",
+  "bytes": 46441,
+  "content_type": null,
+  "http_last_modified": null,
+  "title": "unep material argentina"
+}

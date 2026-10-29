@@ -85,9 +85,7 @@ To roll back, revert the release commit on `main` through a reviewed PR; CI rebu
 `site/policy-view/` is an additive, portable retrospective evidence atlas, copied
 to `/policies/` by the static builder. Its policy outcomes retain native units,
 periods, jurisdictions and causal limitations. Conceptual Doughnut slice links
-are not new portrait scores and do not update `site/data/portraits.json`. The
-staff-only prospective policy analyzer and its `projected_value` contract are
-unchanged. City, county, water-service and regional outcomes must remain distinct.
+are not new portrait scores and do not update `site/data/portraits.json`. The staff analyzer offers the existing modeled portrait comparison plus explicit retrospective and prospective evidence-graph modes. Graph modes do not resize portrait wedges or assert custom-dimension mappings. Source-text matches are not claim validation. City, county, water-service and regional outcomes must remain distinct.
 
 The artifact is a research draft, not a publication approval. Keel architecture
 and principle checks are code checks, not independent verification of every
@@ -95,3 +93,4 @@ statistical claim. Missing source archives or unresolved claims remain explicit.
 No database approval, paid research call or deployment is needed to review the
 local artifact. Run `node --test scripts/policy-study.test.mjs` for its structural
 checks, in addition to the normal Pages and Keel checks above.
+

@@ -64,20 +64,20 @@ export async function createPlannedRunIn(db: DbExecutor, input: PlannedRunInput)
     const specs: PlanDimensionSpec[] = [];
     for (const dim of dims) {
       const frameworkDim = frameworkDimension(dim.slug, dim.canonicalSlug);
-      let indicators = frameworkDim?.indicators ?? [];
-      let name = frameworkDim?.name ?? dim.slug;
-
-      if (!frameworkDim) {
-        // Custom dimension: research whatever indicators its latest version names.
-        const latest = await latestVersion(db, dim.id);
-        name = latest?.data.name ?? dim.slug;
-        indicators = (latest?.data.indicators ?? []).map((ind) => ({
-          slug: ind.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-          name: ind.name,
-          unit: ind.unit,
-          threshold_ref: ind.scoring?.threshold_ref ?? '',
-        }));
-      }
+      const latest = await latestVersion(db, dim.id);
+      const name = latest?.data.name ?? frameworkDim?.name ?? dim.slug;
+      // The editor's actual list is authoritative, including removal of all
+      // indicators. A framework reference supplies thresholds, not a hidden
+      // replacement list. Unversioned seeded dimensions alone use defaults.
+      const indicators = latest
+        ? latest.data.indicators.map(ind => ({
+            slug: ind.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+            name: ind.name,
+            unit: ind.unit,
+            threshold_ref: ind.scoring?.threshold_ref ??
+              frameworkDim?.indicators.find(fi => fi.name === ind.name)?.threshold_ref ?? '',
+          }))
+        : frameworkDim?.indicators ?? [];
 
       specs.push({
         dimensionId: dim.id,

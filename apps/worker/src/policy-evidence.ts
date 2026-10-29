@@ -21,3 +21,4 @@ export function retrievedPolicyEvidence(transcript:Buffer):RetrievedPolicyEviden
   }
   return receipts;
 }
+

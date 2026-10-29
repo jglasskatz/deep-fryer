@@ -1,0 +1,14 @@
+{
+  "id": "wdi-meta-AG.LND.FRST.ZS",
+  "url": "https://api.worldbank.org/v2/indicator/AG.LND.FRST.ZS?format=json",
+  "resolved_url": "https://api.worldbank.org/v2/indicator/AG.LND.FRST.ZS?format=json",
+  "path": "raw/wdi-meta-AG.LND.FRST.ZS.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:06.839522+00:00",
+  "sha256": "706587ee22b05b930a1e745e4f104d6c895f46b827f5209655405764b85c7145",
+  "bytes": 879,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 03:20:09 GMT",
+  "title": "WDI indicator metadata: Forest area (% of land area)"
+}

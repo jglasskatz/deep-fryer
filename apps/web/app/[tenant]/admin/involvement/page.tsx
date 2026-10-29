@@ -122,11 +122,13 @@ function ReviewSummary({
 
 function SubmissionCard({
   tenantSlug,
+  dimensionOptions,
   submission: s,
   listingsById,
   timeZone,
 }: {
   tenantSlug: string;
+  dimensionOptions: {slug:string;name:string}[];
   submission: SubmissionView;
   listingsById: Map<string, InvolvementListing>;
   timeZone: string;
@@ -211,6 +213,7 @@ function SubmissionCard({
       <div className="mt-3">
         <SubmissionActions
           tenantSlug={tenantSlug}
+          dimensionOptions={dimensionOptions}
           submissionId={s.id}
           status={s.status}
           draft={listingDraftFromSubmission(s)}
@@ -229,7 +232,7 @@ function LinkCheck({ listing, timeZone }: { listing: InvolvementListing; timeZon
   );
 }
 
-function ListingRow({ tenantSlug, listing: l, timeZone }: { tenantSlug: string; listing: InvolvementListing; timeZone: string }) {
+function ListingRow({ tenantSlug, dimensionOptions, listing: l, timeZone }: { tenantSlug: string; dimensionOptions:{slug:string;name:string}[]; listing: InvolvementListing; timeZone: string }) {
   const href = safeHref(l.url);
   const source = safeHref(l.sourceUrl);
   const tel = telHref(l.phone);
@@ -308,7 +311,7 @@ function ListingRow({ tenantSlug, listing: l, timeZone }: { tenantSlug: string; 
         </span>
       </div>
       {/* The form mounts only when Edit is opened; updatedAt remounts it with a changed listing's values. */}
-      <ListingEditDetails tenantSlug={tenantSlug} listing={formListing} version={l.updatedAt.getTime()} />
+      <ListingEditDetails tenantSlug={tenantSlug} dimensionOptions={dimensionOptions} listing={formListing} version={l.updatedAt.getTime()} />
     </li>
   );
 }
@@ -403,7 +406,7 @@ export default async function InvolvementAdminPage({
               ) : null}
               <ul className="mt-4 space-y-3">
                 {view.submissions.map((s) => (
-                  <SubmissionCard key={s.id} tenantSlug={slug} submission={s} listingsById={listingsById} timeZone={tz} />
+                  <SubmissionCard key={s.id} tenantSlug={slug} dimensionOptions={view.dimensionOptions} submission={s} listingsById={listingsById} timeZone={tz} />
                 ))}
               </ul>
             </>
@@ -424,14 +427,14 @@ export default async function InvolvementAdminPage({
           ) : (
             <ul className="mt-3 space-y-2">
               {view.listings.map((l) => (
-                <ListingRow key={l.id} tenantSlug={slug} listing={l} timeZone={tz} />
+                <ListingRow key={l.id} tenantSlug={slug} dimensionOptions={view.dimensionOptions} listing={l} timeZone={tz} />
               ))}
             </ul>
           )}
           <details className="mt-3 rounded border border-dashed border-black/20 p-3" open={view.listings.length === 0}>
             <summary className="cursor-pointer text-sm font-medium">Add a listing</summary>
             <div className="mt-3">
-              <ListingForm tenantSlug={slug} />
+              <ListingForm tenantSlug={slug} dimensionOptions={view.dimensionOptions} />
             </div>
           </details>
         </section>

@@ -69,6 +69,33 @@ jobs:
       - name: Build web (production)
         run: pnpm --filter @deep-fryer/web build
 
+      - name: Policy browser regression (synthetic isolated database)
+        env:
+          ALLOW_MUTATING_UI_FIXTURES: '1'
+          UI_TEST_SEED_TENANT: '1'
+          UI_TEST_TENANT: ui-policy-ci
+          POLICY_UI_FIXTURE_URL: http://127.0.0.1:4185/ui-policy-ci/admin/policy/967edc27-3b31-4bfe-ae4c-5e01f3f8f69e
+        run: |
+          pnpm --filter @deep-fryer/worker exec playwright-core install --with-deps chromium
+          node --import tsx scripts/create-policy-ui-fixture.mjs
+          pnpm --filter @deep-fryer/web exec next dev --hostname 127.0.0.1 --port 4185 > /tmp/policy-ui-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 60); do
+            if curl --silent --fail http://127.0.0.1:4185/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/check-policy-design.mjs
+      - name: Retain policy browser evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: policy-validation-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            test-results/policy-design
+            /tmp/policy-ui-server.log
+          if-no-files-found: warn
+
       # Exit 2 (critical) blocks; exit 1 (warnings) is surfaced for review.
       - name: keel verify (architecture + principles)
         env:
@@ -126,6 +153,8 @@ jobs:
           path: |
             test-results/pages
             test-results/pages-ui
+            test-results/public-design
+            test-results/longitudinal
             test-results/policy-evaluator
             dist/pages/release.json
           if-no-files-found: warn
@@ -160,3 +189,4 @@ jobs:
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
         with:
           artifact_name: ${{ needs.pages-build.outputs.artifact_name }}
+

@@ -1,0 +1,15 @@
+{
+  "id": "wdi-EN.GHG.CO2.PC.CE.AR5",
+  "url": "https://api.worldbank.org/v2/country/ARG/indicator/EN.GHG.CO2.PC.CE.AR5?format=json&per_page=100&date=2013:2026",
+  "resolved_url": "https://api.worldbank.org/v2/country/ARG/indicator/EN.GHG.CO2.PC.CE.AR5?format=json&per_page=100&date=2013:2026",
+  "path": "raw/wdi-EN.GHG.CO2.PC.CE.AR5.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:07.157596+00:00",
+  "sha256": "ca40eef5a8a1ca73d508234f14585368adb02147ae08afa399580c5da1c14fe2",
+  "bytes": 3627,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 11:38:07 GMT",
+  "title": "WDI Argentina: Carbon dioxide (CO2) emissions excluding LULUCF per capita (t CO2e/capita)",
+  "dataset_last_updated": "2026-10-08"
+}

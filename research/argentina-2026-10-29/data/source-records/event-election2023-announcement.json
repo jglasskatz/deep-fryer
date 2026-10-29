@@ -1,0 +1,14 @@
+{
+  "id": "event-election2023-announcement",
+  "url": "https://www.argentina.gob.ar/noticias/ballotage-2023-donde-voto",
+  "resolved_url": "https://www.argentina.gob.ar/noticias/ballotage-2023-donde-voto",
+  "path": "raw/event-election2023-announcement.html",
+  "publisher": "Argentina government",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:59:46.681442+00:00",
+  "sha256": "86ed45999ff920e55e08e393f3624994a87ab87e2b235909feb950c48788e590",
+  "bytes": 36541,
+  "content_type": "text/html; charset=utf-8",
+  "http_last_modified": null,
+  "title": "event election 2023 announcement"
+}

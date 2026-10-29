@@ -1,0 +1,14 @@
+{
+  "id": "gcb-2025-paper",
+  "url": "https://essd.copernicus.org/articles/18/3211/2026/essd-18-3211-2026.pdf",
+  "resolved_url": "https://essd.copernicus.org/articles/18/3211/2026/essd-18-3211-2026.pdf",
+  "path": "raw/gcb-2025-paper.pdf",
+  "publisher": "Friedlingstein et al. / Earth System Science Data",
+  "release_date": "2026-05-13",
+  "retrieved_at": "2026-10-28T11:38:59.929214+00:00",
+  "sha256": "166e10a66b4dfb1e3396be57dc0596a9e3de6c17a293a2f0b933d5f30572df12",
+  "bytes": 13426392,
+  "content_type": "application/pdf",
+  "http_last_modified": "Tue, 08 Sep 2026 05:48:40 GMT",
+  "title": "gcb 2025 paper"
+}

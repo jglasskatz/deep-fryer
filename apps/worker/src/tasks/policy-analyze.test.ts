@@ -122,7 +122,7 @@ describe('fitToContract', () => {
     expect(value.impacts[0]!.sources).toHaveLength(L.sourcesPerImpact);
     expect(value.impacts[0]!.sources.every((x) => x.url.startsWith('https://'))).toBe(true);
     expect(adjustments).toEqual([
-      'An impact on “nightlife”, which is not one of the doughnut\'s 21 dimensions, was set aside.',
+      'An impact on “nightlife”, which is not one of this portrait\'s published dimensions, was set aside.',
       '2 cited sources were left out because they were not https links.',
       '2 sources beyond the 12 allowed per impact were left out.',
     ]);
@@ -274,6 +274,7 @@ describe.skipIf(!hasDb)('policyAnalyze (Postgres, mocked session)', () => {
             rationale: 'Covered units see capped increases, reducing cost burden over time.',
             indicator: RENT,
             projected_value: 46,
+            projected_unit: '%',
             projected_year: 2030,
             sources: [{ title: 'Furman Center', url: 'https://furmancenter.org/research' }],
           },
@@ -297,30 +298,51 @@ describe.skipIf(!hasDb)('policyAnalyze (Postgres, mocked session)', () => {
     expect(session.lastInput).toMatchObject({ allowedTools: ['WebSearch', 'WebFetch'], orchestrate: false });
     expect(row.status).toBe('complete');
     expect(row.error).toBeNull();
-    expect(row.adjustments).toBeNull();
+    expect(row.adjustments).toEqual(["An impact on “energy”, which is not one of this portrait's published dimensions, was set aside."]);
     expect(row.startedAt).toBeInstanceOf(Date);
     expect(row.completedAt).toBeInstanceOf(Date);
     expect(row.tokenUsage).toEqual({ input_tokens: 1200, output_tokens: 340 });
     expect(row.transcript?.toString()).toBe('transcript');
-    expect(row.result?.impacts).toHaveLength(2);
+    expect(row.result?.impacts).toHaveLength(1);
 
     const housing = row.projections!.find((p) => p.dimension_slug === 'housing')!;
     // 52% → 46% against target 30 / scale 30: level_pct 73.3 → 53.3.
     expect(housing.current_viz).toBeCloseTo(123.3, 1);
     expect(housing.projected_viz).toBeCloseTo(103.3, 1);
     expect(housing.indicator_changes).toEqual([
-      { indicator: RENT, unit: '%', current_value: 52, projected_value: 46, projected_year: 2030 },
+      { indicator: RENT, unit: '%', current_value: 52, current_year: 2023, projected_value: 46, projected_year: 2030 },
     ]);
-    // Energy is not published on this portrait: direction only, with the reason.
-    const energy = row.projections!.find((p) => p.dimension_slug === 'energy')!;
-    expect(energy.direction).toBe('worsens');
-    expect(energy.projected_viz).toBeNull();
-    expect(energy.unquantified_reasons[0]).toMatch(/not published/);
+    // Unknown/unpublished addresses are excluded before projection, not aliased.
+    expect(row.projections!.some(p=>p.dimension_slug==='energy')).toBe(false);
+    expect(housing.baseline?.version_num).toBe(2);
+    expect(housing.epistemic_type).toBe('modeled-estimate');
+    expect(row.result!.portrait_baseline).toMatchObject({schema_version:1,dimensions:[{slug:'housing',ring:'social',version_num:2}]});
 
     const mail = mailTo(requester.email!);
     expect(mail).not.toBeNull();
     expect(mail).toMatch(/Subject: =\?UTF-8\?Q\?Policy_analysis_ready/);
     expect(mail).toContain(`https://app.example.gov/${tenant.slug}/admin/policy/${analysis.id}`);
+  });
+
+  it('keeps exact custom identity and incomplete estimates qualitative without publishing', async () => {
+    const {tenant,analysis}=await seed();const m=await import('@deep-fryer/db');const {and,eq}=await import('drizzle-orm');const db=m.getDb();
+    const [dimension]=await db.select().from(m.dimensions).where(and(eq(m.dimensions.tenantId,tenant.id),eq(m.dimensions.slug,'housing')));
+    await db.update(m.dimensions).set({slug:'extreme-heat',canonicalSlug:null}).where(eq(m.dimensions.id,dimension!.id));
+    session.succeeded=true;session.resultText=JSON.stringify({summary:'Conditional estimate only.',impacts:[{...validImpact,dimension_slug:'extreme-heat',indicator:RENT,projected_value:46,projected_year:2030,sources:[]}]});
+    const row=await run(analysis.id);
+    expect(row.status).toBe('complete');expect(row.projections![0]!.dimension_slug).toBe('extreme-heat');
+    expect(row.projections![0]!.projected_viz).toBeNull();expect(row.projections![0]!.unquantified_reasons.join(' ')).toMatch(/unit|source/);
+    expect(session.lastInput!.prompt).toContain('extreme-heat');expect(session.lastInput!.prompt).not.toContain('ozone-depletion');
+    const [after]=await db.select().from(m.dimensions).where(eq(m.dimensions.id,dimension!.id));
+    expect(after!.publishedVersionId).toBe(dimension!.publishedVersionId);
+  });
+
+  it('settles an empty published baseline without a model call or retained reservation',async()=>{
+    const {tenant,analysis}=await seed();const m=await import('@deep-fryer/db');const {eq}=await import('drizzle-orm');
+    await m.getDb().update(m.dimensions).set({archivedAt:new Date()}).where(eq(m.dimensions.tenantId,tenant.id));
+    const before=session.calls;const row=await run(analysis.id);
+    expect(session.calls).toBe(before);expect(row.status).toBe('failed');expect(row.error).toContain('published baseline');
+    expect(row.tokenUsage).toBeNull();expect(await m.researchSessionsUsed(m.getDb(),tenant.organizationId,new Date(0))).toBe(0);
   });
 
   it('completes a slightly-off answer, fixing what it can and noting it for staff', async () => {
@@ -356,7 +378,7 @@ describe.skipIf(!hasDb)('policyAnalyze (Postgres, mocked session)', () => {
     expect(row.result!.impacts[0]!.sources).toEqual([{ title: 'Furman Center', url: 'https://furmancenter.org/research' }]);
     expect(row.adjustments).toEqual([
       'The summary was shortened to 1,200 characters.',
-      'An impact on “nightlife”, which is not one of the doughnut\'s 21 dimensions, was set aside.',
+      'An impact on “nightlife”, which is not one of this portrait\'s published dimensions, was set aside.',
       '1 cited source was left out because it was not an https link.',
     ]);
   });

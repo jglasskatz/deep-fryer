@@ -1,0 +1,14 @@
+{
+  "id": "wdi-meta-SH.STA.BASS.ZS",
+  "url": "https://api.worldbank.org/v2/indicator/SH.STA.BASS.ZS?format=json",
+  "resolved_url": "https://api.worldbank.org/v2/indicator/SH.STA.BASS.ZS?format=json",
+  "path": "raw/wdi-meta-SH.STA.BASS.ZS.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:06.640233+00:00",
+  "sha256": "5be5e6443462725b4bb1ea4547a443489c6dde0ae875c278be049151aa9ec5df",
+  "bytes": 1257,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 03:40:14 GMT",
+  "title": "WDI indicator metadata: People using at least basic sanitation services (% of population)"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "wdi-AG.LND.FRST.ZS",
+  "url": "https://api.worldbank.org/v2/country/ARG/indicator/AG.LND.FRST.ZS?format=json&per_page=100&date=2013:2026",
+  "resolved_url": "https://api.worldbank.org/v2/country/ARG/indicator/AG.LND.FRST.ZS?format=json&per_page=100&date=2013:2026",
+  "path": "raw/wdi-AG.LND.FRST.ZS.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:07.660828+00:00",
+  "sha256": "a5a6736b6df7176e30a54086efa38cc62742e1c3a3f7229e6af0d9c9558971af",
+  "bytes": 2938,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 11:38:07 GMT",
+  "title": "WDI Argentina: Forest area (% of land area)",
+  "dataset_last_updated": "2026-10-08"
+}

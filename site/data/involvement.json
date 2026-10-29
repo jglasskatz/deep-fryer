@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "listings": [
+    {
+      "id": "carmel-regional-food-bank",
+      "portrait_slug": "carmel",
+      "dimension_slugs": ["food"],
+      "name": "Help the Food Bank for Monterey County",
+      "kind": "volunteer",
+      "description": "Explore food sorting, distribution and other volunteer roles with the county food bank.",
+      "url": "https://foodbankformontereycounty.org/donate/volunteer/",
+      "source_url": "https://foodbankformontereycounty.org/donate/volunteer/",
+      "checked_at": "2026-10-29",
+      "geography": "Monterey County; a regional opportunity for Carmel residents",
+      "participation_note": "Check the organizer's sign-up page for available shifts, locations and participation requirements."
+    },
+    {
+      "id": "carmel-beach-community",
+      "portrait_slug": "carmel",
+      "dimension_slugs": ["biodiversity-loss", "networks"],
+      "name": "Take part in Carmel community volunteering",
+      "kind": "volunteer",
+      "description": "The Carmel Residents Association lists beach cleanups and help with community programs and events.",
+      "url": "https://www.carmelresidents.org/volunteer",
+      "source_url": "https://www.carmelresidents.org/volunteer",
+      "checked_at": "2026-10-29",
+      "geography": "Carmel-by-the-Sea",
+      "participation_note": "Confirm the next activity, sign-up requirements and any membership conditions with the association."
+    },
+    {
+      "id": "carmel-civic-participation",
+      "portrait_slug": "carmel",
+      "dimension_slugs": ["political-voice"],
+      "name": "Follow Carmel board and commission opportunities",
+      "kind": "civic",
+      "description": "Learn about city advisory bodies and sign up for recruitment notices. Responsibilities include planning, the urban forest and beach, and community activities.",
+      "url": "https://ci.carmel.ca.us/boards-commissions",
+      "source_url": "https://ci.carmel.ca.us/boards-commissions",
+      "checked_at": "2026-10-29",
+      "geography": "Carmel-by-the-Sea; eligibility varies by board",
+      "participation_note": "Read current recruitment notices before applying. Archived deadlines are not open vacancies; residency and professional requirements vary."
+    },
+    {
+      "id": "monterey-food-bank",
+      "portrait_slug": "monterey-county",
+      "dimension_slugs": ["food"],
+      "name": "Help the Food Bank for Monterey County",
+      "kind": "volunteer",
+      "description": "Explore food sorting, distribution and other volunteer roles with the county food bank.",
+      "url": "https://foodbankformontereycounty.org/donate/volunteer/",
+      "source_url": "https://foodbankformontereycounty.org/donate/volunteer/",
+      "checked_at": "2026-10-29",
+      "geography": "Monterey County",
+      "participation_note": "Check the organizer's sign-up page for available shifts, locations and participation requirements."
+    },
+    {
+      "id": "monterey-conservation-volunteering",
+      "portrait_slug": "monterey-county",
+      "dimension_slugs": ["biodiversity-loss", "freshwater-withdrawals", "land-conversion"],
+      "name": "Ask about local conservation volunteering",
+      "kind": "volunteer",
+      "description": "The Resource Conservation District of Monterey County welcomes inquiries about helping with community events and field projects.",
+      "url": "https://www.rcdmonterey.org/volunteering-and-internships",
+      "source_url": "https://www.rcdmonterey.org/volunteering-and-internships",
+      "checked_at": "2026-10-29",
+      "geography": "Monterey County; locations depend on the project",
+      "participation_note": "Opportunities depend on project needs. Contact the district to discuss suitable roles and time commitments."
+    },
+    {
+      "id": "monterey-civic-participation",
+      "portrait_slug": "monterey-county",
+      "dimension_slugs": ["political-voice"],
+      "name": "Explore county boards and commissions",
+      "kind": "civic",
+      "description": "Find county advisory bodies on housing, agriculture, disability, water and other public issues, with links to the responsible agencies.",
+      "url": "https://apps.co.monterey.ca.us/bccsite",
+      "source_url": "https://apps.co.monterey.ca.us/bccsite",
+      "checked_at": "2026-10-29",
+      "geography": "Monterey County; eligibility varies by body",
+      "participation_note": "Use each body's official page to confirm meeting access, current vacancies and application requirements."
+    }
+  ]
+}

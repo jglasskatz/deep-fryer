@@ -1,0 +1,15 @@
+{
+  "id": "wdi-EG.FEC.RNEW.ZS",
+  "url": "https://api.worldbank.org/v2/country/ARG/indicator/EG.FEC.RNEW.ZS?format=json&per_page=100&date=2013:2026",
+  "resolved_url": "https://api.worldbank.org/v2/country/ARG/indicator/EG.FEC.RNEW.ZS?format=json&per_page=100&date=2013:2026",
+  "path": "raw/wdi-EG.FEC.RNEW.ZS.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:07.695225+00:00",
+  "sha256": "6f04c7cbb841e9623e1bdf5f5655fbe0a328f5c90bb4f8329e11762fc2972d41",
+  "bytes": 3284,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 11:38:07 GMT",
+  "title": "WDI Argentina: Renewable energy consumption (% of total final energy consumption)",
+  "dataset_last_updated": "2026-10-08"
+}

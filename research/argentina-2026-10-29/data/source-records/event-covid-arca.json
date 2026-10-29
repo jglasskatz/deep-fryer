@@ -1,0 +1,14 @@
+{
+  "id": "event-covid-arca",
+  "url": "https://biblioteca.arca.gob.ar/dcp/DEC_C_000297_2020_03_19",
+  "resolved_url": "https://biblioteca.arca.gob.ar/dcp/DEC_C_000297_2020_03_19",
+  "path": "raw/event-covid-arca.html",
+  "publisher": "ARCA / official legislation archive",
+  "release_date": "2020-03-20",
+  "retrieved_at": "2026-10-28T11:48:09.749590+00:00",
+  "sha256": "05da120a092f6d95fc33cfa25b80b72ef310b46cccd78e82a15ab9b278de069e",
+  "bytes": 40010,
+  "content_type": "text/html",
+  "http_last_modified": null,
+  "title": "Official legislation archive: Decree 297/2020 mandatory isolation"
+}

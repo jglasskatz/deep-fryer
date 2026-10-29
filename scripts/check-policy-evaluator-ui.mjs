@@ -50,3 +50,4 @@ try{
  assert.deepEqual(errors,[]);assert.deepEqual(external,[],'Smoke test must not contact external sites or model APIs');
  console.log('PASS: policy evaluator browser smoke — 10 cases, 21 slices, opposite radial arrows, keyboard mode switch, no-match recovery, conditional scenario/export, repeated modes, mobile overflow, offline network boundary.');
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}
+

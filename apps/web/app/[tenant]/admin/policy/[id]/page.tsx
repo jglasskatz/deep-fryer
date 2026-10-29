@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { formatIndicatorValue } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { PolicyImpactGraph } from '@/components/policy/PolicyImpactGraph';
 import { AnalysisStatus } from '@/components/policy/AnalysisStatus';
 import { CancelAnalysisButton } from '@/components/policy/CancelAnalysisButton';
-import { DirectionLabel, PolicyDoughnut } from '@/components/policy/PolicyDoughnut';
+import { PolicyDoughnut } from '@/components/policy/PolicyDoughnut';
+import { PolicyImpactCards } from '@/components/policy/PolicyImpactCards';
 import { adminTenant } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
 import {
@@ -15,9 +15,6 @@ import {
   impactsChartLabel,
   impactsSummary,
   policyDoughnut,
-  type ImpactGroup,
-  type ImpactRow,
-  type WedgeOutcome,
 } from '@/lib/policy';
 import { requireFeature } from '@/lib/features';
 import { safeHref } from '@/lib/safe-url';
@@ -47,7 +44,6 @@ export async function generateMetadata({
 }
 
 const when = (d: Date) => `${d.toISOString().slice(0, 16).replace('T', ' ')} UTC`;
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /**
  * One policy analysis (SPEC-v5 §2). While it waits or runs, a live status
@@ -72,7 +68,7 @@ export default async function PolicyAnalysisPage({
 
   const result = analysis.status === 'complete' ? analysis.result : null;
   const projections = analysis.projections ?? [];
-  const doughnut = result ? await policyDoughnut(ctx.tenant.slug, projections) : null;
+  const doughnut = result ? await policyDoughnut(ctx.tenant.slug, projections, result.portrait_baseline) : null;
   const groups = result ? impactGroups(result, projections) : [];
   const onDoughnut = new Set(doughnut?.dimensions.map((d) => d.slug) ?? []);
   const source = safeHref(analysis.sourceUrl);
@@ -155,17 +151,17 @@ export default async function PolicyAnalysisPage({
           </section>
         ) : null}
 
-        {result && doughnut ? (
+        {result && (result.impact_graph || doughnut) ? (
           <>
             <aside
               className="mt-6 rounded border-2 border-amber-500 p-4 text-sm"
               aria-label="About this analysis"
             >
               <p className="font-semibold">
-                {result.impact_graph?.mode === 'retrospective' ? 'Retrospective evidence synthesis, not automatic causal proof' : 'Projection, not measurement'} — drafted with AI assistance for staff review.
+                {result.impact_graph ? 'Evidence graph — AI-classified claims, not independently verified policy effects.' : 'Modeled scenario — not a measured policy effect.'}
               </p>
               <p className="mt-1">
-                {result.impact_graph ? 'Check each mechanism, source excerpt and study design. Retrieved content is not independent claim verification or proof of causality. Unknown directions and unverified model claims are retained explicitly; no graph magnitude changes wedge size.' : 'Check each rationale and its sources before relying on it. Quantified projections are re-scored with the same thresholds as the published portrait.'} Nothing here is published.
+                {result.impact_graph ? 'Review each claim, source excerpt, study design and scope. Source text matching is not independent validation; graph categories do not represent custom portrait scores. Nothing here is published.' : 'Check each rationale, time horizon and source before relying on an estimate. Qualified projections use the analysis baseline’s fixed thresholds. Missing units, dates or evidence remain direction-only. This comparison does not establish causation; nothing here is published.'}
               </p>
               {adjustments.length ? (
                 <>
@@ -188,24 +184,25 @@ export default async function PolicyAnalysisPage({
               </p>
             </section>
 
-            {result.impact_graph ? <PolicyImpactGraph value={result.impact_graph} /> : <section className="mt-8" aria-labelledby="doughnut-heading">
+            {result.impact_graph ? <PolicyImpactGraph value={result.impact_graph} /> : doughnut ? <section className="mt-8" aria-labelledby="doughnut-heading">
               <h2 id="doughnut-heading" className="text-lg font-semibold">
-                The doughnut, today and with this policy
+                {doughnut.baselineComplete ? 'Compare the analysis baseline and modeled scenario' : 'Legacy comparison — incomplete baseline'}
               </h2>
-              {doughnut.republished.length ? (
+              {!doughnut.baselineComplete ? <p className="mt-2 text-sm">The complete original portrait was not saved with this analysis. Current portrait geometry is shown for context; legacy quantified estimates are not verified.</p> : null}
+              {doughnut.baselineComplete && doughnut.republished.length ? (
                 <p className="mt-2 text-sm">
                   {listNames(doughnut.republished)}{' '}
                   {doughnut.republished.length === 1 ? 'has' : 'have'} been republished since this
-                  analysis ran. “Today” shows the portrait as published now; projected sizes were
-                  computed against the data published then.
+                  analysis ran. This comparison keeps the original analysis baseline, so newer measurements are not mixed with earlier estimates.
                 </p>
               ) : null}
               <div className="mt-4">
                 {doughnut.dimensions.length ? (
                   <PolicyDoughnut
                     dimensions={doughnut.dimensions}
+                    baselineComplete={doughnut.baselineComplete}
                     ariaLabel={impactsChartLabel(ctx.tenant.name)}
-                    summary={impactsSummary(doughnut.dimensions, projections, doughnut.republished)}
+                    summary={impactsSummary(doughnut.dimensions, projections, doughnut.republished).replace('impacts table', 'impact cards')}
                   />
                 ) : (
                   <p className="text-sm text-[color:var(--color-muted)]">
@@ -214,7 +211,7 @@ export default async function PolicyAnalysisPage({
                   </p>
                 )}
               </div>
-            </section>}
+            </section> : null}
 
             <section className="mt-8" aria-labelledby="impacts-heading">
               <h2 id="impacts-heading" className="text-lg font-semibold">
@@ -225,28 +222,7 @@ export default async function PolicyAnalysisPage({
                   {result.impact_graph ? 'Cross-slice evidence is listed above; no additional legacy projections were supplied.' : 'No impacts were supplied. This does not establish that the policy has no effect.'}
                 </p>
               ) : (
-                <div className="mt-3 overflow-x-auto">
-                  <table className="w-full min-w-[960px] border-collapse text-sm">
-                    <caption className="sr-only">
-                      Every projected impact, grouped by dimension, with direction, magnitude,
-                      confidence, the indicator change where quantified, rationale, and sources.
-                    </caption>
-                    <thead>
-                      <tr className="border-b text-left align-bottom text-[color:var(--color-muted)]">
-                        <th scope="col" className="py-2 pr-4">Dimension</th>
-                        <th scope="col" className="py-2 pr-4">Direction</th>
-                        <th scope="col" className="py-2 pr-4">Magnitude</th>
-                        <th scope="col" className="py-2 pr-4">Confidence</th>
-                        <th scope="col" className="py-2 pr-4">Indicator change</th>
-                        <th scope="col" className="py-2 pr-4">Rationale</th>
-                        <th scope="col" className="py-2 pr-4">Sources</th>
-                      </tr>
-                    </thead>
-                    {groups.map((g) => (
-                      <ImpactRowGroup key={g.slug} group={g} onDoughnut={onDoughnut.has(g.slug)} />
-                    ))}
-                  </table>
-                </div>
+                <PolicyImpactCards groups={groups} onDoughnut={[...onDoughnut]} />
               )}
             </section>
 
@@ -284,120 +260,9 @@ export default async function PolicyAnalysisPage({
   );
 }
 
-/** Why a quantified wedge keeps its size, in the table (lib/policy.ts wedgeOutcome). */
-const UNMOVED_NOTE: Record<Exclude<WedgeOutcome, 'resized'>, string> = {
-  worse_indicator: 'Wedge unchanged: a dimension is drawn at its worst indicator, and another indicator stays further out.',
-  display_range: 'Wedge unchanged: the dimension is beyond the chart’s range now and with this policy, so it stays at the edge.',
-  too_small: 'Wedge unchanged: the change is smaller than one step on the chart.',
-  unmoved: 'Wedge unchanged by the projected change.',
-};
-
 function listNames(names: string[]): string {
   if (names.length <= 1) return names.join('');
   return `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
-}
-
-/**
- * One dimension's impacts. The first row carries `impact-{slug}`, the anchor
- * a doughnut wedge jumps to; the dimension cell heads the whole group.
- */
-function ImpactRowGroup({ group, onDoughnut }: { group: ImpactGroup; onDoughnut: boolean }) {
-  return (
-    <tbody className="border-b">
-      {group.rows.map((row, i) => (
-        <tr
-          key={i}
-          id={i === 0 ? `impact-${group.slug}` : undefined}
-          className="scroll-mt-24 align-top target:bg-black/5"
-        >
-          {i === 0 ? (
-            <th scope="rowgroup" rowSpan={group.rows.length} className="py-2 pr-4 text-left font-semibold">
-              {group.name}
-              {group.rows.length > 1 && group.direction !== 'none' ? (
-                <span className="mt-1 block text-xs font-normal text-[color:var(--color-muted)]">
-                  Overall: <DirectionLabel direction={group.direction} />
-                </span>
-              ) : null}
-              {!onDoughnut ? (
-                <span className="mt-1 block text-xs font-normal text-[color:var(--color-muted)]">
-                  Not published on this portrait
-                </span>
-              ) : null}
-              {onDoughnut && group.wedge && group.wedge !== 'resized' ? (
-                <span className="mt-1 block text-xs font-normal text-[color:var(--color-muted)]">
-                  {UNMOVED_NOTE[group.wedge]}
-                </span>
-              ) : null}
-            </th>
-          ) : null}
-          <td className="py-2 pr-4 whitespace-nowrap">
-            <DirectionLabel direction={row.impact.direction} />
-          </td>
-          <td className="py-2 pr-4">{capitalize(row.impact.magnitude)}</td>
-          <td className="py-2 pr-4">{capitalize(row.impact.confidence)}</td>
-          <td className="py-2 pr-4">
-            <IndicatorChangeCell row={row} />
-          </td>
-          <td className="min-w-[14rem] py-2 pr-4">{row.impact.rationale}</td>
-          <td className="py-2 pr-4">
-            <SourceList sources={row.impact.sources} />
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  );
-}
-
-function IndicatorChangeCell({ row }: { row: ImpactRow }) {
-  const { change } = row;
-  if (change) {
-    return (
-      <>
-        <span className="block">{change.indicator}</span>
-        {/* Each value stays on one line; the pair may wrap at the arrow so long units leave room for the rationale. */}
-        <span className="block font-medium tabular-nums">
-          <span className="whitespace-nowrap">{formatIndicatorValue(change.current_value, change.unit)}</span> →{' '}
-          <span className="whitespace-nowrap">{formatIndicatorValue(change.projected_value, change.unit)}</span>
-        </span>
-        {/* The values above carry the unit; the projection's year completes the claim. */}
-        <span className="block text-xs text-[color:var(--color-muted)]">
-          {change.projected_year ? `Projected for ${change.projected_year}` : 'Projected; year not given'}
-        </span>
-      </>
-    );
-  }
-  return (
-    <>
-      <span className="block">Direction only</span>
-      {row.unquantified.length ? (
-        <span className="block text-xs text-[color:var(--color-muted)]">
-          Not quantified: {row.unquantified.join('; ')}.
-        </span>
-      ) : null}
-    </>
-  );
-}
-
-function SourceList({ sources }: { sources: ImpactRow['impact']['sources'] }) {
-  if (sources.length === 0) return <span className="text-[color:var(--color-muted)]">—</span>;
-  return (
-    <ul className="space-y-1">
-      {sources.map((s, i) => {
-        const href = safeHref(s.url);
-        return (
-          <li key={i}>
-            {href ? (
-              <a className="underline" href={href} target="_blank" rel="noreferrer">
-                {s.title}
-              </a>
-            ) : (
-              s.title
-            )}
-          </li>
-        );
-      })}
-    </ul>
-  );
 }
 
 function TextList({ heading, items }: { heading: string; items: string[] }) {
@@ -416,3 +281,4 @@ function TextList({ heading, items }: { heading: string; items: string[] }) {
     </section>
   );
 }
+

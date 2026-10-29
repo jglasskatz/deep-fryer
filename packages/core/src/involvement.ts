@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { httpsUrlSchema, phoneSchema } from './emergency.js';
-import { POLICY_DIMENSION_SLUGS } from './policy.js';
+import { SLUG_RE } from './slugs.js';
 
 /**
  * Getting involved (SPEC-v6 §4): listings of ways to take part in each
@@ -43,8 +43,9 @@ export const SUBMISSION_LIMITS = {
   maxTokenAgeMs: 24 * 60 * 60 * 1000,
 } as const;
 
-const DIMENSION_SLUGS = new Set<string>(POLICY_DIMENSION_SLUGS);
-const dimensionSlugSchema = z.string().refine((s) => DIMENSION_SLUGS.has(s), 'not a doughnut dimension');
+// Syntax only: every write also validates membership in the portrait's active
+// dimensions. A framework reference never changes a local dimension's identity.
+const dimensionSlugSchema = z.string().max(80).regex(SLUG_RE, 'not a dimension address');
 
 /** Form fields arrive as '' when left empty; optional fields store null instead. */
 const emptyToNull = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? null : v);
@@ -81,7 +82,7 @@ export const involvementListingInputSchema = z.object({
   /** Empty = the listing serves every dimension. */
   dimension_slugs: z
     .array(dimensionSlugSchema)
-    .max(POLICY_DIMENSION_SLUGS.length)
+    .max(200)
     .default([])
     .refine((d) => new Set(d).size === d.length, 'each dimension once'),
   source_url: optional(httpsUrlSchema),

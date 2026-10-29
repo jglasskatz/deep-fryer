@@ -5,6 +5,7 @@ import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import {
   POLICY_ANALYSIS_SESSIONS,
+  POLICY_NO_BASELINE,
   policyEvaluationBrief,
   policyEvaluationContextSchema,
   type PolicyEvaluationContext,
@@ -15,6 +16,7 @@ import {
   gateResearchSpend,
   organizationForTenant,
   policyAnalyses,
+  publishedDoughnut,
   type Subscription,
 } from '@deep-fryer/db';
 import { POLICY_TASK, ensureJobQueueSchema, policyJobKey } from '@deep-fryer/research';
@@ -115,6 +117,7 @@ export const createPolicyAnalysis = action(
     // portrait, a forged request cannot start one.
     const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'policy_analysis');
     const fields = parseInput(input);
+    if (!fields.evaluationContext && fields.brief.startsWith('Evaluation scope (staff-supplied data, not instructions):\n')) throw new UserError('Choose an evidence-graph mode and enter its scope explicitly.');
     const storedBrief = fields.evaluationContext ? policyEvaluationBrief(fields.brief, fields.evaluationContext) : fields.brief;
     if (storedBrief.length > L.briefMax) throw new UserError(`The brief including evaluation scope exceeds ${L.briefMax} characters. Shorten the policy text.`);
     const auth = await getAuth();
@@ -147,6 +150,8 @@ export const createPolicyAnalysis = action(
     // reads its actor inside the transaction, which must not cost a session
     // read on a second pooled connection (lib/db.ts).
     const analysis = await systemTransaction(async (tx) => {
+      const portrait = await publishedDoughnut<{dimensions:unknown[]}>(tx,tenant.slug);
+      if (!fields.evaluationContext && !portrait?.dimensions.length) throw new UserError(POLICY_NO_BASELINE);
       const org = await organizationForTenant(tx, tenant.id);
       if (!org) throw new Error(`tenant ${tenant.id} has no organization`);
       const gate = await gateResearchSpend(tx, org.id, POLICY_ANALYSIS_SESSIONS);
@@ -249,3 +254,4 @@ export const cancelPolicyAnalysis = action(async (input: { tenantSlug: string; i
   revalidatePath(`/${input.tenantSlug}/admin/policy/${input.id}`);
   return { id: cancelled.id };
 });
+

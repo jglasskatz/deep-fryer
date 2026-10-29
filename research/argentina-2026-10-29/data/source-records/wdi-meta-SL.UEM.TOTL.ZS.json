@@ -1,0 +1,14 @@
+{
+  "id": "wdi-meta-SL.UEM.TOTL.ZS",
+  "url": "https://api.worldbank.org/v2/indicator/SL.UEM.TOTL.ZS?format=json",
+  "resolved_url": "https://api.worldbank.org/v2/indicator/SL.UEM.TOTL.ZS?format=json",
+  "path": "raw/wdi-meta-SL.UEM.TOTL.ZS.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:05.657702+00:00",
+  "sha256": "3ae370ed4bebba092338e94334c35add71490324ee57f1dfe81885dade51f52f",
+  "bytes": 670,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 10:23:14 GMT",
+  "title": "WDI indicator metadata: Unemployment, total (% of total labor force) (modeled ILO estimate)"
+}

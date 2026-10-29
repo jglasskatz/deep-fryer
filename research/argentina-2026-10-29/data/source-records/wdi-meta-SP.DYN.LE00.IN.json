@@ -1,0 +1,14 @@
+{
+  "id": "wdi-meta-SP.DYN.LE00.IN",
+  "url": "https://api.worldbank.org/v2/indicator/SP.DYN.LE00.IN?format=json",
+  "resolved_url": "https://api.worldbank.org/v2/indicator/SP.DYN.LE00.IN?format=json",
+  "path": "raw/wdi-meta-SP.DYN.LE00.IN.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:05.095250+00:00",
+  "sha256": "a39cb6fddfbbb953053690366243dffe77a266c4deae79c46ce5a06da9f5fc31",
+  "bytes": 969,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 05:09:56 GMT",
+  "title": "WDI indicator metadata: Life expectancy at birth, total (years)"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "wdi-meta-NY.GDP.PCAP.KD",
+  "url": "https://api.worldbank.org/v2/indicator/NY.GDP.PCAP.KD?format=json",
+  "resolved_url": "https://api.worldbank.org/v2/indicator/NY.GDP.PCAP.KD?format=json",
+  "path": "raw/wdi-meta-NY.GDP.PCAP.KD.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:06.172634+00:00",
+  "sha256": "46689488cd435920647264ede1bfb2d4b51b09800fb36f3d3b1422a0b11ea49d",
+  "bytes": 1100,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 11:38:06 GMT",
+  "title": "WDI indicator metadata: GDP per capita (constant 2015 US$)"
+}

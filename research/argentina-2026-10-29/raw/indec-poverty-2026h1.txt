@@ -1,0 +1,1274 @@
+    Informes técnicos / Vol. 10, n° 238   ISSN 2545-6636
+
+
+
+
+Condiciones de vida
+Vol. 10, n° 21
+
+
+
+
+Incidencia de la pobreza y la
+indigencia en 31 aglomerados urbanos
+Primer semestre de 2026
+Informes técnicos. Vol. 10, nº 238                                                 Índice                                                                                                            Pág.
+ISSN 2545-6636
+                                                                                   Resumen ejecutivo................................................................................................3
+Condiciones de vida. Vol. 10, nº 21
+                                                                                   Introducción .........................................................................................................4
+ISSN 2545-6660
+                                                                                   Cuadros
+Incidencia de la pobreza y la                                                      Cuadro 1.           Pobreza e indigencia. Total 31 aglomerados urbanos.......................5
+indigencia en 31 aglomerados                                                       Cuadro 2.1          Brecha de la indigencia. Total 31 aglomerados urbanos...................7
+urbanos                                                                            Cuadro 2.2          Brecha de la pobreza. Total 31 aglomerados urbanos. .....................7
+                                                                                   Cuadro 3.1          Población por condición de pobreza, según grupos de edad.
+Primer semestre de 2026
+                                                                                                       Primer semestre de 2026................................................................8
+                                                                                   Cuadro 3.2          Población por grupos de edad, según condición de pobreza.
+Instituto Nacional de Estadística y Censos
+                                                                                                       Primer semestre de 2026................................................................8
+Dirección: Pedro Ignacio Lines                                                     Cuadro 3.3          Población de 0 a 17 años por condición de pobreza, según grupos
+                                                                                                       de edad. Primer semestre de 2026..................................................8
+Dirección Técnica: Carolina Andrea Plat
+                                                                                   Cuadro 3.4          Población de 0 a 17 años por grupos de edad, según condición de
+Dirección General de Difusión y Comunicación: Sandra Fernández Gallo
+                                                                                                       pobreza. Primer semestre de 2026..................................................8
+Dirección de Comunicación: Gonzalo Grandis                                         Cuadro 4.1          Incidencia de la pobreza en hogares y personas y sus respectivos
+Coordinación de Producción Gráfica y Editorial: Marcelo Costanzo                                       coeficientes de variación por áreas geográficas. Total 31 aglomerados
+                                                                                                       urbanos. Primer semestre de 2026. ...................................................9
+Este informe técnico fue producido por los equipos de trabajo de:                  Cuadro 4.2          Incidencia de la indigencia en hogares y personas y sus respectivos
+                                                                                                       coeficientes de variación por áreas geográficas. Total 31
+                                                                                                       aglomerados urbanos. Primer semestre de 2026*. ........................10
+Dirección Nacional de Estadísticas de Condiciones de Vida
+                                                                                   Cuadro 5.           Evolución de indicadores seleccionados. Total 31 aglomerados
+Alejandra Clemente                                                                                     urbanos. Primer semestre 2025-primer semestre 2026. ...............11
+
+Dirección de Encuesta Permanente de Hogares
+Estefanía Gretel Blanco                                                            Gráficos
+                                                                                   Gráfico 1.          Resultados del primer semestre de 2026. .......................................5
+                    Esta publicación utiliza una licencia Creative Commons.        Gráfico 2.          Incidencia de pobreza y la indigencia en hogares. Total 31
+                    Se permite su reproducción con atribución de la fuente.                            aglomerados urbanos.
+                                                                                                       Segundo semestre de 2016 a primer semestre de 2026. ................6
+                                                                                   Gráfico 3.          Incidencia de pobreza y la indigencia en personas. Total 31
+Buenos Aires, septiembre de 2026                                                                       aglomerados urbanos.
+                                                                                                       Segundo semestre de 2016 a primer semestre de 2026. ................6
+                                                                                   Gráfico 4.          Incidencia de la pobreza y de la indigencia en los hogares y
+Signos convencionales:                                                                                 variaciones del ingreso total familiar (ITF), la canasta básica
+                                                                                                       alimentaria (CBA) y la canasta básica total (CBT). Total 31
+*      Dato provisorio                                                                                 aglomerados urbanos.
+e
+       Dato estimado por extrapolación, proyección                                                     Primer semestre 2024-primer semestre 2026...............................11
+i      Dato estimado por imputación                                                Gráfico 5.          Incidencia de la pobreza y de la indigencia en las personas y
+u      Dato de calidad inferior al estándar                                                            variaciones del ingreso total familiar (ITF), la canasta básica
+-      Cero absoluto                                                                                   alimentaria (CBA) y la canasta básica total (CBT). Total 31
+.      Dato no registrado                                                                              aglomerados urbanos.
+...    Dato no disponible a la fecha de presentación de los resultados                                 Primer semestre 2024-primer semestre 2026...............................12
+///    Dato que no corresponde presentar
+s      Dato confidencial por aplicación de las reglas del secreto estadístico
+                                                                                   Anexo metodológico. ........................................................................................13
+                                                                                   Metodología general de cálculo de línea de pobreza y línea de indigencia. ..........13
+                         Publicaciones del INDEC                                                       ¿Qué se entiende por línea de indigencia?.....................................13
+    Las publicaciones editadas por el Instituto Nacional de Estadística y Censos                       ¿Qué se entiende por línea de pobreza?........................................14
+    pueden ser consultadas en www.indec.gob.ar y en el Centro Estadístico de                           Canastas regionales......................................................................15
+    Servicios, ubicado en Av. Presidente Julio A. Roca 609 C1067ABB, Ciudad
+    Autónoma de Buenos Aires, Argentina. El horario de atención al público es                          Composición de las canastas básicas alimentarias regionales
+    de 9:30 a 16:00.                                                                                   del adulto equivalente. ..................................................................17
+    También pueden solicitarse al teléfono (54-11) 5031-4632                       Definiciones. .......................................................................................................17
+    Correo electrónico: ces@indec.gob.ar                                           Aspectos metodológicos generales......................................................................17
+    Sitio web: www.indec.gob.ar                 X: @INDECArgentina                                     Características de la muestra........................................................17
+    Facebook: /INDECArgentina                   Instagram: @indecargentina                             Cálculo y ajuste de factores de expansión. ....................................18
+    Spotify: /INDECArgentina
+                                                                                                       Acerca de las proyecciones de población. .....................................20
+    Calendario anual anticipado de informes:
+    http://www.indec.gob.ar/indec/web/Calendario-Fecha-0                           Enlaces. .............................................................................................................20
+
+                                                                                   Política de revisión de los datos.......................................................................20
+
+
+                                                INDECArgentina
+               Condiciones de vida                                                           Buenos Aires, 24 de septiembre de 2026
+
+
+
+Incidencia de la pobreza y la indigencia
+en 31 aglomerados urbanos
+Resumen ejecutivo del primer semestre de 2026
+
+                millones de hogares                            Universo de la                           millones de personas
+                                                            Encuesta Permanente
+                               10,2                             de Hogares                                          30,1
+
+
+
+                               En situación                                                    En situación
+         24,4%                 de pobreza
+                                                             Tamaño promedio del hogar
+                                                                                               de pobreza            32,3%
+                                                                  3,89 miembros
+                                  2,5 millones                                                 9,7 millones de
+                                   de hogares              Ingreso total familiar promedio        personas
+
+                                                                       $922.755
+
+                                                           Canasta básica total promedio
+                                                                    del hogar
+                                                                      $1.440.395
+
+                              Hogares que no llegan
+                                 a cubrir con sus
+                               ingresos la canasta
+                                básica alimentaria
+
+
+                                  En situación               Tamaño promedio del hogar           En situación
+                                 de indigencia                                                  de indigencia
+            5,6%                                                   3,91 miembros                                        7,5%
+                                  0,6 millones                                                  2,2 millones de
+                                   de hogares              Ingreso total familiar promedio         personas
+
+                                                                      $442.443
+
+                                                             Canasta básica alimentaria
+                                                                promedio del hogar
+                                   Hogares que no
+                               llegan a cubrir con sus
+                                                                      $669.098
+                                 ingresos la canasta
+                                     básica total
+
+
+                                   Pobres                                                          Pobres
+                                no indigentes                                                   no indigentes
+           18,8%                                                                                                       24,8%
+                                   1,9 millones                                                 7,5 millones de
+                                   de hogares                                                      personas
+
+
+
+
+                                  Hogares                                                       Personas
+          75,6%                  no pobres                                                      no pobres            67,7%
+
+                                7,7 millones de                                               20,4 millones de
+                                     hogares                                                      personas
+
+
+
+
+Nota: los totales por suma pueden no coincidir por redondeo de las cifras parciales.
+Fuente: INDEC, Encuesta Permanente de Hogares.
+Incidencia de la pobreza y la indigencia
+en 31 aglomerados urbanos
+Principales resultados. Primer semestre de 2026
+Los resultados del primer semestre de 2026 correspondientes al total de aglomerados
+urbanos registraron que:
+
+    Incidencia
+    El porcentaje de hogares por debajo de la línea de pobreza (LP) alcanzó el 24,4%. Dentro de estos
+    hogares reside el 32,3% de las personas. En este conjunto, hay 5,6% de hogares por debajo de la línea de
+    indigencia (LI), que incluyen al 7,5% de las personas. Esto implica que, para el universo de los 31
+    aglomerados urbanos de la EPH, por debajo de la LP hay 2.498.000 hogares que incluyen a 9.729.000
+    personas; y, dentro de ese conjunto, hay 575.000 hogares se encuentran por debajo de la LI, lo que
+    representa 2.249.000 personas indigentes.
+
+    Evolución
+    Con respecto al segundo semestre de 2025, la incidencia de la pobreza registró un aumento en los
+    hogares y en las personas de 3,4 y 4,1 puntos porcentuales (p.p.), respectivamente. La indigencia tuvo un
+    aumento de 0,8 p.p. en los hogares y de 1,2 p.p. en las personas.
+    En los aglomerados de 500.000 y más habitantes se observó un aumento de la pobreza de 3,9 p.p. con
+    respecto al segundo semestre de 2025. Mientras que, en los aglomerados de menos de 500.000, el
+    aumento fue de 4,9 p.p. entre los mismos períodos.
+    No se observan cambios signiﬁcativos respecto al mismo semestre del año anterior.
+    La serie de estos indicadores se puede consultar en el siguiente enlace:
+    http://www.indec.gob.ar/ftp/cuadros/sociedad/cuadros_informe_pobreza_09_26.xls
+
+    Ingresos-canastas
+    Dado que la incidencia de la pobreza y la indigencia resultan de la capacidad de los hogares de acceder
+    a la canasta básica alimentaria (CBA) y a la canasta básica total (CBT) mediante sus ingresos monetarios,
+    se observó, con respecto al semestre anterior:
+        En promedio, el ingreso per cápita familiar aumentó 11,5%.
+        Las canastas regionales promedio aumentaron 21,4% (CBA) y 19,6% (CBT).
+    Los ingresos en el período estudiado aumentaron menos que lo que aumentó la CBT y la CBA, por ende,
+    tanto la tasa de pobreza como la de indigencia también aumentaron con respecto al semestre anterior.1
+
+    Brecha
+    Dado que la brecha de la pobreza es la distancia entre los ingresos y las canastas de los hogares pobres,
+    se observó que:
+       La brecha de la pobreza de los hogares se ubicó en 35,9% (ver cuadro 2.2).
+       El ingreso total familiar promedio de los hogares pobres fue de $922.755, mientras la CBT promedio
+    del mismo grupo de hogares alcanzó $1.440.395 (ver cuadro 2.2).
+       La distancia entre los ingresos de los hogares pobres y la CBT aumentó respecto del segundo semestre 2025.
+
+    Grupos de edad
+    En cuanto a los grupos de edad según condición de pobreza, se destaca que 44,5% de las personas de 0
+    a 14 años forman parte de hogares bajo la línea de pobreza.
+    El porcentaje total de personas bajo la línea de pobreza para los grupos de 15 a 29 años y de 30 a 64 años
+    fue de 36,9% y 28,8%, respectivamente. En la población de 65 años y más, el 14,8% de las personas se
+    ubicó debajo de la línea de pobreza (ver cuadro 3.2).
+
+    Regiones
+    La incidencia de la pobreza en personas fue de 32,1% para Gran Buenos Aires; 36,7% para Cuyo; 41,5%
+    para Noreste; 31,5% para Noroeste; 30,3% para Pampeana y 28,4% para Patagonia (ver cuadro 4.1). La
+    incidencia de la indigencia en personas fue de 8,4% para Gran Buenos Aires; 5,0% para Cuyo; 10,5% para
+    Noreste; 4,3% para Noroeste; 7,2% para Pampeana; y 4,2% para Patagonia.
+
+1
+ Para ampliar la información sobre la evolución de las canastas regionales promedio y los ingresos de los hogares para el total 31 aglomerados urbanos,
+ver el cuadro 5 y los gráficos 4 y 5 de este mismo informe.
+Nota: los totales por suma pueden no coincidir por redondeo de las cifras parciales.
+Fuente: INDEC, Encuesta Permanente de Hogares.
+              Condiciones de vida                                                          Buenos Aires, 24 de septiembre de 2026
+
+
+
+Incidencia de la pobreza y la indigencia en 31 aglomerados
+urbanos
+Primer semestre de 2026
+
+
+Cuadro 1.             Pobreza e indigencia. Total 31 aglomerados urbanos
+
+
+Indicador                                  1° semestre 2024       2° semestre 2024     1° semestre 2025      2° semestre 2025         1° semestre 2026*
+
+
+Pobreza
+   Hogares                                        42,5                   28,6                 24,1                  21,0                     24,4
+     Intervalos de confianza (90%)            [41,4 ; 43,7]          [27,6 ; 29,7]        [23,0 ; 25,3]         [20,0 ; 22,0]            [23,3 ; 25,5]
+   Personas                                       52,9                   38,1                 31,6                  28,2                     32,3
+     Intervalos de confianza (90%)            [51,4 ; 54,5]          [36,3 ; 39,6]        [30,1 ; 33,1]         [26,8 ; 29,7]            [30,8 ; 33,7]
+Indigencia
+   Hogares                                        13,6                      6,4                5,6                   4,8                         5,6
+     Intervalos de confianza (90%)            [12,8 ; 14,3]             [5,8 ; 6,9]        [5,0 ; 6,1]           [4,4 ; 5,3]                 [5,0 ; 6,2]
+   Personas                                       18,1                      8,2                6,9                   6,3                         7,5
+     Intervalos de confianza (90%)            [16,8 ; 19,5]             [7,4 ; 9,0]        [6,1 ; 7,7]           [5,5 ; 7,0]                 [6,6 ; 8,4]
+
+Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+Gráfico 1.            Resultados del primer semestre de 2026*
+
+                           Incidencia de pobreza e indigencia.                          Incidencia de pobreza e indigencia.
+                                        Hogares                                                      Personas
+
+                                                Total de pobres 24,4%                                        Total de pobres 32,3%
+
+                                                 Pobres                                                        Pobres
+                                               indigentes                                                    indigentes
+                                                  5,6%                                                          7,5%
+
+                                                              Pobres no
+                                                              indigentes
+                                                                18,8%                                                           Pobres no
+                                                                                                                                indigentes
+                                                                                                                                  24,8%
+
+
+
+
+                         No pobres                                                      No pobres
+                           75,6%                                                          67,7%
+
+
+                      Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+La población total de los 31 aglomerados es de 30.143.000 y está constituida por 10.246.000 hogares.
+
+
+Los porcentajes presentados en el cuadro 1 indican que, durante el primer semestre de 2026, se encuentran por
+debajo de la LP 2.498.000 hogares, los cuales incluyen a 9.729.000 personas. En conjunto, 575.000 hogares se
+encuentran, a su vez, bajo la LI, e incluyen a 2.249.000 personas indigentes.
+
+
+
+
+                                                                 Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos          5/20
+Gráfico 2.           Incidencia de pobreza y la indigencia en hogares. Total 31 aglomerados urbanos.
+                     Segundo semestre de 2016 a primer semestre de 2026
+60
+
+
+
+50
+
+
+
+40
+
+
+
+30
+
+
+
+20
+
+
+
+10
+
+
+
+ 0
+       2° S   1° S 2° S   1° S 2° S     1° S 2° S    1° S 2° S      1° S 2° S    1° S 2° S    1° S 2° S   1° S 2° S   1° S 2° S 1° S
+      2016       2017        2018          2019         2020           2021         2022         2023        2024        2025   2026*
+
+                                                          Pobreza               Indigencia
+
+
+Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+Gráfico 3.           Incidencia de pobreza y la indigencia en personas. Total 31 aglomerados
+                     urbanos. Segundo semestre de 2016 a primer semestre de 2026
+60
+
+
+
+50
+
+
+
+40
+
+
+
+30
+
+
+
+20
+
+
+
+10
+
+
+
+  0
+       2° S   1° S 2° S    1° S 2° S    1° S 2° S     1° S 2° S     1° S 2° S     1° S 2° S   1° S 2° S   1° S 2° S   1° S 2° S 1° S
+      2016       2017         2018         2019          2020          2021          2022        2023        2024        2025   2026*
+
+                                                          Pobreza               Indigencia
+
+
+Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+                                                               Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos   6/20
+Cuadro 2.1       Brecha de la indigencia. Total 31 aglomerados urbanos
+
+                                                                                                                        1º semestre de 2026*
+
+                  Incidencia de la indigencia en hogares                                                      %                         5,6
+                  Tamaño promedio del hogar indigente en personas                                                                       3,91
+                  Tamaño promedio del hogar indigente en adulto equivalente                                                             3,18
+                  Canasta básica alimentaria promedio del hogar indigente (a)                                  $               669.098
+                  Ingreso total familiar promedio del hogar indigente (b)                                      $               442.443
+                  Brecha monetaria promedio de los hogares indigentes (b-a)                                    $              -226.655
+                  Brecha porcentual promedio de los hogares indigentes (b-a)/a                                %                        33,9
+                 Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+Cuadro 2.2       Brecha de la pobreza. Total 31 aglomerados urbanos
+
+                                                                                                                       1º semestre de 2026*
+
+                  Incidencia de la pobreza en hogares                                                        %                     24,4
+                  Tamaño promedio del hogar pobre en personas                                                                          3,89
+                  Tamaño promedio del hogar pobre en adulto equivalente                                                                3,15
+                  Canasta básica total promedio del hogar pobre (a)                                           $             1.440.395
+                  Ingreso total familiar promedio del hogar pobre (b)                                         $               922.755
+                  Brecha monetaria promedio de los hogares pobres (b-a)                                       $              -517.640
+                  Brecha porcentual promedio de los hogares pobres (b-a)/a                                   %                     35,9
+
+                 Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+En promedio, la distancia entre los ingresos y el valor de la LI de los hogares indigentes fue de $226.655. En términos
+porcentuales, esto implica que sus ingresos en promedio se encuentran 33,9% por debajo de la LI. En el caso de
+los hogares pobres, la distancia entre sus ingresos y el valor de la LP fue de $517.640, lo que implica una brecha de
+35,9%.
+
+
+
+
+                                                                  Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos          7/20
+Cuadro 3.1   Población por condición de pobreza, según grupos de edad. Primer semestre de 2026*
+
+                                                                                           Pobres
+                    Grupos de edad                 Total               Pobres            Pobres no             Total de           No pobres
+                                                                     indigentes          indigentes            pobres
+                                                                                             %
+              Total                                100,0               100,0                100,0               100,0                100,0
+               0-14                                 22,3                32,2                 30,3                30,8                 18,3
+               15-29                                21,7                24,7                 24,9                24,9                 20,3
+               30-64                                43,3                39,4                 38,3                38,6                 45,5
+               65 y más                             12,7                 3,7                  6,4                 5,8                 16,0
+             Nota: la suma de los porcentajes de población puede no coincidir con el porcentaje total, debido a que los valores están redondeados
+             a un decimal.
+             Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+Cuadro 3.2   Población por grupos de edad, según condición de pobreza. Primer semestre de 2026*
+
+                                                                                           Pobres
+                    Grupos de edad                 Total               Pobres            Pobres no             Total de           No pobres
+                                                                     indigentes          indigentes            pobres
+                                                                                             %
+              Total                                100,0                 7,5                24,8                 32,3                67,7
+               0-14                                100,0                10,8                33,7                 44,5                55,5
+               15-29                               100,0                 8,5                28,4                 36,9                63,1
+               30-64                               100,0                 6,8                22,0                 28,8                71,2
+               65 y más                            100,0                 2,2                12,6                 14,8                85,2
+             Nota: la suma de los porcentajes de población puede no coincidir con el porcentaje total, debido a que los valores están redondeados
+             a un decimal.
+             Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+Cuadro 3.3   Población de 0 a 17 años por condición de pobreza, según grupos de edad.
+             Primer semestre de 2026*
+
+                                                                                           Pobres
+                    Grupos de edad                 Total               Pobres            Pobres no             Total de           No pobres
+                                                                     indigentes          indigentes            pobres
+                                                                                             %
+              Total                                100,0               100,0                100,0               100,0                100,0
+               0-5                                  24,2                19,9                 22,2                21,6                 26,4
+               6-11                                 36,9                41,8                 38,1                39,0                 35,3
+               12-17                                38,8                38,3                 39,7                39,4                 38,4
+             Nota: la suma de los porcentajes de población puede no coincidir con el porcentaje total, debido a que los valores están redondeados
+             a un decimal.
+             Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+Cuadro 3.4   Población de 0 a 17 años por grupos de edad, según condición de pobreza.
+             Primer semestre de 2026*
+
+                                                                                           Pobres
+                    Grupos de edad                 Total               Pobres            Pobres no             Total de           No pobres
+                                                                     indigentes          indigentes            pobres
+                                                                                             %
+              Total                                100,0                10,9                34,3                 45,2                54,8
+               0-5                                 100,0                 8,9                31,5                 40,4                59,6
+               6-11                                100,0                12,3                35,4                 47,7                52,3
+               12-17                               100,0                10,7                35,1                 45,8                54,2
+             Nota: la suma de los porcentajes de población puede no coincidir con el porcentaje total, debido a que los valores están redondeados
+             a un decimal.
+             Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+                                                           Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos                8/20
+Se presenta a continuación la proporción de hogares y personas pobres e indigentes relevados por la Encuesta
+Permanente de Hogares (EPH) para cada región estadística, el conjunto de aglomerados de 500.000 y más
+habitantes, el conjunto de aglomerados de menos de 500.000 habitantes y cada uno de los 31 aglomerados
+urbanos.
+
+
+Cuadro 4.1               Incidencia de la pobreza en hogares y personas y sus respectivos coeficientes de variación
+                         por áreas geográficas. Total 31 aglomerados urbanos. Primer semestre de 2026*
+
+
+                                                                           Hogares                                      Personas
+
+                         Área geográfica
+                                                                 Total                    Coeficientes        Total                     Coeficientes
+                                                                             Incidencia                                   Incidencia
+                                                              (en miles)                  de variación     (en miles)                   de variación
+
+
+ Total 31 aglomerados urbanos                                   2.498           24,4            2,7          9.729            32,3           2,7
+   Aglomerados del interior                                     1.142           23,8            2,3          4.508            32,5           2,4
+   Regiones
+    Gran Buenos Aires                                           1.356           24,9            4,5          5.221            32,1           4,6
+      Ciudad Autónoma de Buenos Aires                             112            8,9           15,7            334            11,1          17,2
+      Partidos del GBA                                          1.244           29,7            4,6          4.888            36,9           4,7
+    Cuyo                                                          166           27,3            5,3            694            36,7           5,1
+      Gran Mendoza                                                 96           27,4            7,6            395            36,9           7,4
+      Gran San Juan                                                46           27,4            9,3            207            36,8           8,7
+      Gran San Luis                                                23           26,9            8,8             91            35,7           8,7
+    Noreste                                                       155           31,9            6,1            619            41,5           5,8
+      Corrientes                                                   39           29,5           10,5            163            41,0          10,4
+      Formosa                                                      20           24,4            9,9             80            29,9           9,7
+      Gran Resistencia                                             55           40,3           11,4            209            48,6          10,8
+      Posadas                                                      42           30,2           12,9            168            42,2          12,5
+    Noroeste                                                      205           23,6            4,4            908            31,5           5,0
+      Gran Catamarca                                               22           30,2            9,2             89            37,3           7,1
+      Gran Tucumán-Tafí Viejo                                      62           21,6            6,7            261            27,9           7,3
+      Jujuy-Palpalá                                                24           21,1           12,8            101            27,6          11,4
+      La Rioja                                                     20           26,6            9,8             93            38,4           8,6
+      Salta                                                        44           22,9            7,1            202            29,7           6,7
+      Santiago del Estero-La Banda                                 33           25,6           17,8            163            38,5          19,6
+    Pampeana                                                      528           21,9            3,9          1.959            30,3           4,1
+      Bahía Blanca-Cerri                                           27           20,5           11,4             86            26,6          14,0
+      Concordia                                                    23           43,6            7,2             94            56,2           6,1
+      Gran Córdoba                                                125           21,3            8,1            503            31,1           8,1
+      Gran La Plata                                               102           28,0           11,7            359            37,8          13,0
+      Gran Rosario                                                 90           17,4            8,4            315            23,1           9,4
+      Gran Paraná                                                  26           25,1           11,2             99            34,3          11,2
+      Gran Santa Fe                                                56           29,0           11,8            215            38,6          10,8
+      Mar del Plata                                                39           14,9           15,3            137            20,4          17,7
+      Río Cuarto                                                   11           16,2           12,3             44            23,6          11,2
+      Santa Rosa-Toay                                               9           18,1           13,1             34            25,4          15,5
+      San Nicolás-Villa Constitución                               18           24,7           10,8             72            35,5           9,3
+    Patagonia                                                      88           21,0            6,2            328            28,4           6,6
+      Comodoro Rivadavia-Rada Tilly                                22           25,4           14,6             98            37,2          13,6
+      Neuquén-Plottier                                             19           15,7           14,9             65            19,6          16,1
+      Río Gallegos                                                 10           19,3           16,0             35            25,6          14,8
+      Ushuaia-Río Grande                                           13           19,5           13,6             48            25,9          14,2
+      Rawson-Trelew                                                16           26,9           12,8             54            35,1          14,8
+      Viedma-Carmen de Patagones                                    8           23,6           12,5             29            33,2          12,9
+   Total aglomerados de 500.000 y más habitantes                2.017           24,1            3,2          7.815            31,7           3,3
+   Total aglomerados de menos de 500.000 habitantes               481           25,7            3,0          1.914            35,0           3,2
+Nota: las estimaciones que tengan asociados coeficientes de variación entre el 16% y el 25% deberían ser consideradas con cuidado. Aquellas que tengan
+asociados coeficientes de variación que superen el 25% deberían ser consideradas como no confiables. Los coeficientes de variación se estiman para la
+incidencia de la pobreza e indigencia.
+Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+                                                                  Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos            9/20
+Cuadro 4.2               Incidencia de la indigencia en hogares y personas y sus respectivos coeficientes de
+                         variación por áreas geográficas. Total 31 aglomerados urbanos. Primer semestre de 2026*
+
+
+                                                                           Hogares                                      Personas
+
+                         Área geográfica
+                                                                 Total                    Coeficientes        Total                     Coeficientes
+                                                                             Incidencia                                   Incidencia
+                                                              (en miles)                  de variación     (en miles)                   de variación
+
+
+ Total 31 aglomerados urbanos                                     575            5,6            6,1          2.249             7,5           7,4
+   Aglomerados del interior                                       234            4,9            5,1            889             6,4           5,9
+   Regiones
+    Gran Buenos Aires                                             341            6,2            9,6          1.360             8,4          11,5
+      Ciudad Autónoma de Buenos Aires                              21            1,7           26,2             46             1,5          30,5
+      Partidos del GBA                                            319            7,6           10,0          1.314             9,9          11,7
+    Cuyo                                                           24            4,0           14,6             95             5,0          16,1
+      Gran Mendoza                                                 19            5,4           17,6             78             7,3          18,9
+      Gran San Juan                                                 2            1,4           37,6               9            1,6          39,1
+      Gran San Luis                                                 3            2,9           18,9               8            3,1          21,0
+    Noreste                                                        40            8,3           13,2            157            10,5          13,7
+      Corrientes                                                    9            6,9           19,8             34             8,6          26,9
+      Formosa                                                       3            4,1           32,4             16             5,9          41,9
+      Gran Resistencia                                             19           14,2           21,2             74            17,3          21,6
+      Posadas                                                       9            6,3           31,9             33             8,2          29,9
+    Noroeste                                                       29            3,4            9,3            124             4,3          11,4
+      Gran Catamarca                                                5            6,6           15,7             20             8,3          19,3
+      Gran Tucumán-Tafí Viejo                                      11            3,7           16,0             41             4,4          21,2
+      Jujuy-Palpalá                                                 2            1,5           29,3               5            1,4          36,0
+      La Rioja                                                      2            2,8           30,4             11             4,7          31,8
+      Salta                                                         7            3,5           21,5             30             4,4          24,8
+      Santiago del Estero-La Banda                                  3            2,7           26,5             17             3,9          31,1
+    Pampeana                                                      125            5,2            7,5            465             7,2           9,1
+      Bahía Blanca-Cerri                                            6            4,5           26,2             20             6,2          29,7
+      Concordia                                                     5            9,7           11,6             21            12,7          11,9
+      Gran Córdoba                                                 28            4,8           15,8            113             7,0          17,9
+      Gran La Plata                                                21            5,8           24,2             87             9,2          29,3
+      Gran Rosario                                                 26            5,1           16,6             84             6,2          20,2
+      Gran Paraná                                                   5            4,7           23,0             17             6,0          24,9
+      Gran Santa Fe                                                13            6,9           24,4             54             9,8          26,2
+      Mar del Plata                                                11            4,3           25,1             33             5,0          31,3
+      Río Cuarto                                                    2            2,4           27,7               6            3,2          30,1
+      Santa Rosa-Toay                                               2            3,8           24,1               7            4,9          26,4
+      San Nicolás-Villa Constitución                                5            7,0           16,7             21            10,3          17,9
+    Patagonia                                                      15            3,6           12,2             48             4,2          14,6
+      Comodoro Rivadavia-Rada Tilly                                 3            3,2           32,1             10             3,7          38,4
+      Neuquén-Plottier                                              4            2,9           24,2               9            2,8          31,6
+      Río Gallegos                                                  1            1,8           47,4               4            2,6          49,8
+      Ushuaia-Río Grande                                            2            2,6           29,7               6            3,1          35,3
+      Rawson-Trelew                                                 5            8,0           22,3             15            10,0          24,4
+      Viedma-Carmen de Patagones                                    1            3,8           29,6               5            5,2          35,6
+   Total aglomerados de 500.000 y más habitantes                  480            5,7            7,1          1.891             7,7           8,6
+   Total aglomerados de menos de 500.000 habitantes                95            5,1            6,8            358             6,5           7,3
+Nota: las estimaciones que tengan asociados coeficientes de variación entre el 16% y el 25% deberían ser consideradas con cuidado. Aquellas que tengan
+asociados coeficientes de variación que superen el 25% deberían ser consideradas como no confiables. Los coeficientes de variación se estiman para la
+incidencia de la pobreza e indigencia.
+Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+                                                                  Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos           10/20
+                 A continuación, se presentan indicadores semestrales seleccionados para el total de los aglomerados urbanos. El
+                 objetivo de estos es contextualizar y facilitar la lectura de los resultados principales, ya que contienen información
+                 sobre la evolución de las canastas, los ingresos de los hogares y las tasas de empleo.
+
+
+
+                 Cuadro 5.              Evolución de indicadores seleccionados. Total 31 aglometrados urbanos.
+                                        Primer semestre 2025-primer semestre 2026
+
+                                                                                                                                                              Variaciones %
+                                                                                                        1° semestre    2° semestre      1° semestre         con        con respecto
+                                                                                                            2025           2025            2026*        respecto al       a igual
+                                                                                                                                                         semestre      semestre del
+                                                                                                                                                          anterior     año anterior
+      Canastas         Canasta básica alimentaria                                                         148.644,47      166.272,07       201.772,49      21,4               35,7
+      regionales                                                                                $
+      promedio (1)     Canasta básica total                                                               337.082,50      375.266,65       448.682,36      19,6               33,1
+
+
+      Ingresos
+                                    Suma del ingreso total familiar                                     16.116.172     19.066.986       21.347.287         12,0               32,5
+                                    Suma de los ingresos laborales                           Millones   12.598.811     15.003.512       16.621.381         10,8               31,9
+                       Hogares
+                                    Suma de los ingresos no laborales                         de $       3.517.361      4.063.474         4.725.906        16,3               34,4
+                                    Suma del ingreso total familiar del estrato bajo   (2)
+                                                                                                         3.355.369      4.077.653         4.467.381          9,6              33,1
+                                    Media del ingreso per cápita familiar                                 541.948         637.955          711.368         11,5               31,3
+                       Personas     Media del ingreso por adulto equivalente                    $         665.222         785.678          874.462         11,3               31,5
+                                    Media del ingreso de la ocupación principal                           866.875       1.006.376         1.116.874        11,0               28,8
+      Tasa de empleo                                                                            %              44,5            45,2             44,9        -0,7               0,9
+  Por adulto equivalente.
+(1)
+
+  El estrato bajo está conformado por los deciles 1 a 4 (ver “Definiciones” en el Anexo metodológico del presente informe técnico).
+(2)
+
+Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+                 Los cuadros con la evolución de indicadores seleccionados por región y aglomerados se encuentran en el siguiente
+                 enlace: http://www.indec.gob.ar/ftp/cuadros/sociedad/cuadros_informe_pobreza_09_26.xls.
+
+
+
+
+                                                                                              Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos      11/20
+ Gráfico 4.             Incidencia de la pobreza y de la indigencia en los hogares y variaciones del ingreso
+                        total familiar (ITF), la canasta básica alimentaria (CBA) y la canasta básica total
+                        (CBT). Total 31 aglomerados urbanos.
+                        Primer semestre 2024-primer semestre 2026
+
+             60,0
+                                                                                                                                                            120,0
+
+             50,0
+                          42,5                                                                                                                              100,0
+
+             40,0
+                                                                                                                                                            80,0
+Porcentaje
+
+                                                                                                                                                                     Variaciones
+                                                         28,6
+             30,0
+  Tasas                                                                           24,1                                                         24,4         60,0
+                           28,9
+                                                                                                                  21,0
+             20,0
+                                                         22,2                                                                                               40,0
+                                                                                  18,5
+
+                                                                                                                  16,2                          18,8
+             10,0                                                                                                                                           20,0
+                           13,6
+                                                          6,4                      5,6
+                                                                                                                      4,8                       5,6
+              0,0                                                                                                                                           0,0
+                    1° semestre 2024               2° semestre 2024       1° semestre 2025                2° semestre 2025            1° semestre 2026*
+                    Total pobres indigentes (hogares)                 Total pobres no indigentes (hogares)                    Total pobres (hogares)
+                    Variación de la suma del ITF                      Variación de la suma del ITF del estrato bajo           Variación de la CBT
+                    Variación de la CBA
+
+
+  Nota: el estrato bajo está conformado por los deciles 1 a 4 (ver “Definiciones” en el Anexo metodológico del presente informe técnico). Las variaciones de
+  las canastas corresponden a promedios regionales.
+  Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+  Gráfico 5.             Incidencia de la pobreza y de la indigencia en las personas y variaciones del
+                         ingreso total familiar (ITF), la canasta básica alimentaria (CBA) y la canasta
+                         básica total (CBT). Total 31 aglomerados urbanos.
+                         Primer semestre 2024-primer semestre 2026
+             60,0
+                          52,9                                                                                                                               120,0
+
+             50,0
+                                                                                                                                                             100,0
+
+             40,0
+                                                         38,1
+                                                                                                                                                             80,0
+                          34,8                                                    31,6                                                          32,3
+
+
+                                                                                                                                                                       Variaciones
+Porcentaje                                                                                                        28,2
+             30,0
+  Tasas
+                                                                                                                                                             60,0
+                                                                                   24,7
+                                                         29,9
+             20,0
+                                                                                                                                                    24,8     40,0
+                                                                                                                      21,9
+
+             10,0         18,1                                                                                                                               20,0
+                                                          8,2                      6,9                                6,3                           7,5
+              0,0                                                                                                                                            0,0
+                    1° semestre 2024               2° semestre 2024        1° semestre 2025                2° semestre 2025             1° semestre 2026*
+
+                        Pobres indigentes (personas)                     Pobres no indigentes (personas)                        Total pobres (personas)
+                        Variación de la suma del ITF                     Variación de la suma del ITF del estrato bajo          Variación de la CBT
+                        Variación de la CBA
+
+
+  Nota: el estrato bajo está conformado por los deciles 1 a 4 (ver “Definiciones” en el Anexo metodológico del presente informe técnico). Las variaciones de
+  las canastas corresponden a promedios regionales.
+  Fuente: INDEC, Dirección de Encuesta Permanente de Hogares.
+
+
+
+
+                                                                          Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos                       12/20
+Anexo metodológico
+
+La EPH es un programa nacional de producción sistemática y permanente de indicadores sociales que lleva a
+cabo el INDEC conjuntamente con las direcciones provinciales de estadística (DPE). Tiene por objeto relevar las
+características sociodemográficas y socioeconómicas de la población.
+
+
+Con relación a la medición de la pobreza, es necesario tener presente que la información que se difunde está producida
+con la metodología de cálculo de la pobreza que se ha estado utilizando desde 1992, es decir, con una valorización
+de la canasta básica alimentaria (CBA) y de la canasta básica total (CBT) comparada con los ingresos de los hogares
+relevados por la EPH. Desde 2016, la medición introdujo la actualización de la línea de indigencia y de pobreza con
+base en la composición de la CBA resultante de la Encuesta Nacional de Gastos de los Hogares (ENGHo) 1996/97. Dicha
+composición fue validada, en términos de la estructura alimentaria, con el patrón de consumo que surge de la ENGHo
+2004/05. La relación entre la CBA y la CBT se deriva, a su vez, de esta última (2004/05).1
+
+
+Metodología general de cálculo de línea de pobreza y línea de indigencia
+
+¿Qué se entiende por línea de indigencia?
+
+El concepto de línea de indigencia (LI) procura establecer si los hogares cuentan con ingresos suficientes como para
+cubrir una canasta de alimentos capaz de satisfacer un umbral mínimo de necesidades energéticas y proteicas. De
+esta manera, los hogares que no superan ese umbral o línea son considerados indigentes.
+El procedimiento parte de utilizar una canasta básica de alimentos de costo mínimo (CBA) determinada en función
+de los hábitos de consumo de la población definida como población de referencia, con base en los resultados de la
+Encuesta de Gastos e Ingresos de los Hogares (ENGHo) de 1996/97 validada con la ENGHo de 2004/05.
+Asimismo, el procedimiento en uso toma en cuenta los requerimientos normativos kilocalóricos y proteicos
+imprescindibles para esa población (según “Composición de las canastas básicas alimentarias regionales del
+adulto equivalente” presentadas más adelante).
+Una vez establecidos los componentes de la CBA, se los valoriza con los precios relevados por el Índice de precios
+al consumidor (IPC) para cada período de medición.
+Dado que los requerimientos nutricionales son diferentes según la edad, el sexo y la actividad de las personas, es
+necesario hacer una adecuación que refleje las características de cada individuo en relación con esas variables,
+para lo cual se toma como unidad de referencia al varón adulto, de 30 a 60 años, con actividad moderada. A esta
+unidad de referencia se la denomina “adulto equivalente” y se le asigna un valor igual a uno.
+
+
+La tabla de equivalencias de las necesidades energéticas y unidades consumidoras, en términos de adulto
+equivalente, es la siguiente:
+
+                                         Edad                          Mujeres                         Varones
+                                    Menor de 1 año                       0,35                           0,35
+                                        1 año                            0,37                           0,37
+                                        2 años                           0,46                           0,46
+                                        3 años                           0,51                           0,51
+                                        4 años                           0,55                           0,55
+                                        5 años                           0,60                           0,60
+                                        6 años                           0,64                           0,64
+                                        7 años                           0,66                           0,66
+                                        8 años                           0,68                           0,68
+                                        9 años                           0,69                           0,69
+                                       10 años                           0,70                           0,79
+                                       11 años                           0,72                           0,82
+                                       12 años                           0,74                           0,85
+                                       13 años                           0,76                           0,90
+                                       14 años                           0,76                           0,96
+                                       15 años                           0,77                           1,00
+                                       16 años                           0,77                           1,03
+                                       17 años                           0,77                           1,04
+                                     18 a 29 años                        0,76                           1,02
+                                     30 a 45 años                        0,77                           1,00
+                                     46 a 60 años                        0,76                           1,00
+                                     61 a 75 años                        0,67                           0,83
+                                    Más de 75 años                       0,63                           0,74
+                             Fuente: INDEC, “Actualización de la metodología oficial de cálculo de las líneas de pobreza”,
+                             presentado en el Taller Regional de Medición de la Pobreza, Buenos Aires, noviembre de 2003.
+1
+ Para más detalle: INDEC (2016). La medición de la pobreza y la indigencia en la Argentina [Metodología INDEC n° 22]. http://www.indec.gob.ar/ftp/
+cuadros/sociedad/EPH_metodologia_22_pobreza.pdf
+
+                                                                   Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos          13/20
+Se presentan a continuación dos ejemplos de cómo se determina la cantidad de unidades de referencia (adultos
+equivalentes) para cada caso.
+
+
+Ejemplos
+
+
+– Un hogar de tres miembros, compuesto por una mujer de 35 años, su hijo de 18 y su madre de 61:
+
+
+La mujer equivale a 0,77 de adulto equivalente.
+
+
+El hijo equivale a 1,02 de adulto equivalente.
+
+
+La madre equivale a 0,67 de adulto equivalente.
+
+
+En total, el hogar suma 2,46 unidades de referencia o adultos equivalentes.
+
+
+– Otro hogar de cinco miembros, constituido por una pareja (ambos de cuarenta años) y tres hijos de cinco, tres
+y un año cumplidos:
+
+
+El varón equivale a 1,00 adulto equivalente.
+
+
+La mujer equivale a 0,77 de adulto equivalente.
+
+
+El hijo de 5 años equivale a 0,60 de adulto equivalente.
+
+
+El hijo de 3 años equivale a 0,51 de adulto equivalente.
+
+
+El hijo de 1 año equivale a 0,37 de adulto equivalente.
+
+
+En total, el hogar suma 3,25 unidades de referencia o adultos equivalentes.
+
+
+La composición de cada hogar en adultos equivalentes determina un valor de CBA específico para ese hogar.
+Por ejemplo, si en un mes el valor de la CBA para el adulto equivalente fue de $212.948,52 (valor de referencia de
+la CBA para la región GBA en marzo de 2026) el valor de la CBA para el caso del primer hogar surge de multiplicar
+el costo de la CBA para el adulto equivalente por la cantidad de adultos equivalentes que conforman el hogar,
+es decir: $212.948,52 * 2,46 = $523.853,36. La CBA del segundo hogar vale $212.948,52 * 3,25 = $692.082,69. Por
+último, se compara este valor específico de cada CBA con el ingreso total familiar del hogar. Si el ingreso es
+inferior al valor de la canasta, se considera que el hogar y los individuos que lo componen se hallan por debajo
+de la “línea de indigencia” ese mes.
+
+
+Siguiendo con los ejemplos, si ese mes el primer hogar tuviera un ingreso total familiar de $500.000, sería
+considerado indigente; pero no lo sería si el ingreso fuera de $540.000 (valor superior a $523.853,36, que es
+el valor de la CBA para ese hogar). En el caso del segundo hogar, si su ingreso total familiar del mes fuera de
+$510.000 (valor inferior a $692.082,69), sería considerado indigente. Si ambos hogares tuvieran un ingreso total
+familiar de $650.000, solo el segundo sería considerado indigente, ya que con el mismo ingreso debe alimentar
+a más personas (en rigor, a más adultos equivalentes).
+
+
+¿Qué se entiende por línea de pobreza?
+
+La medición de la pobreza con el método de la línea de pobreza (LP) consiste en establecer, a partir de los
+ingresos de los hogares, si estos tienen capacidad de satisfacer –por medio de la compra de bienes y servicios–
+un conjunto de necesidades alimentarias y no alimentarias consideradas esenciales.
+
+
+Para calcular la línea de pobreza es necesario contar con el valor de la CBA y ampliarlo con la inclusión de
+bienes y servicios no alimentarios (vestimenta, transporte, educación, salud, etc.), con el fin de obtener el valor
+de la CBT.
+
+
+
+
+                                                    Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos   14/20
+Para ampliar o expandir el valor de la CBA se utiliza el coeficiente de Engel (CdE), definido como la relación
+entre los gastos alimentarios y los gastos totales observados en la población de referencia (en este caso, la que
+surge de la ENGHo 2004-05).
+
+
+                           Coeficiente de Engel = Gastos alimentarios / Gastos totales
+
+
+En cada período, el CdE se actualiza por el cambio en el precio relativo de los alimentos respecto de los demás
+bienes y servicios. De esta forma, se actualizan los montos de gasto alimentario y total del período base,
+considerando la misma relación de cantidades de consumo. Para esto se toman los precios relevados por el IPC,
+tomando en cuenta la estructura de gastos específica de la población de referencia. Para expandir el valor de la
+CBA, se multiplica su valor por la inversa del coeficiente de Engel.
+
+
+                                   CBT = CBA * inversa del coeficiente de Engel
+
+
+Por ejemplo, si en un mes el valor de la inversa del coeficiente de Engel fue de 2,18 y la CBA de $212.948,52 (valor
+de referencia de la CBA para la región GBA en marzo de 2026) entonces: $212.948,52 (CBA) * 2,18 (inversa del CdE)
+= $464.227,77 (la CBT para un adulto equivalente). Por último, se compara el valor de la CBT de cada hogar con
+el ingreso total familiar de dicho hogar. Si el ingreso es inferior al valor de la CBT, se considera que el hogar y los
+individuos que lo componen se hallan por debajo de la línea de pobreza; de lo contrario, se encontrarán en el grupo
+de hogares y personas no pobres.
+
+
+Retomando los ejemplos, la línea de pobreza correspondiente al primer hogar (es decir, su CBT) es de $1.142.000,31,
+por lo que el hogar y sus integrantes serán considerados pobres si ese mes su ingreso total familiar es inferior a ese
+valor. En el caso del segundo hogar la línea de pobreza corresponde al valor de $1.508.740,25.
+
+
+Obsérvese que si ambos hogares tuvieran un mismo ingreso total familiar de $1.300.000, solo el segundo sería
+considerado como pobre, o ubicado por debajo de la línea de pobreza, ya que con los mismos recursos debe
+satisfacer las necesidades de más personas (o, más precisamente, de más adultos equivalentes).
+
+
+Canastas regionales
+
+En este informe también se incorpora otro desarrollo metodológico consistente en la composición y valorización
+de la CBA para cada una de las regiones, de acuerdo con los hábitos de consumo específicos relevados en la
+ENGHo.
+
+
+Los valores de la CBA y de la CBT para el adulto equivalente y de la inversa del coeficiente de Engel utilizados
+se presentan a continuación:
+
+
+
+
+                                                     Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos   15/20
+Serie canasta básica alimentaria. Línea de indigencia
+
+                                                                                 2026
+              Región
+                                       Enero      Febrero             Marzo                Abril         Mayo             Junio
+                                                                                 Pesos
+  Gran Buenos Aires                 201.938,62   208.442,85         212.948,52           215.227,62   220.467,99       223.253,29
+  Cuyo                              180.246,53   185.489,02         188.757,68           190.352,65   194.885,21       197.727,65
+  Noreste                           181.330,65   187.227,79         191.384,50           192.915,65   196.837,12       199.189,33
+  Noroeste                          174.760,29   180.159,10         184.144,78           185.752,39   190.394,84       193.127,00
+  Pampeana                          200.393,68   206.100,59         209.702,44           211.347,00   216.667,64       219.465,16
+  Patagonia                         209.549,23   216.344,88         219.926,67           221.731,88   226.400,04       229.219,42
+
+
+
+
+Serie inversa del coeficiente de Engel
+
+                                                                                 2026
+              Región
+                                       Enero      Febrero             Marzo                Abril         Mayo             Junio
+
+
+  Gran Buenos Aires                     2,18        2,17               2,18                 2,21         2,20              2,22
+  Cuyo                                  2,32        2,31               2,32                 2,35         2,35              2,36
+  Noreste                               2,04        2,03               2,04                 2,07         2,06              2,07
+  Noroeste                              2,02        2,02               2,02                 2,05         2,05              2,06
+  Pampeana                              2,18        2,17               2,18                 2,21         2,20              2,22
+  Patagonia                             2,47        2,47               2,47                 2,51         2,50              2,52
+
+
+
+
+Serie canasta básica total. Línea de pobreza
+
+                                                                                 2026
+              Región
+                                       Enero      Febrero             Marzo                 Abril        Mayo             Junio
+                                                                                 Pesos
+  Gran Buenos Aires                 440.226,19   452.320,98         464.227,77           475.653,04   485.029,58       495.622,30
+  Cuyo                              418.171,95   428.479,64         437.917,82           447.328,73   457.980,24       466.637,25
+  Noreste                           369.914,53   380.072,41         390.424,38           399.335,40   405.484,47       412.321,91
+  Noroeste                          353.015,79   363.921,38         371.972,46           380.792,40   390.309,42       397.841,62
+  Pampeana                          436.858,22   447.238,28         457.151,32           467.076,87   476.668,81       487.212,66
+  Patagonia                         517.586,60   534.371,85         543.218,87           556.547,02   566.000,10       577.632,94
+
+Fuente: INDEC, Encuesta Permanente de Hogares.
+
+
+
+
+                                                           Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos     16/20
+Composición de las canastas básicas alimentarias regionales del adulto equivalente
+
+En la elaboración de la CBA, se consideraron los hábitos alimentarios de cada región y se conformaron distintas
+canastas regionales para cada una de ellas. Estas canastas son las siguientes:
+
+
+
+Composición de las CBA regionales (mensuales)
+Gramos o centímetros cúbicos por mes, por unidad de consumo o adulto equivalente
+
+                                                                                             Regiones
+                                           Gran Buenos
+                                                               Pampeana           Noroeste              Noreste           Cuyo            Patagonia
+                                              Aires
+
+
+  Harinas y cereales                          11.610            11.880             12.300               12.090           12.300             11.700
+  Carnes y fiambres                            6.600             6.810              6.720                6.630            6.660              6.780
+  Aceites y grasas                             1.260             1.170              1.110                1.200            1.140              1.200
+  Lácteos y huevos                            10.170             9.210              8.040                5.820            6.390              5.580
+  Frutas                                       4.950             5.880              6.030                6.180            5.970              6.120
+  Verduras                                    12.750            13.830             13.710               13.230           13.470             13.770
+  Legumbres                                      240               240                240                  300              240                240
+  Azúcar y dulces                              1.560             1.500              1.500                1.440            1.500              1.470
+  Bebidas                                      4.530             4.980              5.610                4.500            5.340              4.020
+  Infusiones                                     540               660                420                  810              450                510
+  Condimentos y otros productos                  300               330                270                  300              330                360
+Fuente: INDEC, “Actualización de la metodología oficial de cálculo de las líneas de pobreza”, presentado en el Taller Regional de Medición de la Pobreza,
+Buenos Aires, noviembre de 2003.
+
+
+
+Definiciones
+
+Ingreso total familiar: se obtiene sumando el ingreso individual de todas las personas que integran el hogar, como
+así también los montos correspondientes al hogar que no son atribuibles a un miembro en particular.
+Ingreso per cápita familiar: se obtiene dividiendo el ingreso total familiar por la totalidad de los componentes
+del hogar.
+Ingreso por adulto equivalente: se obtiene dividiendo el ingreso total familiar por el coeficiente de adulto
+equivalente total del hogar (ver “Metodología general de cálculo de línea de pobreza y línea de indigencia” en el
+presente Anexo metodológico).
+Estrato bajo: comprende los deciles 1 a 4 de hogares según el ingreso per cápita familiar.
+Tasa de empleo: se calcula como porcentaje entre la población ocupada y la población total de referencia
+(ver “Definiciones básicas” en el Anexo metodológico del informe técnico Mercado de trabajo. Tasas e
+indicadores socioeconómicos).
+
+
+Aspectos metodológicos generales
+
+Características de la muestra
+
+La EPH se basa en una muestra probabilística, estratificada, en dos etapas de selección. Dicha muestra está
+distribuida a lo largo del período respecto del cual se brinda información (el trimestre). El relevamiento se
+desarrolla a lo largo de todo el año.
+El tamaño de muestra de este semestre es de 52.895 viviendas. Como en toda encuesta por muestreo, los
+resultados obtenidos son valores que estiman el verdadero valor de cada tasa y tienen asociado un error, cuya
+cuantía también se estima, lo que permite conocer la confiabilidad de las estimaciones. Estos resultados indican
+el nivel probable alcanzado por cada tasa a partir de la muestra, admitiéndose oscilaciones de este nivel, en más
+y en menos, con un grado de confianza conocido.
+La encuesta produce estimaciones trimestrales y, en este caso, semestrales válidas para:
+                           • Cada uno de los 31 aglomerados urbanos.
+                           • Total de 31 aglomerados agrupados.
+                           • Aglomerados del interior: todos los aglomerados excluido el aglomerado Gran Buenos Aires.
+
+
+
+
+                                                                    Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos               17/20
+                     • Conjunto de aglomerados agrupados en 6 regiones estadísticas:
+                           - Región Gran Buenos Aires: integrada por Ciudad Autónoma de Buenos Aires y
+                            Partidos del Gran Buenos Aires.
+                           - Región Cuyo: integrada por Gran Mendoza, Gran San Juan y Gran San Luis.
+                           - Región Noreste (NEA): integrada por Corrientes, Formosa, Gran Resistencia y Posadas.
+                           - Región Noroeste (NOA): integrada por Gran Catamarca, Gran Tucumán-Tafí Viejo, Jujuy-
+                            Palpalá, La Rioja, Salta y Santiago del Estero-La Banda.
+                           - Región Pampeana: integrada por Bahía Blanca-Cerri, Concordia, Gran Córdoba, Gran
+                            La Plata, Gran Rosario, Gran Paraná, Gran Santa Fe, Mar del Plata, Río Cuarto, San
+                            Nicolás-Villa Constitución y Santa Rosa-Toay.
+                           - Región Patagonia: integrada por Comodoro Rivadavia-Rada Tilly, Neuquén-Plottier,
+                            Rawson-Trelew, Río Gallegos, Ushuaia-Río Grande y Viedma-Carmen de Patagones.
+                      • Conjunto de aglomerados con 500.000 y más habitantes: Gran Buenos Aires, Gran
+                      Córdoba, Gran La Plata, Mar del Plata, Gran Mendoza, Gran Rosario, Gran Tucumán-Tafí
+                      Viejo, Salta, Santa Fe y Gran San Juan.
+                      • Conjunto de aglomerados con menos de 500.000 habitantes: Bahía Blanca-Cerri, Gran
+                      Paraná, Posadas, Gran Resistencia, Comodoro Rivadavia-Rada Tilly, Corrientes, Concordia,
+                      Formosa, Neuquén-Plottier, Santiago del Estero-La Banda, Jujuy-Palpalá, Río Gallegos,
+                      Gran Catamarca, La Rioja, Gran San Luis, Santa Rosa-Toay, Ushuaia-Río Grande, Río Cuarto,
+                      San Nicolás-Villa Constitución, Rawson-Trelew y Viedma-Carmen de Patagones.
+
+
+Cálculo y ajuste de factores de expansión
+
+Los censos de población constituyen el marco de referencia para las encuestas a hogares. A partir del Censo
+Nacional de Población, Hogares y Viviendas 2010, se seleccionó una muestra de áreas geográficas, según
+el fraccionamiento territorial y cartográfico del Censo. Ese conjunto de áreas seleccionadas, siguiendo
+procedimientos probabilísticos, constituye una muestra maestra, que se denominó Muestra Maestra Urbana de
+Viviendas de la República Argentina (MMUVRA). Las áreas geográficas que la componen son, en general, radios
+censales o agrupamientos de radios censales.
+
+
+La MMUVRA es el marco del que se seleccionan las muestras para las encuestas a hogares durante todo el período
+intercensal. La cantidad de áreas que se seleccionan para los 31 aglomerados urbanos de la EPH permite diseñar
+muestras cuyos dominios de estimación sean las poblaciones urbanas de esos aglomerados. Al determinar la
+cantidad de áreas a seleccionar se tienen en cuenta los niveles de precisión requeridos para poder construir series
+de la tasa de desempleo.
+
+
+Para cada una de las áreas seleccionadas, se construyó un listado exhaustivo de las viviendas particulares, es decir,
+de las unidades de selección de la etapa final del muestreo de la EPH. Las muestras de viviendas a encuestar cada
+trimestre en cada aglomerado EPH se seleccionan de los listados de viviendas de las áreas de la MMUVRA.
+
+
+Selección de las áreas de la MMUVRA en los aglomerados EPH
+
+Las áreas son las unidades de muestreo en esta segunda etapa. Son radios censales o agrupamientos de radios
+para asegurar un número mínimo de viviendas en las áreas (200 viviendas). El método por el que se seleccionan
+es el del muestreo estratificado con probabilidad de selección proporcional a la cantidad de viviendas particulares
+del área (PPS).
+
+
+Selección de las viviendas en las áreas seleccionadas
+
+En la tercera etapa, se seleccionan las viviendas a encuestar entre las viviendas particulares listadas en cada
+área, mediante el muestreo sistemático de conglomerados de viviendas contiguas (dos o tres conglomerados,
+según el aglomerado). Los listados de viviendas se ordenan geográficamente previamente a la selección, lo que
+constituye una estratificación geográfica implícita.
+
+
+
+
+                                                    Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos   18/20
+Ponderación de la muestra de la EPH
+
+Como en la mayoría de las encuestas probabilísticas, el cálculo de los factores de expansión se realiza en las
+siguientes etapas:
+
+
+- cálculo de los factores de expansión de diseño
+
+
+- ajuste de los factores utilizando proyecciones de población
+
+
+Dado que en cada aglomerado la muestra EPH tiene un diseño bietápico, el factor de expansión de diseño de una
+vivienda i, perteneciente a un área k, en un aglomerado h, será:
+
+
+Fhi = F1hk * F2hki
+
+
+donde F1hk es el factor de expansión del área k dentro del aglomerado h, y F2hki es el factor de expansión de la
+vivienda i dentro del área k, en el aglomerado h.
+
+
+Una vez finalizado el relevamiento trimestral, se ajustan los factores de diseño para realizar las correcciones por
+no respuesta (no respuesta a nivel de hogares, o sea, los hogares que no aceptan ser encuestados o, por algún
+motivo, no pueden ser encuestados).
+
+
+Este ajuste es una simple reponderación a nivel de estrato de selección –o de agrupamiento de estratos
+de selección, en caso de haber pocas áreas en alguno de ellos, en algún aglomerado–, multiplicando por un
+factor de corrección por no respuesta FCNRhr, que depende del aglomerado h y el estrato de reponderación r
+correspondiente.
+
+
+FCNRhr = VEhr / VRhr
+
+
+Siendo:
+
+
+VEhr las viviendas habitadas en el estrato de reponderación r del aglomerado h,
+
+
+VRhr las viviendas con algún hogar que haya respondido la encuesta, en el estrato de reponderación correspondiente
+del aglomerado h.
+
+
+El factor final de diseño, corregido por no respuesta, en un área k de un aglomerado h, es entonces:
+
+
+Dhk = FCNRhk . Fhk
+
+
+Finalmente, se realiza un ajuste de los factores utilizando las proyecciones de población que provee la Dirección
+Nacional de Estadísticas Poblacionales.
+
+
+Cálculo de coeficientes de variación y errores estándar
+
+Al analizar las estimaciones provenientes de una muestra, se debe tener presente que estas están afectadas por
+el llamado error muestral y que es importante conocer aproximadamente la magnitud de esos errores. Una
+medida de estos errores está dada por el desvío estándar (DS).
+
+
+Con el desvío estándar, el usuario puede construir un intervalo numérico que tiene un determinado nivel de
+confianza, medido en términos de probabilidad, de contener el valor verdadero que se desea estimar.
+
+
+La teoría del muestreo indica que, con una confianza del 90%, el intervalo comprendido entre la estimación
+menos 1,64 veces el desvío estándar y la estimación más 1,64 veces el desvío estándar contiene el valor verdadero
+que se desea estimar.
+
+
+
+
+                                                    Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos   19/20
+Es por eso que a este intervalo se lo denomina “intervalo de confianza del 90%”.
+
+
+Cabe aclarar que se pueden construir otros intervalos de confianza:
+
+
+Estimación +/- 1 vez el desvío estándar = intervalo de confianza del 67%
+
+
+Estimación +/- 2 veces el desvío estándar = intervalo de confianza del 95%
+
+
+Estimación +/- 3 veces el desvío estándar = intervalo de confianza del 99%
+
+
+
+Además, con el desvío estándar se puede calcular el coeficiente de variación (CV), efectuando el cociente entre el
+desvío estándar de una estimación y esa estimación:
+
+
+CV = DS / Estimación
+
+
+El coeficiente de variación brinda una idea de la precisión de la estimación, o sea, la relación entre el desvío
+estándar y el valor a estimar. Cuanto más pequeño es el coeficiente de variación, más precisa es la estimación.
+Si bien corresponde al usuario determinar si un dato con cierto coeficiente de variación le es útil o no para su
+objetivo, de acuerdo con el grado de precisión requerido, se advierte que cifras con coeficiente de variación
+superiores al 16% deben ser tratadas con cautela.
+
+
+Aquellas estimaciones que tengan asociados coeficientes de variación entre el 16% y el 25% deberían ser
+consideradas con cuidado, ya que la precisión es baja. Asimismo, las estimaciones que tengan asociados
+coeficientes de variación que superen el 25% deberían ser consideradas como no confiables.
+
+
+Acerca de las proyecciones de población
+
+Las estimaciones de población residente en viviendas particulares de los aglomerados que cubre la Encuesta
+Permanente de Hogares (EPH) han sido elaboradas ajustándolas a las proyecciones de población nacional y
+provinciales obtenidas a partir del Censo Nacional de Población, Hogares y Viviendas 2010. Las estimaciones de
+población de los aglomerados EPH se ajustan a las áreas correspondientes a los dominios que conforman la
+actual MMUVRA para dichos aglomerados
+
+
+Enlaces
+
+Desde aquí se pueden descargar los cuadros del informe técnico Incidencia de la pobreza y de la indigencia
+en 31 aglomerados urbanos. Primer semestre de 2026:
+http://www.indec.gob.ar/ftp/cuadros/sociedad/cuadros_informe_pobreza_09_26.xls
+
+
+Las estimaciones de las tasas de pobreza e indigencia en 31 aglomerados urbanos y según grupos de edad,
+y sus respectivos coeficientes de variación e intervalos de confianza al 90%, se encuentran disponibles en:
+https://www.indec.gob.ar/ftp/cuadros/sociedad/coeficientes_variacion_pobreza_09_26.xlsx
+
+
+Política de revisión de los datos
+
+La práctica de revisión del INDEC sigue criterios generales en línea con los estándares definidos sobre la materia en
+el código de buenas prácticas de las estadísticas oficiales.
+
+
+Los resultados semestrales presentados en este informe tienen carácter provisorio hasta 60 días posteriores a la
+publicación definitiva de la base usuaria.
+
+
+
+
+                                                     Incidencia de la pobreza y la indigencia en 31 aglomerados urbanos   20/20
+

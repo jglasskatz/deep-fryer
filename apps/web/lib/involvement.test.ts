@@ -30,6 +30,11 @@ describe('groupListingsByDimension', () => {
     expect(grouped.general).toEqual([general]);
   });
 
+  it('uses supplied actual portrait order without mapping heat to ozone', () => {
+    const heat=listing('Cooling center',['extreme-heat']);
+    expect(groupListingsByDimension([heat,listing('Old ozone',['ozone-depletion'])],null,['extreme-heat','local-shade']).dimensions).toEqual([{slug:'extreme-heat',listings:[heat]}]);
+  });
+
   it('keeps the order listings came in within a group', () => {
     const second = listing('Pantry', ['food']);
     const grouped = groupListingsByDimension([second, food]);
@@ -91,13 +96,13 @@ describe('formDimensionOptions', () => {
     expect(formDimensionOptions(es, dims).map((d) => d.name)).toEqual([es.dimensions.food, es.dimensions.housing]);
   });
 
-  it('maps a renamed dimension to its framework slug, once, and leaves out one with no counterpart', () => {
+  it('keeps actual local addresses, including custom and adapted dimensions', () => {
     const dims = [
       dim('affordable-homes', 'Affordable homes', 1, 'housing'),
       dim('housing', 'Housing', 2),
       dim('nightlife', 'Nightlife', 3),
     ];
-    expect(formDimensionOptions(en, dims)).toEqual([{ slug: 'housing', name: 'Affordable homes' }]);
+    expect(formDimensionOptions(en, dims)).toEqual([{ slug: 'affordable-homes', name: 'Affordable homes' }, {slug:'housing',name:'Housing'}, {slug:'nightlife',name:'Nightlife'}]);
   });
 });
 

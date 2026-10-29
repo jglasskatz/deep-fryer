@@ -1,0 +1,14 @@
+{
+  "id": "event-election2023-act",
+  "url": "https://www.electoral.gob.ar/nuevo/paginas/pdf/actas_escrutinio/2023/SEGUNDA%20VUELTA/NEUQUEN.pdf",
+  "resolved_url": "https://www.electoral.gob.ar/nuevo/paginas/pdf/actas_escrutinio/2023/SEGUNDA%20VUELTA/NEUQUEN.pdf",
+  "path": "raw/event-election2023-act.pdf",
+  "publisher": "Camara Nacional Electoral / Junta Electoral Nacional Neuquen",
+  "release_date": "2023-11-23",
+  "retrieved_at": "2026-10-28T11:59:49.777751+00:00",
+  "sha256": "55a4a285ca2d2f5a1e1aab4ebed439f83656bbdad8eca1f84032542dd06657f1",
+  "bytes": 553090,
+  "content_type": "application/pdf",
+  "http_last_modified": "Tue, 29 Sep 2026 22:04:01 GMT",
+  "title": "National Electoral Board: certification of 19 November 2023 presidential runoff in Neuquen"
+}

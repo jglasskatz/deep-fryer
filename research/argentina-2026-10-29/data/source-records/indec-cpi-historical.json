@@ -1,0 +1,14 @@
+{
+  "id": "indec-cpi-historical",
+  "url": "https://www.indec.gob.ar/ftp/cuadros/economia/sh_ipc_divisiones.xls",
+  "resolved_url": "https://www.indec.gob.ar/ftp/cuadros/economia/sh_ipc_divisiones.xls",
+  "path": "raw/indec-cpi-historical.xls",
+  "publisher": "INDEC",
+  "release_date": "2026-10-13",
+  "retrieved_at": "2026-10-28T11:41:28.773630+00:00",
+  "sha256": "f2d39fa932813261c50cec6bc7f6499d2e054e798e3a8379d16ed87fa7682560",
+  "bytes": 2388480,
+  "content_type": "application/vnd.ms-excel",
+  "http_last_modified": "Tue, 13 Oct 2026 19:02:59 GMT",
+  "title": "INDEC national consumer price index: historical monthly, interannual and price-level tables"
+}

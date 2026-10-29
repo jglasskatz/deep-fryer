@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { onOneConnection } from '../test/one-connection';
 import { setPortraitFeatures } from './test-features';
 import { markPortraitPublic } from './test-portraits';
+import { publishInvolvementTestDimensions } from './test-involvement-dimensions';
 
 /**
  * Staff curation of getting involved (SPEC-v6 §4.3), against the dev
@@ -51,6 +52,7 @@ describe.skipIf(!hasDb)('involvement admin actions under row-level security', ()
     await setPortraitFeatures(tenant.id, { involvement: true });
     // Public, as its first publish would make it (migration 0015): anonymous visitors only reach public portraits.
     await markPortraitPublic(tenant.id);
+      await publishInvolvementTestDimensions(tenant.id);
     tenantSlug = tenant.slug;
     tenantId = tenant.id;
     cleanup.tenantId = tenant.id;
@@ -128,6 +130,36 @@ describe.skipIf(!hasDb)('involvement admin actions under row-level security', ()
     url: 'https://tenants.example.org/join',
     kind: 'organize' as const,
     dimension_slugs: ['housing'],
+  });
+
+  it('uses actual tenant dimensions end-to-end and retains history after archives', async () => {
+    signedIn = people.editor;
+    const m = await import('@deep-fryer/db'); const {eq}=await import('drizzle-orm'); const db=m.getDb();
+    const [heat]=await db.insert(m.dimensions).values({tenantId,slug:'extreme-heat',ring:'ecological',displayOrder:99}).returning();
+    const [shade]=await db.insert(m.dimensions).values({tenantId,slug:'local-shade',ring:'ecological',displayOrder:100}).returning();
+    await publishInvolvementTestDimensions(tenantId,['extreme-heat']);
+    const a=await import('./involvement-admin-actions');
+    const saved=await a.saveListing({tenantSlug,listing:{...listing(`Cooling ${uniq()}`),dimension_slugs:['extreme-heat','local-shade'],published:true}});
+    expect(saved.ok).toBe(true);
+    expect(await a.saveListing({tenantSlug,listing:{...listing(uniq()),dimension_slugs:['other-city-only']}})).toMatchObject({ok:false,error:expect.stringMatching(/active dimensions/)});
+    const draftSubmission={tenantId,kind:'suggestion' as const,dimensionSlug:'local-shade',pitch:'Plant local shade.',contactName:'A',email:`${uniq()}@example.org`,locale:'en',ipHash:'scope-test'};
+    await expect(m.withAuthContext(db,null,tx=>tx.insert(m.involvementSubmissions).values(draftSubmission))).rejects.toThrow(/active dimensions/);
+    const id=randomUUID();
+    await m.withAuthContext(db,null,tx=>tx.insert(m.involvementSubmissions).values({...draftSubmission,id,dimensionSlug:'extreme-heat'}));
+    const publicBefore=await (await import('./involvement')).publishedListings(tenantSlug);
+    expect(publicBefore.find(l=>l.id===(saved as {ok:true;data:{id:string}}).data.id)?.dimension_slugs).toEqual(['extreme-heat']);
+    await db.update(m.dimensions).set({archivedAt:new Date()}).where(eq(m.dimensions.id,heat!.id));
+    expect((await (await import('./involvement')).publishedListings(tenantSlug)).some(l=>l.id===(saved as {ok:true;data:{id:string}}).data.id)).toBe(false);
+    const [historical]=await db.select().from(m.involvementSubmissions).where(eq(m.involvementSubmissions.id,id));
+    expect(historical!.dimensionSlug).toBe('extreme-heat');
+    expect((await a.reviewSubmission({tenantSlug,submissionId:id,status:'declined',note:'Historical association retained.'})).ok).toBe(true);
+    const listingId=(saved as {ok:true;data:{id:string}}).data.id;
+    expect((await a.setListingPublished({tenantSlug,id:listingId,published:false})).ok).toBe(true);
+    expect((await a.setListingPublished({tenantSlug,id:listingId,published:true})).ok).toBe(false);
+    await expect(m.withAuthContext(db,null,tx=>tx.insert(m.involvementSubmissions).values({...draftSubmission,dimensionSlug:'extreme-heat'}))).rejects.toThrow(/active dimensions/);
+    // No selection is explicitly general, never an alias of an archived topic.
+    await m.withAuthContext(db,null,tx=>tx.insert(m.involvementSubmissions).values({...draftSubmission,dimensionSlug:null}));
+    expect(shade!.canonicalSlug).toBeNull();
   });
 
   it('approves a submission into a listing in one step, and only once', async () => {
@@ -251,7 +283,7 @@ describe.skipIf(!hasDb)('involvement admin actions under row-level security', ()
     expect(await a.saveListing({ tenantSlug, listing: { ...base, url: 'javascript:alert(1)' } })).toMatchObject({ ok: false });
     expect(await a.saveListing({ tenantSlug, listing: { ...base, dimension_slugs: ['vibes'] } })).toMatchObject({
       ok: false,
-      error: expect.stringMatching(/not a doughnut dimension/),
+      error: expect.stringMatching(/active dimensions/),
     });
     expect(await a.saveListing({ tenantSlug, listing: { ...base, phone: 'call us' } })).toMatchObject({ ok: false });
 

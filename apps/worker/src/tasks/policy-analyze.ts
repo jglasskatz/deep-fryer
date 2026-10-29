@@ -1,15 +1,17 @@
-import { gatePolicyGraphEvidence, readPolicyEvaluationContext, policyGraphMatchesScope } from '@deep-fryer/core';
+import { gatePolicyGraphEvidence, policyGraphEvidenceSummary, readPolicyEvaluationContext, policyGraphMatchesScope } from '@deep-fryer/core';
 import { retrievedPolicyEvidence } from '../policy-evidence.js';
 import type { Task } from 'graphile-worker';
 import type { ZodError } from 'zod';
 import { and, eq, inArray, lt, sql } from 'drizzle-orm';
-import { framework, frameworkDimension } from '@deep-fryer/contract';
+import { framework } from '@deep-fryer/contract';
 import {
   POLICY_DIMENSION_SLUGS,
   POLICY_OUTPUT_LIMITS,
+  POLICY_NO_BASELINE,
   policyAnalysisOutputSchema,
   policyAnalysisPrompt,
   projectDimensions,
+  freezePolicyPortrait,
   type DimensionData,
   type PublishedDimensionInput,
   type SessionTokenUsage,
@@ -102,6 +104,9 @@ interface PublishedPortraitDimensions {
   dimensions: {
     slug: string;
     canonical_slug: string | null;
+    version_num?: number;
+    ring: 'social' | 'ecological';
+    display_order: number;
     viz_level: number | null;
     data: DimensionData;
   }[];
@@ -188,14 +193,13 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
     const regionName = (regionRow?.value as { name?: string } | undefined)?.name?.trim() || tenant.name;
 
     // The public read path: exactly the dimensions and indicators residents
-    // see, so a projection names an indicator someone can look up. A custom
-    // dimension with no framework mapping has no valid dimension_slug, so it
-    // is neither offered to the model nor projected.
+    // see, keyed by their actual local addresses. Framework references do
+    // not alias a custom heat dimension to an unrelated framework topic.
+    const requestedScope = readPolicyEvaluationContext(analysis.brief);
     const portrait = await publishedDoughnut<PublishedPortraitDimensions>(db, tenant.slug);
-    const published: PublishedDimensionInput[] = (portrait?.dimensions ?? []).flatMap((d) => {
-      const fw = frameworkDimension(d.slug, d.canonical_slug);
-      return fw ? [{ slug: fw.slug, viz_level: d.viz_level, data: d.data }] : [];
-    });
+    const published: PublishedDimensionInput[] = (portrait?.dimensions ?? []).map(d => ({ slug: d.slug, viz_level: d.viz_level, data: d.data, version_num: d.version_num, ring:d.ring, display_order:d.display_order }));
+    if (!requestedScope && !published.length) throw new AnalysisFailure(`${POLICY_NO_BASELINE} This analysis was not counted against your research sessions.`);
+    const portraitBaseline = requestedScope ? undefined : freezePolicyPortrait(published);
 
     const prompt = policyAnalysisPrompt({
       regionName,
@@ -203,6 +207,7 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
       brief: analysis.brief,
       sourceUrl: analysis.sourceUrl,
       dimensions: published,
+      graphMode: requestedScope?.mode,
     });
     // Not orchestrated: a policy prompt ends with its own output contract,
     // and research's delegation note must not follow it.
@@ -250,7 +255,7 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
     // limit) are fixed and noted for staff rather than failing an analysis
     // that already spent minutes of web research; what remains invalid fails.
     // A result read from malformed output is noted first (PARTIAL_OUTPUT_NOTE).
-    const fitted = fitToContract(raw);
+    const fitted = fitToContract(raw, published.map(d => d.slug));
     if (salvaged) fitted.adjustments.unshift(PARTIAL_OUTPUT_NOTE);
     const parsed = policyAnalysisOutputSchema.safeParse(fitted.value);
     if (!parsed.success) {
@@ -261,9 +266,12 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
       );
     }
 
-    const requestedScope = readPolicyEvaluationContext(analysis.brief);
     if (requestedScope && (!parsed.data.impact_graph || !policyGraphMatchesScope(parsed.data.impact_graph, requestedScope))) {
-      throw new AnalysisFailure('The evaluation did not return a cross-slice graph with the requested mode, geography, cutoff, horizon and comparator. No result was accepted.');
+      throw new AnalysisFailure('The evaluation did not return a cross-slice graph with the requested mode, geography, cutoff, horizon, comparator and affected groups. No result was accepted.');
+    }
+    if (!requestedScope && parsed.data.impact_graph) {
+      delete parsed.data.impact_graph;
+      fitted.adjustments.push('Unrequested graph omitted; the requested portrait comparison is retained.');
     }
     // Model-declared provenance is not trusted: bind citations to actual tool receipts.
     if (parsed.data.impact_graph) {
@@ -271,8 +279,10 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
       parsed.data.impact_graph = gated.graph;
       // Legacy impacts have no receipt-level provenance; do not render a second, ungated claim channel.
       parsed.data.impacts = [];
-      parsed.data.summary = (`AI research draft; retrieved excerpts are not independent claim verification. ${gated.downgraded} pathways lack matched retrieved evidence. ` + parsed.data.summary).slice(0, POLICY_OUTPUT_LIMITS.summaryChars);
-      if (gated.downgraded) fitted.adjustments.push(`${gated.downgraded} cross-slice pathways lacked matched retrieved evidence and were kept as unverified hypotheses with unknown direction and no effect size.`);
+      parsed.data.assumptions = [];
+      parsed.data.risks = [];
+      parsed.data.summary = policyGraphEvidenceSummary(gated.graph).slice(0, POLICY_OUTPUT_LIMITS.summaryChars);
+      if (gated.downgraded) fitted.adjustments.push(`${gated.downgraded} cross-slice pathways lacked matched source text or matching scope and were kept as unverified hypotheses with unknown direction and no effect size.`);
     }
     // Graph-backed analyses use directional/native-unit evidence, never fabricated wedge sizes.
     const projections = parsed.data.impact_graph ? [] : projectDimensions(published, parsed.data.impacts);
@@ -280,7 +290,7 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
       .update(policyAnalyses)
       .set({
         status: 'complete',
-        result: parsed.data,
+        result: { ...parsed.data, portrait_baseline: portraitBaseline },
         projections,
         adjustments: fitted.adjustments.length ? fitted.adjustments : null,
         error: null,
@@ -412,7 +422,7 @@ function isHttpsUrl(value: unknown): value is string {
  * Anything else (a missing summary, an unknown direction) is left for the
  * schema to reject: guessing those would put words in the analysis.
  */
-export function fitToContract(raw: unknown): { value: unknown; adjustments: string[] } {
+export function fitToContract(raw: unknown, allowedSlugs: string[] = POLICY_DIMENSION_SLUGS): { value: unknown; adjustments: string[] } {
   if (!isObject(raw)) return { value: raw, adjustments: [] };
   const notes: string[] = [];
   const out: Json = { ...raw };
@@ -436,7 +446,8 @@ export function fitToContract(raw: unknown): { value: unknown; adjustments: stri
         continue;
       }
       const impact: Json = { ...item };
-      const slug = resolveSlug(impact.dimension_slug);
+      const resolved = resolveSlug(impact.dimension_slug);
+      const slug = typeof impact.dimension_slug === 'string' && allowedSlugs.includes(impact.dimension_slug) ? impact.dimension_slug : resolved && allowedSlugs.includes(resolved) ? resolved : null;
       if (!slug) {
         setAside.push(String(impact.dimension_slug ?? 'no dimension'));
         continue;
@@ -497,7 +508,7 @@ export function fitToContract(raw: unknown): { value: unknown; adjustments: stri
     }
 
     for (const slug of setAside) {
-      notes.push(`An impact on “${slug.slice(0, 80)}”, which is not one of the doughnut's 21 dimensions, was set aside.`);
+      notes.push(`An impact on “${slug.slice(0, 80)}”, which is not one of this portrait's published dimensions, was set aside.`);
     }
     if (impacts.length > L.impacts) {
       notes.push(`${count(impacts.length - L.impacts, 'impact')} beyond the ${L.impacts} allowed ${impacts.length - L.impacts === 1 ? 'was' : 'were'} left out.`);
@@ -670,3 +681,4 @@ export async function notifyPolicyRequester(analysisId: string): Promise<void> {
     console.error(`[notify] policy analysis ${analysisId}: ${err instanceof Error ? err.message : err}`);
   }
 }
+

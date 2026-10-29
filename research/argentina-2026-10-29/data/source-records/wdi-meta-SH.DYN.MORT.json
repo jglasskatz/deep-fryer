@@ -1,0 +1,14 @@
+{
+  "id": "wdi-meta-SH.DYN.MORT",
+  "url": "https://api.worldbank.org/v2/indicator/SH.DYN.MORT?format=json",
+  "resolved_url": "https://api.worldbank.org/v2/indicator/SH.DYN.MORT?format=json",
+  "path": "raw/wdi-meta-SH.DYN.MORT.json",
+  "publisher": "World Bank WDI",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:05.022333+00:00",
+  "sha256": "d6b4f172d2c2b36198d3a0977b21c17740566801f9fd75dda99c82a517f1e3c4",
+  "bytes": 1099,
+  "content_type": "application/json;charset=utf-8",
+  "http_last_modified": "Wed, 28 Oct 2026 04:52:05 GMT",
+  "title": "WDI indicator metadata: Mortality rate, under-5 (per 1,000 live births)"
+}

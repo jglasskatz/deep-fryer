@@ -1,0 +1,15 @@
+{
+  "id": "gcb-2025-workbook",
+  "url": "https://data.icos-cp.eu/objects/loCXyssaalv6DPdO6Qdj90qQ",
+  "resolved_url": "https://data.icos-cp.eu/licence?ids=%5B%22loCXyssaalv6DPdO6Qdj90qQ%22%5D",
+  "path": "raw/gcb-2025-national-fossil.access.html",
+  "publisher": "Global Carbon Project / ICOS",
+  "release_date": null,
+  "retrieved_at": "2026-10-28T11:38:14.155432+00:00",
+  "sha256": "ed27bc839148118843cc73c25ae14f2dea0c9291944f695c6228cea2eeb30100",
+  "bytes": 61971,
+  "content_type": "text/html; charset=UTF-8",
+  "http_last_modified": null,
+  "evidence_status": "access-page-only; not used for numerical extraction",
+  "title": "gcb 2025 workbook"
+}
