@@ -1,5 +1,11 @@
 # California portrait import
 
+## Current report audit (2026-11-15)
+
+The initial legacy-import notes below are historical. The display now uses a separate report-backed overlay, while the three source files remain byte-for-byte intact. See `docs/pages.md` (California report-checked import) and the full 42-indicator `site/imports/california/report-audit.json`. The authoritative PDF was downloaded from Zenodo, matched against its published MD5, and pages 84–85 were visually checked. Four ecological results and seven native values missing from the old import are restored. Ozone is explicitly within-boundary and green, biodiversity is scored overshoot. All 42 targets and unit meanings align. The PDF/source rounding differences and Forest Cover year uncertainty remain documented. Underlying studies were not independently re-audited and publication approval remains false.
+
+## Historical import record
+
 ## Scope and provenance
 
 Add the existing California dataset to Deep Fryer's static portrait UI on an isolated review branch. This is not new research, independent verification, human publication approval, a live database migration, a main merge, or deployment. PR #18's policy-evaluator work is outside this migration.
@@ -40,3 +46,11 @@ The generic definition previously passed through a native measurement descriptio
 Available-but-unscored wedges now use neutral dark grey instead of the previous purple/slate override. Matching legend and control styles changed with it. Red/green scores, pale-grey data gaps and blue selection remain unchanged, including the unknown scores for California biodiversity and ozone.
 
 Local verification for this follow-up: 32 Pages tests, the production static build, workspace typecheck (also the workspace lint command's check), architecture-map validation and built-HTML assertions passed. The broad workspace regression did not finish and is not claimed as passed. Full automated browser/mobile coverage remains unrun; manual visual checks are recorded separately. No CI rerun, merge or deployment is included.
+
+## Report-audit verification
+
+On 2026-11-15, the final report overlay passed all 34 Pages tests, the production static build (12 portraits; 243 checked evidence assets), all seven workspace TypeScript checks, and the architecture-map check. The five library-package test suites completed with 259 passing tests and 27 service-dependent skips. A full workspace regression did not finish: an external API request from the web test suite was denied; the remaining web/worker suites are not claimed as passed. The focused shared-renderer suite passed all 6 tests.
+
+Automated browser checks could not launch the installed Chromium because its socket operation returned EPERM, including after the permitted retry. The browser assertions were therefore not run in that process. Screenshots and manual browser coverage must be checked separately against this rebuilt artifact. These local checks do not establish remote CI, merge or deployment.
+
+Manual visual review of the rebuilt managed-browser preview passed: the unselected Ozone Depletion label is green, Biodiversity Loss is red, and selected ozone remains blue with a Within target / No overshoot panel. Both ozone cards retain their native observations (284 Dobson Units against >276, measured 2020; and Yes against Yes). Overview and selected-ozone screenshots were captured from this build. This manual check does not replace the unrun full automated desktop/mobile regression.

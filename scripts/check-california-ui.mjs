@@ -35,7 +35,7 @@ try {
   assert.equal(await page.locator('h1').innerText(), 'State of California');
   assert.equal(await page.locator('.dimension').count(), 21);
   assert.equal(await page.locator('.dimension .indicator').count(), 42);
-  assert.match(await page.locator('.notice').innerText(), /not newly verified or approved/);
+  assert.match(await page.locator('.notice').innerText(), /checked against the November 2025 California Doughnut Report/);
   assert.match(await page.locator('.status-legend').innerText(), /Dark grey: value available, score unknown/);
   assert.equal(await page.locator('.legend-swatch.unscored').evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(119, 119, 119)');
   await mkdir(screenshots, { recursive: true });
@@ -47,7 +47,7 @@ try {
   const assertNativePair = async (name, score, native, definition) => {
     const section = indicator(name);
     assert.equal(await section.locator('.value').innerText(), score);
-    assert.match(await section.locator('.meta').first().innerText(), /^Imported (shortfall|overshoot)$/);
+    assert.match(await section.locator('.meta').first().innerText(), /^Report (shortfall|overshoot)$/);
     assert.match(await section.locator('.source-worksheet').innerText(), new RegExp(`Native measurement: ${native.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\n|$)`));
     assert.equal(await section.locator('.native-definition').innerText(), `Native measurement definition: ${definition}`);
     assert.equal(await section.locator('.target').count(), 0);
@@ -58,14 +58,14 @@ try {
   };
   await open('Equity');
   await assertNativePair('Gender Pay Gap', '12.9%', '87.1%', "Percent of men's median wage earned by women for full-time year-round work");
-  assert.match(await page.locator('#summary-equity .dimension-headline').innerText(), /^Imported shortfall: 12.9%/);
+  assert.match(await page.locator('#summary-equity .dimension-headline').innerText(), /^Report shortfall: 12.9%/);
   await page.screenshot({ path: path.join(screenshots, 'california-pay-gap-desktop.png') });
   await close();
   await open('Political Voice');
-  await assertNativePair('Voter Turnout', '40.0%', '60.0%', 'Percent of eligible voter turnout');
+  await assertNativePair('Voter Turnout', '40%', '60%', 'Percent of eligible voter turnout');
   await close();
   await open('Food');
-  await assertNativePair('Vegetables per Day', '40.8%', 'Not supplied', 'Percent of adults who eat >=1 serving(s) of vegetables per day');
+  await assertNativePair('Vegetables per Day', '40.8%', '59.2%', 'Percent of adults who eat ≥1 serving(s) of vegetables per day');
   await close();
   await open('Climate Change');
   assert.equal(await panel.locator('.indicator').count(), 2);
@@ -83,27 +83,31 @@ try {
   assert.equal(await panel.isVisible(), false);
   assert.equal(new URL(page.url()).searchParams.has('dim'), false);
   await open('Ozone Depletion');
-  assert.match(await panel.innerText(), /score unknown/);
+  assert.match(await panel.innerText(), /Within target/);
   const ods = indicator('Ozone-Depleting Substances');
-  assert.equal(await ods.locator('.value').innerText(), 'Yes');
-  assert.equal(await ods.locator('.imported-percentage').innerText(), 'Source category average (not indicator overshoot): 0%');
+  assert.equal(await ods.locator('.value').innerText(), 'No overshoot');
+  assert.match(await ods.locator('.source-worksheet').innerText(), /Native measurement: Yes/);
+  assert.equal(await ods.locator('.imported-percentage').textContent(), 'Archived category average (not indicator overshoot): 0%');
   const ozone = indicator('Ozone Layer');
-  assert.equal(await ozone.locator('.value').innerText(), '284 Dobson Units');
-  assert.equal(await ozone.locator('.imported-percentage').count(), 0);
+  assert.equal(await ozone.locator('.value').innerText(), 'No overshoot');
+  assert.match(await ozone.locator('.source-worksheet').innerText(), /284 Dobson Units/);
   assert.match(await ozone.innerText(), /Global observation/);
+  await page.screenshot({ path: path.join(screenshots, 'california-ozone-report.png') });
   await close();
   await open('Biodiversity Loss');
   const protectedArea = indicator('Protected Area');
-  assert.equal(await protectedArea.locator('.value').innerText(), '25.2% / 16.2%');
-  assert.equal(await protectedArea.locator('.imported-percentage').innerText(), 'Source category average (not indicator overshoot): 503%');
-  assert.match(await protectedArea.locator('.meta').first().innerText(), /^Source value/);
-  assert.equal(await indicator('At-Risk Species').locator('.imported-percentage').count(), 0);
+  assert.equal(await protectedArea.locator('.value').innerText(), '59%');
+  assert.match(await protectedArea.locator('.source-worksheet').innerText(), /25.2% \/ 16.2%/);
+  assert.equal(await protectedArea.locator('.imported-percentage').textContent(), 'Archived category average (not indicator overshoot): 503%');
+  assert.match(await protectedArea.locator('.meta').first().innerText(), /^Report overshoot/);
+  assert.equal(await indicator('At-Risk Species').locator('.value').innerText(), '947%');
+  await page.screenshot({ path: path.join(screenshots, 'california-biodiversity-report.png') });
   await close();
   await open('Income & Work');
-  assert.match(await indicator('Poverty').locator('.source-worksheet').innerText(), /2021-2023 \/ 2024/);
+  assert.match(await indicator('Poverty').locator('.source-worksheet').innerText(), /2021-2023/);
   await close();
   await open('Education');
-  assert.match(await indicator('Literacy Rate').locator('.source-worksheet').innerText(), /2017 \/ 2018\?/);
+  assert.match(await indicator('Literacy Rate').locator('.original-import').textContent(), /2017 \/ 2018\?/);
   await close();
   for (const width of [390, 320]) {
     await page.setViewportSize({ width, height: 844 });
@@ -123,7 +127,7 @@ try {
     if (width === 390) await page.screenshot({ path: path.join(screenshots, 'california-pay-gap-mobile.png') });
     await close();
   }
-  for (const file of ['doughnut.json', 'raw_social.csv', 'raw_ecological.csv', 'manifest.json']) assert.equal((await page.request.get(`${origin}/deep-fryer/imports/california/${file}`)).status(), 200);
+  for (const file of ['doughnut.json', 'raw_social.csv', 'raw_ecological.csv', 'manifest.json', 'report-audit.json']) assert.equal((await page.request.get(`${origin}/deep-fryer/imports/california/${file}`)).status(), 200);
   const noJsContext = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
   await noJsContext.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
   const noJs = await noJsContext.newPage();
@@ -131,5 +135,5 @@ try {
   assert.equal(await noJs.locator('.dimension .indicator').count(), 42);
   assert.equal(await noJs.locator('#dim-food').isVisible(), true);
   assert.deepEqual(errors, []); assert.deepEqual(failures, []);
-  console.log('California UI passed: desktop/mobile, native definitions/values/targets versus scores, native units, exact fallback scores, unknown/zero, full periods, keyboard/repeat/reload/Close/Escape, source downloads and no-JS.');
+  console.log('California UI passed: desktop/mobile, native definitions/values/targets versus scores, native units, report-restored scores, archived fallback provenance, explicit no-overshoot, full periods, keyboard/repeat/reload/Close/Escape, source downloads and no-JS.');
 } finally { await browser?.close(); await new Promise(resolve => server.close(resolve)); }

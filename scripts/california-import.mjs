@@ -8,7 +8,8 @@ const pinned = {
   'raw_social.csv': '1dd48802a4c2c0a796c4a2a9bb0f9465590161dbdf37ff8b1ce107bd2f718ddc',
   'raw_ecological.csv': '8e45e5018d659615e9ed38b92dbc4b175490824ef8951258171ad25c4284dfd0',
 };
-export const californiaSourceFiles = ['manifest.json', ...Object.keys(pinned)];
+const reportAuditHash = 'f3b3041c0648e1cd768590ca1cf7dbc146620f8c0a20ed2ed3d32c869756a731';
+export const californiaSourceFiles = ['manifest.json', ...Object.keys(pinned), 'report-audit.json'];
 export function parseWorksheet(text) {
   const rows = []; let row = [], field = '', quoted = false;
   for (let n = 0; n < text.length; n++) {
@@ -38,6 +39,10 @@ export function californiaPortrait() {
     return [name, bytes.toString('utf8')];
   }));
   const snapshot = JSON.parse(source['doughnut.json']);
+  const auditBytes = readFileSync(new URL('report-audit.json', root));
+  if (createHash('sha256').update(auditBytes).digest('hex') !== reportAuditHash) throw new Error('California report audit changed');
+  const audit = JSON.parse(auditBytes);
+  if (audit.approved !== false || audit.indicators.length !== 42) throw new Error('California report audit coverage/approval changed');
   const dimensions = [];
   for (const ring of ['social', 'ecological']) {
     const worksheet = parseWorksheet(source[`raw_${ring}.csv`]);
@@ -50,25 +55,25 @@ export function californiaPortrait() {
         const percent = ring === 'social' ? record.shortfall_pct : record.overshoot_pct;
         const metric = ring === 'social' ? 'shortfall' : 'overshoot';
         const fallback = ring === 'ecological' && !row.Overshoot && percent !== null;
+        const verified = audit.indicators.find(i => i.name === record.name && i.ring === ring);
+        if (!verified || !Number.isFinite(verified.score_pct)) throw new Error(`California report row missing: ${record.name}`);
         const caveats = [
-          'Imported from the existing California portrait; source links and reported percentages have not been independently revalidated.',
-          ...(fallback ? ['The original importer used the category Average column because this indicator’s Overshoot was blank. This is not a separately supplied indicator overshoot; the indicator score remains unknown.'] : []),
-          ...(percent === null ? ['No overshoot percentage was supplied for this indicator. Its native observation is retained; missing is not zero.'] : []),
-          ...(record.name === 'Homelessness' ? ['35.9% is the imported shortfall score, not the percentage of Californians experiencing homelessness. The worksheet does not supply a native point-in-time count.'] : []),
-          ...(record.name === 'Ozone Layer' ? ['Global ozone-layer observation, not a California-specific measurement.'] : []),
+          ...verified.caveats,
         ];
         return {
           indicator_slug: record.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-          name: record.name, value: record.value, unit: percent === null && record.unit !== '%' ? record.unit || '' : '', year: record.year,
-          value_label: percent === null || fallback ? 'Source value · indicator overshoot unknown' : `Imported ${metric}`,
+          name: record.name, value: verified.score_text === 'No Overshoot' ? 'No overshoot' : `${verified.score_pct}%`, unit: '',
+          year: /^\d{4}$/.test(verified.measurement.period) ? Number(verified.measurement.period) : verified.measurement.period,
+          value_label: `Report ${metric}`,
           // A native target must not be attached to the imported percentage headline.
           // Preserve it with its native definition/value and in the unchanged legacy record.
-          target: null, source: record.source, source_url: record.source_url,
+          target: null, source: `California Doughnut Report (2025), p${verified.page}`, source_url: `${audit.report.download_url}#page=${verified.page}`,
           geography: record.name === 'Ozone Layer' ? 'Global observation · California source portrait' : 'California source portrait · scope varies by measure',
-          status: 'legacy-source', notes: percent === null || fallback
-            ? 'The headline is the original source value. No indicator overshoot is supplied; the native measurement definition and target are shown in the original worksheet section.'
-            : `The headline is the imported ${metric} percentage, not the native measurement. The original measurement definition, value and target are shown together in the worksheet section; missing native values have not been inferred from the score.`, quality_flags: caveats,
-          evidence_path: null, pdf_path: null, level_pct: fallback ? null : percent,
+          status: 'source-supported-draft', notes: `The headline is the report’s ${metric} result, not the native measurement. The definition, observation and target below are checked against the report. Original import data remain separately archived.`, quality_flags: caveats,
+          review_note: `${audit.scope} ${verified.changes.join(' ')}`.trim(),
+          evidence_path: audit.assets[ring], pdf_path: audit.assets.tables_pdf, level_pct: verified.score_pct,
+          report_measurement: verified.measurement,
+          report_verification: { doi: audit.report.doi, page: verified.page, checked_at: audit.checked_at, report_name: verified.report_name, score_text: verified.score_text, score_comparison: verified.score_comparison, approved: false },
           imported_percentage: { metric, value: percent, origin: fallback ? 'category-average-fallback' : percent === null ? 'not-supplied' : 'indicator-column' },
           source_worksheet: { definition: record.description, value: row.California || null, unit: row.Unit || '', target: row.Desirable || null, period: row['Year (Measured / Published)'], notes: row.Notes },
           legacy_record: record, worksheet_record: row,
@@ -79,8 +84,8 @@ export function californiaPortrait() {
       const average = complete ? pcts.reduce((sum, n) => sum + n, 0) / pcts.length : null;
       const { indicators: originalIndicators, ...legacyCategory } = category;
       dimensions.push({ slug: category.slug, name: category.name, ring,
-        level: average === null ? null : pctToVizLevel(average), imported_average_pct: average,
-        context: 'Imported percentages describe different constructs. They are not additive or a validated ranking. Wedges use the mean of the supplied percentages only when both indicators have a score, mapped through Deep Fryer’s display scale (capped at 150).',
+        level: average === null ? null : pctToVizLevel(average), report_average_pct: average,
+        context: 'Percentages are checked against the 2025 report and describe different constructs. They are not additive or a validated ranking. Wedges use the mean of the two reported indicator results, mapped through Deep Fryer’s display scale (capped at 150).',
         actions: category.actions, indicators, legacy_category: legacyCategory,
       });
     }
@@ -91,10 +96,11 @@ export function californiaPortrait() {
     slug: 'california', name: snapshot.region.name, group: 'California',
     region: 'Statewide California portrait. Source periods vary from 2005 to 2025; some measures use regional or global observations.',
     population: snapshot.region.population, status: 'legacy-source',
-    notice: 'Imported California data, not newly verified or approved. All 42 indicators and their source links are retained from ca-doughnut. Reported shortfalls and overshoots are shown separately from native measurements. Missing scores remain unknown; inherited category-average values and uncertain source dates are flagged.',
+    notice: 'All 42 indicators have been checked against the November 2025 California Doughnut Report, pages 84–85. Four omitted ecological results and seven missing native observations are restored. Reported scores remain separate from native measurements. Original imports and rounding differences are preserved. This checks report alignment, not the underlying studies, and does not grant publication approval.',
     data_import: { kind: 'california-legacy', imported_at: manifest.imported_at, source_path: 'imports/california/' },
     provenance: { ...manifest, kind: 'legacy-source', source_file: manifest.files['doughnut.json'].source_path,
-      source_sha256: pinned['doughnut.json'], scoring: 'Arithmetic mean of complete imported percentage pairs, mapped using pctToVizLevel; incomplete pairs remain unscored.', legacy_region: snapshot.region },
+      source_sha256: pinned['doughnut.json'], scoring: 'Arithmetic mean of the two report percentages, mapped using pctToVizLevel. Explicit No Overshoot maps to zero; missing is never inferred as zero.', legacy_region: snapshot.region,
+      report_audit: { path: 'imports/california/report-audit.json', sha256: reportAuditHash, checked_at: audit.checked_at, report: audit.report, scope: audit.scope, approved: false } },
     dimensions,
   };
 }

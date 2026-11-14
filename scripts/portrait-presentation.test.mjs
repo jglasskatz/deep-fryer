@@ -17,10 +17,19 @@ test('unscored values use neutral grey without changing data or hiding selection
  assert.deepEqual(unscored,before);
  assert.equal(dimensionStatus(unscored),'Value available · score unknown');
  assert.equal(dimensionColour({...unscored,indicators:[{value:null}]}),null,'Data gaps retain renderer pale grey');
- assert.equal(dimensionColour({...unscored,level:0}),null,'Scored values retain renderer target palette');
+ assert.equal(dimensionColour({...unscored,level:0}),'#8cd755','Zero has a green label marker without a fabricated bar');
  assert.equal(dimensionColour({...unscored,level:40}),null);
 });
 test('geography summary uses complete source text, never a truncated geographic claim',()=>{
  assert.equal(regionSummary({region:'Coastal city in Monterey Bay. Local context follows.',group:'Santa Cruz'}),'Coastal city in Monterey Bay.');
  assert.equal(regionSummary({region:'A'.repeat(121),group:'Santa Cruz'}),'Santa Cruz portrait');
+});
+
+test('within-target label is green without changing zero magnitude or selection', () => {
+ const zero={ring:'ecological',level:0,indicators:[{value:'No overshoot',level_pct:0}]};
+ const before=structuredClone(zero);
+ assert.equal(dimensionColour(zero),'#8cd755');
+ assert.equal(dimensionColour(zero,true),'#0066cc');
+ assert.equal(dimensionStatus(zero),'Within target');
+ assert.deepEqual(zero,before);
 });

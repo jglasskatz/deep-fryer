@@ -52,8 +52,10 @@ function selectPortrait(slug, restoreDimension = true) {
       add('p', `${indicator.name}: ${formatIndicatorValue(indicator.kind === 'observation' && indicator.value !== null ? Number(indicator.value.toFixed(1)) : indicator.value, indicator.unit)} ${indicator.year ? `(${indicator.year})` : ''}`);
       add('small', `${collection.statuses[indicator.status]} · ${indicator.geography || 'See source context'}`);
       if (indicator.value_label) add('small', indicator.value_label);
-      if (indicator.imported_percentage?.origin === 'category-average-fallback') add('small', `Source category average (not indicator overshoot): ${indicator.imported_percentage.value}%`);
-      if (indicator.source_worksheet?.period) add('small', `Measured / published: ${indicator.source_worksheet.period}`);
+      if (indicator.report_verification) add('small', `Checked against 2025 report, page ${indicator.report_verification.page}`);
+      else if (indicator.imported_percentage?.origin === 'category-average-fallback') add('small', `Source category average (not indicator overshoot): ${indicator.imported_percentage.value}%`);
+      if (indicator.report_measurement?.period) add('small', `Measured period: ${indicator.report_measurement.period}`);
+      else if (indicator.source_worksheet?.period) add('small', `Measured / published: ${indicator.source_worksheet.period}`);
       if (indicator.quality_flags?.length) add('small', indicator.quality_flags.join(' · '));
       if (indicator.source) add('small', `Source: ${indicator.source}`);
     }
