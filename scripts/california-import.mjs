@@ -52,7 +52,7 @@ export function californiaPortrait() {
         const fallback = ring === 'ecological' && !row.Overshoot && percent !== null;
         const caveats = [
           'Imported from the existing California portrait; source links and reported percentages have not been independently revalidated.',
-          ...(fallback ? ['The original importer used the category Average column because this indicator’s Overshoot was blank. This is not a separately supplied indicator overshoot.'] : []),
+          ...(fallback ? ['The original importer used the category Average column because this indicator’s Overshoot was blank. This is not a separately supplied indicator overshoot; the indicator score remains unknown.'] : []),
           ...(percent === null ? ['No overshoot percentage was supplied for this indicator. Its native observation is retained; missing is not zero.'] : []),
           ...(record.name === 'Homelessness' ? ['35.9% is the imported shortfall score, not the percentage of Californians experiencing homelessness. The worksheet does not supply a native point-in-time count.'] : []),
           ...(record.name === 'Ozone Layer' ? ['Global ozone-layer observation, not a California-specific measurement.'] : []),
@@ -60,11 +60,11 @@ export function californiaPortrait() {
         return {
           indicator_slug: record.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
           name: record.name, value: record.value, unit: percent === null && record.unit !== '%' ? record.unit || '' : '', year: record.year,
-          value_label: percent === null ? 'Source value · overshoot unavailable' : fallback ? 'Source value · overshoot inherited from category average' : `Imported ${metric}`,
+          value_label: percent === null || fallback ? 'Source value · indicator overshoot unknown' : `Imported ${metric}`,
           target: record.target, source: record.source, source_url: record.source_url,
           geography: record.name === 'Ozone Layer' ? 'Global observation · California source portrait' : 'California source portrait · scope varies by measure',
           status: 'legacy-source', notes: record.description, quality_flags: caveats,
-          evidence_path: null, pdf_path: null, level_pct: percent,
+          evidence_path: null, pdf_path: null, level_pct: fallback ? null : percent,
           imported_percentage: { metric, value: percent, origin: fallback ? 'category-average-fallback' : percent === null ? 'not-supplied' : 'indicator-column' },
           source_worksheet: { value: row.California || null, unit: row.Unit || '', target: row.Desirable || null, period: row['Year (Measured / Published)'], notes: row.Notes },
           legacy_record: record, worksheet_record: row,

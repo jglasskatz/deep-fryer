@@ -8,6 +8,8 @@ for (const [destination, { source, sha256, bytes }] of reviewedOverlayAssets()) 
   await copyFile(source, path.join('site', destination));
   manifest[destination] = { sha256, bytes };
 }
-await writeFile('site/data/portraits.json', JSON.stringify(release, null, 2) + '\n');
+// The import is assembled at build time, keeping the existing snapshot unchanged.
+const baseline = { ...release, portraits: release.portraits.filter(p => p.slug !== 'california') };
+await writeFile('site/data/portraits.json', JSON.stringify(baseline, null, 2) + '\n');
 await writeFile('site/data/evidence-manifest.json', JSON.stringify(manifest, null, 2) + '\n');
 console.log(`Applied ${release.research_overlay.applied.length} reviewed amendments; human approval remains false.`);

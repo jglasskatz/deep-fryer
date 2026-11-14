@@ -1,3 +1,5 @@
+import { publicRelease } from './research-overlays.mjs';
+import { californiaSourceFiles } from './california-import.mjs';
 import { buildResearchPages } from './build-research-pages.mjs';
 import { readFile, writeFile, mkdir, copyFile, rm, realpath } from 'node:fs/promises';
 import path from 'node:path';
@@ -18,7 +20,7 @@ function indicatorValue(indicator) {
   return formatIndicatorValue(indicator.kind === 'observation' && indicator.value !== null
     ? Number(indicator.value.toFixed(1)) : indicator.value, indicator.unit);
 }
-const text = await readFile(path.join(source, 'data/portraits.json'), 'utf8');
+const text = JSON.stringify(publicRelease(), null, 2) + '\n';
 const release = validateRelease(JSON.parse(text));
 const involvement = validatePublicInvolvement(JSON.parse(await readFile(path.join(source, 'data/involvement.json'), 'utf8')), release.portraits);
 const manifest = JSON.parse(await readFile(path.join(source, 'data/evidence-manifest.json'), 'utf8'));
@@ -37,9 +39,11 @@ await writeFile(path.join(output, 'assets/format.js'), formatterCode);
 for (const name of ['site.css', 'site.js', 'portrait-presentation.js']) await copyFile(path.join(source, name), path.join(output, 'assets', name));
 await copyFile('apps/web/components/doughnut/doughnut-renderer.js', path.join(output, 'assets/doughnut-renderer.js'));
 await mkdir(path.join(output, 'data'), { recursive: true });
-await copyFile(path.join(source, 'data/portraits.json'), path.join(output, 'data/portraits.json'));
+await writeFile(path.join(output, 'data/portraits.json'), text);
 await copyFile(path.join(source, 'data/evidence-manifest.json'), path.join(output, 'data/evidence-manifest.json'));
 for (const asset of requiredAssets) { await mkdir(path.dirname(inside(output, asset)), { recursive: true }); await copyFile(inside(source, asset), inside(output, asset)); }
+await mkdir(path.join(output, 'imports/california'), { recursive: true });
+for (const name of californiaSourceFiles) await copyFile(path.join(source, 'imports/california', name), path.join(output, 'imports/california', name));
 await writeFile(path.join(output, '.nojekyll'), '');
 const status = { published: 'Published portrait', 'legacy-source': 'Existing source portrait', 'research-preview': 'Research preview', 'source-supported-observation': 'Observed · no scoring target', 'source-supported-draft': 'Source-supported draft · not approved', uncertain: 'Uncertain · evidence incomplete', gap: 'Data gap' };
 function portraitBadge(portrait) {
@@ -70,11 +74,14 @@ function indicatorDetails(i) {
     : !hasValue(i) ? 'No acceptable value is available for this measure.' : '';
   return `<section class="indicator"><div>
     <span class="tag ${h(i.status)}">${h(status[i.status])}</span><h3>${h(i.name)}</h3>
+    ${i.value_label ? `<p class="meta">${h(i.value_label)}</p>` : ''}
     <p class="value">${h(indicatorValue(i))}</p>
+    ${i.imported_percentage?.origin === 'category-average-fallback' ? `<p class="imported-percentage">Source category average (not indicator overshoot): <strong>${h(i.imported_percentage.value)}%</strong></p>` : ''}
+    ${i.source_worksheet ? `<section class="source-worksheet"><h4>Original worksheet</h4><p>Native measurement: ${h(i.source_worksheet.value == null ? 'Not supplied' : formatIndicatorValue(i.source_worksheet.value, ['%', 'Yes/No'].includes(i.source_worksheet.unit) ? '' : i.source_worksheet.unit))}</p><p>Native target: ${h(i.source_worksheet.target == null ? 'Not supplied' : formatIndicatorValue(i.source_worksheet.target, ['%', 'Yes/No'].includes(i.source_worksheet.unit) ? '' : i.source_worksheet.unit))}</p><p>Measured / published: ${h(i.source_worksheet.period)}</p>${i.source_worksheet.notes ? `<p>${h(i.source_worksheet.notes)}</p>` : ''}</section>` : ''}
     <p class="meta">${i.year ? `${i.kind === 'observation' ? 'Period ending' : 'Data year'}: ${h(i.year)} · ` : ''}${h(i.geography || 'Geography: see source notes')}</p>
     ${limitation ? `<p class="evidence-caution">${h(limitation)}</p>` : ''}
     ${i.quality_flags?.length ? `<p class="missing">${i.quality_flags.map(h).join(' · ')}</p>` : ''}
-    ${i.target != null ? `<p class="target">Target: ${h(formatIndicatorValue(i.target, i.unit))}</p>` : ''}
+    ${i.target != null && !i.source_worksheet ? `<p class="target">Target: ${h(formatIndicatorValue(i.target, i.unit))}</p>` : ''}
     <p class="sources">${i.source_url ? `<a href="${h(i.source_url)}" rel="noopener noreferrer">${h(i.source || 'Original source')} ↗</a>` : h(i.source || '')}${i.pdf_path ? ` · <a href="../${h(i.pdf_path)}">Archived PDF</a>` : ''}</p>
     ${i.notes || i.unscored_reason ? `<details class="evidence-details"><summary>Definition and limitations</summary>${i.unscored_reason ? `<p>${h(i.unscored_reason)}</p>` : ''}${i.notes ? `<p>${h(i.notes)}</p>` : ''}</details>` : ''}
     ${i.evidence_path ? `<details class="evidence-details"><summary>View archived source</summary><a class="exhibit" href="../${h(i.evidence_path)}"><img loading="lazy" src="../${h(i.evidence_path)}" alt="Archived source for ${h(i.name)}"><span>Open full evidence snapshot ↗</span></a></details>` : hasValue(i) ? '<p class="missing">Archived screenshot unavailable. Follow the original source.</p>' : ''}
@@ -86,6 +93,7 @@ function indicatorDetails(i) {
 }
 function portraitNotice(portrait) {
   const preview = portrait.research_update || portrait.status === 'research-preview';
+  if (portrait.data_import) return `<details class="notice" open><summary>${portraitBadge(portrait)}<span>Imported data · not newly verified or approved.</span></summary><p>${h(portrait.notice)}</p><p><a href="../imports/california/doughnut.json">Original app snapshot</a> · <a href="../imports/california/raw_social.csv">Social worksheet</a> · <a href="../imports/california/raw_ecological.csv">Ecological worksheet</a> · <a href="${h(portrait.provenance.repository)}/tree/${h(portrait.provenance.commit)}">Pinned source repository ↗</a></p></details>`;
   return `<details class="notice"><summary>${portraitBadge(portrait)}<span>${preview ? 'New findings await publication review.' : 'Sources, dates and coverage vary by measure.'}</span></summary>
     <p>${portrait.research_update ? 'This portrait combines an existing baseline with new findings. Baseline approval does not approve the amendments. Each measure retains its own review status.' : preview ? 'This is a provisional portrait. Findings require review before publication approval.' : 'Each measure links to its original source and available archived evidence.'} Values without a defensible target remain unscored; missing evidence remains a data gap.</p>
     <p>Open a dimension for source dates, geographic coverage and limitations. <a href="../#method">How to read the portrait</a>.</p></details>`;
@@ -106,7 +114,7 @@ function portraitBody(portrait) {
   <section class="chart-section"><div class="chart-column"><div class="chart"><canvas id="doughnut" tabindex="-1" width="800" height="800" role="img" aria-label="Doughnut portrait for ${h(portrait.name)}. All dimensions and values are listed below."></canvas><div id="chart-tooltip" class="chart-tooltip" role="tooltip" hidden></div><p id="chart-hover" aria-live="polite">Select a segment or a dimension below to read its evidence.</p></div>${dimensionLinks(portrait)}</div>
   <div class="chart-key"><div id="panel-empty"><h2>Read the portrait</h2><p class="evidence-counts">${available} available values · ${gaps} data gaps<br>${unscored} dimensions with values but no score</p>
   <ul class="status-legend" aria-label="Chart legend"><li><span class="legend-swatch within" aria-hidden="true"></span>Green: within target</li><li><span class="legend-swatch outside" aria-hidden="true"></span>Red: shortfall or overshoot</li><li><span class="legend-swatch unscored" aria-hidden="true"></span>Slate: value available, no score</li><li><span class="legend-swatch unknown" aria-hidden="true"></span>Grey: data needed</li><li><span class="legend-swatch selected" aria-hidden="true"></span>Blue: selected dimension</li></ul>
-  <details class="chart-explanation"><summary>What the rings and scores mean</summary><p>Inner ring: social foundation. Outer ring: ecological ceiling.</p><p>A dimension may contain several measures. Its wedge shows the published aggregate or worst supported draft score. A missing measure remains a gap even when another measure is available. Unscored values have no wedge score.</p></details></div>
+  <details class="chart-explanation"><summary>What the rings and scores mean</summary><p>Inner ring: social foundation. Outer ring: ecological ceiling.</p><p>${portrait.data_import ? 'Imported California wedges show the mean of both supplied percentages on Deep Fryer’s display scale, capped at 150. If either percentage is absent, the dimension remains unscored. The imported values are not a validated composite ranking.' : 'A dimension may contain several measures. Its wedge shows the published aggregate or worst supported draft score.'} A missing measure remains a gap even when another measure is available. Unscored values have no wedge score.</p></details></div>
   <dialog id="detail-panel" class="detail-panel" aria-labelledby="panel-heading"><button type="button" class="panel-close" aria-label="Close dimension details">Close ×</button><div class="panel-content"></div></dialog></div></section><div class="dimension-list">${details}</div>`;
 }
 for (const portrait of release.portraits) {
