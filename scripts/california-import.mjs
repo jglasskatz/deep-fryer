@@ -61,12 +61,16 @@ export function californiaPortrait() {
           indicator_slug: record.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
           name: record.name, value: record.value, unit: percent === null && record.unit !== '%' ? record.unit || '' : '', year: record.year,
           value_label: percent === null || fallback ? 'Source value · indicator overshoot unknown' : `Imported ${metric}`,
-          target: record.target, source: record.source, source_url: record.source_url,
+          // A native target must not be attached to the imported percentage headline.
+          // Preserve it with its native definition/value and in the unchanged legacy record.
+          target: null, source: record.source, source_url: record.source_url,
           geography: record.name === 'Ozone Layer' ? 'Global observation · California source portrait' : 'California source portrait · scope varies by measure',
-          status: 'legacy-source', notes: record.description, quality_flags: caveats,
+          status: 'legacy-source', notes: percent === null || fallback
+            ? 'The headline is the original source value. No indicator overshoot is supplied; the native measurement definition and target are shown in the original worksheet section.'
+            : `The headline is the imported ${metric} percentage, not the native measurement. The original measurement definition, value and target are shown together in the worksheet section; missing native values have not been inferred from the score.`, quality_flags: caveats,
           evidence_path: null, pdf_path: null, level_pct: fallback ? null : percent,
           imported_percentage: { metric, value: percent, origin: fallback ? 'category-average-fallback' : percent === null ? 'not-supplied' : 'indicator-column' },
-          source_worksheet: { value: row.California || null, unit: row.Unit || '', target: row.Desirable || null, period: row['Year (Measured / Published)'], notes: row.Notes },
+          source_worksheet: { definition: record.description, value: row.California || null, unit: row.Unit || '', target: row.Desirable || null, period: row['Year (Measured / Published)'], notes: row.Notes },
           legacy_record: record, worksheet_record: row,
         };
       });

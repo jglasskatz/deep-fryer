@@ -13,6 +13,7 @@ Do not use the repository's older `data/california.csv` example: it has no sourc
 ## Interpretation safeguards
 
 - A displayed shortfall or overshoot is not a native measurement. GHG is 1890% imported overshoot, while the worksheet measurement is 19.6 tonnes CO2 eq against 0.985. Native units must never be appended to percentage scores.
+- Native definitions and targets must accompany the worksheet observation, not define the headline percentage. Gender Pay Gap is 12.9% imported shortfall versus 87.1% native wages earned (target 100%); Voter Turnout is 40.0% shortfall versus 60.0% native turnout (target 100%). Preserve this separation for all 42 indicators. Compact summaries identify their value type. Top-level targets are null while original targets survive unchanged in the native worksheet and legacy records. Do not infer absent native values, including Vegetables per Day, from shortfalls.
 - Protected Area's inherited 503% and Ozone-Depleting Substances' inherited 0% came from the source category `Average` column, not supplied indicator overshoots. Their original values (25.2% / 16.2%, and Yes) are labeled source values; the inherited category average appears separately and is explicitly not an indicator overshoot. Both individual scores remain unknown.
 - At-Risk Species and Ozone Layer have observations but missing overshoot percentages. Null is not zero. Ozone Layer is a global observation and retains Dobson Units.
 - Homelessness's 35.9% is the imported shortfall score, not the percentage of Californians experiencing homelessness. Its worksheet native count is missing.
@@ -31,3 +32,11 @@ A durable source checkpoint was published at `6fd4b9c4c82d2ae00a2002ed9d380bcb2d
 `scripts/check-california-ui.mjs` checks the built `dist/pages` artifact offline using an already installed Chromium. It covers desktop and 390/320px layouts, scoped fallback score/native-value assertions, keyboard/repeated selection, reload, Close/Escape, source downloads and no-JavaScript access. Indicator assertions target headings rather than relying on original record order. It writes screenshots to `test-results/california/`. Run only after rebuilding the current code. Source requests outside the local test origin are blocked.
 
 The complete release is assembled at build time by publicRelease() and checked against the content-bound reconstruction. The large tracked 11-portrait baseline remains unchanged; generated dist/pages/data/portraits.json contains all 12 portraits.
+
+## Definition and palette follow-up
+
+The generic definition previously passed through a native measurement description next to an imported score. Definitions now appear inside the native worksheet section with the observation and target. Top-level targets are null; raw files, original records, source percentages and dimension levels are unchanged. Tests explicitly cover the pay ratio, voter turnout, other inverse scales and absent native observations.
+
+Available-but-unscored wedges now use neutral dark grey instead of the previous purple/slate override. Matching legend and control styles changed with it. Red/green scores, pale-grey data gaps and blue selection remain unchanged, including the unknown scores for California biodiversity and ozone.
+
+Local verification for this follow-up: 32 Pages tests, the production static build, workspace typecheck (also the workspace lint command's check), architecture-map validation and built-HTML assertions passed. The broad workspace regression did not finish and is not claimed as passed. Full automated browser/mobile coverage remains unrun; manual visual checks are recorded separately. No CI rerun, merge or deployment is included.

@@ -1,6 +1,6 @@
 import { DoughnutRenderer } from './doughnut-renderer.js';
 import { formatIndicatorValue } from './format.js';
-import { dimensionState, dimensionStatus } from './portrait-presentation.js';
+import { dimensionColour, dimensionStatus } from './portrait-presentation.js';
 const collection = JSON.parse(document.getElementById('portrait-data').textContent);
 const portraits = new Map(collection.portraits.map(p => [p.slug, p]));
 const links = [...document.querySelectorAll('.portrait-switcher a')];
@@ -113,7 +113,7 @@ function selectPortrait(slug, restoreDimension = true) {
       onSelect: hit => { const dimension = resolve(hit); if (dimension) { showDimension(dimension, false, canvas); queueMicrotask(drawChart); } },
     });
     renderer.setColours(2, 1, '#883251', '#E096C6');
-    renderer.setLevels(portrait.dimensions.map(d => ({ type: d.ring === 'social' ? 'inner' : 'outer', name: d.name, level: d.level ?? 'NaN', colour: d.slug === selectedDimension ? '#0066cc' : dimensionState(d) === 'unscored' ? '#6d7188' : null })));
+    renderer.setLevels(portrait.dimensions.map(d => ({ type: d.ring === 'social' ? 'inner' : 'outer', name: d.name, level: d.level ?? 'NaN', colour: dimensionColour(d, d.slug === selectedDimension) })));
   }
   canvas.parentElement.addEventListener('mouseleave', () => { tooltip.hidden = true; });
   panel.querySelector('.panel-close').addEventListener('click', () => { showDimension(null); drawChart(); });

@@ -6,7 +6,7 @@ import { californiaPortrait, californiaSourceFiles, parseWorksheet } from './cal
 import { publicRelease } from './research-overlays.mjs';
 import { validateRelease } from './pages-contract.mjs';
 import { pctToVizLevel } from '../packages/core/src/viz-level.js';
-import { dimensionState } from '../site/portrait-presentation.js';
+import { dimensionColour, dimensionState } from '../site/portrait-presentation.js';
 const json = path => JSON.parse(readFileSync(path, 'utf8'));
 const original = json('site/imports/california/doughnut.json');
 const portrait = californiaPortrait();
@@ -34,6 +34,9 @@ test('all 42 original records and worksheet rows survive without approval', () =
         assert.equal(i.source_url, i.legacy_record.source_url);
         assert.ok(i.source_url && i.source);
         assert.equal(i.value, i.legacy_record.value);
+        assert.equal(i.target, null, 'Native targets must not qualify imported percentage headlines');
+        assert.equal(i.source_worksheet.definition, i.legacy_record.description);
+        assert.notEqual(i.notes, i.legacy_record.description, 'Native definitions must not define the score');
         assert.equal(i.status, 'legacy-source');
         assert.equal(i.evidence_path, null);
         assert.equal(i.imported_percentage.value, i.legacy_record[ring === 'social' ? 'shortfall_pct' : 'overshoot_pct']);
@@ -44,6 +47,38 @@ test('all 42 original records and worksheet rows survive without approval', () =
     }
     const sort = a => a.toSorted((a, b) => a.Abreviation.localeCompare(b.Abreviation));
     assert.deepEqual(sort(importedRows), sort(rows));
+  }
+});
+
+test('score definitions and native observations remain distinct on inverse scales', () => {
+  for (const [name, score, native, target] of [
+    ['Gender Pay Gap', '12.9%', '87.1%', '100%'],
+    ['Voter Turnout', '40.0%', '60.0%', '100%'],
+    ['Racial Equity Index', '40.0%', '60', '100'],
+    ['Police Scorecard', '65.0%', '35%', '100%'],
+    ['Income Inequality', '100.0%', '0%', '100%'],
+    ['Transportation (Transit Report Card)', '40.0%', '6', '10'],
+    ['Renewable Electricity', '62%', '38%', '100%'],
+    ['Forest Cover', '28%', '27%', '37.5%'],
+  ]) {
+    const i = named(name);
+    assert.equal(i.value, score);
+    assert.equal(i.source_worksheet.value, native);
+    assert.equal(i.source_worksheet.target, target);
+    assert.equal(i.legacy_record.target, target);
+    assert.equal(i.target, null);
+    assert.match(i.value_label, /^Imported (shortfall|overshoot)$/);
+    assert.match(i.notes, /not the native measurement/);
+    assert.equal(i.source_worksheet.definition, i.legacy_record.description);
+  }
+  const vegetables = named('Vegetables per Day');
+  assert.equal(vegetables.value, '40.8%');
+  assert.equal(vegetables.source_worksheet.value, null, 'Do not infer 59.2% from a shortfall');
+  assert.equal(vegetables.source_worksheet.target, '100%');
+  assert.match(vegetables.source_worksheet.definition, /adults who eat/);
+  for (const i of indicators) {
+    assert.equal(i.source_worksheet.value, i.worksheet_record.California || null);
+    assert.equal(i.source_worksheet.target, i.worksheet_record.Desirable || null);
   }
 });
 
@@ -77,6 +112,7 @@ test('missing scores remain unknown, explicit zero survives, positive scores nev
     if (values.some(v => v === null)) {
       assert.equal(d.level, null);
       assert.equal(dimensionState(d), 'unscored');
+      assert.equal(dimensionColour(d), '#777777');
     } else {
       assert.equal(d.level, pctToVizLevel(values.reduce((a, b) => a + b, 0) / values.length));
       assert.ok(d.level > 0);
@@ -99,6 +135,8 @@ test('release preserves all 11 pre-import portraits exactly and reproduces Calif
     p => { p.provenance.approved = true; },
     p => { p.dimensions.find(d => d.slug === 'ozone-depletion').level = 0; },
     p => { p.dimensions[0].indicators[0].source_worksheet.period = '2026'; },
+    p => { p.dimensions[0].indicators[0].target = '100%'; },
+    p => { p.dimensions[0].indicators[0].source_worksheet.definition = 'Definition of the score'; },
   ]) {
     const modified = structuredClone(release);
     mutate(modified.portraits.find(p => p.slug === 'california'));

@@ -36,12 +36,37 @@ try {
   assert.equal(await page.locator('.dimension').count(), 21);
   assert.equal(await page.locator('.dimension .indicator').count(), 42);
   assert.match(await page.locator('.notice').innerText(), /not newly verified or approved/);
+  assert.match(await page.locator('.status-legend').innerText(), /Dark grey: value available, score unknown/);
+  assert.equal(await page.locator('.legend-swatch.unscored').evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(119, 119, 119)');
   await mkdir(screenshots, { recursive: true });
   await page.screenshot({ path: path.join(screenshots, 'california-desktop.png'), fullPage: true });
   const panel = page.locator('#detail-panel');
   const indicator = name => panel.locator('.indicator').filter({ has: page.getByRole('heading', { name, exact: true }) });
   const open = async name => { await page.getByRole('link', { name, exact: true }).click(); assert.equal(await panel.isVisible(), true); };
   const close = async () => { await page.getByRole('button', { name: 'Close dimension details' }).click(); assert.equal(await panel.isVisible(), false); };
+  const assertNativePair = async (name, score, native, definition) => {
+    const section = indicator(name);
+    assert.equal(await section.locator('.value').innerText(), score);
+    assert.match(await section.locator('.meta').first().innerText(), /^Imported (shortfall|overshoot)$/);
+    assert.match(await section.locator('.source-worksheet').innerText(), new RegExp(`Native measurement: ${native.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\n|$)`));
+    assert.equal(await section.locator('.native-definition').innerText(), `Native measurement definition: ${definition}`);
+    assert.equal(await section.locator('.target').count(), 0);
+    const notes = section.locator('.evidence-details').filter({ hasText: 'Definition and limitations' });
+    await notes.locator('summary').click();
+    assert.match(await notes.innerText(), /not the native measurement/);
+    assert.ok(!(await notes.innerText()).includes(definition), 'Native definition must not describe score');
+  };
+  await open('Equity');
+  await assertNativePair('Gender Pay Gap', '12.9%', '87.1%', "Percent of men's median wage earned by women for full-time year-round work");
+  assert.match(await page.locator('#summary-equity .dimension-headline').innerText(), /^Imported shortfall: 12.9%/);
+  await page.screenshot({ path: path.join(screenshots, 'california-pay-gap-desktop.png') });
+  await close();
+  await open('Political Voice');
+  await assertNativePair('Voter Turnout', '40.0%', '60.0%', 'Percent of eligible voter turnout');
+  await close();
+  await open('Food');
+  await assertNativePair('Vegetables per Day', '40.8%', 'Not supplied', 'Percent of adults who eat >=1 serving(s) of vegetables per day');
+  await close();
   await open('Climate Change');
   assert.equal(await panel.locator('.indicator').count(), 2);
   const ghg = indicator('Greenhouse Gas Footprint');
@@ -92,6 +117,11 @@ try {
     assert.ok(await panel.evaluate(el => el.scrollWidth <= el.clientWidth), 'No panel overflow');
     if (width === 390) await page.screenshot({ path: path.join(screenshots, 'california-food-mobile.png') });
     await close();
+    await open('Equity');
+    await assertNativePair('Gender Pay Gap', '12.9%', '87.1%', "Percent of men's median wage earned by women for full-time year-round work");
+    assert.ok(await panel.evaluate(el => el.scrollWidth <= el.clientWidth), 'No native-definition overflow');
+    if (width === 390) await page.screenshot({ path: path.join(screenshots, 'california-pay-gap-mobile.png') });
+    await close();
   }
   for (const file of ['doughnut.json', 'raw_social.csv', 'raw_ecological.csv', 'manifest.json']) assert.equal((await page.request.get(`${origin}/deep-fryer/imports/california/${file}`)).status(), 200);
   const noJsContext = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
@@ -101,5 +131,5 @@ try {
   assert.equal(await noJs.locator('.dimension .indicator').count(), 42);
   assert.equal(await noJs.locator('#dim-food').isVisible(), true);
   assert.deepEqual(errors, []); assert.deepEqual(failures, []);
-  console.log('California UI passed: desktop/mobile, native units, exact fallback scores, unknown/zero, full periods, keyboard/repeat/reload/Close/Escape, source downloads and no-JS.');
+  console.log('California UI passed: desktop/mobile, native definitions/values/targets versus scores, native units, exact fallback scores, unknown/zero, full periods, keyboard/repeat/reload/Close/Escape, source downloads and no-JS.');
 } finally { await browser?.close(); await new Promise(resolve => server.close(resolve)); }

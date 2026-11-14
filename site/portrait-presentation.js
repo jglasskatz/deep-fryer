@@ -4,6 +4,11 @@ export function dimensionState(dimension) {
   if (dimension.level === null) return dimension.indicators.some(hasValue) ? 'unscored' : 'unknown';
   return dimension.level <= 0 ? 'within' : 'outside';
 }
+/** Neutral unscored colour, distinct from pale data gaps and green safe results. */
+export function dimensionColour(dimension, selected = false) {
+  if (selected) return '#0066cc';
+  return dimensionState(dimension) === 'unscored' ? '#777777' : null;
+}
 export function dimensionStatus(dimension) {
   const state = dimensionState(dimension);
   if (state === 'unknown') return 'Data needed';
