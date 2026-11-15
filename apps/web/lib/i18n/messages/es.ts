@@ -414,12 +414,13 @@ export const es: Messages = {
     wedgesOutside: '{n}/{total} segmentos fuera de la zona segura',
     divergeTitle: 'Mayores diferencias entre {nouns}',
     divergeIntro:
-      'Indicadores publicados, comparados entre {nouns} y ordenados según la diferencia entre el {noun} mejor ubicado y el peor ubicado.',
+      'Los indicadores publicados se comparan entre {nouns} solo cuando coinciden el indicador, la unidad y el año, y se ordenan por la diferencia entre el valor mínimo y el máximo.',
     wholeColumn: 'La columna de la jurisdicción completa es una cifra publicada por separado, no un promedio.',
     indicator: 'Indicador',
     spread: 'Diferencia',
+    empty: 'No hay indicadores diferentes con la misma unidad y un año conocido para al menos dos miembros. La jurisdicción completa, si está presente, solo aporta contexto.',
     legend:
-      'Rojo = el {noun} más alejado de la meta; verde = el más cercano, en cada fila. Los indicadores que abarcan toda la jurisdicción (idénticos en todos los {nouns}) no aparecen en esta tabla por definición.',
+      'El verde marca el extremo favorable y el rojo el desfavorable solo cuando todos los miembros comparados comparten un criterio documentado de mayor es mejor o menor es mejor. En caso contrario, los valores se muestran sin color valorativo. Se omiten las filas idénticas; los colores no indican que se haya alcanzado la meta.',
   },
   insights: {
     metaTitle: 'Análisis · {org}',

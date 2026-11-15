@@ -43,6 +43,23 @@ const V4_BLOCKS: [string, number][] = [
   ['240.0.0.0', 4],
 ];
 
+/** Expand a validated IPv6 address, including a dotted IPv4 tail, into eight words. */
+function ipv6Words(ip: string): number[] {
+  // isIP accepts a zone identifier; it does not change the address being classified.
+  let address = ip.split('%')[0]!;
+  if (address.includes('.')) {
+    const lastColon = address.lastIndexOf(':');
+    const ipv4 = ipv4ToInt(address.slice(lastColon + 1));
+    address = `${address.slice(0, lastColon + 1)}${(ipv4 >>> 16).toString(16)}:${(ipv4 & 0xffff).toString(16)}`;
+  }
+  const [head, tail] = address.split('::');
+  const words = (part: string) => part ? part.split(':').map((word) => parseInt(word, 16)) : [];
+  const left = words(head!);
+  if (tail === undefined) return left;
+  const right = words(tail);
+  return [...left, ...Array<number>(8 - left.length - right.length).fill(0), ...right];
+}
+
 export function isPrivateAddress(ip: string): boolean {
   const family = isIP(ip);
   if (family === 4) {
@@ -53,12 +70,18 @@ export function isPrivateAddress(ip: string): boolean {
     });
   }
   if (family === 6) {
-    const lower = ip.toLowerCase();
-    if (lower === '::' || lower === '::1') return true;
-    const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(lower);
-    if (mapped?.[1]) return isPrivateAddress(mapped[1]);
+    const words = ipv6Words(ip);
+    if (words.slice(0, 7).every((word) => word === 0) && words[7]! <= 1) return true;
+    // IPv4-mapped IPv6 is ::ffff:0:0/96. URL parsing normalizes dotted tails
+    // to hexadecimal, so matching only ::ffff:a.b.c.d leaves a bypass.
+    if (words.slice(0, 5).every((word) => word === 0) && words[5] === 0xffff) {
+      const high = words[6]!;
+      const low = words[7]!;
+      return isPrivateAddress(`${high >>> 8}.${high & 255}.${low >>> 8}.${low & 255}`);
+    }
     // fc00::/7 unique-local, fe80::/10 link-local, ff00::/8 multicast.
-    return /^f[cd]/.test(lower) || /^fe[89ab]/.test(lower) || lower.startsWith('ff');
+    const first = words[0]!;
+    return (first & 0xfe00) === 0xfc00 || (first & 0xffc0) === 0xfe80 || (first & 0xff00) === 0xff00;
   }
   return true; // not an IP at all — refuse rather than guess
 }

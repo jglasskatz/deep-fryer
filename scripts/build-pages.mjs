@@ -15,8 +15,7 @@ const formatterCode = ts.transpileModule(await readFile('packages/core/src/forma
 }).outputText;
 const { formatIndicatorValue } = await import(`data:text/javascript;base64,${Buffer.from(formatterCode).toString('base64')}`);
 function indicatorValue(indicator) {
-  return formatIndicatorValue(indicator.kind === 'observation' && indicator.value !== null
-    ? Number(indicator.value.toFixed(1)) : indicator.value, indicator.unit);
+  return formatIndicatorValue(indicator.value, indicator.unit);
 }
 const text = await readFile(path.join(source, 'data/portraits.json'), 'utf8');
 const release = validateRelease(JSON.parse(text));

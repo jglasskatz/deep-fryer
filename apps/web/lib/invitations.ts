@@ -221,12 +221,22 @@ export async function acceptInvitation(
     );
   }
   await systemDb().transaction(async (tx) => {
+    // The earlier lookup is only a preview. Serialize with revocation and other
+    // acceptances, then recheck every live condition before granting membership.
+    // Lock first so an invitation that expires while waiting cannot be claimed.
+    await tx.select({ id: invitations.id }).from(invitations)
+      .where(eq(invitations.id, invitation.id)).for('update');
     const [claimed] = await tx
       .update(invitations)
       .set({ acceptedAt: new Date(), acceptedBy: user.id })
-      .where(and(eq(invitations.id, invitation.id), isNull(invitations.acceptedAt)))
+      .where(and(
+        eq(invitations.id, invitation.id),
+        isNull(invitations.acceptedAt),
+        isNull(invitations.revokedAt),
+        gt(invitations.expiresAt, sql`clock_timestamp()`),
+      ))
       .returning();
-    if (!claimed) throw new UserError('This invitation was already used.');
+    if (!claimed) throw new UserError('This invitation is no longer valid. Ask for a new one.');
     if (invitation.tenantId) {
       const [held] = await tx
         .select({ role: tenantMembers.role })

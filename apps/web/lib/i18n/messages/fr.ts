@@ -417,13 +417,14 @@ export const fr: Messages = {
     wedgesOutside: '{n}/{total} segments hors de la zone sûre',
     divergeTitle: 'Les plus grands écarts entre {nouns}',
     divergeIntro:
-      'Indicateurs publiés comparés entre {nouns}, classés selon l’écart entre le meilleur et le moins bon {noun}.',
+      'Les indicateurs publiés sont comparés entre {nouns} uniquement si l’indicateur, l’unité et l’année correspondent, puis classés selon l’écart entre les valeurs minimale et maximale.',
     wholeColumn:
       'La colonne du territoire dans son ensemble correspond à un chiffre publié à part entière, et non à une moyenne.',
     indicator: 'Indicateur',
     spread: 'Écart',
+    empty: 'Aucun indicateur différent avec une unité commune et une année connue n’est disponible pour au moins deux membres. Le territoire dans son ensemble, s’il est présent, sert uniquement de contexte.',
     legend:
-      'Pour chaque ligne : rouge = {noun} le plus éloigné de la cible, vert = le plus proche. Les indicateurs établis pour l’ensemble du territoire (identiques pour tous les {nouns}) sont, par construction, exclus de ce tableau.',
+      'Le vert marque l’extrême favorable et le rouge l’extrême défavorable uniquement si tous les membres comparés partagent un sens d’évaluation documenté : plus élevé ou plus bas signifie mieux. Sinon, les valeurs restent neutres. Les lignes identiques sont omises ; les couleurs ne prouvent pas que la cible est atteinte.',
   },
   insights: {
     metaTitle: 'Analyses · {org}',

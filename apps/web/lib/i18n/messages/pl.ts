@@ -428,12 +428,13 @@ export const pl: Messages = {
     wedgesOutside: 'Wycinki poza bezpieczną strefą: {n}/{total}',
     divergeTitle: 'Gdzie {nouns} różnią się najbardziej',
     divergeIntro:
-      'Opublikowane wskaźniki w zestawieniu — {nouns} obok siebie — uszeregowane według rozpiętości między najlepiej i najgorzej wypadającą jednostką ({noun}).',
+      'Opublikowane wskaźniki porównujemy między {nouns} tylko wtedy, gdy wskaźnik, jednostka i rok są zgodne. Kolejność zależy od rozpiętości między najniższą a najwyższą wartością.',
     wholeColumn: 'Kolumna „cała jurysdykcja” to osobno publikowana wartość, a nie średnia.',
     indicator: 'Wskaźnik',
     spread: 'Rozpiętość',
+    empty: 'Brak różniących się wskaźników o zgodnej jednostce i znanym roku dla co najmniej dwóch jednostek. Cała jurysdykcja, jeśli jest obecna, służy wyłącznie jako kontekst.',
     legend:
-      'W każdym wierszu: czerwony = jednostka ({noun}) najdalej od celu, zielony = najbliżej celu. Wskaźniki dla całej jurysdykcji (gdzie {nouns} się nie różnią) z założenia nie trafiają do tej tabeli.',
+      'Zielony oznacza korzystne ekstremum, a czerwony niekorzystne tylko wtedy, gdy wszystkie porównywane jednostki mają udokumentowany wspólny kierunek oceny: więcej znaczy lepiej lub mniej znaczy lepiej. W przeciwnym razie wartości pozostają neutralne. Wiersze z identycznymi wartościami są pomijane; kolory nie potwierdzają osiągnięcia celu.',
   },
   insights: {
     metaTitle: 'Analizy · {org}',
