@@ -1,13 +1,13 @@
 #!/usr/bin/env tsx
 /**
- * NYC portrait config proposal (Phase 1 output of docs/nyc-research-brief.md;
- * research synthesis in docs/nyc-impact-research.md).
+ * NYC portrait config proposal: threshold overrides, progress baseline and
+ * scale policy for the six NYC tenants.
  *
  * Dry-run by default: prints the proposed config as a diff against framework
  * defaults. `--apply` writes to tenant_config for all six NYC tenants — run
- * only after the Phase 2 user confirmation.
+ * only after the owner has confirmed the proposal.
  *
- * Design rules (from the brief): overrides only where NYC has an *adopted*
+ * Design rules: overrides only where NYC has an *adopted*
  * goal, each rationale cites the adopting instrument, nothing softens a
  * default. New threshold refs (no framework base) carry an explicit function
  * and, where target = 0, a scale.
@@ -135,9 +135,9 @@ export const thresholdOverrides = {
 // glidepath.
 
 // ---------------------------------------------------------------------------
-// Progress baseline (SPEC-v4 §4; docs/nyc-impact-research.md §1 "baseline
-// everything to January 2026"): the latest data year available when the
-// administration took office. Movement is measured from there.
+// Progress baseline (SPEC-v4 §4): every indicator is measured from the
+// latest data year available in January 2026, when the current target
+// period starts. Movement is measured from there.
 // ---------------------------------------------------------------------------
 export const progress = {
   baseline_year: 2025,
@@ -318,8 +318,7 @@ export const recency = {
 // county) already matches how NYC data publishes. Citywide-only dimensions
 // (GHG inventory, freshwater withdrawals) accept 'regional' so borough
 // portraits can carry the citywide figure explicitly labeled rather than a
-// fabricated split — Tier 2 of the ecological scale policy in
-// docs/nyc-impact-research.md §3.
+// fabricated split. A citywide figure is never divided among boroughs.
 // ---------------------------------------------------------------------------
 export const scalePolicy = {
   default_accepted: ['city', 'county'],

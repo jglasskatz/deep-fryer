@@ -84,7 +84,8 @@ set contract terms in-app for agreements invoiced outside Stripe.
   latest publication of a data year wins.
 - `tenant_config.progress = { baseline_year, baseline_label }`. NYC: 2025,
   "January 2026 baseline (latest data available at the start of the
-  administration)" — docs/nyc-impact-research.md §1.
+  administration)": the baseline is the latest data year available when the
+  target period starts.
 - Threshold overrides gain optional `target_year` (contract schema + zod).
   With a due year, status is on/off track against a straight glidepath from
   the baseline; without one, improving / worsening / no change. With only a

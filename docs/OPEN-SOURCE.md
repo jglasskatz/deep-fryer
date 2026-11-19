@@ -2,7 +2,7 @@
 
 *Audit date: 2026-10-16.*
 
-**Scope.** This audit covers the committed tree at `abae8f9` (branch `claude/production-pwa-billing`). It also covers the full history of every ref on GitHub: 76 commits across `main`, `claude/production-pwa-billing`, `claude/deep-fryer-design-spec-v2-7oojwt`, `claude/nyc-research-brief-6dhjpa`, `gh-pages` and `refs/pull/1/head`. Unreachable objects in the local clone are included too.
+**Scope.** This audit covers the committed tree at `abae8f9` (branch `claude/production-pwa-billing`). It also covers the full history of every ref on GitHub: 76 commits across `main`, `claude/production-pwa-billing`, `claude/deep-fryer-design-spec-v2-7oojwt`, one other `claude/*` branch, `gh-pages` and `refs/pull/1/head`. Unreachable objects in the local clone are included too.
 
 **Not covered:**
 
@@ -18,7 +18,7 @@
 | Question | Answer |
 |---|---|
 | Are there real secrets in the code or the history? | **No.** No live or real credentials were found in any ref, branch, PR ref or local unreachable object. Every string shaped like a key is a test fixture, a placeholder in the docs or a local-dev default (§1.2). **No secrets need rotating.** |
-| Can we just switch the existing repo to public? | **Not recommended.** On every branch and on PR #1, the history contains internal NYC sales and political strategy notes (`docs/nyc-impact-research.md`, `docs/nyc-research-brief.md`). It also contains the owner's personal Gmail address as author on 30 commits. Publish a **new repo** built from a cleaned tree instead (§5, step 6). |
+| Can we just switch the existing repo to public? | **Not recommended.** The history contains the owner's personal Gmail address as author on 30 commits. Internal working documents are kept outside the repository. Publish a **new repo** built from a cleaned tree instead (§5, step 6). |
 | Is anything licensed today? | **No.** deep-fryer has no LICENSE file, every `package.json` is `private` and none has a `license` field, so legally it is "all rights reserved". `doughnut-santa-cruz` also has no top-level LICENSE, even though its README says "MIT" and the repo has 6 forks. |
 | Do any dependencies block a license? | Nothing blocks MIT, Apache-2.0 or AGPL-3.0. The one proprietary runtime dependency is `@anthropic-ai/claude-agent-sdk`. If you choose AGPL, it needs a linking exception (§2). |
 | Is the Doughnut attributed? | **Attribution is required, and the product UI does not have it yet.** CC BY-SA on the diagram does not decide the code license (§3). |
@@ -79,13 +79,11 @@ To repeat the scan on the release commit, run `gitleaks detect --log-opts="--all
 
 | Item | Where | Risk | Action |
 |---|---|---|---|
-| NYC pitch and political strategy | `docs/nyc-impact-research.md`, added in `52c9864`, on every branch | **High (reputational).** It is framed as a pitch to the Mayor's office ("Don't lead with Raworth…", how to pre-empt "doughnut = degrowth" attacks, the mayor's political positioning). It is not confidential data, but it is business- and politically-sensitive, and DEAL could read it as unfriendly. | Remove from the tree **and** keep it out of the public history. This is the main reason to publish a new repo rather than switching the existing one to public. |
-| Orchestrator brief | `docs/nyc-research-brief.md`, `6509dab` | Medium. It is an internal agent prompt ("The audience is the mayor's office"). It also says research runs "on this session's own credentials … no API key needed", which goes against Anthropic's rule for third-party products (see §5, step 8). | Remove, or rewrite it as a generic guide to running a research campaign. |
-| Review notes on unpublished NYC data | `docs/review-briefs/*.md`, `2dc66d8` | Low to medium. It lists rejected and contested values that could be quoted as if they were official NYC figures. | Remove from the public tree. |
+| Internal working documents | Kept outside the repository | None in the tree. | Keep design documents, work cards and internal notes outside the repository. |
 | Owner's personal email | Commit author on 30 commits | Low. It is your address, but publishing exposes it. | A new repo with a single commit made under your GitHub noreply address avoids this. |
 | Keel session telemetry | `.keel/sessions/*.jsonl` (6 files) | Low. It is tool noise with no secrets. | Remove, and add `.keel/sessions/` to `.gitignore`. |
 | Real municipal contacts used as CLI examples | `clerk@cityofithaca.org` and `(607) 274-6570` in `scripts/create-tenant.ts`, `docs/deploy.md` and `docs/language-access.md` | Low. These are public office contacts, but someone pasting the example would invite a real clerk. | Replace them with `example.gov` placeholders. NYC 311 `(212) 639-9675` in tests is a public number and is fine. |
-| Notes about the sales funnel | `SPEC.md` §5 ("`deep-fryer` (closed)"), SPEC-v3 §0/W1 ("for the pitch"), SPEC-v5 §5 (notebook items such as "meet w/ candidates"), SPEC-v6 ("NYC: the Mayor's administration") | Low. These are design history, not secrets. | **[Owner decision]** Either keep them as design history under `docs/design/` with a note, or remove the pitch and candidate lines. |
+| Notes about the open and closed split | `SPEC.md` §5 ("`deep-fryer` (closed)") | Low. These are design history, not secrets. | **[Owner decision]** Either keep them as design history under `docs/design/` with a note, or remove them. |
 | `scripts/export-nyc.ts` | Hard-codes a `Co-Authored-By` trailer and pushes into the `doughnut-santa-cruz` checkout | Low | Generalize it, or move the NYC scripts to `examples/nyc/`. |
 | `gh-pages` branch | Santa Cruz static dashboard, plus 6 PNG screenshots of Santa Cruz and Watsonville government reports | Low | Leave it out of the new repo. The same content is already public in `doughnut-santa-cruz`. |
 
@@ -284,16 +282,16 @@ While you hold all the copyright (with a CLA), relicensing from AGPL to Apache l
    - a dependency list from `pnpm licenses list --prod -r`.
 4. [ ] **Add Doughnut attribution to the product** (§3.3): one component on every view that draws a doughnut, plus the methodology page, embeds and static export. Reword the "Doughnut Economics" copy listed in §3.2(5).
 5. [ ] **Clean the tree:**
-   - delete `docs/nyc-impact-research.md`, `docs/nyc-research-brief.md`, `docs/review-briefs/` and `.keel/sessions/`, and gitignore `.keel/sessions/`;
+   - keep internal working documents outside the repository;
+   - delete `.keel/sessions/` and gitignore it;
    - replace the Ithaca clerk's email and phone with `example.gov` placeholders;
    - generalize `scripts/export-nyc.ts` or move the NYC scripts to `examples/nyc/`;
-   - label the Santa Cruz demo data as unofficial;
-   - **[Owner decision]** whether to remove the pitch and candidate notes from the SPECs.
+   - label the Santa Cruz demo data as unofficial.
 6. [ ] **Choose a stable release commit.** HEAD is a work-in-progress checkpoint ("In progress: getting-involved foundation"), other agents are still editing, and the committed `docs/deploy.md` already refers to `scripts/nyc-involvement.ts`, which is not committed. Merge to `main`, get CI green, then **run §1.1 again on that commit**.
 7. [ ] **Publish a new repo, not a visibility switch.**
    - `git archive <release-commit> | tar -x -C ../deep-fryer-public`, then `git init`, then make one commit as `jglasskatz@users.noreply.github.com`, then push to a new public repo.
    - Either rename the private repo (for example to `deep-fryer-internal`) and publish the public one as `deep-fryer`, or use a new name.
-   - This leaves behind the strategy docs, the personal email, PR #1, `gh-pages` and the branches that exist only on the remote. Rewriting history with `git filter-repo` is worse: GitHub keeps `refs/pull/*` and cached views of the old commits.
+   - This leaves behind the old history, the personal email, PR #1, `gh-pages` and the branches that exist only on the remote. Rewriting history with `git filter-repo` is worse: GitHub keeps `refs/pull/*` and cached views of the old commits.
 8. [ ] **Self-hoster README** (rewrite `README.md`):
    - what it is, with a screenshot;
    - a 10-minute Docker quickstart: `cp .env.example .env`; set `SITE_ADDRESS`, `APP_URL`, `AUTH_SECRET`, `POSTGRES_PASSWORD`, `STORAGE_SECRET_KEY` and one sign-in method; `docker compose up -d --build`; `docker compose run --rm migrate node --import tsx ../../scripts/create-tenant.ts …`;
@@ -341,7 +339,7 @@ While you hold all the copyright (with a CLA), relicensing from AGPL to Apache l
 **Partly.** An assistant working in this repo can do everything up to the switch:
 
 - write the LICENSE, NOTICE, attribution component, README, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY.md, templates and CI checks;
-- remove the internal docs on a branch;
+- keep internal working documents outside the repository;
 - run the secret and license scans again;
 - build the clean single-commit export ready to push.
 

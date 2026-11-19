@@ -12,10 +12,9 @@ import type { MappingFunctionName } from '@deep-fryer/contract';
  * When the same data year was published more than once (a correction, a
  * re-research), the latest publication wins.
  *
- * Trajectory framing (docs/nyc-impact-research.md §1): a wedge outside the
- * safe zone at baseline is an inherited condition; what the administration
- * owns is the pace from there. With a target year, the engine draws a
- * straight glidepath from the baseline value to the target and reports
+ * Trajectory framing: a wedge outside the safe zone at baseline is an
+ * inherited condition; what the city owns is the pace from there. With a
+ * target year, the engine draws a straight glidepath from the baseline value to the target and reports
  * whether the latest value is on the right side of it — and, when there is
  * only one measurement so far, the annual pace the target requires.
  */

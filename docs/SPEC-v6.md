@@ -2,8 +2,7 @@
 
 **Status:** In implementation on `claude/production-pwa-billing`, 2026-10-16.
 Source: the owner's request to see the experience end to end — sign in,
-explore the doughnut, comment — for city staff (NYC: the Mayor's
-administration) and for a New York resident; "how to get involved" drawn
+explore the doughnut, comment — for city staff and for a New York resident; "how to get involved" drawn
 from NYC programs and organizations; and a way for organizations to put
 themselves forward on any page. Amends SPEC-v5. Decisions not made with
 the owner are marked **[P]**.
