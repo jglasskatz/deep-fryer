@@ -18,6 +18,7 @@ import {
 } from '@deep-fryer/core';
 import {
   getDb,
+  logSafeError,
   policyAnalyses,
   publishedDoughnut,
   tenantConfig,
@@ -306,9 +307,8 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
     );
   } catch (err) {
     const message = err instanceof AnalysisFailure ? err.message : UNEXPECTED;
-    helpers.logger.error(
-      `policy analysis ${analysisId} failed: ${err instanceof Error ? err.message : String(err)}`,
-    );
+    // Never the error's own message: a failed query's carries its SQL and bound values.
+    helpers.logger.error(`policy analysis ${analysisId} failed: ${logSafeError(err)}`);
     await settleFailed(analysisId, message, usage, transcript);
   }
 
@@ -717,7 +717,7 @@ export async function notifyPolicyRequester(analysisId: string): Promise<void> {
     );
     await send([row.email], email);
   } catch (err) {
-    console.error(`[notify] policy analysis ${analysisId}: ${err instanceof Error ? err.message : err}`);
+    console.error(`[notify] policy analysis ${analysisId}: ${logSafeError(err)}`);
   }
 }
 

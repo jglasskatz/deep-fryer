@@ -141,6 +141,31 @@ describe('preflight verdicts', () => {
     expect(errorDetail(new Error('x'.repeat(400)))).toHaveLength(220);
   });
 
+  // What drizzle-orm throws for a failed query: its own error, whose message
+  // is the SQL and the bound values, with the driver's error as its cause.
+  // (packages/db's tests run the same check against the real class.)
+  function queryWrapper(cause?: unknown) {
+    const query = 'select "id" from "users" where "users"."email" = $1';
+    const params = ['resident@example.org'];
+    return Object.assign(new Error(`Failed query: ${query}\nparams: ${params}`), { query, params, cause });
+  }
+
+  it('starts a failed database query with the network reason, not "Failed query"', () => {
+    const refused = Object.assign(new Error('connect ECONNREFUSED 127.0.0.1:5432'), { code: 'ECONNREFUSED' });
+    const detail = errorDetail(queryWrapper(refused));
+    expect(detail).toBe('connect ECONNREFUSED 127.0.0.1:5432');
+    expect(detail).not.toMatch(/Failed query|select|resident@example\.org/);
+    // Every address refused: postgres-js passes Node's AggregateError on.
+    const both = Object.assign(
+      new AggregateError([new Error('connect ECONNREFUSED ::1:5432'), new Error('connect ECONNREFUSED 127.0.0.1:5432')], ''),
+      { code: 'ECONNREFUSED' },
+    );
+    expect(errorDetail(queryWrapper(both))).toBe('connect ECONNREFUSED ::1:5432; connect ECONNREFUSED 127.0.0.1:5432');
+    const denied = Object.assign(new Error('permission denied for table users'), { code: '42501', severity: 'ERROR' });
+    expect(errorDetail(queryWrapper(denied))).toBe('permission denied for table users (42501)');
+    expect(errorDetail(queryWrapper())).toBe('database query failed');
+  });
+
   it('warns about placeholder sender and support addresses, and a support address that cannot be a mailto link', () => {
     expect(addressDomain('deep-fryer <no-reply@Example.gov>')).toBe('example.gov');
     expect(addressDomain('help@city.gov')).toBe('city.gov');
