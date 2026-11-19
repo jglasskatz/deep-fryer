@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { dimensionColour, dimensionState, dimensionStatus, regionSummary } from '../site/portrait-presentation.js';
+import { dimensionColour, dimensionState, dimensionStatus, hasValue, regionSummary } from '../site/portrait-presentation.js';
 test('a missing score distinguishes available values from missing data without inferring a score', () => {
  const dimension={ring:'social',level:null,indicators:[{value:null}]};
  assert.equal(dimensionState(dimension),'unknown');assert.equal(dimensionStatus(dimension),'Data needed');
@@ -35,6 +35,15 @@ test('explicit missing-data text is a gap, while zero and qualitative observatio
  }
  assert.equal(dimensionState({level:null,indicators:[{value:'placeholder',status:'gap'}]}), 'unknown');
  assert.equal(dimensionState({level:null,indicators:[{value:'Not available'},{value:0}]}), 'unscored');
+});
+
+test('a gap marker that also reports a number is a value, while a bare or located gap is not', () => {
+ for (const value of ['Data not available at city level (county: 12.3 mg/L)', 'Not available for 2024; 2022 value was 41%', 'Not available in 41 census tracts']) {
+  assert.equal(hasValue({value}), true, value);
+ }
+ for (const value of ['Data not available at city level', 'Not available for 2024', 'Not reported for 2022-23.', 'Value unavailable in Santa Cruz']) {
+  assert.equal(hasValue({value}), false, value);
+ }
 });
 
 test('within-target label is green without changing zero magnitude or selection', () => {
