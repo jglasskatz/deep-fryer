@@ -150,5 +150,9 @@ test('a legacy data file is read as data and anything executable is refused', ()
     'const JURISDICTIONS = {}, OTHER = 1;',
     'const OTHER = {};',
     'const JURISDICTIONS = {',
-  ]) assert.throws(() => readJurisdictions(text), /Legacy data/, text);
+    'JURISDICTIONS = { a: 1 }',
+    '({ a: 1 })',
+    '',
+    'let JURISDICTIONS;',
+  ]) assert.throws(() => readJurisdictions(text), error => error.constructor === Error && /^Legacy data/.test(error.message), text);
 });
