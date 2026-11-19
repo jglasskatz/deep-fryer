@@ -164,8 +164,9 @@ test('release preserves all 11 pre-import portraits exactly and reproduces Calif
   const preserved = release.portraits.filter(p => !importedSlugs.has(p.slug));
   assert.equal(preserved.length, 11);
   // Canonical JSON of the 11 baseline portraits before the import: main c7798c74
-  // plus the reviewed Santa Cruz housing and equity corrections in 9f6705e.
-  assert.equal(createHash('sha256').update(JSON.stringify(preserved)).digest('hex'), '2632e299d929409c5b2daed94aa7701dbcdebd7c1c5c7c58e2989890d0a485aa');
+  // plus the reviewed Santa Cruz housing and equity corrections in 9f6705e,
+  // with that housing and equity context rewritten as plain sentences.
+  assert.equal(createHash('sha256').update(JSON.stringify(preserved)).digest('hex'), 'bf12b19028489955c252bf2cf4ac35a93c5616fc3dbfa84a3f7560b3e37c9ca3');
   assert.deepEqual(release.portraits.find(p => p.slug === 'california'), JSON.parse(JSON.stringify(portrait)));
   validateRelease(release);
   for (const mutate of [
