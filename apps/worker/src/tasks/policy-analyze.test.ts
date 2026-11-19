@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { JobHelpers } from 'graphile-worker';
-import { POLICY_OUTPUT_LIMITS } from '@deep-fryer/core';
-import { composePolicyEmail, fitToContract, type PolicyNotice } from './policy-analyze.js';
+import { POLICY_OUTPUT_LIMITS, gatePolicyGraphEvidence, type PolicyImpactEdge, type PolicyImpactGraph } from '@deep-fryer/core';
+import { composePolicyEmail, fitToContract, policyGraphGateNote, type PolicyNotice } from './policy-analyze.js';
 import { startSmtpSink } from '../test/smtp-sink.js';
 
 /**
@@ -142,6 +142,69 @@ describe('fitToContract', () => {
     expect(value.impacts[1]).toMatchObject({ indicator: 'Rent burden', projected_value: 46 });
     expect(value.impacts[1]).not.toHaveProperty('projected_year');
     expect(adjustments).toEqual(['2 projections with an unusable indicator name, value, or year were kept as direction only (or without a year).']);
+  });
+});
+
+describe('policyGraphGateNote', () => {
+  const scope = { geography: 'Example County', horizon: '2020-2024', comparator: 'Neighboring counties', affectedGroups: ['Renter households'] };
+  const pageText =
+    'Evictions fell in the first two years after the ordinance took effect. Filings dropped 18 percent against neighboring counties.';
+  const receipts = [{ url: 'https://example.gov/evaluation', content: pageText, contentSha256: 'synthetic' }];
+  const edge = (id: string, magnitude: number | null, excerpt: string, url = 'https://example.gov/evaluation'): PolicyImpactEdge => ({
+    ...scope,
+    provenance: 'unverified',
+    id,
+    slice: 'housing',
+    direction: 'towardSafeJust',
+    evidence: 'observed',
+    link: 'direct',
+    outcome: 'Fewer eviction filings',
+    pathId: id,
+    mechanism: 'Just-cause protections',
+    magnitude: magnitude === null ? null : { value: magnitude, unit: 'percent', metric: 'Eviction filings', uncertainty: 'Stated' },
+    sources: [{ title: 'Evaluation', url, locator: 'p. 4', excerpt }],
+    uncertainty: 'Single study.',
+    assumptions: [],
+    validation: 'Compare with court records.',
+  });
+  const graph = (edges: PolicyImpactEdge[]): PolicyImpactGraph => ({
+    ...scope,
+    affectedGroups: [...scope.affectedGroups],
+    policyId: 'example-ordinance',
+    title: 'Example ordinance',
+    mode: 'retrospective',
+    evidenceCutoff: '2026-10-01',
+    assumptions: [],
+    costs: [],
+    validation: ['Compare with court records.'],
+    edges,
+  });
+  const noteFor = (g: PolicyImpactGraph) => policyGraphGateNote(g, gatePolicyGraphEvidence(g, receipts));
+  const unstated = 'Evictions fell in the first two years after the ordinance took effect.';
+  const stated = 'Filings dropped 18 percent against neighboring counties.';
+
+  it('names both counts when one pathway is downgraded and two lose only their number', () => {
+    const run = graph([
+      edge('no-receipt', 30, 'A passage that was never fetched from any page at all.', 'https://example.gov/other'),
+      edge('number-not-stated-a', 25, unstated),
+      edge('number-not-stated-b', 40, unstated),
+      edge('number-stated', 18, stated),
+      edge('no-number', null, unstated),
+    ]);
+    const gated = gatePolicyGraphEvidence(run, receipts);
+    expect(gated.downgraded).toBe(1);
+    expect(gated.graph.edges.map((e) => e.magnitude?.value ?? null)).toEqual([null, null, null, 18, null]);
+    expect(policyGraphGateNote(run, gated)).toBe(
+      '1 cross-slice pathway lacked matched source text or matching scope and was kept as an unverified hypothesis with unknown direction and no effect size. ' +
+        '2 cross-slice pathways kept their matched source text but lost their effect sizes, because no matched excerpt states the number.',
+    );
+  });
+
+  it('reports a lost number on its own, and nothing when the gate changed nothing', () => {
+    expect(noteFor(graph([edge('number-not-stated', 25, unstated)]))).toBe(
+      '1 cross-slice pathway kept its matched source text but lost its effect size, because no matched excerpt states the number.',
+    );
+    expect(noteFor(graph([edge('number-stated', 18, stated), edge('no-number', null, unstated)]))).toBeNull();
   });
 });
 

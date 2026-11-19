@@ -1,4 +1,4 @@
-import { gatePolicyGraphEvidence, policyGraphEvidenceSummary, readPolicyEvaluationContext, policyGraphMatchesScope } from '@deep-fryer/core';
+import { gatePolicyGraphEvidence, policyGraphEvidenceSummary, readPolicyEvaluationContext, policyGraphMatchesScope, type PolicyImpactGraph } from '@deep-fryer/core';
 import { retrievedPolicyEvidence } from '../policy-evidence.js';
 import type { Task } from 'graphile-worker';
 import type { ZodError } from 'zod';
@@ -18,6 +18,7 @@ import {
 } from '@deep-fryer/core';
 import {
   getDb,
+  logSafeError,
   policyAnalyses,
   publishedDoughnut,
   tenantConfig,
@@ -275,14 +276,16 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
     }
     // Model-declared provenance is not trusted: bind citations to actual tool receipts.
     if (parsed.data.impact_graph) {
-      const gated = gatePolicyGraphEvidence(parsed.data.impact_graph, retrievedPolicyEvidence(session.transcript));
+      const ungated = parsed.data.impact_graph;
+      const gated = gatePolicyGraphEvidence(ungated, retrievedPolicyEvidence(session.transcript));
       parsed.data.impact_graph = gated.graph;
       // Legacy impacts have no receipt-level provenance; do not render a second, ungated claim channel.
       parsed.data.impacts = [];
       parsed.data.assumptions = [];
       parsed.data.risks = [];
       parsed.data.summary = policyGraphEvidenceSummary(gated.graph).slice(0, POLICY_OUTPUT_LIMITS.summaryChars);
-      if (gated.downgraded) fitted.adjustments.push(`${gated.downgraded} cross-slice pathways lacked matched source text or matching scope and were kept as unverified hypotheses with unknown direction and no effect size.`);
+      const gateNote = policyGraphGateNote(ungated, gated);
+      if (gateNote) fitted.adjustments.push(gateNote);
     }
     // Graph-backed analyses use directional/native-unit evidence, never fabricated wedge sizes.
     const projections = parsed.data.impact_graph ? [] : projectDimensions(published, parsed.data.impacts);
@@ -304,9 +307,8 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
     );
   } catch (err) {
     const message = err instanceof AnalysisFailure ? err.message : UNEXPECTED;
-    helpers.logger.error(
-      `policy analysis ${analysisId} failed: ${err instanceof Error ? err.message : String(err)}`,
-    );
+    // Never the error's own message: a failed query's carries its SQL and bound values.
+    helpers.logger.error(`policy analysis ${analysisId} failed: ${logSafeError(err)}`);
     await settleFailed(analysisId, message, usage, transcript);
   }
 
@@ -541,6 +543,43 @@ export function fitToContract(raw: unknown, allowedSlugs: string[] = POLICY_DIME
   return { value: out, adjustments: notes };
 }
 
+// ---- The evidence gate's note ------------------------------------------------
+
+/**
+ * What the evidence gate changed in a cross-slice graph, as one note for the
+ * adjustments staff read, or null when it changed nothing they need to know.
+ * Two outcomes are counted apart. A downgraded pathway lost its direction and
+ * its effect size. A pathway whose excerpt matched the fetched page kept its
+ * wording but lost its effect size because no matched excerpt writes that
+ * number; the gate does not report these, so they are found by comparing each
+ * pathway before and after the gate (it maps the edges in order).
+ */
+export function policyGraphGateNote(
+  before: PolicyImpactGraph,
+  gated: { graph: PolicyImpactGraph; downgraded: number },
+): string | null {
+  const numberRemoved = gated.graph.edges.filter(
+    (edge, i) =>
+      edge.provenance === 'retrievedNotIndependentlyVerified' &&
+      edge.magnitude === null &&
+      (before.edges[i]?.magnitude ?? null) !== null,
+  ).length;
+  const parts: string[] = [];
+  if (gated.downgraded) {
+    const one = gated.downgraded === 1;
+    parts.push(
+      `${count(gated.downgraded, 'cross-slice pathway')} lacked matched source text or matching scope and ${one ? 'was' : 'were'} kept as ${one ? 'an unverified hypothesis' : 'unverified hypotheses'} with unknown direction and no effect size.`,
+    );
+  }
+  if (numberRemoved) {
+    const one = numberRemoved === 1;
+    parts.push(
+      `${count(numberRemoved, 'cross-slice pathway')} kept ${one ? 'its' : 'their'} matched source text but lost ${one ? 'its effect size' : 'their effect sizes'}, because no matched excerpt states the number.`,
+    );
+  }
+  return parts.length ? parts.join(' ') : null;
+}
+
 // ---- The safety net ------------------------------------------------------------
 
 /** A queued analysis this old with no runnable job is settled by the sweep. */
@@ -678,7 +717,7 @@ export async function notifyPolicyRequester(analysisId: string): Promise<void> {
     );
     await send([row.email], email);
   } catch (err) {
-    console.error(`[notify] policy analysis ${analysisId}: ${err instanceof Error ? err.message : err}`);
+    console.error(`[notify] policy analysis ${analysisId}: ${logSafeError(err)}`);
   }
 }
 

@@ -68,6 +68,8 @@ export function validateRelease(release) {
           if (!source.label || !source.evidence_path || !['https:', 'http:'].includes(new URL(source.source_url).protocol)) throw new Error('Invalid supporting source');
         }
         if (indicator.source_url && !['https:', 'http:'].includes(new URL(indicator.source_url).protocol)) throw new Error('Unsafe source URL');
+        // An imported record's own source address is also written into a link.
+        if (indicator.legacy_record?.source_url && !['https:', 'http:'].includes(new URL(indicator.legacy_record.source_url).protocol)) throw new Error('Unsafe imported source URL');
         if (indicator.status === 'source-supported-draft' && (!indicator.evidence_path || !indicator.review_note)) throw new Error('Unsupported draft badge');
         const spec = framework.dimensions.find(d => d.slug === dimension.slug)?.indicators.find(i => i.slug === indicator.indicator_slug);
         // An explicit reviewed overlay may retain a related measurement as

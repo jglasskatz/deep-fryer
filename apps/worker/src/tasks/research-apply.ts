@@ -13,6 +13,7 @@ import {
   dimensions,
   findings,
   getDb,
+  logSafeError,
   researchRuns,
   researchSessions,
   tenants,
@@ -407,7 +408,8 @@ export const researchApply: Task = async (rawPayload, helpers) => {
     if (settled === 'complete') helpers.logger.info(`run ${runId} complete`);
     else helpers.logger.error(`run ${runId} failed: no session succeeded`);
   } catch (err) {
-    helpers.logger.error(`run ${runId} failed: ${err instanceof Error ? err.message : err}`);
+    // Never the error's own message: a failed query's carries its SQL and bound values.
+    helpers.logger.error(`run ${runId} failed: ${logSafeError(err)}`);
     if (err instanceof OrgKeyUnavailableError) await failPlannedSessions(db, run, err.message);
     await db
       .update(researchSessions)

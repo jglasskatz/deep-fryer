@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { unstable_rethrow } from 'next/navigation';
 import { sql } from 'drizzle-orm';
 import { involvementSubmissionInputSchema, SUBMISSION_LIMITS } from '@deep-fryer/core';
-import { involvementSubmissions, postgresError, tenantBySlug } from '@deep-fryer/db';
+import { driverError, failureCode, involvementSubmissions, postgresError, tenantBySlug } from '@deep-fryer/db';
 import { addressHash, clientAddress } from './client-address';
 import { userDb } from './db';
 import { portraitFeaturesIn } from './features';
@@ -194,14 +194,16 @@ export async function submitInvolvement(input: SubmitInvolvementInput): Promise<
     });
   } catch (err) {
     unstable_rethrow(err);
-    // The Postgres error's code and constraint say what went wrong; any
-    // message, detail or query parameters may quote the submitted row,
-    // contact details included, so none of them is logged.
+    // The failure's code and constraint say what went wrong: a SQLSTATE from
+    // Postgres, or a system code (ECONNREFUSED, a connect timeout) when the
+    // database was never reached. Any message, detail or query parameters
+    // may quote the submitted row, contact details included, so none of them
+    // is logged; the name is the driver's, not the ORM wrapper's.
     const pg = postgresError(err);
-    const name = (err as { name?: unknown } | null)?.name;
+    const name = (driverError(err) as { name?: unknown } | null)?.name;
     console.error('[involvement] submission failed', {
       name: typeof name === 'string' ? name : undefined,
-      code: pg?.code,
+      code: failureCode(err),
       constraint: typeof pg?.constraint_name === 'string' ? pg.constraint_name : undefined,
     });
     return { status: 'failed' };

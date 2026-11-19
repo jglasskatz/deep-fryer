@@ -1,7 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { DrizzleQueryError } from 'drizzle-orm/errors';
+import { eq } from 'drizzle-orm';
+import { drizzle as drizzlePostgres } from 'drizzle-orm/postgres-js';
+import { drizzle as drizzleProxy } from 'drizzle-orm/pg-proxy';
 import postgres from 'postgres';
-import { driverError, isUniqueViolation, postgresError, postgresErrorCode, withPostgresError } from './errors.js';
+import { errorDetail } from '@deep-fryer/core';
+import {
+  driverError,
+  failureCode,
+  isUniqueViolation,
+  logSafeError,
+  postgresError,
+  postgresErrorCode,
+  withPostgresError,
+} from './errors.js';
+import { users } from './schema.js';
 
 /** A driver error as postgres-js builds one from a server ErrorResponse. */
 function serverError(code: string, message: string, extra: Record<string, string> = {}) {
@@ -66,5 +79,74 @@ describe('postgres errors behind the ORM', () => {
     expect(driverError(own)).toBe(own);
     expect(driverError(rls)).toBe(rls);
     expect(driverError('plain')).toBe('plain');
+  });
+});
+
+/** A value a resident typed, bound to the failing query below. */
+const RESIDENT = 'resident@example.org';
+
+/** Runs a real select bound to RESIDENT and returns what the ORM threw. */
+async function failedLookup(db: ReturnType<typeof drizzleProxy> | ReturnType<typeof drizzlePostgres>): Promise<unknown> {
+  try {
+    await db.select({ id: users.id }).from(users).where(eq(users.email, RESIDENT));
+  } catch (err) {
+    return err;
+  }
+  throw new Error('the query was expected to fail');
+}
+
+/** Log text never holds the bound value or any SQL. */
+function expectNoQueryText(text: string) {
+  expect(text).not.toContain(RESIDENT);
+  expect(text.toLowerCase()).not.toContain('select');
+  expect(text).not.toContain('"users"');
+}
+
+describe('log-safe descriptions of a failed query', () => {
+  it('keeps what Postgres said and its code, never the SQL or the bound values', async () => {
+    // The ORM's real query path, with a driver that answers as Postgres does
+    // when the role may not read the table.
+    const denied = serverError('42501', 'permission denied for table users');
+    const db = drizzleProxy(async () => {
+      throw denied;
+    });
+    const err = await failedLookup(db);
+    expect(err).toBeInstanceOf(DrizzleQueryError);
+    // The ORM's own message is exactly what must not be logged.
+    expect((err as Error).message).toContain(RESIDENT);
+    const line = logSafeError(err);
+    expect(line).toBe('permission denied for table users (42501)');
+    expectNoQueryText(line);
+    expect(failureCode(err)).toBe('42501');
+  });
+
+  it('reports a refused connection by its network reason and system code', async () => {
+    // A real postgres-js connection to a port nothing listens on.
+    const client = postgres('postgres://nobody:nothing@127.0.0.1:1/none', { max: 1, connect_timeout: 5, onnotice: () => {} });
+    try {
+      const err = await failedLookup(drizzlePostgres(client));
+      expect(err).toBeInstanceOf(DrizzleQueryError);
+      expect(failureCode(err)).toBe('ECONNREFUSED');
+      const line = logSafeError(err);
+      expect(line).toMatch(/^connect ECONNREFUSED 127\.0\.0\.1:1/);
+      expectNoQueryText(line);
+      // The operator preflight's line for the same failure starts the same way.
+      expect(errorDetail(err)).toMatch(/^connect ECONNREFUSED/);
+      expect(errorDetail(err)).not.toMatch(/Failed query/);
+    } finally {
+      await client.end({ timeout: 1 });
+    }
+  });
+
+  it('finds a code on any link, and none on an error of our own', () => {
+    const timeout = Object.assign(new Error('write CONNECT_TIMEOUT db:5432'), { code: 'CONNECT_TIMEOUT' });
+    expect(failureCode(wrapped(timeout))).toBe('CONNECT_TIMEOUT');
+    expect(failureCode(new Error('outer', { cause: wrapped(timeout) }))).toBe('CONNECT_TIMEOUT');
+    expect(failureCode(new Error('tenant t-1 missing'))).toBeUndefined();
+    expect(failureCode(null)).toBeUndefined();
+    // A wrapper buried in our own error is still left out of the line.
+    const nested = new Error('apply failed', { cause: wrapped(serverError('23505', 'duplicate key value violates unique constraint "t_a_uniq"')) });
+    expect(logSafeError(nested)).toBe('apply failed: duplicate key value violates unique constraint "t_a_uniq" (23505)');
+    expect(logSafeError(wrapped(undefined))).toBe('database query failed');
   });
 });
