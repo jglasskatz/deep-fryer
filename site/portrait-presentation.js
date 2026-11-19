@@ -13,6 +13,15 @@ export function dimensionState(dimension) {
   if (dimension.level === null) return dimension.indicators.some(hasValue) ? 'unscored' : 'unknown';
   return dimension.level <= 0 ? 'within' : 'outside';
 }
+/** Neutral unscored colour, distinct from pale data gaps and green safe results. */
+export function dimensionColour(dimension, selected = false) {
+  if (selected) return '#0066cc';
+  const state = dimensionState(dimension);
+  // A zero score has no bar area. The renderer's label pill makes the safe
+  // result visibly green without inventing a nonzero or negative magnitude.
+  if (state === 'within') return '#8cd755';
+  return state === 'unscored' ? '#777777' : null;
+}
 export function dimensionStatus(dimension) {
   const state = dimensionState(dimension);
   if (state === 'unknown') return 'Data needed';

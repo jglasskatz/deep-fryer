@@ -1,0 +1,23 @@
+{
+  "repository": "https://github.com/jglasskatz/ca-doughnut",
+  "commit": "6ff5033d020291985e47548509dc0ee1d2547488",
+  "imported_at": "2026-11-14",
+  "approved": false,
+  "files": {
+    "doughnut.json": {
+      "source_path": "frontend/public/api/regions/california/doughnut.json",
+      "sha256": "fa7dfd5504f2b5532495cd361ee1c0aaa494eb39246823f451d764ae5bdbab43",
+      "bytes": 29609
+    },
+    "raw_social.csv": {
+      "source_path": "data/raw_social.csv",
+      "sha256": "1dd48802a4c2c0a796c4a2a9bb0f9465590161dbdf37ff8b1ce107bd2f718ddc",
+      "bytes": 7334
+    },
+    "raw_ecological.csv": {
+      "source_path": "data/raw_ecological.csv",
+      "sha256": "8e45e5018d659615e9ed38b92dbc4b175490824ef8951258171ad25c4284dfd0",
+      "bytes": 5378
+    }
+  }
+}
