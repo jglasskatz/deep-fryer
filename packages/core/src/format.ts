@@ -3,18 +3,22 @@
  * never appears without its unit. Percent-style units attach directly
  * ("61.2% of renter households"); everything else gets a space
  * ("13,361 homes/year"). Non-numeric values pass through with the unit
- * appended.
+ * appended. Numeric values retain their source precision rather than being
+ * rounded to a fixed number of decimal places. Very small values use
+ * scientific notation so a nonzero measurement never appears as zero.
  */
 export function formatIndicatorValue(
   value: number | string | null | undefined,
   unit: string | null | undefined,
 ): string {
-  if (value === null || value === undefined || value === '') return 'Data needed';
+  if (value === null || value === undefined || value === '' ||
+      (typeof value === 'number' && !Number.isFinite(value))) return 'Data needed';
   const num =
     typeof value === 'number'
-      ? Number.isInteger(value)
-        ? value.toLocaleString('en-US')
-        : value.toLocaleString('en-US', { maximumFractionDigits: 2 })
+      ? value.toLocaleString('en-US', {
+          maximumSignificantDigits: 21,
+          notation: value !== 0 && Math.abs(value) < 0.000001 ? 'scientific' : 'standard',
+        })
       : String(value);
   const u = (unit ?? '').trim();
   if (!u) return num;

@@ -986,5 +986,17 @@
   "evidence/shared/901f341c58e9e15456964635.png": {
     "sha256": "901f341c58e9e154569646353103e994a926250ab3a2c80a18ead411ed502ecf",
     "bytes": 115714
+  },
+  "evidence/california-report/c6115602e4e0141f4a6c1634b826e7cfd7afc1fe941be6aa5d499fda80313535.png": {
+    "sha256": "c6115602e4e0141f4a6c1634b826e7cfd7afc1fe941be6aa5d499fda80313535",
+    "bytes": 400910
+  },
+  "evidence/california-report/9d6a13b5af388cc651a5cfb93edceba63b3053239950d13ddc8072440cc459ca.png": {
+    "sha256": "9d6a13b5af388cc651a5cfb93edceba63b3053239950d13ddc8072440cc459ca",
+    "bytes": 352927
+  },
+  "evidence/california-report/2bb83cb575e224ca01512973958b6c6d7d9eaf0e9f6ad612599f1cd19042d60b.pdf": {
+    "sha256": "2bb83cb575e224ca01512973958b6c6d7d9eaf0e9f6ad612599f1cd19042d60b",
+    "bytes": 123406
   }
 }

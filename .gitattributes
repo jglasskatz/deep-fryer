@@ -12,3 +12,10 @@ research/**/evidence/** binary
 research/**/figures/*.svg -whitespace
 research/**/*.csv binary
 research/**/source-extract.html binary
+
+# Preserve byte-pinned California import line endings.
+site/imports/california/*.csv -text
+site/imports/california/doughnut.json -text
+
+# Preserve the byte-pinned San Francisco import.
+site/imports/san-francisco/data.js -text

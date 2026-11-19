@@ -436,12 +436,13 @@ export const en = {
     wedgesOutside: '{n}/{total} wedges outside the safe zone',
     divergeTitle: 'Where the {nouns} diverge most',
     divergeIntro:
-      'Published indicators compared across {nouns}, ranked by the spread between the best- and worst-placed {noun}.',
+      'Published indicators compared across {nouns} only when the indicator, unit and year match, ranked by the spread between the lowest and highest values.',
     wholeColumn: 'The whole-jurisdiction column is its own published figure, not an average.',
     indicator: 'Indicator',
     spread: 'Spread',
+    empty: 'No differing indicators with a matching unit and known year are available for at least two members. The whole jurisdiction, when present, is context only.',
     legend:
-      'Red = the {noun} furthest from the target, green = closest, for each row. Jurisdiction-wide indicators (identical across {nouns}) drop out of this table by construction.',
+      'Green marks the favorable extreme and red the unfavorable extreme only when all compared members share a documented higher-is-better or lower-is-better scoring direction. Otherwise values stay neutral. Identical rows are omitted; colors do not establish target attainment.',
   },
   insights: {
     metaTitle: 'Insights · {org}',

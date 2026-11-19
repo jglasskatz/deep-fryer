@@ -9,14 +9,54 @@ describe('isPrivateAddress', () => {
       expect(isPrivateAddress(ip), ip).toBe(true);
     }
   });
+  it('checks the embedded IPv4 address in every mapped IPv6 representation', () => {
+    for (const ipv4 of [
+      '0.0.0.1', '10.1.2.3', '100.64.0.1', '127.0.0.1', '169.254.169.254',
+      '172.16.0.9', '192.0.0.1', '192.0.2.1', '192.168.1.1', '198.18.0.1',
+      '198.51.100.1', '203.0.113.1', '224.0.0.1', '255.255.255.255',
+    ]) {
+      const octets = ipv4.split('.').map(Number);
+      const high = (octets[0]! * 256 + octets[1]!).toString(16);
+      const low = (octets[2]! * 256 + octets[3]!).toString(16);
+      for (const ip of [
+        `::ffff:${ipv4}`, `::ffff:${high}:${low}`, `0:0:0:0:0:ffff:${ipv4}`,
+        `0000:0000:0000:0000:0000:FFFF:${high.padStart(4, '0')}:${low.padStart(4, '0')}`,
+        `0:0::ffff:${high}:${low}`,
+      ]) {
+        expect(isPrivateAddress(ip), ip).toBe(true);
+      }
+    }
+  });
+  it('recognizes expanded unspecified and loopback IPv6 addresses', () => {
+    for (const ip of ['0:0:0:0:0:0:0:0', '0:0:0:0:0:0:0:1', '0::1', '::0001']) {
+      expect(isPrivateAddress(ip), ip).toBe(true);
+    }
+  });
   it('passes public addresses', () => {
-    for (const ip of ['8.8.8.8', '172.32.0.1', '151.101.1.69', '2606:4700::1111']) {
+    for (const ip of ['8.8.8.8', '172.32.0.1', '151.101.1.69', '2606:4700::1111', '::ffff:8.8.8.8', '::ffff:808:808', '0:0:0:0:0:ffff:0808:0808']) {
       expect(isPrivateAddress(ip), ip).toBe(false);
     }
   });
 });
 
 describe('assertPublicHttpsUrl', () => {
+  it.each([
+    'https://[::ffff:127.0.0.1]/',
+    'https://[::ffff:7f00:1]/',
+    'https://[0:0:0:0:0:ffff:a9fe:a9fe]/latest/meta-data/',
+    'https://[::ffff:c0a8:101]/',
+  ])('rejects mapped private literals after URL normalization: %s', async (url) => {
+    const resolve = vi.fn(async () => ['8.8.8.8']);
+    await expect(assertPublicHttpsUrl(url, resolve)).rejects.toThrow(/non-public/);
+    expect(resolve).not.toHaveBeenCalled();
+  });
+
+  it('rejects a DNS answer with a mapped private address alongside public answers', async () => {
+    await expect(assertPublicHttpsUrl('https://mixed.example/', resolveTo({
+      'mixed.example': ['8.8.8.8', '0:0:0:0:0:ffff:7f00:1'],
+    }))).rejects.toThrow(/non-public/);
+  });
+
   it('requires https and public resolution', async () => {
     await expect(assertPublicHttpsUrl('http://data.cityofnewyork.us/x', resolveTo({}))).rejects.toThrow(/only https/);
     await expect(
@@ -46,6 +86,18 @@ describe('guardedFetch', () => {
     await expect(
       guardedFetch('https://public.example/start', {}, resolveTo({ 'public.example': ['8.8.8.8'], 'internal.example': ['10.0.0.7'] })),
     ).rejects.toThrow(/non-public address 10.0.0.7/);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('blocks a redirect to mapped IPv4 metadata before making a second request', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, {
+      status: 302,
+      headers: { location: 'https://[::ffff:169.254.169.254]/latest/meta-data/' },
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+    await expect(guardedFetch('https://public.example/start', {}, resolveTo({
+      'public.example': ['8.8.8.8'],
+    }))).rejects.toThrow(/non-public/);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 

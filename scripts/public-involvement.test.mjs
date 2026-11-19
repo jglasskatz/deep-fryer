@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import test from 'node:test';
+import { publicRelease } from './research-overlays.mjs';
 import { validatePublicInvolvement } from './public-involvement.mjs';
 const data = JSON.parse(readFileSync('site/data/involvement.json'));
-const portraits = JSON.parse(readFileSync('site/data/portraits.json')).portraits;
+const portraits = publicRelease().portraits;
 test('public opportunities have primary evidence and exact portrait dimensions', () => {
   const listings = validatePublicInvolvement(data, portraits);
   assert.ok(listings.some(x => x.portrait_slug === 'carmel'));

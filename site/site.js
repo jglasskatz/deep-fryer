@@ -1,6 +1,6 @@
 import { DoughnutRenderer } from './doughnut-renderer.js';
 import { formatIndicatorValue } from './format.js';
-import { dimensionState, dimensionStatus } from './portrait-presentation.js';
+import { dimensionColour, dimensionStatus } from './portrait-presentation.js';
 const collection = JSON.parse(document.getElementById('portrait-data').textContent);
 const portraits = new Map(collection.portraits.map(p => [p.slug, p]));
 const links = [...document.querySelectorAll('.portrait-switcher a')];
@@ -49,8 +49,13 @@ function selectPortrait(slug, restoreDimension = true) {
     add('strong', d.name);
     add('p', `${d.ring === 'social' ? 'Social foundation' : 'Ecological ceiling'} · ${dimensionStatus(d)}`);
     for (const indicator of d.indicators.slice(0, 2)) {
-      add('p', `${indicator.name}: ${formatIndicatorValue(indicator.kind === 'observation' && indicator.value !== null ? Number(indicator.value.toFixed(1)) : indicator.value, indicator.unit)} ${indicator.year ? `(${indicator.year})` : ''}`);
+      add('p', `${indicator.name}: ${formatIndicatorValue(indicator.value, indicator.unit)} ${indicator.year ? `(${indicator.year})` : ''}`);
       add('small', `${collection.statuses[indicator.status]} · ${indicator.geography || 'See source context'}`);
+      if (indicator.value_label) add('small', indicator.value_label);
+      if (indicator.report_verification) add('small', `Checked against 2025 report, page ${indicator.report_verification.page}`);
+      else if (indicator.imported_percentage?.origin === 'category-average-fallback') add('small', `Source category average (not indicator overshoot): ${indicator.imported_percentage.value}%`);
+      if (indicator.report_measurement?.period) add('small', `Measured period: ${indicator.report_measurement.period}`);
+      else if (indicator.source_worksheet?.period) add('small', `Measured / published: ${indicator.source_worksheet.period}`);
       if (indicator.quality_flags?.length) add('small', indicator.quality_flags.join(' · '));
       if (indicator.source) add('small', `Source: ${indicator.source}`);
     }
@@ -110,7 +115,7 @@ function selectPortrait(slug, restoreDimension = true) {
       onSelect: hit => { const dimension = resolve(hit); if (dimension) { showDimension(dimension, false, canvas); queueMicrotask(drawChart); } },
     });
     renderer.setColours(2, 1, '#883251', '#E096C6');
-    renderer.setLevels(portrait.dimensions.map(d => ({ type: d.ring === 'social' ? 'inner' : 'outer', name: d.name, level: d.level ?? 'NaN', colour: d.slug === selectedDimension ? '#0066cc' : dimensionState(d) === 'unscored' ? '#6d7188' : null })));
+    renderer.setLevels(portrait.dimensions.map(d => ({ type: d.ring === 'social' ? 'inner' : 'outer', name: d.name, level: d.level ?? 'NaN', colour: dimensionColour(d, d.slug === selectedDimension) })));
   }
   canvas.parentElement.addEventListener('mouseleave', () => { tooltip.hidden = true; });
   panel.querySelector('.panel-close').addEventListener('click', () => { showDimension(null); drawChart(); });

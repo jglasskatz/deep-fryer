@@ -1,0 +1,21 @@
+diff --git a/dist/index.js b/dist/index.js
+index ce0713f0d4d3a403ffdf53922a97421ad2a6c548..a3ab0729abf5c25e6d7e8007bd7e9dbaf0d27ddd 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -448,7 +448,16 @@ export const generalSEPrinciples = [
+                 for (let i = 0; i < lines.length; i++) {
+                     const line = lines[i] ?? "";
+                     const matches = line.matchAll(ABSOLUTE_PATH_RE);
++                    // Public source URLs can contain /home/ or /Users/ paths.
++                    // Exempt only matches inside valid HTTP(S) URL spans;
++                    // filesystem paths elsewhere on the same line still fail.
++                    const webUrls = [...line.matchAll(/\bhttps?:\/\/[^\s"'`<>\\]+/g)].filter((candidate) => {
++                        try { return Boolean(new URL(candidate[0]).hostname); }
++                        catch { return false; }
++                    });
+                     for (const match of matches) {
++                        if (webUrls.some((url) => match.index >= url.index && match.index + match[0].length <= url.index + url[0].length))
++                            continue;
+                         if (isIgnoreNextLine(content, i, "gate-is-reproducible"))
+                             continue;
+                         violations.push({

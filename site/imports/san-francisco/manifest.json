@@ -1,0 +1,77 @@
+{
+  "repository": "https://github.com/BioKyle/doughnut-san-francisco-v1",
+  "commit": "5cce9f1cc476052b88c316d847926e0ad34b4b00",
+  "forked_from": "https://github.com/jglasskatz/doughnut-santa-cruz",
+  "imported_at": "2026-11-19",
+  "approved": false,
+  "files": {
+    "data.js": {
+      "source_path": "docs/data.js",
+      "sha256": "2a18eca99b39838bbe054b80c106d9032eb289056d3f25b6e34e15ada020f531",
+      "bytes": 79628
+    }
+  },
+  "jurisdictions": {
+    "city_san_francisco": {
+      "import": true,
+      "slug": "san-francisco",
+      "geography": "city"
+    },
+    "soma_sf": {
+      "import": false,
+      "reason": "Not San Francisco data. All 22 rows are the Watsonville portrait's rows; only the name, population and description were changed."
+    },
+    "city_santa_cruz": {
+      "import": false,
+      "reason": "Inherited from the upstream project, which this collection already includes."
+    },
+    "santa_cruz_county": {
+      "import": false,
+      "reason": "Inherited from the upstream project, which this collection already includes."
+    }
+  },
+  "known_issues": [
+    {
+      "id": "repeated-placeholder",
+      "dimensions": [
+        "ocean-acidification",
+        "chemical-pollution",
+        "ozone-layer-depletion"
+      ],
+      "observed": {
+        "indicator": "Regional environmental baseline",
+        "value": "Compliant with state limits",
+        "target": "Planetary boundary alignment",
+        "source": "EPA / NOAA Region 9",
+        "level": 0
+      },
+      "issue": "These three dimensions repeat one placeholder record (indicator “Regional environmental baseline”, value “Compliant with state limits”, source “EPA / NOAA Region 9”) rather than a measurement each, and each is scored 0 (within target)."
+    },
+    {
+      "id": "freshwater-score-contradicts-target",
+      "dimensions": [
+        "freshwater-withdrawals"
+      ],
+      "observed": {
+        "value": "42",
+        "target": "45",
+        "level": 42
+      },
+      "issue": "Freshwater withdrawals reports 42 gallons per person per day against a target of 45, which is within target, yet carries an overshoot level of 42."
+    },
+    {
+      "id": "projected-source",
+      "dimensions": [
+        "peace-justice"
+      ],
+      "observed": {
+        "source": "Projected Synthesis"
+      },
+      "issue": "Peace & justice names its source as “Projected Synthesis”, a projection rather than a published measurement."
+    },
+    {
+      "id": "publisher-home-page-links",
+      "issue": "Source links go to publishers’ home or section pages, not to the cited documents, so no figure can be traced to the page it came from."
+    }
+  ]
+}

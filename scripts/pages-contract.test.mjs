@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { publicRelease } from './research-overlays.mjs';
 import { validateRelease, publicAssetPath, escapeHtml, inside } from './pages-contract.mjs';
-const release = JSON.parse(await readFile('site/data/portraits.json', 'utf8'));
+const release = publicRelease();
 test('release preserves every requested portrait and all researched indicators', () => {
   validateRelease(release);
-  assert.equal(release.portraits.length, 11);
+  assert.equal(release.portraits.length, 13);
   for (const slug of ['carmel', 'monterey-county']) {
     const portrait = release.portraits.find(p => p.slug === slug);
     assert.equal(portrait.status, 'research-preview');
