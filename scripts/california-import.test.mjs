@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { californiaPortrait, californiaSourceFiles, parseWorksheet } from './california-import.mjs';
+import { californiaPortrait, californiaSourceFiles, checkCaliforniaRecord, parseWorksheet } from './california-import.mjs';
 import { publicRelease } from './research-overlays.mjs';
 import { importedSlugs } from './portrait-imports.mjs';
 import { validateRelease } from './pages-contract.mjs';
@@ -32,7 +32,8 @@ test('all 42 original records and worksheet rows survive without approval', () =
       assert.deepEqual({ ...dimension.legacy_category, indicators: category.indicators }, category);
       assert.deepEqual(dimension.actions, category.actions);
       for (const i of dimension.indicators) {
-        assert.match(i.source_url, /^https:\/\/zenodo.org\/records\/17540639\/files\//);
+        assert.equal(i.source_url, 'https://zenodo.org/records/17540639');
+        assert.match(i.source, /, p8[45]$/);
         assert.ok(i.source_url && i.source);
         assert.equal(i.value, i.report_verification.score_text === 'No Overshoot' ? 'No overshoot' : `${i.level_pct}%`);
         assert.equal(i.target, null, 'Native targets must not qualify imported percentage headlines');
@@ -196,6 +197,53 @@ test('the inconsistent legacy example is excluded and source hashes remain pinne
   assert.equal(named('Literacy Rate').level_pct, 28);
   assert.equal(named('Energy Burden').level_pct, 19.6);
   assert.equal(named('Forest Cover').level_pct, 28);
+});
+
+test('source links open the report record page, never a file download', () => {
+  for (const i of indicators) {
+    for (const link of [i.source_url, i.legacy_record.source_url]) {
+      assert.doesNotMatch(link, /download=1/);
+      assert.ok(['https:', 'http:'].includes(new URL(link).protocol));
+    }
+  }
+});
+
+test('a release whose imported record links to a script is refused', () => {
+  for (const url of ['javascript:alert(1)', 'JavaScript:alert(1)', 'data:text/html,<script>alert(1)</script>']) {
+    const release = publicRelease();
+    release.portraits.find(p => p.slug === 'california').dimensions[0].indicators[0].legacy_record.source_url = url;
+    assert.throws(() => validateRelease(release), /Unsafe imported source URL/);
+  }
+});
+
+test('every field of the import record has a check', () => {
+  const manifest = json('site/imports/california/manifest.json');
+  assert.equal(checkCaliforniaRecord(structuredClone(manifest)).commit, manifest.commit);
+  // A field nobody checks is refused, at the top level and inside each file entry.
+  for (const add of [
+    m => { m.license = 'CC BY 4.0'; },
+    m => { m.files['notes.txt'] = { ...m.files['doughnut.json'] }; },
+    m => { m.files['raw_social.csv'].url = 'https://example.org/'; },
+  ]) {
+    const modified = structuredClone(manifest);
+    add(modified);
+    assert.throws(() => checkCaliforniaRecord(modified), /provenance changed/);
+  }
+  // Changing or removing any field that is present today is refused too.
+  const leaves = (value, path = []) => value && typeof value === 'object' ? Object.entries(value).flatMap(([key, child]) => [[...path, key], ...leaves(child, [...path, key])]) : [];
+  const paths = leaves(manifest);
+  assert.equal(paths.length, 17);
+  for (const path of paths) {
+    const parent = m => path.slice(0, -1).reduce((node, key) => node[key], m);
+    const key = path.at(-1);
+    const changed = structuredClone(manifest);
+    const value = parent(changed)[key];
+    parent(changed)[key] = typeof value === 'boolean' ? !value : typeof value === 'number' ? value + 1 : typeof value === 'string' ? `${value}x` : {};
+    assert.throws(() => checkCaliforniaRecord(changed), /provenance changed/, `changed ${path.join('.')}`);
+    const removed = structuredClone(manifest);
+    delete parent(removed)[key];
+    assert.throws(() => checkCaliforniaRecord(removed), /provenance changed/, `removed ${path.join('.')}`);
+  }
 });
 
 test('worksheet parser preserves quoted text and rejects malformed rows', () => {
