@@ -6,7 +6,7 @@ const release = publicRelease();
 test('every displayed amendment and unchanged baseline field reproduces from the exact independent reviews', () => {
   assert.deepEqual(release, reviewedOverlayRelease());
   assert.equal(release.research_overlay.human_approval, false);
-  assert.equal(release.portraits.length, 12);
+  assert.equal(release.portraits.length, 13);
   assert.ok(release.research_overlay.applied.length >= 31);
   assert.equal(overlayBaseline().portraits.find(p => p.slug === 'bronx').dimensions.find(d => d.slug === 'chemical-pollution').indicators[1].value, 6.76);
 });

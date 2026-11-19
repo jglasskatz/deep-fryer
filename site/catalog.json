@@ -55,6 +55,10 @@
     {
       "slug": "california",
       "status": "legacy-source"
+    },
+    {
+      "slug": "san-francisco",
+      "status": "legacy-source"
     }
   ]
 }

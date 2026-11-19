@@ -8,7 +8,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { gunzipSync } from 'node:zlib';
 import path from 'node:path';
 import { pctToVizLevel } from '../packages/core/src/viz-level.js';
-import { californiaPortrait } from './california-import.mjs';
+import { importedPortraits, importedSlugs } from './portrait-imports.mjs';
 import { portraitFramework } from './portrait-framework.mjs';
 
 const repo = realpathSync(new URL('..', import.meta.url));
@@ -148,8 +148,8 @@ export function reviewedOverlayRelease() {
   // portrait or its downloadable data. Preserve the frozen input for review.
   delete release.cost_scenarios;
   release.captured_at = overlayConfig.generated_at ?? release.captured_at;
-  // The separately hash-bound legacy import does not alter the reviewed baseline.
-  release.portraits.push(californiaPortrait());
+  // The separately hash-bound imports do not alter the reviewed baseline.
+  release.portraits.push(...importedPortraits());
   cached = { release, assets: [...assets] };
   return structuredClone(release);
 }
@@ -159,11 +159,11 @@ export function validateReviewedOverlay(release) {
   if (!isDeepStrictEqual(release, reviewedOverlayRelease())) throw new Error('Public snapshot differs from its content-bound research overlay');
 }
 
-/** Keep the large existing snapshot frozen; assemble the legacy import only at build time. */
+/** Keep the large existing snapshot frozen; assemble the pinned imports only at build time. */
 export function publicRelease() {
   const baseline = json(path.join(repo, 'site/data/portraits.json'));
-  if (baseline.portraits.some(p => p.slug === 'california')) throw new Error('California must be assembled from its pinned import, not duplicated in the baseline');
-  const release = { ...baseline, portraits: [...baseline.portraits, californiaPortrait()] };
+  if (baseline.portraits.some(p => importedSlugs.has(p.slug))) throw new Error('An imported portrait must be assembled from its pinned source, not duplicated in the baseline');
+  const release = { ...baseline, portraits: [...baseline.portraits, ...importedPortraits()] };
   validateReviewedOverlay(release);
   return release;
 }

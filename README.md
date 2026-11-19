@@ -6,7 +6,7 @@ Status: **v4 — shippable product.** [`SPEC.md`](./SPEC.md) (v2) is the base de
 
 ## Public portraits on GitHub Pages
 
-The [portrait collection](https://jglasskatz.github.io/deep-fryer/) includes the imported California statewide portrait, Santa Cruz, NYC and its boroughs, and explicitly labeled Carmel/Monterey research previews. It is a static public snapshot; accounts, billing, research execution and review remain in the server application.
+The [portrait collection](https://jglasskatz.github.io/deep-fryer/) includes the imported California statewide portrait, Santa Cruz, a community-made San Francisco portrait (shown as its author scored it, not checked here), NYC and its boroughs, and explicitly labeled Carmel/Monterey research previews. It is a static public snapshot; accounts, billing, research execution and review remain in the server application.
 
 CI checks the existing app, migrations, billing integration, Keel principles, snapshot contracts, evidence hashes and browser behavior. Only a passing `main` build deploys. See [the Pages release guide](docs/pages.md) for updating data, previews, verification and rollback.
 

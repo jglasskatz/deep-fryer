@@ -1,5 +1,5 @@
 import { publicRelease } from './research-overlays.mjs';
-import { californiaSourceFiles } from './california-import.mjs';
+import { portraitImports } from './portrait-imports.mjs';
 import { buildResearchPages } from './build-research-pages.mjs';
 import { readFile, writeFile, mkdir, copyFile, rm, realpath } from 'node:fs/promises';
 import path from 'node:path';
@@ -41,8 +41,10 @@ await mkdir(path.join(output, 'data'), { recursive: true });
 await writeFile(path.join(output, 'data/portraits.json'), text);
 await copyFile(path.join(source, 'data/evidence-manifest.json'), path.join(output, 'data/evidence-manifest.json'));
 for (const asset of requiredAssets) { await mkdir(path.dirname(inside(output, asset)), { recursive: true }); await copyFile(inside(source, asset), inside(output, asset)); }
-await mkdir(path.join(output, 'imports/california'), { recursive: true });
-for (const name of californiaSourceFiles) await copyFile(path.join(source, 'imports/california', name), path.join(output, 'imports/california', name));
+for (const { directory, files } of portraitImports) {
+  await mkdir(path.join(output, directory), { recursive: true });
+  for (const name of files) await copyFile(path.join(source, directory, name), path.join(output, directory, name));
+}
 await writeFile(path.join(output, '.nojekyll'), '');
 const status = { published: 'Published portrait', 'legacy-source': 'Existing source portrait', 'research-preview': 'Research preview', 'source-supported-observation': 'Observed · no scoring target', 'source-supported-draft': 'Source-supported draft · not approved', uncertain: 'Uncertain · evidence incomplete', gap: 'Data gap' };
 function portraitBadge(portrait) {
@@ -93,6 +95,7 @@ function indicatorDetails(i) {
 }
 function portraitNotice(portrait) {
   const preview = portrait.research_update || portrait.status === 'research-preview';
+  if (portrait.data_import?.kind === 'community-fork') return `<details class="notice" open><summary>${portraitBadge(portrait)}<span>Community data · not checked or approved here.</span></summary><p>${h(portrait.notice)}</p><p>${portrait.data_import.downloads.map(file => `<a href="../${h(file.path)}">${h(file.label)}</a>`).join(' · ')} · <a href="${h(portrait.provenance.repository)}/tree/${h(portrait.provenance.commit)}" rel="noopener noreferrer">Pinned commit ↗</a></p></details>`;
   if (portrait.data_import) return `<details class="notice" open><summary>${portraitBadge(portrait)}<span>${portrait.provenance.report_audit ? 'Checked against the 2025 report · not publication approved.' : 'Imported data · not newly verified or approved.'}</span></summary><p>${h(portrait.notice)}</p><p>${portrait.provenance.report_audit ? '<a href="../imports/california/report-audit.json">42-indicator report audit</a> · <a href="https://zenodo.org/records/17540639">2025 report ↗</a> · ' : ''}<a href="../imports/california/doughnut.json">Original app snapshot</a> · <a href="../imports/california/raw_social.csv">Social worksheet</a> · <a href="../imports/california/raw_ecological.csv">Ecological worksheet</a> · <a href="${h(portrait.provenance.repository)}/tree/${h(portrait.provenance.commit)}">Pinned source repository ↗</a></p></details>`;
   return `<details class="notice"><summary>${portraitBadge(portrait)}<span>${preview ? 'New findings await publication review.' : 'Sources, dates and coverage vary by measure.'}</span></summary>
     <p>${portrait.research_update ? 'This portrait combines an existing baseline with new findings. Baseline approval does not approve the amendments. Each measure retains its own review status.' : preview ? 'This is a provisional portrait. Findings require review before publication approval.' : 'Each measure links to its original source and available archived evidence.'} Values without a defensible target remain unscored; missing evidence remains a data gap.</p>
@@ -114,7 +117,7 @@ function portraitBody(portrait) {
   <section class="chart-section"><div class="chart-column"><div class="chart"><canvas id="doughnut" tabindex="-1" width="800" height="800" role="img" aria-label="Doughnut portrait for ${h(portrait.name)}. All dimensions and values are listed below."></canvas><div id="chart-tooltip" class="chart-tooltip" role="tooltip" hidden></div><p id="chart-hover" aria-live="polite">Select a segment or a dimension below to read its evidence.</p></div>${dimensionLinks(portrait)}</div>
   <div class="chart-key"><div id="panel-empty"><h2>Read the portrait</h2><p class="evidence-counts">${available} available values · ${gaps} data gaps<br>${unscored} dimensions with values but no score</p>
   <ul class="status-legend" aria-label="Chart legend"><li><span class="legend-swatch within" aria-hidden="true"></span>Green: within target</li><li><span class="legend-swatch outside" aria-hidden="true"></span>Red: shortfall or overshoot</li><li><span class="legend-swatch unscored" aria-hidden="true"></span>Dark grey: value available, score unknown</li><li><span class="legend-swatch unknown" aria-hidden="true"></span>Grey: data needed</li><li><span class="legend-swatch selected" aria-hidden="true"></span>Blue: selected dimension</li></ul>
-  <details class="chart-explanation"><summary>What the rings and scores mean</summary><p>Inner ring: social foundation. Outer ring: ecological ceiling.</p><p>${portrait.data_import ? 'California wedges show the mean of both report percentages on Deep Fryer’s display scale, capped at 150. If either percentage is absent, the dimension remains unscored. The reported values are not a validated composite ranking.' : 'A dimension may contain several measures. Its wedge shows the published aggregate or worst supported draft score.'} A missing measure remains a gap even when another measure is available. Unscored values have no wedge score.</p></details></div>
+  <details class="chart-explanation"><summary>What the rings and scores mean</summary><p>Inner ring: social foundation. Outer ring: ecological ceiling.</p>${portrait.data_import?.kind === 'community-fork' ? '<p>Wedges show the scores the source project assigned.</p>' : `<p>${portrait.data_import ? 'California wedges show the mean of both report percentages on Deep Fryer’s display scale, capped at 150. If either percentage is absent, the dimension remains unscored. The reported values are not a validated composite ranking.' : 'A dimension may contain several measures. Its wedge shows the published aggregate or worst supported draft score.'} A missing measure remains a gap even when another measure is available. Unscored values have no wedge score.</p>`}</details></div>
   <dialog id="detail-panel" class="detail-panel" aria-labelledby="panel-heading"><button type="button" class="panel-close" aria-label="Close dimension details">Close ×</button><div class="panel-content"></div></dialog></div></section><div class="dimension-list">${details}</div>`;
 }
 for (const portrait of release.portraits) {
