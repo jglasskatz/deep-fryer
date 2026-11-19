@@ -100,6 +100,34 @@ Wedges use the mean of the two report percentages mapped through `pctToVizLevel`
 
 The inconsistent old example `data/california.csv` remains excluded. Some example figures happened to match the final report (including at-risk species 947%), but it also contained substantive discrepancies. All corrections now cite the actual report, not that example.
 
-`scripts/california-import.mjs` rebuilds deterministically from hash-pinned originals plus the report audit. All 11 pre-import portraits and the large tracked baseline snapshot remain unchanged. The complete 12-portrait download is generated into `dist/pages/data/portraits.json`. The equality gate rejects changed values, scores and forged approvals. `approved: false` remains explicit. Contacts and outreach drafts are not included.
+`scripts/california-import.mjs` rebuilds deterministically from hash-pinned originals plus the report audit. All 11 pre-import portraits and the large tracked baseline snapshot remain unchanged. The complete portrait download (13 portraits, with San Francisco) is generated into `dist/pages/data/portraits.json`. The equality gate rejects changed values, scores and forged approvals. `approved: false` remains explicit. Contacts and outreach drafts are not included.
 
 Run `pnpm pages:test`, `pnpm pages:build` and `pnpm pages:check`. Tests cover all 42 report scores, immutable original records, native units and targets, omitted values, rounding, explicit no-overshoot, measured ranges, source hashes and tampering. Browser checks cover desktop/mobile, archive downloads, keyboard selection, repeated selection, reload, Close/Escape and no-JavaScript access. Browser checks require an executable installed Chromium; inability to launch is not a passing UI result.
+
+## San Francisco community import
+
+The `/san-francisco/` route shows the City of San Francisco portrait from a community fork of the Santa Cruz doughnut project, [`BioKyle/doughnut-san-francisco-v1`](https://github.com/BioKyle/doughnut-san-francisco-v1), pinned at commit `5cce9f1cc476052b88c316d847926e0ad34b4b00`. Its 21 dimensions use the shared canvas, dimension explorer and evidence panel. Nothing in it has been researched, checked against its sources or approved here, and the page says so in a notice that is open by default, with links to the original data file, the import record and the pinned commit.
+
+`site/imports/san-francisco/data.js` is the fork's `docs/data.js`, kept byte-for-byte (79,628 bytes, sha256 `2a18eca99b39838bbe054b80c106d9032eb289056d3f25b6e34e15ada020f531`; `.gitattributes` keeps its line endings). The build never runs it: `scripts/legacy-data-literal.mjs` parses it with the TypeScript parser and accepts only a single `JURISDICTIONS` object literal made of strings, numbers, booleans, null, arrays and plain objects. A function call, template expression, getter, method, spread, computed or repeated key, or a second statement is refused. `site/imports/san-francisco/manifest.json` is the import record: the pin, `approved: false`, a decision for every jurisdiction in the file, and the known issues. `scripts/san-francisco-import.mjs` assembles the portrait at build time, like California, so the frozen research snapshot is unchanged; `scripts/portrait-imports.mjs` lists both imports.
+
+**Scores are the fork's.** By the owner's decision every dimension keeps the fork's own `level`, unchanged, with no score withheld and no per-row flag. Ocean acidification, chemical pollution and ozone layer depletion therefore draw as within target, and freshwater withdrawals as an overshoot of 42. The chart explanation says only that wedges show the scores the source project assigned.
+
+**SoMa is not included.** The fork also contains a SoMa portrait, but all 22 of its rows are identical to the Watsonville portrait in the frozen baseline (the fork started from the same Santa Cruz commit); only its name, population and description were changed. A test checks that this still holds (22 of 22 rows). The fork's City of Santa Cruz and Santa Cruz County entries are inherited from the upstream project, which the collection already includes.
+
+**Known issues.** The import record lists these for the fork's author. They are recorded, not shown on the page, and the importer re-checks the facts behind each one against the pinned file, so the list fails the build rather than going stale:
+
+1. Ocean acidification, chemical pollution and ozone layer depletion repeat one placeholder record ("Regional environmental baseline", "Compliant with state limits", source "EPA / NOAA Region 9") rather than a measurement each.
+2. Freshwater withdrawals reports 42 gallons per person per day against a target of 45, which is within target, yet carries an overshoot level of 42.
+3. Peace & justice names its source as "Projected Synthesis".
+4. Source links go to publishers' home or section pages, not to the cited documents.
+
+The build fails if the file's bytes or hash, the pinned commit or the list of jurisdictions changes, if the record is marked approved or brings back withheld scores or flags, or if a known issue no longer matches the file. The release equality gate rejects any edit to the published portrait, including a changed score and a forged approval.
+
+**Refreshing the pin when the fork changes.**
+
+1. Download `docs/data.js` at the new commit (`https://raw.githubusercontent.com/BioKyle/doughnut-san-francisco-v1/<commit>/docs/data.js`) over `site/imports/san-francisco/data.js`. Do not open it in a browser or run it.
+2. Record its `sha256` and byte count in `manifest.json` (`files["data.js"]`), and the new `commit` and `imported_at`. Change the matching `pinned` values in `scripts/san-francisco-import.mjs` and the expected commit, hash and size in `scripts/san-francisco-import.test.mjs` and `scripts/check-san-francisco-ui.mjs`. The pin is deliberately written in more than one place, so a changed file cannot slip in through the record alone.
+3. Run `pnpm pages:test`. A new jurisdiction needs its own decision in the record. If SoMa no longer matches Watsonville, decide whether to import it rather than editing the test to pass. If the author has fixed a known issue, the importer reports it: remove that issue from the record and from the importer's list. A new placeholder group or score contradiction must be added to the list.
+4. Run `pnpm pages:build` and `pnpm pages:check` and read the built `dist/pages/san-francisco/index.html`.
+
+Run `pnpm pages:test`, `pnpm pages:build` and `pnpm pages:check`. Tests cover the pin, all 21 values, targets, years, sources, links, actions and scores against the fork's record, the known issues, the SoMa exclusion, the literal-only reader and tampering. The browser check covers the collection card, the open notice and its three links, each dimension's state against the fork's level, the panel and deep link, 390px and no-JavaScript reading.

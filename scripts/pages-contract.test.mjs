@@ -5,7 +5,7 @@ import { validateRelease, publicAssetPath, escapeHtml, inside } from './pages-co
 const release = publicRelease();
 test('release preserves every requested portrait and all researched indicators', () => {
   validateRelease(release);
-  assert.equal(release.portraits.length, 12);
+  assert.equal(release.portraits.length, 13);
   for (const slug of ['carmel', 'monterey-county']) {
     const portrait = release.portraits.find(p => p.slug === slug);
     assert.equal(portrait.status, 'research-preview');

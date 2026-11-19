@@ -4,6 +4,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { californiaPortrait, californiaSourceFiles, parseWorksheet } from './california-import.mjs';
 import { publicRelease } from './research-overlays.mjs';
+import { importedSlugs } from './portrait-imports.mjs';
 import { validateRelease } from './pages-contract.mjs';
 import { pctToVizLevel } from '../packages/core/src/viz-level.js';
 import { dimensionColour, dimensionState } from '../site/portrait-presentation.js';
@@ -159,8 +160,8 @@ test('all 42 report table scores, native values, targets and measured periods ma
 
 test('release preserves all 11 pre-import portraits exactly and reproduces California', () => {
   const release = publicRelease();
-  assert.equal(release.portraits.length, 12);
-  const preserved = release.portraits.filter(p => p.slug !== 'california');
+  assert.equal(release.portraits.length, 13);
+  const preserved = release.portraits.filter(p => !importedSlugs.has(p.slug));
   assert.equal(preserved.length, 11);
   // Canonical JSON of the 11 baseline portraits before the import: main c7798c74
   // plus the reviewed Santa Cruz housing and equity corrections in 9f6705e.
