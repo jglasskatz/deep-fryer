@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, it } from 'vitest';
+import { withPostgresError } from './errors.js';
 
 /**
  * The sign-in request ledger (migration 0016) and its limit: requests from
@@ -115,12 +116,12 @@ describe.skipIf(!hasDb)('sign-in requests', () => {
   it('is out of the app role’s reach entirely', async () => {
     const m = await import('./index.js');
     const db = m.getDb();
-    await expect(m.withAuthContext(db, null, (tx) => tx.select().from(m.signInRequests))).rejects.toThrow(/permission denied/);
+    await expect(withPostgresError(m.withAuthContext(db, null, (tx) => tx.select().from(m.signInRequests)))).rejects.toThrow(/permission denied/);
     await expect(
-      m.withAuthContext(db, null, (tx) => tx.insert(m.signInRequests).values({ ipHash: hash() })),
+      withPostgresError(m.withAuthContext(db, null, (tx) => tx.insert(m.signInRequests).values({ ipHash: hash() }))),
     ).rejects.toThrow(/permission denied/);
     await expect(
-      m.withAuthContext(db, null, (tx) => m.admitSignInRequest(tx, { ipHash: hash(), limit: 1, windowMs: 1_000 })),
+      withPostgresError(m.withAuthContext(db, null, (tx) => m.admitSignInRequest(tx, { ipHash: hash(), limit: 1, windowMs: 1_000 }))),
     ).rejects.toThrow(/permission denied/);
   });
 });

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { tenantBySlug } from '@deep-fryer/db';
+import { driverError, tenantBySlug } from '@deep-fryer/db';
 import { userDb } from '@/lib/db';
 import { getAuth, getRole, roleAtLeast } from '@/lib/auth';
 import { createPlannedRun } from '@/lib/research';
@@ -42,8 +42,11 @@ export async function POST(request: Request) {
       models: run.plan.models,
     });
   } catch (err) {
+    // A failed query reports what the database said, never the SQL and
+    // parameters the ORM puts in its own message.
+    const reason = driverError(err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'plan failed' },
+      { error: reason instanceof Error ? reason.message : 'plan failed' },
       { status: 400 },
     );
   }

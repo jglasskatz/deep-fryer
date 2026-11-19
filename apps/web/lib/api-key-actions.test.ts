@@ -194,7 +194,7 @@ describe.skipIf(!hasDb)('organization_api_keys under row-level security', () => 
 
     // Not an owner: cannot store a key (billing contacts neither).
     for (const who of [billing!, outsider!]) {
-      await expect(as(who.id, (tx) => m.upsertOrganizationApiKey(tx, values))).rejects.toThrow(/row-level security/);
+      await expect(m.withPostgresError(as(who.id, (tx) => m.upsertOrganizationApiKey(tx, values)))).rejects.toThrow(/row-level security/);
     }
 
     await as(owner!.id, (tx) => m.upsertOrganizationApiKey(tx, values));
@@ -206,9 +206,9 @@ describe.skipIf(!hasDb)('organization_api_keys under row-level security', () => 
 
     // The ciphertext column is not granted to the app role at all.
     await expect(
-      as(owner!.id, (tx) =>
+      m.withPostgresError(as(owner!.id, (tx) =>
         tx.select({ c: m.organizationApiKeys.ciphertext }).from(m.organizationApiKeys).where(eq(m.organizationApiKeys.organizationId, org.id)),
-      ),
+      )),
     ).rejects.toThrow(/permission denied/);
 
     expect(await as(outsider!.id, (tx) => m.deleteOrganizationApiKey(tx, org.id))).toBeNull();
