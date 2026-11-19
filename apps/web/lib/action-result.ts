@@ -1,5 +1,6 @@
 import { unstable_rethrow } from 'next/navigation';
 import { ZodError } from 'zod';
+import { errorDetail } from '@deep-fryer/core';
 
 /**
  * Server actions return values, never throw (SPEC-v3 §2.3). Production
@@ -44,10 +45,47 @@ export function action<I extends unknown[], O>(
       unstable_rethrow(err);
       if (err instanceof UserError) return { ok: false, error: err.message };
       if (err instanceof ZodError) return { ok: false, error: zodMessage(err) };
-      console.error('[server action]', err);
+      console.error('[server action]', logLine(err));
       return { ok: false, error: GENERIC };
     }
   };
+}
+
+/** A log line is long enough for a short cause chain; it is not a dump. */
+const LOG_LINE_MAX = 600;
+
+/**
+ * What the server log keeps of an unexpected failure: the reason as one line
+ * (what Postgres or the network said, with its code) and where it was thrown.
+ * The error itself is never logged, because a failed query's error carries
+ * the SQL text and the values bound to it, which may be a resident's contact
+ * details, in its message, its stack and its fields. Stack frames hold only
+ * function names and file positions, so they are kept.
+ *
+ * This is packages/db logSafeError's rule, called from core: client
+ * components import this module for unwrap(), so it must not load the
+ * database package.
+ */
+function logLine(err: unknown): string {
+  const reason = errorDetail(err, LOG_LINE_MAX);
+  const frames = stackFrames(err);
+  return frames.length ? `${reason}\n${frames.join('\n')}` : reason;
+}
+
+/**
+ * The "at …" lines of an error's stack. V8 writes the stack as the message
+ * and then the frames, and a bound value inside the message could itself
+ * contain a line that looks like a frame, so the message is cut off first;
+ * a stack that does not begin with its message gives no frames at all.
+ */
+function stackFrames(err: unknown): string[] {
+  if (!(err instanceof Error) || typeof err.stack !== 'string') return [];
+  const header = err.message ? `${err.name}: ${err.message}` : err.name;
+  if (!err.stack.startsWith(header)) return [];
+  return err.stack
+    .slice(header.length)
+    .split('\n')
+    .filter((line) => /^\s+at /.test(line));
 }
 
 /** Client side: turn a failed result back into a thrown Error for useAction to display. */

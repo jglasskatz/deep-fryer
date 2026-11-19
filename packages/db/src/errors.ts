@@ -10,6 +10,7 @@
  */
 
 import { DrizzleQueryError } from 'drizzle-orm/errors';
+import { errorDetail } from '@deep-fryer/core';
 
 /** The fields Postgres sends with every error response (both Node drivers carry them). */
 export interface PostgresErrorFields extends Error {
@@ -81,4 +82,41 @@ export async function withPostgresError<T>(promise: Promise<T>): Promise<T> {
  */
 export function driverError(err: unknown): unknown {
   return err instanceof DrizzleQueryError && err.cause !== undefined ? err.cause : err;
+}
+
+/** Room for a cause chain of a few links; a log line is not a dump. */
+const LOG_LINE_MAX = 600;
+
+/**
+ * A failure as one line a server log may keep: what Postgres or the network
+ * said and its code (SQLSTATE, or a system code such as ECONNREFUSED), for
+ * every link of the cause chain. The ORM's query wrapper adds nothing: its
+ * message is the SQL text and the bound values, which can carry a resident's
+ * contact details, free-text notes or a whole research payload. Postgres's
+ * DETAIL field, which quotes the offending row, is never read either.
+ *
+ * The rule itself is core's errorDetail, which the operator preflight shares
+ * and which the web app's action wrapper calls directly, because that module
+ * is also loaded in the browser and cannot import this package.
+ */
+export function logSafeError(err: unknown): string {
+  return errorDetail(err, LOG_LINE_MAX);
+}
+
+/**
+ * The code behind a failure: the SQLSTATE Postgres sent, or else the first
+ * system code on the cause chain (ECONNREFUSED, ETIMEDOUT, postgres-js's
+ * CONNECT_TIMEOUT), so a refused or timed-out connection is still told apart
+ * from a bug in our own code. Undefined when nothing on the chain has one.
+ */
+export function failureCode(err: unknown): string | undefined {
+  const pg = postgresErrorCode(err);
+  if (pg) return pg;
+  let current: unknown = err;
+  for (let depth = 0; depth < MAX_CAUSE_DEPTH && current != null; depth++) {
+    const code = (current as { code?: unknown }).code;
+    if (typeof code === 'string' && code) return code;
+    current = (current as { cause?: unknown }).cause;
+  }
+  return undefined;
 }

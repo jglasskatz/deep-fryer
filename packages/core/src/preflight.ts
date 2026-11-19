@@ -19,6 +19,13 @@ export type Verdict = { status: 'pass' | 'fail' | 'warn'; detail: string };
  * level deeper, or as an AggregateError with an empty message when every
  * address of a host refused). That reason is the only thing the operator can
  * act on, so each link contributes its first message line and its code, once.
+ *
+ * A failed database query arrives wrapped by the ORM, whose message is
+ * "Failed query: <SQL>" followed by the bound values: text that can hold a
+ * resident's contact details and that says nothing about why the query
+ * failed. That link contributes nothing, and its cause (what Postgres or the
+ * network said) is reported in its place. The line is therefore also what a
+ * server log may keep (packages/db logSafeError).
  */
 export function errorDetail(err: unknown, max = 220): string {
   const parts: string[] = [];
@@ -29,6 +36,11 @@ export function errorDetail(err: unknown, max = 220): string {
       break;
     }
     const e = current as { code?: unknown; message?: unknown; errors?: unknown; cause?: unknown };
+    if (isQueryWrapper(current)) {
+      if (e.cause === undefined || e.cause === null) parts.push('database query failed');
+      current = e.cause;
+      continue;
+    }
     const firstLine = (m: unknown) => (typeof m === 'string' ? m.split('\n')[0]!.trim() : '');
     let message = firstLine(e.message);
     if (!message && Array.isArray(e.errors)) {
@@ -41,6 +53,17 @@ export function errorDetail(err: unknown, max = 220): string {
   }
   const line = parts.join(': ') || 'unknown error';
   return line.length > max ? `${line.slice(0, max - 1)}…` : line;
+}
+
+/**
+ * The ORM's query error (drizzle-orm's DrizzleQueryError), recognised by the
+ * two fields it carries, the SQL text and its parameter list, because this
+ * package does not depend on the ORM. packages/db's tests hold this to the
+ * real class.
+ */
+function isQueryWrapper(value: object): boolean {
+  const v = value as { query?: unknown; params?: unknown };
+  return typeof v.query === 'string' && Array.isArray(v.params);
 }
 
 /** The domain of a bare address or of a "Name <address>" mailbox, lower-cased; null when there is none. */
