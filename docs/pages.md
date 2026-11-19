@@ -79,3 +79,55 @@ The deployed artifact contains only `dist/pages`, never the repository root. `re
 After deployment, verify the home page, `/santa-cruz/`, `/nyc/`, `/carmel/`, `/monterey-county/`, an archived screenshot and `release.json`. Confirm the deployed commit is the expected release and that the preview labels survived.
 
 To roll back, revert the release commit on `main` through a reviewed PR; CI rebuilds and redeploys the prior content. Avoid force-pushing history or bypassing failed checks. The **Run workflow** control can redeploy the checked current `main` snapshot without changing data. Re-run from the current revision when dependencies or evidence change; an old approval does not authorize modified findings.
+
+## California report-checked import
+
+The `/california/` route uses the shared canvas, dimension explorer, responsive evidence panel and source links. It contains 21 dimensions and all 42 indicators from the ca-doughnut snapshot at `6ff5033d020291985e47548509dc0ee1d2547488`, reconciled against the November 2025 California Doughnut Report. This is a report-transcription check, not independent validation of the underlying studies, publication approval, a live database migration or a deployment.
+
+`site/imports/california/` preserves the original `doughnut.json`, `raw_social.csv` and `raw_ecological.csv` byte-for-byte. `report-audit.json` is a separate hash-bound overlay with all 42 report observations, targets, units, measured periods, scores, comparisons and caveats. Its source is the 95-page report at https://zenodo.org/records/17540639. The downloaded PDF matched the Zenodo MD5 `fa91f14fe71eeae586cdc1d6d12616b0`. Pages 84 and 85 were text-extracted and visually inspected. Content-addressed PNGs and a two-page PDF excerpt are retained in `site/evidence/california-report/` and checked by the evidence manifest. The official report's linked live workbook was also inspected, but does not silently replace the dated PDF.
+
+Of 42 scores, 37 exactly match the report, one is a rounding difference (sanitation: imported 0.57%, report 0.6%), and four source outcomes were omitted or replaced by category-average fallbacks in the old import:
+
+- Protected Area: report overshoot 59%, not the inherited biodiversity category mean of 503%.
+- At-Risk Species: report overshoot 947%, not missing.
+- Ozone-Depleting Substances and Ozone Layer: both explicitly `No Overshoot`. Their display scores are zero and their wedge is green. This is report evidence, not a missing-to-zero conversion.
+
+Seven native social observations omitted by the imported CSV are restored from page 84: food insecurity 11.4%, vegetables/day 59.2%, homelessness 0.47%, poverty 15.4%, unemployment U6 9.3%, water quality 2.2%, and sanitation 0.6%. All 42 native targets and unit meanings align. Life expectancy and toxic-chemical observations have report/workbook rounding differences. The poverty measured period is 2021–2023 rather than the old top-level 2021. Forest Cover is 2022 in the PDF, while the live workbook marks `2022? / 2024`; that uncertainty is visible. Publication-year uncertainties remain in the archived import.
+
+The primary display follows the report's precision. Headlines are labeled `Report shortfall` or `Report overshoot`, separate from native observations and targets. Native GHG is 19.6 tonnes CO2 eq per capita (consumption), with 1890% overshoot against 0.985. Homelessness 35.9% is a normalized shortfall, not population prevalence; page 37 explains the 187,084 people / 0.47% observation and 1.32% OECD comparator. Original import values, periods, scores, underlying links and category fallbacks remain separately labeled provenance. Top-level score targets stay null.
+
+Wedges use the mean of the two report percentages mapped through `pctToVizLevel`, capped at 150. These mixed constructs are not additive or a validated composite ranking. Biodiversity is scored red. Ozone has a green label marker with zero external bar height, so its safe status is visible without inventing a negative overshoot. Neutral dark grey remains available for genuinely unscored observations elsewhere, pale grey for data gaps, and blue for selection. Selecting a scored wedge temporarily shows blue without changing its score.
+
+The inconsistent old example `data/california.csv` remains excluded. Some example figures happened to match the final report (including at-risk species 947%), but it also contained substantive discrepancies. All corrections now cite the actual report, not that example.
+
+`scripts/california-import.mjs` rebuilds deterministically from hash-pinned originals plus the report audit. All 11 pre-import portraits and the large tracked baseline snapshot remain unchanged. The complete portrait download (13 portraits, with San Francisco) is generated into `dist/pages/data/portraits.json`. The equality gate rejects changed values, scores and forged approvals. `approved: false` remains explicit. Contacts and outreach drafts are not included.
+
+Run `pnpm pages:test`, `pnpm pages:build` and `pnpm pages:check`. Tests cover all 42 report scores, immutable original records, native units and targets, omitted values, rounding, explicit no-overshoot, measured ranges, source hashes and tampering. Browser checks cover desktop/mobile, archive downloads, keyboard selection, repeated selection, reload, Close/Escape and no-JavaScript access. Browser checks require an executable installed Chromium; inability to launch is not a passing UI result.
+
+## San Francisco community import
+
+The `/san-francisco/` route shows the City of San Francisco portrait from a community fork of the Santa Cruz doughnut project, [`BioKyle/doughnut-san-francisco-v1`](https://github.com/BioKyle/doughnut-san-francisco-v1), pinned at commit `5cce9f1cc476052b88c316d847926e0ad34b4b00`. Its 21 dimensions use the shared canvas, dimension explorer and evidence panel. Nothing in it has been researched, checked against its sources or approved here, and the page says so in a notice that is open by default, with links to the original data file, the import record and the pinned commit.
+
+`site/imports/san-francisco/data.js` is the fork's `docs/data.js`, kept byte-for-byte (79,628 bytes, sha256 `2a18eca99b39838bbe054b80c106d9032eb289056d3f25b6e34e15ada020f531`; `.gitattributes` keeps its line endings). The build never runs it: `scripts/legacy-data-literal.mjs` parses it with the TypeScript parser and accepts only a single `JURISDICTIONS` object literal made of strings, numbers, booleans, null, arrays and plain objects. A function call, template expression, getter, method, spread, computed or repeated key, or a second statement is refused. `site/imports/san-francisco/manifest.json` is the import record: the pin, `approved: false`, a decision for every jurisdiction in the file, and the known issues. `scripts/san-francisco-import.mjs` assembles the portrait at build time, like California, so the frozen research snapshot is unchanged; `scripts/portrait-imports.mjs` lists both imports.
+
+**Scores are the fork's.** By the owner's decision every dimension keeps the fork's own `level`, unchanged, with no score withheld and no per-row flag. Ocean acidification, chemical pollution and ozone layer depletion therefore draw as within target, and freshwater withdrawals as an overshoot of 42. The chart explanation says only that wedges show the scores the source project assigned.
+
+**SoMa is not included.** The fork also contains a SoMa portrait, but all 22 of its rows are identical to the Watsonville portrait in the frozen baseline (the fork started from the same Santa Cruz commit); only its name, population and description were changed. A test checks that this still holds (22 of 22 rows). The fork's City of Santa Cruz and Santa Cruz County entries are inherited from the upstream project, which the collection already includes.
+
+**Known issues.** The import record lists these for the fork's author. They are recorded, not shown on the page, and the importer re-checks the facts behind each one against the pinned file, so the list fails the build rather than going stale:
+
+1. Ocean acidification, chemical pollution and ozone layer depletion repeat one placeholder record ("Regional environmental baseline", "Compliant with state limits", source "EPA / NOAA Region 9") rather than a measurement each.
+2. Freshwater withdrawals reports 42 gallons per person per day against a target of 45, which is within target, yet carries an overshoot level of 42.
+3. Peace & justice names its source as "Projected Synthesis".
+4. Source links go to publishers' home or section pages, not to the cited documents.
+
+The build fails if the file's bytes or hash, the pinned commit or the list of jurisdictions changes, if the record is marked approved or brings back withheld scores or flags, or if a known issue no longer matches the file. The release equality gate rejects any edit to the published portrait, including a changed score and a forged approval.
+
+**Refreshing the pin when the fork changes.**
+
+1. Download `docs/data.js` at the new commit (`https://raw.githubusercontent.com/BioKyle/doughnut-san-francisco-v1/<commit>/docs/data.js`) over `site/imports/san-francisco/data.js`. Do not open it in a browser or run it.
+2. Record its `sha256` and byte count in `manifest.json` (`files["data.js"]`), and the new `commit` and `imported_at`. Change the matching `pinned` values in `scripts/san-francisco-import.mjs` and the expected commit, hash and size in `scripts/san-francisco-import.test.mjs` and `scripts/check-san-francisco-ui.mjs`. The pin is deliberately written in more than one place, so a changed file cannot slip in through the record alone.
+3. Run `pnpm pages:test`. A new jurisdiction needs its own decision in the record. If SoMa no longer matches Watsonville, decide whether to import it rather than editing the test to pass. If the author has fixed a known issue, the importer reports it: remove that issue from the record and from the importer's list. A new placeholder group or score contradiction must be added to the list.
+4. Run `pnpm pages:build` and `pnpm pages:check` and read the built `dist/pages/san-francisco/index.html`.
+
+Run `pnpm pages:test`, `pnpm pages:build` and `pnpm pages:check`. Tests cover the pin, all 21 values, targets, years, sources, links, actions and scores against the fork's record, the known issues, the SoMa exclusion, the literal-only reader and tampering. The browser check covers the collection card, the open notice and its three links, each dimension's state against the fork's level, the panel and deep link, 390px and no-JavaScript reading.

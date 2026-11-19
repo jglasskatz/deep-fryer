@@ -155,6 +155,7 @@ jobs:
             test-results/pages-ui
             test-results/public-design
             test-results/longitudinal
+            test-results/san-francisco
             dist/pages/release.json
           if-no-files-found: warn
       - name: Name this attempt's public artifact

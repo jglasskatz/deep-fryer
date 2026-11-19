@@ -171,7 +171,7 @@
           "ring": "social",
           "name": "housing",
           "level": null,
-          "context": "2024 PIT count: 1,850 unhoused (sheltered + unsheltered) city-wide. 19.5% of county households cost-burdened (>30% income on housing, DataShare SCC 2023). 60% of city residents are renters. Median rent above $3,000/mo. Rents up 24.4% since 2019. Santa Cruz has the highest per-capita homelessness rate in the nation.",
+          "context": "The 2026 PIT report, physical page 13, reports one-night counts by jurisdiction. Street enumeration occurred January 29, with shelter occupancy from January 28. The count excludes some forms of homelessness and is not annual persons served. Newly included safe parking/sleeping records added 124 people in Santa Cruz city and 2 in Watsonville compared with prior practice, so annual changes are not directly comparable. The legacy 1,850 was the 2024 COUNTY total, not Santa Cruz city. Housing cost burden remains a separate unresolved measure. No count-based score is inferred from the legacy combined prose target. Source arithmetic conflict: the published city total is 1,024, but 789 unsheltered + 234 sheltered = 1,023; incorporated and county subtotals also support 1,023. Retain uncertainty and do not silently repair the source.",
           "actions": [
             "Support Housing Matters Santa Cruz (formerly Homeless Services Center)",
             "Advocate for more affordable housing development",
@@ -286,7 +286,7 @@
           "ring": "social",
           "name": "social equity",
           "level": null,
-          "context": "Gini of 0.483 — well above the California Doughnut target of <0.30 (where 0 = perfect equality, 1 = all income to one person). California state index is 0.65. Racial Equity Index Inclusion Score: 54 (county) vs CA target of 100. Tech/university incomes vs service/agricultural worker wages create extreme polarization.",
+          "context": "Official B19083_E001=0.4936;90%MOE±0.0183. 2020–2024 ACS5 year, geography 1600000 US0669112. Replaces earlier unclear countyproxy/approximation. Legacytarget was prose and differs byportrait; no new numericthreshold approved here. Watsonville environmentaljustice context is distinct from household income Gini.",
           "actions": [
             "Support living wage initiatives",
             "Advocate for progressive local tax policies",
@@ -935,7 +935,7 @@
           "ring": "social",
           "name": "housing",
           "level": null,
-          "context": "Rents up 24.4% since 2019. 2024 PIT: 1,850 unhoused county-wide (down to 1,473 in 2025). 57% of renters cost-burdened. Highest per-capita homelessness rate in the nation.",
+          "context": "The 2026 PIT report, physical page 13, reports one-night counts by jurisdiction. Street enumeration occurred January 29, with shelter occupancy from January 28. The count excludes some forms of homelessness and is not annual persons served. Newly included safe parking/sleeping records added 124 people in Santa Cruz city and 2 in Watsonville compared with prior practice, so annual changes are not directly comparable. The legacy 1,850 was the 2024 COUNTY total, not Santa Cruz city. Housing cost burden remains a separate unresolved measure. No count-based score is inferred from the legacy combined prose target. County: 1,290 unsheltered + 358 sheltered = 1,648.",
           "actions": [
             "Support Housing Matters",
             "Advocate for affordable housing",
@@ -1048,7 +1048,7 @@
           "ring": "social",
           "name": "social equity",
           "level": null,
-          "context": "Gini of 0.50 at threshold of severe inequality. North-south divide: SC city median $111K vs Watsonville $75K. Tech/university incomes vs agricultural/service wages. CalEnviroScreen flags south county for environmental injustice.",
+          "context": "Official B19083_E001=0.4864;90%MOE±0.0184. 2024 ACS1 year, geography 0500000 US06087. Replaces earlier unclear countyproxy/approximation. Legacytarget was prose and differs byportrait; no new numericthreshold approved here. Watsonville environmentaljustice context is distinct from household income Gini.",
           "actions": [
             "Support living wage initiatives",
             "Advocate for equitable tax policies",
@@ -1721,7 +1721,7 @@
           "ring": "social",
           "name": "housing",
           "level": null,
-          "context": "Affordable housing rent limits: $1,627 (studio) to $2,510 (4BR). Market rate likely higher. Rising homelessness with smaller budget and fewer staff than SC city. No dedicated homelessness department. 20.4% decline in county-wide homelessness reported.",
+          "context": "The 2026 PIT report, physical page 13, reports one-night counts by jurisdiction. Street enumeration occurred January 29, with shelter occupancy from January 28. The count excludes some forms of homelessness and is not annual persons served. Newly included safe parking/sleeping records added 124 people in Santa Cruz city and 2 in Watsonville compared with prior practice, so annual changes are not directly comparable. The legacy 1,850 was the 2024 COUNTY total, not Santa Cruz city. Housing cost burden remains a separate unresolved measure. No count-based score is inferred from the legacy combined prose target. Watsonville: 179 unsheltered + 124 sheltered = 303.",
           "actions": [
             "Advocate for Watsonville homelessness department/coordinator",
             "Support affordable housing development",
@@ -1836,7 +1836,7 @@
           "ring": "social",
           "name": "social equity",
           "level": null,
-          "context": "CalEnviroScreen flags south county as high pesticide exposure and pollution burden. County Gini 0.50 (severe inequality). Watsonville disproportionately bears county's environmental costs while having lower incomes.",
+          "context": "Official B19083_E001=0.4282;90%MOE±0.0213. 2020–2024 ACS5 year, geography 1600000 US0683668. Replaces earlier unclear countyproxy/approximation. Legacytarget was prose and differs byportrait; no new numericthreshold approved here. Watsonville environmentaljustice context is distinct from household income Gini.",
           "actions": [
             "Support environmental justice organizations (COPA, APEN)",
             "Advocate for equitable distribution of environmental burdens",

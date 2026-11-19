@@ -51,6 +51,14 @@
       "slug": "monterey-county",
       "status": "research-preview",
       "framework_profile": "local-extreme-heat-v1"
+    },
+    {
+      "slug": "california",
+      "status": "legacy-source"
+    },
+    {
+      "slug": "san-francisco",
+      "status": "legacy-source"
     }
   ]
 }

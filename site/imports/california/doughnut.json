@@ -1,0 +1,854 @@
+{
+  "region": {
+    "id": 1,
+    "slug": "california",
+    "name": "State of California",
+    "region_type": "state",
+    "population": "~39 million",
+    "description": "California is the US's 3rd largest state by land mass and has its largest population, with over 39 million residents."
+  },
+  "social": [
+    {
+      "id": 1,
+      "slug": "connectivity-and-transportation",
+      "name": "Connectivity & Transportation",
+      "ring": "social",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 1,
+          "name": "Connectivity (Internet Access)",
+          "description": "Percent of households without any internet subscription or access through cellphone-only",
+          "value": "16.9%",
+          "unit": null,
+          "year": 2023,
+          "shortfall_pct": 16.9,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "U.S. Census Bureau. (n.d.). California households without internet access [Data table].",
+          "source_url": "https://data.census.gov/table?q=california%20without%20internet"
+        },
+        {
+          "id": 2,
+          "name": "Transportation (Transit Report Card)",
+          "description": "Report card scores on vehicle miles traveled and transit access only",
+          "value": "40.0%",
+          "unit": null,
+          "year": 2021,
+          "shortfall_pct": 40.0,
+          "overshoot_pct": null,
+          "target": "10",
+          "source": "Transportation for America. (n.d.). Transit report card.",
+          "source_url": "https://t4america.org/transit-report-card/"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "slug": "education",
+      "name": "Education",
+      "ring": "social",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 3,
+          "name": "Literacy Rate",
+          "description": "Percent of people 16-74 with literacy proficiency at or below Level 1",
+          "value": "28.0%",
+          "unit": null,
+          "year": 2017,
+          "shortfall_pct": 28.0,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "Institute of Education Sciences, National Center for Education Statistics.",
+          "source_url": "https://nces.ed.gov/surveys/piaac/skillsmap/src/PDF/STATE.pdf"
+        },
+        {
+          "id": 4,
+          "name": "Student Loan Debt",
+          "description": "Percent of college graduates with student loan debt",
+          "value": "46.0%",
+          "unit": null,
+          "year": 2020,
+          "shortfall_pct": 46.0,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "The Institute for College Access & Success. (2021).",
+          "source_url": "https://ticas.org/wp-content/uploads/2021/11/Student-Debt-for-College-Graduates-in-California.pdf"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "slug": "energy",
+      "name": "Energy",
+      "ring": "social",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 5,
+          "name": "Energy Burden",
+          "description": "Percent of households whose energy bill was >=10% of household income",
+          "value": "19.6%",
+          "unit": null,
+          "year": 2022,
+          "shortfall_pct": 19.6,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "Fisher, Sheehan & Colton. (2023). Home Energy Affordability Gap.",
+          "source_url": "http://www.homeenergyaffordabilitygap.com/03a_affordabilityData.html"
+        },
+        {
+          "id": 6,
+          "name": "Energy Reliability",
+          "description": "Percent of population living in counties with average total outage time of 6 hours or more per year",
+          "value": "7.0%",
+          "unit": null,
+          "year": 2023,
+          "shortfall_pct": 7.0,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "Murphy, P. & Kwoka, B. (in preparation). Equity-adjusted value of lost load.",
+          "source_url": "https://doi.org/10.6084/m9.figshare.24237376.v2"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "slug": "equity",
+      "name": "Equity",
+      "ring": "social",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 8,
+          "name": "Gender Pay Gap",
+          "description": "Percent of men's median wage earned by women for full-time year-round work",
+          "value": "12.9%",
+          "unit": null,
+          "year": 2023,
+          "shortfall_pct": 12.9,
+          "overshoot_pct": null,
+          "target": "100%",
+          "source": "U.S. Census Bureau. (2023). What is the gender wage gap in your state?",
+          "source_url": "https://www.census.gov/library/stories/2022/03/what-is-the-gender-wage-gap-in-your-state.html"
+        },
+        {
+          "id": 7,
+          "name": "Racial Equity Index",
+          "description": "Inclusion score based on racial gaps in economic vitality, readiness, and connectedness",
+          "value": "40.0%",
+          "unit": null,
+          "year": 2023,
+          "shortfall_pct": 40.0,
+          "overshoot_pct": null,
+          "target": "100",
+          "source": "PolicyLink & USC Equity Research Institute. (2024). Racial Equity Index.",
+          "source_url": "https://nationalequityatlas.org/research/racial_equity_index/index"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "slug": "food",
+      "name": "Food",
+      "ring": "social",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 9,
+          "name": "Food Insecurity",
+          "description": "Percent of households who live with food insecurity",
+          "value": "11.4%",
+          "unit": null,
+          "year": 2023,
+          "shortfall_pct": 11.4,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "USDA Economic Research Service. Food security in the U.S.",
+          "source_url": "https://www.ers.usda.gov/topics/food-nutrition-assistance/food-security-in-the-u-s/interactive-charts-and-highlights/#States"
+        },
+        {
+          "id": 10,
+          "name": "Vegetables per Day",
+          "description": "Percent of adults who eat >=1 serving(s) of vegetables per day",
+          "value": "40.8%",
+          "unit": null,
+          "year": 2022,
+          "shortfall_pct": 40.8,
+          "overshoot_pct": null,
+          "target": "100%",
+          "source": "California Department of Public Health. California community obesity profiles.",
+          "source_url": "https://www.cdph.ca.gov/Programs/CCDPHP/DCDIC/NEOPB/Pages/SNAPEdCountyProfileDashboard.aspx"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "slug": "health",
+      "name": "Health",
+      "ring": "social",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 12,
+          "name": "Healthcare Affordability",
+          "description": "Percent of adults who delayed, skipped, or reduced their utilization of health care due to costs",
+          "value": "53.0%",
+          "unit": null,
+          "year": 2023,
+          "shortfall_pct": 53.0,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "California Health Care Foundation. Understanding California's health care affordability crisis.",
+          "source_url": "https://www.chcf.org/resource-center/understanding-californias-health-care-affordability-crisis/impact-on-californians/"
+        },
+        {
+          "id": 11,
+          "name": "Life Expectancy",
+          "description": "Percent of population living in counties with life expectancy below OECD average (80.9 years)",
+          "value": "32.5%",
+          "unit": null,
+          "year": 2023,
+          "shortfall_pct": 32.5,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "County Health Rankings and Roadmaps. Life Expectancy in California. Year: 2023.",
+          "source_url": "https://www.countyhealthrankings.org/health-data/population-health-and-well-being/length-of-life/life-span/life-expectancy?state=06&tab=1&year=2023"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "slug": "housing",
+      "name": "Housing",
+      "ring": "social",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 13,
+          "name": "Homelessness",
+          "description": "Point-in-time count of unhoused people",
+          "value": "35.9%",
+          "unit": null,
+          "year": 2024,
+          "shortfall_pct": 35.9,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "HUD. (2024). Continuum of care homeless populations report: California 2024.",
+          "source_url": "https://files.hudexchange.info/reports/published/CoC_PopSub_State_CA_2024.pdf"
+        },
+        {
+          "id": 14,
+          "name": "Housing Cost Burden",
+          "description": "Percent of renters with housing costs that exceed 30% of household income",
+          "value": "55.0%",
+          "unit": null,
+          "year": 2018,
+          "shortfall_pct": 55.0,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "Public Policy Institute of California. Californians and the housing crisis.",
+          "source_url": "https://www.ppic.org/interactive/californians-and-the-housing-crisis/"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "slug": "income-and-work",
+      "name": "Income & Work",
+      "ring": "social",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 15,
+          "name": "Poverty",
+          "description": "Percent of people experiencing poverty defined by supplemental poverty rate (3-year average)",
+          "value": "15.4%",
+          "unit": null,
+          "year": 2021,
+          "shortfall_pct": 15.4,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "U.S. Census Bureau. (2024). Supplemental poverty measure.",
+          "source_url": "https://www.census.gov/library/stories/2024/09/supplemental-poverty-measure-states.html"
+        },
+        {
+          "id": 16,
+          "name": "Unemployment (U-6)",
+          "description": "Percent of unemployed people including workers employed part-time for economic reasons and those marginally attached to the labor force",
+          "value": "9.3%",
+          "unit": null,
+          "year": 2023,
+          "shortfall_pct": 9.3,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "Bureau of Labor Statistics. (2024). Alternative measures of labor underutilization in California.",
+          "source_url": "https://www.bls.gov/regions/west/news-release/laborunderutilization_california.htm"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "slug": "peace-and-justice",
+      "name": "Peace & Justice",
+      "ring": "social",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 18,
+          "name": "Police Scorecard",
+          "description": "Averaged score for police funding, accountability, violence, and approach to law enforcement",
+          "value": "65.0%",
+          "unit": null,
+          "year": 2023,
+          "shortfall_pct": 65.0,
+          "overshoot_pct": null,
+          "target": "100%",
+          "source": "Police Scorecard. California.",
+          "source_url": "https://policescorecard.org/ca"
+        },
+        {
+          "id": 17,
+          "name": "Violent Crime",
+          "description": "Percent of CA people living in counties with a violent crime rate above 200 incidents per 100000 residents",
+          "value": "99.9%",
+          "unit": null,
+          "year": 2023,
+          "shortfall_pct": 99.9,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "California Department of Justice. OpenJustice: Crime data and statistics.",
+          "source_url": "https://openjustice.doj.ca.gov/"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "slug": "political-voice",
+      "name": "Political Voice",
+      "ring": "social",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 20,
+          "name": "Registered Voters",
+          "description": "Percent of eligible voters who are not registered to vote",
+          "value": "16.0%",
+          "unit": null,
+          "year": 2024,
+          "shortfall_pct": 16.0,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "California Secretary of State. (2024). Historical voter registration statistics.",
+          "source_url": "https://elections.cdn.sos.ca.gov/ror/15day-presprim-2024/historical-reg-stats.pdf"
+        },
+        {
+          "id": 19,
+          "name": "Voter Turnout",
+          "description": "Percent of eligible voter turnout",
+          "value": "40.0%",
+          "unit": null,
+          "year": 2024,
+          "shortfall_pct": 40.0,
+          "overshoot_pct": null,
+          "target": "100%",
+          "source": "California Secretary of State. Historical Voter Registration and Participation.",
+          "source_url": "https://elections.cdn.sos.ca.gov/sov/2024-general/sov/04-historical-voter-reg-general.pdf"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "slug": "social-cohesion",
+      "name": "Social Cohesion",
+      "ring": "social",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 21,
+          "name": "Income Inequality",
+          "description": "Percent of people living in counties with a Gini Index below 0.30",
+          "value": "100.0%",
+          "unit": null,
+          "year": 2023,
+          "shortfall_pct": 100.0,
+          "overshoot_pct": null,
+          "target": "100%",
+          "source": "U.S. Census Bureau. Gini Index of Income Inequality, ACS 5-Year Estimates.",
+          "source_url": "https://data.census.gov/table/ACSDT5Y2023.B19083?q=gini+in+california+counties"
+        },
+        {
+          "id": 22,
+          "name": "Report Not Happy",
+          "description": "Percent of people who report they are not too happy",
+          "value": "26.0%",
+          "unit": null,
+          "year": 2023,
+          "shortfall_pct": 26.0,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "Baldassare, M., et al. (2023). PPIC Statewide Survey.",
+          "source_url": "https://www.ppic.org/publication/ppic-statewide-survey-californians-and-their-government-september-2023/"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "slug": "water-and-sanitation",
+      "name": "Water & Sanitation",
+      "ring": "social",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 24,
+          "name": "Sanitation Access",
+          "description": "Percent of people who lack basic access to sanitation",
+          "value": "0.57%",
+          "unit": null,
+          "year": 2019,
+          "shortfall_pct": 0.57,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "Capone, D., et al. (2020). Water and sanitation in urban America.",
+          "source_url": "https://ajph.aphapublications.org/doi/full/10.2105/AJPH.2020.305833"
+        },
+        {
+          "id": 23,
+          "name": "Water Quality",
+          "description": "Percent of people who receive water from systems that do not meet drinking water quality standards",
+          "value": "2.2%",
+          "unit": null,
+          "year": 2025,
+          "shortfall_pct": 2.2,
+          "overshoot_pct": null,
+          "target": "0%",
+          "source": "California State Water Resources Control Board. SAFER dashboard.",
+          "source_url": "https://www.waterboards.ca.gov/drinking_water/certlic/drinkingwater/saferdashboard.html"
+        }
+      ]
+    }
+  ],
+  "ecological": [
+    {
+      "id": 13,
+      "slug": "air-pollution",
+      "name": "Air Pollution",
+      "ring": "ecological",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 26,
+          "name": "Ozone Pollution",
+          "description": "Percent of air basins in violation of the national ozone standard of 0.070 ppm",
+          "value": "60%",
+          "unit": "%",
+          "year": 2023,
+          "shortfall_pct": null,
+          "overshoot_pct": 60.0,
+          "target": "0%",
+          "source": "California Air Resources Board. Air quality and emissions data.",
+          "source_url": "https://www.arb.ca.gov/adam/select8/sc8start.php"
+        },
+        {
+          "id": 25,
+          "name": "Particulate Matter",
+          "description": "Percent of air basins in violation of annual average national PM2.5 standard (9 micrograms/m3)",
+          "value": "60%",
+          "unit": "%",
+          "year": 2023,
+          "shortfall_pct": null,
+          "overshoot_pct": 60.0,
+          "target": "0%",
+          "source": "California Air Resources Board. Air quality and emissions data.",
+          "source_url": "https://www.arb.ca.gov/adam/select8/sc8start.php"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "slug": "biodiversity-loss",
+      "name": "Biodiversity Loss",
+      "ring": "ecological",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 28,
+          "name": "At-Risk Species",
+          "description": "Percent of animal / plant species at risk of extinction",
+          "value": "33.1% / 29.7%",
+          "unit": "%",
+          "year": 2022,
+          "shortfall_pct": null,
+          "overshoot_pct": null,
+          "target": "3%",
+          "source": "NatureServe. (2023). Biodiversity in focus: United States edition.",
+          "source_url": "https://www.natureserve.org/bif"
+        },
+        {
+          "id": 27,
+          "name": "Protected Area",
+          "description": "Percent protected land / sea area",
+          "value": "25.2% / 16.2%",
+          "unit": "%",
+          "year": 2024,
+          "shortfall_pct": null,
+          "overshoot_pct": 503.0,
+          "target": "50% / 50%",
+          "source": "30x30 California. (2024). Pathways to 30x30.",
+          "source_url": "https://resources.ca.gov/-/media/CNRA-Website/Files/2024_30x30_Pathways_Progress_Report.pdf"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "slug": "chemical-pollution",
+      "name": "Chemical Pollution",
+      "ring": "ecological",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 30,
+          "name": "Toxic Chemicals Released",
+          "description": "Percent of toxic chemicals released out of total toxic chemicals produced per year",
+          "value": "13%",
+          "unit": "%",
+          "year": 2023,
+          "shortfall_pct": null,
+          "overshoot_pct": 13.0,
+          "target": "0%",
+          "source": "U.S. EPA. (2024). Toxics release inventory: California fact sheet.",
+          "source_url": "https://enviro.epa.gov/triexplorer/tri_factsheet.factsheet_forstate?pstate=CA&pyear=2023&pParent=TRI&pDataSet=TRIQ1"
+        },
+        {
+          "id": 29,
+          "name": "Toxic Pesticides Applied",
+          "description": "Percent of total pesticides applied per year which are categorized as high-risk toxins",
+          "value": "65%",
+          "unit": "%",
+          "year": 2022,
+          "shortfall_pct": null,
+          "overshoot_pct": 65.0,
+          "target": "0%",
+          "source": "California Department of Pesticide Regulation. (2024). Pesticide Use Annual Report.",
+          "source_url": "https://www.cdpr.ca.gov/wp-content/uploads/2024/12/pur_2022_data_summary.pdf"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "slug": "climate-change",
+      "name": "Climate Change",
+      "ring": "ecological",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 31,
+          "name": "Greenhouse Gas Footprint",
+          "description": "Greenhouse gas footprint per capita",
+          "value": "1890%",
+          "unit": "Tonnes CO2 eq",
+          "year": 2019,
+          "shortfall_pct": null,
+          "overshoot_pct": 1890.0,
+          "target": "0.985",
+          "source": "EPA. (2024). Consumption-based GHG emissions for CA 2012-2019.",
+          "source_url": "https://pasteur.epa.gov/uploads/10.23719/1531923/CA.html"
+        },
+        {
+          "id": 32,
+          "name": "Renewable Electricity",
+          "description": "Percent of electricity from renewables (solar, wind, and geothermal)",
+          "value": "62%",
+          "unit": "%",
+          "year": 2023,
+          "shortfall_pct": null,
+          "overshoot_pct": 62.0,
+          "target": "100%",
+          "source": "U.S. Energy Information Administration. (2024). California state energy profile.",
+          "source_url": "https://www.eia.gov/state/analysis.php?sid=CA"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "slug": "freshwater-use",
+      "name": "Freshwater Use",
+      "ring": "ecological",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 34,
+          "name": "Blue Water Footprint",
+          "description": "Blue water footprint per capita",
+          "value": "76%",
+          "unit": "Cubic Meters H20",
+          "year": 2020,
+          "shortfall_pct": null,
+          "overshoot_pct": 76.0,
+          "target": "494",
+          "source": "Ingwersen, W., et al. (2024). USEEIO State Models v1.0.",
+          "source_url": "https://cfpub.epa.gov/si/si_public_record_Report.cfm?dirEntryId=360453&Lab=CESER"
+        },
+        {
+          "id": 33,
+          "name": "Groundwater",
+          "description": "Percent of groundwater pumped from basins currently designated as critically overdrafted",
+          "value": "63%",
+          "unit": "%",
+          "year": 2014,
+          "shortfall_pct": null,
+          "overshoot_pct": 63.0,
+          "target": "0%",
+          "source": "California Natural Resources Agency. (2021). California groundwater update 2020.",
+          "source_url": "https://data.cnra.ca.gov/dataset/calgw_update2020/resource/88dbb333-90c3-48f2-a247-7a4f84fce56d"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "slug": "land-use-change",
+      "name": "Land Use Change",
+      "ring": "ecological",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 36,
+          "name": "Ecological Footprint",
+          "description": "Ecological footprint per capita",
+          "value": "351%",
+          "unit": "Global Hectares",
+          "year": 2014,
+          "shortfall_pct": null,
+          "overshoot_pct": 351.0,
+          "target": "1.48",
+          "source": "Global Footprint Network. (2015). State of the States Report.",
+          "source_url": "https://www.footprintnetwork.org/2015/07/14/states/"
+        },
+        {
+          "id": 35,
+          "name": "Forest Cover",
+          "description": "Percent of land with forest cover",
+          "value": "28%",
+          "unit": "%",
+          "year": 2022,
+          "shortfall_pct": null,
+          "overshoot_pct": 28.0,
+          "target": "37.5%",
+          "source": "California Natural Resources Agency. (2024). California's Nature-Based Solutions Climate Targets.",
+          "source_url": "https://resources.ca.gov/-/media/CNRA-Website/Files/Initiatives/Expanding-Nature-Based-Solutions/Californias-NBS-Climate-Targets-2024.pdf"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "slug": "nitrogen-and-phosphorus",
+      "name": "Nitrogen and Phosphorus",
+      "ring": "ecological",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 38,
+          "name": "Eutrophication Potential",
+          "description": "Eutrophication potential footprint per capita",
+          "value": "657%",
+          "unit": "Kg N eq",
+          "year": 2020,
+          "shortfall_pct": null,
+          "overshoot_pct": 657.0,
+          "target": "29",
+          "source": "Ingwersen, W., et al. (2024). USEEIO State Models v1.0.",
+          "source_url": "https://cfpub.epa.gov/si/si_public_record_report.cfm?LAB=CESER&dirEntryID=360453"
+        },
+        {
+          "id": 37,
+          "name": "Nitrogen Leached",
+          "description": "Nitrogen leached to groundwater per year",
+          "value": "209%",
+          "unit": "Tonnes Nitrogen",
+          "year": 2005,
+          "shortfall_pct": null,
+          "overshoot_pct": 209.0,
+          "target": "123000",
+          "source": "Tomich, T., et al. (2016). The California nitrogen assessment.",
+          "source_url": "https://asi.ucdavis.edu/sites/g/files/dgvnsk5751/files/inline-files/Executive%20Summary%20Layout_FINAL_reduced.pdf"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "slug": "ocean-acidification",
+      "name": "Ocean Acidification",
+      "ring": "ecological",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 39,
+          "name": "Ocean pH",
+          "description": "Change in pH compared to preindustrial levels",
+          "value": "91%",
+          "unit": "pH",
+          "year": 2015,
+          "shortfall_pct": null,
+          "overshoot_pct": 91.0,
+          "target": "<0.11",
+          "source": "Osborne, E., et al. (2020). Decadal variability in ocean acidification in the California Current.",
+          "source_url": "https://doi.org/10.1038/s41561-019-0499-z"
+        },
+        {
+          "id": 40,
+          "name": "SO2-eq Footprint",
+          "description": "Acidification potential footprint per capita",
+          "value": "520%",
+          "unit": "Kg SO2 eq",
+          "year": 2020,
+          "shortfall_pct": null,
+          "overshoot_pct": 520.0,
+          "target": "4.6",
+          "source": "Ingwersen, W., et al. (2024). USEEIO State Models v1.0.",
+          "source_url": "https://cfpub.epa.gov/si/si_public_record_report.cfm?LAB=CESER&dirEntryID=360453"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "slug": "ozone-depletion",
+      "name": "Ozone Depletion",
+      "ring": "ecological",
+      "icon": null,
+      "description": null,
+      "context": null,
+      "policy_spotlight": null,
+      "justice_spotlight": null,
+      "actions": [],
+      "indicators": [
+        {
+          "id": 42,
+          "name": "Ozone Layer",
+          "description": "Global average thickness of ozone layer",
+          "value": "284",
+          "unit": "Dobson Units",
+          "year": 2020,
+          "shortfall_pct": null,
+          "overshoot_pct": null,
+          "target": ">276",
+          "source": "World Meteorological Organization. (2022). Scientific Assessment of Ozone Depletion: 2022.",
+          "source_url": "https://csl.noaa.gov/assessments/ozone/2022/downloads/2022OzoneAssessment.pdf"
+        },
+        {
+          "id": 41,
+          "name": "Ozone-Depleting Substances",
+          "description": "Compliance with Montreal Protocol on Ozone-Depleting Substances",
+          "value": "Yes",
+          "unit": "Yes/No",
+          "year": 2014,
+          "shortfall_pct": null,
+          "overshoot_pct": 0.0,
+          "target": "Yes",
+          "source": "California Air Resources Board. (2014). Ozone-depleting substances projects.",
+          "source_url": "https://ww2.arb.ca.gov/our-work/programs/compliance-offset-program/compliance-offset-protocols/ozone-depleting-substances-projects"
+        }
+      ]
+    }
+  ]
+}
