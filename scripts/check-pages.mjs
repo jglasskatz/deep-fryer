@@ -5,8 +5,10 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import { chromium } from '../apps/worker/node_modules/playwright-core/index.mjs';
 import { installedChromium } from './chromium-path.mjs';
-import { indicatorAssets } from './pages-contract.mjs';
+import { indicatorAssets, assertNoLiveArchives } from './pages-contract.mjs';
 const root = path.resolve('dist/pages');
+// The artifact being checked must not publish an archived page or script under a live name.
+assertNoLiveArchives(root);
 const server = createServer(async (req, res) => {
   try {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
