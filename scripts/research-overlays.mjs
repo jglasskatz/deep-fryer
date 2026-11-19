@@ -104,6 +104,17 @@ export function reviewedOverlayRelease() {
       rendered.research_review = { campaign: overlayConfig.campaign, amendment_id: amendment.id,
         review_sha256: declaration.sha256, amendment_file_sha256: decision.bound_amendment_file_sha256,
         approved: false, reviewer: review.reviewer, reasoning_effort: review.reasoning_effort };
+      // These reviewed housing/equity replacements correct the legacy context's
+      // geography, old values and unsupported comparisons. Use the exact
+      // reviewed qualifications as the visible context too, rather than
+      // retaining a contradictory summary above the corrected indicator.
+      // The original prose stays intact in the hash-bound frozen baseline.
+      if ([
+        'santa-cruz:housing:0', 'santa-cruz-county:housing:0', 'watsonville:housing:0',
+        'santa-cruz:social-equity:0', 'santa-cruz-county:social-equity:0', 'watsonville:social-equity:0',
+      ].includes(amendment.id)) {
+        dimension.context = rendered.notes;
+      }
       if (amendment.kind === 'append') dimension.indicators.push(rendered);
       else dimension.indicators[amendment.indicator_index] = rendered;
       const count = (portrait.research_update?.amendments ?? 0) + 1;

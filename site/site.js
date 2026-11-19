@@ -49,7 +49,7 @@ function selectPortrait(slug, restoreDimension = true) {
     add('strong', d.name);
     add('p', `${d.ring === 'social' ? 'Social foundation' : 'Ecological ceiling'} · ${dimensionStatus(d)}`);
     for (const indicator of d.indicators.slice(0, 2)) {
-      add('p', `${indicator.name}: ${formatIndicatorValue(indicator.kind === 'observation' && indicator.value !== null ? Number(indicator.value.toFixed(1)) : indicator.value, indicator.unit)} ${indicator.year ? `(${indicator.year})` : ''}`);
+      add('p', `${indicator.name}: ${formatIndicatorValue(indicator.value, indicator.unit)} ${indicator.year ? `(${indicator.year})` : ''}`);
       add('small', `${collection.statuses[indicator.status]} · ${indicator.geography || 'See source context'}`);
       if (indicator.quality_flags?.length) add('small', indicator.quality_flags.join(' · '));
       if (indicator.source) add('small', `Source: ${indicator.source}`);

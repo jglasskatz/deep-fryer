@@ -407,12 +407,13 @@ export const ht: Messages = {
     wedgesOutside: '{n}/{total} segman deyò zòn ki an sekirite a',
     divergeTitle: 'Kote diferans ant {nouns} yo pi gwo',
     divergeIntro:
-      'Endikatè ki pibliye yo, konpare ant {nouns} yo, klase dapre diferans ant {noun} ki pi byen plase a ak sa ki pi mal plase a.',
+      'Nou konpare endikatè ki pibliye ant {nouns} yo sèlman lè endikatè a, inite a ak ane a menm, epi nou klase yo dapre diferans ant valè ki pi ba ak sa ki pi wo a.',
     wholeColumn: 'Kolòn tout jiridiksyon an se yon chif ki pibliye apa, se pa yon mwayèn.',
     indicator: 'Endikatè',
     spread: 'Diferans',
+    empty: 'Pa gen endikatè diferan ki gen menm inite ak yon ane konnen pou omwen de manm. Tout jiridiksyon an, lè li prezan, sèvi sèlman kòm kontèks.',
     legend:
-      'Wouj = {noun} ki pi lwen sib la, vèt = sa ki pi pre a, pou chak liy. Endikatè ki valab pou tout jiridiksyon an (ki menm pou tout {nouns} yo) pa parèt nan tablo sa a, akoz fason li fèt.',
+      'Vèt make ekstrèm favorab la epi wouj make ekstrèm defavorab la sèlman lè tout manm yo konpare yo gen menm règ dokimante ki di pi wo pi bon oswa pi ba pi bon. Sinon, valè yo rete net. Nou retire liy ki idantik yo; koulè yo pa pwouve objektif la reyalize.',
   },
   insights: {
     metaTitle: 'Analiz · {org}',

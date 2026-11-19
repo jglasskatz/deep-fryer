@@ -84,6 +84,144 @@ describe.skipIf(!hasDb)('acceptInvitation', () => {
     return row?.role ?? null;
   }
 
+  /** Hold the invitation until its acceptance is waiting, then change it before commit. */
+  async function whileInvitationLocked(
+    token: string,
+    accept: () => Promise<void>,
+    change: (tx: import('@deep-fryer/db').DbExecutor) => Promise<void>,
+    waiters = 1,
+  ) {
+    const m = await import('@deep-fryer/db');
+    const { eq, sql } = await import('drizzle-orm');
+    const { hashToken } = await import('./invitations');
+    let held!: (pid: number) => void;
+    let release!: () => void;
+    const locked = new Promise<number>((resolve) => { held = resolve; });
+    const released = new Promise<void>((resolve) => { release = resolve; });
+    const blocker = m.getDb().transaction(async (tx) => {
+      await tx.select().from(m.invitations)
+        .where(eq(m.invitations.tokenHash, hashToken(token))).for('update');
+      const [backend] = await tx.execute<{ pid: number }>(sql`SELECT pg_backend_pid() AS pid`);
+      held(backend!.pid);
+      await released;
+      await change(tx);
+    });
+    let running: Promise<void> | undefined;
+    try {
+      const blockerPid = await Promise.race([
+        locked, blocker.then(() => { throw new Error('invitation lock was not acquired'); }),
+      ]);
+      running = accept();
+      // Attach a rejection handler immediately; propagate its result after releasing the lock.
+      void running.catch(() => undefined);
+      let waiting = false;
+      for (let i = 0; i < 120; i++) {
+        const [row] = await m.getDb().execute<{ n: number }>(sql`
+          WITH RECURSIVE blocked(pid) AS (
+            SELECT ${blockerPid}::int
+            UNION
+            SELECT a.pid FROM pg_stat_activity a JOIN blocked b ON b.pid = ANY(pg_blocking_pids(a.pid))
+          )
+          SELECT count(*)::int AS n FROM pg_stat_activity
+           WHERE pid IN (SELECT pid FROM blocked WHERE pid <> ${blockerPid})
+             AND wait_event_type = 'Lock' AND query ILIKE '%"invitations"%'`);
+        if (row!.n >= waiters) { waiting = true; break; }
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      }
+      expect(waiting, `${waiters} acceptance(s) must have read the live invitation and be waiting to claim it`).toBe(true);
+      release();
+      await blocker;
+      await running;
+    } finally {
+      release();
+      await blocker;
+      await running?.catch(() => undefined);
+    }
+  }
+
+  it.each(['tenant', 'organization'] as const)(
+    'does not grant %s membership if revocation wins after the live invitation lookup',
+    async (kind) => {
+      const { m, db, user, tenant } = await setup(null, null);
+      const scope = kind === 'tenant' ? { tenantId: tenant.id } : { organizationId: tenant.organizationId };
+      const token = await invite(scope, user.email, kind === 'tenant' ? 'editor' : 'billing');
+      const { acceptInvitation, hashToken, liveInvitation } = await import('./invitations');
+      const { eq } = await import('drizzle-orm');
+      await whileInvitationLocked(token, async () => {
+        await expect(acceptInvitation(token, user)).rejects.toThrow(/no longer valid/);
+      }, async (tx) => {
+        await tx.update(m.invitations).set({ revokedAt: new Date() })
+          .where(eq(m.invitations.tokenHash, hashToken(token)));
+      });
+      expect(await tenantRoleOf(tenant.id, user.id)).toBeNull();
+      const orgMemberships = await db.select().from(m.organizationMembers)
+        .where(eq(m.organizationMembers.userId, user.id));
+      expect(orgMemberships).toEqual([]);
+      const [invitation] = await db.select().from(m.invitations)
+        .where(eq(m.invitations.tokenHash, hashToken(token)));
+      expect(invitation!.acceptedAt).toBeNull();
+      expect(invitation!.acceptedBy).toBeNull();
+      expect(invitation!.revokedAt).not.toBeNull();
+      expect(await liveInvitation(token)).toBeNull();
+    },
+  );
+
+  it('does not consume an invitation that expires before the claim can execute', async () => {
+    const { m, db, user, tenant } = await setup(null, null);
+    const token = await invite({ tenantId: tenant.id }, user.email, 'editor');
+    const { acceptInvitation, hashToken } = await import('./invitations');
+    const { eq } = await import('drizzle-orm');
+    await whileInvitationLocked(token, async () => {
+      await expect(acceptInvitation(token, user)).rejects.toThrow(/no longer valid/);
+    }, async (tx) => {
+      await tx.update(m.invitations).set({ expiresAt: new Date(Date.now() - 1_000) })
+        .where(eq(m.invitations.tokenHash, hashToken(token)));
+    });
+    expect(await tenantRoleOf(tenant.id, user.id)).toBeNull();
+    const [invitation] = await db.select().from(m.invitations)
+      .where(eq(m.invitations.tokenHash, hashToken(token)));
+    expect(invitation!.acceptedAt).toBeNull();
+    expect(invitation!.acceptedBy).toBeNull();
+  });
+
+  it('rechecks expiry after waiting on a row lock even if no other transaction changes the invitation', async () => {
+    const { m, db, user, tenant } = await setup(null, null);
+    const token = await invite({ tenantId: tenant.id }, user.email, 'editor');
+    const { acceptInvitation, hashToken } = await import('./invitations');
+    const { eq, sql } = await import('drizzle-orm');
+    await db.update(m.invitations).set({ expiresAt: new Date(Date.now() + 3_000) })
+      .where(eq(m.invitations.tokenHash, hashToken(token)));
+    await whileInvitationLocked(token, async () => {
+      await expect(acceptInvitation(token, user)).rejects.toThrow(/no longer valid/);
+    }, async (tx) => {
+      // Let time pass without updating the row. A condition evaluated before
+      // the lock wait (or transaction-stable now()) would incorrectly succeed.
+      await tx.execute(sql`
+        SELECT pg_sleep(greatest(0, extract(epoch FROM expires_at - clock_timestamp())) + 0.05)
+          FROM invitations WHERE token_hash = ${hashToken(token)}`);
+    });
+    expect(await tenantRoleOf(tenant.id, user.id)).toBeNull();
+    const [invitation] = await db.select().from(m.invitations)
+      .where(eq(m.invitations.tokenHash, hashToken(token)));
+    expect(invitation!.acceptedAt).toBeNull();
+    expect(invitation!.acceptedBy).toBeNull();
+  }, 10_000);
+
+  it('grants membership once when two acceptances race for the same invitation', async () => {
+    const { user, tenant } = await setup(null, null);
+    const token = await invite({ tenantId: tenant.id }, user.email, 'editor');
+    const { acceptInvitation, liveInvitation } = await import('./invitations');
+    await whileInvitationLocked(token, async () => {
+      const results = await Promise.allSettled([
+        acceptInvitation(token, user), acceptInvitation(token, user),
+      ]);
+      expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+      expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1);
+    }, async () => {}, 2);
+    expect(await tenantRoleOf(tenant.id, user.id)).toBe('editor');
+    expect(await liveInvitation(token)).toBeNull();
+  });
+
   it('keeps an owner an owner when they accept an editor invitation, and uses it up', async () => {
     const { user, tenant } = await setup('owner', null);
     const token = await invite({ tenantId: tenant.id }, user.email, 'editor');
