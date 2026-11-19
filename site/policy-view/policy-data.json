@@ -1,0 +1,1376 @@
+{
+  "schemaVersion": "1.0.0",
+  "asOf": "2026-10-26",
+  "title": "Deep Fryer Policy Evidence Atlas",
+  "geographicAssumption": "SC means Santa Cruz, California; city, unincorporated county, service-area and regional outcomes are distinguished.",
+  "frameworkVersion": "0.2.0",
+  "geometry": "All ring segments use equal geometry within each ring. Color indicates case-study mapping, not magnitude, direction, uncertainty, attainment or impact.",
+  "method": "Purposive exploratory case study, not a systematic review, additive impact model, causal meta-analysis, or city ranking.",
+  "evidenceNote": "Research-design tiers are distinct from source verification and factual confidence. Native units are preserved. No missing value is treated as zero.",
+  "dimensions": [
+    {
+      "id": "food",
+      "name": "Food",
+      "ring": "social",
+      "description": "Food security and nutrition access.",
+      "code": "FOOD"
+    },
+    {
+      "id": "health",
+      "name": "Health",
+      "ring": "social",
+      "description": "Healthcare access and health outcomes.",
+      "code": "HEALTH"
+    },
+    {
+      "id": "education",
+      "name": "Education",
+      "ring": "social",
+      "description": "Educational attainment, quality, and equity.",
+      "code": "EDU"
+    },
+    {
+      "id": "income-work",
+      "name": "Income & Work",
+      "ring": "social",
+      "description": "Poverty, employment, and living wage.",
+      "code": "WORK"
+    },
+    {
+      "id": "water-sanitation",
+      "name": "Water & Sanitation",
+      "ring": "social",
+      "description": "Access to clean water and sanitation.",
+      "code": "WATER"
+    },
+    {
+      "id": "energy",
+      "name": "Energy",
+      "ring": "social",
+      "description": "Affordable, reliable, clean energy access.",
+      "code": "ENERGY"
+    },
+    {
+      "id": "networks",
+      "name": "Networks",
+      "ring": "social",
+      "description": "Social capital, internet access, community connections.",
+      "code": "NET"
+    },
+    {
+      "id": "housing",
+      "name": "Housing",
+      "ring": "social",
+      "description": "Affordable, adequate housing and freedom from homelessness.",
+      "code": "HOME"
+    },
+    {
+      "id": "gender-equality",
+      "name": "Gender Equality",
+      "ring": "social",
+      "description": "Pay equity, representation, and safety.",
+      "code": "GENDER"
+    },
+    {
+      "id": "social-equity",
+      "name": "Social Equity",
+      "ring": "social",
+      "description": "Income inequality and racial equity.",
+      "code": "EQUITY"
+    },
+    {
+      "id": "political-voice",
+      "name": "Political Voice",
+      "ring": "social",
+      "description": "Voter turnout and civic engagement.",
+      "code": "VOICE"
+    },
+    {
+      "id": "peace-justice",
+      "name": "Peace & Justice",
+      "ring": "social",
+      "description": "Safety, incarceration, and institutional trust.",
+      "code": "JUSTICE"
+    },
+    {
+      "id": "climate-change",
+      "name": "Climate Change",
+      "ring": "ecological",
+      "description": "Greenhouse gas emissions per capita.",
+      "code": "CLIMATE"
+    },
+    {
+      "id": "ocean-acidification",
+      "name": "Ocean Acidification",
+      "ring": "ecological",
+      "description": "Marine pH and CO2 absorption impacts.",
+      "code": "OCEAN"
+    },
+    {
+      "id": "chemical-pollution",
+      "name": "Chemical Pollution",
+      "ring": "ecological",
+      "description": "Pesticide use and toxic releases.",
+      "code": "CHEM"
+    },
+    {
+      "id": "nitrogen-phosphorus-loading",
+      "name": "Nitrogen & Phosphorus Loading",
+      "ring": "ecological",
+      "description": "Fertilizer runoff and groundwater contamination.",
+      "code": "N + P"
+    },
+    {
+      "id": "freshwater-withdrawals",
+      "name": "Freshwater Withdrawals",
+      "ring": "ecological",
+      "description": "Water use vs sustainable yield.",
+      "code": "FRESH"
+    },
+    {
+      "id": "land-conversion",
+      "name": "Land Conversion",
+      "ring": "ecological",
+      "description": "Development of natural land.",
+      "code": "LAND"
+    },
+    {
+      "id": "biodiversity-loss",
+      "name": "Biodiversity Loss",
+      "ring": "ecological",
+      "description": "Species decline and habitat loss.",
+      "code": "BIO"
+    },
+    {
+      "id": "air-pollution",
+      "name": "Air Pollution",
+      "ring": "ecological",
+      "description": "PM2.5 and ozone levels.",
+      "code": "AIR"
+    },
+    {
+      "id": "ozone-depletion",
+      "name": "Ozone Layer Depletion",
+      "ring": "ecological",
+      "description": "Stratospheric ozone (largely global, not local). Local portraits usually report this as a data gap or a compliance statement.",
+      "code": "OZONE"
+    }
+  ],
+  "policies": [
+    {
+      "id": "nyc-universal-school-meals",
+      "city": "nyc",
+      "jurisdiction": "NYC public schools; federal reimbursement framework",
+      "scale": "city school system",
+      "slices": [
+        "food",
+        "education"
+      ],
+      "mechanism": "Remove lunch prices and means-testing stigma; increase meal participation and learning readiness.",
+      "headline": {
+        "value": "+5.4",
+        "unit": "percentage points",
+        "kind": "Quasi-experimental estimate",
+        "text": "Higher lunch participation among poor middle-school students exposed to universal free meals.",
+        "context": "2010–2013 NYC school-level exposure; within-student comparison—not the 2017 citywide rollout effect."
+      },
+      "title": "Universal school meals",
+      "year": "2017 CITYWIDE",
+      "caution": "Learning estimates are positive, but food security and ecological footprints were not measured.",
+      "tierLabel": "Quasi-experimental",
+      "tierClass": "causal",
+      "hasCausalEstimate": true,
+      "causal": [
+        "Student fixed-effects difference-in-differences: lunch participation +5.395 percentage points for poor students (SE 1.389) and +10.975 points for non-poor students (SE 4.389). The larger sample for test-score effects is separate from the participation sample.",
+        "Math effects: +0.032 SD for poor students and +0.083 SD for non-poor students; ELA +0.027 and +0.059 SD. Results rely on identifying assumptions, not random assignment."
+      ],
+      "observed": [
+        "2017 official rollout expanded free-lunch eligibility from 75% to all public-school students; this is coverage, not measured food-security improvement."
+      ],
+      "tradeoffs": [
+        "Federal CEP reimbursement shifted financing; meal production still consumes resources. Added consumption, food waste and supply-chain footprints were not estimated here.",
+        "Both income groups gain; larger participation/test estimates for students not previously classified poor."
+      ],
+      "limits": [
+        "Historical middle-school estimates are not the citywide 2017 treatment effect. Weight effects mostly statistically insignificant; no evidence of obesity increase is not proof of nutritional sufficiency. School selection and changing exposure require identifying assumptions. Breakfast participation null; non-poor attendance -0.124 pp (p<.10), approximately one-fifth school day; other attendance effects insignificant.",
+        "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing."
+      ],
+      "sources": [
+        {
+          "id": "meals-study",
+          "title": "Schwartz & Rothbart (2020), Let Them Eat Lunch, Journal of Policy Analysis and Management 39(2):376–410",
+          "url": "https://doi.org/10.1002/pam.22175",
+          "full_text": "https://www.future-ed.org/wp-content/uploads/2019/10/Let-Them-Eat-Lunch_-The-Impact-of-Universal-Free-Meals-on-Student-Performance.pdf",
+          "locator": "Tables 3–4; 6–7"
+        },
+        {
+          "id": "meals-policy",
+          "title": "NYC DOE, Chancellor Fariña Announces Free School Lunch for All (September 6, 2017)",
+          "url": "https://www.schools.nyc.gov/about-us/news/announcements/2017/09/06/chancellor-fari%C3%B1a-announces-free-school-lunch-for-all"
+        },
+        {
+          "id": "meals-current",
+          "title": "NYSED, Universal Free School Meals: statewide requirement beginning 2025–26",
+          "url": "https://www.cn.nysed.gov/content/new-york-state-universal-free-meals"
+        }
+      ],
+      "researchRecord": {
+        "id": "nyc-universal-school-meals",
+        "title": "Universal free school meals",
+        "jurisdiction": "NYC public schools; federal reimbursement framework",
+        "scale": "city school system",
+        "slices": [
+          "food",
+          "education"
+        ],
+        "status": "Implemented citywide September 7, 2017; evaluated earlier school-level provision, NOT the 2017 citywide expansion",
+        "mechanism": "Remove lunch prices and means-testing stigma; increase meal participation and learning readiness.",
+        "dates": {
+          "evaluation_window": "Academic years 2010–2013",
+          "publication": "2020",
+          "citywide_launch": "2017-09-07"
+        },
+        "headline": {
+          "value": 5.395,
+          "unit": "percentage points",
+          "label": "Lunch participation increase, poor middle-school students",
+          "window": "2010–2013",
+          "type": "quasi-experimental estimate"
+        },
+        "outcomes": [
+          {
+            "metric": "Lunch participation",
+            "group": "Poor / non-poor middle-school students",
+            "estimate": [
+              5.395,
+              10.975
+            ],
+            "unit": "percentage points",
+            "standard_error": [
+              1.389,
+              4.389
+            ],
+            "counterfactual": "Within-student changes in UFM exposure with grade-by-year controls; non-UFM experience",
+            "source": "meals-study",
+            "reference_participation_rates": {
+              "poor": 63.96,
+              "non_poor": 45.55,
+              "unit": "percent",
+              "note": "Paper comparison means, not randomized untreated baselines"
+            }
+          },
+          {
+            "metric": "Math test score",
+            "group": "Poor / non-poor",
+            "estimate": [
+              0.032,
+              0.083
+            ],
+            "unit": "standard deviations",
+            "source": "meals-study"
+          },
+          {
+            "metric": "ELA test score",
+            "group": "Poor / non-poor",
+            "estimate": [
+              0.027,
+              0.059
+            ],
+            "unit": "standard deviations",
+            "source": "meals-study"
+          }
+        ],
+        "observed_outcomes": "2017 official rollout expanded free-lunch eligibility from 75% to all public-school students; this is coverage, not measured food-security improvement.",
+        "evidence_grade": "Quasi-experimental / moderate",
+        "design": "Longitudinal difference-in-differences with student fixed effects; participation sample 47,887 students and 122,685 student-years. Test-score sample: 222,456 students / 659,797 observations, same 2010–2013 window; not the smaller participation sample.",
+        "distribution": "Both income groups gain; larger participation/test estimates for students not previously classified poor.",
+        "costs_tradeoffs": "Federal CEP reimbursement shifted financing; meal production still consumes resources. Added consumption, food waste and supply-chain footprints were not estimated here.",
+        "limitations": "Historical middle-school estimates are not the citywide 2017 treatment effect. Weight effects mostly statistically insignificant; no evidence of obesity increase is not proof of nutritional sufficiency. School selection and changing exposure require identifying assumptions. Breakfast participation null; non-poor attendance -0.124pp (p<.10), approximately one-fifth school day; other attendance effects insignificant.",
+        "sources": [
+          {
+            "id": "meals-study",
+            "title": "Schwartz & Rothbart (2020), Let Them Eat Lunch, Journal of Policy Analysis and Management 39(2):376–410",
+            "url": "https://doi.org/10.1002/pam.22175",
+            "full_text": "https://www.future-ed.org/wp-content/uploads/2019/10/Let-Them-Eat-Lunch_-The-Impact-of-Universal-Free-Meals-on-Student-Performance.pdf",
+            "locator": "Tables 3–4; 6–7"
+          },
+          {
+            "id": "meals-policy",
+            "title": "NYC DOE, Chancellor Fariña Announces Free School Lunch for All (September 6, 2017)",
+            "url": "https://www.schools.nyc.gov/about-us/news/announcements/2017/09/06/chancellor-fari%C3%B1a-announces-free-school-lunch-for-all"
+          },
+          {
+            "id": "meals-current",
+            "title": "NYSED, Universal Free School Meals: statewide requirement beginning 2025–26",
+            "url": "https://www.cn.nysed.gov/content/new-york-state-universal-free-meals"
+          }
+        ]
+      },
+      "mappingNote": "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing."
+    },
+    {
+      "id": "sc-water-rationing",
+      "city": "santa-cruz",
+      "jurisdiction": "City of Santa Cruz Water Department service area",
+      "scale": "Utility service area; not city boundary or whole county",
+      "slices": [
+        "water-sanitation",
+        "freshwater-withdrawals"
+      ],
+      "mechanism": "Stage 3 emergency, mandatory 25% reduction, restrictions on spray irrigation hours, runoff and hosing hard surfaces.",
+      "headline": {
+        "value": "26%",
+        "unit": "average monthly savings",
+        "kind": "Administrative before–after",
+        "text": "Lower water use in the Santa Cruz Water service area, comparing the same months one year earlier.",
+        "context": "June–November 2014 vs June–November 2013. Not necessarily volume-weighted seasonal savings."
+      },
+      "title": "Drought water rationing",
+      "year": "2014 RESPONSE",
+      "caution": "No untreated comparison: drought, publicity, restrictions, and price responses cannot be separated.",
+      "tierLabel": "Descriptive",
+      "tierClass": "descriptive",
+      "hasCausalEstimate": false,
+      "observed": [
+        "Official Attachment 2 reports 26% average monthly savings, alongside residential use of 47 gallons/person/day. Cover text says 28% without matching window; use the explicitly windowed table, not cover figure."
+      ],
+      "causal": [
+        "No identified causal estimate. Supplier administrative reports summarized by County HSA; table visually checked on PDF page 13. Comparator: Prior year only, not weather-adjusted untreated comparison."
+      ],
+      "tradeoffs": [
+        "Program operating cost not isolated. Contemporary reporting documents utility revenue pressure as reduced sales leave infrastructure costs; no cost-effectiveness estimate.",
+        "Penalties and fixed revenue-recovery charges may burden low-income households; marginal conservation scope differs between efficient households and heavy outdoor users. These distributional mechanisms are not locally quantified.",
+        "Demand reductions protect scarce supply but do not establish ecological streamflow benefits or household wellbeing changes. Drought, publicity, restrictions and price responses cannot be separated."
+      ],
+      "limits": [
+        "Service-area result, not city resident effect. 26% is average monthly savings, not necessarily volume-weighted seasonal savings. No untreated counterfactual. No measured ecological threshold closure.",
+        "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing."
+      ],
+      "sources": [
+        {
+          "title": "County HSA Water Resources Management Status Report for 2014, January 27 2015, Attachment 2, PDF p13",
+          "url": "https://www2.santacruzcountyca.gov/BDS/GovStream2/ASP/Display/PdfFinder.asp?Filename=024.pdf&MeetingDate=20150127&MeetingID=648&Type=Minutes",
+          "type": "Primary government report"
+        },
+        {
+          "title": "City Water Supply: current conservation constraints",
+          "url": "https://www.santacruzca.gov/Government/City-Departments/Water-Department/Your-Water/Water-Supply",
+          "type": "Primary government"
+        },
+        {
+          "title": "Santa Cruz water fees could go up, July 9 2015",
+          "url": "https://kion546.com/news/2015/07/09/santa-cruz-water-fees-could-go-up/",
+          "type": "Secondary contemporaneous fiscal context"
+        }
+      ],
+      "researchRecord": {
+        "id": "sc-water-rationing",
+        "title": "Drought rationing and water-waste restrictions",
+        "place": "Santa Cruz",
+        "jurisdiction": "City of Santa Cruz Water Department service area",
+        "scale": "Utility service area; not city boundary or whole county",
+        "dates": "2014 drought response; outcome June–November 2014",
+        "mechanism": "Stage 3 emergency, mandatory 25% reduction, restrictions on spray irrigation hours, runoff and hosing hard surfaces.",
+        "slices": [
+          "Water",
+          "Freshwater change"
+        ],
+        "direction": "Observed lower water use; affordability tradeoff unquantified",
+        "headline": "26% lower water use",
+        "headline_value": 26,
+        "headline_unit": "percent average monthly savings",
+        "headline_window": "June–November 2014 vs June–November 2013",
+        "observed_outcomes": "Official Attachment 2 reports 26% average monthly savings, alongside residential use of 47 gallons/person/day. Cover text says 28% without matching window; use the explicitly windowed table, not cover figure.",
+        "baseline": "Same months of 2013; absolute baseline volume not reported in table",
+        "counterfactual": "Prior year only, not weather-adjusted untreated comparison",
+        "causal_estimate": null,
+        "evidence_grade": "Descriptive",
+        "design": "Supplier administrative reports summarized by County HSA; table visually checked on PDF page 13",
+        "costs": "Program operating cost not isolated. Contemporary reporting documents utility revenue pressure as reduced sales leave infrastructure costs; no cost-effectiveness estimate.",
+        "distribution": "Penalties and fixed revenue-recovery charges may burden low-income households; marginal conservation scope differs between efficient households and heavy outdoor users. These distributional mechanisms are not locally quantified.",
+        "tradeoffs": "Demand reductions protect scarce supply but do not establish ecological streamflow benefits or household wellbeing changes. Drought, publicity, restrictions and price responses cannot be separated.",
+        "limitations": "Service-area result, not city resident effect. 26% is average monthly savings, not necessarily volume-weighted seasonal savings. No untreated counterfactual. No measured ecological threshold closure.",
+        "sources": [
+          {
+            "title": "County HSA Water Resources Management Status Report for 2014, January 27 2015, Attachment 2, PDF p13",
+            "url": "https://www2.santacruzcountyca.gov/BDS/GovStream2/ASP/Display/PdfFinder.asp?Filename=024.pdf&MeetingDate=20150127&MeetingID=648&Type=Minutes",
+            "type": "Primary government report"
+          },
+          {
+            "title": "City Water Supply: current conservation constraints",
+            "url": "https://www.santacruzca.gov/Government/City-Departments/Water-Department/Your-Water/Water-Supply",
+            "type": "Primary government"
+          },
+          {
+            "title": "Santa Cruz water fees could go up, July 9 2015",
+            "url": "https://kion546.com/news/2015/07/09/santa-cruz-water-fees-could-go-up/",
+            "type": "Secondary contemporaneous fiscal context"
+          }
+        ]
+      },
+      "mappingNote": "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing."
+    },
+    {
+      "id": "nyc-right-to-counsel",
+      "city": "nyc",
+      "jurisdiction": "NYC Office of Civil Justice contracts; proceedings in New York State Housing Court",
+      "scale": "city / targeted ZIP-code rollout",
+      "slices": [
+        "housing",
+        "peace-justice",
+        "social-equity"
+      ],
+      "mechanism": "Publicly funded counsel changes legal defense and bargaining for tenants at or below 200% federal poverty guidelines.",
+      "headline": {
+        "value": "−1.0",
+        "unit": "percentage point",
+        "kind": "Program-rollout estimate",
+        "text": "Lower eviction probability across housing-court cases in targeted ZIP codes during rollout.",
+        "context": "2016–2019 case data; within-ZIP rollout comparison with borough-by-month controls."
+      },
+      "title": "Tenant Right to Counsel",
+      "year": "2017 LAW",
+      "caution": "An early-rollout estimate, not current effectiveness. Representation has since fallen sharply.",
+      "tierLabel": "Quasi-experimental",
+      "tierClass": "causal",
+      "hasCausalEstimate": true,
+      "causal": [
+        "The reduced-form program rollout estimate is −1.0 percentage point across cases. Do not confuse it with the −8.4-point IV local effect of representation among tenants induced to obtain counsel.",
+        "The 727,692-case analysis uses ZIP rollout as an instrument. The interpretation needs exclusion and monotonicity assumptions."
+      ],
+      "observed": [
+        "Comptroller (May 2025): representation fell from 71% in Q 4 FY 2021 to 42% in Q 4 FY 2024; Bronx 81% to 31%. FY 2024 represented-household retention of 89% is selected-service descriptive data, NOT 89% evictions prevented."
+      ],
+      "tradeoffs": [
+        "Counsel is a real staffing/fiscal cost. Longer adjudication benefits tenants but delays landlords: +85 days to judgment in primary IV specification. 2023 RFx contemplated $408 m over FY 2025–27, not verified expenditure.",
+        "Larger estimated gains for high-risk tenants; service gaps concentrated in Bronx and low-income Black/Latine communities."
+      ],
+      "limits": [
+        "Address-fixed-effect eviction estimate -5.8 pp (SE 3.4) is less precise. No long-run rent/supply conclusion; no measured homelessness effect. Early rollout estimates cannot establish current program effectiveness.",
+        "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing."
+      ],
+      "sources": [
+        {
+          "id": "rtc-study",
+          "title": "Cassidy & Currie (2023), The effects of legal representation on tenant outcomes in housing court, Journal of Public Economics 222:104844",
+          "url": "https://doi.org/10.1016/j.jpubeco.2023.104844",
+          "full_text": "https://miketcassidy.com/files/cassidy-currie-2023-evictions-jpube.pdf",
+          "locator": "Table 3; main-text page 14 (PDF page index 13) narrates Appendix A.1 reduced-form -1.0pp; Table 7"
+        },
+        {
+          "id": "rtc-implementation",
+          "title": "NYC Comptroller (May 2, 2025), Evictions Up, Representation Down",
+          "url": "https://comptroller.nyc.gov/reports/evictions-up-representation-down/"
+        }
+      ],
+      "researchRecord": {
+        "id": "nyc-right-to-counsel",
+        "title": "Tenant Right to Counsel / Universal Access",
+        "jurisdiction": "NYC Office of Civil Justice contracts; proceedings in New York State Housing Court",
+        "scale": "city / targeted ZIP-code rollout",
+        "slices": [
+          "housing",
+          "peace and justice",
+          "social equity"
+        ],
+        "status": "Local Law 136 (2017); expanded citywide, with substantial representation gaps",
+        "mechanism": "Publicly funded counsel changes legal defense and bargaining for tenants at or below 200% federal poverty guidelines.",
+        "dates": {
+          "law": "2017-08",
+          "initial_operations": "2017-02",
+          "evaluation_window": "2016–2019 case data",
+          "publication": "2023-06"
+        },
+        "headline": {
+          "value": -1.0,
+          "unit": "percentage point",
+          "label": "Eviction probability across cases: program rollout reduced-form estimate",
+          "window": "2016–2019",
+          "type": "quasi-experimental estimate"
+        },
+        "outcomes": [
+          {
+            "metric": "Eviction probability",
+            "estimate": -1.0,
+            "unit": "percentage point",
+            "estimand": "Program introduction across all housing-court cases in targeted ZIP codes",
+            "source": "rtc-study"
+          },
+          {
+            "metric": "Eviction probability",
+            "estimate": -8.4,
+            "standard_error": 2.1,
+            "unit": "percentage points",
+            "estimand": "IV local effect of representation among tenants induced to obtain counsel",
+            "source": "rtc-study"
+          },
+          {
+            "metric": "Representation probability",
+            "estimate": 12.4,
+            "unit": "percentage points",
+            "estimand": "First stage",
+            "source": "rtc-study"
+          }
+        ],
+        "observed_outcomes": "Comptroller (May 2025): representation fell from 71% in Q4 FY2021 to 42% in Q4 FY2024; Bronx 81% to 31%. FY2024 represented-household retention of 89% is selected-service descriptive data, NOT 89% evictions prevented.",
+        "evidence_grade": "Quasi-experimental / moderate",
+        "design": "ZIP rollout instruments counsel; ZIP and borough-by-month fixed effects, detailed case covariates; 727,692 cases.",
+        "counterfactual": "Same ZIP before rollout, net contemporaneous borough changes and covariates; IV requires exclusion/monotonicity.",
+        "distribution": "Larger estimated gains for high-risk tenants; service gaps concentrated in Bronx and low-income Black/Latine communities.",
+        "costs_tradeoffs": "Counsel is a real staffing/fiscal cost. Longer adjudication benefits tenants but delays landlords: +85 days to judgment in primary IV specification. 2023 RFx contemplated $408m over FY2025–27, not verified expenditure.",
+        "limitations": "Address-fixed-effect eviction estimate -5.8pp (SE 3.4) is less precise. No long-run rent/supply conclusion; no measured homelessness effect. Early rollout estimates cannot establish current program effectiveness.",
+        "sources": [
+          {
+            "id": "rtc-study",
+            "title": "Cassidy & Currie (2023), The effects of legal representation on tenant outcomes in housing court, Journal of Public Economics 222:104844",
+            "url": "https://doi.org/10.1016/j.jpubeco.2023.104844",
+            "full_text": "https://miketcassidy.com/files/cassidy-currie-2023-evictions-jpube.pdf",
+            "locator": "Table 3; main-text page 14 (PDF page index 13) narrates Appendix A.1 reduced-form -1.0pp; Table 7"
+          },
+          {
+            "id": "rtc-implementation",
+            "title": "NYC Comptroller (May 2, 2025), Evictions Up, Representation Down",
+            "url": "https://comptroller.nyc.gov/reports/evictions-up-representation-down/"
+          }
+        ]
+      },
+      "mappingNote": "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing."
+    },
+    {
+      "id": "sc-adu-reform",
+      "city": "santa-cruz",
+      "jurisdiction": "Unincorporated Santa Cruz County; California enabling/preemptive laws",
+      "scale": "Unincorporated county, excludes City of Santa Cruz",
+      "slices": [
+        "housing"
+      ],
+      "mechanism": "Ministerial review, eased setbacks/parking, shorter review, fee relief and pre-approved designs lower development barriers.",
+      "headline": {
+        "value": "28→103",
+        "unit": "annual ADU permits",
+        "kind": "Administrative output",
+        "text": "More accessory-dwelling permits in unincorporated Santa Cruz County—not completed or occupied homes.",
+        "context": "2017: 28 permits → 2024: 103 permits. The 2024 count includes one tiny home on wheels."
+      },
+      "title": "ADU permitting reform",
+      "year": "2018–2021 + STATE LAWS",
+      "caution": "A state/local policy bundle and market conditions changed together; no rent-reduction estimate.",
+      "tierLabel": "Descriptive",
+      "tierClass": "descriptive",
+      "hasCausalEstimate": false,
+      "observed": [
+        "2024 General Plan Annual Report Table 1:2017 28; 2018 37; 2019 29; 2020 37; 2021 63; 2022 58; 2023 85; 2024 103.2024 includes one tiny home on wheels classified as an ADU. This is a permitting output, not completed/occupied units or rent reduction."
+      ],
+      "causal": [
+        "No identified causal estimate. County administrative annual permit series. Comparator: No untreated jurisdiction or modeled no-reform trajectory."
+      ],
+      "tradeoffs": [
+        "Report identifies construction and permit costs as barriers; fee reductions and free designs are supports. Total fiscal cost not established. Forgivable Loan Program ended in 2022 for low performance.",
+        "Benefits require property/financing access; potential additional rental or family space is not guaranteed affordable. County removed rent restrictions outside Coastal Zone in 2008 and inside in 2009.",
+        "Infill can reduce land pressure relative to sprawl but adds water, materials and infrastructure demand. No lifecycle or rent effect measured."
+      ],
+      "limits": [
+        "State/local policy bundle cannot be separated from demand, credit and construction conditions. Use February 2025 General Plan report Table 1 full-year series; source explicitly includes one tiny home on wheels among 2024 ADUs.",
+        "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing."
+      ],
+      "sources": [
+        {
+          "title": "2025 Growth Goal Report, September11 2024; ADU report pp27–30, Table14",
+          "url": "https://www2.santacruzcountyca.gov/planning/plnmeetings/PLNSupMaterial/PC/agendas/2024/20240911/006a.pdf",
+          "type": "Primary administrative report"
+        },
+        {
+          "title": "County ADU rules and assistance",
+          "url": "https://www.cdi.santacruzcountyca.gov/Planning/Housing/ADU.aspx",
+          "type": "Primary policy page"
+        },
+        {
+          "title": "2024 General Plan Annual Report, February2025, Table1 PDFp13",
+          "url": "https://www2.santacruzcountyca.gov/planning/plnmeetings/PLNSupMaterial/PC/agendas/2025/20250226/006.pdf",
+          "type": "Primary administrative outcome series"
+        }
+      ],
+      "researchRecord": {
+        "id": "sc-adu-reform",
+        "title": "ADU permitting reforms and fee/design assistance",
+        "place": "Santa Cruz",
+        "jurisdiction": "Unincorporated Santa Cruz County; California enabling/preemptive laws",
+        "scale": "Unincorporated county, excludes City of Santa Cruz",
+        "dates": "Local reforms2018,2020–2021; multiple state laws; annual permits2017–2024",
+        "mechanism": "Ministerial review, eased setbacks/parking, shorter review, fee relief and pre-approved designs lower development barriers.",
+        "slices": [
+          "Housing"
+        ],
+        "direction": "More permitted units; affordability and completed supply not identified",
+        "headline": "28 → 103 ADU permits",
+        "headline_value": 103,
+        "headline_unit": "building permits issued per year",
+        "headline_window": "2017 vs 2024",
+        "observed_outcomes": "2024 General Plan Annual Report Table1:2017 28;2018 37;2019 29;2020 37;2021 63;2022 58;2023 85;2024 103.2024 includes one tiny home on wheels classified as an ADU. This is a permitting output, not completed/occupied units or rent reduction.",
+        "baseline": "2017:28 permits",
+        "counterfactual": "No untreated jurisdiction or modeled no-reform trajectory",
+        "causal_estimate": null,
+        "evidence_grade": "Descriptive",
+        "design": "County administrative annual permit series",
+        "costs": "Report identifies construction and permit costs as barriers; fee reductions and free designs are supports. Total fiscal cost not established. Forgivable Loan Program ended in 2022 for low performance.",
+        "distribution": "Benefits require property/financing access; potential additional rental or family space is not guaranteed affordable. County removed rent restrictions outside Coastal Zone in2008 and inside in2009.",
+        "tradeoffs": "Infill can reduce land pressure relative to sprawl but adds water, materials and infrastructure demand. No lifecycle or rent effect measured.",
+        "limitations": "State/local policy bundle cannot be separated from demand, credit and construction conditions. Use February2025 General Plan report Table1 full-year series; source explicitly includes one tiny home on wheels among2024 ADUs.",
+        "sources": [
+          {
+            "title": "2025 Growth Goal Report, September11 2024; ADU report pp27–30, Table14",
+            "url": "https://www2.santacruzcountyca.gov/planning/plnmeetings/PLNSupMaterial/PC/agendas/2024/20240911/006a.pdf",
+            "type": "Primary administrative report"
+          },
+          {
+            "title": "County ADU rules and assistance",
+            "url": "https://www.cdi.santacruzcountyca.gov/Planning/Housing/ADU.aspx",
+            "type": "Primary policy page"
+          },
+          {
+            "title": "2024 General Plan Annual Report, February2025, Table1 PDFp13",
+            "url": "https://www2.santacruzcountyca.gov/planning/plnmeetings/PLNSupMaterial/PC/agendas/2025/20250226/006.pdf",
+            "type": "Primary administrative outcome series"
+          }
+        ]
+      },
+      "mappingNote": "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing."
+    },
+    {
+      "id": "nyc-clean-heat",
+      "city": "nyc",
+      "jurisdiction": "NYC DEP regulation with NYC assistance; related NY State sulfur standards",
+      "scale": "city buildings / census-tract outcomes",
+      "slices": [
+        "air-pollution",
+        "health"
+      ],
+      "mechanism": "Replace dirty residual heating oil with cleaner fuels; reduce local combustion pollution. Distinct from LL 97 and the later NYS heat-pump incentive program.",
+      "headline": {
+        "value": "−0.12",
+        "unit": "µg/m³ PM2.5",
+        "kind": "Adjusted association",
+        "text": "Lower ambient PM2.5 per 10 converted buildings in a census tract—not a citywide policy effect.",
+        "context": "2011 vs 2016 pollution; 2012–2016 conversions; 95% CI −0.15 to −0.09 µg/m³."
+      },
+      "title": "Clean Heat oil phaseout",
+      "year": "2011–2015",
+      "caution": "Ambient association is not a measured health gain. A small apartment study found unchanged indoor PM2.5.",
+      "tierLabel": "Adjusted observational",
+      "tierClass": "descriptive",
+      "hasCausalEstimate": false,
+      "causal": [
+        "Spatial-lag regression across 2,151 tracts adjusts for traffic, fuel shifts, income and building age. Conversion intensity is associated with pollution change; this is not an untreated-city causal comparison.",
+        "Associated reductions per 10 converted buildings per tract: SO2 −0.28 ppb and NO2 −0.29 ppb. These coefficients are not total citywide effects."
+      ],
+      "observed": [
+        "City reports more than 5, 300 registered No. 6 buildings converted during 2012–2015. Avoided deaths quoted by officials are MODELED, not counted mortality effects."
+      ],
+      "tradeoffs": [
+        "Boiler conversions require capital. Gas substitution can improve local pollutants without establishing life-cycle climate gains; methane/leakage not quantified here.",
+        "Poorer buildings could switch to intermediate No. 4 rather than cleanest alternatives; financing and information barriers matter."
+      ],
+      "limits": [
+        "Separate 48-apartment study found indoor PM2.5 unchanged at 12.8 μg/m³ (p=.99). Raw outdoor PM2.5 fell 8.96→8.08 (p=.08); reference-site-corrected outdoor reduction was significant (p=.04, Table 6). No systematic cleaner-fuel versus No. 4 differences were observed. Ambient associations do not prove personal exposure or health improvements; conversion coefficient is not the citywide policy effect.",
+        "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing."
+      ],
+      "sources": [
+        {
+          "id": "heat-study",
+          "title": "Zhang, He et al. (2021), Evaluating the Impact of the Clean Heat Program on Air Pollution Levels in New York City, Environmental Health Perspectives 129(12):127701",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8653771/",
+          "locator": "Figure 1 and methods"
+        },
+        {
+          "id": "heat-policy",
+          "title": "NYC (2016), Carbon Challenge Handbook for Multifamily Buildings: Heating Oil Conversions",
+          "url": "https://www.nyc.gov/assets/climate/downloads/pdfs/nyc_carbon_challenge_handbook_for_multifamily_buildings.pdf"
+        },
+        {
+          "id": "heat-null",
+          "title": "Gould et al. (2018), Soot and the city, PLOS ONE 13(6):e0199783",
+          "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0199783"
+        },
+        {
+          "id": "heat-equity",
+          "title": "Carrión et al. (2018), Residual Inequity: Assessing the Unintended Consequences of NYC’s Clean Heat Transition",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5800216/"
+        }
+      ],
+      "researchRecord": {
+        "id": "nyc-clean-heat",
+        "title": "Clean Heat: phase out No. 6 heating oil",
+        "jurisdiction": "NYC DEP regulation with NYC assistance; related NY State sulfur standards",
+        "scale": "city buildings / census-tract outcomes",
+        "slices": [
+          "air pollution",
+          "health"
+        ],
+        "status": "2011 rule; assistance 2012; No. 6 deadline June 30, 2015; converted buildings assessed through 2016",
+        "mechanism": "Replace dirty residual heating oil with cleaner fuels; reduce local combustion pollution. Distinct from LL97 and the later NYS heat-pump incentive program.",
+        "dates": {
+          "regulation": "2011",
+          "assistance": "2012",
+          "evaluation_window": "2011 vs 2016 pollution; 2012–2016 fuel conversions",
+          "publication": "2021-12-08"
+        },
+        "headline": {
+          "value": -0.12,
+          "unit": "μg/m³ PM2.5 per 10 converted buildings per census tract",
+          "label": "Adjusted pollution association",
+          "window": "2011–2016",
+          "type": "observational adjusted association"
+        },
+        "outcomes": [
+          {
+            "metric": "PM2.5 concentration",
+            "estimate": -0.12,
+            "ci95": [
+              -0.15,
+              -0.09
+            ],
+            "unit": "μg/m³ per 10 converted buildings per tract",
+            "source": "heat-study"
+          },
+          {
+            "metric": "SO2 concentration",
+            "estimate": -0.28,
+            "ci95": [
+              -0.34,
+              -0.22
+            ],
+            "unit": "ppb per 10 converted buildings per tract",
+            "source": "heat-study"
+          },
+          {
+            "metric": "NO2 concentration",
+            "estimate": -0.29,
+            "ci95": [
+              -0.41,
+              -0.17
+            ],
+            "unit": "ppb per 10 converted buildings per tract",
+            "source": "heat-study"
+          }
+        ],
+        "observed_outcomes": "City reports more than 5,300 registered No. 6 buildings converted during 2012–2015. Avoided deaths quoted by officials are MODELED, not counted mortality effects.",
+        "evidence_grade": "Adjusted observational / moderate-low",
+        "design": "Spatial-lag regression across 2,151 tracts; modeled NYCCAS exposure surfaces and fuel-conversion records; controls include traffic, fuel shifts, income and building age.",
+        "counterfactual": "Conditional relationship between conversion intensity and pollution change; not randomized or untreated-city difference-in-differences.",
+        "distribution": "Poorer buildings could switch to intermediate No. 4 rather than cleanest alternatives; financing and information barriers matter.",
+        "costs_tradeoffs": "Boiler conversions require capital. Gas substitution can improve local pollutants without establishing life-cycle climate gains; methane/leakage not quantified here.",
+        "limitations": "Separate 48-apartment study found indoor PM2.5 unchanged at 12.8 μg/m³ (p=.99). Raw outdoor PM2.5 fell 8.96→8.08 (p=.08); reference-site-corrected outdoor reduction was significant (p=.04, Table 6). No systematic cleaner-fuel versus No. 4 differences were observed. Ambient associations do not prove personal exposure or health improvements; conversion coefficient is not the citywide policy effect.",
+        "sources": [
+          {
+            "id": "heat-study",
+            "title": "Zhang, He et al. (2021), Evaluating the Impact of the Clean Heat Program on Air Pollution Levels in New York City, Environmental Health Perspectives 129(12):127701",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8653771/",
+            "locator": "Figure 1 and methods"
+          },
+          {
+            "id": "heat-policy",
+            "title": "NYC (2016), Carbon Challenge Handbook for Multifamily Buildings: Heating Oil Conversions",
+            "url": "https://www.nyc.gov/assets/climate/downloads/pdfs/nyc_carbon_challenge_handbook_for_multifamily_buildings.pdf"
+          },
+          {
+            "id": "heat-null",
+            "title": "Gould et al. (2018), Soot and the city, PLOS ONE 13(6):e0199783",
+            "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0199783"
+          },
+          {
+            "id": "heat-equity",
+            "title": "Carrión et al. (2018), Residual Inequity: Assessing the Unintended Consequences of NYC’s Clean Heat Transition",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5800216/"
+          }
+        ]
+      },
+      "mappingNote": "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing."
+    },
+    {
+      "id": "sc-youth-cruz-free",
+      "city": "santa-cruz",
+      "jurisdiction": "Santa Cruz Metropolitan Transit District",
+      "scale": "Regional county-serving transit authority, not City policy",
+      "slices": [
+        "networks",
+        "education",
+        "income-work",
+        "climate-change"
+      ],
+      "mechanism": "Fare-free local buses remove a monetary access barrier for school-age youth.",
+      "headline": {
+        "value": "31%",
+        "unit": "of 280 respondents",
+        "kind": "Retrospective survey",
+        "text": "Reported starting to ride during the fare-free youth bus pilot: 86 of 280 surveyed respondents.",
+        "context": "Recalled pre-March 2023 travel vs pilot period; survey May–August 2024. Not a ridership-growth rate."
+      },
+      "title": "Youth Cruz Free",
+      "year": "2023 PILOT",
+      "caution": "33 of 280 respondents stopped riding. The survey is nonrandom; car-trip replacement and CO2 savings are unknown.",
+      "tierLabel": "Descriptive survey",
+      "tierClass": "descriptive",
+      "hasCausalEstimate": false,
+      "observed": [
+        "86/280 respondents reported riding only after pilot began; 136/280 rode in both periods; 33/280 stopped; 25/280 never rode. Agency also reported 536% youth ridership growth, but accessible summary lacks raw denominator/time window, so do not use that as the main metric."
+      ],
+      "causal": [
+        "No identified causal estimate. UC Davis observational survey:394 usable cases overall; 280 for Table 1. School/network recruitment, not representative probability sample.. Comparator: None; nonrandom retrospective survey."
+      ],
+      "tradeoffs": [
+        "December 2024 board report records $1, 192, 777 LCTOP award for continuation of free/reduced fares, with confirmation of Youth Cruz Free funding being pursued. Grant award is not total program cost or expenditure.",
+        "Fare removal supports youth without cars; survey associations with ethnicity, vehicle access and safety suggest benefits/access are uneven. Rural and communities-of-color representation requires improvement.",
+        "Fare-free service requires stable replacement funding and sufficient service. New bus trips need not replace car trips; cannot infer CO2 savings. No causal school-attendance result."
+      ],
+      "limits": [
+        "Recall/selection bias, no control group, pandemic recovery and service changes. 31% is new rider share, not ridership growth. Age-related driving access changes travel behavior.",
+        "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing. Networks, education, income/work and climate links are mechanisms; school attendance, income and emissions effects were not estimated. Networks does not imply broadband change."
+      ],
+      "sources": [
+        {
+          "title": "Pike et al. Youth Cruz Free, UC Davis/NCST August2025, Table1 p10",
+          "url": "https://rosap.ntl.bts.gov/view/dot/86231/dot_86231_DS1.pdf",
+          "type": "Primary research"
+        },
+        {
+          "title": "METRO Youth Cruz Free program",
+          "url": "https://scmetro.org/projects/youth-cruz-free/",
+          "type": "Primary program page"
+        },
+        {
+          "title": "METRO December20 2024 Board agenda, grant report",
+          "url": "https://scmetro.org/wp-content/uploads/board-meetings/2024.12.20-BOD-Agenda.pdf",
+          "type": "Primary agency finance report"
+        }
+      ],
+      "researchRecord": {
+        "id": "sc-youth-cruz-free",
+        "title": "Youth Cruz Free fares",
+        "place": "Santa Cruz",
+        "jurisdiction": "Santa Cruz Metropolitan Transit District",
+        "scale": "Regional county-serving transit authority, not City policy",
+        "dates": "Pilot began March1 2023; survey May29–August15 2024; report August2025",
+        "mechanism": "Fare-free local buses remove a monetary access barrier for school-age youth.",
+        "slices": [
+          "Social connections",
+          "Education",
+          "Income & work",
+          "Climate change"
+        ],
+        "direction": "Observed transit uptake; educational and climate effects unmeasured",
+        "headline": "31% of respondents started riding",
+        "headline_value": 31,
+        "headline_unit": "percent of 280 respondents",
+        "headline_window": "Recalled pre-March2023 vs during pilot, survey2024",
+        "observed_outcomes": "86/280 respondents reported riding only after pilot began; 136/280 rode in both periods; 33/280 stopped;25/280 never rode. Agency also reported536% youth ridership growth, but accessible summary lacks raw denominator/time window, so do not use that as the main metric.",
+        "baseline": "Respondents' recalled bus use before March1 2023",
+        "counterfactual": "None; nonrandom retrospective survey",
+        "causal_estimate": null,
+        "evidence_grade": "Descriptive",
+        "design": "UC Davis observational survey:394 usable cases overall;280 for Table1. School/network recruitment, not representative probability sample.",
+        "costs": "December2024 board report records $1,192,777 LCTOP award for continuation of free/reduced fares, with confirmation of Youth Cruz Free funding being pursued. Grant award is not total program cost or expenditure.",
+        "distribution": "Fare removal supports youth without cars; survey associations with ethnicity, vehicle access and safety suggest benefits/access are uneven. Rural and communities-of-color representation requires improvement.",
+        "tradeoffs": "Fare-free service requires stable replacement funding and sufficient service. New bus trips need not replace car trips; cannot infer CO2 savings. No causal school-attendance result.",
+        "limitations": "Recall/selection bias, no control group, pandemic recovery and service changes. 31% is new rider share, not ridership growth. Age-related driving access changes travel behavior.",
+        "sources": [
+          {
+            "title": "Pike et al. Youth Cruz Free, UC Davis/NCST August2025, Table1 p10",
+            "url": "https://rosap.ntl.bts.gov/view/dot/86231/dot_86231_DS1.pdf",
+            "type": "Primary research"
+          },
+          {
+            "title": "METRO Youth Cruz Free program",
+            "url": "https://scmetro.org/projects/youth-cruz-free/",
+            "type": "Primary program page"
+          },
+          {
+            "title": "METRO December20 2024 Board agenda, grant report",
+            "url": "https://scmetro.org/wp-content/uploads/board-meetings/2024.12.20-BOD-Agenda.pdf",
+            "type": "Primary agency finance report"
+          }
+        ]
+      },
+      "mappingNote": "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing. Networks, education, income/work and climate links are mechanisms; school attendance, income and emissions effects were not estimated. Networks does not imply broadband change."
+    },
+    {
+      "id": "nyc-congestion-pricing",
+      "city": "nyc",
+      "jurisdiction": "MTA Bridges and Tunnels / New York State; NYC and NYSDOT project partners",
+      "scale": "Manhattan cordon, regional network spillovers",
+      "slices": [
+        "networks",
+        "air-pollution",
+        "income-work"
+      ],
+      "mechanism": "Price road congestion; change trips/routes/timing and fund transit. Faster roads are not themselves proof of equitable access or lower emissions.",
+      "headline": {
+        "value": "+11%",
+        "unit": "cordon-area speed",
+        "kind": "Quasi-experimental estimate",
+        "text": "Higher traffic speeds inside the cordon relative to a synthetic no-pricing counterfactual.",
+        "context": "2025 rollout; Cook et al. working paper revised 3 August 2026."
+      },
+      "title": "Congestion Relief Zone",
+      "year": "2025 LAUNCH",
+      "caution": "Air-quality evidence is contested: official monitoring and research estimates do not agree.",
+      "tierLabel": "Quasi-experimental · mixed air",
+      "tierClass": "mixed",
+      "hasCausalEstimate": true,
+      "causal": [
+        "Speed estimate uses generalized synthetic control with granular Google Maps data. It is a working-paper result, not proof of equitable access or emissions reduction.",
+        "Air evidence differs by method and endpoint. Official NYC Health evaluation found no statistically significant policy-attributable CRZ change in full-year 2025 vs 2024. Fraser et al. predict −22% daily maximum PM2.5 in the first six months. Goldberg et al. report −1.44 µg/m³ PM2.5 with difference-in-differences; only the primary abstract was reviewed. These estimates should not be pooled."
+      ],
+      "observed": [
+        "Official NYC Health full-year 2025 vs 2024 evaluation found no statistically significant policy-attributable pollution difference within CRZ. EJ sites showed no attributable increase overall; BQE pollutant improvement lagged control at one site."
+      ],
+      "tradeoffs": [
+        "Launch peak E-ZPass car toll $9; overnight $2.25. Toll is a transfer, collection and behavioral costs are resource costs. Diversion risk requires EJ monitoring, not assumed uniform gains.",
+        "Drivers pay; transit riders can benefit from funding. Low-income frequent-driver discount and disability exemptions mitigate but do not remove burdens; unpriced regional drivers may gain time."
+      ],
+      "limits": [
+        "Working-paper speed result; headline window must not imply all of 2026. Air estimates disagree and daily maximum differs from neighborhood-average exposure. Do not merge traffic-emissions models with ambient measurements or infer avoided deaths. Cook et al. also find little effect on consumer spending or foot traffic. October 2026 Goldberg et al. real-time-monitor DiD also reports PM2.5 benefits; primary abstract reviewed, full paper not accessed. Its satellite NO2 result is not significant at 5% despite a large regional before-after decline.",
+        "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing. Mobility is mapped to Networks as a conceptual extension; the repository's broadband indicator was not evaluated."
+      ],
+      "sources": [
+        {
+          "id": "toll-study",
+          "title": "Cook et al. (August 3, 2026), The Network-Wide Effects of Congestion Pricing: Evidence from New York City, working paper",
+          "url": "https://tobin.yale.edu/research/network-wide-effects-congestion-pricing-evidence-new-york-city"
+        },
+        {
+          "id": "toll-air-official",
+          "title": "NYC Health (August 14, 2026), Air Quality Impacts of Congestion Relief Zone Tolling",
+          "url": "https://a816-dohbesp.nyc.gov/IndicatorPublic/data-features/congestion-pricing-report/"
+        },
+        {
+          "id": "toll-air-positive",
+          "title": "Fraser et al. (2025, corrected December 31), A first look into congestion pricing in the United States, npj Clean Air 1:39",
+          "url": "https://www.nature.com/articles/s44407-025-00037-2"
+        },
+        {
+          "id": "toll-policy",
+          "title": "MTA, A New Congestion Relief Zone for New York (launch factsheet)",
+          "url": "https://cbmanhattan.cityofnewyork.us/cb2/wp-content/uploads/sites/9/2024/12/2-Congestion-Pricing-Factsheet.pdf"
+        },
+        {
+          "id": "toll-air-2026",
+          "title": "Goldberg, Anand, Goldberg & Westervelt (October 7, 2026), Attributing PM2.5 and NO2 Changes One Year after NYC’s Congestion Pricing Policy, Environmental Science & Technology Letters",
+          "url": "https://pubs.acs.org/doi/10.1021/acs.estlett.6c00610",
+          "locator": "Publisher abstract indexed in web search; full article not accessed"
+        }
+      ],
+      "researchRecord": {
+        "id": "nyc-congestion-pricing",
+        "title": "Congestion Relief Zone tolling",
+        "jurisdiction": "MTA Bridges and Tunnels / New York State; NYC and NYSDOT project partners",
+        "scale": "Manhattan cordon, regional network spillovers",
+        "slices": [
+          "mobility",
+          "air pollution",
+          "income and work"
+        ],
+        "status": "Operating since January 5, 2025; evidence reviewed through October 26, 2026",
+        "mechanism": "Price road congestion; change trips/routes/timing and fund transit. Faster roads are not themselves proof of equitable access or lower emissions.",
+        "dates": {
+          "launch": "2025-01-05",
+          "speed_paper_revision": "2026-08-03",
+          "official_air_report": "2026-08-14"
+        },
+        "headline": {
+          "value": 11,
+          "unit": "percent",
+          "label": "Cordon-area speed increase vs synthetic counterfactual",
+          "window": "2025 rollout; August 2026 paper revision",
+          "type": "quasi-experimental estimate"
+        },
+        "outcomes": [
+          {
+            "metric": "Cordon-area traffic speed",
+            "estimate": 11,
+            "unit": "percent",
+            "source": "toll-study",
+            "counterfactual": "Generalized synthetic control using granular Google Maps data"
+          },
+          {
+            "metric": "CRZ daily maximum PM2.5",
+            "estimate": -3.05,
+            "unit": "μg/m³",
+            "relative_percent": -22,
+            "baseline": "Predicted without-policy 13.8 μg/m³",
+            "window": "First six months 2025",
+            "source": "toll-air-positive",
+            "type": "Predictive-counterfactual estimate, contested"
+          },
+          {
+            "metric": "CRZ-site PM2.5",
+            "estimate": -1.44,
+            "unit": "μg/m³",
+            "p_value": "<0.001",
+            "window": "2025 vs 2022–2024",
+            "type": "Difference-in-differences estimate; abstract verified",
+            "source": "toll-air-2026",
+            "sensitivity": "Spillover-adjusted -1.33 μg/m³; nearby non-CRZ +0.50 μg/m³, p=.34; satellite NO2 attributable -1.23%, p=.096"
+          }
+        ],
+        "observed_outcomes": "Official NYC Health full-year 2025 vs 2024 evaluation found no statistically significant policy-attributable pollution difference within CRZ. EJ sites showed no attributable increase overall; BQE pollutant improvement lagged control at one site.",
+        "evidence_grade": "Quasi-experimental mobility; contested air-quality evidence",
+        "design": "Speed: generalized synthetic control. Air: predictive counterfactual at 42 monitors versus official integrated-monitor controlled evaluation; these are distinct endpoints/designs.",
+        "distribution": "Drivers pay; transit riders can benefit from funding. Low-income frequent-driver discount and disability exemptions mitigate but do not remove burdens; unpriced regional drivers may gain time.",
+        "costs_tradeoffs": "Launch peak E-ZPass car toll $9; overnight $2.25. Toll is a transfer, collection and behavioral costs are resource costs. Diversion risk requires EJ monitoring, not assumed uniform gains.",
+        "limitations": "Working-paper speed result; headline window must not imply all of 2026. Air estimates disagree and daily maximum differs from neighborhood-average exposure. Do not merge traffic-emissions models with ambient measurements or infer avoided deaths. Cook et al. also find little effect on consumer spending or foot traffic. October 2026 Goldberg et al. real-time-monitor DiD also reports PM2.5 benefits; primary abstract reviewed, full paper not accessed. Its satellite NO2 result is not significant at 5% despite a large regional before-after decline.",
+        "sources": [
+          {
+            "id": "toll-study",
+            "title": "Cook et al. (August 3, 2026), The Network-Wide Effects of Congestion Pricing: Evidence from New York City, working paper",
+            "url": "https://tobin.yale.edu/research/network-wide-effects-congestion-pricing-evidence-new-york-city"
+          },
+          {
+            "id": "toll-air-official",
+            "title": "NYC Health (August 14, 2026), Air Quality Impacts of Congestion Relief Zone Tolling",
+            "url": "https://a816-dohbesp.nyc.gov/IndicatorPublic/data-features/congestion-pricing-report/"
+          },
+          {
+            "id": "toll-air-positive",
+            "title": "Fraser et al. (2025, corrected December 31), A first look into congestion pricing in the United States, npj Clean Air 1:39",
+            "url": "https://www.nature.com/articles/s44407-025-00037-2"
+          },
+          {
+            "id": "toll-policy",
+            "title": "MTA, A New Congestion Relief Zone for New York (launch factsheet)",
+            "url": "https://cbmanhattan.cityofnewyork.us/cb2/wp-content/uploads/sites/9/2024/12/2-Congestion-Pricing-Factsheet.pdf"
+          },
+          {
+            "id": "toll-air-2026",
+            "title": "Goldberg, Anand, Goldberg & Westervelt (October 7, 2026), Attributing PM2.5 and NO2 Changes One Year after NYC’s Congestion Pricing Policy, Environmental Science & Technology Letters",
+            "url": "https://pubs.acs.org/doi/10.1021/acs.estlett.6c00610",
+            "locator": "Publisher abstract indexed in web search; full article not accessed"
+          }
+        ]
+      },
+      "mappingNote": "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing. Mobility is mapped to Networks as a conceptual extension; the repository's broadband indicator was not evaluated."
+    },
+    {
+      "id": "sc-food-scraps",
+      "city": "santa-cruz",
+      "jurisdiction": "City of Santa Cruz implementing California AB1826 and SB1383",
+      "scale": "City solid-waste collection customers only",
+      "slices": [
+        "climate-change",
+        "nitrogen-phosphorus-loading"
+      ],
+      "mechanism": "Separate food scraps from landfill waste and process for secondary uses; residential and commercial collection.",
+      "headline": {
+        "value": "≈40",
+        "unit": "tons diverted per week",
+        "kind": "Operational throughput",
+        "text": "Food waste reported diverted from landfill by city residential and commercial collection.",
+        "context": "City of Santa Cruz 2023 newsletter. Not an observed annual total; the earlier pilot served a different population."
+      },
+      "title": "Food-scrap separation",
+      "year": "2022 RESIDENTIAL ROLLOUT",
+      "caution": "Diversion is measured; methane avoided, lifecycle emissions, and nutrient-runoff changes are not.",
+      "tierLabel": "Descriptive",
+      "tierClass": "descriptive",
+      "hasCausalEstimate": false,
+      "observed": [
+        "FY 2018 report:45–50 tons/month from commercial collection serving over 26 businesses. City 2023 newsletter:about 40 tons/week from residential+commercial. Changed service population means these are rollout milestones, not like-for-like efficacy estimates."
+      ],
+      "causal": [
+        "No identified causal estimate. Municipal operational throughput reporting. Comparator: No measured no-program disposal trajectory; city's diverted-from-landfill accounting."
+      ],
+      "tradeoffs": [
+        "Capital/operating cost not established from primary sources reviewed. Do not calculate net fiscal savings from throughput.",
+        "Rollout newsletter says multifamily complexes not yet enrolled could use drop-off; convenience differed by housing type. Current mandatory service applies all housing types.",
+        "Transport and processing consume energy; feedstock recovery is not edible food redistribution. Biogas at City's wastewater plant was future work in 2023, not a demonstrated benefit then."
+      ],
+      "limits": [
+        "No measured methane avoided, lifecycle emissions, food security improvement or nutrient runoff effect. Do not annualize 40 tons/week as observed annual tonnage or confuse with county's broader organics totals.",
+        "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing. Climate and nutrient-loading links are mechanisms; neither lifecycle emissions nor nutrient runoff was measured."
+      ],
+      "sources": [
+        {
+          "title": "City Santa Cruz Refuse & Recycling2023 newsletter, p1",
+          "url": "https://www.santacruzca.gov/files/assets/city/v/1/wt/documents/santacruz-refuse-recycling-newsletter.pdf",
+          "type": "Primary operational report"
+        },
+        {
+          "title": "FY2019 adopted budget: FY2018 Public Works accomplishments, PW-6",
+          "url": "https://www.santacruzca.gov/files/assets/city/v/1/fn/documents/budget/fy2019/24-public-works-adopted-2019-c13.pdf",
+          "type": "Primary municipal report"
+        },
+        {
+          "title": "City food-waste service and SB1383 requirements",
+          "url": "https://www.santacruzca.gov/Government/City-Departments/Public-Works/Resource-Recovery/Recycling-and-Waste-Reduction/Food-Waste",
+          "type": "Primary policy page"
+        }
+      ],
+      "researchRecord": {
+        "id": "sc-food-scraps",
+        "title": "Source-separated food-scrap collection",
+        "place": "Santa Cruz",
+        "jurisdiction": "City of Santa Cruz implementing California AB1826 and SB1383",
+        "scale": "City solid-waste collection customers only",
+        "dates": "Commercial pilot byFY2018; preprocessing2019; residential rollout2022; City newsletter2023",
+        "mechanism": "Separate food scraps from landfill waste and process for secondary uses; residential and commercial collection.",
+        "slices": [
+          "Climate change",
+          "Nitrogen & phosphorus loading"
+        ],
+        "direction": "Measured diversion output; net emissions/nutrient effects not measured",
+        "headline": "About40 tons diverted weekly",
+        "headline_value": 40,
+        "headline_unit": "tons of food waste per week",
+        "headline_window": "City2023 newsletter, residential+commercial",
+        "observed_outcomes": "FY2018 report:45–50 tons/month from commercial collection serving over26 businesses. City2023 newsletter:about40 tons/week from residential+commercial. Changed service population means these are rollout milestones, not like-for-like efficacy estimates.",
+        "baseline": "FY2018 commercial pilot45–50tons/month; not a matched baseline",
+        "counterfactual": "No measured no-program disposal trajectory; city's diverted-from-landfill accounting",
+        "causal_estimate": null,
+        "evidence_grade": "Descriptive",
+        "design": "Municipal operational throughput reporting",
+        "costs": "Capital/operating cost not established from primary sources reviewed. Do not calculate net fiscal savings from throughput.",
+        "distribution": "Rollout newsletter says multifamily complexes not yet enrolled could use drop-off; convenience differed by housing type. Current mandatory service applies all housing types.",
+        "tradeoffs": "Transport and processing consume energy; feedstock recovery is not edible food redistribution. Biogas at City's wastewater plant was future work in2023, not a demonstrated benefit then.",
+        "limitations": "No measured methane avoided, lifecycle emissions, food security improvement or nutrient runoff effect. Do not annualize40tons/week as observed annual tonnage or confuse with county's broader organics totals.",
+        "sources": [
+          {
+            "title": "City Santa Cruz Refuse & Recycling2023 newsletter, p1",
+            "url": "https://www.santacruzca.gov/files/assets/city/v/1/wt/documents/santacruz-refuse-recycling-newsletter.pdf",
+            "type": "Primary operational report"
+          },
+          {
+            "title": "FY2019 adopted budget: FY2018 Public Works accomplishments, PW-6",
+            "url": "https://www.santacruzca.gov/files/assets/city/v/1/fn/documents/budget/fy2019/24-public-works-adopted-2019-c13.pdf",
+            "type": "Primary municipal report"
+          },
+          {
+            "title": "City food-waste service and SB1383 requirements",
+            "url": "https://www.santacruzca.gov/Government/City-Departments/Public-Works/Resource-Recovery/Recycling-and-Waste-Reduction/Food-Waste",
+            "type": "Primary policy page"
+          }
+        ]
+      },
+      "mappingNote": "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing. Climate and nutrient-loading links are mechanisms; neither lifecycle emissions nor nutrient runoff was measured."
+    },
+    {
+      "id": "nyc-paid-sick-leave",
+      "city": "nyc",
+      "jurisdiction": "NYC employer mandate; later overlapping NY State law",
+      "scale": "city; Medicaid evaluation population",
+      "slices": [
+        "health",
+        "income-work"
+      ],
+      "mechanism": "Paid time away from work lowers income/time barriers to seeking care and staying home when ill.",
+      "headline": {
+        "value": "−0.6",
+        "unit": "percentage points",
+        "kind": "Quasi-experimental association",
+        "text": "Lower annual emergency-care probability among continuously enrolled adult Medicaid beneficiaries.",
+        "context": "August 2011–July 2017; NYC vs entropy-balanced adults elsewhere in New York State."
+      },
+      "title": "Paid sick leave",
+      "year": "2014 MANDATE",
+      "caution": "The association loses significance in an unweighted specification; actual employment and leave receipt were not observed.",
+      "tierLabel": "Quasi-experimental · sensitive",
+      "tierClass": "causal",
+      "hasCausalEstimate": true,
+      "causal": [
+        "Difference-in-differences with individual fixed effects and entropy weights estimates −0.6 percentage points (95% CI −0.7 to −0.5). This is not −0.6 percent.",
+        "The study does not observe confirmed employment or actual paid-leave receipt. Not all Medicaid adults were treated, and specification sensitivity limits causal confidence."
+      ],
+      "observed": [
+        "Study cohort: 552, 857 continuously enrolled adults age 18–64, including 361, 208 NYC residents; not a sample of confirmed employed recipients."
+      ],
+      "tradeoffs": [
+        "Employers finance paid absences and coverage; reduced contagion is plausible spillover, not measured by this evaluation. NYC-specific net fiscal or employment effect not established here.",
+        "Relevant to low-income workers and carers; employment/actual leave receipt unobserved. Not all Medicaid residents were treated."
+      ],
+      "limits": [
+        "ED association loses significance in traditional unweighted DiD; primary-care result loses significance with linear trends. Breast/cervical screening null. Later state mandate is outside evaluation. Do not describe -0.6 pp as -0.6% or extrapolate to all city residents.",
+        "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing."
+      ],
+      "sources": [
+        {
+          "id": "sick-study",
+          "title": "Ko & Glied (2021), Associations Between a NYC Paid Sick Leave Mandate and Health Care Utilization, JAMA Health Forum 2(5):e210342",
+          "url": "https://jamanetwork.com/journals/jama-health-forum/fullarticle/2779693"
+        },
+        {
+          "id": "sick-policy",
+          "title": "NYC DCA (July 29, 2014), New Yorkers Can Begin Using Paid Sick Leave Tomorrow, July 30th",
+          "url": "https://www.nyc.gov/site/dca/news/020-14/new-yorkers-can-begin-using-paid-sick-leave-tomorrow-july-30th"
+        },
+        {
+          "id": "sick-current",
+          "title": "NYC DCWP, Protected Time Off Law FAQs (current rules)",
+          "url": "https://www.nyc.gov/site/dca/about/paid-sick-leave-FAQs.page"
+        }
+      ],
+      "researchRecord": {
+        "id": "nyc-paid-sick-leave",
+        "title": "Paid sick leave mandate",
+        "jurisdiction": "NYC employer mandate; later overlapping NY State law",
+        "scale": "city; Medicaid evaluation population",
+        "slices": [
+          "health",
+          "income and work"
+        ],
+        "status": "2014 mandate implemented; current rules expanded since study and must not be conflated with evaluated treatment",
+        "mechanism": "Paid time away from work lowers income/time barriers to seeking care and staying home when ill.",
+        "dates": {
+          "effective": "2014-04-01",
+          "first_use": "2014-07-30",
+          "study_cutoff": "2014-08-01",
+          "evaluation_window": "August 2011–July 2017",
+          "publication": "2021-05-06"
+        },
+        "headline": {
+          "value": -0.6,
+          "unit": "percentage points",
+          "label": "Annual probability of emergency care among continuously enrolled adult Medicaid beneficiaries",
+          "window": "2011–2017",
+          "type": "quasi-experimental association"
+        },
+        "outcomes": [
+          {
+            "metric": "Annual emergency-care probability",
+            "estimate": -0.6,
+            "ci95": [
+              -0.7,
+              -0.5
+            ],
+            "unit": "percentage points",
+            "counterfactual": "Entropy-balanced Medicaid adults elsewhere in NY State",
+            "source": "sick-study"
+          }
+        ],
+        "observed_outcomes": "Study cohort: 552,857 continuously enrolled adults age 18–64, including 361,208 NYC residents; not a sample of confirmed employed recipients.",
+        "evidence_grade": "Quasi-experimental / moderate-low",
+        "design": "Difference-in-differences with individual fixed effects and entropy weights; event study and sensitivity checks.",
+        "distribution": "Relevant to low-income workers and carers; employment/actual leave receipt unobserved. Not all Medicaid residents were treated.",
+        "costs_tradeoffs": "Employers finance paid absences and coverage; reduced contagion is plausible spillover, not measured by this evaluation. NYC-specific net fiscal or employment effect not established here.",
+        "limitations": "ED association loses significance in traditional unweighted DiD; primary-care result loses significance with linear trends. Breast/cervical screening null. Later state mandate is outside evaluation. Do not describe -0.6pp as -0.6% or extrapolate to all city residents.",
+        "sources": [
+          {
+            "id": "sick-study",
+            "title": "Ko & Glied (2021), Associations Between a NYC Paid Sick Leave Mandate and Health Care Utilization, JAMA Health Forum 2(5):e210342",
+            "url": "https://jamanetwork.com/journals/jama-health-forum/fullarticle/2779693"
+          },
+          {
+            "id": "sick-policy",
+            "title": "NYC DCA (July 29, 2014), New Yorkers Can Begin Using Paid Sick Leave Tomorrow, July 30th",
+            "url": "https://www.nyc.gov/site/dca/news/020-14/new-yorkers-can-begin-using-paid-sick-leave-tomorrow-july-30th"
+          },
+          {
+            "id": "sick-current",
+            "title": "NYC DCWP, Protected Time Off Law FAQs (current rules)",
+            "url": "https://www.nyc.gov/site/dca/about/paid-sick-leave-FAQs.page"
+          }
+        ]
+      },
+      "mappingNote": "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing."
+    },
+    {
+      "id": "sc-community-choice-energy",
+      "city": "santa-cruz",
+      "jurisdiction": "Central Coast Community Energy multi-jurisdiction JPA",
+      "scale": "Regional electricity supplier; not a Santa Cruz-only outcome",
+      "slices": [
+        "energy",
+        "climate-change"
+      ],
+      "mechanism": "Publicly governed generation procurement, renewable contracts and opt-up tariff; PG&E still delivers electricity.",
+      "headline": {
+        "value": "551",
+        "unit": "lbCO2e/MWh · supplier total",
+        "kind": "Emissions accounting",
+        "text": "3CE total electricity emissions intensity, above the comparable California utility-average total of 384.",
+        "context": "2025 power-content label, published September 2026. Same total scope: retail, other end uses, and losses."
+      },
+      "title": "Community-choice energy",
+      "year": "2018 OPERATIONS",
+      "caution": "Do not label this automatic climate success. Regional accounting factors are not Santa Cruz avoided emissions.",
+      "tierLabel": "Accounting + modeled tariffs",
+      "tierClass": "mixed",
+      "hasCausalEstimate": false,
+      "observed": [
+        "2025 label: 3CE total intensity 551 vs California utility-average total 384 lbCO2e/MWh (retail sales, other end uses and losses). Retail-only 3Cchoice 542; 3Cprime 0. These are accounting intensities, not marginal or causal avoided emissions."
+      ],
+      "causal": [
+        "No identified causal estimate. CEC power-source disclosure accounting; joint 3CE/PG&E tariff illustration. Comparator: No causal no-CCA comparison. Tariff illustration compares matched 375 kWh usage at published 2024 rates.."
+      ],
+      "tradeoffs": [
+        "2024 E-TOU-C illustration at 375 kWh/month:PG&E$172.57 vs 3Cchoice$158.71, modeled$13.86/month (~8.0%) difference including delivery/PCIA. Not measured household savings, not current 2026 rates, and rate effective dates differ (PG&EJune 1; 3CEJan 1).",
+        "Benefits vary with tariff, usage, vintage fees and eligibility. Cheap generation alone does not remove delivery charges. No local energy-poverty effect identified.",
+        "New renewable contracts can have additionality benefits but procurement accounting does not prove them. Offsite land/material and grid effects require lifecycle evidence. A 100%renewable opt-up product is not default service."
+      ],
+      "limits": [
+        "Do not use regional energy totals as Santa Cruz city effects.2025 new reporting separates retail-only and total scopes:compare total 551 with total 384, not retail 542 with state-total 384. No automatic climate-success label.",
+        "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing."
+      ],
+      "sources": [
+        {
+          "title": "3CE2025 Power Content Label, publishedSeptember2026",
+          "url": "https://3cenergy.org/wp-content/uploads/2026/09/2025-PCL-Central-Coast-Community-Energy.pdf",
+          "type": "Primary standardized disclosure"
+        },
+        {
+          "title": "3CE/PG&E2024 residential joint rate mailer, E-TOU-C",
+          "url": "https://3cenergy.org/wp-content/uploads/2024/08/3CE_JRM_PGE-RES_2024.pdf",
+          "type": "Primary joint tariff illustration"
+        },
+        {
+          "title": "3CE clean energy contracts and disclosure archive",
+          "url": "https://3cenergy.org/about-us/understanding-clean-energy/",
+          "type": "Primary supplier claims, not independent additionality evaluation"
+        }
+      ],
+      "researchRecord": {
+        "id": "sc-community-choice-energy",
+        "title": "Community-choice electricity procurement (3CE)",
+        "place": "Santa Cruz",
+        "jurisdiction": "Central Coast Community Energy multi-jurisdiction JPA",
+        "scale": "Regional electricity supplier; not a Santa Cruz-only outcome",
+        "dates": "Operations since2018;2024 rate comparison;2025 power-content label published2026",
+        "mechanism": "Publicly governed generation procurement, renewable contracts and opt-up tariff; PG&E still delivers electricity.",
+        "slices": [
+          "Energy",
+          "Climate change"
+        ],
+        "direction": "Mixed: modeled tariff saving; default supply emissions intensity above state comparator",
+        "headline": "551 vs384 lbCO2e/MWh",
+        "headline_value": 551,
+        "headline_unit": "lbCO2e/MWh, supplier total",
+        "headline_window": "2025, 3CE total vs CA utility-average total, same scope",
+        "observed_outcomes": "2025 label: 3CE total intensity551 vs California utility-average total384 lbCO2e/MWh (retail sales, other end uses and losses). Retail-only3Cchoice542;3Cprime0. These are accounting intensities, not marginal or causal avoided emissions.",
+        "baseline": "Contemporaneous statewide total benchmark384, not untreated Santa Cruz counterfactual",
+        "counterfactual": "No causal no-CCA comparison. Tariff illustration compares matched375kWh usage at published2024 rates.",
+        "causal_estimate": null,
+        "evidence_grade": "Descriptive + modeled",
+        "design": "CEC power-source disclosure accounting; joint3CE/PG&E tariff illustration",
+        "costs": "2024 E-TOU-C illustration at375kWh/month:PG&E$172.57 vs3Cchoice$158.71, modeled$13.86/month (~8.0%) difference including delivery/PCIA. Not measured household savings, not current2026 rates, and rate effective dates differ (PG&EJune1;3CEJan1).",
+        "distribution": "Benefits vary with tariff, usage, vintage fees and eligibility. Cheap generation alone does not remove delivery charges. No local energy-poverty effect identified.",
+        "tradeoffs": "New renewable contracts can have additionality benefits but procurement accounting does not prove them. Offsite land/material and grid effects require lifecycle evidence. A100%renewable opt-up product is not default service.",
+        "limitations": "Do not use regional energy totals as Santa Cruz city effects.2025 new reporting separates retail-only and total scopes:compare total551 with total384, not retail542 with state-total384. No automatic climate-success label.",
+        "sources": [
+          {
+            "title": "3CE2025 Power Content Label, publishedSeptember2026",
+            "url": "https://3cenergy.org/wp-content/uploads/2026/09/2025-PCL-Central-Coast-Community-Energy.pdf",
+            "type": "Primary standardized disclosure"
+          },
+          {
+            "title": "3CE/PG&E2024 residential joint rate mailer, E-TOU-C",
+            "url": "https://3cenergy.org/wp-content/uploads/2024/08/3CE_JRM_PGE-RES_2024.pdf",
+            "type": "Primary joint tariff illustration"
+          },
+          {
+            "title": "3CE clean energy contracts and disclosure archive",
+            "url": "https://3cenergy.org/about-us/understanding-clean-energy/",
+            "type": "Primary supplier claims, not independent additionality evaluation"
+          }
+        ]
+      },
+      "mappingNote": "All slice links are conceptual. None of these estimates directly establishes a Doughnut indicator threshold crossing."
+    }
+  ]
+}

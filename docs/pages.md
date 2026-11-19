@@ -131,3 +131,18 @@ The build fails if the file's bytes or hash, the pinned commit or the list of ju
 4. Run `pnpm pages:build` and `pnpm pages:check` and read the built `dist/pages/san-francisco/index.html`.
 
 Run `pnpm pages:test`, `pnpm pages:build` and `pnpm pages:check`. Tests cover the pin, all 21 values, targets, years, sources, links, actions and scores against the fork's record, the known issues, the SoMa exclusion, the literal-only reader and tampering. The browser check covers the collection card, the open notice and its three links, each dimension's state against the fork's level, the panel and deep link, 390px and no-JavaScript reading.
+
+## NYC and Santa Cruz policy evidence study (draft)
+
+`site/policy-view/` is an additive, portable retrospective evidence atlas, copied
+to `/policies/` by the static builder. Its policy outcomes retain native units,
+periods, jurisdictions and causal limitations. Conceptual Doughnut slice links
+are not new portrait scores and do not update `site/data/portraits.json`. The staff analyzer offers the existing modeled portrait comparison plus explicit retrospective and prospective evidence-graph modes. Graph modes do not resize portrait wedges or assert custom-dimension mappings. Source-text matches are not claim validation. City, county, water-service and regional outcomes must remain distinct.
+
+The artifact is a research draft, not a publication approval. Keel architecture
+and principle checks are code checks, not independent verification of every
+statistical claim. Missing source archives or unresolved claims remain explicit.
+No database approval, paid research call or deployment is needed to review the
+local artifact. Run `node --test scripts/policy-study.test.mjs` for its structural
+checks, in addition to the normal Pages and Keel checks above.
+
