@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { formatIndicatorValue } from '@deep-fryer/core';
+import { formatCalculatedValue, formatIndicatorValue } from '@deep-fryer/core';
 import type { ProgressRow } from '@/lib/progress';
 import { safeHref } from '@/lib/safe-url';
 import { dimensionLabel, scaleLabel } from '@/lib/i18n/content';
@@ -8,9 +8,10 @@ import { getI18n } from '@/lib/i18n/server';
 import { Sparkline } from './Sparkline';
 import { StatusChip } from './StatusChip';
 
+/** A change the app calculated (since the baseline, or needed per year). */
 function signed(n: number, unit: string): string {
   if (n === 0) return `±0`;
-  return `${n > 0 ? '+' : '−'}${formatIndicatorValue(Math.abs(n), unit)}`;
+  return `${n > 0 ? '+' : '−'}${formatCalculatedValue(Math.abs(n), unit)}`;
 }
 
 /**
