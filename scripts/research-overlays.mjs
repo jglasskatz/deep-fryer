@@ -32,6 +32,21 @@ export function overlayBaseline() {
   return JSON.parse(bound(overlayConfig.baseline, overlayConfig.baseline_sha256).bytes);
 }
 
+/** Reader-facing context for the dimensions whose legacy summary was
+ * superseded by a reviewed indicator. The reviewed indicator notes stay exactly
+ * as bound to their amendment hash; this text restates the same measurements
+ * and qualifications in plain sentences for the place being described. Each
+ * entry must name its indicator's reviewed value, so the two cannot drift.
+ */
+export const readerContext = Object.freeze({
+  'santa-cruz:housing:0': 'The 2026 PIT report (page 13) gives 1,024 people experiencing homelessness in the City of Santa Cruz on the night of the point-in-time count. Street enumeration took place on January 29 and shelter occupancy was recorded from January 28. The report\'s own figures do not quite agree: 789 unsheltered plus 234 sheltered people make 1,023, and the incorporated-area and county subtotals also support 1,023, so the published total of 1,024 is shown as uncertain. The count covers a single night, leaves out some forms of homelessness and is not the number of people served over a year. This year the count newly included safe parking and sleeping records, which added 124 people in the city compared with earlier practice, so annual changes are not directly comparable. An earlier version of this page gave 1,850 for the city, but 1,850 was the 2024 COUNTY total, not Santa Cruz city. Housing cost burden is a separate measure that has not yet been reviewed. The earlier target for this dimension was written in words rather than as a number, so the count is shown without a score.',
+  'santa-cruz-county:housing:0': 'The 2026 PIT report (page 13) gives 1,648 people experiencing homelessness across Santa Cruz County on the night of the point-in-time count: 1,290 unsheltered and 358 sheltered. Street enumeration took place on January 29 and shelter occupancy was recorded from January 28. The count covers a single night, leaves out some forms of homelessness and is not the number of people served over a year. This year the count newly included safe parking and sleeping records, which added 124 people in the City of Santa Cruz and 2 in Watsonville compared with earlier practice, so annual changes are not directly comparable. The 2024 county count was 1,850. Housing cost burden is a separate measure that has not yet been reviewed. The earlier target for this dimension was written in words rather than as a number, so the count is shown without a score.',
+  'watsonville:housing:0': 'The 2026 PIT report (page 13) gives 303 people experiencing homelessness in Watsonville on the night of the point-in-time count: 179 unsheltered and 124 sheltered. Street enumeration took place on January 29 and shelter occupancy was recorded from January 28. The count covers a single night, leaves out some forms of homelessness and is not the number of people served over a year. This year the count newly included safe parking and sleeping records, which added 2 people in Watsonville compared with earlier practice, so annual changes are not directly comparable. Housing cost burden is a separate measure that has not yet been reviewed. The earlier target for this dimension was written in words rather than as a number, so the count is shown without a score.',
+  'santa-cruz:social-equity:0': 'Household income inequality in the City of Santa Cruz, measured by the Gini index (0 means every household has the same income, 1 means one household has all of it), is 0.4936, with a 90% margin of error of ±0.0183. The figure is the American Community Survey five-year estimate for 2020–2024 (table B19083, city geography 1600000US0669112). It replaces an earlier figure that was unclear and appeared to be a county proxy or an approximation. The earlier target for this dimension was written in words and differed between portraits, so no numeric threshold has been set and the value is shown without a score.',
+  'santa-cruz-county:social-equity:0': 'Household income inequality across Santa Cruz County, measured by the Gini index (0 means every household has the same income, 1 means one household has all of it), is 0.4864, with a 90% margin of error of ±0.0184. The figure is the American Community Survey one-year estimate for 2024 (table B19083, county geography 0500000US06087). Because the city figures use five-year estimates for 2020–2024, this value is not a like-for-like comparison with them. It replaces an earlier figure that was unclear and appeared to be an approximation. The earlier target for this dimension was written in words and differed between portraits, so no numeric threshold has been set and the value is shown without a score.',
+  'watsonville:social-equity:0': 'Household income inequality in Watsonville, measured by the Gini index (0 means every household has the same income, 1 means one household has all of it), is 0.4282, with a 90% margin of error of ±0.0213. The figure is the American Community Survey five-year estimate for 2020–2024 (table B19083, city geography 1600000US0683668). It replaces an earlier figure that was unclear and appeared to be a county proxy or an approximation. Environmental justice in Watsonville, such as its pollution burden, is a separate question that this income measure does not capture. The earlier target for this dimension was written in words and differed between portraits, so no numeric threshold has been set and the value is shown without a score.',
+});
+
 let cached;
 export function reviewedOverlayRelease() {
   if (cached) return structuredClone(cached.release);
@@ -40,6 +55,7 @@ export function reviewedOverlayRelease() {
   const touched = new Set();
   const records = [];
   const verifiedRaw = new Set();
+  const contextApplied = new Set();
   const catalog = json(path.join(repo, 'site/catalog.json'));
   const original = structuredClone(release);
   for (const declaration of overlayConfig.reviews) {
@@ -106,15 +122,14 @@ export function reviewedOverlayRelease() {
         review_sha256: declaration.sha256, amendment_file_sha256: decision.bound_amendment_file_sha256,
         approved: false, reviewer: review.reviewer, reasoning_effort: review.reasoning_effort };
       // These reviewed housing/equity replacements correct the legacy context's
-      // geography, old values and unsupported comparisons. Use the exact
-      // reviewed qualifications as the visible context too, rather than
-      // retaining a contradictory summary above the corrected indicator.
+      // geography, old values and unsupported comparisons, so the legacy
+      // summary is replaced rather than left contradicting the indicator.
       // The original prose stays intact in the hash-bound frozen baseline.
-      if ([
-        'santa-cruz:housing:0', 'santa-cruz-county:housing:0', 'watsonville:housing:0',
-        'santa-cruz:social-equity:0', 'santa-cruz-county:social-equity:0', 'watsonville:social-equity:0',
-      ].includes(amendment.id)) {
-        dimension.context = rendered.notes;
+      if (Object.hasOwn(readerContext, amendment.id)) {
+        const context = readerContext[amendment.id];
+        if (!context.includes(rendered.value.toLocaleString('en-US', { maximumFractionDigits: 4 }))) throw new Error(`Reader context omits the reviewed value: ${amendment.id}`);
+        dimension.context = context;
+        contextApplied.add(amendment.id);
       }
       if (amendment.kind === 'append') dimension.indicators.push(rendered);
       else dimension.indicators[amendment.indicator_index] = rendered;
@@ -142,6 +157,8 @@ export function reviewedOverlayRelease() {
       records.push({ id: amendment.id, portrait: portrait.slug, dimension: dimension.slug, review_sha256: declaration.sha256 });
     }
   }
+  const unused = Object.keys(readerContext).filter(id => !contextApplied.has(id));
+  if (unused.length) throw new Error(`Reader context has no accepted amendment: ${unused.join(', ')}`);
   release.research_overlay = { campaign: overlayConfig.campaign, baseline_sha256: overlayConfig.baseline_sha256,
     config_sha256: hash(readFileSync(configPath)), reviews: overlayConfig.reviews, applied: records, human_approval: false };
   // Campaign accounting is internal bookkeeping, never part of the public

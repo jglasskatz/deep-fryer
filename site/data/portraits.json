@@ -171,7 +171,7 @@
           "ring": "social",
           "name": "housing",
           "level": null,
-          "context": "The 2026 PIT report, physical page 13, reports one-night counts by jurisdiction. Street enumeration occurred January 29, with shelter occupancy from January 28. The count excludes some forms of homelessness and is not annual persons served. Newly included safe parking/sleeping records added 124 people in Santa Cruz city and 2 in Watsonville compared with prior practice, so annual changes are not directly comparable. The legacy 1,850 was the 2024 COUNTY total, not Santa Cruz city. Housing cost burden remains a separate unresolved measure. No count-based score is inferred from the legacy combined prose target. Source arithmetic conflict: the published city total is 1,024, but 789 unsheltered + 234 sheltered = 1,023; incorporated and county subtotals also support 1,023. Retain uncertainty and do not silently repair the source.",
+          "context": "The 2026 PIT report (page 13) gives 1,024 people experiencing homelessness in the City of Santa Cruz on the night of the point-in-time count. Street enumeration took place on January 29 and shelter occupancy was recorded from January 28. The report's own figures do not quite agree: 789 unsheltered plus 234 sheltered people make 1,023, and the incorporated-area and county subtotals also support 1,023, so the published total of 1,024 is shown as uncertain. The count covers a single night, leaves out some forms of homelessness and is not the number of people served over a year. This year the count newly included safe parking and sleeping records, which added 124 people in the city compared with earlier practice, so annual changes are not directly comparable. An earlier version of this page gave 1,850 for the city, but 1,850 was the 2024 COUNTY total, not Santa Cruz city. Housing cost burden is a separate measure that has not yet been reviewed. The earlier target for this dimension was written in words rather than as a number, so the count is shown without a score.",
           "actions": [
             "Support Housing Matters Santa Cruz (formerly Homeless Services Center)",
             "Advocate for more affordable housing development",
@@ -286,7 +286,7 @@
           "ring": "social",
           "name": "social equity",
           "level": null,
-          "context": "Official B19083_E001=0.4936;90%MOE±0.0183. 2020–2024 ACS5 year, geography 1600000 US0669112. Replaces earlier unclear countyproxy/approximation. Legacytarget was prose and differs byportrait; no new numericthreshold approved here. Watsonville environmentaljustice context is distinct from household income Gini.",
+          "context": "Household income inequality in the City of Santa Cruz, measured by the Gini index (0 means every household has the same income, 1 means one household has all of it), is 0.4936, with a 90% margin of error of ±0.0183. The figure is the American Community Survey five-year estimate for 2020–2024 (table B19083, city geography 1600000US0669112). It replaces an earlier figure that was unclear and appeared to be a county proxy or an approximation. The earlier target for this dimension was written in words and differed between portraits, so no numeric threshold has been set and the value is shown without a score.",
           "actions": [
             "Support living wage initiatives",
             "Advocate for progressive local tax policies",
@@ -935,7 +935,7 @@
           "ring": "social",
           "name": "housing",
           "level": null,
-          "context": "The 2026 PIT report, physical page 13, reports one-night counts by jurisdiction. Street enumeration occurred January 29, with shelter occupancy from January 28. The count excludes some forms of homelessness and is not annual persons served. Newly included safe parking/sleeping records added 124 people in Santa Cruz city and 2 in Watsonville compared with prior practice, so annual changes are not directly comparable. The legacy 1,850 was the 2024 COUNTY total, not Santa Cruz city. Housing cost burden remains a separate unresolved measure. No count-based score is inferred from the legacy combined prose target. County: 1,290 unsheltered + 358 sheltered = 1,648.",
+          "context": "The 2026 PIT report (page 13) gives 1,648 people experiencing homelessness across Santa Cruz County on the night of the point-in-time count: 1,290 unsheltered and 358 sheltered. Street enumeration took place on January 29 and shelter occupancy was recorded from January 28. The count covers a single night, leaves out some forms of homelessness and is not the number of people served over a year. This year the count newly included safe parking and sleeping records, which added 124 people in the City of Santa Cruz and 2 in Watsonville compared with earlier practice, so annual changes are not directly comparable. The 2024 county count was 1,850. Housing cost burden is a separate measure that has not yet been reviewed. The earlier target for this dimension was written in words rather than as a number, so the count is shown without a score.",
           "actions": [
             "Support Housing Matters",
             "Advocate for affordable housing",
@@ -1048,7 +1048,7 @@
           "ring": "social",
           "name": "social equity",
           "level": null,
-          "context": "Official B19083_E001=0.4864;90%MOE±0.0184. 2024 ACS1 year, geography 0500000 US06087. Replaces earlier unclear countyproxy/approximation. Legacytarget was prose and differs byportrait; no new numericthreshold approved here. Watsonville environmentaljustice context is distinct from household income Gini.",
+          "context": "Household income inequality across Santa Cruz County, measured by the Gini index (0 means every household has the same income, 1 means one household has all of it), is 0.4864, with a 90% margin of error of ±0.0184. The figure is the American Community Survey one-year estimate for 2024 (table B19083, county geography 0500000US06087). Because the city figures use five-year estimates for 2020–2024, this value is not a like-for-like comparison with them. It replaces an earlier figure that was unclear and appeared to be an approximation. The earlier target for this dimension was written in words and differed between portraits, so no numeric threshold has been set and the value is shown without a score.",
           "actions": [
             "Support living wage initiatives",
             "Advocate for equitable tax policies",
@@ -1721,7 +1721,7 @@
           "ring": "social",
           "name": "housing",
           "level": null,
-          "context": "The 2026 PIT report, physical page 13, reports one-night counts by jurisdiction. Street enumeration occurred January 29, with shelter occupancy from January 28. The count excludes some forms of homelessness and is not annual persons served. Newly included safe parking/sleeping records added 124 people in Santa Cruz city and 2 in Watsonville compared with prior practice, so annual changes are not directly comparable. The legacy 1,850 was the 2024 COUNTY total, not Santa Cruz city. Housing cost burden remains a separate unresolved measure. No count-based score is inferred from the legacy combined prose target. Watsonville: 179 unsheltered + 124 sheltered = 303.",
+          "context": "The 2026 PIT report (page 13) gives 303 people experiencing homelessness in Watsonville on the night of the point-in-time count: 179 unsheltered and 124 sheltered. Street enumeration took place on January 29 and shelter occupancy was recorded from January 28. The count covers a single night, leaves out some forms of homelessness and is not the number of people served over a year. This year the count newly included safe parking and sleeping records, which added 2 people in Watsonville compared with earlier practice, so annual changes are not directly comparable. Housing cost burden is a separate measure that has not yet been reviewed. The earlier target for this dimension was written in words rather than as a number, so the count is shown without a score.",
           "actions": [
             "Advocate for Watsonville homelessness department/coordinator",
             "Support affordable housing development",
@@ -1836,7 +1836,7 @@
           "ring": "social",
           "name": "social equity",
           "level": null,
-          "context": "Official B19083_E001=0.4282;90%MOE±0.0213. 2020–2024 ACS5 year, geography 1600000 US0683668. Replaces earlier unclear countyproxy/approximation. Legacytarget was prose and differs byportrait; no new numericthreshold approved here. Watsonville environmentaljustice context is distinct from household income Gini.",
+          "context": "Household income inequality in Watsonville, measured by the Gini index (0 means every household has the same income, 1 means one household has all of it), is 0.4282, with a 90% margin of error of ±0.0213. The figure is the American Community Survey five-year estimate for 2020–2024 (table B19083, city geography 1600000US0683668). It replaces an earlier figure that was unclear and appeared to be a county proxy or an approximation. Environmental justice in Watsonville, such as its pollution burden, is a separate question that this income measure does not capture. The earlier target for this dimension was written in words and differed between portraits, so no numeric threshold has been set and the value is shown without a score.",
           "actions": [
             "Support environmental justice organizations (COPA, APEN)",
             "Advocate for equitable distribution of environmental burdens",
