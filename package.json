@@ -26,14 +26,14 @@
     "pages:amend": "node scripts/apply-research-overlays.mjs"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1156.0",
+    "@aws-sdk/client-s3": "^3.1170.0",
     "@deep-fryer/contract": "workspace:*",
     "@deep-fryer/core": "workspace:*",
     "@deep-fryer/db": "workspace:*",
     "@deep-fryer/research": "workspace:*",
     "@keel_flow/core": "^0.2.0",
     "@keel_flow/pack-agent-topology": "^0.2.0",
-    "@keel_flow/pack-general-se": "^0.4.1",
+    "@keel_flow/pack-general-se": "^0.5.0",
     "@keel_flow/pack-research": "workspace:^",
     "@keel_flow/schema": "^0.2.0",
     "drizzle-orm": "^0.45.4",
@@ -48,7 +48,7 @@
   "pnpm": {
     "patchedDependencies": {
       "@keel_flow/pack-general-se@0.2.0": "patches/@keel_flow__pack-general-se@0.2.0.patch",
-      "@keel_flow/pack-general-se@0.4.1": "patches/@keel_flow__pack-general-se@0.4.1.patch"
+      "@keel_flow/pack-general-se@0.5.0": "patches/@keel_flow__pack-general-se@0.5.0.patch"
     }
   }
 }
