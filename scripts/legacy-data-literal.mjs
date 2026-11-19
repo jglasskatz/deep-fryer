@@ -45,8 +45,10 @@ export function readJurisdictions(text) {
   const file = ts.createSourceFile('data.js', text, ts.ScriptTarget.ES2020, false, ts.ScriptKind.JS);
   if (file.parseDiagnostics.length) throw new Error('Legacy data does not parse');
   const [statement] = file.statements;
-  const declaration = statement?.kind === K.VariableStatement ? statement.declarationList.declarations[0] : null;
-  if (file.statements.length !== 1 || statement.declarationList.declarations.length !== 1
+  // An assignment, a bare expression or an empty file has no declaration list; refuse it before reading one.
+  const declarations = statement?.kind === K.VariableStatement ? statement.declarationList.declarations : [];
+  const [declaration] = declarations;
+  if (file.statements.length !== 1 || declarations.length !== 1
     || declaration.name.kind !== K.Identifier || declaration.name.text !== 'JURISDICTIONS'
     || declaration.initializer?.kind !== K.ObjectLiteralExpression) throw new Error('Legacy data must be a single JURISDICTIONS object literal');
   return literal(declaration.initializer);
