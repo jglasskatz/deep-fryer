@@ -2,7 +2,11 @@
 // Legacy snapshots sometimes encode a gap as prose rather than null. Keep
 // that original text intact, but do not count an explicit missing-data marker
 // as an observation. Real qualitative statements remain available values.
-const missingValue = /^(?:(?:(?:data|value|measurement)\s+)?(?:not available|unavailable|not reported|not published)(?:\s+(?:at|for|in)\b.*)?|n\/a|unknown|data needed)[.!]?$/i;
+// A marker may name where or when the data is missing ("at city level",
+// "for 2024"), but only with plain words and years. Anything else after it,
+// such as a clause break, a bracket or a measured number, means the text also
+// reports a value, so it is shown rather than replaced with a gap.
+const missingValue = /^(?:(?:(?:data|value|measurement)\s+)?(?:not available|unavailable|not reported|not published)(?:\s+(?:at|for|in)(?:\s+(?:[a-z][a-z'\/-]*|\d{4}(?:[-\u2013]\d{2,4})?))*)?|n\/a|unknown|data needed)[.!]?$/i;
 export function hasValue(indicator) {
   if (indicator.status === 'gap') return false;
   const value = indicator.value;
