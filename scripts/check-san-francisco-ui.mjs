@@ -1,6 +1,6 @@
 /** Offline regression of the built San Francisco route. Never installs a browser or fetches sources. */
 import { createServer } from 'node:http';
-import { readFile, stat, mkdir } from 'node:fs/promises';
+import { readFile, readdir, stat, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { chromium } from '../apps/worker/node_modules/playwright-core/index.mjs';
@@ -44,7 +44,11 @@ try {
   await page.goto(`${origin}/deep-fryer/`, { waitUntil: 'networkidle' });
   const card = page.locator('a.card[href="san-francisco/"]');
   assert.equal(await card.count(), 1);
-  assert.match(await card.innerText(), /Existing source portrait[\s\S]*City of San Francisco/);
+  assert.match(await card.innerText(), /^Community data · not checked\s+City of San Francisco/);
+  // The checked California import shares the status but not this label, so the two cards can be told apart.
+  const california = page.locator('a.card[href="california/"]');
+  assert.equal(await california.count(), 1);
+  assert.doesNotMatch(await california.innerText(), /Community data/);
   assert.equal(await page.getByText('SoMa', { exact: false }).count(), 0, 'The copied SoMa portrait is not published');
 
   await page.goto(url, { waitUntil: 'networkidle' });
@@ -102,9 +106,32 @@ try {
   await nojs.goto(url);
   assert.equal(await nojs.locator('.dimension').count(), 21, 'Every dimension is readable without JavaScript');
 
+  // No published page may load anything from the fork's directory as a script, whether written in the HTML or added later.
+  const htmlFiles = (await readdir(root, { recursive: true })).filter(name => name.endsWith('.html'));
+  // Compare the decoded path so an escaped spelling such as san%2Dfrancisco is caught too.
+  const fromFork = url => { const target = new URL(url); return target.origin === origin && decodeURIComponent(target.pathname).startsWith('/deep-fryer/imports/san-francisco/'); };
+  const scripted = [];
+  const scan = await browser.newContext();
+  await scan.route('**/*', route => {
+    const request = route.request();
+    if (request.resourceType() === 'script' && fromFork(request.url())) scripted.push(`requested ${request.url()}`);
+    return new URL(request.url()).origin === origin ? route.continue() : route.abort();
+  });
+  const scanPage = await scan.newPage();
+  // A fake clock lets each page run its timers a minute ahead, so a script added after a delay is in the DOM when it is read.
+  await scanPage.clock.install();
+  for (const name of htmlFiles) {
+    const pageUrl = `${origin}/deep-fryer/${name.split(path.sep).join('/')}`;
+    await scanPage.goto(pageUrl, { waitUntil: 'load' });
+    await scanPage.clock.runFor(60_000);
+    for (const src of await scanPage.locator('script[src]').evaluateAll(nodes => nodes.map(node => node.src))) if (fromFork(src)) scripted.push(`${name} → ${src}`);
+  }
+  assert.ok(htmlFiles.length > 2, 'The scan found the published pages');
+  assert.deepEqual(scripted, [], 'No page loads the fork’s data file as a script');
+
   assert.deepEqual(errors, []);
   assert.deepEqual(failures, []);
-  console.log(`San Francisco UI passed: collection card, open import notice, source downloads, ${expectedWithin} within and ${expectedOutside} outside as the fork scores them, nothing withheld, SoMa absent, panel and deep link, 390px, no-JS.`);
+  console.log(`San Francisco UI passed: community label on its card only, open import notice, source downloads, ${expectedWithin} within and ${expectedOutside} outside as the fork scores them, nothing withheld, SoMa absent, panel and deep link, 390px, no-JS, no fork script on ${htmlFiles.length} pages.`);
 } finally {
   await browser?.close();
   server.close();
