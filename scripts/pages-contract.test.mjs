@@ -1,8 +1,52 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { publicRelease } from './research-overlays.mjs';
-import { validateRelease, publicAssetPath, escapeHtml, inside } from './pages-contract.mjs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { validateRelease, publicAssetPath, escapeHtml, inside, assertNoLiveArchives, FIRST_PARTY_RENDERABLE } from './pages-contract.mjs';
+import { publishedArchiveName, isRenderable } from '../site/published-name.js';
 const release = publicRelease();
+test('archived files a browser renders or runs are published as text; other files keep their names', () => {
+  for (const [name, published] of [
+    ['raw/indec-poverty-topic.html', 'raw/indec-poverty-topic.html.txt'],
+    ['raw/unep-material-app.js', 'raw/unep-material-app.js.txt'],
+    ['raw/figure.svg', 'raw/figure.svg.txt'],
+    ['raw/PAGE.HTML', 'raw/PAGE.HTML.txt'],
+    ['raw/Bundle.Js', 'raw/Bundle.Js.txt'],
+    ['raw/old.HTM', 'raw/old.HTM.txt'],
+    ['raw/module.mjs', 'raw/module.mjs.txt'],
+    ['raw/feed.xml', 'raw/feed.xml.txt'],
+    ['raw/page.xhtml', 'raw/page.xhtml.txt'],
+    ['raw/gcb-2025-national-fossil.access.html', 'raw/gcb-2025-national-fossil.access.html.txt'],
+    ['raw/report.pdf', 'raw/report.pdf'],
+    ['raw/REPORT.PDF', 'raw/REPORT.PDF'],
+    ['raw/wdi.json', 'raw/wdi.json'],
+    ['raw/table.csv', 'raw/table.csv'],
+    ['raw/sheet.xlsx', 'raw/sheet.xlsx'],
+    ['raw/sheet.xls', 'raw/sheet.xls'],
+    ['raw/shot.png', 'raw/shot.png'],
+    ['raw/page.html.txt', 'raw/page.html.txt'],
+    ['raw/html', 'raw/html'],
+    ['raw.html/readme', 'raw.html/readme'],
+  ]) assert.equal(publishedArchiveName(name), published, name);
+  assert.equal(isRenderable('data.js'), true);
+  assert.equal(isRenderable('data.json'), false);
+});
+test('a built site that publishes a renderable archive is refused', () => {
+  const site = mkdtempSync(path.join(tmpdir(), 'deep-fryer-archives-'));
+  const put = file => { mkdirSync(path.dirname(path.join(site, file)), { recursive: true }); writeFileSync(path.join(site, file), '<script>alert(1)</script>'); };
+  try {
+    for (const file of [...FIRST_PARTY_RENDERABLE, 'research/argentina/raw/page.html.txt', 'research/argentina/raw/report.pdf', 'evidence/shared/abc.png', 'imports/san-francisco/data.js.txt', 'policies/index.html', 'index.html']) put(file);
+    assertNoLiveArchives(site);
+    for (const file of ['research/argentina/raw/page.html', 'research/argentina/raw/PAGE.HTM', 'research/argentina/raw/app.js', 'evidence/shared/drawing.svg', 'imports/san-francisco/data.js', 'research/other/index.html']) {
+      put(file);
+      assert.throws(() => assertNoLiveArchives(site), new RegExp(file.replaceAll('.', '\\.')), file);
+      rmSync(path.join(site, file));
+    }
+    assertNoLiveArchives(site);
+  } finally { rmSync(site, { recursive: true, force: true }); }
+});
 test('release preserves every requested portrait and all researched indicators', () => {
   validateRelease(release);
   assert.equal(release.portraits.length, 13);

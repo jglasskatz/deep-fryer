@@ -1,4 +1,5 @@
 /** Pure presentation of precomputed, validated longitudinal series. No scoring or interpolation. */
+import { isRenderable, publishedArchiveName } from './published-name.js';
 export const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const h = escape;
 export const number = value => value == null ? 'Not available' : new Intl.NumberFormat('en', {maximumFractionDigits:2}).format(value);
@@ -9,7 +10,12 @@ export function period(observation, frequency) {
 }
 export function sourceLinks(data, id) {
   const source = data.sources.find(s => s.id === id);
-  return source ? `<a href="${h(source.url)}" rel="noopener noreferrer">${h(source.publisher)} ↗</a> · <a href="${h(source.path)}">Archived source</a>` : 'No source available';
+  if (!source) return 'No source available';
+  // An archived web page or script is published as plain text (see published-name.js), so say so.
+  const archive = isRenderable(source.path)
+    ? `<a href="${h(publishedArchiveName(source.path))}" type="text/plain">Archived page source (text)</a>`
+    : `<a href="${h(source.path)}">Archived source</a>`;
+  return `<a href="${h(source.url)}" rel="noopener noreferrer">${h(source.publisher)} ↗</a> · ${archive}`;
 }
 export function observationNotes(data, observation, indicator) {
   if(!observation || observation.value===null)return '';
