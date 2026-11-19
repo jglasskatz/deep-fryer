@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { withPostgresError } from './errors.js';
 
 /**
  * Database-enforced access (migration 0005): these run real queries as the
@@ -79,10 +80,10 @@ describe.skipIf(!hasDb)('row-level security under the app role', () => {
     );
     expect(editorB).toHaveLength(1); // B's published version only
     await expect(
-      asEditor((tx) => tx.insert(m.dimensionVersions).values({
+      withPostgresError(asEditor((tx) => tx.insert(m.dimensionVersions).values({
         dimensionId: b.dimensions[2]!.dimensionId, versionNum: 99, status: 'draft',
         data: editorA as never, origin: 'human', changeNote: 'cross-tenant write', createdBy: editor!.id,
-      })),
+      }))),
     ).rejects.toThrow(/row-level security/);
     // …but can write A.
     const v1 = (await m.latestVersion(db, a.dimensions[2]!.dimensionId))!;
@@ -97,11 +98,11 @@ describe.skipIf(!hasDb)('row-level security under the app role', () => {
 
     // Transcripts: the column is not readable by the user role at all.
     await expect(
-      m.withAuthContext(db, editor!.id, (tx) => tx.execute(sql`select transcript from research_sessions where id = ${session!.id}`)),
+      withPostgresError(m.withAuthContext(db, editor!.id, (tx) => tx.execute(sql`select transcript from research_sessions where id = ${session!.id}`))),
     ).rejects.toThrow(/permission denied/);
 
     // Login plumbing is system-only.
-    await expect(anon((tx) => tx.execute(sql`select * from sessions limit 1`))).rejects.toThrow(/permission denied/);
+    await expect(withPostgresError(anon((tx) => tx.execute(sql`select * from sessions limit 1`)))).rejects.toThrow(/permission denied/);
 
     // People: a resident sees only themself; display names come via the definer function.
     const residentSeesUsers = await asResident((tx) => tx.select({ id: m.users.id }).from(m.users));
@@ -112,14 +113,14 @@ describe.skipIf(!hasDb)('row-level security under the app role', () => {
     // Comments: residents post as themselves only, and cannot edit others'.
     const dimA = a.dimensions[0]!.dimensionId;
     await expect(
-      asResident((tx) => tx.insert(m.comments).values({ tenantId: a.tenant.id, dimensionId: dimA, authorId: editor!.id, body: 'impersonation' })),
+      withPostgresError(asResident((tx) => tx.insert(m.comments).values({ tenantId: a.tenant.id, dimensionId: dimA, authorId: editor!.id, body: 'impersonation' }))),
     ).rejects.toThrow(/row-level security/);
     const [mine] = await asResident((tx) =>
       tx.insert(m.comments).values({ tenantId: a.tenant.id, dimensionId: dimA, authorId: resident!.id, body: 'hello' }).returning(),
     );
     // Editors moderate (remove/restore) but can never rewrite a resident's words…
     await expect(
-      asEditor((tx) => tx.update(m.comments).set({ body: 'tampered' }).where(eq(m.comments.id, mine!.id))),
+      withPostgresError(asEditor((tx) => tx.update(m.comments).set({ body: 'tampered' }).where(eq(m.comments.id, mine!.id)))),
     ).rejects.toThrow(/never rewrite/);
     const removed = await asEditor((tx) =>
       tx.update(m.comments).set({ removedAt: new Date(), removedBy: editor!.id }).where(eq(m.comments.id, mine!.id)).returning(),
@@ -127,7 +128,7 @@ describe.skipIf(!hasDb)('row-level security under the app role', () => {
     expect(removed).toHaveLength(1);
     // …and authors can edit their text but not undo a removal.
     await expect(
-      asResident((tx) => tx.update(m.comments).set({ removedAt: null, removedBy: null }).where(eq(m.comments.id, mine!.id))),
+      withPostgresError(asResident((tx) => tx.update(m.comments).set({ removedAt: null, removedBy: null }).where(eq(m.comments.id, mine!.id)))),
     ).rejects.toThrow(/moderation state/);
     // Another resident cannot touch it at all (no matching policy → 0 rows).
     const [stranger] = await db.insert(m.users).values({ email: `${uniq()}@example.org` }).returning();
@@ -185,21 +186,21 @@ describe.skipIf(!hasDb)('row-level security under the app role', () => {
     expect(await anon((tx) => tx.select({ id: m.policyAnalyses.id }).from(m.policyAnalyses).where(eq(m.policyAnalyses.tenantId, a.tenant.id)))).toHaveLength(0);
     expect(await asEditor((tx) => tx.select({ id: m.policyAnalyses.id, title: m.policyAnalyses.title, adjustments: m.policyAnalyses.adjustments }).from(m.policyAnalyses).where(eq(m.policyAnalyses.tenantId, a.tenant.id)))).toHaveLength(1);
     expect(await asViewer((tx) => tx.select({ id: m.policyAnalyses.id }).from(m.policyAnalyses).where(eq(m.policyAnalyses.tenantId, a.tenant.id)))).toHaveLength(0);
-    await expect(asEditor((tx) => tx.execute(sql`select transcript from policy_analyses`))).rejects.toThrow(/permission denied/);
-    await expect(asEditor((tx) => tx.insert(m.policyAnalyses).values({ tenantId: a.tenant.id, title: 'x', brief: 'y' }))).rejects.toThrow(/row-level security/);
+    await expect(withPostgresError(asEditor((tx) => tx.execute(sql`select transcript from policy_analyses`)))).rejects.toThrow(/permission denied/);
+    await expect(withPostgresError(asEditor((tx) => tx.insert(m.policyAnalyses).values({ tenantId: a.tenant.id, title: 'x', brief: 'y' })))).rejects.toThrow(/row-level security/);
 
     // Hazards: the public sees published ones; the editor curates all of A's, none of B's.
     expect((await anon((tx) => tx.select({ slug: m.hazards.slug }).from(m.hazards).where(eq(m.hazards.tenantId, a.tenant.id)))).map((h) => h.slug)).toEqual(['heat']);
     expect(await asEditor((tx) => tx.select({ id: m.hazards.id }).from(m.hazards).where(eq(m.hazards.tenantId, a.tenant.id)))).toHaveLength(2);
-    await expect(asEditor((tx) => tx.insert(m.hazards).values({ tenantId: b.tenant.id, slug: 'x', name: 'x', kind: 'other', likelihood: 1, severity: 1 }))).rejects.toThrow(/row-level security/);
-    await expect(db.insert(m.hazards).values({ tenantId: a.tenant.id, slug: uniq(), name: 'bad', kind: 'other', likelihood: 6, severity: 1 })).rejects.toThrow(/hazards_likelihood_range/);
+    await expect(withPostgresError(asEditor((tx) => tx.insert(m.hazards).values({ tenantId: b.tenant.id, slug: 'x', name: 'x', kind: 'other', likelihood: 1, severity: 1 })))).rejects.toThrow(/row-level security/);
+    await expect(withPostgresError(db.insert(m.hazards).values({ tenantId: a.tenant.id, slug: uniq(), name: 'bad', kind: 'other', likelihood: 6, severity: 1 }))).rejects.toThrow(/hazards_likelihood_range/);
 
     // Alerts are official public information; only the system writes them.
     expect(await anon((tx) => tx.select({ id: m.emergencyAlerts.id }).from(m.emergencyAlerts).where(eq(m.emergencyAlerts.tenantId, a.tenant.id)))).toHaveLength(1);
-    await expect(asEditor((tx) => tx.insert(m.emergencyAlerts).values({
+    await expect(withPostgresError(asEditor((tx) => tx.insert(m.emergencyAlerts).values({
       tenantId: a.tenant.id, source: 'nws', sourceId: uniq(), event: 'Fake', severity: 'Extreme', urgency: 'x', certainty: 'x',
       description: 'd', areaDesc: 'a', senderName: 's', url: 'https://x', effective: new Date(),
-    }))).rejects.toThrow(/row-level security/);
+    })))).rejects.toThrow(/row-level security/);
   });
 
   // Migration 0015: a portrait is public only once it has published a
@@ -279,14 +280,14 @@ describe.skipIf(!hasDb)('row-level security under the app role', () => {
     expect(await seen(billing!.id)).toEqual({ ...nothing, tenant: 1, organization: 1, doughnutDimensions: 0 });
     // Nobody outside writes into it either.
     await expect(
-      as(stranger!.id)((tx) => tx.insert(m.comments).values({ tenantId, dimensionId: dim, authorId: stranger!.id, body: 'hi' })),
+      withPostgresError(as(stranger!.id)((tx) => tx.insert(m.comments).values({ tenantId, dimensionId: dim, authorId: stranger!.id, body: 'hi' }))),
     ).rejects.toThrow(/row-level security/);
     await expect(
-      as(null)((tx) => tx.insert(m.translationRequests).values({ tenantId, locale: 'es', path: `/${p.tenant.slug}`, ipHash: 'h' })),
+      withPostgresError(as(null)((tx) => tx.insert(m.translationRequests).values({ tenantId, locale: 'es', path: `/${p.tenant.slug}`, ipHash: 'h' }))),
     ).rejects.toThrow(/row-level security/);
     // Its own owner cannot make it public (or, later, private) by hand.
     await expect(
-      as(owner!.id)((tx) => tx.update(m.tenants).set({ firstPublishedAt: new Date() }).where(eq(m.tenants.id, tenantId))),
+      withPostgresError(as(owner!.id)((tx) => tx.update(m.tenants).set({ firstPublishedAt: new Date() }).where(eq(m.tenants.id, tenantId)))),
     ).rejects.toThrow(/set by the database/);
     // …but may still edit the rest of its row.
     await as(owner!.id)((tx) => tx.update(m.tenants).set({ description: 'Our town' }).where(eq(m.tenants.id, tenantId)));
@@ -321,7 +322,7 @@ describe.skipIf(!hasDb)('row-level security under the app role', () => {
     expect(await firstPublishedAt()).toEqual(publishedAt);
     // …and the owner cannot clear it: un-publishing a portrait is archiving it.
     await expect(
-      as(owner!.id)((tx) => tx.update(m.tenants).set({ firstPublishedAt: null }).where(eq(m.tenants.id, tenantId))),
+      withPostgresError(as(owner!.id)((tx) => tx.update(m.tenants).set({ firstPublishedAt: null }).where(eq(m.tenants.id, tenantId)))),
     ).rejects.toThrow(/set by the database/);
 
     // Archived, the portrait and everything in it leave the public plane together.

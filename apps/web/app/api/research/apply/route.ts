@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { tenantBySlug } from '@deep-fryer/db';
+import { driverError, tenantBySlug } from '@deep-fryer/db';
 import { getRole, roleAtLeast } from '@/lib/auth';
 import { applyRun } from '@/lib/research';
 import { systemDb } from '@/lib/db';
@@ -25,8 +25,11 @@ export async function POST(request: Request) {
     const run = await applyRun(tenant.id, body.run_id);
     return NextResponse.json({ run_id: run.id, enqueued: true });
   } catch (err) {
+    // A failed query reports what the database said, never the SQL and
+    // parameters the ORM puts in its own message.
+    const reason = driverError(err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'apply failed' },
+      { error: reason instanceof Error ? reason.message : 'apply failed' },
       { status: 400 },
     );
   }

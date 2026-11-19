@@ -126,7 +126,7 @@ describe.skipIf(!hasDb)('involvement under row-level security', () => {
     expect(await submissionsOf(people.resident, cityA.id)).toHaveLength(0);
     // RETURNING needs SELECT on the new row, which the submitter does not have.
     await expect(
-      as(null, (tx) => tx.insert(m.involvementSubmissions).values(submission(cityA.id)).returning()),
+      m.withPostgresError(as(null, (tx) => tx.insert(m.involvementSubmissions).values(submission(cityA.id)).returning())),
     ).rejects.toThrow(RLS);
   });
 
@@ -134,12 +134,12 @@ describe.skipIf(!hasDb)('involvement under row-level security', () => {
     const m = await import('@deep-fryer/db');
     const insert = (extra: Record<string, unknown>, tenantId = cityA.id) =>
       as(null, (tx) => tx.insert(m.involvementSubmissions).values(submission(tenantId, extra)));
-    await expect(insert({ status: 'approved' })).rejects.toThrow(RLS);
-    await expect(insert({ status: 'spam' })).rejects.toThrow(RLS);
-    await expect(insert({ reviewedBy: people.editorA })).rejects.toThrow(RLS);
-    await expect(insert({ reviewedAt: new Date() })).rejects.toThrow(RLS);
-    await expect(insert({ reviewNote: 'looks fine' })).rejects.toThrow(RLS);
-    await expect(insert({ listingId: '00000000-0000-4000-8000-000000000000' })).rejects.toThrow(RLS);
+    await expect(m.withPostgresError(insert({ status: 'approved' }))).rejects.toThrow(RLS);
+    await expect(m.withPostgresError(insert({ status: 'spam' }))).rejects.toThrow(RLS);
+    await expect(m.withPostgresError(insert({ reviewedBy: people.editorA }))).rejects.toThrow(RLS);
+    await expect(m.withPostgresError(insert({ reviewedAt: new Date() }))).rejects.toThrow(RLS);
+    await expect(m.withPostgresError(insert({ reviewNote: 'looks fine' }))).rejects.toThrow(RLS);
+    await expect(m.withPostgresError(insert({ listingId: '00000000-0000-4000-8000-000000000000' }))).rejects.toThrow(RLS);
 
     const { tenant } = await m.provisionTenant(m.getDb(), { slug: uniq(), name: 'Archived City' });
     cleanup.tenantIds.push(tenant.id);
@@ -149,7 +149,7 @@ describe.skipIf(!hasDb)('involvement under row-level security', () => {
       await publishInvolvementTestDimensions(tenant.id);
     const { eq } = await import('drizzle-orm');
     await m.getDb().update(m.tenants).set({ archivedAt: new Date() }).where(eq(m.tenants.id, tenant.id));
-    await expect(insert({}, tenant.id)).rejects.toThrow(RLS);
+    await expect(m.withPostgresError(insert({}, tenant.id))).rejects.toThrow(RLS);
   });
 
   it('lets only the portrait’s editors read and review submissions', async () => {
@@ -215,12 +215,12 @@ describe.skipIf(!hasDb)('involvement under row-level security', () => {
     expect(names(await listingsAs(people.viewerA))).toEqual(['Draft listing', 'Food bank shifts']);
     // …and only editors write them.
     await expect(
-      as(people.viewerA, (tx) =>
+      m.withPostgresError(as(people.viewerA, (tx) =>
         tx.insert(m.involvementListings).values({ tenantId: cityA.id, name: 'Viewer’s', description: 'x', kind: 'other' }),
-      ),
+      )),
     ).rejects.toThrow(RLS);
     await expect(
-      as(null, (tx) => tx.insert(m.involvementListings).values({ tenantId: cityA.id, name: 'Anon’s', description: 'x', kind: 'other' })),
+      m.withPostgresError(as(null, (tx) => tx.insert(m.involvementListings).values({ tenantId: cityA.id, name: 'Anon’s', description: 'x', kind: 'other' }))),
     ).rejects.toThrow(RLS);
 
     // The public read path, as an anonymous visitor and as an editor.

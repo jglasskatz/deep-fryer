@@ -97,10 +97,10 @@ describe.skipIf(!hasDb)('custom pages through editor actions and anonymous RLS',
   it('enforces immutable content and same-page publication independently in Postgres', async () => {
     const m = await import('@deep-fryer/db');
     const { eq } = await import('drizzle-orm');
-    await expect(m.withAuthContext(m.getDb(), people.editor, db => db.update(m.customPageVersions).set({ mdxBody: 'overwrite' }).where(eq(m.customPageVersions.id, originalVersion)))).rejects.toThrow('immutable');
+    await expect(m.withPostgresError(m.withAuthContext(m.getDb(), people.editor, db => db.update(m.customPageVersions).set({ mdxBody: 'overwrite' }).where(eq(m.customPageVersions.id, originalVersion))))).rejects.toThrow('immutable');
     const [other] = await m.getDb().select().from(m.customPages).where(eq(m.customPages.tenantId, privateId));
-    await expect(m.withAuthContext(m.getDb(), people.editor, db => db.update(m.customPages).set({ publishedVersionId: originalVersion }).where(eq(m.customPages.id, other!.id)))).rejects.toThrow('must belong');
-    await expect(m.withAuthContext(m.getDb(), people.editor, db => db.delete(m.customPages).where(eq(m.customPages.id, pageId)))).rejects.toThrow('permission denied');
+    await expect(m.withPostgresError(m.withAuthContext(m.getDb(), people.editor, db => db.update(m.customPages).set({ publishedVersionId: originalVersion }).where(eq(m.customPages.id, other!.id))))).rejects.toThrow('must belong');
+    await expect(m.withPostgresError(m.withAuthContext(m.getDb(), people.editor, db => db.delete(m.customPages).where(eq(m.customPages.id, pageId))))).rejects.toThrow('permission denied');
   });
 
   it('hides public content and refuses actions when the feature is off, checking roles first', async () => {
