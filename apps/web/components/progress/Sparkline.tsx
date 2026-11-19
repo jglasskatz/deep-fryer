@@ -1,4 +1,4 @@
-import type { SeriesPoint } from '@deep-fryer/core';
+import { formatIndicatorValue, type SeriesPoint } from '@deep-fryer/core';
 import { fmt } from '@/lib/i18n/format';
 
 /**
@@ -33,9 +33,11 @@ export function Sparkline({
   const x = (year: number) => (maxY === minY ? width / 2 : pad + ((year - minY) / (maxY - minY)) * (width - 2 * pad));
   const y = (v: number) => (maxV === minV ? height / 2 : height - pad - ((v - minV) / (maxV - minV)) * (height - 2 * pad));
   // Values keep one number format across languages so they match the open
-  // data files (SPEC-v4 §7).
-  const points = `${series.map((p) => `${p.year}: ${p.value.toLocaleString('en-US')}`).join(', ')}${unit ? ` (${unit})` : ''}`;
-  const label = `${fmt(labels.trend, { points })}${target !== null ? `; ${fmt(labels.target, { value: target.toLocaleString('en-US') })}` : ''}`;
+  // data files (SPEC-v4 §7), and the same precision as the table beside the
+  // line: a plain toLocaleString would cut every value to three decimals.
+  const num = (v: number) => formatIndicatorValue(v, '');
+  const points = `${series.map((p) => `${p.year}: ${num(p.value)}`).join(', ')}${unit ? ` (${unit})` : ''}`;
+  const label = `${fmt(labels.trend, { points })}${target !== null ? `; ${fmt(labels.target, { value: num(target) })}` : ''}`;
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={label} className="overflow-visible">
       {target !== null ? (
