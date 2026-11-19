@@ -11,8 +11,10 @@ const html = read('index.html');
 const snapshot = JSON.parse(readFileSync('site/data/portraits.json', 'utf8'));
 
 test('policy data is separate from unchanged portrait and prospective projections', () => {
+  // The portrait snapshot as on main after the reviewed Santa Cruz housing and
+  // equity corrections (#20). This study adds a page and never edits it.
   assert.equal(createHash('sha256').update(readFileSync('site/data/portraits.json')).digest('hex'),
-    'd73bd707ac4047b4c6b2a503bf7669b8c44b7aa64deaf5ece6582b64d76d1603');
+    '0110e04f950bb76a16ed772c0a086829854569ececd6f52ca341210cadc23b32');
   assert.doesNotMatch(JSON.stringify(data), /"projected_value"\s*:/);
   assert.match(html, /Research draft.*not publication-approved/);
   assert.match(html, /source archives are incomplete/);
