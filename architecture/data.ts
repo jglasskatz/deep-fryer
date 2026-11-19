@@ -359,7 +359,7 @@ const data: ArchitectureMap = {
       tech: "Claude Code WebFetch / CLI small-fast model (Claude Haiku 4.5, pinned)",
       description: "Not our code, but every research result depends on it: inside each session the Claude Code CLI hands every page WebFetch fetches to its small/fast model with the session's question, and the session receives that model's summary (quotes capped at 125 characters), not the page; only short markdown from preapproved domains passes through raw. Researchers, the region-context and policy sessions, scouts, and the verifier all read pages through this one model. Pinned by ANTHROPIC_SMALL_FAST_MODEL (compose default claude-haiku-4-5-20251001, first-party API ids only) and by the exact Agent SDK version, so an SDK update cannot swap it silently (docs/haiku-5-5.md §3.2, §4.2)",
       keyFiles: ["apps/worker/package.json"],
-      keyFunctionality: ["page summaries for every WebFetch", "model pin (ANTHROPIC_SMALL_FAST_MODEL)", "exact Agent SDK pin", "pins held across worker dependency updates (the nodemailer security bump, the playwright-core 1.64.1 bump and the drizzle-orm 0.45.4 bump left the SDK at 0.3.220)"],
+      keyFunctionality: ["page summaries for every WebFetch", "model pin (ANTHROPIC_SMALL_FAST_MODEL)", "exact Agent SDK pin", "pins held across worker dependency updates (the nodemailer security bumps, including 10.1.4, the playwright-core 1.64.1 bump and the drizzle-orm 0.45.4 bump left the SDK at 0.3.220)"],
       fileCount: 2,
       linesOfCode: "~10",
       principles: {

@@ -50,8 +50,8 @@ importers:
         specifier: ^0.45.4
         version: 0.45.4(@opentelemetry/api@1.9.1)(@types/pg@8.20.1)(pg@8.22.0)(postgres@3.4.9)
       nodemailer:
-        specifier: ^10.0.13
-        version: 10.0.13
+        specifier: ^10.1.4
+        version: 10.1.4
       stripe:
         specifier: ^23.0.0
         version: 23.0.0(@types/node@22.19.19)
@@ -73,7 +73,7 @@ importers:
         version: 0.135.0(zod@3.25.76)
       '@auth/drizzle-adapter':
         specifier: 1.11.3
-        version: 1.11.3(nodemailer@10.0.13)
+        version: 1.11.3(nodemailer@10.1.4)
       '@deep-fryer/contract':
         specifier: workspace:*
         version: link:../../packages/contract
@@ -100,10 +100,10 @@ importers:
         version: 15.5.28(@opentelemetry/api@1.9.1)(@types/node@22.19.19)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       next-auth:
         specifier: 5.0.0-beta.32
-        version: 5.0.0-beta.32(next@15.5.28(@opentelemetry/api@1.9.1)(@types/node@22.19.19)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(nodemailer@10.0.13)(react@19.2.6)
+        version: 5.0.0-beta.32(next@15.5.28(@opentelemetry/api@1.9.1)(@types/node@22.19.19)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(nodemailer@10.1.4)(react@19.2.6)
       nodemailer:
-        specifier: ^10.0.13
-        version: 10.0.13
+        specifier: ^10.1.4
+        version: 10.1.4
       react:
         specifier: ^19.0.0
         version: 19.2.6
@@ -175,8 +175,8 @@ importers:
         specifier: ^0.16.6
         version: 0.16.6(typescript@5.9.3)
       nodemailer:
-        specifier: ^10.0.13
-        version: 10.0.13
+        specifier: ^10.1.4
+        version: 10.1.4
       playwright-core:
         specifier: 1.64.1
         version: 1.64.1
@@ -3424,8 +3424,8 @@ packages:
       encoding:
         optional: true
 
-  nodemailer@10.0.13:
-    resolution: {integrity: sha512-SzG86OlvcW/NNhUFC6uROMwRTL4n7MswfQqC/T8mhkmnY1YVa23zUEMYi4ijSeXSl9GLz9ZeTJDUatEDuY5FeQ==}
+  nodemailer@10.1.4:
+    resolution: {integrity: sha512-EsMnOR2oRv4LGnWvHgcVYkkQ4O2j8KO4WTw6l+PHR4sOXo8SAgIraxtEnGDmotjbhv0hDsu3IuDIFZm8iXwO4A==}
     engines: {node: '>=20.0.0'}
 
   oauth4webapi@3.8.8:
@@ -4305,7 +4305,7 @@ snapshots:
     optionalDependencies:
       zod: 3.25.76
 
-  '@auth/core@0.41.3(nodemailer@10.0.13)':
+  '@auth/core@0.41.3(nodemailer@10.1.4)':
     dependencies:
       '@panva/hkdf': 1.2.1
       jose: 6.2.6
@@ -4313,11 +4313,11 @@ snapshots:
       preact: 10.24.3
       preact-render-to-string: 6.5.11(preact@10.24.3)
     optionalDependencies:
-      nodemailer: 10.0.13
+      nodemailer: 10.1.4
 
-  '@auth/drizzle-adapter@1.11.3(nodemailer@10.0.13)':
+  '@auth/drizzle-adapter@1.11.3(nodemailer@10.1.4)':
     dependencies:
-      '@auth/core': 0.41.3(nodemailer@10.0.13)
+      '@auth/core': 0.41.3(nodemailer@10.1.4)
     transitivePeerDependencies:
       - '@simplewebauthn/browser'
       - '@simplewebauthn/server'
@@ -7202,13 +7202,13 @@ snapshots:
 
   negotiator@1.0.0: {}
 
-  next-auth@5.0.0-beta.32(next@15.5.28(@opentelemetry/api@1.9.1)(@types/node@22.19.19)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(nodemailer@10.0.13)(react@19.2.6):
+  next-auth@5.0.0-beta.32(next@15.5.28(@opentelemetry/api@1.9.1)(@types/node@22.19.19)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(nodemailer@10.1.4)(react@19.2.6):
     dependencies:
-      '@auth/core': 0.41.3(nodemailer@10.0.13)
+      '@auth/core': 0.41.3(nodemailer@10.1.4)
       next: 15.5.28(@opentelemetry/api@1.9.1)(@types/node@22.19.19)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react: 19.2.6
     optionalDependencies:
-      nodemailer: 10.0.13
+      nodemailer: 10.1.4
 
   next@15.5.28(@opentelemetry/api@1.9.1)(@types/node@22.19.19)(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
     dependencies:
@@ -7248,7 +7248,7 @@ snapshots:
     dependencies:
       whatwg-url: 5.0.0
 
-  nodemailer@10.0.13: {}
+  nodemailer@10.1.4: {}
 
   oauth4webapi@3.8.8: {}
 
