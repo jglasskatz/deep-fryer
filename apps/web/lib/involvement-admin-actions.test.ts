@@ -143,7 +143,7 @@ describe.skipIf(!hasDb)('involvement admin actions under row-level security', ()
     expect(saved.ok).toBe(true);
     expect(await a.saveListing({tenantSlug,listing:{...listing(uniq()),dimension_slugs:['other-city-only']}})).toMatchObject({ok:false,error:expect.stringMatching(/active dimensions/)});
     const draftSubmission={tenantId,kind:'suggestion' as const,dimensionSlug:'local-shade',pitch:'Plant local shade.',contactName:'A',email:`${uniq()}@example.org`,locale:'en',ipHash:'scope-test'};
-    await expect(m.withAuthContext(db,null,tx=>tx.insert(m.involvementSubmissions).values(draftSubmission))).rejects.toThrow(/active dimensions/);
+    await expect(m.withPostgresError(m.withAuthContext(db,null,tx=>tx.insert(m.involvementSubmissions).values(draftSubmission)))).rejects.toThrow(/active dimensions/);
     const id=randomUUID();
     await m.withAuthContext(db,null,tx=>tx.insert(m.involvementSubmissions).values({...draftSubmission,id,dimensionSlug:'extreme-heat'}));
     const publicBefore=await (await import('./involvement')).publishedListings(tenantSlug);
@@ -156,7 +156,7 @@ describe.skipIf(!hasDb)('involvement admin actions under row-level security', ()
     const listingId=(saved as {ok:true;data:{id:string}}).data.id;
     expect((await a.setListingPublished({tenantSlug,id:listingId,published:false})).ok).toBe(true);
     expect((await a.setListingPublished({tenantSlug,id:listingId,published:true})).ok).toBe(false);
-    await expect(m.withAuthContext(db,null,tx=>tx.insert(m.involvementSubmissions).values({...draftSubmission,dimensionSlug:'extreme-heat'}))).rejects.toThrow(/active dimensions/);
+    await expect(m.withPostgresError(m.withAuthContext(db,null,tx=>tx.insert(m.involvementSubmissions).values({...draftSubmission,dimensionSlug:'extreme-heat'})))).rejects.toThrow(/active dimensions/);
     // No selection is explicitly general, never an alias of an archived topic.
     await m.withAuthContext(db,null,tx=>tx.insert(m.involvementSubmissions).values({...draftSubmission,dimensionSlug:null}));
     expect(shade!.canonicalSlug).toBeNull();
@@ -391,9 +391,9 @@ describe.skipIf(!hasDb)('involvement admin actions under row-level security', ()
       ),
     ).toEqual([]);
     await expect(
-      asOutsider((tx) =>
+      m.withPostgresError(asOutsider((tx) =>
         tx.insert(m.involvementListings).values({ tenantId, name, description: 'Sneaky.', kind: 'other', published: true }),
-      ),
+      )),
     ).rejects.toThrow(/row-level security/);
 
     expect(await submissionRow(submissionId)).toMatchObject({ status: 'new', reviewedBy: null, listingId: null });

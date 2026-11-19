@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { unstable_rethrow } from 'next/navigation';
 import { sql } from 'drizzle-orm';
 import { involvementSubmissionInputSchema, SUBMISSION_LIMITS } from '@deep-fryer/core';
-import { involvementSubmissions, tenantBySlug } from '@deep-fryer/db';
+import { involvementSubmissions, postgresError, tenantBySlug } from '@deep-fryer/db';
 import { addressHash, clientAddress } from './client-address';
 import { userDb } from './db';
 import { portraitFeaturesIn } from './features';
@@ -194,13 +194,15 @@ export async function submitInvolvement(input: SubmitInvolvementInput): Promise<
     });
   } catch (err) {
     unstable_rethrow(err);
-    // The error's code and constraint say what went wrong; its message and
-    // detail may quote the submitted row, contact details included.
-    const e = (err ?? {}) as { code?: unknown; constraint_name?: unknown; name?: unknown };
+    // The Postgres error's code and constraint say what went wrong; any
+    // message, detail or query parameters may quote the submitted row,
+    // contact details included, so none of them is logged.
+    const pg = postgresError(err);
+    const name = (err as { name?: unknown } | null)?.name;
     console.error('[involvement] submission failed', {
-      name: typeof e.name === 'string' ? e.name : undefined,
-      code: typeof e.code === 'string' ? e.code : undefined,
-      constraint: typeof e.constraint_name === 'string' ? e.constraint_name : undefined,
+      name: typeof name === 'string' ? name : undefined,
+      code: pg?.code,
+      constraint: typeof pg?.constraint_name === 'string' ? pg.constraint_name : undefined,
     });
     return { status: 'failed' };
   }

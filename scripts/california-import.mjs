@@ -10,6 +10,34 @@ const pinned = {
 };
 const reportAuditHash = 'f3b3041c0648e1cd768590ca1cf7dbc146620f8c0a20ed2ed3d32c869756a731';
 export const californiaSourceFiles = ['manifest.json', ...Object.keys(pinned), 'report-audit.json'];
+// Where each pinned file sat in the source repository and its size; both are
+// published as provenance.
+const pinnedOrigin = {
+  'doughnut.json': { source_path: 'frontend/public/api/regions/california/doughnut.json', bytes: 29609 },
+  'raw_social.csv': { source_path: 'data/raw_social.csv', bytes: 7334 },
+  'raw_ecological.csv': { source_path: 'data/raw_ecological.csv', bytes: 5378 },
+};
+const sameKeys = (value, keys) => value !== null && typeof value === 'object' && !Array.isArray(value) && JSON.stringify(Object.keys(value).sort()) === JSON.stringify([...keys].sort());
+// The whole import record is copied into the public provenance, so every field
+// it may hold has a check here and a record with any other field is refused.
+const fileChecks = {
+  source_path: (value, name) => value === pinnedOrigin[name].source_path,
+  sha256: (value, name) => value === pinned[name],
+  bytes: (value, name) => value === pinnedOrigin[name].bytes,
+};
+const recordChecks = {
+  repository: value => value === 'https://github.com/jglasskatz/ca-doughnut',
+  commit: value => value === '6ff5033d020291985e47548509dc0ee1d2547488',
+  imported_at: value => value === '2026-11-14',
+  approved: value => value === false,
+  files: value => sameKeys(value, Object.keys(pinned)) && Object.entries(value).every(([name, entry]) =>
+    sameKeys(entry, Object.keys(fileChecks)) && Object.entries(fileChecks).every(([key, check]) => check(entry[key], name))),
+};
+/** Refuse an import record with a missing, changed or unchecked field. */
+export function checkCaliforniaRecord(manifest) {
+  if (!sameKeys(manifest, Object.keys(recordChecks)) || !Object.entries(recordChecks).every(([key, check]) => check(manifest[key]))) throw new Error('California import provenance changed');
+  return manifest;
+}
 export function parseWorksheet(text) {
   const rows = []; let row = [], field = '', quoted = false;
   for (let n = 0; n < text.length; n++) {
@@ -31,8 +59,7 @@ export function parseWorksheet(text) {
   });
 }
 export function californiaPortrait() {
-  const manifest = JSON.parse(readFileSync(new URL('manifest.json', root), 'utf8'));
-  if (manifest.repository !== 'https://github.com/jglasskatz/ca-doughnut' || manifest.commit !== '6ff5033d020291985e47548509dc0ee1d2547488' || manifest.approved !== false) throw new Error('California import provenance changed');
+  const manifest = checkCaliforniaRecord(JSON.parse(readFileSync(new URL('manifest.json', root), 'utf8')));
   const source = Object.fromEntries(Object.entries(pinned).map(([name, digest]) => {
     const bytes = readFileSync(new URL(name, root));
     if (createHash('sha256').update(bytes).digest('hex') !== digest || manifest.files[name]?.sha256 !== digest || manifest.files[name]?.bytes !== bytes.length) throw new Error(`California import changed: ${name}`);
@@ -67,7 +94,9 @@ export function californiaPortrait() {
           value_label: `Report ${metric}`,
           // A native target must not be attached to the imported percentage headline.
           // Preserve it with its native definition/value and in the unchanged legacy record.
-          target: null, source: `California Doughnut Report (2025), p${verified.page}`, source_url: `${audit.report.download_url}#page=${verified.page}`,
+          // The link opens the report's record page, not its 25 MB PDF download;
+          // the cited page number stays in the source label.
+          target: null, source: `California Doughnut Report (2025), p${verified.page}`, source_url: audit.report.record_url,
           geography: record.name === 'Ozone Layer' ? 'Global observation · California source portrait' : 'California source portrait · scope varies by measure',
           status: 'source-supported-draft', notes: `The headline is the report’s ${metric} result, not the native measurement. The definition, observation and target below are checked against the report. Original import data remain separately archived.`, quality_flags: caveats,
           review_note: `${audit.scope} ${verified.changes.join(' ')}`.trim(),
