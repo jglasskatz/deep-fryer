@@ -9,6 +9,8 @@
  * its message, reads it through these helpers so either shape works.
  */
 
+import { DrizzleQueryError } from 'drizzle-orm/errors';
+
 /** The fields Postgres sends with every error response (both Node drivers carry them). */
 export interface PostgresErrorFields extends Error {
   /** SQLSTATE, e.g. '23505' for a unique violation. */
@@ -68,4 +70,15 @@ export async function withPostgresError<T>(promise: Promise<T>): Promise<T> {
   } catch (err) {
     throw postgresError(err) ?? err;
   }
+}
+
+/**
+ * The error the database driver threw, with the ORM's query wrapper taken
+ * off: the wrapper's message is the SQL text and its bound parameters, which
+ * must not reach a response body, while the driver's message is what Postgres
+ * (or the network) actually said. Anything that is not the wrapper — a
+ * validation error, an error from our own code — is returned as it is.
+ */
+export function driverError(err: unknown): unknown {
+  return err instanceof DrizzleQueryError && err.cause !== undefined ? err.cause : err;
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DrizzleQueryError } from 'drizzle-orm/errors';
 import postgres from 'postgres';
-import { isUniqueViolation, postgresError, postgresErrorCode, withPostgresError } from './errors.js';
+import { driverError, isUniqueViolation, postgresError, postgresErrorCode, withPostgresError } from './errors.js';
 
 /** A driver error as postgres-js builds one from a server ErrorResponse. */
 function serverError(code: string, message: string, extra: Record<string, string> = {}) {
@@ -54,5 +54,17 @@ describe('postgres errors behind the ORM', () => {
     const other = new Error('not from the database');
     await expect(withPostgresError(Promise.reject(other))).rejects.toBe(other);
     await expect(withPostgresError(Promise.resolve(7))).resolves.toBe(7);
+  });
+
+  it('takes the query wrapper off, so a message never carries SQL or parameters', () => {
+    const rls = serverError('42501', 'new row violates row-level security policy for table "t"');
+    expect(driverError(wrapped(rls))).toBe(rls);
+    const refused = Object.assign(new Error('connect ECONNREFUSED 127.0.0.1:5432'), { code: 'ECONNREFUSED' });
+    expect((driverError(wrapped(refused)) as Error).message).toBe('connect ECONNREFUSED 127.0.0.1:5432');
+    expect((driverError(wrapped(refused)) as Error).message).not.toMatch(/secret@example\.gov|insert into/);
+    const own = new Error('Select at least one dimension.');
+    expect(driverError(own)).toBe(own);
+    expect(driverError(rls)).toBe(rls);
+    expect(driverError('plain')).toBe('plain');
   });
 });
