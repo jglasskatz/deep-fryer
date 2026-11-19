@@ -79,3 +79,27 @@ The deployed artifact contains only `dist/pages`, never the repository root. `re
 After deployment, verify the home page, `/santa-cruz/`, `/nyc/`, `/carmel/`, `/monterey-county/`, an archived screenshot and `release.json`. Confirm the deployed commit is the expected release and that the preview labels survived.
 
 To roll back, revert the release commit on `main` through a reviewed PR; CI rebuilds and redeploys the prior content. Avoid force-pushing history or bypassing failed checks. The **Run workflow** control can redeploy the checked current `main` snapshot without changing data. Re-run from the current revision when dependencies or evidence change; an old approval does not authorize modified findings.
+
+## California report-checked import
+
+The `/california/` route uses the shared canvas, dimension explorer, responsive evidence panel and source links. It contains 21 dimensions and all 42 indicators from the ca-doughnut snapshot at `6ff5033d020291985e47548509dc0ee1d2547488`, reconciled against the November 2025 California Doughnut Report. This is a report-transcription check, not independent validation of the underlying studies, publication approval, a live database migration or a deployment.
+
+`site/imports/california/` preserves the original `doughnut.json`, `raw_social.csv` and `raw_ecological.csv` byte-for-byte. `report-audit.json` is a separate hash-bound overlay with all 42 report observations, targets, units, measured periods, scores, comparisons and caveats. Its source is the 95-page report at https://zenodo.org/records/17540639. The downloaded PDF matched the Zenodo MD5 `fa91f14fe71eeae586cdc1d6d12616b0`. Pages 84 and 85 were text-extracted and visually inspected. Content-addressed PNGs and a two-page PDF excerpt are retained in `site/evidence/california-report/` and checked by the evidence manifest. The official report's linked live workbook was also inspected, but does not silently replace the dated PDF.
+
+Of 42 scores, 37 exactly match the report, one is a rounding difference (sanitation: imported 0.57%, report 0.6%), and four source outcomes were omitted or replaced by category-average fallbacks in the old import:
+
+- Protected Area: report overshoot 59%, not the inherited biodiversity category mean of 503%.
+- At-Risk Species: report overshoot 947%, not missing.
+- Ozone-Depleting Substances and Ozone Layer: both explicitly `No Overshoot`. Their display scores are zero and their wedge is green. This is report evidence, not a missing-to-zero conversion.
+
+Seven native social observations omitted by the imported CSV are restored from page 84: food insecurity 11.4%, vegetables/day 59.2%, homelessness 0.47%, poverty 15.4%, unemployment U6 9.3%, water quality 2.2%, and sanitation 0.6%. All 42 native targets and unit meanings align. Life expectancy and toxic-chemical observations have report/workbook rounding differences. The poverty measured period is 2021–2023 rather than the old top-level 2021. Forest Cover is 2022 in the PDF, while the live workbook marks `2022? / 2024`; that uncertainty is visible. Publication-year uncertainties remain in the archived import.
+
+The primary display follows the report's precision. Headlines are labeled `Report shortfall` or `Report overshoot`, separate from native observations and targets. Native GHG is 19.6 tonnes CO2 eq per capita (consumption), with 1890% overshoot against 0.985. Homelessness 35.9% is a normalized shortfall, not population prevalence; page 37 explains the 187,084 people / 0.47% observation and 1.32% OECD comparator. Original import values, periods, scores, underlying links and category fallbacks remain separately labeled provenance. Top-level score targets stay null.
+
+Wedges use the mean of the two report percentages mapped through `pctToVizLevel`, capped at 150. These mixed constructs are not additive or a validated composite ranking. Biodiversity is scored red. Ozone has a green label marker with zero external bar height, so its safe status is visible without inventing a negative overshoot. Neutral dark grey remains available for genuinely unscored observations elsewhere, pale grey for data gaps, and blue for selection. Selecting a scored wedge temporarily shows blue without changing its score.
+
+The inconsistent old example `data/california.csv` remains excluded. Some example figures happened to match the final report (including at-risk species 947%), but it also contained substantive discrepancies. All corrections now cite the actual report, not that example.
+
+`scripts/california-import.mjs` rebuilds deterministically from hash-pinned originals plus the report audit. All 11 pre-import portraits and the large tracked baseline snapshot remain unchanged. The complete 12-portrait download is generated into `dist/pages/data/portraits.json`. The equality gate rejects changed values, scores and forged approvals. `approved: false` remains explicit. Contacts and outreach drafts are not included.
+
+Run `pnpm pages:test`, `pnpm pages:build` and `pnpm pages:check`. Tests cover all 42 report scores, immutable original records, native units and targets, omitted values, rounding, explicit no-overshoot, measured ranges, source hashes and tampering. Browser checks cover desktop/mobile, archive downloads, keyboard selection, repeated selection, reload, Close/Escape and no-JavaScript access. Browser checks require an executable installed Chromium; inability to launch is not a passing UI result.
