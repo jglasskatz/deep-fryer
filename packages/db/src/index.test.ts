@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { withPostgresError } from './errors.js';
 
 /**
  * Integration tests over a real Postgres (migrations applied). They run
@@ -73,13 +74,13 @@ describe.skipIf(!hasDb)('db integration', () => {
 
     // A draft cannot be published by pointer alone…
     await expect(
-      db.update(dimensions).set({ publishedVersionId: draftA.id }).where(eq(dimensions.id, a!.dimensionId)),
+      withPostgresError(db.update(dimensions).set({ publishedVersionId: draftA.id }).where(eq(dimensions.id, a!.dimensionId))),
     ).rejects.toThrow(/published version of this dimension/);
 
     // …nor can another dimension's published version be borrowed.
     await db.update(dimensionVersions).set({ status: 'published', publishedAt: new Date() }).where(eq(dimensionVersions.id, draftA.id));
     await expect(
-      db.update(dimensions).set({ publishedVersionId: draftA.id }).where(eq(dimensions.id, b!.dimensionId)),
+      withPostgresError(db.update(dimensions).set({ publishedVersionId: draftA.id }).where(eq(dimensions.id, b!.dimensionId))),
     ).rejects.toThrow(/published version of this dimension/);
 
     await db.update(dimensions).set({ publishedVersionId: draftA.id }).where(eq(dimensions.id, a!.dimensionId));
