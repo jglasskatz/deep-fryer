@@ -1,6 +1,34 @@
 import path from 'node:path';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { pctToVizLevel } from '../packages/core/src/viz-level.js';
+import { isRenderable } from '../site/published-name.js';
+// Published folders that hold archived, imported or third-party files.
+export const ARCHIVE_FOLDERS = Object.freeze(['research', 'evidence', 'imports']);
+// The only renderable files allowed in those folders: pages and figures this
+// project writes itself. Anything else that a browser would render or run there
+// must be published as text (site/published-name.js).
+export const FIRST_PARTY_RENDERABLE = Object.freeze([
+  'research/argentina/index.html',
+  'research/argentina/argentina-working-paper.html',
+  'research/argentina/methods-paper.html',
+  'research/argentina/figures/ecological-evidence.svg',
+  'research/argentina/figures/partial-social-doughnuts.svg',
+  'research/argentina/figures/poverty-history.svg',
+]);
+/** Refuse a built site that publishes an archived file a browser would render or run. */
+export function assertNoLiveArchives(output) {
+  const live = [];
+  for (const folder of ARCHIVE_FOLDERS) {
+    const base = path.join(output, folder);
+    if (!existsSync(base)) continue;
+    for (const entry of readdirSync(base, { recursive: true, withFileTypes: true })) {
+      if (entry.isDirectory()) continue;
+      const published = path.relative(output, path.join(entry.parentPath, entry.name)).split(path.sep).join('/');
+      if (isRenderable(published) && !FIRST_PARTY_RENDERABLE.includes(published)) live.push(published);
+    }
+  }
+  if (live.length) throw new Error(`Archived files would render or run on the site; publish them as text: ${live.sort().join(', ')}`);
+}
 const catalog = JSON.parse(readFileSync(new URL('../site/catalog.json', import.meta.url), 'utf8'));
 import { portraitFramework } from './portrait-framework.mjs';
 import { overlayConfig, validateReviewedOverlay } from './research-overlays.mjs';

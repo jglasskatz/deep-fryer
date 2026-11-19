@@ -60,7 +60,9 @@ try {
   assert.match(noticeText, /SoMa portrait is not included, because its rows are still those of the Watsonville portrait/);
   // Known issues are recorded for the fork's author, not shown to readers.
   assert.doesNotMatch(await page.locator('main').innerText(), /placeholder|withheld|not shown/i);
-  for (const [label, href] of [['Original data file', '../imports/san-francisco/data.js'], ['Import record', '../imports/san-francisco/manifest.json']]) {
+  // The fork's data.js is published as text, never under a name a browser runs.
+  assert.equal((await page.request.get(new URL('../imports/san-francisco/data.js', url).href)).status(), 404);
+  for (const [label, href] of [['Original data file (source text)', '../imports/san-francisco/data.js.txt'], ['Import record', '../imports/san-francisco/manifest.json']]) {
     assert.equal(await notice.getByRole('link', { name: label, exact: true }).getAttribute('href'), href);
     assert.equal((await page.request.get(new URL(href, url).href)).status(), 200);
   }

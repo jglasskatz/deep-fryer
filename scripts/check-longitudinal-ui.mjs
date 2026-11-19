@@ -3,10 +3,12 @@ import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {readFile,stat,mkdir} from 'node:fs/promises';
 import path from 'node:path';
+import {createHash} from 'node:crypto';
 import {chromium} from '../apps/worker/node_modules/playwright-core/index.mjs';
 import {installedChromium} from './chromium-path.mjs';
+import {isRenderable,publishedArchiveName} from '../site/published-name.js';
 const root=path.resolve('dist/pages');
-const server=createServer(async(req,res)=>{try{let file=path.resolve(root,`.${decodeURIComponent(new URL(req.url,'http://localhost').pathname)}`);if(!file.startsWith(root+path.sep)&&file!==root){res.writeHead(403).end();return;}if((await stat(file)).isDirectory())file=path.join(file,'index.html');res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.css':'text/css'})[path.extname(file)]||'application/octet-stream');res.end(await readFile(file));}catch{res.writeHead(404).end();}});
+const server=createServer(async(req,res)=>{try{let file=path.resolve(root,`.${decodeURIComponent(new URL(req.url,'http://localhost').pathname)}`);if(!file.startsWith(root+path.sep)&&file!==root){res.writeHead(403).end();return;}if((await stat(file)).isDirectory())file=path.join(file,'index.html');res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.css':'text/css','.txt':'text/plain; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.pdf':'application/pdf'})[path.extname(file)]||'application/octet-stream');res.end(await readFile(file));}catch{res.writeHead(404).end();}});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const origin=`http://127.0.0.1:${server.address().port}`;
 const out=process.env.CI?path.resolve('test-results/longitudinal'):path.join(tmpdir(),'deep-fryer-ui-evidence');await mkdir(out,{recursive:true});
 let browser;
@@ -43,6 +45,35 @@ try{
   await page.screenshot({path:path.join(out,`argentina-modeled-${width}.png`)});
   await page.close();
  }
+ // Archived web pages and scripts are served as source text: same bytes, never a live page.
+ const sources=JSON.parse(await readFile(path.join(root,'research/argentina/data/portrait-series.json'),'utf8')).sources;
+ const archive=await browser.newPage();archive.on('pageerror',e=>errors.push(e.message));
+ const requests=[];await archive.route('**/*',route=>{requests.push(route.request().url());return route.request().url().startsWith(origin)?route.continue():route.abort();});
+ await archive.goto(`${origin}/research/argentina/`,{waitUntil:'networkidle'});
+ const hrefs=await archive.locator('a[href^="raw/"]').evaluateAll(links=>links.map(a=>a.getAttribute('href')));
+ assert.ok(hrefs.length>0);assert.deepEqual(hrefs.filter(isRenderable),[],'No archived-source link points at a renderable name');
+ for(const source of sources.filter(s=>isRenderable(s.path))){
+  assert.equal((await archive.request.get(`${origin}/research/argentina/${source.path}`)).status(),404,source.path);
+  const response=await archive.request.get(`${origin}/research/argentina/${publishedArchiveName(source.path)}`);
+  assert.equal(response.status(),200,source.path);assert.match(response.headers()['content-type'],/^text\/plain/);
+  assert.equal(createHash('sha256').update(await response.body()).digest('hex'),source.sha256,source.id);
+ }
+ const followed=sources.find(s=>s.id==='indec-poverty-topic');
+ await archive.locator('#sources details summary').click();
+ const link=archive.locator('#sources li').filter({hasText:followed.title}).first().getByRole('link',{name:'Archived page source (text)',exact:true});
+ assert.equal(await link.getAttribute('href'),`${followed.path}.txt`);
+ assert.equal(await archive.locator('#sources li').filter({hasText:followed.title}).first().getByRole('link',{name:`${followed.publisher} ↗`}).getAttribute('href'),followed.url,'Live original stays linked');
+ requests.length=0;
+ const [navigation]=await Promise.all([archive.waitForNavigation({waitUntil:'networkidle'}),link.click()]);
+ assert.match(navigation.headers()['content-type'],/^text\/plain/);
+ assert.equal(archive.url(),`${origin}/research/argentina/${followed.path}.txt`);
+ const shown=await archive.evaluate(()=>({type:document.contentType,elements:[...document.querySelectorAll('*')].map(e=>e.localName),text:document.body.innerText}));
+ assert.equal(shown.type,'text/plain');
+ assert.deepEqual(shown.elements.filter(name=>!['html','head','meta','body','pre','style'].includes(name)),[],'No element of the archived page was parsed');
+ assert.ok(shown.text.includes('<script'),'The archived markup is shown as text');
+ assert.deepEqual(requests.filter(url=>!url.startsWith(origin)),[],'No request left the local origin');
+ assert.deepEqual(requests,[`${origin}/research/argentina/${followed.path}.txt`],'The text view loads nothing else');
+ await archive.close();
  const nojs=await browser.newPage({javaScriptEnabled:false});await nojs.goto(`${origin}/research/argentina/`);assert.equal(await nojs.locator('.social-values>li').count(),4);assert.ok(await nojs.locator('.trend-chart svg').isVisible());await nojs.close();
- assert.deepEqual(errors,[]);console.log('Argentina desktop/mobile, exact missing years, gap disclosure, projected-input exclusion, separate modes and no-JS evidence passed.');
+ assert.deepEqual(errors,[]);console.log('Argentina desktop/mobile, exact missing years, gap disclosure, projected-input exclusion, separate modes, archived pages served as source text and no-JS evidence passed.');
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}
