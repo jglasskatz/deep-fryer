@@ -19,6 +19,7 @@ import {
   emergencyPlans,
   emergencyResources,
   hazards,
+  isUniqueViolation,
   tenantConfig,
   type DbExecutor,
   type Tenant,
@@ -60,11 +61,6 @@ const resourceUpdateSchema = emergencyResourceInputSchema.omit({ published: true
 function revalidate(tenant: Tenant) {
   revalidatePath(`/${tenant.slug}/emergency`);
   revalidatePath(`/${tenant.slug}/admin/emergency`);
-}
-
-/** Postgres unique_violation, e.g. a second hazard with the same slug racing the pre-check. */
-function isUniqueViolation(err: unknown): boolean {
-  return typeof err === 'object' && err !== null && (err as { code?: string }).code === '23505';
 }
 
 /** Plans and resources may only point at hazards that exist on this portrait (published or not). */
