@@ -9,7 +9,13 @@ import {
   type InvolvementListingInput,
   type InvolvementListingInputDraft,
 } from '@deep-fryer/core';
-import { involvementListings, involvementSubmissions, type DbExecutor, type Tenant } from '@deep-fryer/db';
+import {
+  involvementListings,
+  involvementSubmissions,
+  isUniqueViolation,
+  type DbExecutor,
+  type Tenant,
+} from '@deep-fryer/db';
 import { action, UserError } from './action-result';
 import { audit } from './audit';
 import { getAuth } from './auth';
@@ -66,11 +72,6 @@ function revalidate(tenant: Tenant) {
   revalidatePath(`/${tenant.slug}/outreach`);
   // Every dimension page lists the listings that serve it (or all of them).
   revalidatePath(`/${tenant.slug}/dim`, 'layout');
-}
-
-/** Postgres unique_violation: a second listing with the same name racing the pre-check. */
-function isUniqueViolation(err: unknown): boolean {
-  return typeof err === 'object' && err !== null && (err as { code?: string }).code === '23505';
 }
 
 const duplicateName = (name: string) =>

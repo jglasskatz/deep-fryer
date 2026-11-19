@@ -74,8 +74,8 @@ describe.skipIf(!hasDb)('portrait structure and outreach version management', ()
     const a = await import('./dimension-admin-actions'); const m = await import('@deep-fryer/db'); const { eq } = await import('drizzle-orm');
     signedIn = people.editor;
     expect(await a.createDimension({ tenantSlug, slug: 'forged', name: 'Forged', ring: 'social' })).toMatchObject({ ok: false, error: 'This needs the owner role on this portrait.' });
-    await expect(m.withAuthContext(m.getDb(), people.editor, db => db.update(m.dimensions).set({ displayOrder: 99 }).where(eq(m.dimensions.id, dimensionId)))).rejects.toThrow('requires an owner');
-    await expect(m.withAuthContext(m.getDb(), people.owner, db => db.update(m.dimensions).set({ slug: 'changed-address' }).where(eq(m.dimensions.id, dimensionId)))).rejects.toThrow('immutable');
+    await expect(m.withPostgresError(m.withAuthContext(m.getDb(), people.editor, db => db.update(m.dimensions).set({ displayOrder: 99 }).where(eq(m.dimensions.id, dimensionId))))).rejects.toThrow('requires an owner');
+    await expect(m.withPostgresError(m.withAuthContext(m.getDb(), people.owner, db => db.update(m.dimensions).set({ slug: 'changed-address' }).where(eq(m.dimensions.id, dimensionId))))).rejects.toThrow('immutable');
     signedIn = people.owner;
     expect(await a.setDimensionArchived({ tenantSlug: otherSlug, dimensionId, archived: true, reason: 'Wrong tenant' })).toMatchObject({ ok: false, error: 'Unknown dimension.' });
   });
@@ -108,6 +108,6 @@ describe.skipIf(!hasDb)('portrait structure and outreach version management', ()
     signedIn = people.editor;
     expect(await a.saveOutreachContact({ tenantSlug: otherSlug, contactId, data: contact })).toMatchObject({ ok: false, error: 'Unknown contact.' });
     expect(await a.saveOutreachContact({ tenantSlug, data: { ...contact, website: 'javascript:alert(1)' } })).toMatchObject({ ok: false });
-    await expect(m.withAuthContext(m.getDb(), people.editor, db => db.update(m.outreachContactVersions).set({ data: { ...contact, org: 'Overwrite' } }).where(eq(m.outreachContactVersions.id, contactVersion)))).rejects.toThrow('immutable');
+    await expect(m.withPostgresError(m.withAuthContext(m.getDb(), people.editor, db => db.update(m.outreachContactVersions).set({ data: { ...contact, org: 'Overwrite' } }).where(eq(m.outreachContactVersions.id, contactVersion))))).rejects.toThrow('immutable');
   });
 });

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { withPostgresError } from './errors.js';
 import { decideResearchSpend } from './billing.js';
 import type { Subscription } from './schema.js';
 
@@ -234,7 +235,7 @@ describe.skipIf(!hasDb)('research funding as stored on runs and analyses (Postgr
       expect(planned!.funding).toBe('plan');
       // …but the app role can neither choose the funding nor change it later.
       await expect(
-        asEditor((tx) => tx.insert(m.researchRuns).values({ ...values, funding: 'organization_key' })),
+        withPostgresError(asEditor((tx) => tx.insert(m.researchRuns).values({ ...values, funding: 'organization_key' }))),
       ).rejects.toThrow(/decided by the research gate/);
       // The system context (the gate, in applyRun) records the decision…
       const thisRun = eq(m.researchRuns.id, planned!.id);
@@ -244,9 +245,9 @@ describe.skipIf(!hasDb)('research funding as stored on runs and analyses (Postgr
       // counted), and it cannot delete it or give it another id or portrait to plan a run in its place.
       const denied = /permission denied for table research_runs/;
       for (const set of [{ funding: 'plan' as const }, { appliedAt: new Date(0) }, { plan: plan(9) }, { id: crypto.randomUUID() }]) {
-        await expect(asEditor((tx) => tx.update(m.researchRuns).set(set).where(thisRun))).rejects.toThrow(denied);
+        await expect(withPostgresError(asEditor((tx) => tx.update(m.researchRuns).set(set).where(thisRun)))).rejects.toThrow(denied);
       }
-      await expect(asEditor((tx) => tx.delete(m.researchRuns).where(thisRun))).rejects.toThrow(denied);
+      await expect(withPostgresError(asEditor((tx) => tx.delete(m.researchRuns).where(thisRun)))).rejects.toThrow(denied);
       // The app only ever inserts a planned run, and that is all it may insert: not one already applied,
       // running, or completed (which would count, or look finished, without passing the gate).
       for (const extra of [
@@ -254,7 +255,7 @@ describe.skipIf(!hasDb)('research funding as stored on runs and analyses (Postgr
         { status: 'running' as const },
         { status: 'complete' as const, completedAt: new Date() },
       ]) {
-        await expect(asEditor((tx) => tx.insert(m.researchRuns).values({ ...values, ...extra }))).rejects.toThrow(
+        await expect(withPostgresError(asEditor((tx) => tx.insert(m.researchRuns).values({ ...values, ...extra })))).rejects.toThrow(
           /row-level security/,
         );
       }

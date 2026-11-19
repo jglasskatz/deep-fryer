@@ -74,7 +74,7 @@ describe.skipIf(!process.env.DATABASE_URL)('human application of machine audits 
     expect(await m.withAuthContext(m.getDb(), outsider, (db) => db.select().from(m.findingAudits).where(eq(m.findingAudits.id, f.audit.id)))).toEqual([]);
     expect((await m.withAuthContext(m.getDb(), editor, (db) => db.select().from(m.findingAudits).where(eq(m.findingAudits.id, f.audit.id)))).length).toBe(1);
     await expect(m.withAuthContext(m.getDb(), editor, (db) => db.update(m.findingAudits).set({ reason: 'Tampered' }).where(eq(m.findingAudits.id, f.audit.id)))).rejects.toThrow();
-    await expect(m.getDb().update(m.findingAudits).set({ reason: 'Tampered' }).where(eq(m.findingAudits.id, f.audit.id))).rejects.toThrow(/immutable/);
+    await expect(m.withPostgresError(m.getDb().update(m.findingAudits).set({ reason: 'Tampered' }).where(eq(m.findingAudits.id, f.audit.id)))).rejects.toThrow(/immutable/);
     signedIn = outsider;
     expect((await (await import('./machine-audit-actions')).applyMachineAudits(input(f))).ok).toBe(false);
     signedIn = editor;
@@ -96,7 +96,7 @@ describe.skipIf(!process.env.DATABASE_URL)('human application of machine audits 
     expect(versions).toHaveLength(1);
     const applied = (await m.getDb().select().from(m.findingAudits).where(eq(m.findingAudits.id, f.audit.id)))[0]!;
     expect(applied.appliedBy).toBe(editor);
-    await expect(m.getDb().update(m.findingAudits).set({ appliedBy: reviewer }).where(eq(m.findingAudits.id, f.audit.id))).rejects.toThrow(/only once/);
+    await expect(m.withPostgresError(m.getDb().update(m.findingAudits).set({ appliedBy: reviewer }).where(eq(m.findingAudits.id, f.audit.id)))).rejects.toThrow(/only once/);
 
     await m.getDb().update(m.tenantConfig).set({ value: { require_approval: 'all', dual_review_on_edits: true, first_post_requires_approval: false } })
       .where(and(eq(m.tenantConfig.tenantId, tenant.id), eq(m.tenantConfig.key, 'review_policy')));
@@ -105,11 +105,11 @@ describe.skipIf(!process.env.DATABASE_URL)('human application of machine audits 
       indicator: 'unavailable-local-series', reason: 'No supported local value is available.' });
     expect(gap).toMatchObject({ ok: true, data: { published: false, requiresSecondReview: true } });
     expect((await m.latestVersion(m.getDb(), dims[8]!.dimensionId))!.status).toBe('draft');
-    await expect(m.withAuthContext(m.getDb(), editor, (db) => db.update(m.dimensionVersions)
-      .set({ status: 'published', publishedAt: new Date() }).where(eq(m.dimensionVersions.id, v!.id)))).rejects.toThrow(/second editor/);
-    await expect(m.withAuthContext(m.getDb(), editor, (db) => db.insert(m.dimensionVersions).values({
+    await expect(m.withPostgresError(m.withAuthContext(m.getDb(), editor, (db) => db.update(m.dimensionVersions)
+      .set({ status: 'published', publishedAt: new Date() }).where(eq(m.dimensionVersions.id, v!.id))))).rejects.toThrow(/second editor/);
+    await expect(m.withPostgresError(m.withAuthContext(m.getDb(), editor, (db) => db.insert(m.dimensionVersions).values({
       dimensionId: f.dimensionId, versionNum: 900, status: 'draft', origin: 'human', data: v!.data, createdBy: reviewer,
-    }))).rejects.toThrow(/author/);
+    })))).rejects.toThrow(/author/);
     signedIn = reviewer;
     expect(await onOneConnection(() => actions.publishReviewed({ tenantSlug: tenant.slug, versionIds: [v!.id] }))).toMatchObject({ ok: true, data: { published: 1 } });
     expect(await (await import('./public-api-metadata')).publicApiMetadata(tenant.slug)).toMatchObject({ organization: { slug: tenant.slug } });

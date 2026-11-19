@@ -1,5 +1,6 @@
 import { and, desc, eq, inArray, sql, type SQL } from 'drizzle-orm';
 import type { DbExecutor } from './client.js';
+import { isUniqueViolation } from './errors.js';
 import {
   dimensionVersions,
   tenants,
@@ -72,12 +73,7 @@ export async function latestVersionsByDimension(
   return new Map(rows.map((v) => [v.dimensionId, v]));
 }
 
-const UNIQUE_VIOLATION = '23505';
 const MAX_APPEND_ATTEMPTS = 5;
-
-function isUniqueViolation(err: unknown): boolean {
-  return typeof err === 'object' && err !== null && (err as { code?: string }).code === UNIQUE_VIOLATION;
-}
 
 /**
  * Append the next immutable version (SPEC.md §7). The number is allocated by
