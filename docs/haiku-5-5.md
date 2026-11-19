@@ -495,7 +495,7 @@ The output schema has no value field.
 **Storage:** `finding_audits` (migration 0014 or later, with RLS like `findings`), plus a staff-only chip on `ReviewCard`.
 
 **Eval:**
-- Replay 30 campaign tier-audit claims through a new `scripts/tier-audit-eval.ts`. The review briefs contain no URLs, so the inputs must be reconstructed from the campaign database or re-entered by staff.
+- Replay 30 campaign tier-audit claims through a new `scripts/tier-audit-eval.ts`. The inputs must be reconstructed from the campaign database or re-entered by staff.
 - Labelled positives:
   - 5 tier-label failures: bronx homelessness-rate and cost-burdened-renters; manhattan food-insecurity and protected-land-share; staten-island poverty-rate.
   - About 6 better-source cases, such as the class-size borough workbooks and the DOHMH Staten Island PM2.5.

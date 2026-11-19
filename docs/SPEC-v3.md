@@ -12,21 +12,21 @@ production runs.
 The NYC portrait family (city + five boroughs) is researched, audited,
 published locally, and demo-deployed as a static page at
 `jglasskatz.github.io/doughnut-santa-cruz/nyc/`. **[D]** The demo stays there
-for the pitch; the long-run product is **fully self-hosted** — no Supabase,
+for city staff to review; the long-run product is **fully self-hosted** — no Supabase,
 no managed PaaS dependencies beyond a VM and object storage.
 
 Four workstreams, independently shippable:
 
 | WS | Name | Outcome |
 |---|---|---|
-| W1 | Pitch dataset completion | Coherent, gate-approved six-portrait family incl. heat + consumption wedges |
+| W1 | Demo dataset completion | Coherent, gate-approved six-portrait family incl. heat + consumption wedges |
 | W2 | Hardening + self-hosted architecture | Deployable product with two independent enforcement layers |
 | W3 | Research-plane quality | Measured fixes from the strategy campaign productized |
 | W4 | Review & insights depth | Machine audit in the product; accessible, comparable portraits |
 
 ---
 
-## W1 — Pitch dataset completion **[D: both heat and consumption lens ship before the pitch]**
+## W1 — Demo dataset completion **[D: both heat and consumption lens ship before the city staff demo]**
 
 ### 1.1 Cross-tenant harmonization (the 5 reconciliation flags)
 
@@ -55,7 +55,7 @@ pressures; the Earth Commission's sub-global safe-and-just boundaries
 (Nature 2023) carry no ozone boundary. Ozone dimensions are archived, never
 deleted. **Flood exposure** is the designated next ceiling candidate once
 nyc.gov floodplain population counts are verifiable **[D]**. Heat is also
-the one ecological topic the administration has personally executive-ordered.
+covered by an adopted city executive order.
 Indicators: heat-vulnerability index distribution (population-weighted, never
 a mean rank), heat-exacerbated deaths (citywide, regional scale, labeled),
 surface-temperature differential. Threshold refs added to
@@ -269,13 +269,13 @@ workflow (§5 contract).
 
 | Phase | Contents | Effort |
 |---|---|---|
-| P1 (pre-pitch) | W1 fully; W3.3–3.4 (they gate W1 acceptance) | ~2 days incl. re-research runs |
+| P1 (pre-demo) | W1 fully; W3.3–3.4 (they gate W1 acceptance) | ~2 days incl. re-research runs |
 | P2 (hardening) | W2.2 policy repairs + 2.3 web/worker fixes (Supabase-independent) | ~2 days |
 | P3 (self-host) | W2.1 Supabase removal + 2.4 droplet deploy | ~3 days |
 | P4 (product) | W4.1 audit-in-review, W4.2 accessibility, W3.1–3.2 | ~3 days |
 | P5 (polish) | W4.3 insights v2, W3.5–3.6, W4.4 upstream PR | ~2 days |
 
-P1 and P2 are parallelizable. Nothing in P3+ blocks the pitch.
+P1 and P2 are parallelizable. Nothing in P3+ blocks the city staff demo.
 
 ## Open questions
 

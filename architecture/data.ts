@@ -108,7 +108,7 @@ const data: ArchitectureMap = {
       label: "Progress engine",
       layer: "packages",
       tech: "@deep-fryer/core",
-      description: "Baseline-to-target status per indicator from published history: target-year glidepaths, required annual pace, improving/worsening for undated goals; feeds the progress pages and open-data exports (progress.csv's last column, sample_data, marks every row of a seeded portrait)",
+      description: "Baseline-to-target status per indicator from published history: target-year glidepaths, required annual pace, improving/worsening for undated goals; a wedge outside the safe zone at baseline counts as inherited, so status judges the pace from there; feeds the progress pages and open-data exports (progress.csv's last column, sample_data, marks every row of a seeded portrait)",
       keyFiles: ["packages/core/src/progress.ts", "apps/web/lib/progress.ts", "apps/web/app/api/v1/portraits/[tenant]/progress.csv/route.ts"],
       keyFunctionality: ["data-year series", "on/off track vs glidepath", "required annual change", "CSV/JSON export"],
       fileCount: 3,
