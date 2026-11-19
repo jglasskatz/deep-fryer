@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { formatIndicatorValue } from '@deep-fryer/core';
+import { formatCalculatedValue, formatIndicatorValue } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { PortraitDoughnut } from '@/components/doughnut/PortraitDoughnut';
 import { SampleDataNotice } from '@/components/sample-data/SampleDataNotice';
@@ -250,9 +250,9 @@ export default async function ComparePage({ params }: { params: Promise<{ org: s
                     })}
                     <td dir="ltr" className="py-2 ps-3 text-end tabular-nums text-[color:var(--color-muted)]">
                       {Math.abs(row.min) < 1
-                        // Derived differences suppress floating-point subtraction noise,
-                        // while the shared formatter preserves nonzero tiny values.
-                        ? `Δ ${formatIndicatorValue(Number((row.max - row.min).toPrecision(15)), '')}`
+                        // A calculated difference: drop floating-point subtraction
+                        // noise, while keeping nonzero tiny values visible.
+                        ? `Δ ${formatCalculatedValue(row.max - row.min, '')}`
                         : Math.abs(row.spreadPct) >= 1
                           ? `${row.spreadPct.toFixed(0)}%`
                           : '<1%'}
