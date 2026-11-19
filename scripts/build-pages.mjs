@@ -7,7 +7,8 @@ import { createHash } from 'node:crypto';
 import ts from 'typescript';
 import { validatePublicInvolvement } from './public-involvement.mjs';
 import { dimensionState, dimensionStatus, hasValue, regionSummary } from '../site/portrait-presentation.js';
-import { validateRelease, escapeHtml as h, inside, publicAssetPath, indicatorAssets } from './pages-contract.mjs';
+import { validateRelease, escapeHtml as h, inside, publicAssetPath, indicatorAssets, assertNoLiveArchives } from './pages-contract.mjs';
+import { isRenderable, publishedArchiveName } from '../site/published-name.js';
 const source = path.resolve('site');
 const output = path.resolve('dist/pages');
 // Use the same value/unit rules as the server application and emit that exact
@@ -43,7 +44,8 @@ await copyFile(path.join(source, 'data/evidence-manifest.json'), path.join(outpu
 for (const asset of requiredAssets) { await mkdir(path.dirname(inside(output, asset)), { recursive: true }); await copyFile(inside(source, asset), inside(output, asset)); }
 for (const { directory, files } of portraitImports) {
   await mkdir(path.join(output, directory), { recursive: true });
-  for (const name of files) await copyFile(path.join(source, directory, name), path.join(output, directory, name));
+  // A pinned third-party script (San Francisco's data.js) is published as text, never as a runnable file.
+  for (const name of files) await copyFile(path.join(source, directory, name), path.join(output, directory, publishedArchiveName(name)));
 }
 await writeFile(path.join(output, '.nojekyll'), '');
 const status = { published: 'Published portrait', 'legacy-source': 'Existing source portrait', 'research-preview': 'Research preview', 'source-supported-observation': 'Observed · no scoring target', 'source-supported-draft': 'Source-supported draft · not approved', uncertain: 'Uncertain · evidence incomplete', gap: 'Data gap' };
@@ -95,7 +97,7 @@ function indicatorDetails(i) {
 }
 function portraitNotice(portrait) {
   const preview = portrait.research_update || portrait.status === 'research-preview';
-  if (portrait.data_import?.kind === 'community-fork') return `<details class="notice" open><summary>${portraitBadge(portrait)}<span>Community data · not checked or approved here.</span></summary><p>${h(portrait.notice)}</p><p>${portrait.data_import.downloads.map(file => `<a href="../${h(file.path)}">${h(file.label)}</a>`).join(' · ')} · <a href="${h(portrait.provenance.repository)}/tree/${h(portrait.provenance.commit)}" rel="noopener noreferrer">Pinned commit ↗</a></p></details>`;
+  if (portrait.data_import?.kind === 'community-fork') return `<details class="notice" open><summary>${portraitBadge(portrait)}<span>Community data · not checked or approved here.</span></summary><p>${h(portrait.notice)}</p><p>${portrait.data_import.downloads.map(file => `<a href="../${h(publishedArchiveName(file.path))}"${isRenderable(file.path) ? ' type="text/plain"' : ''}>${h(file.label)}${isRenderable(file.path) ? ' (source text)' : ''}</a>`).join(' · ')} · <a href="${h(portrait.provenance.repository)}/tree/${h(portrait.provenance.commit)}" rel="noopener noreferrer">Pinned commit ↗</a></p></details>`;
   if (portrait.data_import) return `<details class="notice" open><summary>${portraitBadge(portrait)}<span>${portrait.provenance.report_audit ? 'Checked against the 2025 report · not publication approved.' : 'Imported data · not newly verified or approved.'}</span></summary><p>${h(portrait.notice)}</p><p>${portrait.provenance.report_audit ? '<a href="../imports/california/report-audit.json">42-indicator report audit</a> · <a href="https://zenodo.org/records/17540639">2025 report ↗</a> · ' : ''}<a href="../imports/california/doughnut.json">Original app snapshot</a> · <a href="../imports/california/raw_social.csv">Social worksheet</a> · <a href="../imports/california/raw_ecological.csv">Ecological worksheet</a> · <a href="${h(portrait.provenance.repository)}/tree/${h(portrait.provenance.commit)}">Pinned source repository ↗</a></p></details>`;
   return `<details class="notice"><summary>${portraitBadge(portrait)}<span>${preview ? 'New findings await publication review.' : 'Sources, dates and coverage vary by measure.'}</span></summary>
     <p>${portrait.research_update ? 'This portrait combines an existing baseline with new findings. Baseline approval does not approve the amendments. Each measure retains its own review status.' : preview ? 'This is a provisional portrait. Findings require review before publication approval.' : 'Each measure links to its original source and available archived evidence.'} Values without a defensible target remain unscored; missing evidence remains a data gap.</p>
@@ -138,4 +140,6 @@ console.log(`Built ${release.portraits.length} portraits with ${requiredAssets.s
 
 const research = await buildResearchPages(output);
 console.log(`Built Argentina research with ${research.indicators} indicators and ${research.sources} verified source archives.`);
+assertNoLiveArchives(output);
+console.log('No archived or imported file in research/, evidence/ or imports/ is published under a name a browser renders or runs.');
 
