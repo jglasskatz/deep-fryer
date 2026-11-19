@@ -4,8 +4,9 @@
  * approveFindings + publishVersion (apps/web/lib/review-actions.ts) outside
  * the web app. Inclusion rule per indicator (latest finding wins, so fix-up
  * runs supersede originals): verifier 'pass' OR an honest gap OR the
- * indicator is on the audit-approved allowlist (dispositions approve/edit
- * from docs/review-briefs). Anything else stays unpublished in the queue.
+ * indicator is on the audit-approved allowlist passed with --allow (only
+ * indicators a reviewer approved or edited). Anything else stays
+ * unpublished in the queue.
  *
  *   tsx scripts/publish-reviewed.ts --tenant nyc --allow slug1,slug2 [--dry]
  */

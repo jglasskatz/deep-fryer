@@ -13,7 +13,7 @@ which this spec lays the data model and names the open question (§5).
 | "Policy analysis view — flashing impacts to dimensions based on projected policy impacts; policy brief as input" | §2 Policy analysis (staff) | built |
 | "emergency / disaster view — show threats in terms of risk/impact"; "emergency → for users to grab alerts, surfacing existing plans, making it more accessible" | §3 Emergency view (public) | built |
 | "Hold down dark mode (or right click) and have option to deep fry the page" | §4 Theme and the fryer | built |
-| "suggest solutions?", "mutual aid", "how to analyze a problem?", "let's make a plan for governing", "meet w/ candidates → find out needs for dash", "For S.C./Product — policy view" | §5 Foundations and open questions | foundation |
+| "suggest solutions?", "mutual aid", "how to analyze a problem?", "let's make a plan for governing", "For S.C./Product — policy view"; interviews with city staff about what the dashboard needs | §5 Foundations and open questions | foundation |
 
 ## 1. Principles carried forward
 
@@ -215,12 +215,12 @@ forever.
 | "suggest solutions?" (emergency) | Hazards link to plans and resources; policy analyses produce dimension impacts that could be attached to a hazard | Should solutions be curated (staff), AI-suggested (staff plane only, like §2), or drawn from adopted plans? |
 | "mutual aid" | `emergency_resources.kind = 'mutual_aid'`, published per portrait | Who curates and vets mutual-aid groups, and how are they kept current? Partnership with an existing directory? |
 | "how to analyze a problem?" | The §2 engine maps any text to dimension impacts; a *problem* brief is the same input with a different prompt | Is this a staff tool (problem → affected dimensions → existing plans/policies), a public explainer, or a guided method (e.g. a doughnut "unrolled" worksheet)? |
-| "let's make a plan for governing" | Adopted targets with due dates (progress engine, SPEC-v4 §4) + policy analyses (§2) are the parts of a plan: goals, and the policies projected to move them | A plan = selected goals + policies + owners + timeline? Who is it for — an administration, a council, a campaign? |
-| "meet w/ candidates → find out needs for dash"; "For S.C./Product — policy view" | Policy analysis works for any portrait (Santa Cruz included) in the staff plane; candidates would need a non-staff role | Interview guide below. Can a candidate hold a role without being city staff (a "campaign" organization on a portrait it does not own)? |
+| "let's make a plan for governing" | Adopted targets with due dates (progress engine, SPEC-v4 §4) + policy analyses (§2) are the parts of a plan: goals, and the policies projected to move them | A plan = selected goals + policies + owners + timeline? Who is it for — a city's sustainability office, a council, another department? |
+| Interviews with city staff about what the dashboard needs; "For S.C./Product — policy view" | Policy analysis works for any portrait (Santa Cruz included) in the staff plane | Interview guide below. Should an organization that does not own a portrait be able to hold a role on it? |
 
-**Candidate interview guide (draft):** what decisions would you use the
-doughnut for in the first 100 days? Which dimensions matter most to your
-platform, and which data do you not trust today? Would you share policy
+**City staff interview guide (draft):** what decisions would you use the
+doughnut for in your first year? Which dimensions matter most to your
+office's work, and which data do you not trust today? Would you share policy
 analyses publicly, and with what review? What would make a dashboard part
 of a weekly routine rather than a launch event? Who on your team would run
 it? What would make you stop using it?

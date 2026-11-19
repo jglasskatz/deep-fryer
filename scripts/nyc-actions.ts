@@ -1,8 +1,8 @@
 /**
  * Engagement actions per dimension for the NYC portrait family — the "how to
  * get involved" panel content (SPEC v2 §9/§10; SPEC v3 W1). Initial curated
- * set grounded in docs/nyc-impact-research.md: real NYC programs, adopted-law
- * levers, and civic entry points. Research sessions draft these per §9 in
+ * set: only real NYC programs, adopted-law levers, and civic entry points
+ * that exist today. Research sessions draft these per §9 in
  * future runs; this seeds the family until then.
  *
  * Keyed by dimension slug; `byTenant` overrides/extends for a borough where
