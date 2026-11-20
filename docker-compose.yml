@@ -15,6 +15,9 @@ x-app-env: &app-env
   S3_ENDPOINT: http://storage:8333
   S3_REGION: us-east-1
   S3_BUCKET: ${S3_BUCKET:-deep-fryer-evidence}
+  # A group's own uploaded files: a second bucket that anonymous callers cannot read and /files/ never
+  # reaches; members open them through the web app (deploy/storage/start.sh).
+  S3_PRIVATE_BUCKET: ${S3_PRIVATE_BUCKET:-deep-fryer-private}
   S3_ACCESS_KEY_ID: ${STORAGE_ACCESS_KEY:-deepfryer}
   S3_SECRET_ACCESS_KEY: ${STORAGE_SECRET_KEY:?set STORAGE_SECRET_KEY}
   S3_FORCE_PATH_STYLE: 'true'
@@ -89,7 +92,8 @@ services:
       timeout: 5s
       retries: 20
 
-  # Evidence snapshots (the audit record behind every published claim).
+  # Evidence snapshots (the audit record behind every published claim), and
+  # in a second, private bucket the groups' own uploaded files.
   # Credentials and the anonymous-read policy are generated at boot by
   # deploy/storage/start.sh; the S3 port is reachable only on the compose
   # network and from the host's loopback.
@@ -99,6 +103,7 @@ services:
     entrypoint: ['/bin/sh', '/deploy/start.sh']
     environment:
       S3_BUCKET: ${S3_BUCKET:-deep-fryer-evidence}
+      S3_PRIVATE_BUCKET: ${S3_PRIVATE_BUCKET:-deep-fryer-private}
       STORAGE_ACCESS_KEY: ${STORAGE_ACCESS_KEY:-deepfryer}
       STORAGE_SECRET_KEY: ${STORAGE_SECRET_KEY:?set STORAGE_SECRET_KEY}
     volumes:
@@ -112,9 +117,10 @@ services:
       timeout: 5s
       retries: 30
 
-  # Creates the evidence bucket once (idempotent). Runs inside the storage
-  # network with the cluster shell, so the app identity never needs the
-  # bucket-admin rights that could also delete it.
+  # Creates the evidence bucket and the private bucket once each
+  # (idempotent). Runs inside the storage network with the cluster shell, so
+  # the app identity never needs the bucket-admin rights that could also
+  # delete them.
   storage-init:
     image: chrislusf/seaweedfs:4.48
     depends_on:
@@ -125,13 +131,16 @@ services:
       - -c
       - |
         set -u
-        # weed shell exits 1 for "already exists" — that is success here
-        # (every `docker compose up` after the first), so judge the output.
-        out=$$(echo "s3.bucket.create -name $${S3_BUCKET}" | weed shell -master=storage:9333 2>&1)
-        echo "$$out"
-        echo "$$out" | grep -qE "created bucket|already exists"
+        for bucket in "$${S3_BUCKET}" "$${S3_PRIVATE_BUCKET}"; do
+          # weed shell exits 1 for "already exists" — that is success here
+          # (every `docker compose up` after the first), so judge the output.
+          out=$$(echo "s3.bucket.create -name $$bucket" | weed shell -master=storage:9333 2>&1)
+          echo "$$out"
+          echo "$$out" | grep -qE "created bucket|already exists" || exit 1
+        done
     environment:
       S3_BUCKET: ${S3_BUCKET:-deep-fryer-evidence}
+      S3_PRIVATE_BUCKET: ${S3_PRIVATE_BUCKET:-deep-fryer-private}
 
   # Applies SQL migrations, then exits; web and worker wait for it. Also the
   # ops shell (docs/deploy.md §4): `docker compose run --rm migrate node

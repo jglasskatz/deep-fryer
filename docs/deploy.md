@@ -165,6 +165,28 @@ anonymous callers can fetch objects but not list them
 the `S3_*` entries of `x-app-env` in `docker-compose.yml` at them and drop the
 `storage` services.
 
+The files a group uploads for itself (reports, spreadsheets, and the text
+later read out of them) live in a second bucket, `S3_PRIVATE_BUCKET`
+(`deep-fryer-private` by default, created by `storage-init` beside the
+evidence bucket). Anonymous callers can do nothing in it, and `/files/` never
+reaches it: `/files/<key>` always reads the evidence bucket, which does not
+hold these files, so their addresses there answer 404. Members of the
+portrait open them through the app at `/api/supplied/<portrait>/<key>`, which
+checks their membership and answers 404 to anyone else. With Spaces or S3,
+make a second bucket with no public access for `S3_PRIVATE_BUCKET`; without
+one, the app refuses to store these files rather than put them in the public
+bucket. To confirm the bundled store refuses anonymous reads of it (a 403):
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8333/deep-fryer-private/any-key
+```
+
+Without any S3 store (local development), evidence lands in
+`apps/web/public/evidence/<portrait>/` and these files in
+`.private-uploads/<portrait>/` at the repository root, outside anything the
+web app serves (set `LOCAL_PRIVATE_DIR` to put them elsewhere; it must not be
+inside a `public/` directory).
+
 ### Other ports, or a second stack on one host
 
 To serve on ports other than 80/443 (because the host already uses them, or
@@ -558,7 +580,8 @@ one up to date at once, resend its latest event from the Dashboard
 ### Backups
 
 Three things, all needed to recover: the database, the `storage` volume
-(evidence is the audit record behind every published claim), and `.env`.
+(evidence is the audit record behind every published claim; the volume also
+holds the private bucket of groups' own files), and `.env`.
 Without `DF_SECRETS_KEY` from `.env`, organizations' stored API keys cannot
 be decrypted
 ([Organizations' own Anthropic API keys](#organizations-own-anthropic-api-keys-spec-v7-4)),
