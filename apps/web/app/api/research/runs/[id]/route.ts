@@ -2,12 +2,14 @@ import { NextResponse } from 'next/server';
 import { summarizeRunCosts } from '@deep-fryer/core';
 import { runWithSessions } from '@/lib/admin-data';
 import { getRole, roleAtLeast } from '@/lib/auth';
+import { isSignedIn, SIGN_IN_REQUIRED } from '@/lib/signed-in';
 
 /** GET /api/research/runs/:id — status of a run, its sessions, and metering. */
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  if (!(await isSignedIn())) return NextResponse.json(SIGN_IN_REQUIRED, { status: 401 });
   const { id } = await params;
   const data = await runWithSessions(id);
   if (!data) return NextResponse.json({ error: 'unknown run' }, { status: 404 });

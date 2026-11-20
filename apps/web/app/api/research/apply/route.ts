@@ -4,15 +4,20 @@ import { driverError, tenantBySlug } from '@deep-fryer/db';
 import { getRole, roleAtLeast } from '@/lib/auth';
 import { applyRun } from '@/lib/research';
 import { systemDb } from '@/lib/db';
+import { isSignedIn, SIGN_IN_REQUIRED } from '@/lib/signed-in';
 
 const bodySchema = z.object({
   tenant: z.string(),
   run_id: z.guid(),
 });
 
-/** POST /api/research/apply — enqueue a planned run for the worker. */
+/**
+ * POST /api/research/apply — enqueue a planned run for the worker. Someone
+ * signed out is answered before the body is read.
+ */
 export async function POST(request: Request) {
   try {
+    if (!(await isSignedIn())) return NextResponse.json(SIGN_IN_REQUIRED, { status: 401 });
     const body = bodySchema.parse(await request.json());
     const tenant = await tenantBySlug(systemDb(), body.tenant);
     if (!tenant) return NextResponse.json({ error: 'unknown tenant' }, { status: 404 });

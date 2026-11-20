@@ -2,13 +2,20 @@
 
 import { revalidatePath } from 'next/cache';
 import { and, eq, isNotNull, isNull, or } from 'drizzle-orm';
+import { z } from 'zod';
 import { researchRuns } from '@deep-fryer/db';
-import type { ResearchStrategy } from '@deep-fryer/core';
+import { boundedRecord, REQUEST_LIMITS, type ResearchStrategy } from '@deep-fryer/core';
 import { getAuth, requireTenantRole } from './auth';
 import { applyRun, createPlannedRun } from './research';
 import { action, UserError } from './action-result';
 import { audit } from './audit';
 import { systemDb, userDb } from './db';
+
+/** The dimensions to research and the notes keyed by them: at most one per dimension of the portrait. */
+const planLists = z.object({
+  dimensionIds: z.array(z.string()).max(REQUEST_LIMITS.dimensions).optional(),
+  reviewerNotes: boundedRecord(z.string(), z.string(), REQUEST_LIMITS.dimensions).optional(),
+});
 
 export const planResearchAction = action(async (input: {
   tenantSlug: string;
@@ -20,11 +27,12 @@ export const planResearchAction = action(async (input: {
   if (input.strategy !== undefined && input.strategy !== 'standard' && input.strategy !== 'deep') {
     throw new UserError('Choose the standard or deep research strategy.');
   }
+  const lists = planLists.parse(input);
   const auth = await getAuth();
   const { run, sessionCount } = await createPlannedRun({
     tenantId: tenant.id,
-    dimensionIds: input.dimensionIds,
-    reviewerNotes: input.reviewerNotes,
+    dimensionIds: lists.dimensionIds,
+    reviewerNotes: lists.reviewerNotes,
     requestedBy: auth.userId,
     strategy: input.strategy,
   });

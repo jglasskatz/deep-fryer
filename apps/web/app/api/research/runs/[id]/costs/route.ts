@@ -1,6 +1,7 @@
 import { summarizeRunCosts } from '@deep-fryer/core';
 import { runWithSessions } from '@/lib/admin-data';
 import { getRole, roleAtLeast } from '@/lib/auth';
+import { isSignedIn, SIGN_IN_REQUIRED } from '@/lib/signed-in';
 
 export const dynamic = 'force-dynamic';
 const PRIVATE = { 'cache-control': 'private, no-store' };
@@ -15,6 +16,7 @@ function cell(value: string | number | null): string {
 
 /** Member-only accounting. RLS is applied by runWithSessions before any output. */
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!(await isSignedIn())) return Response.json(SIGN_IN_REQUIRED, { status: 401, headers: PRIVATE });
   const { id } = await params;
   if (!UUID.test(id)) return Response.json({ error: 'unknown run' }, { status: 404, headers: PRIVATE });
   const data = await runWithSessions(id);
