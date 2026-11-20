@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { frameworkDimension } from '@deep-fryer/contract';
-import { summarizeRunCosts } from '@deep-fryer/core';
+import { summarizePortraitCosts, summarizeRunCosts } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { NewRunForm } from '@/components/admin/NewRunForm';
-import { tenantDimensions, tenantRuns } from '@/lib/admin-data';
+import { tenantDimensions, tenantRunSessionIds, tenantRuns } from '@/lib/admin-data';
+import { PortraitCostTotal, RunCostCell } from '@/components/admin/RunCostSummary';
 import { requireAdminPage } from '@/lib/admin-guard';
 import { adminPageMetadata } from '@/lib/page-meta';
 import { billingSummary, keyFundedSessionsNote } from '@/lib/billing';
@@ -27,11 +28,15 @@ export default async function ResearchPage({
 }) {
   const { tenant } = await params;
   const ctx = await requireAdminPage(tenant, 'editor');
-  const [runs, dims, billing] = await Promise.all([
+  const [runs, dims, billing, sessionIds] = await Promise.all([
     tenantRuns(ctx.tenant.id),
     tenantDimensions(ctx.tenant.id),
     billingSummary(ctx.tenant.organizationId),
+    tenantRunSessionIds(ctx.tenant.id),
   ]);
+  // Each run's own session rows, so a session that left no usage record keeps its run's dollars partial here too.
+  const costRuns = runs.map((run) => ({ ...run, sessionIds: sessionIds.get(run.id) ?? [] }));
+  const portraitTotal = summarizePortraitCosts(costRuns);
   // The meter is the plan's allowance (plan-funded sessions only); what ran on the organization's own key is named
   // under it, in the same words as on the billing page and the org hub (lib/billing.ts keyFundedSessionsNote).
   const keyNote = keyFundedSessionsNote(billing);
@@ -70,6 +75,10 @@ export default async function ResearchPage({
           </p>
         </section>
 
+        <section className="mt-4 rounded border border-black/10 p-3" aria-label="Research spending">
+          <PortraitCostTotal total={portraitTotal} />
+        </section>
+
         <div className="mt-6">
           <NewRunForm
             tenantSlug={tenant}
@@ -85,7 +94,7 @@ export default async function ResearchPage({
         <section className="mt-8">
           <h2 className="text-lg font-semibold">History</h2>
           <div className="mt-3 overflow-x-auto">
-<table className="w-full min-w-[560px] border-collapse text-sm">
+<table className="w-full min-w-[680px] border-collapse text-sm">
             <thead>
               <tr className="border-b text-left text-[color:var(--color-muted)]">
                 <th className="py-2 pr-4">Run</th>
@@ -93,18 +102,19 @@ export default async function ResearchPage({
                 <th className="py-2 pr-4">Sessions</th>
                 <th className="py-2 pr-4">Created</th>
                 <th className="py-2 pr-4">Tokens</th>
+                <th className="py-2 pr-4">Estimated cost</th>
               </tr>
             </thead>
             <tbody>
               {runs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-3 text-[color:var(--color-muted)]">
+                  <td colSpan={6} className="py-3 text-[color:var(--color-muted)]">
                     No runs yet. Plan one above — planning is free.
                   </td>
                 </tr>
               ) : (
-                runs.map((run) => {
-                  const cost = summarizeRunCosts(run.tokenUsage);
+                costRuns.map((run) => {
+                  const cost = summarizeRunCosts(run.tokenUsage, run.sessionIds);
                   const tokens = cost.sessions.length ? cost.sessions.reduce((total, session) => total + session.input_tokens + session.output_tokens + session.cache_read_tokens + session.cache_write_tokens, 0) : null;
                   return (
                     <tr key={run.id} className="border-b">
@@ -121,6 +131,7 @@ export default async function ResearchPage({
                         {run.createdAt.toISOString().slice(0, 16).replace('T', ' ')}
                       </td>
                       <td className="py-2 pr-4">{tokens === null ? '—' : tokens.toLocaleString('en-US')}{cost.coverage === 'partial' ? ' (partial)' : ''}</td>
+                      <td className="py-2 pr-4 tabular-nums"><RunCostCell summary={cost} /></td>
                     </tr>
                   );
                 })
