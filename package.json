@@ -31,7 +31,7 @@
     "@deep-fryer/core": "workspace:*",
     "@deep-fryer/db": "workspace:*",
     "@deep-fryer/research": "workspace:*",
-    "@keel_flow/core": "^0.2.0",
+    "@keel_flow/core": "^0.5.0",
     "@keel_flow/pack-agent-topology": "^0.2.0",
     "@keel_flow/pack-general-se": "^0.5.0",
     "@keel_flow/pack-research": "workspace:^",
