@@ -81,6 +81,33 @@ describe('research costs export', () => {
     expect(food[col('coverage')]).toBe('partial');
     expect(food[col('cost_per_verified_finding_usd')]).toBe('');
   });
+
+  it('names the provider, the executor and each session’s model, with any model that answered after a refusal', async () => {
+    const execution = { provider: 'anthropic', endpoint_host: 'api.anthropic.com', executor: 'shared_worker', host_region: null };
+    mocks.data.mockResolvedValue({
+      run: {
+        tenantId: 'tenant', execution, tokenUsage: {
+          s1: { input_tokens: 10, output_tokens: 2, model: 'claude-sonnet-5', refusal_fallbacks: [{ original_model: 'claude-sonnet-5', fallback_model: 'claude-opus-5', category: null }] },
+          'verifier:s1': { input_tokens: 4, output_tokens: 1, model: 'claude-opus-5' },
+        },
+      },
+      sessions: [{ id: 's1', kind: 'dimension', dimensionId: null }, { id: 's2', kind: 'dimension', dimensionId: null }], findings: [],
+    });
+    const { GET } = await import('./route');
+    const lines = (await (await GET(request('?format=csv'), params)).text()).trim().split('\r\n');
+    expect(lines[0]).toContain('"provider","executor","model","answered_after_refusal_by"');
+    expect(lines.find((line) => line.includes('"session","s1",'))).toMatch(/"Anthropic","shared server","claude-sonnet-5","claude-opus-5"$/);
+    expect(lines.find((line) => line.includes('"session","verifier:s1",'))).toMatch(/"Anthropic","shared server","claude-opus-5",""$/);
+    expect(lines.find((line) => line.includes('"session","s2",'))).toMatch(/"Anthropic","shared server","",""$/);
+    expect(lines.at(-1)).toMatch(/^"[^"]+","total","TOTAL".*"Anthropic","shared server","",""$/);
+    expect(await (await GET(request(), params)).json()).toMatchObject({ execution });
+  });
+  it('reads "provider not recorded" for an older run', async () => {
+    mocks.data.mockResolvedValue({ run: { tenantId: 'tenant', execution: null, tokenUsage: { s1: { input_tokens: 1, output_tokens: 1, model: 'claude-sonnet-5' } } }, sessions: [{ id: 's1', kind: 'dimension', dimensionId: null }], findings: [] });
+    const { GET } = await import('./route');
+    const csv = await (await GET(request('?format=csv'), params)).text();
+    expect(csv).toContain('"provider not recorded","","claude-sonnet-5",""');
+  });
 });
 
 const sonnet = { input_tokens: 1000, output_tokens: 100, by_model: { 'claude-sonnet-5': { input_tokens: 1000, output_tokens: 100, cache_read_tokens: 5000, cache_write_tokens: 200, web_search_requests: 2 } } };

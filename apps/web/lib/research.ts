@@ -9,6 +9,8 @@ import {
   organizationForTenant,
   researchRuns,
   type DbExecutor,
+  type ResearchFunding,
+  type RunExecution,
 } from '@deep-fryer/db';
 import {
   enqueueResearchApply,
@@ -114,6 +116,42 @@ export async function createPlannedRunIn(db: DbExecutor, input: PlannedRunInput)
     return { run, sessionCount: plan.sessions.length };
 }
 
+/** The model API's own host: where sessions go when nothing reroutes them. */
+const FIRST_PARTY_HOST = 'api.anthropic.com';
+
+function hostOf(url: string | undefined): string | null {
+  if (!url?.trim()) return null;
+  try {
+    return new URL(url.trim()).hostname || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Where a run applied with this funding will execute, recorded on the run
+ * beside `funding`. Every session runs on the shared worker and calls one
+ * provider. On the organization's own key the worker withholds any base URL
+ * the deployment set (apps/worker session.ts sessionEnv), so the calls go to
+ * the first-party host. On the plan they go wherever the worker's own
+ * environment points the model client, which this process cannot see: the
+ * host is recorded only when the deployment names one to this process too,
+ * and is null otherwise. The host region is likewise whatever the deployment
+ * states, or null. The record is written once and never updated, so unknown
+ * is recorded as unknown, never guessed.
+ */
+export function runExecution(
+  funding: ResearchFunding,
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): RunExecution {
+  return {
+    provider: 'anthropic',
+    endpoint_host: funding === 'organization_key' ? FIRST_PARTY_HOST : hostOf(env.ANTHROPIC_BASE_URL),
+    executor: 'shared_worker',
+    host_region: env.DF_HOST_REGION?.trim() || null,
+  };
+}
+
 /**
  * Apply: the moment research spend starts, so the billing gate lives here
  * (SPEC-v4 §3). In one transaction: lock the run and the organization's
@@ -134,7 +172,10 @@ export async function createPlannedRunIn(db: DbExecutor, input: PlannedRunInput)
  * `funding` in the same update as applied_at, so it is recorded exactly when
  * the run starts to count: the allowance counts only plan-funded runs, and
  * the worker runs every session on the key `funding` names, whatever key is
- * on file by the time the run starts (apps/worker research-apply.ts).
+ * on file by the time the run starts (apps/worker research-apply.ts). The
+ * same update records where the run executes (`execution`, runExecution),
+ * which review, the run page and the cost export show beside each session's
+ * model.
  *
  * Every path in the app that starts a run — the research page, "Build my
  * doughnut", a request for more research — comes through here. The returned
@@ -170,7 +211,7 @@ export async function applyRun(tenantId: string, runId: string) {
 
     const [applied] = await tx
       .update(researchRuns)
-      .set({ appliedAt: new Date(), funding: gate.funding })
+      .set({ appliedAt: new Date(), funding: gate.funding, execution: runExecution(gate.funding) })
       .where(eq(researchRuns.id, row.id))
       .returning();
     return applied!;

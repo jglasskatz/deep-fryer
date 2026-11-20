@@ -24,6 +24,8 @@ export async function GET(
     status: data.run.status,
     created_at: data.run.createdAt,
     completed_at: data.run.completedAt,
+    // Provider, endpoint host, executor and host region, recorded when the run was applied; null on older runs.
+    execution: data.run.execution ?? null,
     token_usage: data.run.tokenUsage,
     cost_summary: summarizeRunCosts(data.run.tokenUsage, data.sessions.map((s) => s.id)),
     sessions: data.sessions.map((s) => ({

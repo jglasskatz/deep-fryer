@@ -308,6 +308,25 @@ export const dimensionVersions = pgTable(
 
 // ---- Research plane (SPEC.md §7–8) ----
 
+/**
+ * Where a research run's model calls went and what ran its sessions,
+ * recorded by the research gate when the run is applied, beside `funding`
+ * (apps/web/lib/research.ts applyRun). Which model answered each session is
+ * not here: it is in that session's usage record (`token_usage`, with any
+ * refusal fallback). Null on runs applied before this was recorded, and on
+ * runs never applied. Staff and members read it; public pages never do.
+ */
+export interface RunExecution {
+  /** Who served the model calls. */
+  provider: 'anthropic';
+  /** Host name of the model API the sessions called, or null when it was not known at apply time. */
+  endpoint_host: string | null;
+  /** What ran the sessions: the deployment's one shared worker. */
+  executor: 'shared_worker';
+  /** The region our host runs in, or null when the deployment does not say. */
+  host_region: string | null;
+}
+
 export const researchRuns = pgTable('research_runs', {
   id: uuid('id').primaryKey().defaultRandom(),
   tenantId: uuid('tenant_id')
@@ -330,6 +349,12 @@ export const researchRuns = pgTable('research_runs', {
    * neither set nor change it (migration 0012).
    */
   funding: researchFundingEnum('funding').notNull().default('plan'),
+  /**
+   * Provider, endpoint host, executor and host region (RunExecution), set in
+   * the same update as `funding`. The app role cannot insert a run that
+   * carries one, and cannot update runs at all (migrations 0013, 0024).
+   */
+  execution: jsonb('execution').$type<RunExecution>(),
   completedAt: timestamp('completed_at', { withTimezone: true }),
   tokenUsage: jsonb('token_usage').$type<RunTokenUsage>(),
 }, (t) => ({

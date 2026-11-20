@@ -23,6 +23,7 @@ import {
   sessionDurationMs,
 } from '@/lib/run-progress';
 import { RunPhaseBadge, SessionChipBadge } from '../RunBadges';
+import { fallbackSentence, runProvenanceSentence, sessionModels } from '../provenance';
 import { ReplanFailed } from './ReplanFailed';
 
 export const dynamic = 'force-dynamic';
@@ -139,6 +140,11 @@ export default async function RunDetailPage({
               : ''}
           </span>
         </p>
+        {run.appliedAt ? (
+          <p className="mt-1 text-sm text-[color:var(--color-muted)]">
+            {runProvenanceSentence(run, sessions.map((s) => s.id))}
+          </p>
+        ) : null}
 
         <section aria-label="Where this run stands" className="mt-6 rounded border border-black/15 p-4">
           {phase === 'unapplied' ? (
@@ -285,6 +291,9 @@ export default async function RunDetailPage({
             {progress.items.map((item, i) => {
               const took = sessionDurationMs(item.session);
               const cause = item.session ? causeBySession.get(item.session.id) : undefined;
+              // Which model answered this session, once the worker has written its usage (at the run's end).
+              const models = item.session ? sessionModels(run.tokenUsage?.[item.session.id]) : null;
+              const fallback = fallbackSentence(models);
               return (
                 <li key={i} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-black/10 py-2 text-sm">
                   <span>{nameOf(item.key)}</span>
@@ -293,12 +302,14 @@ export default async function RunDetailPage({
                   ) : (
                     <span className="flex flex-wrap items-baseline gap-2 text-xs">
                       {cause ? <span>{cause.label}</span> : null}
+                      {models?.model ? <span className="text-[color:var(--color-muted)]">{models.model}</span> : null}
                       {took !== null ? (
                         <span className="text-[color:var(--color-muted)]">{formatDuration(took)}</span>
                       ) : null}
                       <SessionChipBadge chip={item.chip} />
                     </span>
                   )}
+                  {fallback ? <span className="basis-full text-xs">{fallback}.</span> : null}
                 </li>
               );
             })}
