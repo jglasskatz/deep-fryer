@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { httpsUrlSchema, phoneSchema } from './emergency.js';
 import { SLUG_RE } from './slugs.js';
+import { emailFormat } from './validators.js';
 
 /**
  * Getting involved (SPEC-v6 §4): listings of ways to take part in each
@@ -49,7 +50,7 @@ const dimensionSlugSchema = z.string().max(80).regex(SLUG_RE, 'not a dimension a
 
 /** Form fields arrive as '' when left empty; optional fields store null instead. */
 const emptyToNull = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? null : v);
-const optional = <T extends z.ZodTypeAny>(schema: T) => z.preprocess(emptyToNull, schema.nullable()).default(null);
+const optional = <T extends z.ZodType>(schema: T) => z.preprocess(emptyToNull, schema.nullable()).default(null);
 
 /**
  * An organization's own website may still be plain http; staff convert it
@@ -106,13 +107,13 @@ export const involvementSubmissionInputSchema = z
     pitch: z.string().trim().min(1, 'tell us why, or what you suggest').max(INVOLVEMENT_LIMITS.pitch),
     website: optional(websiteSchema),
     contact_name: z.string().trim().min(1, 'your name is required').max(INVOLVEMENT_LIMITS.contactName),
-    email: z.string().trim().max(INVOLVEMENT_LIMITS.email).email('use an email address such as name@example.org'),
+    email: z.string().trim().max(INVOLVEMENT_LIMITS.email).check(emailFormat('use an email address such as name@example.org')),
     phone: optional(phoneSchema),
   })
   .superRefine((v, ctx) => {
     if (v.kind !== 'listing') return;
-    if (!v.org_name) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['org_name'], message: 'the organization’s name is required' });
-    if (!v.about) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['about'], message: 'tell us who you are' });
+    if (!v.org_name) ctx.addIssue({ code: 'custom', path: ['org_name'], message: 'the organization’s name is required' });
+    if (!v.about) ctx.addIssue({ code: 'custom', path: ['about'], message: 'tell us who you are' });
   });
 export type InvolvementSubmissionInput = z.infer<typeof involvementSubmissionInputSchema>;
 

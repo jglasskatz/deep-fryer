@@ -12,7 +12,7 @@ import { audit } from './audit';
 import { userDb } from './db';
 
 const content = z.object({
-  pageId: z.string().uuid().optional(),
+  pageId: z.guid().optional(),
   slug: z.string().trim().min(1).max(80).regex(SLUG_RE, 'Use lowercase letters, numbers and single hyphens.'),
   title: z.string().trim().min(1).max(160),
   body: z.string().max(60000),
@@ -54,7 +54,7 @@ export const saveCustomPage = action(async (input: { tenantSlug: string; pageId?
 
 export const publishCustomPage = action(async (input: { tenantSlug: string; pageId: string; versionId: string }) => {
   const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'custom_pages');
-  const ids = z.object({ pageId: z.string().uuid(), versionId: z.string().uuid() }).parse(input);
+  const ids = z.object({ pageId: z.guid(), versionId: z.guid() }).parse(input);
   const auth = await getAuth();
   const slug = await userDb(async (db) => {
     const [page] = await db.select().from(customPages).where(and(eq(customPages.id, ids.pageId), eq(customPages.tenantId, tenant.id))).for('update');
@@ -80,7 +80,7 @@ export const publishCustomPage = action(async (input: { tenantSlug: string; page
 /** Removal is reversible: retain all versions and their publication dates. */
 export const unpublishCustomPage = action(async (input: { tenantSlug: string; pageId: string }) => {
   const { tenant } = await requireTenantRoleWithFeature(input.tenantSlug, 'editor', 'custom_pages');
-  const pageId = z.string().uuid().parse(input.pageId);
+  const pageId = z.guid().parse(input.pageId);
   const slug = await userDb(async (db) => {
     const [page] = await db.select().from(customPages).where(and(eq(customPages.id, pageId), eq(customPages.tenantId, tenant.id))).for('update');
     if (!page) throw new UserError('Unknown page.');

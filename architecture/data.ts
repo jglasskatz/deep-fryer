@@ -392,7 +392,7 @@ const data: ArchitectureMap = {
       tech: "@deep-fryer/contract",
       description: "Framework dimensions, default thresholds with rationales, and the finding/portrait-config JSON Schemas Finding contracts now support optional bounded context/action drafts with HTTPS sources and captured exhibits, plus a separate narrative-support verdict. Core validation preserves unknown targets as unknown. Research measurement distinguishes additive counts from weighted rates and rejects future observation years deterministically.",
       keyFiles: ["packages/contract/framework/framework.json", "packages/contract/schemas/finding.schema.json", "packages/core/src/types.ts", "packages/core/src/validators.ts", "packages/core/src/finding-audits.ts", "packages/research/src/measure.ts", "packages/research/src/verify.ts"],
-      keyFunctionality: ["targets with rationales", "research output schema", "bounded sourced narrative/action contracts", "independent narrative-support verdict", "complete comparable count-sum reconciliation", "future-year and unknown-target validation"],
+      keyFunctionality: ["targets with rationales", "research output schema", "bounded sourced narrative/action contracts", "independent narrative-support verdict", "complete comparable count-sum reconciliation", "future-year and unknown-target validation", "email, URL and timestamp checks accept exactly what they accepted under zod 3 (validators.ts string formats; a URL is never trimmed or rewritten)"],
       fileCount: 6,
       linesOfCode: "~900",
       principles: {

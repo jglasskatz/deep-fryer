@@ -1,10 +1,11 @@
 import { z } from 'zod';
 import { framework } from '@deep-fryer/contract';
+import { INVALID_URL, isParseableUrl } from './validators.js';
 
 const slices = framework.dimensions.map(d => d.slug) as [string, ...string[]];
 const text = z.string().trim().min(1).max(1600);
 const isoDate=z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(value=>{const date=new Date(value+'T00:00:00Z');return Number.isFinite(date.getTime())&&date.toISOString().slice(0,10)===value;},'Use a valid calendar date.');
-const source = z.object({ title: text, url: z.string().url().refine(u => u.startsWith('https://')), locator: z.string().max(600).optional(), excerpt:z.string().max(600).optional(), retrieval:z.object({status:z.enum(['unverified','retrievedExcerptMatched','curatedReview']),contentSha256:z.string().optional()}).optional() });
+const source = z.object({ title: text, url: z.string().refine(isParseableUrl, INVALID_URL).refine(u => u.startsWith('https://')), locator: z.string().max(600).optional(), excerpt:z.string().max(600).optional(), retrieval:z.object({status:z.enum(['unverified','retrievedExcerptMatched','curatedReview']),contentSha256:z.string().optional()}).optional() });
 export const policySliceDirectionSchema = z.enum(['towardSafeJust', 'away', 'mixed', 'unknown', 'noDemonstratedChange']);
 export type PolicySliceDirection = z.infer<typeof policySliceDirectionSchema>;
 export const policyImpactEdgeSchema = z.object({
@@ -80,7 +81,7 @@ export function lookupPolicyImpactGraphs(graphs:PolicyImpactGraph[],query:string
   return graphs.map(g=>({g,score:terms.filter(t=>(g.title+' '+g.policyId+' '+g.geography+' '+g.edges.map(e=>e.slice).join(' ')).toLowerCase().includes(t)).length})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).map(x=>x.g);
 }
 export interface PolicyEvaluationRequest { title:string; brief:string; sourceUrl?:string; context:PolicyEvaluationContext; }
-export const policyEvaluationRequestSchema=z.object({title:z.string().trim().min(1).max(200),brief:z.string().trim().min(1).max(60_000),sourceUrl:z.string().url().refine(url=>url.startsWith('https://')).optional(),context:policyEvaluationContextSchema});
+export const policyEvaluationRequestSchema=z.object({title:z.string().trim().min(1).max(200),brief:z.string().trim().min(1).max(60_000),sourceUrl:z.string().refine(isParseableUrl, INVALID_URL).refine(url=>url.startsWith('https://')).optional(),context:policyEvaluationContextSchema});
 export type PolicyEvaluationProvider = (request:PolicyEvaluationRequest) => Promise<unknown>;
 /** Agent-neutral boundary. Callers must retain their existing authentication, quota and provider gate. */
 export async function evaluatePolicyImpact(request:PolicyEvaluationRequest, provider?:PolicyEvaluationProvider):Promise<

@@ -7,8 +7,8 @@ import { createPlannedRun } from '@/lib/research';
 
 const bodySchema = z.object({
   tenant: z.string(),
-  dimension_ids: z.array(z.string().uuid()).optional(),
-  reviewer_notes: z.record(z.string()).optional(),
+  dimension_ids: z.array(z.guid()).optional(),
+  reviewer_notes: z.record(z.string(), z.string()).optional(),
   strategy: z.enum(['standard', 'deep']).optional(),
 });
 

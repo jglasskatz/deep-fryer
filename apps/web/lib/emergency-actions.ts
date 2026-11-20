@@ -51,7 +51,7 @@ import { userDb } from './db';
  * pressed Publish or Unpublish cannot silently undo that decision.
  */
 
-const idSchema = z.string().uuid('unknown record');
+const idSchema = z.guid('unknown record');
 
 // Edits never carry visibility (see above); zod drops the key if sent.
 const hazardUpdateSchema = hazardInputSchema.omit({ published: true });

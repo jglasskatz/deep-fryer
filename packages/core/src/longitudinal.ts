@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { INVALID_URL, isoDatetime, isParseableUrl } from './validators.js';
 
 /** Measured statistical series, not policy effects. Native units and coverage
  * stay attached to every series; no aggregation, interpolation or causal
@@ -8,22 +9,22 @@ const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(value => {
   const parsed = new Date(`${value}T00:00:00Z`);
   return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }, 'must be a real calendar date');
-const timestamp = z.string().datetime({ offset: true });
-const geography = z.object({ id: text, name: text, level: text, coverage: text }).passthrough();
+const timestamp = isoDatetime();
+const geography = z.object({ id: text, name: text, level: text, coverage: text }).loose();
 const archivePath = text.refine(value => !value.startsWith('/') && !value.split('/').some(p => p === '..' || p === '.') && !value.includes('\\') && !value.includes('\0'), 'archive path must stay relative');
 export const longitudinalSourceSchema = z.object({
   id: text, title: text, publisher: text,
-  url: z.string().url().refine(value => new URL(value).protocol === 'https:', 'source must use HTTPS'),
+  url: z.string().refine(isParseableUrl, INVALID_URL).refine(value => new URL(value).protocol === 'https:', 'source must use HTTPS'),
   path: archivePath, sha256: z.string().regex(/^[a-f0-9]{64}$/), retrieved_at: timestamp,
   release_date: date.nullable(),
-}).passthrough();
+}).loose();
 export const longitudinalIndicatorSchema = z.object({
   id: text, label: text, dimension: z.enum(['social', 'ecological', 'context']), unit: text,
   direction: z.enum(['higher', 'lower', 'context']), frequency: z.enum(['annual', 'semester', 'monthly']),
   geography, epistemic_type: z.literal('estimate'),
   target: z.number().finite().nullable(), target_rationale: z.string().nullable(), target_source_id: text.optional(),
   comparability_notes: z.union([z.string(), z.array(z.string())]),
-}).passthrough();
+}).loose();
 export const longitudinalObservationSchema = z.object({
   indicator_id: text, epistemic_type: z.enum(['observed', 'retrospective-estimate', 'projection']),
   status: z.enum(['source-supported-observation', 'source-supported-projection', 'missing']), period_start: date, period_end: date, observation_year: z.number().int(),
@@ -40,21 +41,21 @@ export const longitudinalObservationSchema = z.object({
     conclusion: z.enum(['no-significant-change', 'significant-increase', 'significant-decrease']),
     producer_statement: text, source_id: text, source_locator: text,
   })).optional(),
-}).passthrough();
+}).loose();
 
 export const longitudinalEventSchema = z.object({
   id: text, date, date_end: date.optional(), category: z.enum(['election','inauguration','policy','context']),
   label: text, source_id: text, source_locator: text, date_precision: text.optional(),
   causal_status: z.literal('chronology only; not an estimated treatment effect'),
-}).passthrough();
+}).loose();
 
 export const longitudinalDatasetSchema = z.object({
   schema_version: z.literal('1.0.0'), as_of: z.union([date, timestamp]), geography,
-  scope: z.union([text, z.record(z.unknown())]),
+  scope: z.union([text, z.record(z.string(), z.unknown())]),
   indicators: z.array(longitudinalIndicatorSchema), observations: z.array(longitudinalObservationSchema),
   sources: z.array(longitudinalSourceSchema), events: z.array(longitudinalEventSchema).default([]),
 }).superRefine((dataset, ctx) => {
-  const issue = (path: (string | number)[], message: string) => ctx.addIssue({ code: z.ZodIssueCode.custom, path, message });
+  const issue = (path: (string | number)[], message: string) => ctx.addIssue({ code: 'custom', path, message });
   const sources = new Map(dataset.sources.map(source => [source.id, source]));
   const indicators = new Map(dataset.indicators.map(indicator => [indicator.id, indicator]));
   const asOf = dataset.as_of.slice(0, 10);

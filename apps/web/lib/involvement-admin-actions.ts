@@ -52,7 +52,7 @@ import { validInvolvementDimensionsIn } from './involvement-dimensions';
  * name, email, or phone.
  */
 
-const idSchema = z.string().uuid('unknown record');
+const idSchema = z.guid('unknown record');
 
 // Edits never carry visibility (see above); zod drops the key if sent.
 const listingUpdateSchema = involvementListingInputSchema.omit({ published: true });
