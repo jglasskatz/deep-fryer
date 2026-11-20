@@ -8,7 +8,7 @@
 # apps/worker/package.json (exact pin) — src/image.test.ts fails CI when the
 # two drift, because a mismatched browser fails evidence capture at runtime,
 # not at build time.
-ARG PLAYWRIGHT_IMAGE=mcr.microsoft.com/playwright:v1.64.1-noble
+ARG PLAYWRIGHT_IMAGE=mcr.microsoft.com/playwright:v1.65.1-noble
 FROM ${PLAYWRIGHT_IMAGE}
 
 RUN corepack enable
