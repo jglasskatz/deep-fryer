@@ -30,8 +30,13 @@ import type {
   FindingAuditSource,
   OutreachContactData,
   ResearchPlan,
+  ResearchModels,
+  ReviewDecision,
+  ReviewLabelCause,
+  ReviewLabelProvider,
   RunTokenUsage,
   PortraitConfig,
+  StrategyName,
   TenantBranding,
 } from '@deep-fryer/core';
 
@@ -419,6 +424,43 @@ export const findingAudits = pgTable('finding_audits', {
   appliedAt: timestamp('applied_at', { withTimezone: true }),
 }, (t) => ({
   findingSource: unique('finding_audits_finding_source_uniq').on(t.findingId, t.source),
+}));
+
+/**
+ * Every reviewer decision on a research finding, with its cause (core
+ * review-causes.ts): one row per finding a decision covers, written in the
+ * same transaction as the decision itself. Insert-only: the app role may
+ * read and insert, never update or delete, and no one may update a row
+ * (migration 0032). A row names the run's strategy, version, models and
+ * provider as recorded when the run was planned and applied, so a decision
+ * stays tied to what produced the finding.
+ */
+export const reviewLabels = pgTable('review_labels', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  /** Null only when the dimension had no findings in the run. */
+  findingId: uuid('finding_id').references(() => findings.id, { onDelete: 'cascade' }),
+  runId: uuid('run_id').notNull().references(() => researchRuns.id, { onDelete: 'cascade' }),
+  dimensionId: uuid('dimension_id').notNull().references(() => dimensions.id, { onDelete: 'cascade' }),
+  decision: text('decision').$type<ReviewDecision>().notNull(),
+  cause: text('cause').$type<ReviewLabelCause>().notNull(),
+  note: text('note'),
+  strategy: text('strategy').$type<StrategyName>(),
+  strategyVersion: integer('strategy_version'),
+  models: jsonb('models').$type<ResearchModels>(),
+  provider: text('provider').$type<ReviewLabelProvider>().notNull().default('anthropic'),
+  reviewerId: uuid('reviewer_id').notNull().references(() => users.id),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  tenantCreatedIdx: index('review_labels_tenant_created_idx').on(t.tenantId, t.createdAt),
+  findingIdx: index('review_labels_finding_idx').on(t.findingId),
+  runIdx: index('review_labels_run_idx').on(t.runId),
+  decision: check('review_labels_decision', sql`${t.decision} IN ('approve', 'edit', 're_research', 'reject')`),
+  cause: check('review_labels_cause', sql`${t.cause} IN ('correct_as_cited', 'wrong_geography', 'wrong_year', 'value_not_on_page', 'home_page_link', 'wrong_measure', 'out_of_date', 'source_unreadable', 'better_source', 'unsupported', 'placeholder', 'other')`),
+  approvalCause: check('review_labels_approval_cause', sql`(${t.decision} = 'approve') = (${t.cause} = 'correct_as_cited')`),
+  otherNote: check('review_labels_other_note', sql`${t.cause} <> 'other' OR coalesce(length(btrim(${t.note})), 0) > 0`),
+  noteLength: check('review_labels_note_length', sql`${t.note} IS NULL OR char_length(${t.note}) <= 4000`),
+  provider: check('review_labels_provider', sql`${t.provider} = 'anthropic'`),
 }));
 
 // ---- Discussion board (SPEC.md §7, §10) ----
@@ -1271,6 +1313,8 @@ export type NewResearchSession = typeof researchSessions.$inferInsert;
 export type Finding = typeof findings.$inferSelect;
 export type NewFinding = typeof findings.$inferInsert;
 export type FindingAudit = typeof findingAudits.$inferSelect;
+export type ReviewLabel = typeof reviewLabels.$inferSelect;
+export type NewReviewLabel = typeof reviewLabels.$inferInsert;
 export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
 export type CommentVote = typeof commentVotes.$inferSelect;

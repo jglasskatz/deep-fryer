@@ -5,19 +5,21 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { framework } from '@deep-fryer/contract';
 import {
+  checkReviewCause,
   formatIndicatorValue,
   isFlagged,
   WHOLE_DIMENSION_GAP,
   type FindingPayload,
   type FindingVerification,
   type ReviewAudit,
+  type ReviewCause,
 } from '@deep-fryer/core';
 import { approveFindings, flagGap, reResearchDimension } from '@/lib/review-actions';
 import { useAction } from '@/lib/use-action';
 import { unwrap } from '@/lib/action-result';
 import { safeHref } from '@/lib/safe-url';
 import { provenanceSentence, type FindingProvenance } from '@/app/[tenant]/admin/research/provenance';
-import { AuditOpinions, AuditApplyPreview } from './ReviewAudits';
+import { AuditOpinions, AuditApplyPreview, CausePicker } from './ReviewAudits';
 
 export interface ReviewFinding {
   id: string;
@@ -111,6 +113,8 @@ export function gapSavedMessage(versionNum: number, requiresSecondReview: boolea
 /** The gap form as the reviewer sees it: what is chosen and typed, and how the last save went. */
 export interface GapFormState {
   indicator: string;
+  /** Why research's finding cannot be used (core review-causes.ts). */
+  cause: ReviewCause | '';
   reason: string;
   /** True from the click until the server answers. */
   saving: boolean;
@@ -123,7 +127,18 @@ export interface GapFormState {
 /** Shown when the save request gets no answer at all. */
 export const NO_ANSWER = 'The server did not answer, so the gap may not have been saved. Reload the page to check, then try again.';
 
-export const emptyGapForm: GapFormState = { indicator: '', reason: '', saving: false, error: '', saved: '' };
+export const emptyGapForm: GapFormState = { indicator: '', cause: '', reason: '', saving: false, error: '', saved: '' };
+
+/** Where the "Something else" words go when a decision already has a text box. */
+export const OTHER_IN_REASON = 'Say what is wrong in the reason below.';
+export const OTHER_IN_NOTES = 'Say what is wrong in the notes below.';
+export const OTHER_IN_CHANGE_NOTE = 'Say what is wrong in the change note when you save.';
+
+/** The editor, opened to correct one run's findings for a dimension, with the reviewer's cause. */
+export function reviewEditHref(tenantSlug: string, dimensionId: string, runId: string, cause: ReviewCause): string {
+  const query = new URLSearchParams({ run: runId, cause });
+  return `/${tenantSlug}/admin/dim/${dimensionId}?${query.toString()}`;
+}
 
 /**
  * Send the form's chosen indicator and reason, and return the form as it
@@ -132,11 +147,11 @@ export const emptyGapForm: GapFormState = { indicator: '', reason: '', saving: f
  */
 export async function submitGap(
   send: typeof flagGap,
-  where: { tenantSlug: string; dimensionId: string },
+  where: { tenantSlug: string; runId: string; dimensionId: string },
   form: GapFormState,
 ): Promise<GapFormState> {
   try {
-    const result = await send({ ...where, indicator: form.indicator, reason: form.reason });
+    const result = await send({ ...where, indicator: form.indicator, reason: form.reason, cause: form.cause });
     if (result.ok) {
       return { ...emptyGapForm, saved: gapSavedMessage(result.data.versionNum, result.data.requiresSecondReview) };
     }
@@ -153,12 +168,15 @@ export async function submitGap(
  * passes the form in and is told of each change and of the click.
  */
 export function GapForm({
+  name,
   choices,
   form,
   busy,
   onChange,
   onSave,
 }: {
+  /** A name for the form's cause buttons, unique on the page. */
+  name: string;
   choices: { value: string; label: string }[];
   form: GapFormState;
   /** Another action on the card is running. */
@@ -167,6 +185,7 @@ export function GapForm({
   onSave: () => void;
 }) {
   const locked = busy || form.saving;
+  const causeReady = checkReviewCause(form.cause, form.reason).ok;
   return (
     <div className="mt-2 w-full max-w-80 space-y-2">
       <label className="block">
@@ -185,6 +204,14 @@ export function GapForm({
           ))}
         </select>
       </label>
+      <CausePicker
+        name={name}
+        legend="Why can't research's finding be used?"
+        value={form.cause}
+        disabled={locked}
+        onChange={(cause) => onChange({ cause })}
+        other={{ hint: OTHER_IN_REASON }}
+      />
       <label className="block">
         <span className="font-medium">Reason</span>
         <textarea
@@ -204,7 +231,7 @@ export function GapForm({
       <button
         type="button"
         className="min-h-11 rounded bg-black px-3 py-1.5 font-medium text-white disabled:opacity-50"
-        disabled={locked || !form.indicator || !form.reason.trim()}
+        disabled={locked || !form.indicator || !form.reason.trim() || !causeReady}
         onClick={onSave}
       >
         {form.saving ? 'Saving…' : 'Save gap as draft'}
@@ -252,6 +279,8 @@ export function ReviewCard({
 }) {
   const router = useRouter();
   const [notes, setNotes] = useState('');
+  const [rerunCause, setRerunCause] = useState<ReviewCause | ''>('');
+  const [editCause, setEditCause] = useState<ReviewCause | ''>('');
   const [gap, setGap] = useState<GapFormState>(emptyGapForm);
   const [includeNarrative, setIncludeNarrative] = useState(false);
   const narrativeFindings = findings.filter(finding => finding.payload.kind === 'indicator' && finding.payload.narrative_draft);
@@ -324,18 +353,46 @@ export function ReviewCard({
         >
           Approve &amp; publish
         </button>
-        <Link
-          className="inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:bg-black/5"
-          href={`/${tenantSlug}/admin/dim/${dimensionId}`}
-        >
-          Edit
-        </Link>
+        <details className="text-xs">
+          <summary className="min-h-11 cursor-pointer rounded border px-3 py-3 hover:bg-black/5">
+            Edit…
+          </summary>
+          <div className="mt-2 w-full max-w-80 space-y-2">
+            <CausePicker
+              name={`edit-cause-${dimensionId}`}
+              legend="Why edit?"
+              value={editCause}
+              onChange={setEditCause}
+              other={{ hint: OTHER_IN_CHANGE_NOTE }}
+            />
+            {editCause ? (
+              <Link
+                className="inline-flex min-h-11 items-center rounded bg-black px-3 py-1.5 font-medium text-white"
+                href={reviewEditHref(tenantSlug, dimensionId, runId, editCause)}
+              >
+                Open the editor
+              </Link>
+            ) : (
+              <button type="button" className="min-h-11 rounded bg-black px-3 py-1.5 font-medium text-white disabled:opacity-50" disabled>
+                Open the editor
+              </button>
+            )}
+          </div>
+        </details>
 
         <details className="text-xs">
           <summary className="min-h-11 cursor-pointer rounded border px-3 py-3 hover:bg-black/5">
             Re-research…
           </summary>
-          <div className="mt-2 w-full max-w-80">
+          <div className="mt-2 w-full max-w-80 space-y-2">
+            <CausePicker
+              name={`rerun-cause-${dimensionId}`}
+              legend="Why re-research?"
+              value={rerunCause}
+              disabled={pending}
+              onChange={setRerunCause}
+              other={{ hint: OTHER_IN_NOTES }}
+            />
             <textarea
               className="w-full rounded border border-field-border px-2 py-1"
               rows={3}
@@ -346,14 +403,16 @@ export function ReviewCard({
             />
             <button
               className="mt-1 min-h-11 rounded bg-black px-3 py-1.5 font-medium text-white disabled:opacity-50"
-              disabled={pending || !notes.trim()}
+              disabled={pending || !notes.trim() || !checkReviewCause(rerunCause, notes).ok}
               onClick={() =>
                 act(async () => {
                   const { runId: newRun } = unwrap(
                     await reResearchDimension({
                       tenantSlug,
+                      runId,
                       dimensionId,
                       notes,
+                      cause: rerunCause,
                     }),
                   );
                   router.push(`/${tenantSlug}/admin/research/${newRun}`);
@@ -370,6 +429,7 @@ export function ReviewCard({
             Flag gap…
           </summary>
           <GapForm
+            name={`gap-cause-${dimensionId}`}
             choices={gapChoices(findings)}
             form={gap}
             busy={pending}
@@ -377,7 +437,7 @@ export function ReviewCard({
             onSave={() => {
               const sending = { ...gap, saving: true, error: '', saved: '' };
               setGap(sending);
-              act(async () => setGap(await submitGap(flagGap, { tenantSlug, dimensionId }, sending)));
+              act(async () => setGap(await submitGap(flagGap, { tenantSlug, runId, dimensionId }, sending)));
             }}
           />
         </details>

@@ -2,8 +2,9 @@ import React, { createElement, isValidElement, type ReactElement, type ReactNode
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { AppRouterContext } from 'next/dist/shared/lib/app-router-context.shared-runtime';
-import type { FindingPayload, IndicatorEvidence } from '@deep-fryer/core';
+import { REVIEW_CAUSES, type FindingPayload, type IndicatorEvidence } from '@deep-fryer/core';
 import type { RunExecution } from '@deep-fryer/db';
+import { CausePicker } from './ReviewAudits';
 import {
   emptyGapForm,
   FindingRow,
@@ -12,6 +13,7 @@ import {
   gapChoices,
   gapSavedMessage,
   ReviewCard,
+  reviewEditHref,
   submitGap,
   type GapFormState,
   type ReviewFinding,
@@ -203,7 +205,9 @@ describe('the review card and the cheap source checks', () => {
     const html = renderCard(checked({ value_on_page: 'found', home_page_link: false }));
     expect(html).toContain('value found on the captured page');
     expect(html).not.toContain('value not found');
-    expect(html).not.toContain('Home-page link');
+    // The home-page note and badge; the card's list of causes names it too.
+    expect(html).not.toContain('Home-page link:');
+    expect(html).not.toContain('>home-page link<');
     expect(flaggedCount(html)).toBeNull();
   });
 
@@ -254,7 +258,9 @@ describe('the review card and the cheap source checks', () => {
 
   it('shows neither check on a finding recorded before the checks existed', () => {
     const html = renderCard(checked({}));
-    expect(html).not.toMatch(/value found|value not found|no readable text|home-page link/i);
+    // The badges and notes, not the card's list of causes, which names a home-page link too.
+    expect(html).not.toMatch(/value found|value not found|no readable text|home-page link:/i);
+    expect(html).not.toContain('>home-page link<');
     expect(html).not.toContain('undefined');
   });
 
@@ -387,6 +393,7 @@ function elementsOf(node: ReactNode): ReactElement<Props>[] {
 }
 
 const formProps = (form: Partial<GapFormState>, more: { busy?: boolean; onChange?: (p: Partial<GapFormState>) => void; onSave?: () => void } = {}) => ({
+  name: 'gap-cause-d1',
   choices: gapChoices(three),
   form: { ...emptyGapForm, ...form },
   busy: more.busy ?? false,
@@ -405,14 +412,35 @@ describe('Gap form states', () => {
     expect(changes).toEqual([{ indicator: 'life-expectancy' }, { reason: 'No city-level life table.' }]);
   });
 
-  it('saves when the button is pressed, once something is chosen and a reason given', () => {
+  it('passes the cause picked to the card', () => {
+    const changes: Partial<GapFormState>[] = [];
+    const tree = elementsOf(GapForm(formProps({}, { onChange: (p) => changes.push(p) })));
+    (tree.find((e) => e.type === CausePicker)!.props as unknown as { onChange: (c: string) => void }).onChange('wrong_year');
+    expect(changes).toEqual([{ cause: 'wrong_year' }]);
+  });
+
+  it('saves when the button is pressed, once an indicator and a cause are chosen and a reason given', () => {
     const onSave = vi.fn();
-    const tree = elementsOf(GapForm(formProps({ indicator: 'life-expectancy', reason: 'None.' }, { onSave })));
+    const tree = elementsOf(GapForm(formProps({ indicator: 'life-expectancy', cause: 'wrong_year', reason: 'None.' }, { onSave })));
     const button = tree.find((e) => e.type === 'button')!;
     expect(button.props).toMatchObject({ disabled: false });
     button.props.onClick!();
     expect(onSave).toHaveBeenCalledOnce();
-    expect(renderForm({ indicator: 'life-expectancy', reason: 'None.' })).toMatch(/<option value="life-expectancy" selected="">/);
+    expect(renderForm({ indicator: 'life-expectancy', cause: 'wrong_year', reason: 'None.' })).toMatch(/<option value="life-expectancy" selected="">/);
+  });
+
+  it('waits for a cause before it can save', () => {
+    const html = renderForm({ indicator: 'life-expectancy', reason: 'None.' });
+    expect(html).toContain('Why can&#x27;t research&#x27;s finding be used?');
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Save gap as draft<\/button>/);
+    expect(renderForm({ indicator: 'life-expectancy', cause: 'wrong_year', reason: 'None.' })).toMatch(/<input type="radio" name="gap-cause-d1" checked="" value="wrong_year"/);
+  });
+
+  it('says where the words go for "Something else", and needs them', () => {
+    const blank = renderForm({ indicator: 'life-expectancy', cause: 'other', reason: '  ' });
+    expect(blank).toContain('Say what is wrong in the reason below.');
+    expect(blank).toMatch(/<button[^>]*disabled=""[^>]*>Save gap as draft<\/button>/);
+    expect(renderForm({ indicator: 'life-expectancy', cause: 'other', reason: 'Counts visits, not people.' })).not.toMatch(/<button[^>]*disabled=""/);
   });
 
   it('shows the save in progress, with every field held still', () => {
@@ -440,13 +468,13 @@ describe('Gap form states', () => {
 });
 
 describe('submitGap', () => {
-  const where = { tenantSlug: 'nyc', dimensionId: 'd1' };
-  const chosen: GapFormState = { ...emptyGapForm, indicator: 'life-expectancy', reason: 'No city-level life table.', saving: true };
+  const where = { tenantSlug: 'nyc', runId: 'r1', dimensionId: 'd1' };
+  const chosen: GapFormState = { ...emptyGapForm, indicator: 'life-expectancy', cause: 'wrong_geography', reason: 'No city-level life table.', saving: true };
 
-  it('sends the chosen indicator, then empties the form and says the gap is a draft', async () => {
+  it('sends the run, the chosen indicator and the cause, then empties the form and says the gap is a draft', async () => {
     const send = vi.fn(async () => ({ ok: true as const, data: { versionId: 'v', versionNum: 7, requiresSecondReview: false } }));
     const after = await submitGap(send, where, chosen);
-    expect(send).toHaveBeenCalledWith({ tenantSlug: 'nyc', dimensionId: 'd1', indicator: 'life-expectancy', reason: 'No city-level life table.' });
+    expect(send).toHaveBeenCalledWith({ tenantSlug: 'nyc', runId: 'r1', dimensionId: 'd1', indicator: 'life-expectancy', reason: 'No city-level life table.', cause: 'wrong_geography' });
     expect(after).toEqual({ ...emptyGapForm, saved: gapSavedMessage(7, false) });
   });
 
@@ -461,5 +489,55 @@ describe('submitGap', () => {
     });
     expect(await submitGap(send, where, chosen)).toEqual({ ...chosen, saving: false, error: NO_ANSWER });
     expect(NO_ANSWER).not.toMatch(/fetch|network|error/i);
+  });
+});
+
+/**
+ * Every decision but an approval needs a cause: the card offers the same
+ * causes, in the same order, as one row of radio buttons for re-research,
+ * for a gap and before opening the editor.
+ */
+describe('the review card asks why', () => {
+  const causeLabels = REVIEW_CAUSES.map((c) => c.label.replaceAll("'", '&#x27;'));
+  const radios = (html: string, name: string) =>
+    [...html.matchAll(new RegExp(`<input type="radio" name="${name}" value="([a-z_]+)"`, 'g'))].map((m) => m[1]);
+
+  it('offers every cause, in order, for re-research, a gap and an edit', () => {
+    const html = render(three);
+    for (const name of ['rerun-cause-d1', 'gap-cause-d1', 'edit-cause-d1']) {
+      expect(radios(html, name)).toEqual(REVIEW_CAUSES.map((c) => c.id));
+    }
+    let at = 0;
+    for (const label of causeLabels) {
+      const next = html.indexOf(`<span>${label}</span>`, at);
+      expect(next, label).toBeGreaterThan(-1);
+      at = next;
+    }
+    expect(html).toContain('Why re-research?');
+    expect(html).toContain('Why edit?');
+    expect(html).not.toContain('Correct as cited');
+  });
+
+  it('keeps each button waiting until a cause is picked', () => {
+    const html = render(three);
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Plan re-research<\/button>/);
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Open the editor<\/button>/);
+    // No cause is picked for the reviewer.
+    expect(html).not.toMatch(/type="radio"[^>]*checked=""/);
+  });
+
+  it('lays the causes out to wrap on a narrow screen, each a full-size target', () => {
+    const html = render(three);
+    expect(html).toMatch(/<div class="mt-1 flex flex-wrap gap-1.5"><label class="inline-flex min-h-11/);
+  });
+
+  it('opens the editor on the run and cause picked', () => {
+    expect(reviewEditHref('nyc', 'd1', 'r1', 'wrong_year')).toBe('/nyc/admin/dim/d1?run=r1&cause=wrong_year');
+  });
+
+  it('still asks why on a card with no findings', () => {
+    const html = render([]);
+    expect(radios(html, 'rerun-cause-d1')).toHaveLength(REVIEW_CAUSES.length);
+    expect(radios(html, 'gap-cause-d1')).toHaveLength(REVIEW_CAUSES.length);
   });
 });

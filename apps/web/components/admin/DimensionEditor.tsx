@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import type { Confidence, DimensionData, GeographicScale, Indicator } from '@deep-fryer/core';
+import { OTHER_CAUSE, reviewCauseLabel, type Confidence, type DimensionData, type GeographicScale, type Indicator, type ReviewCause } from '@deep-fryer/core';
 import { saveDimensionEdit } from '@/lib/actions';
 import { unwrap } from '@/lib/action-result';
 import { useAction } from '@/lib/use-action';
@@ -16,16 +16,26 @@ const field =
 const parseValueInput = (raw: string): number | string | null =>
   raw === '' ? null : Number.isFinite(Number(raw)) && raw.trim() !== '' ? Number(raw) : raw;
 
+/** What the editor says when it was opened from a review card, before the edit is saved. */
+export function reviewEditNotice(cause: ReviewCause): string {
+  const why = `You opened this from a review card. Saving also records why you changed what research found: ${reviewCauseLabel(cause)}.`;
+  return cause === OTHER_CAUSE ? `${why} Say what is wrong in the change note.` : why;
+}
+
 export function DimensionEditor({
   tenantSlug,
   dimensionId,
   initial,
+  review: fromReview,
 }: {
   tenantSlug: string;
   dimensionId: string;
   initial: DimensionData;
+  /** The run and cause, when opened from a review card; recorded with the first save only. */
+  review?: { runId: string; cause: ReviewCause };
 }) {
   const [data, setData] = useState<DimensionData>(initial);
+  const [review, setReview] = useState(fromReview);
   const [changeNote, setChangeNote] = useState('');
   const [status, setStatus] = useState('');
   const indicatorsRef = useRef<HTMLDivElement>(null);
@@ -40,9 +50,11 @@ export function DimensionEditor({
 
   const save = () =>
     run(async () => {
-      unwrap(await saveDimensionEdit({ tenantSlug, dimensionId, data, changeNote }));
+      unwrap(await saveDimensionEdit({ tenantSlug, dimensionId, data, changeNote, ...(review ? { review } : {}) }));
       setChangeNote('');
-      setStatus('New draft version saved. Review it before publishing.');
+      setStatus(review ? 'New draft version saved, with why you changed it. Review it before publishing.' : 'New draft version saved. Review it before publishing.');
+      // The reason belongs to this edit; any later save is an ordinary edit.
+      setReview(undefined);
     });
 
   return (
@@ -234,6 +246,7 @@ export function DimensionEditor({
       </label>
 
       <div className="rounded border border-black/15 bg-black/[0.03] p-3">
+        {review ? <p className="mb-2 text-sm">{reviewEditNotice(review.cause)}</p> : null}
         <label className="block text-sm">
           <span className="font-medium">Change note (required — the rationale for this edit)</span>
           <textarea

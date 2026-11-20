@@ -141,6 +141,55 @@ describe.skipIf(!hasDb)('admin actions on their own transaction', () => {
     expect((await m.latestVersion(db, renamedDimensionId))!.id).toBe(saved.id);
   });
 
+  it('records why, for each of the run’s findings, when an edit comes from a review card, and refuses one without a cause', async () => {
+    const m = await import('@deep-fryer/db');
+    const { eq, sql } = await import('drizzle-orm');
+    const db = m.getDb();
+    const editedDimension = renamedDimensionId;
+    const [run] = await db.insert(m.researchRuns).values({
+      tenantId, status: 'complete', configSnapshot: {} as never,
+      plan: { sessions: [], config_hash: 'h', plugin_version: 'v', strategy: 'deep', strategy_version: 1 },
+    }).returning();
+    const [session] = await db.insert(m.researchSessions).values({ runId: run!.id, kind: 'dimension', dimensionId: editedDimension, status: 'complete' }).returning();
+    const recorded = await db.insert(m.findings).values(['uninsured-rate', 'life-expectancy'].map((slug) => ({
+      sessionId: session!.id, dimensionId: editedDimension, indicatorSlug: slug,
+      payload: { kind: 'gap' as const, indicator_slug: slug, reason: 'None.', scales_tried: ['city' as const], searched_at: new Date().toISOString() },
+    }))).returning();
+    try {
+      const base = (await m.latestVersion(db, editedDimension))!;
+      signedIn = people.editor;
+      const { saveDimensionEdit } = await import('./actions');
+      const edit = (review: unknown, changeNote = 'The survey year was 2019, not 2023.') =>
+        saveDimensionEdit({ tenantSlug, dimensionId: editedDimension, data: base.data, changeNote, review: review as never });
+
+      expect(await edit({ runId: run!.id, cause: '' })).toEqual({ ok: false, error: 'Choose why first. Nothing was saved.' });
+      expect(await edit({ runId: run!.id, cause: 'approve' })).toEqual({ ok: false, error: 'Choose why first. Nothing was saved.' });
+      expect(await edit({ runId: 'not-a-run', cause: 'wrong_year' })).toMatchObject({ ok: false, error: expect.stringContaining('not part of this portrait') });
+      expect((await m.latestVersion(db, editedDimension))!.id).toBe(base.id);
+
+      const res = await onOneConnection(() => edit({ runId: run!.id, cause: 'wrong_year' }));
+      expect(res).toMatchObject({ ok: true, data: { versionNum: base.versionNum + 1 } });
+      const labels = await db.select().from(m.reviewLabels).where(eq(m.reviewLabels.runId, run!.id));
+      expect(labels.map((l) => l.findingId).sort()).toEqual(recorded.map((f) => f.id).sort());
+      for (const label of labels) {
+        expect(label).toMatchObject({ decision: 'edit', cause: 'wrong_year', note: 'The survey year was 2019, not 2023.', strategy: 'deep', strategyVersion: 1, reviewerId: people.editor });
+      }
+
+      // An ordinary edit, not from a review card, records no label.
+      expect(await saveDimensionEdit({ tenantSlug, dimensionId: editedDimension, data: base.data, changeNote: 'Tidied.' })).toMatchObject({ ok: true });
+      expect(await db.select().from(m.reviewLabels).where(eq(m.reviewLabels.runId, run!.id))).toHaveLength(2);
+    } finally {
+      // Findings are immutable even to the owner; this test's go in one
+      // transaction that lifts the trigger for that delete only.
+      await db.transaction(async (tx) => {
+        await tx.execute(sql`alter table findings disable trigger findings_immutable`);
+        await tx.delete(m.findings).where(eq(m.findings.sessionId, session!.id));
+        await tx.execute(sql`alter table findings enable trigger findings_immutable`);
+      });
+      await db.delete(m.researchSessions).where(eq(m.researchSessions.id, session!.id));
+    }
+  });
+
   it('publishes a version on its own transaction, audit entry included', async () => {
     // publishVersionFor writes its audit entry on the caller's transaction.
     const m = await import('@deep-fryer/db');

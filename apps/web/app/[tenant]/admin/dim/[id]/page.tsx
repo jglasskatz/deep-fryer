@@ -10,6 +10,7 @@ import { en } from '@/lib/i18n/messages/en';
 import { adminPageMetadata } from '@/lib/page-meta';
 import { publishVersion } from '@/lib/actions';
 import { ActionButton } from '@/components/admin/ActionButton';
+import { isReviewCause } from '@deep-fryer/core';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,11 +33,16 @@ export async function generateMetadata({
 
 export default async function DimensionAdminPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ tenant: string; id: string }>;
+  /** `run` and `cause`, when a review card opened the editor to correct that run's findings. */
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { tenant, id } = await params;
+  const query = (await searchParams) ?? {};
   const ctx = await requireAdminPage(tenant, 'editor');
+  const review = typeof query.run === 'string' && isReviewCause(query.cause) ? { runId: query.run, cause: query.cause } : undefined;
 
   const dimension = await dimensionById(id);
   if (!dimension || dimension.tenantId !== ctx.tenant.id) notFound();
@@ -68,6 +74,7 @@ export default async function DimensionAdminPage({
                 tenantSlug={tenant}
                 dimensionId={dimension.id}
                 initial={latest.data}
+                review={review}
               />
             </div>
           </section>

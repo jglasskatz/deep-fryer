@@ -7,10 +7,13 @@ import {
   deriveVizLevel,
   frameworkIndicatorKeys,
   isIndicatorKey,
+  checkReviewCause,
+  reviewLabelRows,
   WHOLE_DIMENSION_GAP,
   type DimensionData,
   type FindingPayload,
   type Indicator,
+  type ReviewLabelInput,
 } from '@deep-fryer/core';
 import {
   appendDimensionVersion,
@@ -19,13 +22,17 @@ import {
   type DbExecutor,
   type Dimension,
   type DimensionVersion,
+  type Finding,
+  type ResearchRun,
   latestVersion,
   researchRuns,
   researchSessions,
+  reviewLabels,
 } from '@deep-fryer/db';
 import { getAuth, requireTenantRole } from './auth';
 import { audit } from './audit';
 import {
+  approvalFindings,
   bulkApprovalPlan,
   isStandIn,
   liveDimensions,
@@ -35,7 +42,7 @@ import {
   STAND_INS_ONLY_TEXT,
 } from './draft-portrait';
 import { publishVersionFor } from './publish';
-import { createPlannedRun } from './research';
+import { createPlannedRunIn } from './research';
 import { action, UserError } from './action-result';
 import { userDb } from './db';
 import { configValueIn } from './admin-data';
@@ -47,6 +54,41 @@ async function dimensionInTenantOrThrow(db: DbExecutor, tenantId: string, dimens
     .where(and(eq(dimensions.id, dimensionId), eq(dimensions.tenantId, tenantId)));
   if (!dimension) throw new UserError('Unknown dimension.');
   return dimension;
+}
+
+/** What a review decision says when its run is not one of this portrait's. */
+const RUN_NOT_HERE = 'That research run is not part of this portrait. Reload the page and try again. Nothing was saved.';
+
+/** A run of this portrait, as the review card names it, or a plain refusal. */
+async function reviewRunOrThrow(db: DbExecutor, tenantId: string, runId: unknown): Promise<ResearchRun> {
+  if (typeof runId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(runId)) {
+    throw new UserError(RUN_NOT_HERE);
+  }
+  const [run] = await db.select().from(researchRuns).where(and(eq(researchRuns.id, runId), eq(researchRuns.tenantId, tenantId)));
+  if (!run) throw new UserError(RUN_NOT_HERE);
+  return run;
+}
+
+/** One dimension's findings from one run, in the order they were recorded. */
+async function runDimensionFindings(db: DbExecutor, runId: string, dimensionId: string): Promise<Finding[]> {
+  const rows = await db
+    .select({ finding: findings })
+    .from(findings)
+    .innerJoin(researchSessions, eq(findings.sessionId, researchSessions.id))
+    .where(and(eq(researchSessions.runId, runId), eq(findings.dimensionId, dimensionId)))
+    .orderBy(findings.createdAt, findings.id);
+  return rows.map((r) => r.finding);
+}
+
+/**
+ * Record one decision and its cause for each finding it covers
+ * (review_labels), on the decision's own transaction, as the signed-in
+ * reviewer.
+ */
+async function recordReviewLabels(db: DbExecutor, input: Omit<ReviewLabelInput, 'reviewerId'>): Promise<void> {
+  const { userId } = await getAuth();
+  if (!userId) throw new UserError('Sign in to review findings.');
+  await db.insert(reviewLabels).values(reviewLabelRows({ ...input, reviewerId: userId }));
 }
 
 /**
@@ -105,6 +147,8 @@ async function appendResearchVersion(
  * Stand-ins among the run's findings are left waiting: each is accepted or
  * rejected on its own, never by approving the dimension. A dimension whose
  * findings in the run are all stand-ins is refused, approving nothing.
+ *
+ * Each finding approved is recorded as "correct as cited" (review_labels).
  */
 export const approveFindings = action(async (input: {
   tenantSlug: string;
@@ -122,18 +166,11 @@ export const approveFindings = action(async (input: {
 
     // In the order they were recorded, as the draft doughnut reads them: the
     // first indicator is the wedge's headline.
-    const recorded = await db
-      .select({ finding: findings })
-      .from(findings)
-      .innerJoin(researchSessions, eq(findings.sessionId, researchSessions.id))
-      .where(
-        and(eq(researchSessions.runId, input.runId), eq(findings.dimensionId, input.dimensionId)),
-      )
-      .orderBy(findings.createdAt, findings.id);
+    const recorded = await runDimensionFindings(db, input.runId, input.dimensionId);
     if (recorded.length === 0) throw new UserError('No findings for this dimension in this run.');
-    const runFindings = recorded.filter(({ finding }) => !isStandIn(finding));
+    const runFindings = recorded.filter((finding) => !isStandIn(finding));
     if (runFindings.length === 0) throw new UserError(STAND_INS_ONLY_TEXT);
-    if (input.includeNarrative && runFindings.some(({ finding }) => finding.payload.kind === 'indicator' && finding.payload.narrative_draft && finding.verification?.narrative_supported !== 'pass')) {
+    if (input.includeNarrative && runFindings.some((finding) => finding.payload.kind === 'indicator' && finding.payload.narrative_draft && finding.verification?.narrative_supported !== 'pass')) {
       throw new UserError('The drafted narrative and actions need source verification before inclusion. Edit them manually or request research.');
     }
 
@@ -141,9 +178,16 @@ export const approveFindings = action(async (input: {
       db,
       dimension,
       input.runId,
-      runFindings.map(({ finding }) => finding.payload),
+      runFindings.map((finding) => finding.payload),
       input.includeNarrative ?? false,
     );
+    await recordReviewLabels(db, {
+      tenantId: tenant.id,
+      dimensionId: dimension.id,
+      run,
+      findingIds: runFindings.map((finding) => finding.id),
+      decision: 'approve',
+    });
 
     await audit(
       tenant.id,
@@ -191,7 +235,8 @@ export const approveFindings = action(async (input: {
  *
  * One transaction under the run's approval lock, so it is all or nothing and
  * running it again approves nothing twice. One audit entry per finding
- * approved, naming the version it went into.
+ * approved, naming the version it went into, and one review label recording
+ * it as "correct as cited".
  */
 export const approveUnflaggedFindings = action(async (input: {
   tenantSlug: string;
@@ -245,6 +290,13 @@ export const approveUnflaggedFindings = action(async (input: {
         dimFindings.map((f) => f.payload),
       );
       versions.push({ dimension: dimension.slug, versionNum: version.versionNum });
+      await recordReviewLabels(db, {
+        tenantId: tenant.id,
+        dimensionId: dimension.id,
+        run,
+        findingIds: dimFindings.map((f) => f.id),
+        decision: 'approve',
+      });
       for (const finding of dimFindings) {
         await audit(
           tenant.id,
@@ -287,23 +339,46 @@ async function researchNamed(db: DbExecutor, dimensionId: string, key: string): 
  * Re-research (SPEC.md §8 Rerun): user-directed, reviewer notes injected
  * verbatim. Plans only — the reviewer inspects the plan and applies it (the
  * quota-checked step) from the run page.
+ *
+ * It needs a cause: why the run's findings for this dimension are not good
+ * enough (core review-causes.ts). The plan and one review label per finding
+ * of the reviewed run, all with that cause and the notes, are written on one
+ * transaction; without a cause nothing is planned.
  */
 export const reResearchDimension = action(async (input: {
   tenantSlug: string;
+  /** The run whose findings the reviewer is sending back. */
+  runId: string;
   dimensionId: string;
   notes: string;
+  cause: string;
 }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
-  const dimension = await userDb((db) => dimensionInTenantOrThrow(db, tenant.id, input.dimensionId));
-  const auth = await getAuth();
-  const { run } = await createPlannedRun({
-    tenantId: tenant.id,
-    dimensionIds: [dimension.id],
-    reviewerNotes: { [dimension.id]: input.notes.trim().slice(0, 4000) },
-    requestedBy: auth.userId,
+  const notes = typeof input.notes === 'string' ? input.notes.trim().slice(0, 4000) : '';
+  const why = checkReviewCause(input.cause, notes);
+  if (!why.ok) throw new UserError(`${why.problem} Nothing was planned.`);
+  return userDb(async (db) => {
+    const reviewed = await reviewRunOrThrow(db, tenant.id, input.runId);
+    const dimension = await dimensionInTenantOrThrow(db, tenant.id, input.dimensionId);
+    const auth = await getAuth();
+    const { run } = await createPlannedRunIn(db, {
+      tenantId: tenant.id,
+      dimensionIds: [dimension.id],
+      reviewerNotes: { [dimension.id]: notes },
+      requestedBy: auth.userId,
+    });
+    await recordReviewLabels(db, {
+      tenantId: tenant.id,
+      dimensionId: dimension.id,
+      run: reviewed,
+      findingIds: approvalFindings(await runDimensionFindings(db, reviewed.id, dimension.id)).map((f) => f.id),
+      decision: 're_research',
+      cause: why.cause,
+      note: notes,
+    });
+    revalidatePath(`/${input.tenantSlug}/admin/research`);
+    return { runId: run.id };
   });
-  revalidatePath(`/${input.tenantSlug}/admin/research`);
-  return { runId: run.id };
 });
 
 /** What flagGap says when the key it is given names no indicator of the dimension. */
@@ -326,13 +401,20 @@ const NOT_IN_DIMENSION = 'That indicator is not part of this dimension. Reload t
  *
  * Nothing is published here: the draft is published like any other
  * reviewed draft, where a required second reviewer still applies.
+ *
+ * Flagging a gap rejects what the reviewed run found for that indicator (or
+ * for the whole dimension), so it needs a cause, recorded with the reason as
+ * one review label per finding it rejects, on the same transaction.
  */
 export const flagGap = action(async (input: {
   tenantSlug: string;
+  /** The run whose findings the reviewer is rejecting. */
+  runId: string;
   dimensionId: string;
   /** The indicator's key, or WHOLE_DIMENSION_GAP. */
   indicator: string;
   reason: string;
+  cause: string;
 }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
   // A call from the page always sends a key and a reason as text; anything
@@ -342,7 +424,10 @@ export const flagGap = action(async (input: {
   return userDb(async (db) => {
     const reason = typeof input.reason === 'string' ? input.reason.trim() : '';
     if (!reason) throw new UserError('A reason is required to flag a data gap.');
+    const why = checkReviewCause(input.cause, reason);
+    if (!why.ok) throw new UserError(`${why.problem} Nothing was saved.`);
 
+    const reviewed = await reviewRunOrThrow(db, tenant.id, input.runId);
     const dimension = await dimensionInTenantOrThrow(db, tenant.id, input.dimensionId);
 
     const base = await latestVersion(db, dimension.id);
@@ -395,6 +480,17 @@ export const flagGap = action(async (input: {
       { dimension: dimension.slug, indicator: key, reason },
       db,
     );
+    const rejected = approvalFindings(await runDimensionFindings(db, reviewed.id, dimension.id))
+      .filter((f) => whole || f.indicatorSlug === key);
+    await recordReviewLabels(db, {
+      tenantId: tenant.id,
+      dimensionId: dimension.id,
+      run: reviewed,
+      findingIds: rejected.map((f) => f.id),
+      decision: 'reject',
+      cause: why.cause,
+      note: reason,
+    });
 
     const requiresSecondReview = (await configValueIn(db, tenant.id, 'review_policy'))?.dual_review_on_edits === true;
     revalidatePath(`/${input.tenantSlug}/admin/review`);

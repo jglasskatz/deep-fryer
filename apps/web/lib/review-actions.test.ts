@@ -57,7 +57,14 @@ describe.skipIf(!hasDb)('review actions on their own transaction', () => {
       .values({
         tenantId: tenant.id,
         status: 'complete',
-        plan: { sessions: [], config_hash: 'h', plugin_version: 'v' },
+        plan: {
+          sessions: [],
+          config_hash: 'h',
+          plugin_version: 'v',
+          strategy: 'standard',
+          strategy_version: 1,
+          models: { session_model: 'session-model', subagent_model: null, verifier_model: 'verifier-model', page_reader_model: 'reader-model' },
+        },
         configSnapshot: {} as never,
       })
       .returning();
@@ -152,6 +159,20 @@ describe.skipIf(!hasDb)('review actions on their own transaction', () => {
     return rows.map((r) => [r.action, r.userId]);
   }
 
+  /** The review labels recorded for this run, oldest first. */
+  async function labelsOfRun(of = runId) {
+    const m = await import('@deep-fryer/db');
+    const { asc, eq } = await import('drizzle-orm');
+    return m.getDb().select().from(m.reviewLabels).where(eq(m.reviewLabels.runId, of)).orderBy(asc(m.reviewLabels.createdAt), asc(m.reviewLabels.id));
+  }
+
+  async function findingIdsOf(dimensionId: string) {
+    const m = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const rows = await m.getDb().select({ id: m.findings.id, slug: m.findings.indicatorSlug }).from(m.findings).where(eq(m.findings.dimensionId, dimensionId));
+    return new Map(rows.map((r) => [r.slug, r.id]));
+  }
+
   async function publishedVersionOf(dimensionId: string) {
     const m = await import('@deep-fryer/db');
     const { eq } = await import('drizzle-orm');
@@ -202,6 +223,58 @@ describe.skipIf(!hasDb)('review actions on their own transaction', () => {
     expect(after.data.indicators.map((i) => [i.key, i.name])).toEqual(THREE_FINDINGS.map(([slug, name]) => [slug, name]));
     expect(after.data.indicators.slice(0, 2).map((i) => i.key)).toEqual(before.data.indicators.map((i) => i.key));
     expect(await publishedVersionOf(dimensionId)).toBe(versionId);
+
+    // Three findings approved: three labels, each correct as cited, naming the run's strategy and version.
+    const ids = await findingIdsOf(dimensionId);
+    const labels = (await labelsOfRun()).filter((l) => l.dimensionId === dimensionId);
+    expect(labels).toHaveLength(3);
+    expect(labels.map((l) => l.findingId).sort()).toEqual([...ids.values()].sort());
+    for (const label of labels) {
+      expect(label).toMatchObject({
+        decision: 'approve', cause: 'correct_as_cited', note: null, strategy: 'standard', strategyVersion: 1,
+        models: { session_model: 'session-model', subagent_model: null, verifier_model: 'verifier-model', page_reader_model: 'reader-model' },
+        provider: 'anthropic', reviewerId: cleanup.editor, tenantId: cleanup.tenantId,
+      });
+    }
+  });
+
+  it('refuses a re-research without a cause, planning nothing and recording nothing', async () => {
+    const m = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const dimensionId = dimensions[1]!.dimensionId;
+    const runsBefore = await m.getDb().select().from(m.researchRuns).where(eq(m.researchRuns.tenantId, cleanup.tenantId!));
+    const labelsBefore = await labelsOfRun();
+    signedIn = cleanup.editor!;
+    const { reResearchDimension } = await import('./review-actions');
+    const forged = (input: Record<string, unknown>) => reResearchDimension({ tenantSlug, runId, dimensionId, notes: 'Use the 2024 table.', ...input } as Parameters<typeof reResearchDimension>[0]);
+    expect(await forged({})).toEqual({ ok: false, error: 'Choose why first. Nothing was planned.' });
+    expect(await forged({ cause: '' })).toEqual({ ok: false, error: 'Choose why first. Nothing was planned.' });
+    expect(await forged({ cause: 'correct_as_cited' })).toEqual({ ok: false, error: 'Choose why first. Nothing was planned.' });
+    expect(await forged({ cause: 'other', notes: '  ' })).toEqual({ ok: false, error: expect.stringContaining('say in a few words what is wrong') });
+    expect(await forged({ cause: 'wrong_year', runId: 'not-a-run' })).toEqual({ ok: false, error: expect.stringContaining('not part of this portrait') });
+    expect(await m.getDb().select().from(m.researchRuns).where(eq(m.researchRuns.tenantId, cleanup.tenantId!))).toHaveLength(runsBefore.length);
+    expect(await labelsOfRun()).toHaveLength(labelsBefore.length);
+  });
+
+  it('plans a re-research with its cause, recording it for each finding of the reviewed run, on one transaction', async () => {
+    const m = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const dimensionId = dimensions[1]!.dimensionId;
+    signedIn = cleanup.editor!;
+    const res = await onOneConnection(async () =>
+      (await import('./review-actions')).reResearchDimension({ tenantSlug, runId, dimensionId, notes: 'The life table is from 2019.', cause: 'out_of_date' }),
+    );
+    expect(res).toMatchObject({ ok: true });
+    const planned = (res as { ok: true; data: { runId: string } }).data.runId;
+    const [run] = await m.getDb().select().from(m.researchRuns).where(eq(m.researchRuns.id, planned));
+    expect(run).toMatchObject({ status: 'planned', appliedAt: null, requestedBy: cleanup.editor });
+    const labels = (await labelsOfRun()).filter((l) => l.decision === 're_research');
+    expect(labels).toHaveLength(3);
+    for (const label of labels) {
+      expect(label).toMatchObject({ dimensionId, cause: 'out_of_date', note: 'The life table is from 2019.', strategy: 'standard', strategyVersion: 1, reviewerId: cleanup.editor });
+    }
+    // The new plan carries no labels of its own: they belong to the run reviewed.
+    expect(await labelsOfRun(planned)).toEqual([]);
   });
 
   it('clears only the chosen indicator, as a draft, leaving the published version alone', async () => {
@@ -210,7 +283,7 @@ describe.skipIf(!hasDb)('review actions on their own transaction', () => {
     expect(published).toBeTruthy();
     signedIn = cleanup.editor!;
     const res = await onOneConnection(async () =>
-      (await import('./review-actions')).flagGap({ tenantSlug, dimensionId, indicator: 'life-expectancy', reason: 'No city-level life table.' }),
+      (await import('./review-actions')).flagGap({ tenantSlug, runId, dimensionId, indicator: 'life-expectancy', reason: 'No city-level life table.', cause: 'wrong_geography' }),
     );
     expect(res).toMatchObject({ ok: true, data: { requiresSecondReview: false } });
     const { versionId } = (res as { ok: true; data: { versionId: string } }).data;
@@ -227,12 +300,17 @@ describe.skipIf(!hasDb)('review actions on their own transaction', () => {
     expect(version.data.gaps).toEqual([expect.objectContaining({ indicator: 'life-expectancy', reason: 'No city-level life table.' })]);
     expect(await publishedVersionOf(dimensionId)).toBe(published);
     expect(await auditOf(versionId)).toEqual([['flag_gap', cleanup.editor]]);
+    // Only the rejected indicator's finding is labelled, with the cause and the reason.
+    const rejected = (await labelsOfRun()).filter((l) => l.decision === 'reject');
+    expect(rejected).toEqual([expect.objectContaining({
+      findingId: (await findingIdsOf(dimensionId)).get('life-expectancy'), cause: 'wrong_geography', note: 'No city-level life table.', reviewerId: cleanup.editor,
+    })]);
   });
 
   it('flagging the same indicator again replaces its gap rather than listing it twice', async () => {
     const dimensionId = dimensions[1]!.dimensionId;
     signedIn = cleanup.editor!;
-    const res = await (await import('./review-actions')).flagGap({ tenantSlug, dimensionId, indicator: 'life-expectancy', reason: 'Checked again: none.' });
+    const res = await (await import('./review-actions')).flagGap({ tenantSlug, runId, dimensionId, indicator: 'life-expectancy', reason: 'Checked again: none.', cause: 'unsupported' });
     const { versionId } = (res as { ok: true; data: { versionId: string } }).data;
     expect((await versionById(versionId)).data.gaps).toEqual([expect.objectContaining({ indicator: 'life-expectancy', reason: 'Checked again: none.' })]);
   });
@@ -242,7 +320,7 @@ describe.skipIf(!hasDb)('review actions on their own transaction', () => {
     const dimensionId = dimensions[1]!.dimensionId;
     const before = (await m.latestVersion(m.getDb(), dimensionId))!;
     signedIn = cleanup.editor!;
-    const res = await (await import('./review-actions')).flagGap({ tenantSlug, dimensionId, indicator: 'air-quality', reason: 'No monitor.' });
+    const res = await (await import('./review-actions')).flagGap({ tenantSlug, runId, dimensionId, indicator: 'air-quality', reason: 'No monitor.', cause: 'unsupported' });
     expect(res).toMatchObject({ ok: false, error: expect.stringContaining('not part of this dimension') });
     expect((await m.latestVersion(m.getDb(), dimensionId))!.id).toBe(before.id);
   });
@@ -253,10 +331,12 @@ describe.skipIf(!hasDb)('review actions on their own transaction', () => {
     const before = (await m.latestVersion(m.getDb(), dimensionId))!;
     signedIn = cleanup.editor!;
     const { flagGap } = await import('./review-actions');
-    const forged = (input: Record<string, unknown>) => flagGap({ tenantSlug, dimensionId, ...input } as Parameters<typeof flagGap>[0]);
+    const forged = (input: Record<string, unknown>) => flagGap({ tenantSlug, runId, dimensionId, cause: 'unsupported', ...input } as Parameters<typeof flagGap>[0]);
     expect(await forged({ reason: 'No monitor.' })).toEqual({ ok: false, error: expect.stringContaining('not part of this dimension') });
     expect(await forged({ indicator: 42, reason: 'No monitor.' })).toEqual({ ok: false, error: expect.stringContaining('not part of this dimension') });
     expect(await forged({ indicator: 'life-expectancy' })).toEqual({ ok: false, error: 'A reason is required to flag a data gap.' });
+    expect(await forged({ indicator: 'life-expectancy', reason: 'No monitor.', cause: undefined })).toEqual({ ok: false, error: 'Choose why first. Nothing was saved.' });
+    expect(await forged({ indicator: 'life-expectancy', reason: 'No monitor.', runId: undefined })).toEqual({ ok: false, error: expect.stringContaining('not part of this portrait') });
     expect((await m.latestVersion(m.getDb(), dimensionId))!.id).toBe(before.id);
   });
 
@@ -265,7 +345,8 @@ describe.skipIf(!hasDb)('review actions on their own transaction', () => {
     const published = await publishedVersionOf(dimensionId);
     signedIn = cleanup.editor!;
     const { WHOLE_DIMENSION_GAP } = await import('@deep-fryer/core');
-    const res = await (await import('./review-actions')).flagGap({ tenantSlug, dimensionId, indicator: WHOLE_DIMENSION_GAP, reason: 'No usable data at all.' });
+    const before = (await labelsOfRun()).length;
+    const res = await (await import('./review-actions')).flagGap({ tenantSlug, runId, dimensionId, indicator: WHOLE_DIMENSION_GAP, reason: 'No usable data at all.', cause: 'placeholder' });
     const { versionId } = (res as { ok: true; data: { versionId: string } }).data;
     const version = await versionById(versionId);
     expect(version.status).toBe('draft');
@@ -274,6 +355,10 @@ describe.skipIf(!hasDb)('review actions on their own transaction', () => {
     expect(version.data.indicators.map((i) => i.key)).toEqual(THREE_FINDINGS.map(([slug]) => slug));
     expect(version.data.gaps?.map((g) => g.indicator)).toEqual(['life-expectancy', WHOLE_DIMENSION_GAP]);
     expect(await publishedVersionOf(dimensionId)).toBe(published);
+    // Every finding of the dimension is rejected, each labelled once.
+    const added = (await labelsOfRun()).slice(before);
+    expect(added).toHaveLength(3);
+    expect(added.every((l) => l.decision === 'reject' && l.cause === 'placeholder')).toBe(true);
   });
 });
 
@@ -547,7 +632,7 @@ describe.skipIf(!hasDb)('approve all unflagged', () => {
     expect(await approveFindings({ tenantSlug, runId, dimensionId: dims[1]!.dimensionId })).toMatchObject({ ok: true });
     expect(await approveFindings({ tenantSlug, runId, dimensionId: dims[3]!.dimensionId })).toMatchObject({ ok: true });
     expect(
-      await flagGap({ tenantSlug, dimensionId: dims[2]!.dimensionId, indicator: 'c1', reason: 'Nothing at city scale.' }),
+      await flagGap({ tenantSlug, runId, dimensionId: dims[2]!.dimensionId, indicator: 'c1', reason: 'Nothing at city scale.', cause: 'wrong_geography' }),
     ).toMatchObject({ ok: true });
     await laterRun([4]);
 
@@ -592,6 +677,13 @@ describe.skipIf(!hasDb)('approve all unflagged', () => {
     // One audit entry per finding approved, by the editor, naming its version; the sample marked.
     const entries = await bulkAudit();
     expect(entries.map((e) => e.entityId).sort()).toEqual([...spotChecked].sort());
+    // And one review label per finding approved, correct as cited; this run's plan named no strategy.
+    const { inArray } = await import('drizzle-orm');
+    const labels = await m.getDb().select().from(m.reviewLabels).where(inArray(m.reviewLabels.findingId, spotChecked));
+    expect(labels).toHaveLength(3);
+    for (const label of labels) {
+      expect(label).toMatchObject({ decision: 'approve', cause: 'correct_as_cited', runId, reviewerId: editor, strategy: null, strategyVersion: null, provider: 'anthropic' });
+    }
     const versionByDim = new Map(versions.map(([i, v]) => [dims[i]!.slug, v.id]));
     for (const e of entries) {
       expect(e).toMatchObject({ entity: 'finding', userId: editor });

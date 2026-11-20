@@ -2,9 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
-import { applyFindingCorrection, auditDecision, computeScoring, deriveVizLevel, resolveThreshold, type FindingPayload } from '@deep-fryer/core';
+import { applyFindingCorrection, auditCausesNeeded, auditDecision, checkReviewCause, computeScoring, deriveVizLevel, resolveThreshold,
+  reviewLabelRows, CAUSE_MISSING, type FindingPayload, type ReviewCause, type ReviewDecision, type ReviewLabelRow } from '@deep-fryer/core';
 import { appendDimensionVersion, dimensions, dimensionVersions, findingAudits, findings, latestVersion,
-  researchRuns, researchSessions, type DbExecutor, type Dimension, type Finding, type FindingAudit, type Tenant } from '@deep-fryer/db';
+  researchRuns, researchSessions, reviewLabels, type DbExecutor, type Dimension, type Finding, type FindingAudit, type ResearchRun, type Tenant } from '@deep-fryer/db';
 import { getAuth, requireTenantRole } from './auth';
 import { audit } from './audit';
 import { configValueIn } from './admin-data';
@@ -20,6 +21,31 @@ const refresh = (slug: string) => {
 };
 const sameIds = (left: string[], right: string[]) => left.length === right.length && new Set(left).size === left.length && left.every((id) => right.includes(id));
 interface AuditApplicationResult { versionId?: string; versionNum?: number; runId?: string }
+/** The reviewer's cause for each finding whose change needs one (core auditCausesNeeded), by finding id. */
+type AuditCauses = Record<string, { cause: string; note?: string }>;
+
+/**
+ * The cause the reviewer gave for each finding whose recommended change
+ * needs one, checked: a missing cause, or "Something else" with no words,
+ * refuses the whole application, so nothing is applied.
+ */
+function checkedCauses(needed: string[], causes: unknown): Map<string, { cause: ReviewCause; note: string | null }> {
+  const given = causes && typeof causes === 'object' ? (causes as Record<string, unknown>) : {};
+  const checked = new Map<string, { cause: ReviewCause; note: string | null }>();
+  for (const findingId of needed) {
+    const entry = Object.prototype.hasOwnProperty.call(given, findingId) ? given[findingId] : undefined;
+    const pick = entry && typeof entry === 'object' ? (entry as { cause?: unknown; note?: unknown }) : {};
+    const note = typeof pick.note === 'string' ? pick.note : null;
+    const why = checkReviewCause(pick.cause, note);
+    if (!why.ok) {
+      throw new UserError(why.problem === CAUSE_MISSING
+        ? 'Choose why for each change before applying the recommendations. Nothing was applied.'
+        : `${why.problem} Nothing was applied.`);
+    }
+    checked.set(findingId, { cause: why.cause, note });
+  }
+  return checked;
+}
 
 async function settledRun(db: DbExecutor, tenantId: string, runId: string) {
   const [run] = await db.select().from(researchRuns).where(and(eq(researchRuns.id, runId), eq(researchRuns.tenantId, tenantId)));
@@ -47,7 +73,14 @@ async function recordApplications(db: DbExecutor, tenant: Tenant, audits: Findin
   }
 }
 
-async function applyCard(db: DbExecutor, tenant: Tenant, runId: string, dimension: Dimension, recorded: Finding[], audits: FindingAudit[]): Promise<AuditApplicationResult> {
+/**
+ * Apply one dimension's pending recommendations, recording each finding's
+ * decision with its cause (review_labels): an approval as "correct as cited",
+ * an edit or a rejection with the cause the reviewer gave. When the card goes
+ * back to research, only the findings sent back are decided.
+ */
+async function applyCard(db: DbExecutor, tenant: Tenant, reviewed: ResearchRun, dimension: Dimension, recorded: Finding[], audits: FindingAudit[], causes: unknown): Promise<AuditApplicationResult> {
+  const runId = reviewed.id;
   // Stand-ins, and the recommendations about them, wait for their own
   // decision: applying a card works on the rest of the dimension, and
   // writes nothing for a dimension of only stand-ins.
@@ -55,13 +88,21 @@ async function applyCard(db: DbExecutor, tenant: Tenant, runId: string, dimensio
   if (rows.length === 0) throw new UserError(STAND_INS_ONLY_TEXT);
   const pending = audits.filter((a) => !a.appliedAt && rows.some((f) => f.id === a.findingId));
   const decisions = new Map(rows.map((f) => [f.id, auditDecision(pending.filter((a) => a.findingId === f.id))]));
+  const decided = [...decisions].flatMap(([findingId, d]) => (d ? [{ findingId, disposition: d.disposition }] : []));
+  const given = checkedCauses(auditCausesNeeded(decided), causes);
   const reruns = [...decisions.values()].filter((a) => a?.disposition === 're_research');
   const { userId } = await getAuth();
+  if (!userId) throw new UserError('Sign in to apply a recommendation.');
+  const label = (findingId: string, decision: ReviewDecision): ReviewLabelRow[] => reviewLabelRows({
+    tenantId: tenant.id, dimensionId: dimension.id, run: reviewed, findingIds: [findingId], decision,
+    cause: given.get(findingId)?.cause, note: given.get(findingId)?.note, reviewerId: userId,
+  });
   if (reruns.length) {
     const notes = reruns.map((a) => a!.reason).join('\n\n').slice(0, 4000);
     const { run } = await createPlannedRunIn(db, { tenantId: tenant.id, dimensionIds: [dimension.id],
       reviewerNotes: { [dimension.id]: notes }, requestedBy: userId });
     await recordApplications(db, tenant, pending, { runId: run.id });
+    await db.insert(reviewLabels).values(decided.filter((d) => d.disposition === 're_research').flatMap((d) => label(d.findingId, 're_research')));
     return { runId: run.id };
   }
   const overrides = await configValueIn(db, tenant.id, 'threshold_overrides');
@@ -89,19 +130,24 @@ async function applyCard(db: DbExecutor, tenant: Tenant, runId: string, dimensio
     vizLevel: deriveVizLevel(data), origin: edited ? 'human' : 'research', researchRunId: runId,
     createdBy: userId, changeNote: `Human-applied machine audit: ${pending.map((a) => `${a.disposition}: ${a.reason}`).join(' | ')}` });
   await recordApplications(db, tenant, pending, { versionId: version.id });
+  await db.insert(reviewLabels).values(rows.flatMap((f) => label(f.id, decisions.get(f.id)?.disposition ?? 'approve')));
   await audit(tenant.id, 'dimension_version', version.id, 'approve_findings', null,
     { run_id: runId, dimension: dimension.slug, machine_audits: pending.map((a) => a.id), indicators: data.indicators.length }, db);
   return { versionId: version.id, versionNum: version.versionNum };
 }
 
-/** Exact immutable recommendation IDs bind this click to the preview shown. */
+/**
+ * Exact immutable recommendation IDs bind this click to the preview shown.
+ * Every edit, re-research or rejection among them needs the reviewer's
+ * cause, given per finding in `causes`.
+ */
 export const applyMachineAudits = action(async (input: {
-  tenantSlug: string; runId: string; dimensionId: string; expectedAuditIds: string[];
+  tenantSlug: string; runId: string; dimensionId: string; expectedAuditIds: string[]; causes?: AuditCauses;
 }): Promise<AuditApplicationResult> => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
   return userDb(async (db) => {
     await lock(db, input.runId);
-    await settledRun(db, tenant.id, input.runId);
+    const reviewed = await settledRun(db, tenant.id, input.runId);
     const [dimension] = await db.select().from(dimensions).where(and(eq(dimensions.id, input.dimensionId), eq(dimensions.tenantId, tenant.id)));
     if (!dimension || dimension.archivedAt) throw new UserError('Unknown active dimension.');
     const rows = await dimensionFindings(db, input.runId, dimension.id);
@@ -116,7 +162,7 @@ export const applyMachineAudits = action(async (input: {
     const [already] = await db.select({ id: dimensionVersions.id }).from(dimensionVersions)
       .where(and(eq(dimensionVersions.dimensionId, dimension.id), eq(dimensionVersions.researchRunId, input.runId))).limit(1);
     if (already) throw new UserError('This dimension already has a reviewed version from this run. Make any further correction in the version editor.');
-    const result = await applyCard(db, tenant, input.runId, dimension, rows, audits);
+    const result = await applyCard(db, tenant, reviewed, dimension, rows, audits, input.causes);
     refresh(tenant.slug);
     return result;
   });
@@ -143,7 +189,8 @@ export const applyMachineApproved = action(async (input: {
       throw new UserError('The recommendations or source sample changed. Reload and check the current sample.');
     }
     const versions = [];
-    for (const item of eligible) versions.push(await applyCard(db, tenant, run.id, item.dimension, item.findings, audits.filter((a) => item.findings.some((f) => f.id === a.findingId))));
+    // Every finding here was recommended for approval, so none needs a cause.
+    for (const item of eligible) versions.push(await applyCard(db, tenant, run, item.dimension, item.findings, audits.filter((a) => item.findings.some((f) => f.id === a.findingId)), {}));
     refresh(tenant.slug);
     return { findings: eligibleIds.length, versions };
   });
