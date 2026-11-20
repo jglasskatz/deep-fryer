@@ -100,19 +100,29 @@ export default async function OutreachPage({
     'inline-flex min-h-11 items-center rounded-full border border-black/20 px-3 py-1.5 text-sm hover:bg-black/5';
   const chipCurrent = 'inline-flex min-h-11 items-center rounded-full bg-black px-3 py-1.5 text-sm font-medium text-white';
 
+  // Printed, the page is the list alone: the site header (in a display:
+  // contents wrapper, so it stays sticky on screen), the way back, the filter
+  // row and the form are left out, and each website is written out, since a
+  // link cannot be followed on paper. Nothing on the page is collapsed.
   return (
     <>
-      <SiteHeader
-        variant="tenant"
-        tenant={{ slug: portrait.tenant.slug, name: portrait.tenant.name }}
-      />
-      <main id="main" className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
-        <p className="text-sm">
+      <div className="contents print:hidden">
+        <SiteHeader
+          variant="tenant"
+          tenant={{ slug: portrait.tenant.slug, name: portrait.tenant.name }}
+        />
+      </div>
+      <main id="main" className="mx-auto max-w-3xl px-4 sm:px-6 py-10 print:max-w-none print:px-0 print:py-0">
+        <p className="text-sm print:hidden">
           <Link className="underline" href={href(`/${tenant}`)}>
             {fmt(m.common.back, { name: portrait.tenant.name })}
           </Link>
         </p>
-        <h1 className="mt-2 text-3xl font-bold">{m.outreach.title}</h1>
+        {/* On paper the header and the way back are gone, so the heading names the portrait. */}
+        <h1 className="mt-2 text-3xl font-bold">
+          {m.outreach.title}
+          <span className="hidden print:inline"> · {portrait.tenant.name}</span>
+        </h1>
         {features.involvement ? (
           <p className="mt-2 max-w-prose text-[color:var(--color-muted)]">{m.outreach.intro}</p>
         ) : null}
@@ -122,7 +132,7 @@ export default async function OutreachPage({
             <InvolvementLanguageNote m={m} locale={locale} />
 
             {everything.dimensions.length > 0 ? (
-              <nav aria-label={m.involvement.filterLabel} className="mt-6">
+              <nav aria-label={m.involvement.filterLabel} className="mt-6 print:hidden">
                 <ul className="flex flex-wrap gap-2">
                   {[null, ...everything.dimensions.map((g) => g.slug)].map((slug) => {
                     const current = selected === slug;
@@ -188,7 +198,7 @@ export default async function OutreachPage({
         ) : null}
 
         {formToken ? (
-          <section className="mt-12 rounded border border-black/15 p-4 sm:p-6" aria-labelledby="suggest">
+          <section className="mt-12 rounded border border-black/15 p-4 sm:p-6 print:hidden" aria-labelledby="suggest">
             <h2 id="suggest" className="text-xl font-semibold">
               {m.involvement.formTitle}
             </h2>
@@ -209,7 +219,7 @@ export default async function OutreachPage({
             </h2>
             <ul lang="en" className="mt-4 space-y-4">
               {contacts.map((c, i) => (
-                <li key={i} className="rounded border border-black/15 p-4">
+                <li key={i} className="break-inside-avoid-page rounded border border-black/15 p-4">
                   <h3 className="font-semibold">
                     {/* Published outreach comes from research and staff edits: only
                         http(s) links render (safeHref), never javascript: or data:. */}
@@ -221,6 +231,9 @@ export default async function OutreachPage({
                       c.org
                     )}
                   </h3>
+                  {safeHref(c.website) ? (
+                    <p className="hidden break-all text-sm print:block">{safeHref(c.website)}</p>
+                  ) : null}
                   {c.why ? <p className="mt-1 text-sm">{c.why}</p> : null}
                   {c.tags.length ? (
                     <p className="mt-2 text-xs text-[color:var(--color-muted)]">{c.tags.join(' · ')}</p>

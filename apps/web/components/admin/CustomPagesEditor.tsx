@@ -2,6 +2,7 @@
 import { useId, useState } from 'react';
 import { MarkdownContent } from '@/components/content/MarkdownContent';
 import { saveCustomPage, publishCustomPage, unpublishCustomPage } from '@/lib/custom-page-actions';
+import { customPageTemplates, type CustomPageTemplate } from '@/lib/custom-page-templates';
 import { useAction } from '@/lib/use-action';
 import { unwrap } from '@/lib/action-result';
 
@@ -12,6 +13,41 @@ export interface CustomPageForEditor {
   versions: { id: string; versionNum: number; status: string; title: string; mdxBody: string; createdAt: string; publishedAt: string | null }[];
 }
 const button = 'min-h-11 rounded border border-black/20 px-3 py-2 text-sm hover:bg-black/5 disabled:opacity-50';
+
+/** The templates offered on a new page; their content is fetched, filled from the published portrait, when one is chosen. */
+export const TEMPLATE_CHOICES: { id: string; name: string; description: string }[] = [
+  { id: 'energy-deep-dive', name: 'Energy deep-dive', description: 'Energy burden, clean energy, local power and help with bills, with your published Energy figures, their sources and what has no data yet already written in.' },
+];
+
+/**
+ * "Start from a template" on the new-page form: asks the server for the
+ * chosen template, filled from what is published now, and puts it in the
+ * form. Nothing is saved; the editor reads it, changes it and saves a draft.
+ */
+function TemplatePicker({ tenantSlug, hasText, disabled, onFill }: { tenantSlug: string; hasText: boolean; disabled: boolean; onFill: (template: CustomPageTemplate) => void }) {
+  const id = useId();
+  const { run, pending, error } = useAction();
+  const [loading, setLoading] = useState<string | null>(null);
+  return <div className="mt-4 rounded border border-black/10 p-3 sm:p-4" role="group" aria-labelledby={`${id}-heading`}>
+    <h3 id={`${id}-heading`} className="text-sm font-semibold">Start from a template</h3>
+    <p className="mt-1 text-xs text-[color:var(--color-muted)]">A template fills in the title, address and content below. Nothing is saved until you press Save draft.</p>
+    <ul className="mt-3 space-y-3">{TEMPLATE_CHOICES.map(choice => <li key={choice.id} className="flex flex-wrap items-start gap-3">
+      <button type="button" className={button} disabled={disabled || pending} aria-describedby={`${id}-${choice.id}`} onClick={() => {
+        if (hasText && !window.confirm('Replace the title, address and content you have typed with the template?')) return;
+        setLoading(choice.id);
+        run(async () => {
+          try {
+            const template = unwrap(await customPageTemplates({ tenantSlug })).find(t => t.id === choice.id);
+            if (!template) throw new Error('That template is not available. Reload the page and try again.');
+            onFill(template);
+          } finally { setLoading(null); }
+        }, { refresh: false });
+      }}>{loading === choice.id ? 'Filling in…' : `Use the ${choice.name} template`}</button>
+      <p id={`${id}-${choice.id}`} className="min-w-0 flex-1 basis-60 text-xs text-[color:var(--color-muted)]">{choice.description}</p>
+    </li>)}</ul>
+    {error ? <p role="alert" className="mt-2 text-sm text-red-800">{error}</p> : null}
+  </div>;
+}
 
 function PageEditor({ tenantSlug, page }: { tenantSlug: string; page?: CustomPageForEditor }) {
   const id = useId();
@@ -27,6 +63,10 @@ function PageEditor({ tenantSlug, page }: { tenantSlug: string; page?: CustomPag
       {page ? <span className="rounded bg-black/5 px-2 py-1 text-xs">{page.publishedVersionId ? 'Published' : 'Draft only'}</span> : null}
     </div>
     {page?.publishedVersionId ? <p className="mt-2 text-sm"><a className="underline" href={`/${tenantSlug}/pages/${page.slug}`}>View public page ↗</a></p> : null}
+    {page ? null : <TemplatePicker tenantSlug={tenantSlug} disabled={pending} hasText={Boolean(slug.trim() || title.trim() || body.trim())} onFill={template => {
+      setTitle(template.title); setSlug(template.slug); setBody(template.body); setNotice(template.note);
+      document.getElementById(`${id}-title`)?.focus();
+    }} />}
     <form className="mt-4 space-y-4" onSubmit={event => { event.preventDefault(); setNotice(''); run(async () => {
       unwrap(await saveCustomPage({ tenantSlug, pageId: page?.id, slug, title, body }));
       setNotice('Draft saved. Publish a version below when it is ready for residents.');

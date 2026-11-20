@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { CustomPagesEditor, type CustomPageForEditor } from './CustomPagesEditor';
 vi.stubGlobal('React', React);
 vi.mock('@/lib/custom-page-actions', () => ({ saveCustomPage: vi.fn(), publishCustomPage: vi.fn(), unpublishCustomPage: vi.fn() }));
+vi.mock('@/lib/custom-page-templates', () => ({ customPageTemplates: vi.fn() }));
 vi.mock('@/lib/use-action', () => ({ useAction: () => ({ run: vi.fn(), pending: false, error: null }) }));
 const version = (id: string, versionNum: number) => ({ id, versionNum, status: 'draft', title: 'Climate plan', mdxBody: '# Priorities\n\n[Official plan](https://example.gov)\n\n<script>alert(1)</script>', createdAt: '2026-10-23T00:00:00Z', publishedAt: null });
 const page: CustomPageForEditor = { id: 'p1', slug: 'climate-plan', publishedVersionId: 'v1', versions: [version('v2', 2), { ...version('v1', 1), status: 'published' }] };
@@ -23,5 +24,14 @@ describe('custom page editor', () => {
   it('offers explicit restoration of older versions without overwriting them', () => {
     const html = renderToStaticMarkup(createElement(CustomPagesEditor, { tenantSlug: 'nyc', pages: [{ ...page, publishedVersionId: 'v2' }] }));
     expect(html).toContain('Restore and publish this version');
+  });
+  it('offers the templates on the new-page form only, saying that nothing is saved until the draft is', () => {
+    const html = renderToStaticMarkup(createElement(CustomPagesEditor, { tenantSlug: 'nyc', pages: [page] }));
+    expect(html.match(/Start from a template/g)).toHaveLength(1);
+    expect(html).toContain('Use the Energy deep-dive template');
+    expect(html).toContain('Nothing is saved until you press Save draft.');
+    // The new-page form comes first, and the template choice sits above its fields.
+    expect(html.indexOf('Start from a template')).toBeLessThan(html.indexOf('Page title'));
+    expect(html.indexOf('Start from a template')).toBeLessThan(html.indexOf('Climate plan'));
   });
 });
