@@ -25,6 +25,8 @@ const script = vi.hoisted(() => ({
   verdicts: {} as Record<string, () => { resultText: string; usage: SessionTokenUsage }>,
   auditUsage: {} as Record<string, SessionTokenUsage>,
   auditThrows: false,
+  /** Stored objects by path; any other path reads as a captured exhibit. */
+  files: {} as Record<string, string>,
 }));
 vi.mock('../research-audit.js', () => ({ auditResearchRun: vi.fn(async () => {
   if (script.auditThrows) throw new Error('audit unavailable');
@@ -61,7 +63,9 @@ vi.mock('@deep-fryer/research', async (importOriginal) => {
       actual.deterministicChecks(raw, config, slug, async () => true),
   };
 });
-vi.mock('../storage.js', () => ({ tenantStorage: vi.fn(async () => ({ get: vi.fn(async () => Buffer.from('captured exhibit')) })) }));
+vi.mock('../storage.js', () => ({
+  tenantStorage: vi.fn(async () => ({ get: vi.fn(async (path: string) => Buffer.from(script.files[path] ?? 'captured exhibit')) })),
+}));
 vi.mock('../notify.js', () => ({ notifyRunFinished: vi.fn(async () => {}) }));
 
 const hasDb = Boolean(process.env.DATABASE_URL);
@@ -84,7 +88,8 @@ const finding = (slug: string, name: string) => ({
   level_pct: 40,
   scoring: { threshold_ref: `x.${slug}`, function: 'lower_is_better', inputs: { value: 42, target: 30 }, worked_math: 'w' },
   source: 'City statistics office',
-  source_url: `https://stats.example.gov/${slug}`,
+  // A document, not a home or section page, so the link check never flags it.
+  source_url: `https://stats.example.gov/housing/${slug}.pdf`,
   source_tier: 1,
   evidence: { snapshot_path: `evidence/${slug}.png`, captured_at: '2026-10-01T00:00:00Z' },
   confidence: 'high',
@@ -129,6 +134,7 @@ describe.skipIf(!hasDb)('researchApply session handling (Postgres, scripted sess
     script.verdicts = {};
     script.auditUsage = {};
     script.auditThrows = false;
+    script.files = {};
     // One session at a time, so "no further session starts" is observable.
     process.env.RESEARCH_SESSION_CONCURRENCY = '1';
   });
@@ -391,9 +397,47 @@ describe.skipIf(!hasDb)('researchApply session handling (Postgres, scripted sess
     expect(housing.status).toBe('complete');
     const recorded = await findingsOf(housing.id);
     expect(recorded.map((f) => f.indicatorSlug)).toEqual(['cost-burdened-renters']);
-    expect(recorded[0]!.verification).toMatchObject({ content_supported: 'pass', partial_output: true });
-    // Verified and clean on every other check, it is still red-flagged for review.
+    // Clean on every other check (no page text was kept, so the value check could not look)...
+    expect(recorded[0]!.verification).toMatchObject({
+      content_supported: 'pass', partial_output: true, home_page_link: false, value_on_page: 'no_text',
+    });
+    expect(isFlagged({ ...recorded[0]!.verification!, partial_output: false })).toBe(false);
+    // ...it is still red-flagged for review, because it was salvaged.
     expect(isFlagged(recorded[0]!.verification!)).toBe(true);
+  });
+
+  it('flags a finding whose value is not on its captured page, and still runs its verifier', async () => {
+    const { isFlagged } = await import('@deep-fryer/core');
+    const captured = (slug: string, name: string) => ({
+      ...finding(slug, name),
+      value: '12.3%',
+      evidence: { snapshot_path: `evidence/${slug}.png`, text_path: `evidence/${slug}.txt`, captured_at: '2026-10-01T00:00:00Z' },
+    });
+    script.files = {
+      'evidence/cost-burdened-renters.txt': 'Housing Report 2012. Renters: see the county tables.',
+      'evidence/severe-cost-burden.txt': 'In 2025, 12.3 percent of renter households paid more than half their income.',
+    };
+    script.answers = {
+      HOUSING: JSON.stringify([captured('cost-burdened-renters', 'Cost-burdened renters'), captured('severe-cost-burden', 'Severe cost burden')]),
+    };
+    script.verdicts = {
+      'Cost-burdened renters': () => ({ resultText: '{"content_supported":"pass","verifier_note":"Read from the snapshot."}', usage: opus(10, 0) }),
+      'Severe cost burden': () => ({ resultText: '{"content_supported":"pass"}', usage: opus(10, 0) }),
+    };
+    const { run, rows, findingsOf } = await seed('plan');
+    const { researchApply } = await import('./research-apply.js');
+    await researchApply({ runId: run.id }, helpers);
+
+    // Both verifiers ran: the value check never stands in for the verifier.
+    expect(script.verifier).toHaveLength(2);
+    const housing = (await rows()).find((r) => r.slug === 'housing')!;
+    const bySlug = Object.fromEntries((await findingsOf(housing.id)).map((f) => [f.indicatorSlug, f.verification!]));
+    expect(bySlug['cost-burdened-renters']).toMatchObject({
+      content_supported: 'pass', value_on_page: 'not_found', home_page_link: false, verifier_note: 'Read from the snapshot.',
+    });
+    expect(isFlagged(bySlug['cost-burdened-renters']!)).toBe(true);
+    expect(bySlug['severe-cost-burden']).toMatchObject({ content_supported: 'pass', value_on_page: 'found', home_page_link: false });
+    expect(isFlagged(bySlug['severe-cost-burden']!)).toBe(false);
   });
 
   it('stops a key-funded run once Anthropic refuses the key, recording the reason on every session that did not finish', async () => {

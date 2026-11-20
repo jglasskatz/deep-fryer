@@ -25,6 +25,13 @@ export function acceptedScales(
  * A finding is red-flagged for review when any check fails (never dropped),
  * or when it was salvaged from a session's malformed output (partial_output:
  * the session may have returned findings that could not be read).
+ *
+ * The two cheap source checks count too: a claimed value that does not
+ * appear in the captured page's text, and a citation of a home or section
+ * page. A capture with no readable text is shown as such on the review card
+ * but does not flag on its own: the value could not be looked for, and the
+ * verifier judges the snapshot and PDF. Findings recorded before these
+ * checks existed carry neither field and are judged as before.
  */
 export function isFlagged(v: FindingVerification): boolean {
   return (
@@ -34,6 +41,8 @@ export function isFlagged(v: FindingVerification): boolean {
     !v.scale_ok ||
     v.content_supported !== 'pass' ||
     v.partial_output === true ||
+    v.value_on_page === 'not_found' ||
+    v.home_page_link === true ||
     (v.narrative_supported !== undefined && v.narrative_supported !== 'pass')
   );
 }

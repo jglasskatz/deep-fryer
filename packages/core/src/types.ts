@@ -195,7 +195,26 @@ export interface FindingVerification {
    * findings recorded before the check existed, which reads as false.
    */
   partial_output?: boolean;
+  /**
+   * Whether the claimed value was found, written in one of its usual forms,
+   * in the readable text kept with the captured page (packages/research
+   * page-text.ts). `no_text` when the capture kept no text to look in.
+   * Recorded before the verifier runs; a finding whose value was not found
+   * is flagged for review (core isFlagged), and the verifier still judges
+   * it. Absent on findings recorded before the check existed, and on gaps.
+   */
+  value_on_page?: ValueOnPage;
+  /**
+   * True when the cited link is a publisher's home or section page rather
+   * than the page or document holding the figure (core source-links.ts).
+   * Such a finding is flagged for review. Absent on findings recorded before
+   * the check existed, which reads as false.
+   */
+  home_page_link?: boolean;
 }
+
+/** What the value check found in a captured page's readable text. */
+export type ValueOnPage = 'found' | 'not_found' | 'no_text';
 
 export interface IndicatorFindingPayload {
   kind: 'indicator';

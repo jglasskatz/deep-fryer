@@ -3,19 +3,23 @@ import {
   acceptedScales,
   findingPayloadSchema,
   isFlagged,
+  isHomeOrSectionPage,
   maxDataAgeYears,
   storedFindingPayloadSchema,
   type ContentSupported,
   type FindingPayload,
   type FindingVerification,
+  type ValueOnPage,
 } from '@deep-fryer/core';
 import { guardedFetch } from './egress.js';
+import { valueOnPage } from './page-text.js';
 
 export { isFlagged };
 
 /**
  * Deterministic checks run before the verifier subagent (SPEC.md §8 Verify):
- * schema, URL resolution, recency policy, scale policy. Gap findings pass
+ * schema, URL resolution, recency policy, scale policy, and whether the
+ * cited link is only a home or section page. Gap findings pass
  * url/recency/scale vacuously — a gap has nothing to fetch. A stand-in is
  * checked exactly as a sourced indicator is.
  *
@@ -61,8 +65,38 @@ export async function deterministicChecks(
 
   return {
     payload,
-    checks: { schema_ok: true, url_ok: urlOk, recency_ok: recencyOk, scale_ok: scaleOk },
+    checks: {
+      schema_ok: true,
+      url_ok: urlOk,
+      recency_ok: recencyOk,
+      scale_ok: scaleOk,
+      home_page_link: isHomeOrSectionPage(payload.source_url),
+    },
   };
+}
+
+/**
+ * The value check, run before the verifier: is the claimed value in the
+ * readable text kept with the finding's captured page? `readText` returns
+ * the stored text at a storage path; the caller supplies it, so this module
+ * never touches storage. Evidence with no stored text, or text that cannot
+ * be read, answers `no_text`: the check could not look, which is not the
+ * same as the value being absent. A gap has no value and gets no answer.
+ */
+export async function checkValueOnPage(
+  payload: FindingPayload,
+  readText: (textPath: string) => Promise<string>,
+): Promise<ValueOnPage | undefined> {
+  if (payload.kind === 'gap') return undefined;
+  const textPath = payload.evidence.text_path;
+  if (!textPath) return 'no_text';
+  let text: string;
+  try {
+    text = await readText(textPath);
+  } catch {
+    return 'no_text';
+  }
+  return valueOnPage(payload.value, text);
 }
 
 /**

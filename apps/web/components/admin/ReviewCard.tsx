@@ -46,6 +46,28 @@ const READABLE_TEXT_LINK = 'text research read';
 const NO_READABLE_TEXT_NOTE =
   'No readable text: research could not read any words on this page or document. It may be a scanned image, so check the snapshot or PDF by eye.';
 
+/**
+ * What the two cheap source checks recorded (FindingVerification.value_on_page
+ * and home_page_link), as the badge says it and as the note under the
+ * finding explains it. A finding recorded before the checks existed has
+ * neither field and shows neither.
+ */
+export const VALUE_FOUND_LABEL = 'value found on the captured page';
+export const VALUE_NOT_FOUND_LABEL = 'value not found';
+export const NO_TEXT_LABEL = 'no readable text';
+export const HOME_PAGE_LABEL = 'home-page link';
+
+export function valueNotFoundNote(value: string): string {
+  return `Value not found: ${value} does not appear in the text research read from the captured page. Check the snapshot or the text by eye before approving, or re-research.`;
+}
+const NO_TEXT_TO_CHECK_NOTE =
+  'No readable text: research had no text from this page to look for the value in, so check the snapshot or PDF by eye.';
+/** The text was kept with the capture, but the check could not open it when it looked. */
+const TEXT_NOT_OPENED_NOTE =
+  'No readable text: research kept the text of this page but could not open it to look for the value, so check the snapshot or the text by eye.';
+export const HOME_PAGE_NOTE =
+  "Home-page link: the source link goes to a website's home page or one of its sections, not the page or document with the number, so readers cannot check the figure from it. Find the exact page or document, then edit the finding or re-research.";
+
 function PartialOutputNote() {
   return <p className="mt-2 rounded bg-red-50 p-2 text-xs text-red-900">{PARTIAL_OUTPUT_NOTE}</p>;
 }
@@ -191,12 +213,13 @@ export function GapForm({
   );
 }
 
-function Badge({ ok, label, title }: { ok: boolean; label: string; title?: string }) {
+/** A check's result: green when it passed, red when it failed, grey when it could not be made. */
+function Badge({ ok, label, title, neutral }: { ok: boolean; label: string; title?: string; neutral?: boolean }) {
   return (
     <span
       title={title}
       className={`rounded px-1.5 py-0.5 text-[11px] ${
-        ok ? 'bg-green-100 text-green-900' : 'bg-red-100 text-red-900'
+        neutral ? 'bg-black/10' : ok ? 'bg-green-100 text-green-900' : 'bg-red-100 text-red-900'
       }`}
     >
       {label}
@@ -410,6 +433,10 @@ export function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; 
                 label={`source ${v.content_supported}`}
                 title={v.verifier_note}
               />
+              {v.value_on_page === 'found' ? <Badge ok label={VALUE_FOUND_LABEL} /> : null}
+              {v.value_on_page === 'not_found' ? <Badge ok={false} label={VALUE_NOT_FOUND_LABEL} /> : null}
+              {v.value_on_page === 'no_text' ? <Badge ok={false} neutral label={NO_TEXT_LABEL} /> : null}
+              {v.home_page_link ? <Badge ok={false} label={HOME_PAGE_LABEL} /> : null}
               {v.partial_output ? <Badge ok={false} label="partial output" title={PARTIAL_OUTPUT_NOTE} /> : null}
             </>
           ) : null}
@@ -442,6 +469,15 @@ export function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; 
           Verifier: {v.verifier_note}
         </p>
       ) : null}
+      {v?.value_on_page === 'not_found' ? (
+        <p className="mt-2 break-words rounded bg-red-50 p-2 text-xs text-red-900">{valueNotFoundNote(formatIndicatorValue(payload.value, null))}</p>
+      ) : null}
+      {v?.value_on_page === 'no_text' && !payload.evidence?.no_readable_text ? (
+        <p className="mt-2 rounded bg-amber-50 p-2 text-xs text-amber-900">
+          {payload.evidence?.text_path ? TEXT_NOT_OPENED_NOTE : NO_TEXT_TO_CHECK_NOTE}
+        </p>
+      ) : null}
+      {v?.home_page_link ? <p className="mt-2 rounded bg-red-50 p-2 text-xs text-red-900">{HOME_PAGE_NOTE}</p> : null}
       {v?.partial_output ? <PartialOutputNote /> : null}
       {payload.notes ? (
         <p className="mt-1 text-xs text-[color:var(--color-muted)]">Session notes: {payload.notes}</p>

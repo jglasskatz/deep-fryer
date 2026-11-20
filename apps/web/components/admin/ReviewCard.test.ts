@@ -192,6 +192,81 @@ describe('the review card and the text research read', () => {
   });
 });
 
+describe('the review card and the cheap source checks', () => {
+  const checked = (over: Partial<NonNullable<ReviewFinding['verification']>>, evidence?: IndicatorEvidence): ReviewFinding => {
+    const f = capturedFinding(evidence ?? { snapshot_path: 'evidence/abc123.png', text_path: 'evidence/abc123.txt', captured_at: CAPTURED });
+    return { ...f, verification: { ...f.verification!, ...over } };
+  };
+  const flaggedCount = (html: string) => /(\d+) flagged/.exec(html)?.[1] ?? null;
+
+  it('says the value was found, and does not flag the finding for it', () => {
+    const html = renderCard(checked({ value_on_page: 'found', home_page_link: false }));
+    expect(html).toContain('value found on the captured page');
+    expect(html).not.toContain('value not found');
+    expect(html).not.toContain('Home-page link');
+    expect(flaggedCount(html)).toBeNull();
+  });
+
+  it('says the value was not found, explains it in plain words, and flags the finding', () => {
+    const html = renderCard(checked({ value_on_page: 'not_found' }));
+    expect(html).toContain('>value not found<');
+    expect(html).toContain('Value not found: 42.7 does not appear in the text research read from the captured page.');
+    expect(html).toContain('>text research read</a>');
+    expect(flaggedCount(html)).toBe('1');
+  });
+
+  it('says there was no readable text, without flagging the finding for it', () => {
+    const html = renderCard(checked({ value_on_page: 'no_text' }, { snapshot_path: 'evidence/abc123.png', captured_at: CAPTURED }));
+    expect(html).toContain('>no readable text<');
+    expect(html).toContain('No readable text: research had no text from this page to look for the value in');
+    expect(flaggedCount(html)).toBeNull();
+  });
+
+  it('writes the missing value the way the card writes it above', () => {
+    const f = checked({ value_on_page: 'not_found' });
+    const html = renderCard({ ...f, payload: { ...f.payload, value: 1_200_000, unit: 'people' } as FindingPayload });
+    expect(html).toContain('1,200,000 people');
+    expect(html).toContain('Value not found: 1,200,000 does not appear in the text research read');
+  });
+
+  it('says the kept text could not be opened, rather than that there was none, when the text link is there', () => {
+    const html = renderCard(checked({ value_on_page: 'no_text' }));
+    expect(html).toContain('>text research read</a>');
+    expect(html).toContain('No readable text: research kept the text of this page but could not open it to look for the value');
+    expect(html).not.toContain('research had no text from this page');
+    expect(flaggedCount(html)).toBeNull();
+  });
+
+  it('shows one note, not two, for a scanned document with no readable text', () => {
+    const html = renderCard(
+      checked({ value_on_page: 'no_text' }, { snapshot_path: 'evidence/scan01.png', pdf_path: 'evidence/scan01.pdf', no_readable_text: true, captured_at: CAPTURED }),
+    );
+    expect(html).toContain('No readable text: research could not read any words on this page or document.');
+    expect(html).not.toContain('research had no text from this page');
+  });
+
+  it('flags a home-page link and says what to do about it', () => {
+    const html = renderCard(checked({ value_on_page: 'found', home_page_link: true }));
+    expect(html).toContain('>home-page link<');
+    expect(html).toContain('Home-page link: the source link goes to a website&#x27;s home page or one of its sections');
+    expect(flaggedCount(html)).toBe('1');
+  });
+
+  it('shows neither check on a finding recorded before the checks existed', () => {
+    const html = renderCard(checked({}));
+    expect(html).not.toMatch(/value found|value not found|no readable text|home-page link/i);
+    expect(html).not.toContain('undefined');
+  });
+
+  it('keeps a very long claimed value inside the note', () => {
+    const long = 'a'.repeat(400);
+    const f = checked({ value_on_page: 'not_found' });
+    const html = renderCard({ ...f, payload: { ...f.payload, value: long } as FindingPayload });
+    expect(html).toContain(`Value not found: ${long} does not appear`);
+    expect(html).toMatch(/class="mt-2 break-words[^"]*">Value not found/);
+  });
+});
+
 /**
  * The review card's gap form: the reviewer picks which indicator has no
  * usable data — every indicator at once is offered, last — and the button

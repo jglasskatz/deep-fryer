@@ -128,7 +128,7 @@ describe('deterministicChecks', () => {
   it('passes a compliant finding', async () => {
     const { payload, checks } = await deterministicChecks(goodFinding, config, 'housing', async () => true);
     expect(payload?.kind).toBe('indicator');
-    expect(checks).toEqual({ schema_ok: true, url_ok: true, recency_ok: true, scale_ok: true });
+    expect(checks).toEqual({ schema_ok: true, url_ok: true, recency_ok: true, scale_ok: true, home_page_link: false });
   });
 
   it('flags stale years and disallowed scales', async () => {
@@ -182,9 +182,9 @@ describe('deterministicChecks', () => {
     it('are checked as a sourced indicator is, from the pass that proposes them', async () => {
       const passed = await deterministicChecks(standIn, config, 'housing', async () => true, { allowProxy: true });
       expect(passed.payload).toMatchObject({ kind: 'proxy', proxy_for: 'cost-burdened-renters', confidence: 'low' });
-      expect(passed.checks).toEqual({ schema_ok: true, url_ok: true, recency_ok: true, scale_ok: true });
+      expect(passed.checks).toEqual({ schema_ok: true, url_ok: true, recency_ok: true, scale_ok: true, home_page_link: false });
       const stale = await deterministicChecks({ ...standIn, year: 2005, geographic_scale: 'national' }, config, 'housing', async () => false, { allowProxy: true });
-      expect(stale.checks).toEqual({ schema_ok: true, url_ok: false, recency_ok: false, scale_ok: false });
+      expect(stale.checks).toEqual({ schema_ok: true, url_ok: false, recency_ok: false, scale_ok: false, home_page_link: false });
     });
 
     it('must be low confidence and say what they stand in for and why', async () => {

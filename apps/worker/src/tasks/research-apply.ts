@@ -22,6 +22,7 @@ import {
   type ResearchRun,
 } from '@deep-fryer/db';
 import {
+  checkValueOnPage,
   deterministicChecks,
   mergeVerification,
   renderVerifierPrompt,
@@ -170,6 +171,9 @@ export const researchApply: Task = async (rawPayload, helpers) => {
     const plan = run.plan;
     const config = run.configSnapshot;
     const storage = await tenantStorage(tenant.slug);
+    // A finding's captured text, through its tenant's archive only (the
+    // schema already limits the path to evidence/<name>.txt).
+    const readEvidenceText = async (textPath: string) => (await storage.get(textPath)).toString('utf8');
 
     const tenantDims = await db
       .select()
@@ -305,7 +309,13 @@ export const researchApply: Task = async (rawPayload, helpers) => {
       // and per-model usage included) and filed under `verifier:<session id>`.
       let verifierUsage = emptyUsage();
       for (const raw of rawFindings) {
-        const { payload, checks } = await deterministicChecks(raw, config, dimension.slug);
+        const deterministic = await deterministicChecks(raw, config, dimension.slug);
+        const payload = deterministic.payload;
+        // The value check reads the text kept with the capture, and is
+        // recorded before the verifier runs: a finding whose value is not on
+        // its page is flagged, and still gets its verifier.
+        const valueCheck = payload ? await checkValueOnPage(payload, readEvidenceText) : undefined;
+        const checks = valueCheck ? { ...deterministic.checks, value_on_page: valueCheck } : deterministic.checks;
 
         let verdict: { content_supported: ContentSupported; verifier_note?: string; narrative_supported?: ContentSupported } | null;
         if (payload?.kind === 'indicator') {
