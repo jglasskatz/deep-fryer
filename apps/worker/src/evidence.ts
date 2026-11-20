@@ -2,10 +2,15 @@ import { createHash } from 'node:crypto';
 import { chromium, type Browser, type Page, type Response as PageResponse } from 'playwright-core';
 import { assertPublicHttpsUrl, guardedFetch } from '@deep-fryer/research';
 import type { TenantStorage } from './storage.js';
+import { extractText } from './text-extract.js';
 
 export interface CaptureResult {
   snapshot_path: string;
   pdf_path?: string;
+  /** The readable text of the page (and its PDF), when there was any. */
+  text_path?: string;
+  /** Set when the page and its PDF carried no readable words (a scanned document, an image). */
+  no_readable_text?: true;
   captured_at: string;
 }
 
@@ -226,9 +231,36 @@ async function readExhibitSignals(page: Page, response: PageResponse | null): Pr
   };
 }
 
+/** Heads each part of a text copy that holds both the page's text and its PDF's. */
+export const PAGE_TEXT_HEADING = 'Text of the captured page';
+export const PDF_TEXT_HEADING = 'Text of the PDF document';
+/** Written in place of a PDF's text when it had none. */
+export const PDF_WITHOUT_TEXT_NOTE = 'This PDF has no readable text. It may be a scanned image.';
+
+/**
+ * Pure: the text copy stored beside a capture, or null when there is nothing readable to store.
+ * `pdfText` is undefined when no PDF was archived, and '' when one was but had no text layer.
+ *
+ * A page alone is stored as its text. When a PDF was archived too, both parts are kept under plain
+ * headings, so a reviewer knows which part they are reading, and a PDF without text says so. The
+ * headings carry no digits, so a later search of the copy for a claimed number cannot match them.
+ */
+export function composeReadableText(pageText: string, pdfText?: string): string | null {
+  const page = pageText.trim();
+  const pdf = pdfText?.trim();
+  if (pdf === undefined) return page === '' ? null : `${page}\n`;
+  if (page === '' && pdf === '') return null;
+  const parts: string[] = [];
+  if (page !== '') parts.push(`${PAGE_TEXT_HEADING}\n\n${page}`);
+  parts.push(`${PDF_TEXT_HEADING}\n\n${pdf === '' ? PDF_WITHOUT_TEXT_NOTE : pdf}`);
+  return `${parts.join('\n\n')}\n`;
+}
+
 /**
  * Evidence capture (SPEC.md §8, decision D): Playwright screenshot of the
- * source page, plus the PDF itself when the source is a document.
+ * source page, plus the PDF itself when the source is a document, plus the
+ * readable text of both (the page's visible text, the PDF's text layer) as
+ * evidence/<hash>.txt, so a reviewer can read what research read.
  *
  * Egress (SPEC-v3 §2.3): the page URL, every request the page makes
  * (including redirect hops, which Chromium issues as new requests), and the
@@ -240,6 +272,10 @@ async function readExhibitSignals(page: Page, response: PageResponse | null): Pr
  * (classifyExhibit): a block, challenge, error, sign-in, or blank page throws
  * ExhibitRefusedError and nothing is archived — neither the screenshot nor
  * the PDF, because a finding's evidence must open on the source itself.
+ *
+ * The text copy is best-effort like the PDF: when there is no readable text
+ * the result says so (no_readable_text), and when storing it fails the result
+ * simply has neither field, as captures made before text was kept.
  */
 export async function captureEvidence(
   storage: TenantStorage,
@@ -254,6 +290,7 @@ export async function captureEvidence(
     viewport: { width: 1280, height: 1600 },
   });
   let snapshotPath: string;
+  let pageText: string;
   try {
     await context.route('**/*', async (route) => {
       const target = route.request().url();
@@ -281,8 +318,10 @@ export async function captureEvidence(
       }
     });
     const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 45_000 });
-    const problems = classifyExhibit(await readExhibitSignals(page, documents.at(-1) ?? response));
+    const signals = await readExhibitSignals(page, documents.at(-1) ?? response);
+    const problems = classifyExhibit(signals);
     if (problems.length > 0) throw new ExhibitRefusedError(problems);
+    pageText = signals.visibleText;
     const png = await page.screenshot({ fullPage: true });
     snapshotPath = await storage.put(`evidence/${hash}.png`, Buffer.from(png), 'image/png');
   } finally {
@@ -290,6 +329,7 @@ export async function captureEvidence(
   }
 
   let pdfPath: string | undefined;
+  let pdfText: string | undefined;
   const docUrl = pdfUrl ?? (url.toLowerCase().endsWith('.pdf') ? url : undefined);
   if (docUrl) {
     try {
@@ -297,11 +337,24 @@ export async function captureEvidence(
       if (res.ok) {
         const body = Buffer.from(await res.arrayBuffer());
         pdfPath = await storage.put(`evidence/${hash}.pdf`, body, 'application/pdf');
+        // Archived as a PDF, so read as one whatever the server called it.
+        pdfText = (await extractText(body, 'application/pdf')) ?? '';
       }
     } catch {
       // PDF capture is best-effort; the page screenshot is the primary record.
     }
   }
 
-  return { snapshot_path: snapshotPath, pdf_path: pdfPath, captured_at: capturedAt };
+  const result: CaptureResult = { snapshot_path: snapshotPath, pdf_path: pdfPath, captured_at: capturedAt };
+  const text = composeReadableText(pageText, pdfText);
+  if (text === null) {
+    result.no_readable_text = true;
+  } else {
+    try {
+      result.text_path = await storage.put(`evidence/${hash}.txt`, Buffer.from(text, 'utf8'), 'text/plain; charset=utf-8');
+    } catch {
+      // Like the PDF, the text copy is best-effort: without it the capture still stands.
+    }
+  }
+  return result;
 }

@@ -30,6 +30,14 @@ export interface ReviewFinding {
 const PARTIAL_OUTPUT_NOTE =
   'Partial output: the research session returned malformed JSON and only part of it could be read, so this dimension may be missing findings. Consider re-research.';
 
+/**
+ * Evidence captured with its readable text links to it; a capture that found no words to read says
+ * so. Evidence captured before the text was kept has neither field and shows neither.
+ */
+const READABLE_TEXT_LINK = 'text research read';
+const NO_READABLE_TEXT_NOTE =
+  'No readable text: research could not read any words on this page or document. It may be a scanned image, so check the snapshot or PDF by eye.';
+
 function PartialOutputNote() {
   return <p className="mt-2 rounded bg-red-50 p-2 text-xs text-red-900">{PARTIAL_OUTPUT_NOTE}</p>;
 }
@@ -342,7 +350,23 @@ export function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; 
                 </a>
               </>
             ) : null}
+            {payload.evidence.text_path ? (
+              <>
+                {' · '}
+                <a
+                  className="underline"
+                  href={`${evidenceBase}/${payload.evidence.text_path}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {READABLE_TEXT_LINK}
+                </a>
+              </>
+            ) : null}
           </p>
+          {!payload.evidence.text_path && payload.evidence.no_readable_text ? (
+            <p className="mt-1 rounded bg-amber-50 p-2 text-xs text-amber-900">{NO_READABLE_TEXT_NOTE}</p>
+          ) : null}
         </div>
       ) : null}
     </div>
@@ -358,7 +382,7 @@ function NarrativeProposal({ finding, evidenceBase }: { finding: ReviewFinding; 
     <p className="mt-3 whitespace-pre-wrap text-sm">{proposal.context}</p>
     <ul className="mt-3 space-y-4">{proposal.actions.map((action, index) => <li key={index} className="text-sm">
       <p>{action.text}</p>
-      <p className="mt-1 flex flex-wrap gap-3 text-xs">{safeHref(action.source_url) ? <a className="underline" href={safeHref(action.source_url)} rel="noopener noreferrer">Original source ↗</a> : null}<a className="underline" href={`${evidenceBase}/${action.evidence.snapshot_path}`}>Archived evidence</a>{action.evidence.pdf_path ? <a className="underline" href={`${evidenceBase}/${action.evidence.pdf_path}`}>Archived PDF</a> : null}</p>
+      <p className="mt-1 flex flex-wrap gap-3 text-xs">{safeHref(action.source_url) ? <a className="underline" href={safeHref(action.source_url)} rel="noopener noreferrer">Original source ↗</a> : null}<a className="underline" href={`${evidenceBase}/${action.evidence.snapshot_path}`}>Archived evidence</a>{action.evidence.pdf_path ? <a className="underline" href={`${evidenceBase}/${action.evidence.pdf_path}`}>Archived PDF</a> : null}{action.evidence.text_path ? <a className="underline" href={`${evidenceBase}/${action.evidence.text_path}`}>{READABLE_TEXT_LINK}</a> : action.evidence.no_readable_text ? <span>{NO_READABLE_TEXT_NOTE}</span> : null}</p>
       <a href={`${evidenceBase}/${action.evidence.snapshot_path}`}><img loading="lazy" className="mt-2 max-h-48 w-full rounded border border-black/10 object-contain object-left" src={`${evidenceBase}/${action.evidence.snapshot_path}`} alt={`Archived source for: ${action.text}`} /></a>
     </li>)}</ul>
   </details>;

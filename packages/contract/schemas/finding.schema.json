@@ -129,6 +129,15 @@
               "type": "string",
               "description": "Tenant-storage path of the source PDF, when the source is a document."
             },
+            "text_path": {
+              "type": "string",
+              "pattern": "^evidence/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\\.txt$",
+              "description": "Tenant-storage path of the readable text of the page and its PDF, when capture_evidence returned one. Copy it verbatim."
+            },
+            "no_readable_text": {
+              "const": true,
+              "description": "true when capture_evidence returned it: the page and its PDF had no readable text (a scanned document or an image). Copy it verbatim."
+            },
             "captured_at": {
               "type": "string",
               "format": "date-time"
@@ -207,6 +216,15 @@
                       "pdf_path": {
                         "type": "string",
                         "description": "Tenant-storage path of the source PDF, when the source is a document."
+                      },
+                      "text_path": {
+                        "type": "string",
+                        "pattern": "^evidence/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\\.txt$",
+                        "description": "Tenant-storage path of the readable text of the page and its PDF, when capture_evidence returned one. Copy it verbatim."
+                      },
+                      "no_readable_text": {
+                        "const": true,
+                        "description": "true when capture_evidence returned it: the page and its PDF had no readable text (a scanned document or an image). Copy it verbatim."
                       },
                       "captured_at": {
                         "type": "string",
