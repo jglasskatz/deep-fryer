@@ -69,11 +69,29 @@ export function tenantBucketName(tenantSlug: string): string {
 }
 
 /**
+ * Tenant-relative key prefixes that hold a group's own files: what its
+ * members upload, and the text later read out of those uploads. Objects
+ * under them are kept in a separate private store (a second bucket, or a
+ * directory the web app does not serve) and are read back only through the
+ * web app's members-only route, never from a public URL.
+ */
+export const PRIVATE_STORAGE_PREFIXES = ['supplied/', 'material/'] as const;
+
+/** Whether a tenant-relative storage path belongs in the private store. */
+export function isPrivateStoragePath(storagePath: string): boolean {
+  return PRIVATE_STORAGE_PREFIXES.some((prefix) => storagePath.startsWith(prefix));
+}
+
+/**
  * Public URL prefix for a tenant's evidence objects — shared by the worker
  * (which writes `evidence/<key>` under the tenant prefix) and the web app
  * (which renders them), so the two can never disagree on the layout.
  * With an S3-compatible store the tenant prefix sits under the public bucket
  * URL; locally the web app serves files from public/evidence/<tenant>/.
+ *
+ * Paths under PRIVATE_STORAGE_PREFIXES are never stored behind this base:
+ * the same key appended to it names an object the public bucket (or the
+ * public directory) does not hold, so it answers 404.
  */
 export function evidencePublicBase(tenantSlug: string, s3PublicUrl?: string | null): string {
   if (s3PublicUrl) return `${s3PublicUrl.replace(/\/+$/, '')}/${tenantBucketName(tenantSlug)}`;
