@@ -2,7 +2,16 @@
 
 import { revalidatePath } from 'next/cache';
 import { and, eq, sql } from 'drizzle-orm';
-import { deriveVizLevel, type DimensionData, type FindingPayload } from '@deep-fryer/core';
+import {
+  assignIndicatorKeys,
+  deriveVizLevel,
+  frameworkIndicatorKeys,
+  isIndicatorKey,
+  WHOLE_DIMENSION_GAP,
+  type DimensionData,
+  type FindingPayload,
+  type Indicator,
+} from '@deep-fryer/core';
 import {
   appendDimensionVersion,
   dimensions,
@@ -256,6 +265,16 @@ export const approveUnflaggedFindings = action(async (input: {
   });
 });
 
+/** Whether any research finding for this dimension named the indicator `key`. */
+async function researchNamed(db: DbExecutor, dimensionId: string, key: string): Promise<boolean> {
+  const [row] = await db
+    .select({ id: findings.id })
+    .from(findings)
+    .where(and(eq(findings.dimensionId, dimensionId), eq(findings.indicatorSlug, key)))
+    .limit(1);
+  return row !== undefined;
+}
+
 /**
  * Re-research (SPEC.md §8 Rerun): user-directed, reviewer notes injected
  * verbatim. Plans only — the reviewer inspects the plan and applies it (the
@@ -279,20 +298,41 @@ export const reResearchDimension = action(async (input: {
   return { runId: run.id };
 });
 
+/** What flagGap says when the key it is given names no indicator of the dimension. */
+const NOT_IN_DIMENSION = 'That indicator is not part of this dimension. Reload the page and choose again. Nothing was saved.';
+
 /**
- * Flag gap (SPEC.md §9): publish an honest data-gap wedge — gray, not
- * hidden. Values are cleared, the gap is recorded with the reviewer's
- * reason, and the wedge renders as unknown.
+ * Flag gap (SPEC.md §9): record that one indicator has no acceptable data,
+ * as a new draft version. Only the row with that key (core
+ * assignIndicatorKeys) is cleared — its value and score — and the gap,
+ * naming the key, carries the reviewer's reason, which the public sees on
+ * the gray wedge once the draft is published. WHOLE_DIMENSION_GAP clears
+ * every indicator of the dimension instead.
+ *
+ * The key must be one the dimension knows: a row of its latest version, a
+ * gap it already records, or an indicator research reported for it (a gap
+ * card names one the version may not have yet; its gap is recorded with
+ * nothing to clear). Any other key is refused. A gap already recorded for
+ * the same key is replaced, so flagging again updates the reason rather than
+ * listing the gap twice.
+ *
+ * Nothing is published here: the draft is published like any other
+ * reviewed draft, where a required second reviewer still applies.
  */
 export const flagGap = action(async (input: {
   tenantSlug: string;
   dimensionId: string;
+  /** The indicator's key, or WHOLE_DIMENSION_GAP. */
   indicator: string;
   reason: string;
 }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+  // A call from the page always sends a key and a reason as text; anything
+  // else gets the same plain refusal as an unknown key, before any lookup.
+  const key: unknown = input.indicator;
+  if (!isIndicatorKey(key) && key !== WHOLE_DIMENSION_GAP) throw new UserError(NOT_IN_DIMENSION);
   return userDb(async (db) => {
-    const reason = input.reason.trim();
+    const reason = typeof input.reason === 'string' ? input.reason.trim() : '';
     if (!reason) throw new UserError('A reason is required to flag a data gap.');
 
     const dimension = await dimensionInTenantOrThrow(db, tenant.id, input.dimensionId);
@@ -300,33 +340,41 @@ export const flagGap = action(async (input: {
     const base = await latestVersion(db, dimension.id);
     if (!base) throw new UserError('This dimension has no versions yet.');
 
+    const indicators = assignIndicatorKeys(
+      base.data.indicators,
+      [],
+      frameworkIndicatorKeys(dimension.slug, dimension.canonicalSlug),
+    );
+    const whole = key === WHOLE_DIMENSION_GAP;
+    const target = whole ? undefined : indicators.find((ind) => ind.key === key);
+    const known =
+      whole ||
+      target !== undefined ||
+      (base.data.gaps ?? []).some((gap) => gap.indicator === key) ||
+      (await researchNamed(db, dimension.id, key));
+    if (!known) {
+      throw new UserError(NOT_IN_DIMENSION);
+    }
+
+    const cleared = (ind: Indicator): Indicator => ({ ...ind, value: null, level_pct: undefined, scoring: undefined });
     const data: DimensionData = {
       ...base.data,
-      indicators: base.data.indicators.map((ind) => ({
-        ...ind,
-        value: null,
-        level_pct: undefined,
-        scoring: undefined,
-      })),
+      indicators: indicators.map((ind) => (whole || ind.key === key ? cleared(ind) : ind)),
       gaps: [
-        ...(base.data.gaps ?? []),
-        {
-          indicator: input.indicator,
-          reason,
-          scales_tried: [],
-          searched_at: new Date().toISOString(),
-        },
+        ...(base.data.gaps ?? []).filter((gap) => gap.indicator !== key),
+        { indicator: key, reason, scales_tried: [], searched_at: new Date().toISOString() },
       ],
     };
 
+    const label = whole ? 'every indicator' : `"${target?.name ?? key}"`;
     const auth = await getAuth();
     const version = await appendDimensionVersion(db, {
       dimensionId: dimension.id,
       status: 'draft',
       data,
-      vizLevel: null,
+      vizLevel: deriveVizLevel(data),
       origin: 'human',
-      changeNote: `Flagged as data gap: ${reason}`,
+      changeNote: `Flagged ${label} as a data gap: ${reason}`,
       createdBy: auth.userId,
     });
 
@@ -336,14 +384,14 @@ export const flagGap = action(async (input: {
       version.id,
       'flag_gap',
       null,
-      { dimension: dimension.slug, reason },
+      { dimension: dimension.slug, indicator: key, reason },
       db,
     );
 
     const requiresSecondReview = (await configValueIn(db, tenant.id, 'review_policy'))?.dual_review_on_edits === true;
-    if (!requiresSecondReview) await publishVersionFor(db, tenant, version.id);
     revalidatePath(`/${input.tenantSlug}/admin/review`);
     revalidatePath(`/${input.tenantSlug}/admin/draft`);
-    return { versionId: version.id, versionNum: version.versionNum, published: !requiresSecondReview, requiresSecondReview };
+    revalidatePath(`/${input.tenantSlug}/admin`);
+    return { versionId: version.id, versionNum: version.versionNum, requiresSecondReview };
   });
 });

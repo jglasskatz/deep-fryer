@@ -47,6 +47,13 @@ export interface NarrativeDraft {
 }
 
 export interface Indicator {
+  /**
+   * The row's stable key within its dimension (core indicator-keys.ts): a
+   * framework indicator's slug, or one derived from a custom indicator's
+   * name when first saved. It survives renames, so edits and gaps name the
+   * row by it. Absent on versions written before keys existed.
+   */
+  key?: string;
   name: string;
   value: number | string | null;
   unit: string;
@@ -65,6 +72,7 @@ export interface Indicator {
 
 /** Data gaps are first-class findings, not errors (SPEC.md §8). */
 export interface DimensionGap {
+  /** The key of the indicator without data (Indicator.key), or WHOLE_DIMENSION_GAP for every indicator. */
   indicator: string;
   reason: string;
   scales_tried: GeographicScale[];

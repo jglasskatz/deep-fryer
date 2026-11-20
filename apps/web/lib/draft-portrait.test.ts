@@ -142,6 +142,15 @@ describe('researchVersionData (what approving a run makes)', () => {
     ]);
   });
 
+  it('keys each indicator by its finding’s slug, whatever name research gave it', () => {
+    const renamedFinding = { ...indicator('cost-burdened-renters', 30), name: 'Rent-burdened households' } as FindingPayload;
+    const approved = researchVersionData(version('d').data, 'housing', [renamedFinding, indicator('evictions-per-1000', 5)]);
+    expect(approved.indicators.map((row) => [row.key, row.name])).toEqual([
+      ['cost-burdened-renters', 'Rent-burdened households'],
+      ['evictions-per-1000', 'Indicator evictions-per-1000'],
+    ]);
+  });
+
   it('names the dimension by its slug without a version, and skips output that matched no schema', () => {
     const data = researchVersionData(null, 'housing', [{ not: 'a finding' } as never]);
     expect(data).toMatchObject({ name: 'housing', indicators: [], gaps: undefined, actions: [] });

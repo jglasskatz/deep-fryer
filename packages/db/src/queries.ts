@@ -1,7 +1,9 @@
 import { and, desc, eq, inArray, sql, type SQL } from 'drizzle-orm';
+import { assignIndicatorKeys, frameworkIndicatorKeys } from '@deep-fryer/core';
 import type { DbExecutor } from './client.js';
 import { isUniqueViolation } from './errors.js';
 import {
+  dimensions,
   dimensionVersions,
   tenants,
   type DimensionVersion,
@@ -76,13 +78,34 @@ export async function latestVersionsByDimension(
 const MAX_APPEND_ATTEMPTS = 5;
 
 /**
- * Append the next immutable version (SPEC.md §7). The number is allocated by
- * the INSERT itself (max + 1 in a subselect), and a concurrent append that
- * takes the same number trips the (dimension_id, version_num) unique
- * constraint and retries — two reviewers approving at once both land, in
- * some order, instead of one silently failing (SPEC-v3 §2.2 item 4). Each
- * attempt runs in its own (sub)transaction so a retry works inside a caller's
- * transaction too.
+ * `data` with every indicator keyed (core assignIndicatorKeys): a row keeps
+ * its key, else takes the key of the same-named row in the dimension's
+ * latest version, else its framework slug by name, else one derived from its
+ * name. Read on the caller's executor, so inside its transaction.
+ */
+async function withIndicatorKeys(
+  db: DbExecutor,
+  dimensionId: string,
+  data: NewDimensionVersion['data'],
+): Promise<NewDimensionVersion['data']> {
+  if (data.indicators.length === 0) return data;
+  const [dimension] = await db
+    .select({ slug: dimensions.slug, canonicalSlug: dimensions.canonicalSlug })
+    .from(dimensions)
+    .where(eq(dimensions.id, dimensionId));
+  const previous = await latestVersion(db, dimensionId);
+  const known = dimension ? frameworkIndicatorKeys(dimension.slug, dimension.canonicalSlug) : [];
+  return { ...data, indicators: assignIndicatorKeys(data.indicators, previous?.data.indicators ?? [], known) };
+}
+
+/**
+ * Append the next immutable version (SPEC.md §7), every indicator keyed
+ * (withIndicatorKeys). The number is allocated by the INSERT itself (max + 1
+ * in a subselect), and a concurrent append that takes the same number trips
+ * the (dimension_id, version_num) unique constraint and retries — two
+ * reviewers approving at once both land, in some order, instead of one
+ * silently failing (SPEC-v3 §2.2 item 4). Each attempt runs in its own
+ * (sub)transaction so a retry works inside a caller's transaction too.
  */
 export async function appendDimensionVersion(
   db: DbExecutor,
@@ -91,10 +114,12 @@ export async function appendDimensionVersion(
   for (let attempt = 1; ; attempt++) {
     try {
       return await db.transaction(async (tx) => {
+        const data = await withIndicatorKeys(tx, values.dimensionId, values.data);
         const [version] = await tx
           .insert(dimensionVersions)
           .values({
             ...values,
+            data,
             versionNum: sql`(SELECT coalesce(max(${dimensionVersions.versionNum}), 0) + 1 FROM ${dimensionVersions} WHERE ${dimensionVersions.dimensionId} = ${values.dimensionId})`,
           })
           .returning();

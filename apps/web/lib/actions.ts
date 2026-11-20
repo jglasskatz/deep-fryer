@@ -5,9 +5,11 @@ import path from 'node:path';
 import { revalidatePath } from 'next/cache';
 import { and, eq } from 'drizzle-orm';
 import {
+  assignIndicatorKeys,
   computeScoring,
   deriveVizLevel,
   dimensionDataSchema,
+  frameworkIndicatorKeys,
   resolveThreshold,
   tenantConfigSchemas,
   type DimensionData,
@@ -56,7 +58,8 @@ function rescore(
   const indicators: Indicator[] = data.indicators.map((ind) => {
     const ref =
       ind.scoring?.threshold_ref ??
-      frameworkDim?.indicators.find((fi) => fi.name === ind.name)?.threshold_ref;
+      (frameworkDim?.indicators.find((fi) => fi.slug === ind.key) ??
+        frameworkDim?.indicators.find((fi) => fi.name === ind.name))?.threshold_ref;
     if (!ref || typeof ind.value !== 'number') return ind;
     const threshold = resolveThreshold(ref, overrides ?? undefined);
     if (!threshold) return ind;
@@ -86,7 +89,9 @@ export interface SaveDimensionEditInput {
  * Human edit → new immutable version, origin 'human' (SPEC.md §7):
  * change_note required, and any indicator whose value changed must carry a
  * supporting_source_url — human edits meet the same provenance bar as
- * research.
+ * research. Rows are matched to the previous version by key (core
+ * assignIndicatorKeys), so renaming an indicator is not a value change; a
+ * row with no key yet is matched by name.
  */
 export const saveDimensionEdit = action(async (input: SaveDimensionEditInput) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
@@ -94,7 +99,7 @@ export const saveDimensionEdit = action(async (input: SaveDimensionEditInput) =>
     const changeNote = input.changeNote.trim();
     if (!changeNote) throw new UserError('A change note is required for human edits.');
 
-    const parsed = dimensionDataSchema.parse(input.data) as DimensionData;
+    const submitted = dimensionDataSchema.parse(input.data) as DimensionData;
 
     const [dimension] = await db
       .select()
@@ -103,12 +108,18 @@ export const saveDimensionEdit = action(async (input: SaveDimensionEditInput) =>
     if (!dimension) throw new UserError('Unknown dimension.');
 
     const previous = await latestVersion(db, dimension.id);
+    const known = frameworkIndicatorKeys(dimension.slug, dimension.canonicalSlug);
+    const previousRows = assignIndicatorKeys(previous?.data.indicators ?? [], [], known);
+    const parsed: DimensionData = {
+      ...submitted,
+      indicators: assignIndicatorKeys(submitted.indicators, previousRows, known),
+    };
 
     // Value changes need supporting sources (SPEC.md §7 immutability contract).
     if (previous) {
-      const prevByName = new Map(previous.data.indicators.map((i) => [i.name, i]));
+      const prevByKey = new Map(previousRows.map((i) => [i.key, i]));
       for (const ind of parsed.indicators) {
-        const prev = prevByName.get(ind.name);
+        const prev = prevByKey.get(ind.key);
         const valueChanged = !prev || String(prev.value ?? '') !== String(ind.value ?? '');
         if (valueChanged && ind.value !== null && !ind.supporting_source_url?.trim()) {
           throw new UserError(
