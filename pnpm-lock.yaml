@@ -32,8 +32,8 @@ importers:
         specifier: workspace:*
         version: link:packages/research
       '@keel_flow/core':
-        specifier: ^0.2.0
-        version: 0.2.0
+        specifier: ^0.5.0
+        version: 0.5.0
       '@keel_flow/pack-agent-topology':
         specifier: ^0.2.0
         version: 0.2.0(typescript@5.9.3)
@@ -1403,6 +1403,9 @@ packages:
 
   '@keel_flow/core@0.2.0':
     resolution: {integrity: sha512-ib1NgP9/U685o0VEX1WmptKUcfKWe3WYjX94ofKdyDuAACh+U/nqIHXtP+GTJQVzvkYfwK9IAy1sIHY4nhe9WA==}
+
+  '@keel_flow/core@0.5.0':
+    resolution: {integrity: sha512-Fsols0zK43of2U9AEMoCEzoELXWKWOWsWTXn5CzcyQCCVvSxzmozRs0VM3Lyi9Esw2nbDIkNcI1yLOoMW28vBw==}
 
   '@keel_flow/goals@0.2.0':
     resolution: {integrity: sha512-HuEGn57TApOQv8Ze/LVd3KDX0Dm/z+Cvt0GkK3DZ3kzweNDLmd2ziPBYb8TIlF5B3fki14rPQMDKycbnpROK/w==}
@@ -5230,6 +5233,13 @@ snapshots:
     dependencies:
       '@keel_flow/schema': 0.2.0
       zod: 3.25.76
+
+  '@keel_flow/core@0.5.0':
+    dependencies:
+      '@keel_flow/schema': 0.5.0
+      zod: 4.6.7
+    transitivePeerDependencies:
+      - supports-color
 
   '@keel_flow/goals@0.2.0':
     dependencies:
