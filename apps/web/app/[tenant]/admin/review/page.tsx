@@ -11,6 +11,7 @@ import { requireAdminPage } from '@/lib/admin-guard';
 import { adminPageMetadata } from '@/lib/page-meta';
 import { evidenceBase } from '@/lib/data';
 import { reviewQueue, type FailedRunSummary } from '@/lib/review-data';
+import { findingProvenance } from '../research/provenance';
 
 export const dynamic = 'force-dynamic';
 
@@ -114,6 +115,7 @@ export default async function ReviewQueuePage({
                     payload: f.payload,
                     verification: f.verification,
                     audits: f.audits,
+                    provenance: findingProvenance(selectedRun!, f.sessionId),
                   }))}
                   approvedVersionNum={card.approvedVersionNum}
                   sessionId={card.sessionId}

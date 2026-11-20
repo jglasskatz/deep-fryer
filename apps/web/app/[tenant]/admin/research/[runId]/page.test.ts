@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppRouterContext } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import type { ResearchPlan } from '@deep-fryer/core';
+import type { RunExecution } from '@deep-fryer/db';
 
 /**
  * A run's page names the strategy and version its plan was rendered from,
@@ -13,6 +14,10 @@ import type { ResearchPlan } from '@deep-fryer/core';
  * The run page's cost section, read from the run's own rows: dollars for
  * region context, research, verification and audit, a row per dimension,
  * and a cost per verified finding. A dimension where nothing passed says so.
+ *
+ * The run page names where its research ran and which model answered each
+ * session, from what the run recorded: its execution (written when it was
+ * applied) and each session's usage (written when it ended).
  */
 vi.stubGlobal('React', React);
 
@@ -169,5 +174,63 @@ describe('research run page costs', () => {
     // Five priced records, one verified finding.
     expect(costs).toContain('$0.1225');
     expect(costs).toContain('1 finding passed independent verification');
+  });
+});
+
+const execution: RunExecution = { provider: 'anthropic', endpoint_host: 'api.anthropic.com', executor: 'shared_worker', host_region: null };
+const spec = (kind: 'region_context' | 'dimension', slug?: string) => ({
+  kind, dimension_slug: slug, prompt: 'p', tool_allowlist: ['WebFetch'], output_schema_ref: 'finding',
+});
+const provenanceSession = (id: string, kind: 'region_context' | 'dimension', dimensionId: string | null) => ({
+  id, runId: 'run-1', dimensionId, kind, status: 'complete', reviewerNotes: null,
+  startedAt: new Date('2026-11-01T10:00:00Z'), completedAt: new Date('2026-11-01T10:05:00Z'),
+});
+const usage = (model: string, extra: object = {}) => ({ input_tokens: 10, output_tokens: 2, model, ...extra });
+
+function finishedRun(over: { execution: RunExecution | null; tokenUsage: object | null }) {
+  return {
+    run: {
+      id: '11111111-1111-4111-8111-111111111111', tenantId: 't1', status: 'complete', funding: 'plan',
+      plan: { sessions: [spec('region_context'), spec('dimension', 'housing')], config_hash: 'h', plugin_version: '1' },
+      createdAt: new Date('2026-11-01T09:59:00Z'), appliedAt: new Date('2026-11-01T10:00:00Z'), completedAt: new Date('2026-11-01T10:06:00Z'),
+      ...over,
+    },
+    sessions: [provenanceSession('s-region', 'region_context', null), provenanceSession('s-housing', 'dimension', 'd1')],
+    findings: [],
+  };
+}
+
+describe('the run page says where its research ran', () => {
+  afterEach(() => {
+    state.data = null;
+  });
+
+  it('names the models, the provider and the shared server, and a model that answered after a refusal', async () => {
+    state.data = finishedRun({
+      execution,
+      tokenUsage: {
+        's-region': usage('claude-sonnet-5'),
+        's-housing': usage('claude-sonnet-5', { refusal_fallbacks: [{ original_model: 'claude-sonnet-5', fallback_model: 'claude-opus-5', category: 'cyber' }] }),
+        'verifier:s-housing': usage('claude-haiku-4-5'),
+      },
+    });
+    const html = await runPage();
+    expect(html).toContain('Researched with claude-sonnet-5 on Anthropic, shared server. When claude-sonnet-5 declined part of the work, claude-opus-5 answered.');
+    // The verifier's own record is not research: its model is not named as a researcher.
+    expect(html).not.toContain('Researched with claude-sonnet-5 and claude-haiku-4-5');
+    // Each session row names the model that answered it, and the fallback where there was one.
+    expect(html.match(/>claude-sonnet-5</g)).toHaveLength(2);
+    expect(html.match(/When claude-sonnet-5 declined part of the work, claude-opus-5 answered\./g)).toHaveLength(2);
+  });
+
+  it('reads "provider not recorded" on an older run', async () => {
+    state.data = finishedRun({ execution: null, tokenUsage: { 's-housing': usage('claude-sonnet-5') } });
+    expect(await runPage()).toContain('Researched with claude-sonnet-5; provider not recorded');
+  });
+
+  it('says where a run goes before any session has reported', async () => {
+    const queued = finishedRun({ execution, tokenUsage: null });
+    state.data = { ...queued, run: { ...queued.run, status: 'planned', completedAt: null }, sessions: [] };
+    expect(await runPage()).toContain('Runs on Anthropic, shared server');
   });
 });

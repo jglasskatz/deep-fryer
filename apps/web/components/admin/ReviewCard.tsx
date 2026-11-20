@@ -8,6 +8,7 @@ import { approveFindings, flagGap, reResearchDimension } from '@/lib/review-acti
 import { useAction } from '@/lib/use-action';
 import { unwrap } from '@/lib/action-result';
 import { safeHref } from '@/lib/safe-url';
+import { provenanceSentence, type FindingProvenance } from '@/app/[tenant]/admin/research/provenance';
 import { AuditOpinions, AuditApplyPreview } from './ReviewAudits';
 
 export interface ReviewFinding {
@@ -16,6 +17,8 @@ export interface ReviewFinding {
   payload: FindingPayload;
   verification: FindingVerification | null;
   audits: ReviewAudit[];
+  /** Which provider and model produced it (for reviewers only; public pages never say). */
+  provenance?: FindingProvenance;
 }
 
 /**
@@ -29,6 +32,11 @@ const PARTIAL_OUTPUT_NOTE =
 
 function PartialOutputNote() {
   return <p className="mt-2 rounded bg-red-50 p-2 text-xs text-red-900">{PARTIAL_OUTPUT_NOTE}</p>;
+}
+
+/** "Researched with … on Anthropic, shared server", and any model that answered after a refusal. */
+function ProvenanceNote({ provenance }: { provenance: FindingProvenance | undefined }) {
+  return <p className="mt-1 text-xs text-[color:var(--color-muted)]">{provenanceSentence(provenance)}</p>;
 }
 
 function Badge({ ok, label, title }: { ok: boolean; label: string; title?: string }) {
@@ -223,7 +231,7 @@ export function ReviewCard({
   );
 }
 
-function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; evidenceBase: string }) {
+export function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; evidenceBase: string }) {
   const { payload, verification: v } = finding;
 
   if (payload.kind === 'gap') {
@@ -239,6 +247,7 @@ function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; evidenc
           {payload.tiers_tried?.length ? ` · tiers ${payload.tiers_tried.join(', ')}` : ''}
           {payload.nearest_data ? ` · nearest: ${payload.nearest_data}` : ''}
         </p>
+        <ProvenanceNote provenance={finding.provenance} />
         {v?.partial_output ? <PartialOutputNote /> : null}
       </div>
     );
@@ -294,6 +303,7 @@ function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; evidenc
           </span>
         )}
       </p>
+      <ProvenanceNote provenance={finding.provenance} />
       {v?.verifier_note && v.content_supported !== 'pass' ? (
         <p className="mt-2 rounded bg-red-50 p-2 text-xs text-red-900">
           Verifier: {v.verifier_note}
