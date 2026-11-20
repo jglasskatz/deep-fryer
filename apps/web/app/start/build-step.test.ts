@@ -45,6 +45,10 @@ vi.mock('@/lib/auth', async (importOriginal) => ({
   getOrgRole: vi.fn(async () => 'owner'),
 }));
 vi.mock('@/lib/db', () => ({ systemDb: () => ({}), userDb: async () => (runGoing ? [{ id: 'run-1' }] : []) }));
+// The last step's seat count reads the database; three seats with only the owner, as a new group has.
+vi.mock('@/lib/invitations', () => ({
+  seatsInEffect: vi.fn(async () => ({ limit: 3, members: 1, pending: 0, left: 2 })),
+}));
 vi.mock('@deep-fryer/db', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@deep-fryer/db')>()),
   tenantBySlug: vi.fn(async () => ({ id: 't-1', slug: 'ithaca', name: 'City of Ithaca' })),

@@ -88,9 +88,23 @@ describe.skipIf(!hasDb)('startPortrait with only the city and its state/country'
     expect(a.org!.name).toBe(name);
   });
 
-  it('still requires the city and its state/country, and checks an address chosen by hand', async () => {
+  it('takes a place name up to the limit without asking to shorten a field left blank', async () => {
     const { startPortrait } = await import('./org-actions');
-    expect(await startPortrait({ name: 'X', region: 'NY, USA' })).toMatchObject({ ok: false, error: 'name: Name the city.' });
+    // "City of " would take the organization's default past its limit: the name is used as it stands.
+    const name = `Athens ${uniq()} ${'Clarke '.repeat(20)}`.slice(0, 118).trim();
+    const destination = await redirectOf(startPortrait({ name, region: 'GA, USA' }));
+    const { tenant, org } = await created(decodeURIComponent(destination.split('=')[1]!));
+    expect(tenant).toMatchObject({ name });
+    expect(org).toMatchObject({ name });
+    expect(await startPortrait({ name: 'x'.repeat(121), region: 'GA, USA' })).toMatchObject({
+      ok: false,
+      error: 'Keep the name of the place to 120 characters or fewer.',
+    });
+  });
+
+  it('still requires the place and its state/country, and checks an address chosen by hand', async () => {
+    const { startPortrait } = await import('./org-actions');
+    expect(await startPortrait({ name: 'X', region: 'NY, USA' })).toMatchObject({ ok: false, error: 'Type the name of the place, at least 2 letters long.' });
     expect(await startPortrait({ name: 'Ithaca', region: '' })).toMatchObject({
       ok: false,
       error: expect.stringMatching(/state\/province and country/),

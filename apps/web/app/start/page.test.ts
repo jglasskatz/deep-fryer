@@ -1,5 +1,7 @@
 import React from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 /**
  * /start is the deployment's self_serve feature (core features.ts): on by
@@ -27,6 +29,10 @@ async function outcome(promise: Promise<unknown>): Promise<string> {
 }
 
 describe('/start and the self_serve feature', () => {
+  // The first import compiles the page and everything it reaches; done once, outside any test's time limit.
+  beforeAll(async () => {
+    await import('./page');
+  }, 60_000);
   const saved = { DF_DISABLED_FEATURES: process.env.DF_DISABLED_FEATURES, DATABASE_URL: process.env.DATABASE_URL };
   afterEach(async () => {
     for (const [k, v] of Object.entries(saved)) {
@@ -51,6 +57,15 @@ describe('/start and the self_serve feature', () => {
     expect(await visit({}, 'self_serve')).toBe('404');
     expect(await visit({ portrait: 'ithaca' }, 'self_serve')).toBe('404');
     expect(await visit({ portrait: 'ithaca', checkout: 'success' }, 'deep_fry, self_serve')).toBe('404');
+  });
+
+  // These tests read the error the page throws, not the response. Next sends that error's status (404,
+  // or 307 for the sign-in redirect) only while the page has not started streaming; a loading.tsx in
+  // app/start would stream a shell first and turn both into a 200, so the route must not have one.
+  it('has no loading boundary, so the 404 and the sign-in redirect keep their HTTP status', () => {
+    for (const file of ['./loading.tsx', '../loading.tsx']) {
+      expect(existsSync(fileURLToPath(new URL(file, import.meta.url))), file).toBe(false);
+    }
   });
 
   it('exists by default, and when only other features are off', async () => {
