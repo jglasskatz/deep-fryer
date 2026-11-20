@@ -512,9 +512,13 @@ export const customPageVersions = pgTable('custom_page_versions', {
 
 export const auditLog = pgTable('audit_log', {
   id: bigserial('id', { mode: 'bigint' }).primaryKey(),
-  tenantId: uuid('tenant_id')
-    .notNull()
-    .references(() => tenants.id, { onDelete: 'cascade' }),
+  /**
+   * The portrait the change belongs to. Null for a change to an account
+   * itself (staff access, written by staff.ts in the system context), which
+   * belongs to no portrait: no portrait owner reads it, and the app role
+   * cannot write it (the audit_log policies match no tenant).
+   */
+  tenantId: uuid('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }),
   userId: uuid('user_id'),
   entity: text('entity').notNull(),
   entityId: uuid('entity_id').notNull(),

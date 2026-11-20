@@ -361,8 +361,19 @@ docker compose run --rm migrate node --import tsx ../../scripts/create-tenant.ts
 year). Without it the organization has no plan: it can set up and invite
 people, and buys a plan under Billing before any research.
 
-Make yourself staff (contract editing on billing pages):
-`docker compose exec db psql -U deep_fryer -c "update users set is_staff = true where email = 'you@…'"`.
+Make yourself staff (contract editing on billing pages). Sign in to the app
+first, with the address you will use, then:
+
+```bash
+docker compose run --rm migrate node --import tsx ../../scripts/make-staff.ts --email you@…
+```
+
+The command refuses an address no one has signed in with yet (an owner
+`create-tenant.ts` named but who has not signed in counts as not yet). The
+change takes effect on your next page load, without signing in again, and
+is kept in the audit log as an account entry that no portrait's owner sees.
+`--email you@… --revoke` takes staff access away, and `--list` shows who has
+it.
 
 ### Features (SPEC-v7 §3)
 
