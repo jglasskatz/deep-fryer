@@ -37,7 +37,7 @@
     "@keel_flow/pack-research": "workspace:^",
     "@keel_flow/schema": "^0.2.0",
     "drizzle-orm": "^0.45.4",
-    "nodemailer": "^10.0.13",
+    "nodemailer": "^10.1.4",
     "stripe": "^23.0.0"
   },
   "devDependencies": {
