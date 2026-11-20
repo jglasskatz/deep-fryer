@@ -56,7 +56,10 @@ export default async function ResearchPage({
         <h1 className="mt-2 text-2xl font-bold">Research runs</h1>
 
         <section className="mt-4 rounded border border-black/10 p-3" aria-label="Research allowance">
-          {billing.limits && !billing.blockedMessage ? (
+          {/* The first-doughnut note, where the deployment has one, in place of the plan's standing (lib/billing.ts). */}
+          {billing.firstDoughnutNote && !billing.firstDoughnutNote.alert ? (
+            <p className="text-sm">{billing.firstDoughnutNote.text}</p>
+          ) : billing.limits && !billing.blockedMessage && !billing.firstDoughnutNote ? (
             <UsageMeter
               label={`Research sessions this billing period (renews ${billing.subscription!.currentPeriodEnd.toISOString().slice(0, 10)})`}
               used={billing.usage.researchSessions}
@@ -64,7 +67,7 @@ export default async function ResearchPage({
             />
           ) : (
             <p role="alert" className="text-sm text-red-900">
-              {billing.blockedMessage}
+              {billing.firstDoughnutNote?.text ?? billing.blockedMessage}
             </p>
           )}
           <p className="mt-1 text-xs text-[color:var(--color-muted)]">

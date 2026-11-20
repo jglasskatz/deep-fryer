@@ -1,13 +1,17 @@
-import { and, eq, gte, isNull, ne, sql } from 'drizzle-orm';
+import { and, eq, gte, isNotNull, isNull, ne, sql } from 'drizzle-orm';
 import {
   POLICY_ANALYSIS_SESSIONS,
   checkResearchQuota,
   effectiveLimits,
   standing,
+  standingMessage,
+  type FirstDoughnut,
+  type ResearchPlan,
   type ResearchQuotaCheck,
 } from '@deep-fryer/core';
 import type { DbExecutor } from './client.js';
 import {
+  dimensions,
   organizationApiKeys,
   organizationMembers,
   organizations,
@@ -273,6 +277,92 @@ export interface ResearchGate {
 }
 
 /**
+ * What the gate needs to apply the deployment's first-doughnut choice:
+ * the choice, and whether this spend is the organization's first full build
+ * (a run over every dimension of the portrait, in an organization that has
+ * never had research applied).
+ */
+export interface FirstDoughnutFacts {
+  choice: FirstDoughnut;
+  firstFullBuild: boolean;
+}
+
+/** Today's rule, and the default wherever a caller passes nothing: a first doughnut needs a plan or a contract. */
+export const PAID_FIRST_DOUGHNUT: FirstDoughnutFacts = { choice: 'paid', firstFullBuild: false };
+
+/**
+ * Why a first doughnut is refused where the deployment lets a group's own
+ * key pay for it but no key is on file, for an organization that has no
+ * subscription at all. The pages that explain the build beforehand say the
+ * same (apps/web lib/billing.ts firstDoughnutRoute).
+ */
+export const FIRST_DOUGHNUT_ADD_KEY_MESSAGE =
+  'Your first doughnut can be built on your organization’s own Anthropic API key, with no plan: an organization owner adds the key under Billing. Or choose a plan there, or ask us for a contract.';
+
+/**
+ * Whether an organization's subscription (or its lack of one) lets it take
+ * the first-doughnut route on its own key, where the deployment allows it:
+ * only without standing (no plan yet, a card checkout that did not finish,
+ * an invoice not paid yet, a lapsed plan or contract). One in good standing
+ * pays as its plan says; a subscription from before trials were retired
+ * never takes it.
+ */
+export function firstDoughnutEligible(sub: Subscription | null, now: Date = new Date()): boolean {
+  const s = standing(sub, now);
+  return !s.active && s.reason !== 'trial_expired';
+}
+
+/**
+ * The refusal for a first doughnut on the key route with no key on file:
+ * with no subscription, FIRST_DOUGHNUT_ADD_KEY_MESSAGE; with one that has
+ * lost or not reached standing, why (core standingMessage) and then that the
+ * key route is open too.
+ */
+export function firstDoughnutAddKeyMessage(sub: Subscription | null, now: Date = new Date()): string {
+  const reason = standing(sub, now).reason;
+  if (!sub || reason === 'no_subscription') return FIRST_DOUGHNUT_ADD_KEY_MESSAGE;
+  return `${standingMessage(reason) ?? ''} Your first doughnut can also be built on your organization’s own Anthropic API key, with no plan: an organization owner adds the key under Billing.`.trim();
+}
+
+/**
+ * Whether any research run has ever been applied for one of the
+ * organization's portraits, archived ones included, whether it finished,
+ * failed or is still queued. A run whose queueing failed has its applied
+ * time cleared again (apps/web lib/research.ts applyRun) and does not count.
+ */
+export async function organizationHasAppliedResearch(db: DbExecutor, organizationId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ id: researchRuns.id })
+    .from(researchRuns)
+    .innerJoin(tenants, eq(tenants.id, researchRuns.tenantId))
+    .where(and(eq(tenants.organizationId, organizationId), isNotNull(researchRuns.appliedAt)))
+    .limit(1);
+  return row !== undefined;
+}
+
+/**
+ * Whether `plan` is a full build of portrait `tenantId` in this
+ * organization: the region overview and at least one session for every
+ * dimension the portrait has (archived ones aside).
+ */
+export async function planIsFullBuild(
+  db: DbExecutor,
+  organizationId: string,
+  tenantId: string,
+  plan: ResearchPlan,
+): Promise<boolean> {
+  if (!plan.sessions.some((s) => s.kind === 'region_context')) return false;
+  const rows = await db
+    .select({ slug: dimensions.slug })
+    .from(dimensions)
+    .innerJoin(tenants, eq(tenants.id, dimensions.tenantId))
+    .where(and(eq(dimensions.tenantId, tenantId), eq(tenants.organizationId, organizationId), isNull(dimensions.archivedAt)));
+  if (rows.length === 0) return false;
+  const planned = new Set(plan.sessions.flatMap((s) => (s.kind === 'dimension' && s.dimension_slug ? [s.dimension_slug] : [])));
+  return rows.every((d) => planned.has(d.slug));
+}
+
+/**
  * Pure: the gate's decision from the facts it reads — the subscription, the
  * period's usage, and whether a key is on file. Shared by the gate below
  * (which reads those facts under the subscription lock) and by pages that
@@ -295,6 +385,14 @@ export interface ResearchGate {
  * `used` is the plan's usage (researchSessionsUsed: plan-funded sessions
  * only), so sessions an organization paid for with its own key never eat
  * into the allowance it falls back to once the key is removed.
+ *
+ * The one exception is the deployment's first-doughnut choice (core
+ * deploy-env DF_FIRST_DOUGHNUT), passed as `first`. Under `paid`, the
+ * default, nothing above changes. Under `own`, an organization without
+ * standing (firstDoughnutEligible) may apply one first full build on its
+ * own key: its key pays for that build, and everything after it needs a
+ * plan again. Without a key it is told it can add one. An organization in
+ * good standing, or one with a retired trial, is decided as before.
  */
 export function decideResearchSpend(
   sub: Subscription | null,
@@ -302,7 +400,20 @@ export function decideResearchSpend(
   hasOrganizationKey: boolean,
   requested: number,
   now: Date = new Date(),
+  first: FirstDoughnutFacts = PAID_FIRST_DOUGHNUT,
 ): Omit<ResearchGate, 'subscription'> {
+  if (first.choice === 'own' && first.firstFullBuild && firstDoughnutEligible(sub, now)) {
+    if (hasOrganizationKey) {
+      return {
+        funding: 'organization_key',
+        check: { allowed: true, used, limit: 0, remaining: 0, message: null },
+      };
+    }
+    return {
+      funding: 'plan',
+      check: { ...checkResearchQuota(sub, used, requested, now), message: firstDoughnutAddKeyMessage(sub, now) },
+    };
+  }
   if (!hasOrganizationKey) {
     return { funding: 'plan', check: checkResearchQuota(sub, used, requested, now) };
   }
@@ -333,15 +444,39 @@ export function decideResearchSpend(
  * and the worker runs a 'plan' row on the deployment's key and an
  * 'organization_key' row on the organization's key — failing it, never
  * falling back, if that key has been removed or cannot be read by then.
+ *
+ * `options.firstDoughnut` is the deployment's first-doughnut choice
+ * (`paid` when omitted, as for a policy analysis); `options.run` is the
+ * research run being applied, so the gate can tell a first full build.
+ * Under `own`, the subscription row's lock already orders two first builds
+ * of one organization; with no subscription row to lock, the gate locks the
+ * organization's row instead. Either way two first builds on two of its
+ * portraits are decided one after the other and only one goes through.
  */
 export async function gateResearchSpend(
   tx: DbExecutor,
   organizationId: string,
   requested: number,
   now: Date = new Date(),
+  options: { firstDoughnut?: FirstDoughnut; run?: { tenantId: string; plan: ResearchPlan } } = {},
 ): Promise<ResearchGate> {
   const sub = await lockSubscription(tx, organizationId);
   const used = sub ? await researchSessionsUsed(tx, organizationId, sub.currentPeriodStart) : 0;
   const hasKey = (await organizationApiKeyInfo(tx, organizationId)) !== null;
-  return { subscription: sub, ...decideResearchSpend(sub, used, hasKey, requested, now) };
+  let first = PAID_FIRST_DOUGHNUT;
+  if (options.firstDoughnut === 'own' && options.run && firstDoughnutEligible(sub, now)) {
+    if (!sub) {
+      // NO KEY UPDATE: serialises gates without blocking rows that merely reference the organization.
+      await tx
+        .select({ id: organizations.id })
+        .from(organizations)
+        .where(eq(organizations.id, organizationId))
+        .for('no key update');
+    }
+    const firstFullBuild =
+      !(await organizationHasAppliedResearch(tx, organizationId)) &&
+      (await planIsFullBuild(tx, organizationId, options.run.tenantId, options.run.plan));
+    first = { choice: 'own', firstFullBuild };
+  }
+  return { subscription: sub, ...decideResearchSpend(sub, used, hasKey, requested, now, first) };
 }

@@ -2,6 +2,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { FIRST_DOUGHNUT_CHOICES } from '@deep-fryer/core';
+import { decideResearchSpend, type Subscription } from '@deep-fryer/db';
 
 /**
  * The owner's rule, "No free trials for making donuts, but free to view":
@@ -60,6 +62,38 @@ describe('no free research', () => {
       return STARTS_A_TRIAL.filter((re) => re.test(source)).map((re) => `${f}: ${re.source}`);
     });
     expect(offenders).toEqual([]);
+    // The check itself still catches a subscription fixture written as a trial.
+    const fixture = "await db.insert(subscriptions).values({ organizationId, plan: 'community', status: 'trialing' });";
+    expect(STARTS_A_TRIAL.filter((re) => re.test(fixture)).map((re) => re.source)).toEqual([String.raw`\bstatus\s*:\s*['"]trialing['"]`]);
+  });
+
+  /**
+   * The deployment's first-doughnut choice (DF_FIRST_DOUGHNUT) is the one
+   * place research may start without a plan, and only on the group's own
+   * key, which pays for it: never on the deployment's key, never for a
+   * trial, never twice.
+   */
+  it('lets research start without a plan only on the organization’s own key, under every first-doughnut choice', () => {
+    const trial = {
+      organizationId: 'o-1', plan: 'trial', status: 'trialing', collection: 'card',
+      currentPeriodStart: new Date(), currentPeriodEnd: new Date(Date.now() + 86_400_000), trialEndsAt: new Date(Date.now() + 86_400_000),
+      cancelAtPeriodEnd: false, firstInvoicePaidAt: null, researchSessionsOverride: 30, portraitsOverride: null, seatsOverride: null,
+    } as Subscription;
+    for (const choice of FIRST_DOUGHNUT_CHOICES) {
+      for (const firstFullBuild of [false, true]) {
+        for (const hasKey of [false, true]) {
+          for (const requested of [1, 22, 500]) {
+            const none = decideResearchSpend(null, 0, hasKey, requested, new Date(), { choice, firstFullBuild });
+            if (none.check.allowed) {
+              expect({ choice, firstFullBuild, hasKey, funding: none.funding }).toEqual({
+                choice: 'own', firstFullBuild: true, hasKey: true, funding: 'organization_key',
+              });
+            }
+            expect(decideResearchSpend(trial, 0, hasKey, requested, new Date(), { choice, firstFullBuild }).check.allowed).toBe(false);
+          }
+        }
+      }
+    }
   });
 
   it('offers no trial anywhere a reader can see: pages, components, and the catalogs (English is the source of every translation)', () => {

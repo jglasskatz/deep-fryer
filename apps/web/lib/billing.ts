@@ -4,16 +4,21 @@ import { and, asc, eq, isNotNull, isNull, notExists } from 'drizzle-orm';
 import {
   PLANS,
   effectiveLimits,
+  firstDoughnutChoice,
   isPlanId,
   standing,
   standingMessage,
+  type FirstDoughnut,
   type Limits,
   type PlanDefinition,
   type Standing,
 } from '@deep-fryer/core';
 import {
   decideResearchSpend,
+  firstDoughnutAddKeyMessage,
+  firstDoughnutEligible,
   organizationApiKeyInfo,
+  organizationHasAppliedResearch,
   portraitCount,
   researchRuns,
   researchSessionsOnOrganizationKey,
@@ -60,21 +65,33 @@ export interface BillingSummary {
    * hint and dates only; the ciphertext is never selected — or null.
    */
   apiKey: OrganizationApiKeyInfo | null;
+  /** Research has been applied for one of the organization's portraits at some point: its first doughnut is behind it. */
+  researchApplied: boolean;
+  /**
+   * Where the deployment lets a group's own key pay for its first doughnut
+   * (firstDoughnutRoute), what the admin home, the org hub and the research
+   * page say in place of `blockedMessage`: `alert` when something has to be
+   * done before building, otherwise information. Null under `paid`, and
+   * whenever the plan's standing speaks for itself.
+   */
+  firstDoughnutNote: FirstDoughnutNote | null;
 }
 
 export const billingSummary = cache(async (organizationId: string): Promise<BillingSummary> => {
   const db = systemDb();
   const sub = await subscriptionFor(db, organizationId);
-  const [researchSessions, researchSessionsOnKey, portraits, seats, apiKey] = await Promise.all([
+  const [researchSessions, researchSessionsOnKey, portraits, seats, apiKey, researchApplied] = await Promise.all([
     sub ? researchSessionsUsed(db, organizationId, sub.currentPeriodStart) : 0,
     sub ? researchSessionsOnOrganizationKey(db, organizationId, sub.currentPeriodStart) : 0,
     portraitCount(db, organizationId),
     seatCount(db, organizationId),
     organizationApiKeyInfo(db, organizationId),
+    organizationHasAppliedResearch(db, organizationId),
   ]);
   const s = standing(sub);
   // With no key on file the plan pays, and the plan's sessions run on the deployment's key.
   const planUnusable = s.active && apiKey === null && !deploymentResearchKeyConfigured();
+  const route = firstDoughnutRoute({ subscription: sub, researchApplied, keyOnFile: apiKey !== null });
   return {
     subscription: sub,
     plan: sub && isPlanId(sub.plan) ? PLANS[sub.plan] : null,
@@ -83,8 +100,130 @@ export const billingSummary = cache(async (organizationId: string): Promise<Bill
     limits: sub ? effectiveLimits(sub) : null,
     usage: { researchSessions, researchSessionsOnKey, portraits, seats },
     apiKey,
+    researchApplied,
+    firstDoughnutNote: route.note,
   };
 });
+
+// ---- The first doughnut --------------------------------------------------------------
+
+/**
+ * The deployment's first-doughnut choice as the research gate applies it
+ * (core deploy-env DF_FIRST_DOUGHNUT): `own` only where organizations can
+ * store their own key (DF_SECRETS_KEY), since without one no group could
+ * take that way; `paid` otherwise, today's rule.
+ */
+export function firstDoughnutSetting(keysStorable: boolean = bringYourOwnKeyAvailable()): FirstDoughnut {
+  return firstDoughnutChoice(process.env) === 'own' && keysStorable ? 'own' : 'paid';
+}
+
+/** A sentence the admin pages show about the first doughnut: `alert` when it says what to do before building. */
+export interface FirstDoughnutNote {
+  text: string;
+  alert: boolean;
+}
+
+/**
+ * What every screen says about paying for a group's first doughnut, from
+ * one place, so the build step, the billing page and the admin pages read
+ * the same rule as the research gate.
+ */
+export interface FirstDoughnutRoute {
+  choice: FirstDoughnut;
+  /**
+   * This organization's first doughnut may be built on its own key with no
+   * plan: the choice is `own`, it has no plan in good standing (packages/db
+   * firstDoughnutEligible), and no research has been applied for it yet.
+   */
+  onOwnKey: boolean;
+  /**
+   * The choice is `own`, the organization has no plan in good standing, and
+   * research has been applied for it: the first doughnut is under way or
+   * done, so what comes next needs a plan.
+   */
+  firstStarted: boolean;
+  /** For a group with no plan in good standing: setting up is free, and what building needs. */
+  buildNeeds: string;
+  /** The last sentence on the build step while a plan's first invoice is unpaid. */
+  awaitingInvoiceBuild: string;
+  /** What adding the organization's own key does, wherever the key is offered. */
+  ownKeyDoes: string;
+  /** After "Your Anthropic API key (…)" on the build step, while the key on file pays for the first doughnut; null otherwise. */
+  keyPaysForFirst: string | null;
+  /**
+   * The billing page's key section opens with this, with a key on file or
+   * not, while `onOwnKey`; null otherwise, when the page's own words about
+   * the plan's allowance apply.
+   */
+  keyLead: { onFile: string; offFile: string } | null;
+  /** The billing page's key section: what a key does and does not replace. */
+  keyAndPlan: string;
+  /** The billing page, with no plan: what building needs, before "choose a plan below". */
+  billingBuildNeeds: string;
+  /** BillingSummary firstDoughnutNote. */
+  note: FirstDoughnutNote | null;
+}
+
+export function firstDoughnutRoute(
+  facts: { subscription: Subscription | null; researchApplied: boolean; keyOnFile: boolean },
+  choice: FirstDoughnut = firstDoughnutSetting(),
+): FirstDoughnutRoute {
+  const eligible = choice === 'own' && firstDoughnutEligible(facts.subscription);
+  const onOwnKey = eligible && !facts.researchApplied;
+  const firstStarted = eligible && facts.researchApplied;
+  if (!onOwnKey) {
+    return {
+      choice,
+      onOwnKey,
+      firstStarted,
+      buildNeeds: 'Setting up the portrait is free; building it needs a plan in good standing or a contract.',
+      awaitingInvoiceBuild: 'Building the doughnut needs a plan that has been paid for, or a contract.',
+      ownKeyDoes:
+        "The sessions then run on your key and do not use the plan's research allowance. A plan is still needed: your key pays for the model usage, not for hosting, review, and support.",
+      keyPaysForFirst: null,
+      keyLead: null,
+      keyAndPlan: 'A plan is still needed: your key pays for the model usage, the plan for hosting, review, and support.',
+      billingBuildNeeds: 'Building it, the research, needs a plan or a contract:',
+      // With no subscription at all, the plan's standing would say "Choose a plan to build your doughnut",
+      // which reads wrong beside a first doughnut already under way: say where things stand instead.
+      // With one, its standing (canceled, unpaid, …) says what to do, as under `paid`.
+      note:
+        firstStarted && facts.subscription === null
+          ? {
+              text: 'Your first doughnut has been started. More research after it needs a plan or a contract: choose a plan under Billing, or ask us for a contract.',
+              alert: false,
+            }
+          : null,
+    };
+  }
+  return {
+    choice,
+    onOwnKey,
+    firstStarted,
+    buildNeeds:
+      'Setting up the portrait is free, and your first doughnut can be built on your organization’s own Anthropic API key with no plan. After it, more research needs a plan or a contract.',
+    awaitingInvoiceBuild:
+      'Until it is paid, your first doughnut can be built on your organization’s own Anthropic API key instead, with no plan.',
+    ownKeyDoes:
+      'Your first doughnut then runs on your key, with no plan needed: your key pays for the model usage. Research after the first doughnut needs a plan or a contract.',
+    keyPaysForFirst:
+      'pays for your first doughnut, with no plan needed: the sessions run on your key. Research after the first doughnut needs a plan or a contract.',
+    keyLead: {
+      onFile: 'Your first doughnut runs on your key, with no plan needed.',
+      offFile: 'With your own Anthropic API key on file, your first doughnut runs on your key, with no plan needed.',
+    },
+    keyAndPlan: 'Research after it needs a plan or a contract, which pays for hosting, review, and support.',
+    billingBuildNeeds:
+      'Its first doughnut can be built on its own Anthropic API key, added below, with no plan. After that, the research needs a plan or a contract:',
+    note: facts.keyOnFile
+      ? {
+          text: 'Your first doughnut can be built on your organization’s own Anthropic API key, with no plan, as one full build of every dimension. Other research needs a plan: choose one under Billing, or ask us for a contract.',
+          alert: false,
+        }
+      : // The same refusal the research gate gives at the click.
+        { text: firstDoughnutAddKeyMessage(facts.subscription), alert: true },
+  };
+}
 
 export interface ResearchSpendPreview {
   funding: ResearchFunding;
@@ -222,18 +361,27 @@ export function apiKeyUnavailableNotice(
  * fed from the summary, then the same check that the chosen funding can be
  * carried out on this server (assertFundingUsable's), in the same order as
  * at apply; the gate re-decides under the lock at click time.
+ *
+ * `fullBuild` says the spend would be a full build of a portrait (what
+ * "Build my doughnut" plans), so the deployment's first-doughnut choice
+ * applies as it would at apply (firstDoughnutSetting); anything else, a
+ * policy analysis say, is decided by today's rule.
  */
 export function previewResearchSpend(
   summary: BillingSummary,
   sessions: number,
   keysReadable: boolean = bringYourOwnKeyAvailable(),
   researchKeyConfigured: boolean = deploymentResearchKeyConfigured(),
+  fullBuild: boolean = false,
+  choice: FirstDoughnut = firstDoughnutSetting(keysReadable),
 ): ResearchSpendPreview {
   const { funding, check } = decideResearchSpend(
     summary.subscription,
     summary.usage.researchSessions,
     summary.apiKey !== null,
     sessions,
+    new Date(),
+    { choice, firstFullBuild: fullBuild && !summary.researchApplied },
   );
   // A standing or quota refusal comes first, as at apply, and reads the same whoever pays.
   if (check.allowed) {

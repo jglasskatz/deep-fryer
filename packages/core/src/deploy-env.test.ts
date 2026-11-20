@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { productionEnvProblems, secretsKeyProblem } from './deploy-env.js';
+import { firstDoughnutChoice, firstDoughnutProblem, productionEnvProblems, secretsKeyProblem } from './deploy-env.js';
 
 describe('productionEnvProblems', () => {
   const ok = {
@@ -53,5 +53,37 @@ describe('productionEnvProblems', () => {
     expect(problem).toMatch(/must be base64/);
     expect(problem).not.toContain('horse');
     expect(secretsKeyProblem(btoa('x'.repeat(48)))).toMatch(/not 48/);
+  });
+
+  // How a group pays for its first doughnut: one named choice, `paid` unless the operator says otherwise.
+  it('accepts DF_FIRST_DOUGHNUT unset, blank, paid or own', () => {
+    for (const value of [undefined, '', '  ', 'paid', 'own', ' Own\n']) {
+      expect(productionEnvProblems({ ...ok, DF_FIRST_DOUGHNUT: value })).toEqual([]);
+    }
+  });
+  it('refuses a first-doughnut choice that is not built yet, or unknown, listing the accepted choices', () => {
+    for (const value of ['approval', 'starter']) {
+      expect(productionEnvProblems({ ...ok, DF_FIRST_DOUGHNUT: value })).toEqual([
+        `DF_FIRST_DOUGHNUT=${value} is not available yet; accepted choices: paid, own (unset means paid)`,
+      ]);
+    }
+    const [problem] = productionEnvProblems({ ...ok, DF_FIRST_DOUGHNUT: 'free-for-all' });
+    expect(problem).toBe('DF_FIRST_DOUGHNUT must be one of the accepted choices: paid, own (unset means paid)');
+    expect(firstDoughnutProblem({ DF_FIRST_DOUGHNUT: 'yes' })).toMatch(/paid, own/);
+  });
+});
+
+describe('firstDoughnutChoice', () => {
+  it('is paid unless the operator chose own', () => {
+    expect(firstDoughnutChoice({})).toBe('paid');
+    expect(firstDoughnutChoice({ DF_FIRST_DOUGHNUT: '' })).toBe('paid');
+    expect(firstDoughnutChoice({ DF_FIRST_DOUGHNUT: 'paid' })).toBe('paid');
+    expect(firstDoughnutChoice({ DF_FIRST_DOUGHNUT: 'own' })).toBe('own');
+    expect(firstDoughnutChoice({ DF_FIRST_DOUGHNUT: ' OWN ' })).toBe('own');
+  });
+  it('reads a value it cannot use as paid, the stricter rule', () => {
+    for (const value of ['approval', 'starter', 'free', 'owned']) {
+      expect(firstDoughnutChoice({ DF_FIRST_DOUGHNUT: value })).toBe('paid');
+    }
   });
 });

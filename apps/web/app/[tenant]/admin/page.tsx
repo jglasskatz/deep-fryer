@@ -124,9 +124,13 @@ export default async function TenantAdminPage({
           </nav>
         </div>
 
-        {billing.blockedMessage ? (
+        {/* Where the deployment lets a group's own key pay for its first doughnut, that is said in place of the
+            plan's standing: as an alert only when something has to be done first (lib/billing.ts firstDoughnutRoute). */}
+        {billing.firstDoughnutNote && !billing.firstDoughnutNote.alert ? (
+          <p className="mt-4 rounded border border-black/15 bg-black/[0.03] px-3 py-2 text-sm">{billing.firstDoughnutNote.text}</p>
+        ) : billing.firstDoughnutNote || billing.blockedMessage ? (
           <p role="alert" className="mt-4 rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900">
-            {billing.blockedMessage}
+            {billing.firstDoughnutNote?.text ?? billing.blockedMessage}
           </p>
         ) : billing.standing.warning ? (
           <p className="mt-4 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">

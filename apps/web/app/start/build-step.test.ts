@@ -1,6 +1,6 @@
 import React, { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppRouterContext } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { standing, type SubscriptionSnapshot } from '@deep-fryer/core';
 
@@ -20,9 +20,19 @@ vi.stubGlobal('React', React);
 const now = Date.now();
 const DAY = 86_400_000;
 let subscription: (SubscriptionSnapshot & { organizationId: string; stripeSubscriptionId: string | null }) | null = null;
+/** Whether this server can store organizations' own keys, and whether one is on file. */
+let keysStorable = false;
+let keyOnFile = false;
+/** Research has been applied for one of the organization's portraits, and a run of this portrait is going. */
+let researchApplied = false;
+let runGoing = false;
 
 vi.mock('@/components/site-header/SiteHeader', () => ({ SiteHeader: () => null }));
-vi.mock('@/components/onboarding/BuildDoughnut', () => ({ BuildDoughnut: () => null }));
+// Shows why the button is disabled, when it is.
+vi.mock('@/components/onboarding/BuildDoughnut', () => ({
+  BuildDoughnut: ({ blockedReason }: { blockedReason: string | null }) =>
+    createElement('output', { 'data-blocked': blockedReason ?? '' }),
+}));
 vi.mock('@/components/onboarding/PortraitForm', () => ({ PortraitForm: () => null }));
 // Shows whether it is polling, and where it sits next to the status.
 vi.mock('@/components/admin/AutoRefresh', () => ({
@@ -34,7 +44,7 @@ vi.mock('@/lib/auth', async (importOriginal) => ({
   getRole: vi.fn(async () => 'owner'),
   getOrgRole: vi.fn(async () => 'owner'),
 }));
-vi.mock('@/lib/db', () => ({ systemDb: () => ({}), userDb: async () => [] }));
+vi.mock('@/lib/db', () => ({ systemDb: () => ({}), userDb: async () => (runGoing ? [{ id: 'run-1' }] : []) }));
 vi.mock('@deep-fryer/db', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@deep-fryer/db')>()),
   tenantBySlug: vi.fn(async () => ({ id: 't-1', slug: 'ithaca', name: 'City of Ithaca' })),
@@ -54,7 +64,11 @@ vi.mock('@/lib/billing', async (importOriginal) => {
         blockedMessage: standingMessage(s.reason),
         limits: subscription ? effectiveLimits(subscription) : null,
         usage: { researchSessions: 0, researchSessionsOnKey: 0, portraits: 1, seats: 1 },
-        apiKey: null,
+        apiKey: keyOnFile
+          ? { provider: 'anthropic', keyHint: 'Ab12', createdBy: null, createdAt: new Date(now), validatedAt: new Date(now) }
+          : null,
+        researchApplied,
+        firstDoughnutNote: null,
       };
     }),
   };
@@ -63,7 +77,7 @@ vi.mock('@/lib/env', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/env')>()),
   hasDatabase: () => true,
   stripeConfigured: () => true,
-  bringYourOwnKeyAvailable: () => false,
+  bringYourOwnKeyAvailable: () => keysStorable,
   deploymentResearchKeyConfigured: () => true,
   supportEmail: () => 'help@example.gov',
 }));
@@ -155,5 +169,127 @@ describe('/start’s build step before paying', () => {
     expect(html).toContain('Your City plan starts once its first invoice is paid.');
     expect(html).toContain('Pay the first invoice.');
     expect(html).not.toContain('Choose a plan on the billing page');
+  });
+});
+
+/** The button's disabled reason as rendered, or '' when it is enabled. */
+const blocked = (html: string) => html.match(/<output data-blocked="([^"]*)"/)?.[1] ?? null;
+
+describe('/start’s build step and the deployment’s first-doughnut choice', () => {
+  const before = process.env.DF_FIRST_DOUGHNUT;
+  beforeEach(() => {
+    delete process.env.DF_DISABLED_FEATURES;
+    subscription = null;
+    keysStorable = true;
+    keyOnFile = false;
+  });
+  afterEach(() => {
+    keysStorable = false;
+    keyOnFile = false;
+    researchApplied = false;
+    runGoing = false;
+    if (before === undefined) delete process.env.DF_FIRST_DOUGHNUT;
+    else process.env.DF_FIRST_DOUGHNUT = before;
+  });
+
+  it('unset: a plan is needed, the own key spares its allowance only, and the button says to choose a plan', async () => {
+    delete process.env.DF_FIRST_DOUGHNUT;
+    const html = await buildStep();
+    expect(html).toContain('No plan yet.</strong> Setting up the portrait is free; building it needs a plan in good standing or a contract.');
+    expect(html).toContain('A plan is still needed: your key pays for the model usage, not for hosting, review, and support.');
+    expect(blocked(html)).toMatch(/^Choose a plan to build your doughnut/);
+  });
+
+  it('own, no key yet: says the first doughnut needs no plan on the group’s key, and the button says how', async () => {
+    process.env.DF_FIRST_DOUGHNUT = 'own';
+    const html = await buildStep();
+    expect(html).toContain('your first doughnut can be built on your organization’s own Anthropic API key with no plan');
+    expect(html).toContain('Use your own Anthropic API key.</strong> Your first doughnut then runs on your key, with no plan needed');
+    expect(html).toContain('Add your key on the billing page');
+    expect(html).not.toContain('A plan is still needed');
+    // A plan and a contract stay on offer.
+    expect(html).toContain('Choose a plan on the billing page');
+    expect(html).toContain('Arrange a contract.');
+    expect(blocked(html)).toContain('an organization owner adds the key under Billing');
+    // The estimate describes the way the step recommends, the key, not a plan this group does not have.
+    expect(html).toContain('on your key');
+    expect(html).toContain('billed to you by Anthropic.');
+    expect(html).not.toContain('covered by the plan’s research sessions');
+  });
+
+  it('own, first doughnut under way on the key: says it will finish, and offers no way to pay beside it', async () => {
+    process.env.DF_FIRST_DOUGHNUT = 'own';
+    keyOnFile = true;
+    researchApplied = true;
+    runGoing = true;
+    const html = await buildStep();
+    expect(html).toContain('No plan yet.</strong> The research under way will finish; more research after it needs a plan or a contract.');
+    expect(html).toContain('Research for City of Ithaca is under way.');
+    expect(html).toContain('Follow the run');
+    expect(html).not.toContain('Setting up the portrait is free');
+    expect(html).not.toContain('Choose a plan on the billing page');
+    expect(html).not.toContain('Arrange a contract.');
+  });
+
+  it('own, first doughnut done: a rebuild needs a plan, with the ways to get one', async () => {
+    process.env.DF_FIRST_DOUGHNUT = 'own';
+    keyOnFile = true;
+    researchApplied = true;
+    const html = await buildStep();
+    expect(html).toContain('No plan yet.</strong> Setting up the portrait is free; building it needs a plan in good standing or a contract.');
+    expect(html).toContain('Choose a plan on the billing page');
+    expect(html).not.toContain('pays for your first doughnut');
+    expect(blocked(html)).toMatch(/^Choose a plan to build your doughnut/);
+  });
+
+  it('own, an invoice plan not paid yet and no key: pay it, or build the first doughnut on the key meanwhile', async () => {
+    process.env.DF_FIRST_DOUGHNUT = 'own';
+    subscription = cityPlan({ collection: 'invoice', firstInvoicePaidAt: null });
+    const html = await buildStep();
+    expect(html).toContain('Your City plan starts once its first invoice is paid.');
+    expect(html).toContain('Until it is paid, your first doughnut can be built on your organization’s own Anthropic API key instead, with no plan.');
+    expect(html).not.toContain('Building the doughnut needs a plan that has been paid for');
+    expect(html).toContain('Pay the first invoice.');
+    expect(html).toContain('Add your key on the billing page');
+    expect(blocked(html)).toMatch(/^Research starts once the first invoice is paid\..* Your first doughnut can also be built/);
+  });
+
+  it('own, a card checkout that did not finish, with a key on file: the key pays for the first doughnut', async () => {
+    process.env.DF_FIRST_DOUGHNUT = 'own';
+    subscription = cityPlan({ status: 'incomplete' });
+    keyOnFile = true;
+    const html = await buildStep();
+    expect(html).toContain('pays for your first doughnut, with no plan needed');
+    expect(html).not.toContain('Choose a plan on the billing page');
+    expect(blocked(html)).toBe('');
+  });
+
+  it('own, key on file: the key pays for the first doughnut, nothing is left to choose, and the button is enabled', async () => {
+    process.env.DF_FIRST_DOUGHNUT = 'own';
+    keyOnFile = true;
+    const html = await buildStep();
+    expect(html).toContain('sk-ant-…Ab12');
+    expect(html).toContain('pays for your first doughnut, with no plan needed');
+    expect(html).not.toContain('No plan yet.');
+    expect(html).not.toContain('Choose a plan on the billing page');
+    expect(blocked(html)).toBe('');
+  });
+
+  it('own on a server that cannot store keys: today’s rule, word for word', async () => {
+    process.env.DF_FIRST_DOUGHNUT = 'own';
+    keysStorable = false;
+    const html = await buildStep();
+    expect(html).toContain('building it needs a plan in good standing or a contract.');
+    expect(html).not.toContain('first doughnut');
+    expect(blocked(html)).toMatch(/^Choose a plan to build your doughnut/);
+  });
+
+  it('own, for an organization that has a plan: the plan pays, as before', async () => {
+    process.env.DF_FIRST_DOUGHNUT = 'own';
+    subscription = cityPlan();
+    const html = await buildStep();
+    expect(html).not.toContain('first doughnut');
+    expect(html).toContain('Your City plan</strong> — this uses 22 of the');
+    expect(blocked(html)).toBe('');
   });
 });

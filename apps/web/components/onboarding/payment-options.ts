@@ -3,10 +3,11 @@ import type { OrgRole } from '@/lib/auth';
 /**
  * The ways to pay that /start's build step offers (SPEC-v7 §4, as the owner
  * decided: "No free trials for making donuts, but free to view"). Building
- * a doughnut always needs an organization in good standing — a paid plan or
- * a contract — so the step lays out how to get there from what this server
- * can do and what the person looking may do. Pure, so the rules are tested
- * apart from the page (payment-options.test.ts).
+ * a doughnut needs an organization in good standing — a paid plan or a
+ * contract — unless the deployment lets a group's own key pay for its first
+ * doughnut (DF_FIRST_DOUGHNUT=own), so the step lays out how to get there
+ * from what this server can do and what the person looking may do. Pure,
+ * so the rules are tested apart from the page (payment-options.test.ts).
  */
 export interface BuildStepFacts {
   /** The organization has a plan in good standing (core standing().active). */
@@ -27,6 +28,13 @@ export interface BuildStepFacts {
   researchKeyConfigured: boolean;
   /** The viewer's organization role: owners and billing contacts buy plans, only owners add keys. */
   orgRole: OrgRole | null;
+  /**
+   * This deployment lets the organization's own key pay for its first
+   * doughnut with no plan, and that first doughnut is still to come
+   * (lib/billing.ts firstDoughnutRoute onOwnKey). False by default: today a
+   * plan is always needed.
+   */
+  firstOnOwnKey?: boolean;
 }
 
 export interface WaysToPay {
@@ -42,10 +50,16 @@ export interface WaysToPay {
   contract: true;
   /**
    * Add the organization's own key, which spares the plan's allowance (a plan
-   * is still needed). Only where this server can store keys and none is on
-   * file yet; never a dead end that ends in "not available".
+   * is still needed, unless `noPlanNeeded`: the deployment lets the key pay
+   * for the first doughnut on its own). Only where this server can store keys
+   * and none is on file yet; never a dead end that ends in "not available".
    */
-  ownKey: { viewerCan: boolean } | null;
+  ownKey: { viewerCan: boolean; noPlanNeeded: boolean } | null;
+  /**
+   * The key on file pays for the first doughnut with no plan: nothing else
+   * has to be chosen before building.
+   */
+  keyBuildsFirst: boolean;
   /**
    * This server cannot run research a plan pays for (no research key of its
    * own), so a plan alone will not build the doughnut here; with the
@@ -63,7 +77,9 @@ export function waysToPay(f: BuildStepFacts): WaysToPay {
         }
       : null,
     contract: true,
-    ownKey: f.keysStorable && !f.keyOnFile ? { viewerCan: f.orgRole === 'owner' } : null,
+    ownKey:
+      f.keysStorable && !f.keyOnFile ? { viewerCan: f.orgRole === 'owner', noPlanNeeded: Boolean(f.firstOnOwnKey) } : null,
+    keyBuildsFirst: Boolean(f.firstOnOwnKey) && f.keyOnFile,
     planAloneCannotBuild: !f.researchKeyConfigured && !f.keyOnFile,
   };
 }

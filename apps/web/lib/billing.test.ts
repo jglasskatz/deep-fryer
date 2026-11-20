@@ -1,8 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+import { FIRST_DOUGHNUT_ADD_KEY_MESSAGE, firstDoughnutAddKeyMessage } from '@deep-fryer/db';
 import {
   apiKeyUnavailableNotice,
   assertFundingUsable,
   contactSentence,
+  firstDoughnutRoute,
+  firstDoughnutSetting,
   keyFundedSessionsNote,
   orgKeyUnreadableMessage,
   previewResearchSpend,
@@ -158,5 +161,131 @@ describe('previewResearchSpend — what "Build my doughnut" would do, before the
       allowed: false,
       message: orgKeyUnreadableMessage(),
     });
+  });
+});
+
+// DF_FIRST_DOUGHNUT: one named choice for how a group pays for its first doughnut, read the same by every screen.
+describe('the first-doughnut choice', () => {
+  const before = process.env.DF_FIRST_DOUGHNUT;
+  afterEach(() => {
+    if (before === undefined) delete process.env.DF_FIRST_DOUGHNUT;
+    else process.env.DF_FIRST_DOUGHNUT = before;
+  });
+  const sub = {
+    plan: 'community',
+    status: 'active',
+    collection: 'card',
+    currentPeriodStart: new Date(Date.now() - 86_400_000),
+    currentPeriodEnd: new Date(Date.now() + 29 * 86_400_000),
+    trialEndsAt: null,
+    cancelAtPeriodEnd: false,
+    researchSessionsOverride: 30,
+    portraitsOverride: null,
+    seatsOverride: null,
+  } as BillingSummary['subscription'];
+  const fresh = (keyOnFile: boolean, researchApplied = false): BillingSummary =>
+    ({
+      subscription: null,
+      usage: { researchSessions: 0, researchSessionsOnKey: 0, portraits: 1, seats: 1 },
+      apiKey: keyOnFile
+        ? { provider: 'anthropic', keyHint: 'Ab12', createdBy: null, createdAt: new Date(), validatedAt: new Date() }
+        : null,
+      researchApplied,
+    }) as BillingSummary;
+
+  it('is paid unless the operator chose own, and own only where this server can store keys', () => {
+    delete process.env.DF_FIRST_DOUGHNUT;
+    expect(firstDoughnutSetting(true)).toBe('paid');
+    process.env.DF_FIRST_DOUGHNUT = 'own';
+    expect(firstDoughnutSetting(true)).toBe('own');
+    expect(firstDoughnutSetting(false)).toBe('paid');
+    // Refused at boot in production; anywhere else read as the stricter rule.
+    process.env.DF_FIRST_DOUGHNUT = 'starter';
+    expect(firstDoughnutSetting(true)).toBe('paid');
+  });
+
+  it('words today’s rule under paid, and says nothing in place of the plan’s own standing', () => {
+    for (const researchApplied of [false, true]) {
+      const route = firstDoughnutRoute({ subscription: null, researchApplied, keyOnFile: false }, 'paid');
+      expect(route).toMatchObject({ onOwnKey: false, firstStarted: false, keyPaysForFirst: null, keyLead: null, note: null });
+      expect(route.buildNeeds).toBe('Setting up the portrait is free; building it needs a plan in good standing or a contract.');
+      expect(route.awaitingInvoiceBuild).toBe('Building the doughnut needs a plan that has been paid for, or a contract.');
+      expect(route.keyAndPlan).toMatch(/^A plan is still needed/);
+    }
+  });
+
+  it('under own, offers the key for the first doughnut to an organization without standing that has not built one', () => {
+    const facts = { subscription: null, researchApplied: false, keyOnFile: false };
+    const route = firstDoughnutRoute(facts, 'own');
+    expect(route).toMatchObject({ onOwnKey: true, firstStarted: false });
+    expect(route.buildNeeds).toMatch(/first doughnut can be built on your organization’s own Anthropic API key with no plan/);
+    // Something to do first, so an alert: the same refusal the research gate gives at the click.
+    expect(route.note).toEqual({ text: FIRST_DOUGHNUT_ADD_KEY_MESSAGE, alert: true });
+    // With the key on file, good news, said as information.
+    expect(firstDoughnutRoute({ ...facts, keyOnFile: true }, 'own').note).toEqual({
+      text: expect.stringMatching(/as one full build of every dimension/),
+      alert: false,
+    });
+    // No sentence a group reads under own still says a plan is always needed.
+    const texts = [
+      route.buildNeeds, route.awaitingInvoiceBuild, route.ownKeyDoes, route.keyPaysForFirst, route.keyAndPlan,
+      route.billingBuildNeeds, route.keyLead?.onFile, route.keyLead?.offFile, route.note?.text,
+    ];
+    for (const text of texts) {
+      expect(text).toEqual(expect.any(String));
+      expect(text).not.toMatch(/plan is still needed|needs a plan in good standing|not counted against your plan/);
+    }
+  });
+
+  it('under own, treats a checkout that did not finish, an unpaid first invoice and a lapsed plan as without standing', () => {
+    const facts = { researchApplied: false, keyOnFile: false };
+    const withoutStanding = [
+      { ...sub!, status: 'incomplete' as const },
+      { ...sub!, collection: 'invoice' as const, firstInvoicePaidAt: null },
+      { ...sub!, status: 'canceled' as const },
+    ];
+    for (const subscription of withoutStanding) {
+      const route = firstDoughnutRoute({ ...facts, subscription }, 'own');
+      expect(route.onOwnKey).toBe(true);
+      // The plan's own reason first, then the key route.
+      expect(route.note).toEqual({ text: firstDoughnutAddKeyMessage(subscription), alert: true });
+      expect(route.note!.text).toMatch(/Your first doughnut can also be built on your organization’s own Anthropic API key/);
+    }
+    // In good standing, or a trial from before trials were retired: today's rule.
+    const trial = { ...sub!, plan: 'trial', status: 'trialing' as const };
+    for (const subscription of [sub, trial]) {
+      expect(firstDoughnutRoute({ ...facts, subscription }, 'own')).toMatchObject({ onOwnKey: false, firstStarted: false, note: null });
+    }
+  });
+
+  it('under own, once the first doughnut is started, says so in place of “choose a plan to build”, as information', () => {
+    const route = firstDoughnutRoute({ subscription: null, researchApplied: true, keyOnFile: true }, 'own');
+    expect(route).toMatchObject({ onOwnKey: false, firstStarted: true, keyPaysForFirst: null });
+    expect(route.note).toEqual({
+      text: 'Your first doughnut has been started. More research after it needs a plan or a contract: choose a plan under Billing, or ask us for a contract.',
+      alert: false,
+    });
+    // A lapsed plan speaks for itself (its standing message), as under paid.
+    expect(firstDoughnutRoute({ subscription: { ...sub!, status: 'canceled' }, researchApplied: true, keyOnFile: true }, 'own')).toMatchObject({
+      firstStarted: true,
+      note: null,
+    });
+  });
+
+  it('previews a first full build on the key as the gate decides it, and nothing else', () => {
+    process.env.DF_FIRST_DOUGHNUT = 'own';
+    expect(previewResearchSpend(fresh(true), 22, true, true, true)).toMatchObject({ funding: 'organization_key', allowed: true });
+    expect(previewResearchSpend(fresh(false), 22, true, true, true)).toMatchObject({
+      allowed: false,
+      message: FIRST_DOUGHNUT_ADD_KEY_MESSAGE,
+    });
+    // Not a full build (a policy analysis, say), or a second build: refused as before.
+    for (const preview of [previewResearchSpend(fresh(true), 1, true, true), previewResearchSpend(fresh(true, true), 22, true, true, true)]) {
+      expect(preview.allowed).toBe(false);
+      expect(preview.message).toMatch(/^Choose a plan to build your doughnut/);
+    }
+    // Unset: the first full build is refused too.
+    delete process.env.DF_FIRST_DOUGHNUT;
+    expect(previewResearchSpend(fresh(true), 22, true, true, true).message).toMatch(/^Choose a plan to build your doughnut/);
   });
 });
