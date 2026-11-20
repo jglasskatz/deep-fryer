@@ -4,6 +4,7 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { PortraitDoughnut } from '@/components/doughnut/PortraitDoughnut';
 import { SampleDataNotice } from '@/components/sample-data/SampleDataNotice';
 import { evidenceUrl, getPortrait, hasDatabase } from '@/lib/data';
+import { familyForTenant } from '@/lib/family';
 import { portraitFeatures } from '@/lib/features';
 import { localizeDimensions } from '@/lib/i18n/content';
 import { fmt } from '@/lib/i18n/format';
@@ -52,11 +53,14 @@ export default async function TenantPage({
   // `involvement` off no listings are read at all, and with `discussion` off
   // nothing here mentions one.
   const features = await portraitFeatures(tenant);
-  const [portrait, { m, href, locale }, involvement, sample] = await Promise.all([
+  const [portrait, { m, href, locale }, involvement, sample, family] = await Promise.all([
     getPortrait(tenant),
     getI18n(),
     features.involvement ? involvementView(tenant) : Promise.resolve(null),
     portraitSampleData(tenant),
+    // The portraits the number keys open, in the family bar's order (the
+    // site header reads the same cached family).
+    familyForTenant(tenant),
   ]);
   if (!portrait) notFound();
 
@@ -121,6 +125,24 @@ export default async function TenantPage({
               pageHref: href(`/${slug}`),
               discussion: features.discussion,
               englishNote: locale !== 'en',
+            }}
+            chips={{ labels: m.portrait.chips, locale }}
+            shortcuts={{
+              portraits: (family?.members ?? []).map((member) => ({
+                slug: member.slug,
+                name: member.name,
+                href: href(`/${member.slug}`),
+              })),
+              current: slug,
+              locale,
+              labels: {
+                theme: m.doughnut.shortcutsTheme,
+                portraits: m.doughnut.shortcutsPortraits,
+                portrait: m.doughnut.shortcutsPortrait,
+                toggle: m.theme.toggle,
+                light: m.theme.light,
+                dark: m.theme.dark,
+              },
             }}
           />
         </div>

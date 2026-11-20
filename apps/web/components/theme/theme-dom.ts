@@ -5,6 +5,8 @@ import {
   parseThemePreference,
   storePreference,
   themeAttribute,
+  toggledTheme,
+  type ResolvedTheme,
   type ThemePreference,
 } from '@/lib/theme';
 
@@ -76,6 +78,18 @@ function applyPreference(preference: ThemePreference): void {
 export function setThemePreference(preference: ThemePreference): void {
   applyPreference(preference);
   storePreference(preference);
+}
+
+/**
+ * Flip light <-> dark from whatever shows now, as a short press of the
+ * header's toggle does ("Match device" resolves to what the device shows
+ * first, so the flip always visibly changes the page), and remember it.
+ * Returns the theme now on. The doughnut's "d" shortcut uses it.
+ */
+export function flipTheme(): ResolvedTheme {
+  const next = toggledTheme(getThemeState().preference, systemPrefersDark());
+  setThemePreference(next);
+  return next;
 }
 
 export function setFried(fried: boolean): void {

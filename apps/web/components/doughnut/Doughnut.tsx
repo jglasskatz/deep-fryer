@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import type { Ring } from '@deep-fryer/core';
 import { DoughnutRenderer, type RendererHit } from './doughnut-renderer';
 import { fmt } from '@/lib/i18n/format';
@@ -34,6 +34,12 @@ export interface DoughnutProps {
    * renderer's own click outline is all there is.
    */
   selectedSlug?: string | null;
+  /**
+   * Shortcut keys (the portrait's front page only): the canvas joins the tab
+   * order and acts on the keys of doughnutShortcut while it has focus.
+   * Left out, the canvas is a picture outside the tab order, as before.
+   */
+  shortcuts?: DoughnutShortcuts;
 }
 
 /**
@@ -71,13 +77,132 @@ export function dismissesTooltip(event: { key: string; defaultPrevented: boolean
   return event.key === 'Escape' && !event.defaultPrevented && !event.isComposing;
 }
 
+/** What a shortcut key on the focused doughnut asks for. */
+export type DoughnutShortcut = { kind: 'theme' } | { kind: 'portrait'; index: number };
+
+/** The most portraits number keys reach: 1 to 9. */
+export const MAX_PORTRAIT_KEYS = 9;
+
+/** The slice of a keydown that doughnutShortcut reads (a structural type, so tests can pass a plain object). */
+export interface ShortcutKeyEvent {
+  key: string;
+  /** The physical key ("KeyD", "Digit2"), read when the layout types something else there. */
+  code?: string;
+  altKey: boolean;
+  ctrlKey: boolean;
+  metaKey: boolean;
+  repeat?: boolean;
+  isComposing?: boolean;
+  defaultPrevented: boolean;
+  /** Where the key was pressed, and the element listening: they must be the same. */
+  target: unknown;
+  currentTarget: unknown;
+}
+
+/**
+ * The single-character shortcuts of the Santa Cruz site: "d" switches light
+ * and dark, a number opens that portrait of the family. They act only on a
+ * key pressed while the doughnut itself has focus (WCAG 2.1.4), so typing a
+ * "d" or a "2" anywhere else on the page, in a search box or a comment,
+ * does nothing. A key held down acts once (no flashing between themes), and
+ * a key with Ctrl, Alt or Cmd is left to the browser. Shift is allowed, so
+ * Caps Lock does not turn the theme key off.
+ *
+ * The keys are named by what they type on a Latin layout ("Press D"). A
+ * reader whose layout types another script there (Cyrillic, Arabic,
+ * Hangul) or other digits (Arabic-Indic, Bengali), or puts symbols on the
+ * number row (French), presses the same physical keys, so the physical key
+ * decides whenever the typed character is not a Latin letter or digit. A
+ * Latin letter is always taken as typed: on a Dvorak layout the key that
+ * types "d" is the theme key, not the one where D sits on QWERTY.
+ */
+export function doughnutShortcut(event: ShortcutKeyEvent, portraitCount: number): DoughnutShortcut | null {
+  if (event.target !== event.currentTarget || isTextEntry(event.target)) return null;
+  if (event.defaultPrevented || event.isComposing || event.repeat) return null;
+  if (event.altKey || event.ctrlKey || event.metaKey) return null;
+  const typed = [...event.key].length === 1 ? event.key : null;
+  if (!typed) return null; // Named keys (Enter, Tab, arrows) and dead keys.
+  const latin = /^[A-Za-z0-9]$/.test(typed);
+  const physical = latin ? undefined : event.code;
+  if (typed === 'd' || typed === 'D' || physical === 'KeyD') return { kind: 'theme' };
+  const digit = /^[1-9]$/.test(typed) ? typed : /^Digit([1-9])$/.exec(physical ?? '')?.[1];
+  if (digit) {
+    const index = Number(digit) - 1;
+    return index < Math.min(portraitCount, MAX_PORTRAIT_KEYS) ? { kind: 'portrait', index } : null;
+  }
+  return null;
+}
+
+/** A field that takes typed text: a key pressed there is always the reader's typing. */
+function isTextEntry(target: unknown): boolean {
+  const el = target as { tagName?: unknown; isContentEditable?: unknown } | null;
+  if (!el || typeof el !== 'object') return false;
+  if (el.isContentEditable === true) return true;
+  return typeof el.tagName === 'string' && ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName.toUpperCase());
+}
+
+/**
+ * The `aria-keyshortcuts` value for the doughnut's keys: "D", then each
+ * portrait's number up to the ninth, leaving out the current portrait's
+ * (its key does nothing).
+ */
+export function doughnutKeyShortcuts(portraitCount: number, currentIndex?: number): string {
+  const numbers = Array.from({ length: Math.min(portraitCount, MAX_PORTRAIT_KEYS) }, (_, i) => i)
+    .filter((i) => i !== currentIndex)
+    .map((i) => String(i + 1));
+  return ['D', ...numbers].join(' ');
+}
+
+/** What the page gives the doughnut to turn its shortcut keys on. */
+export interface DoughnutShortcuts {
+  /** How many portraits the number keys reach (0 when the portrait stands alone). */
+  portraitCount: number;
+  /** The current portrait's place among them, whose own key does nothing. */
+  currentIndex?: number;
+  /** The keys in words, read as the doughnut's description. */
+  description: string;
+  /** Acts on a shortcut; returns what to announce, if anything. */
+  onShortcut: (shortcut: DoughnutShortcut) => string | void;
+}
+
+/** How long a shortcut's announcement stays in the live region (as the theme toggle's). */
+const ANNOUNCEMENT_MS = 5000;
+
 /**
  * React wrapper around the vendored canvas renderer from doughnut-santa-cruz
  * (the canonical visual, SPEC.md §4). Social dimensions draw on the inner
  * ring, ecological on the outer; viz_level uses the -100..150 scale.
  */
-export function Doughnut({ social, ecological, size = 640, onSelect, ariaLabel, labels, selectedSlug }: DoughnutProps) {
+export function Doughnut({
+  social,
+  ecological,
+  size = 640,
+  onSelect,
+  ariaLabel,
+  labels,
+  selectedSlug,
+  shortcuts,
+}: DoughnutProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const shortcutsId = useId();
+  /** What the last shortcut did ("Theme: Dark"), politely announced, then cleared. */
+  const [announcement, setAnnouncement] = useState('');
+  useEffect(() => {
+    if (!announcement) return;
+    const timer = setTimeout(() => setAnnouncement(''), ANNOUNCEMENT_MS);
+    return () => clearTimeout(timer);
+  }, [announcement]);
+
+  // A React handler on the canvas itself, never a document listener: a key
+  // reaches it only while the canvas has focus (doughnutShortcut also checks).
+  const onKeyDown = (event: ReactKeyboardEvent<HTMLCanvasElement>) => {
+    if (!shortcuts) return;
+    const shortcut = doughnutShortcut(event, shortcuts.portraitCount);
+    if (!shortcut) return;
+    event.preventDefault();
+    const said = shortcuts.onShortcut(shortcut);
+    if (said) setAnnouncement(said);
+  };
   const controlled = selectedSlug !== undefined;
   // Bumped on every canvas click while controlled, to rebuild the renderer.
   // The renderer keeps a click selection of its own (a blue outline that a
@@ -193,14 +318,31 @@ export function Doughnut({ social, ecological, size = 640, onSelect, ariaLabel, 
           renderer runs (it then sets the backing store, at the same 1:1 ratio). Without
           them the canvas lays out at the default 300×150 until hydration, and the panel
           and list below it jump by half its width. */}
+      {/* With shortcuts the canvas is focusable (a click focuses it too), names
+          its keys for assistive technology, and shows the browser's own focus
+          ring. */}
       <canvas
         ref={canvasRef}
         role="img"
         aria-label={ariaLabel ?? labels.chartLabel}
+        tabIndex={shortcuts ? 0 : undefined}
+        aria-keyshortcuts={shortcuts ? doughnutKeyShortcuts(shortcuts.portraitCount, shortcuts.currentIndex) : undefined}
+        aria-describedby={shortcuts ? shortcutsId : undefined}
+        onKeyDown={shortcuts ? onKeyDown : undefined}
         width={size}
         height={size}
         style={{ width: '100%', height: 'auto', display: 'block' }}
       />
+      {shortcuts ? (
+        <>
+          <span id={shortcutsId} hidden>
+            {shortcuts.description}
+          </span>
+          <span role="status" className="sr-only">
+            {announcement}
+          </span>
+        </>
+      ) : null}
       {tooltip ? (
         <div
           style={{

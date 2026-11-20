@@ -1,8 +1,18 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
-import { Doughnut, type DoughnutDimension } from '@/components/doughnut/Doughnut';
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent,
+  type ReactNode,
+} from 'react';
+import { Doughnut, type DoughnutDimension, type DoughnutShortcuts } from '@/components/doughnut/Doughnut';
 import type { DoughnutLabels } from '@/lib/i18n/doughnut';
 import { fmt } from '@/lib/i18n/format';
 import type { PanelLabels, PortraitPanelView } from '@/lib/portrait-panel';
@@ -95,6 +105,8 @@ export function PortraitCoreView({
   panel,
   size,
   fullHref,
+  above,
+  shortcuts,
 }: {
   social: DoughnutDimension[];
   ecological: DoughnutDimension[];
@@ -109,6 +121,10 @@ export function PortraitCoreView({
   size: number;
   /** The full dimension page of a slug. */
   fullHref: (slug: string) => string;
+  /** Shown above the chart, in its column: the summary chips. */
+  above?: ReactNode;
+  /** The chart's shortcut keys, while it has focus. */
+  shortcuts?: DoughnutShortcuts;
 }) {
   const headingId = useId();
   const headingRef = useRef<HTMLHeadingElement | null>(null);
@@ -235,6 +251,7 @@ export function PortraitCoreView({
     // window) while the reader goes down the list.
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-10 xl:grid-cols-[minmax(0,1fr)_26rem]">
       <div className="mx-auto w-full lg:col-start-1 lg:row-start-1" style={{ maxWidth: size }}>
+        {above}
         <Doughnut
           social={social}
           ecological={ecological}
@@ -243,6 +260,7 @@ export function PortraitCoreView({
           selectedSlug={selected}
           ariaLabel={summary}
           labels={labels}
+          shortcuts={shortcuts}
         />
         {hint ? <p className="mt-4 text-center text-sm text-[color:var(--color-muted)]">{hint}</p> : null}
       </div>

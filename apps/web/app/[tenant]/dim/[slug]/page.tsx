@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { ActionSourceLinks } from '@/components/portrait/ActionSourceLinks';
+import { EvidenceLightbox } from '@/components/portrait/EvidenceLightbox';
 import { Thread } from '@/components/discussion/Thread';
 import { InvolvementForm } from '@/components/involvement/InvolvementForm';
 import { InvolvementLanguageNote, InvolvementListings } from '@/components/involvement/InvolvementListings';
@@ -145,6 +146,10 @@ export default async function DimensionDrilldownPage({
                 {ind.geographic_scale
                   ? ` · ${fmt(m.dimension.scaleData, { scale: scaleLabel(m, ind.geographic_scale) })}`
                   : ''}
+                {/* How sure the research is of this figure; older records may lack it. */}
+                {ind.confidence && m.dimension.confidenceLevels[ind.confidence]
+                  ? ` · ${fmt(m.dimension.confidence, { value: m.dimension.confidenceLevels[ind.confidence] })}`
+                  : ''}
               </p>
               {ind.source ? (
                 <p className="mt-2 text-sm">
@@ -161,18 +166,12 @@ export default async function DimensionDrilldownPage({
               ) : null}
               {ind.evidence ? (
                 <figure className="mt-3">
-                  <a
-                    href={evidenceUrl(tenant, ind.evidence.snapshot_path)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={evidenceUrl(tenant, ind.evidence.snapshot_path)}
-                      alt={fmt(m.dimension.snapshotAlt, { name: ind.name, date: ind.evidence.captured_at.slice(0, 10) })}
-                      className="max-h-56 rounded border border-black/15"
-                    />
-                  </a>
+                  {/* Enlarges in place on a click; still a link to the image without JavaScript. */}
+                  <EvidenceLightbox
+                    src={evidenceUrl(tenant, ind.evidence.snapshot_path)}
+                    alt={fmt(m.dimension.snapshotAlt, { name: ind.name, date: ind.evidence.captured_at.slice(0, 10) })}
+                    closeLabel={m.dimension.snapshotClose}
+                  />
                   <figcaption className="mt-1 text-xs text-[color:var(--color-muted)]">
                     {fmt(m.dimension.snapshotCaptured, { date: ind.evidence.captured_at.slice(0, 10) })}
                     {ind.evidence.pdf_path ? (

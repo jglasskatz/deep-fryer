@@ -37,6 +37,9 @@ export const ur: Messages = {
     help: 'اپنی زبان میں مفت مدد کے لیے رابطہ کریں: {contact}',
   },
   doughnut: {
+    shortcutsTheme: 'ہلکے اور گہرے رنگ کے درمیان بدلنے کے لیے D دبائیں۔',
+    shortcutsPortraits: 'دوسرا خاکہ کھولنے کے لیے کوئی نمبر دبائیں: {list}۔',
+    shortcutsPortrait: '{name} کے لیے {key}',
     chartLabel: 'سماجی بنیاد اور ماحولیاتی بالائی حد کے پہلوؤں کا ڈونٹ چارٹ',
     summary:
       '{name}: {total} میں سے {outside} پہلو محفوظ اور منصفانہ دائرے سے باہر ہیں۔ اس کے بعد ہر پہلو کے لنکس کی فہرست ہے۔',
@@ -130,6 +133,13 @@ export const ur: Messages = {
     baseline_only: 'اب تک صرف بنیادی سطح کی پیمائش موجود ہے؛ اگلی تازہ کاری میں رجحان نظر آئے گا۔',
   },
   portrait: {
+    chips: {
+      label: 'ایک نظر میں',
+      thriving: { one: 'اچھی حالت: {n}', other: 'اچھی حالت: {n}' },
+      attention: { one: 'توجہ درکار: {n}', other: 'توجہ درکار: {n}' },
+      critical: { one: 'نازک: {n}', other: 'نازک: {n}' },
+      unknown: { one: 'ڈیٹا نہیں: {n}', other: 'ڈیٹا نہیں: {n}' },
+    },
     metaDescription: '{name} کا ڈونٹ خاکہ: سماجی بنیاد اور ماحولیاتی بالائی حد، ہر عدد کے ماخذ کے ساتھ۔',
     population: 'آبادی: {n}',
     clickHint: 'اشاریے، شواہد، اقدامات اور بحث دیکھنے کے لیے کوئی حصہ منتخب کریں۔',
@@ -157,6 +167,9 @@ export const ur: Messages = {
     legendNoData: 'سرمئی: ابھی تک کوئی ڈیٹا نہیں',
   },
   dimension: {
+    confidence: 'اعتماد: {value}',
+    confidenceLevels: { high: 'زیادہ', medium: 'درمیانہ', low: 'کم' },
+    snapshotClose: 'بند کریں',
     metaDescription: '{name} میں {dimension}: ڈیٹا، اس کے ذرائع، اور آپ کیا کر سکتے ہیں۔',
     updated: 'تازہ کاری {date}',
     target: 'ہدف: {value}',

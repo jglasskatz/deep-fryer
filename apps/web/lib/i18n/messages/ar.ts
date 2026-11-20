@@ -37,6 +37,9 @@ export const ar: Messages = {
     help: 'للحصول على مساعدة مجانية بلغتكم، يُرجى التواصل مع: {contact}',
   },
   doughnut: {
+    shortcutsTheme: 'اضغطوا D للتبديل بين الوضع الفاتح والوضع الداكن.',
+    shortcutsPortraits: 'اضغطوا رقمًا لفتح صورة أخرى: {list}.',
+    shortcutsPortrait: '{key} لـ {name}',
     chartLabel: 'مخطط دونات لأبعاد الأساس الاجتماعي والسقف البيئي',
     summary:
       '{name}: عدد الأبعاد الواقعة خارج المساحة الآمنة والعادلة {outside} من أصل {total}. تليها قائمة بروابط إلى كل بُعد.',
@@ -131,6 +134,13 @@ export const ar: Messages = {
     baseline_only: 'لا يتوفر حتى الآن سوى قياس خط الأساس؛ وسيُظهر التحديث القادم الاتجاه.',
   },
   portrait: {
+    chips: {
+      label: 'نظرة سريعة',
+      thriving: { zero: 'في وضع جيد: {n}', one: 'في وضع جيد: {n}', two: 'في وضع جيد: {n}', few: 'في وضع جيد: {n}', many: 'في وضع جيد: {n}', other: 'في وضع جيد: {n}' },
+      attention: { zero: 'تحتاج إلى اهتمام: {n}', one: 'تحتاج إلى اهتمام: {n}', two: 'تحتاج إلى اهتمام: {n}', few: 'تحتاج إلى اهتمام: {n}', many: 'تحتاج إلى اهتمام: {n}', other: 'تحتاج إلى اهتمام: {n}' },
+      critical: { zero: 'في وضع حرج: {n}', one: 'في وضع حرج: {n}', two: 'في وضع حرج: {n}', few: 'في وضع حرج: {n}', many: 'في وضع حرج: {n}', other: 'في وضع حرج: {n}' },
+      unknown: { zero: 'بلا بيانات: {n}', one: 'بلا بيانات: {n}', two: 'بلا بيانات: {n}', few: 'بلا بيانات: {n}', many: 'بلا بيانات: {n}', other: 'بلا بيانات: {n}' },
+    },
     metaDescription: 'صورة الدونات لـ {name}: الأساس الاجتماعي والسقف البيئي، مع مصدر كل رقم.',
     population: 'عدد السكان: {n}',
     clickHint: 'يمكنكم تحديد أي شريحة لعرض المؤشرات والأدلة والإجراءات والنقاش.',
@@ -161,6 +171,9 @@ export const ar: Messages = {
     legendNoData: 'الرمادي: لا توجد بيانات بعد',
   },
   dimension: {
+    confidence: 'درجة الثقة: {value}',
+    confidenceLevels: { high: 'عالية', medium: 'متوسطة', low: 'منخفضة' },
+    snapshotClose: 'إغلاق',
     metaDescription: '{dimension} في {name}: البيانات ومصادرها وما يمكنكم فعله.',
     updated: 'حُدِّث في {date}',
     target: 'المستهدف: {value}',

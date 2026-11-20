@@ -37,6 +37,9 @@ export const es: Messages = {
     help: 'Para obtener ayuda gratuita en su idioma, comuníquese con: {contact}',
   },
   doughnut: {
+    shortcutsTheme: 'Pulse D para cambiar entre el modo claro y el modo oscuro.',
+    shortcutsPortraits: 'Pulse un número para abrir otro retrato: {list}.',
+    shortcutsPortrait: '{key} para {name}',
     chartLabel: 'Gráfico de rosquilla con las dimensiones de la base social y del techo ecológico',
     summary:
       '{name}: {outside} de {total} dimensiones fuera del espacio seguro y justo. A continuación se incluye una lista de enlaces a cada dimensión.',
@@ -131,6 +134,13 @@ export const es: Messages = {
       'Por ahora solo existe la medición de la línea de base; la próxima actualización mostrará la tendencia.',
   },
   portrait: {
+    chips: {
+      label: 'De un vistazo',
+      thriving: { one: '{n} en buen estado', many: '{n} en buen estado', other: '{n} en buen estado' },
+      attention: { one: '{n} requiere atención', many: '{n} requieren atención', other: '{n} requieren atención' },
+      critical: { one: '{n} en estado crítico', many: '{n} en estado crítico', other: '{n} en estado crítico' },
+      unknown: { one: '{n} sin datos', many: '{n} sin datos', other: '{n} sin datos' },
+    },
     metaDescription: 'El retrato Doughnut de {name}: la base social y el techo ecológico, con la fuente de cada cifra.',
     population: 'población: {n}',
     clickHint: 'Seleccione un segmento para ver indicadores, evidencia, acciones y el debate.',
@@ -158,6 +168,9 @@ export const es: Messages = {
     legendNoData: 'Gris: todavía no hay datos',
   },
   dimension: {
+    confidence: 'confianza: {value}',
+    confidenceLevels: { high: 'alta', medium: 'media', low: 'baja' },
+    snapshotClose: 'Cerrar',
     metaDescription: '{dimension} en {name}: los datos, sus fuentes y lo que usted puede hacer.',
     updated: 'actualizado: {date}',
     target: 'meta: {value}',

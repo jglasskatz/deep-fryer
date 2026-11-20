@@ -37,6 +37,9 @@ export const pl: Messages = {
     help: 'Bezpłatna pomoc w Państwa języku — kontakt: {contact}',
   },
   doughnut: {
+    shortcutsTheme: 'Klawisz D przełącza między trybem jasnym a ciemnym.',
+    shortcutsPortraits: 'Klawisz z cyfrą otwiera inny portret: {list}.',
+    shortcutsPortrait: '{key} – {name}',
     chartLabel: 'Wykres pierścieniowy (obwarzanek) z wymiarami fundamentu społecznego i pułapu ekologicznego',
     summary:
       '{name}: {outside} z {total} wymiarów poza bezpieczną i sprawiedliwą przestrzenią. Poniżej znajduje się lista linków do poszczególnych wymiarów.',
@@ -120,6 +123,13 @@ export const pl: Messages = {
     baseline_only: 'Na razie istnieje tylko pomiar bazowy; tendencja będzie widoczna po następnej aktualizacji.',
   },
   portrait: {
+    chips: {
+      label: 'W skrócie',
+      thriving: { one: 'w dobrym stanie: {n}', few: 'w dobrym stanie: {n}', many: 'w dobrym stanie: {n}', other: 'w dobrym stanie: {n}' },
+      attention: { one: 'wymaga uwagi: {n}', few: 'wymagają uwagi: {n}', many: 'wymaga uwagi: {n}', other: 'wymaga uwagi: {n}' },
+      critical: { one: 'stan krytyczny: {n}', few: 'stan krytyczny: {n}', many: 'stan krytyczny: {n}', other: 'stan krytyczny: {n}' },
+      unknown: { one: 'brak danych: {n}', few: 'brak danych: {n}', many: 'brak danych: {n}', other: 'brak danych: {n}' },
+    },
     metaDescription: '{name}: portret w modelu obwarzanka — fundament społeczny i pułap ekologiczny, ze źródłem każdej liczby.',
     population: 'ludność: {n}',
     clickHint: 'Po wybraniu segmentu wyświetlą się wskaźniki, dowody, działania i dyskusja.',
@@ -149,6 +159,9 @@ export const pl: Messages = {
     legendNoData: 'Kolor szary — na razie brak danych',
   },
   dimension: {
+    confidence: 'wiarygodność: {value}',
+    confidenceLevels: { high: 'wysoka', medium: 'średnia', low: 'niska' },
+    snapshotClose: 'Zamknij',
     metaDescription: '{dimension} — {name}: dane, ich źródła i to, co można zrobić.',
     updated: 'zaktualizowano: {date}',
     target: 'cel: {value}',

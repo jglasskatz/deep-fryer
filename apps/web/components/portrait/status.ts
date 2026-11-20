@@ -11,10 +11,39 @@
  * on its own (WCAG 1.4.1). Palette hues, so dark mode remaps them.
  */
 export function statusDotClass(level: number | null): string {
-  if (level === null || Number.isNaN(level)) return 'bg-gray-400';
-  if (level <= 0) return 'bg-green-600';
-  if (level <= 50) return 'bg-amber-500';
-  return 'bg-red-600';
+  return STATUS_DOT[statusGroup(level)];
+}
+
+/**
+ * The four readings a status dot (and a summary chip) can show: inside the
+ * safe space, just past a boundary, well past it, or no data yet.
+ */
+export type StatusGroup = 'thriving' | 'attention' | 'critical' | 'unknown';
+
+/** Display order of the summary chips: best to worst, then no data. */
+export const STATUS_GROUPS: readonly StatusGroup[] = ['thriving', 'attention', 'critical', 'unknown'];
+
+/** Each reading's dot colour; statusDotClass and the summary chips share it. */
+export const STATUS_DOT: Readonly<Record<StatusGroup, string>> = {
+  thriving: 'bg-green-600',
+  attention: 'bg-amber-500',
+  critical: 'bg-red-600',
+  unknown: 'bg-gray-400',
+};
+
+/** Which reading a viz_level (-100…150 scale) falls in, by the doughnut's own cut-offs. */
+export function statusGroup(level: number | null): StatusGroup {
+  if (level === null || Number.isNaN(level)) return 'unknown';
+  if (level <= 0) return 'thriving';
+  if (level <= 50) return 'attention';
+  return 'critical';
+}
+
+/** How many dimensions fall in each reading: one per wedge on the doughnut. */
+export function statusCounts(dims: readonly { viz_level: number | null }[]): Record<StatusGroup, number> {
+  const counts: Record<StatusGroup, number> = { thriving: 0, attention: 0, critical: 0, unknown: 0 };
+  for (const d of dims) counts[statusGroup(d.viz_level)] += 1;
+  return counts;
 }
 
 /**
