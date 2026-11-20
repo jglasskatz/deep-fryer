@@ -29,6 +29,7 @@ describe.skipIf(!hasDb)('admin actions on their own transaction', () => {
   let tenantSlug = '';
   let tenantId = '';
   let dimensionId = '';
+  let renamedDimensionId = '';
   const people: Record<'owner' | 'editor', string> = { owner: '', editor: '' };
 
   beforeAll(async () => {
@@ -39,6 +40,7 @@ describe.skipIf(!hasDb)('admin actions on their own transaction', () => {
     tenantSlug = tenant.slug;
     tenantId = tenant.id;
     dimensionId = dimensions[0]!.dimensionId;
+    renamedDimensionId = dimensions[1]!.dimensionId;
     cleanup.tenantId = tenant.id;
     cleanup.organizationId = tenant.organizationId;
     for (const role of ['owner', 'editor'] as const) {
@@ -104,6 +106,39 @@ describe.skipIf(!hasDb)('admin actions on their own transaction', () => {
     const [version] = await m.getDb().select().from(m.dimensionVersions).where(eq(m.dimensionVersions.id, versionId));
     expect(version).toMatchObject({ origin: 'human', createdBy: people.editor, changeNote: 'Reworded the context.' });
     expect(await auditOf(versionId)).toEqual([['create_human_version', people.editor]]);
+  });
+
+  it('saves a renamed indicator whose value is unchanged without a supporting source, keeping its key', async () => {
+    const m = await import('@deep-fryer/db');
+    const db = m.getDb();
+    const base = (await m.latestVersion(db, renamedDimensionId))!;
+    const [uninsured, ...rest] = base.data.indicators;
+    expect(uninsured!.key).toBe('uninsured-rate');
+    // A measured value, sourced, as research or an earlier edit left it.
+    await m.appendDimensionVersion(db, { dimensionId: renamedDimensionId, status: 'draft', origin: 'human', createdBy: people.editor,
+      changeNote: 'Measured fixture.', vizLevel: null,
+      data: { ...base.data, indicators: [{ ...uninsured!, value: 9, year: 2024, source: 'County health survey', source_url: 'https://health.example.gov/survey' }, ...rest] } });
+    const measured = (await m.latestVersion(db, renamedDimensionId))!;
+
+    signedIn = people.editor;
+    const { saveDimensionEdit } = await import('./actions');
+    const renamed = { ...measured.data.indicators[0]!, name: 'People with no health insurance' };
+    expect(renamed.supporting_source_url).toBeUndefined();
+    const res = await onOneConnection(() => saveDimensionEdit({ tenantSlug, dimensionId: renamedDimensionId,
+      data: { ...measured.data, indicators: [renamed, ...measured.data.indicators.slice(1)] }, changeNote: 'Clearer name.' }));
+    expect(res).toMatchObject({ ok: true, data: { versionNum: measured.versionNum + 1 } });
+    const saved = (await m.latestVersion(db, renamedDimensionId))!;
+    expect(saved.data.indicators[0]).toMatchObject({ key: 'uninsured-rate', name: 'People with no health insurance', value: 9 });
+    // The renamed row is still scored against its framework threshold.
+    expect(saved.data.indicators[0]!.scoring?.threshold_ref).toBe('health.uninsured-rate');
+    expect(saved.data.indicators.map((i) => i.key)).toEqual(base.data.indicators.map((i) => i.key));
+
+    // A changed value still needs one, renamed or not.
+    const changed = await saveDimensionEdit({ tenantSlug, dimensionId: renamedDimensionId,
+      data: { ...saved.data, indicators: [{ ...saved.data.indicators[0]!, name: 'Uninsured', value: 11 }, ...saved.data.indicators.slice(1)] },
+      changeNote: 'New figure.' });
+    expect(changed).toMatchObject({ ok: false, error: expect.stringContaining('supporting source URL') });
+    expect((await m.latestVersion(db, renamedDimensionId))!.id).toBe(saved.id);
   });
 
   it('publishes a version on its own transaction, audit entry included', async () => {

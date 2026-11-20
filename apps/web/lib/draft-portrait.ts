@@ -50,7 +50,9 @@ import { runPhase, type RunPhase } from './run-progress';
  * A run's findings for one dimension as the version approving them creates
  * (SPEC.md §9): indicators and gaps from the findings, in the order they were
  * recorded, and the narrative fields — name, icon, description, context,
- * actions, spotlights — kept from `base`, the dimension's latest version. A
+ * actions, spotlights — kept from `base`, the dimension's latest version.
+ * Each indicator is keyed by its finding's slug, so a framework indicator
+ * keeps its framework key whatever name the research gave it. A
  * finding whose payload is neither kind (output that did not match the
  * schema, kept for review as it was) contributes nothing.
  */
@@ -65,6 +67,7 @@ export function researchVersionData(
   for (const p of payloads) {
     if (p.kind === 'indicator') {
       indicators.push({
+        key: p.indicator_slug,
         name: p.name,
         value: p.value,
         unit: p.unit,

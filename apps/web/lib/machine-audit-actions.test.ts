@@ -102,8 +102,8 @@ describe.skipIf(!process.env.DATABASE_URL)('human application of machine audits 
       .where(and(eq(m.tenantConfig.tenantId, tenant.id), eq(m.tenantConfig.key, 'review_policy')));
     expect((await actions.publishReviewed({ tenantSlug: tenant.slug, versionIds: [v!.id] })).ok).toBe(false);
     const gap = await (await import('./review-actions')).flagGap({ tenantSlug: tenant.slug, dimensionId: dims[8]!.dimensionId,
-      indicator: 'unavailable-local-series', reason: 'No supported local value is available.' });
-    expect(gap).toMatchObject({ ok: true, data: { published: false, requiresSecondReview: true } });
+      indicator: 'gender-pay-ratio', reason: 'No supported local value is available.' });
+    expect(gap).toMatchObject({ ok: true, data: { requiresSecondReview: true } });
     expect((await m.latestVersion(m.getDb(), dims[8]!.dimensionId))!.status).toBe('draft');
     await expect(m.withPostgresError(m.withAuthContext(m.getDb(), editor, (db) => db.update(m.dimensionVersions)
       .set({ status: 'published', publishedAt: new Date() }).where(eq(m.dimensionVersions.id, v!.id))))).rejects.toThrow(/second editor/);

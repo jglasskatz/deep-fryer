@@ -155,6 +155,7 @@ export async function provisionTenant(db: DbExecutor, args: ProvisionTenantArgs)
         description: dim.description,
         context: '',
         indicators: dim.indicators.map((ind) => ({
+          key: ind.slug,
           name: ind.name,
           value: null,
           unit: ind.unit,

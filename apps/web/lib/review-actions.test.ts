@@ -22,9 +22,16 @@ vi.mock('@/auth', () => ({
 const hasDb = Boolean(process.env.DATABASE_URL);
 const uniq = () => `rv-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
+/** The second dimension's card: slug, name as research reported it, value. */
+const THREE_FINDINGS = [
+  ['uninsured-rate', 'Uninsured residents (research wording)', 9],
+  ['life-expectancy', 'Life expectancy (research wording)', 78],
+  ['clinic-wait-days', 'Days to a clinic appointment', 12],
+] as const;
+
 describe.skipIf(!hasDb)('review actions on their own transaction', () => {
   const saved = process.env.AUTH_SECRET;
-  const cleanup: { tenantId?: string; organizationId?: string; sessionId?: string; editor?: string } = {};
+  const cleanup: { tenantId?: string; organizationId?: string; sessionIds: string[]; editor?: string } = { sessionIds: [] };
   let tenantSlug = '';
   let dimensions: { dimensionId: string; slug: string }[] = [];
   let runId = '';
@@ -59,7 +66,7 @@ describe.skipIf(!hasDb)('review actions on their own transaction', () => {
       .insert(m.researchSessions)
       .values({ runId, kind: 'dimension', dimensionId: dimensions[0]!.dimensionId, status: 'complete' })
       .returning();
-    cleanup.sessionId = session!.id;
+    cleanup.sessionIds.push(session!.id);
     await db.insert(m.findings).values({
       sessionId: session!.id,
       dimensionId: dimensions[0]!.dimensionId,
@@ -72,6 +79,39 @@ describe.skipIf(!hasDb)('review actions on their own transaction', () => {
         searched_at: new Date().toISOString(),
       },
     });
+
+    // A second dimension's card with three findings, named differently from
+    // the framework: its two framework indicators and one of the
+    // portrait's own.
+    const [card] = await db
+      .insert(m.researchSessions)
+      .values({ runId, kind: 'dimension', dimensionId: dimensions[1]!.dimensionId, status: 'complete' })
+      .returning();
+    cleanup.sessionIds.push(card!.id);
+    for (const [slug, name, value] of THREE_FINDINGS) {
+      await db.insert(m.findings).values({
+        sessionId: card!.id,
+        dimensionId: dimensions[1]!.dimensionId,
+        indicatorSlug: slug,
+        payload: {
+          kind: 'indicator',
+          indicator_slug: slug,
+          name,
+          value,
+          unit: '%',
+          year: 2025,
+          target: 5,
+          level_pct: 40,
+          scoring: { threshold_ref: `health.${slug}`, function: 'lower_is_better', inputs: { value }, worked_math: 'm' },
+          source: 'County health department',
+          source_url: 'https://health.example.gov/data',
+          source_tier: 1,
+          evidence: { snapshot_path: 'evidence/h.png', captured_at: '2026-09-01T00:00:00Z' },
+          confidence: 'high',
+          geographic_scale: 'city',
+        },
+      });
+    }
   });
 
   afterAll(async () => {
@@ -79,24 +119,24 @@ describe.skipIf(!hasDb)('review actions on their own transaction', () => {
     if (saved === undefined) delete process.env.AUTH_SECRET;
     else process.env.AUTH_SECRET = saved;
     const m = await import('@deep-fryer/db');
-    const { eq, sql } = await import('drizzle-orm');
+    const { eq, inArray, sql } = await import('drizzle-orm');
     const db = m.getDb();
     // Findings are immutable (migration 0001's trigger refuses even the
     // owner), and they hold the portrait's dimensions and sessions in place.
     // This test's own finding goes in one transaction that lifts the trigger
     // for that one delete only: DDL is transactional, so no other session
     // ever sees findings without it.
-    if (cleanup.sessionId) {
+    if (cleanup.sessionIds.length) {
       await db.transaction(async (tx) => {
         await tx.execute(sql`alter table findings disable trigger findings_immutable`);
-        await tx.delete(m.findings).where(eq(m.findings.sessionId, cleanup.sessionId!));
+        await tx.delete(m.findings).where(inArray(m.findings.sessionId, cleanup.sessionIds));
         await tx.execute(sql`alter table findings enable trigger findings_immutable`);
       });
     }
     // Then the session (it points at a dimension) and the dimensions with
     // their versions (an approved version points at the run), before the
     // portrait takes the run, its config, and its audit entries with it.
-    if (cleanup.sessionId) await db.delete(m.researchSessions).where(eq(m.researchSessions.id, cleanup.sessionId));
+    if (cleanup.sessionIds.length) await db.delete(m.researchSessions).where(inArray(m.researchSessions.id, cleanup.sessionIds));
     if (cleanup.tenantId) {
       await db.delete(m.dimensions).where(eq(m.dimensions.tenantId, cleanup.tenantId));
       await db.delete(m.tenants).where(eq(m.tenants.id, cleanup.tenantId));
@@ -137,17 +177,103 @@ describe.skipIf(!hasDb)('review actions on their own transaction', () => {
     expect(await auditOf(dimensionId)).toEqual([['publish', cleanup.editor]]);
   });
 
-  it('flags a data gap and publishes it on one transaction', async () => {
+  async function versionById(versionId: string) {
+    const m = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const [version] = await m.getDb().select().from(m.dimensionVersions).where(eq(m.dimensionVersions.id, versionId));
+    return version!;
+  }
+
+  it('keeps each framework indicator’s key through an approval that names it differently', async () => {
+    const m = await import('@deep-fryer/db');
     const dimensionId = dimensions[1]!.dimensionId;
+    const before = (await m.latestVersion(m.getDb(), dimensionId))!;
+    // Provisioning keys each framework indicator by its slug.
+    expect(before.data.indicators.map((i) => i.key)).toEqual(['uninsured-rate', 'life-expectancy']);
+    expect(before.data.indicators.map((i) => i.name)).not.toContain(THREE_FINDINGS[0][1]);
+
     signedIn = cleanup.editor!;
     const res = await onOneConnection(async () =>
-      (await import('./review-actions')).flagGap({ tenantSlug, dimensionId, indicator: 'air-quality', reason: 'No monitor in the city.' }),
+      (await import('./review-actions')).approveFindings({ tenantSlug, runId, dimensionId, publish: true }),
     );
     expect(res).toMatchObject({ ok: true });
     const { versionId } = (res as { ok: true; data: { versionId: string } }).data;
+    const after = await versionById(versionId);
+    expect(after.data.indicators.map((i) => [i.key, i.name])).toEqual(THREE_FINDINGS.map(([slug, name]) => [slug, name]));
+    expect(after.data.indicators.slice(0, 2).map((i) => i.key)).toEqual(before.data.indicators.map((i) => i.key));
     expect(await publishedVersionOf(dimensionId)).toBe(versionId);
+  });
+
+  it('clears only the chosen indicator, as a draft, leaving the published version alone', async () => {
+    const dimensionId = dimensions[1]!.dimensionId;
+    const published = await publishedVersionOf(dimensionId);
+    expect(published).toBeTruthy();
+    signedIn = cleanup.editor!;
+    const res = await onOneConnection(async () =>
+      (await import('./review-actions')).flagGap({ tenantSlug, dimensionId, indicator: 'life-expectancy', reason: 'No city-level life table.' }),
+    );
+    expect(res).toMatchObject({ ok: true, data: { requiresSecondReview: false } });
+    const { versionId } = (res as { ok: true; data: { versionId: string } }).data;
+    const version = await versionById(versionId);
+    expect(version).toMatchObject({ status: 'draft', origin: 'human', createdBy: cleanup.editor, publishedAt: null });
+    expect(version.changeNote).toContain('No city-level life table.');
+    expect(version.data.indicators.map((i) => [i.key, i.value])).toEqual([
+      ['uninsured-rate', 9],
+      ['life-expectancy', null],
+      ['clinic-wait-days', 12],
+    ]);
+    expect(version.data.indicators[1]).not.toHaveProperty('scoring');
+    expect(version.data.indicators[0]!.scoring).toBeTruthy();
+    expect(version.data.gaps).toEqual([expect.objectContaining({ indicator: 'life-expectancy', reason: 'No city-level life table.' })]);
+    expect(await publishedVersionOf(dimensionId)).toBe(published);
     expect(await auditOf(versionId)).toEqual([['flag_gap', cleanup.editor]]);
-    expect(await auditOf(dimensionId)).toEqual([['publish', cleanup.editor]]);
+  });
+
+  it('flagging the same indicator again replaces its gap rather than listing it twice', async () => {
+    const dimensionId = dimensions[1]!.dimensionId;
+    signedIn = cleanup.editor!;
+    const res = await (await import('./review-actions')).flagGap({ tenantSlug, dimensionId, indicator: 'life-expectancy', reason: 'Checked again: none.' });
+    const { versionId } = (res as { ok: true; data: { versionId: string } }).data;
+    expect((await versionById(versionId)).data.gaps).toEqual([expect.objectContaining({ indicator: 'life-expectancy', reason: 'Checked again: none.' })]);
+  });
+
+  it('refuses an indicator the dimension does not have, writing nothing', async () => {
+    const m = await import('@deep-fryer/db');
+    const dimensionId = dimensions[1]!.dimensionId;
+    const before = (await m.latestVersion(m.getDb(), dimensionId))!;
+    signedIn = cleanup.editor!;
+    const res = await (await import('./review-actions')).flagGap({ tenantSlug, dimensionId, indicator: 'air-quality', reason: 'No monitor.' });
+    expect(res).toMatchObject({ ok: false, error: expect.stringContaining('not part of this dimension') });
+    expect((await m.latestVersion(m.getDb(), dimensionId))!.id).toBe(before.id);
+  });
+
+  it('refuses a call with no indicator, or no reason as text, in plain words, writing nothing', async () => {
+    const m = await import('@deep-fryer/db');
+    const dimensionId = dimensions[1]!.dimensionId;
+    const before = (await m.latestVersion(m.getDb(), dimensionId))!;
+    signedIn = cleanup.editor!;
+    const { flagGap } = await import('./review-actions');
+    const forged = (input: Record<string, unknown>) => flagGap({ tenantSlug, dimensionId, ...input } as Parameters<typeof flagGap>[0]);
+    expect(await forged({ reason: 'No monitor.' })).toEqual({ ok: false, error: expect.stringContaining('not part of this dimension') });
+    expect(await forged({ indicator: 42, reason: 'No monitor.' })).toEqual({ ok: false, error: expect.stringContaining('not part of this dimension') });
+    expect(await forged({ indicator: 'life-expectancy' })).toEqual({ ok: false, error: 'A reason is required to flag a data gap.' });
+    expect((await m.latestVersion(m.getDb(), dimensionId))!.id).toBe(before.id);
+  });
+
+  it('still offers a gap for the whole dimension, as a draft', async () => {
+    const dimensionId = dimensions[1]!.dimensionId;
+    const published = await publishedVersionOf(dimensionId);
+    signedIn = cleanup.editor!;
+    const { WHOLE_DIMENSION_GAP } = await import('@deep-fryer/core');
+    const res = await (await import('./review-actions')).flagGap({ tenantSlug, dimensionId, indicator: WHOLE_DIMENSION_GAP, reason: 'No usable data at all.' });
+    const { versionId } = (res as { ok: true; data: { versionId: string } }).data;
+    const version = await versionById(versionId);
+    expect(version.status).toBe('draft');
+    expect(version.vizLevel).toBeNull();
+    expect(version.data.indicators.every((i) => i.value === null)).toBe(true);
+    expect(version.data.indicators.map((i) => i.key)).toEqual(THREE_FINDINGS.map(([slug]) => slug));
+    expect(version.data.gaps?.map((g) => g.indicator)).toEqual(['life-expectancy', WHOLE_DIMENSION_GAP]);
+    expect(await publishedVersionOf(dimensionId)).toBe(published);
   });
 });
 
@@ -457,11 +583,11 @@ describe.skipIf(!hasDb)('approve all unflagged', () => {
     const energy = versions.find(([i]) => i === 7)![1];
     expect(energy.data).toMatchObject({ name: 'Energy', icon: '⚡', description: 'Power for every home.', actions: ['Insulate'] });
 
-    // Nothing published by it: the one published version is the reviewer's own data-gap wedge.
+    // Nothing published by it — nor by the reviewer's data gap, which is a draft too.
     const m = await import('@deep-fryer/db');
     const { eq } = await import('drizzle-orm');
     const rows = await m.getDb().select().from(m.dimensions).where(eq(m.dimensions.tenantId, ids.tenantId!));
-    expect(rows.filter((d) => d.publishedVersionId).map((d) => d.id)).toEqual([dims[2]!.dimensionId]);
+    expect(rows.filter((d) => d.publishedVersionId).map((d) => d.id)).toEqual([]);
 
     // One audit entry per finding approved, by the editor, naming its version; the sample marked.
     const entries = await bulkAudit();

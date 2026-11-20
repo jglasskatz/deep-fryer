@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { INDICATOR_KEY_PATTERN } from './indicator-keys.js';
 import { boundedRecord, REQUEST_LIMITS as R } from './request-limits.js';
 
 // ---- String formats ----
@@ -93,6 +94,7 @@ export const narrativeDraftSchema = z.object({
 });
 
 export const indicatorSchema = z.object({
+  key: z.string().regex(INDICATOR_KEY_PATTERN).optional(),
   name: z.string(),
   value: z.union([z.number(), z.string(), z.null()]),
   unit: z.string(),

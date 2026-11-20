@@ -3,7 +3,15 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { formatIndicatorValue, isFlagged, type FindingPayload, type FindingVerification, type ReviewAudit } from '@deep-fryer/core';
+import { framework } from '@deep-fryer/contract';
+import {
+  formatIndicatorValue,
+  isFlagged,
+  WHOLE_DIMENSION_GAP,
+  type FindingPayload,
+  type FindingVerification,
+  type ReviewAudit,
+} from '@deep-fryer/core';
 import { approveFindings, flagGap, reResearchDimension } from '@/lib/review-actions';
 import { useAction } from '@/lib/use-action';
 import { unwrap } from '@/lib/action-result';
@@ -47,6 +55,142 @@ function ProvenanceNote({ provenance }: { provenance: FindingProvenance | undefi
   return <p className="mt-1 text-xs text-[color:var(--color-muted)]">{provenanceSentence(provenance)}</p>;
 }
 
+const frameworkNames = new Map(
+  framework.dimensions.flatMap((d) => d.indicators.map((i) => [i.slug, i.name] as const)),
+);
+
+/**
+ * What the gap form offers: each indicator the card's findings name, once,
+ * in the card's order, by its name (a gap finding has none of its own, so
+ * the framework's, else its key) — then, last, every indicator of the
+ * dimension at once, for a dimension with no usable data at all. The value
+ * is the indicator's key, which is what the gap records.
+ */
+export function gapChoices(findings: readonly Pick<ReviewFinding, 'indicatorSlug' | 'payload'>[]) {
+  const choices = new Map<string, string>();
+  for (const f of findings) {
+    if (choices.has(f.indicatorSlug)) continue;
+    const label = f.payload.kind === 'indicator' ? f.payload.name : frameworkNames.get(f.indicatorSlug) ?? f.indicatorSlug;
+    choices.set(f.indicatorSlug, label);
+  }
+  return [
+    ...[...choices].map(([value, label]) => ({ value, label })),
+    { value: WHOLE_DIMENSION_GAP, label: 'Every indicator in this dimension (clears all its values)' },
+  ];
+}
+
+/** What the reviewer is told once a gap is saved: it is a draft, and how it becomes public. */
+export function gapSavedMessage(versionNum: number, requiresSecondReview: boolean): string {
+  return requiresSecondReview
+    ? `Gap saved as draft version ${versionNum}. Nothing is public yet: another editor needs to publish it.`
+    : `Gap saved as draft version ${versionNum}. Nothing is public yet: publish it under "Publish reviewed drafts" at the top of this page.`;
+}
+
+/** The gap form as the reviewer sees it: what is chosen and typed, and how the last save went. */
+export interface GapFormState {
+  indicator: string;
+  reason: string;
+  /** True from the click until the server answers. */
+  saving: boolean;
+  /** Why the last save was refused, shown beside the form. */
+  error: string;
+  /** What the last successful save says (gapSavedMessage). */
+  saved: string;
+}
+
+/** Shown when the save request gets no answer at all. */
+export const NO_ANSWER = 'The server did not answer, so the gap may not have been saved. Reload the page to check, then try again.';
+
+export const emptyGapForm: GapFormState = { indicator: '', reason: '', saving: false, error: '', saved: '' };
+
+/**
+ * Send the form's chosen indicator and reason, and return the form as it
+ * should look afterwards: emptied with the saved message on success, or as
+ * it was with the reason for the refusal, so nothing typed is lost.
+ */
+export async function submitGap(
+  send: typeof flagGap,
+  where: { tenantSlug: string; dimensionId: string },
+  form: GapFormState,
+): Promise<GapFormState> {
+  try {
+    const result = await send({ ...where, indicator: form.indicator, reason: form.reason });
+    if (result.ok) {
+      return { ...emptyGapForm, saved: gapSavedMessage(result.data.versionNum, result.data.requiresSecondReview) };
+    }
+    return { ...form, saving: false, error: result.error };
+  } catch {
+    // The request itself failed (no connection, or the server went away), so
+    // whether the draft was written is unknown.
+    return { ...form, saving: false, error: NO_ANSWER };
+  }
+}
+
+/**
+ * The gap form's fields and button. It holds no state of its own: the card
+ * passes the form in and is told of each change and of the click.
+ */
+export function GapForm({
+  choices,
+  form,
+  busy,
+  onChange,
+  onSave,
+}: {
+  choices: { value: string; label: string }[];
+  form: GapFormState;
+  /** Another action on the card is running. */
+  busy: boolean;
+  onChange: (patch: Partial<GapFormState>) => void;
+  onSave: () => void;
+}) {
+  const locked = busy || form.saving;
+  return (
+    <div className="mt-2 w-full max-w-80 space-y-2">
+      <label className="block">
+        <span className="font-medium">Indicator with no usable data</span>
+        <select
+          className="mt-1 min-h-11 w-full min-w-0 rounded border border-field-border bg-[color:var(--color-bg)] px-2"
+          value={form.indicator}
+          disabled={locked}
+          onChange={(e) => onChange({ indicator: e.target.value })}
+        >
+          <option value="">Choose an indicator</option>
+          {choices.map((choice) => (
+            <option key={choice.value} value={choice.value}>
+              {choice.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="block">
+        <span className="font-medium">Reason</span>
+        <textarea
+          className="mt-1 w-full rounded border border-field-border px-2 py-1"
+          rows={2}
+          placeholder="Why no acceptable data exists. The public sees this once the draft is published."
+          value={form.reason}
+          disabled={locked}
+          onChange={(e) => onChange({ reason: e.target.value })}
+        />
+      </label>
+      {form.error ? (
+        <p role="alert" className="text-red-700">
+          {form.error}
+        </p>
+      ) : null}
+      <button
+        type="button"
+        className="min-h-11 rounded bg-black px-3 py-1.5 font-medium text-white disabled:opacity-50"
+        disabled={locked || !form.indicator || !form.reason.trim()}
+        onClick={onSave}
+      >
+        {form.saving ? 'Saving…' : 'Save gap as draft'}
+      </button>
+    </div>
+  );
+}
+
 function Badge({ ok, label, title }: { ok: boolean; label: string; title?: string }) {
   return (
     <span
@@ -85,8 +229,7 @@ export function ReviewCard({
 }) {
   const router = useRouter();
   const [notes, setNotes] = useState('');
-  const [gapReason, setGapReason] = useState('');
-  const [gapOutcome, setGapOutcome] = useState('');
+  const [gap, setGap] = useState<GapFormState>(emptyGapForm);
   const [includeNarrative, setIncludeNarrative] = useState(false);
   const narrativeFindings = findings.filter(finding => finding.payload.kind === 'indicator' && finding.payload.narrative_draft);
   const narrativeSupported = narrativeFindings.length > 0 && narrativeFindings.every(finding => finding.verification?.narrative_supported === 'pass');
@@ -203,38 +346,20 @@ export function ReviewCard({
           <summary className="min-h-11 cursor-pointer rounded border px-3 py-3 hover:bg-black/5">
             Flag gap…
           </summary>
-          <div className="mt-2 w-full max-w-80">
-            <textarea
-              className="w-full rounded border border-field-border px-2 py-1"
-              rows={2}
-              aria-label="Published reason for the data gap"
-              placeholder="Why no acceptable data exists — published on the gray wedge"
-              value={gapReason}
-              onChange={(e) => setGapReason(e.target.value)}
-            />
-            <button
-              className="mt-1 min-h-11 rounded bg-black px-3 py-1.5 font-medium text-white disabled:opacity-50"
-              disabled={pending || !gapReason.trim()}
-              onClick={() =>
-                act(async () => {
-                  const result = unwrap(await flagGap({
-                    tenantSlug,
-                    dimensionId,
-                    indicator: findings[0]?.indicatorSlug ?? 'all',
-                    reason: gapReason,
-                  }));
-                  setGapOutcome(result.requiresSecondReview
-                    ? 'Gap saved as draft; a second editor must publish.'
-                    : result.published ? 'Data gap published.' : 'Gap saved as draft. Review it before publishing.');
-                })
-              }
-            >
-              Publish honest gap wedge
-            </button>
-          </div>
+          <GapForm
+            choices={gapChoices(findings)}
+            form={gap}
+            busy={pending}
+            onChange={(patch) => setGap((current) => ({ ...current, ...patch, error: '' }))}
+            onSave={() => {
+              const sending = { ...gap, saving: true, error: '', saved: '' };
+              setGap(sending);
+              act(async () => setGap(await submitGap(flagGap, { tenantSlug, dimensionId }, sending)));
+            }}
+          />
         </details>
       </div>
-      <p role="status" className="mt-2 text-sm">{gapOutcome}</p>
+      <p role="status" className="mt-2 text-sm">{gap.saved}</p>
     </div>
   );
 }
