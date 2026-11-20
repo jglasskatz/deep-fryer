@@ -46,6 +46,17 @@ vi.mock('@/lib/auth', async (importOriginal) => ({
   getOrgRole: vi.fn(async () => 'owner'),
 }));
 vi.mock('@/lib/db', () => ({ systemDb: () => ({}), userDb: async () => (runGoing ? [{ id: 'run-1' }] : []) }));
+// Where the doughnut stands follows the stubbed run: a blank portrait, or research under way.
+vi.mock('@/lib/portrait-stage', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@/lib/portrait-stage')>();
+  return {
+    ...real,
+    portraitStageFacts: vi.fn(async () => ({
+      ...real.BLANK_FACTS,
+      runs: runGoing ? [{ id: 'run-1', status: 'running', appliedAt: new Date() }] : [],
+    })),
+  };
+});
 // The last step's seat count reads the database; three seats with only the owner, as a new group has.
 vi.mock('@/lib/invitations', () => ({
   seatsInEffect: vi.fn(async () => ({ limit: 3, members: 1, pending: 0, left: 2 })),

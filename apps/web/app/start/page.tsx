@@ -18,6 +18,7 @@ import { getAuth, getOrgRole, getRole, roleAtLeast } from '@/lib/auth';
 import { billingSummary, firstDoughnutRoute, previewResearchSpend, researchUnavailableNotice } from '@/lib/billing';
 import { systemDb, userDb } from '@/lib/db';
 import { seatsInEffect } from '@/lib/invitations';
+import { portraitStage, portraitStageFacts, startStepStates } from '@/lib/portrait-stage';
 import {
   bringYourOwnKeyAvailable,
   deploymentResearchKeyConfigured,
@@ -69,7 +70,10 @@ const PLAN_WAY_TITLE = {
  *
  * `/start` shows step one to do and the rest as what comes next;
  * `/start?portrait=<slug>` shows the same four with step one done, for an
- * editor or owner of that portrait (anyone else with a role there is told
+ * editor or owner of that portrait, under a line saying where its doughnut
+ * stands and what to do next (lib/portrait-stage.ts), whose stage also
+ * decides which step is done and which is the one to do now — the markers
+ * follow the research along (anyone else with a role there is told
  * who can; anyone without one gets the plain start page, which says nothing
  * about whether the portrait exists).
  *
@@ -158,7 +162,7 @@ async function portraitSteps(slug: string, paid: boolean, paidAt: number) {
   const org = await organizationForTenant(systemDb(), tenant.id);
   if (!org) return null;
 
-  const [summary, orgRole, inProgress, applied] = await Promise.all([
+  const [summary, orgRole, inProgress, applied, stageFacts] = await Promise.all([
     billingSummary(org.id),
     getOrgRole(org.id),
     userDb((db) =>
@@ -181,7 +185,12 @@ async function portraitSteps(slug: string, paid: boolean, paidAt: number) {
         .where(and(eq(researchRuns.tenantId, tenant.id), isNotNull(researchRuns.appliedAt)))
         .limit(1),
     ),
+    portraitStageFacts(tenant.id),
   ]);
+  // Where the doughnut stands, and which step is the one to do now: the markers follow the research along.
+  // Adding what the group has is step two of this very page.
+  const stage = portraitStage(stageFacts, { tenantSlug: tenant.slug, canEdit: true, addHref: '#step-2' });
+  const stepStates = startStepStates(stageFacts);
   const seats = await seatsInEffect(systemDb(), org.id, summary.subscription);
   const sessions = SESSIONS_PER_FULL_REFRESH;
   // "Build my doughnut" plans a full build, so the deployment's first-doughnut choice applies to it.
@@ -368,7 +377,26 @@ async function portraitSteps(slug: string, paid: boolean, paidAt: number) {
   return (
     <>
       <h1 className="text-3xl font-bold break-words">Make a doughnut for {tenant.name}</h1>
-      <p className="mt-2 text-sm text-[color:var(--color-muted)]">Private until your group publishes it.</p>
+      {/* Where it stands and the next thing to do, before the steps. Not a heading: the page's headings are its four steps. */}
+      <div className="mt-4 rounded-lg border border-black/15 p-4 text-sm break-words" data-where-it-stands="">
+        <p>
+          <span className="font-medium">Where it stands:</span>{' '}
+          <strong className="mr-1 inline-block rounded bg-black/[0.06] px-2 py-0.5" data-stage={stage.stage}>
+            {stage.label}
+          </strong>{' '}
+          {stage.summary}
+        </p>
+        <p className="mt-2">
+          <strong>Next:</strong>{' '}
+          {stage.next.href ? (
+            <Link className="underline" href={stage.next.href}>
+              {stage.next.text}
+            </Link>
+          ) : (
+            stage.next.text
+          )}
+        </p>
+      </div>
 
       {paid ? (
         <>
@@ -400,7 +428,7 @@ async function portraitSteps(slug: string, paid: boolean, paidAt: number) {
       ) : null}
 
       <ol className="mt-8 space-y-4">
-        <StartStep index={0} state="done">
+        <StartStep index={0} state={stepStates[0]}>
           <p className="text-sm">
             {tenant.name}
             {tenant.region ? `, ${tenant.region},` : ''} is set up.{' '}
@@ -412,11 +440,11 @@ async function portraitSteps(slug: string, paid: boolean, paidAt: number) {
           </p>
         </StartStep>
 
-        <StartStep index={1} state="current">
+        <StartStep index={1} state={stepStates[1]}>
           <WhatYouHave routes={DOUGHNUT_ROUTES} tenantSlug={tenant.slug} />
         </StartStep>
 
-        <StartStep index={2} state="upcoming">
+        <StartStep index={2} state={stepStates[2]}>
           <p className="text-sm text-[color:var(--color-muted)]">
             {blocked
               ? 'Research looks up each number for an overview of the place and all 21 topics, from public sources, and records where each one came from. Nothing is public until your group reviews and publishes it.'
@@ -466,7 +494,7 @@ async function portraitSteps(slug: string, paid: boolean, paidAt: number) {
           )}
         </StartStep>
 
-        <StartStep index={3} state="upcoming">
+        <StartStep index={3} state={stepStates[3]}>
           <LookItOver
             tenantSlug={tenant.slug}
             tenantName={tenant.name}

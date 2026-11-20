@@ -4,6 +4,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { AppRouterContext } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { FREE_SETUP_LIMITS, type Role, type SubscriptionSnapshot } from '@deep-fryer/core';
 import type { SeatsInEffect } from '@/lib/invitations';
+import type { StageFacts } from '@/lib/portrait-stage';
 import { DOUGHNUT_ROUTES, routeHref, routesWithoutResearch } from '@/components/onboarding/routes';
 import { START_STEPS, WhatYouHave, WithoutResearch } from '@/components/onboarding/StartSteps';
 
@@ -25,6 +26,8 @@ let role: Role | null = 'owner';
 let runGoing = false;
 let tenantName = 'City of Ithaca';
 let seats: SeatsInEffect = { limit: 3, members: 1, pending: 0, left: 2 };
+/** Where the portrait's doughnut stands, when a test sets it; otherwise it follows `runGoing`. */
+let stageFacts: StageFacts | null = null;
 
 vi.mock('@/components/site-header/SiteHeader', () => ({ SiteHeader: () => null }));
 vi.mock('@/components/onboarding/BuildDoughnut', () => ({
@@ -38,6 +41,20 @@ vi.mock('@/lib/auth', async (importOriginal) => ({
   getOrgRole: vi.fn(async () => (role === 'owner' ? 'owner' : null)),
 }));
 vi.mock('@/lib/db', () => ({ systemDb: () => ({}), userDb: async () => (runGoing ? [{ id: 'run-1' }] : []) }));
+// Where the doughnut stands follows the stubbed run: a blank portrait, or research under way.
+vi.mock('@/lib/portrait-stage', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@/lib/portrait-stage')>();
+  return {
+    ...real,
+    portraitStageFacts: vi.fn(
+      async () =>
+        stageFacts ?? {
+          ...real.BLANK_FACTS,
+          runs: runGoing ? [{ id: 'run-1', status: 'running', appliedAt: new Date() }] : [],
+        },
+    ),
+  };
+});
 vi.mock('@/lib/invitations', () => ({ seatsInEffect: vi.fn(async () => seats) }));
 vi.mock('@deep-fryer/db', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@deep-fryer/db')>()),
@@ -139,6 +156,7 @@ beforeEach(() => {
   runGoing = false;
   tenantName = 'City of Ithaca';
   seats = { limit: 3, members: 1, pending: 0, left: 2 };
+  stageFacts = null;
 });
 afterEach(() => vi.clearAllMocks());
 
@@ -291,6 +309,73 @@ describe('/start for a portrait just created', () => {
       expect(below.match(/Unified Government/g)).toHaveLength(3);
       expect(below.endsWith('</div></main>')).toBe(true);
     }
+  });
+});
+
+describe('/start for a portrait: where it stands, and the markers following it', () => {
+  const box = (html: string) => {
+    const from = html.indexOf('data-where-it-stands');
+    return from < 0 ? '' : decode(html.slice(from, html.indexOf('</div>', from)));
+  };
+  const markers = (html: string) =>
+    [1, 2, 3, 4].map((n) => {
+      const s = step(html, n);
+      return s.includes('aria-current="step"') ? 'current' : s.includes('Done') && s.indexOf('Done') < s.indexOf('<h2') ? 'done' : 'upcoming';
+    });
+  const run = (id: string, status: string) => ({ id, status, appliedAt: new Date() });
+  const blank: StageFacts = { isPublic: false, runs: [], awaitingReview: 0, drafts: 0, addedByGroup: false };
+
+  it('just created: Draft, next is step two, and step two is the one to do now', async () => {
+    const html = await page({ portrait: 'ithaca' });
+    expect(box(html)).toContain('<span class="font-medium">Where it stands:</span>');
+    expect(box(html)).toMatch(/data-stage="draft">Draft<\/strong> Nothing has been added yet, and nothing is public\./);
+    expect(box(html)).toContain('<strong>Next:</strong> <a class="underline" href="#step-2">Add what you already have, or start the research</a>');
+    // The link lands on step two's heading.
+    expect(html).toContain('<h2 id="step-2"');
+    expect(markers(html)).toEqual(['done', 'current', 'upcoming', 'upcoming']);
+    // Before the steps, and not a heading of its own: the page's headings stay its four steps.
+    expect(html.indexOf('data-where-it-stands')).toBeLessThan(html.indexOf('aria-labelledby="step-1"'));
+    expect(headings(html, 'h2')).toEqual([...START_STEPS]);
+  });
+
+  it('research under way: Being researched, and step three is the one under way', async () => {
+    runGoing = true;
+    const html = await page({ portrait: 'ithaca' });
+    expect(box(html)).toMatch(/data-stage="researching">Being researched<\/strong> Research is under way\./);
+    expect(box(html)).toContain('href="/ithaca/admin/research/run-1">Follow the research</a>');
+    expect(markers(html)).toEqual(['done', 'done', 'current', 'upcoming']);
+  });
+
+  it('findings to review: Waiting for review, and looking it over is the step now', async () => {
+    stageFacts = { ...blank, runs: [run('run-1', 'complete')], awaitingReview: 5 };
+    const html = await page({ portrait: 'ithaca' });
+    expect(box(html)).toMatch(/data-stage="review">Waiting for review<\/strong> Nothing is public yet\. 5 topics have research findings to review\./);
+    expect(box(html)).toContain('href="/ithaca/admin/review">Review the research findings</a>');
+    expect(markers(html)).toEqual(['done', 'done', 'done', 'current']);
+  });
+
+  it('public with a newer draft: Public, then review the newer draft, back on step four', async () => {
+    stageFacts = { ...blank, isPublic: true, runs: [run('run-1', 'complete')], drafts: 1, addedByGroup: true };
+    const html = await page({ portrait: 'ithaca' });
+    expect(box(html)).toMatch(/data-stage="public">Public<\/strong> Anyone can see the published topics\./);
+    expect(box(html)).toContain('href="/ithaca/admin/review">Review the newer draft and publish it</a>');
+    expect(markers(html)).toEqual(['done', 'done', 'done', 'current']);
+    // It no longer says the portrait is private.
+    expect(html).not.toContain('Private until your group publishes it.');
+  });
+
+  it('public with nothing waiting: every step done, none to do now', async () => {
+    stageFacts = { ...blank, isPublic: true, runs: [run('run-1', 'complete')], addedByGroup: true };
+    const html = await page({ portrait: 'ithaca' });
+    expect(box(html)).toContain('href="/ithaca">See the doughnut as visitors do</a>');
+    expect(markers(html)).toEqual(['done', 'done', 'done', 'done']);
+    expect(html).not.toContain('aria-current="step"');
+  });
+
+  it('a very long name: the box breaks its text too', async () => {
+    tenantName = `Unified Government of ${'Athens-Clarke'.repeat(12)} County`;
+    const html = await page({ portrait: 'ithaca' });
+    expect(html).toMatch(/<div class="[^"]*break-words[^"]*" data-where-it-stands="">/);
   });
 });
 
