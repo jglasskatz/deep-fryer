@@ -1,0 +1,14 @@
+-- ---- Account changes in the audit log ----
+-- Giving someone staff access, or taking it away, changes an account, not a
+-- portrait, and it can happen before any portrait exists (the first operator
+-- on a new host). Such an entry has no tenant, so tenant_id may now be null.
+-- Every portrait entry still carries its tenant; the foreign key and its
+-- cascade are unchanged.
+--
+-- Row-level security needs nothing new: audit_log_owner_read and
+-- audit_log_member_insert test is_owner(tenant_id) and is_member(tenant_id),
+-- which are never true for a null tenant. So no portrait owner can read an
+-- account entry, and the app role cannot write one; only the system context
+-- (the owner role, which is not FORCE'd, 0005) records them
+-- (packages/db staff.ts setStaff).
+ALTER TABLE "audit_log" ALTER COLUMN "tenant_id" DROP NOT NULL;

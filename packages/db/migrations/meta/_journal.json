@@ -162,6 +162,13 @@
       "when": 1793187737917,
       "tag": "0022_involvement_dimension_scope",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1795144216527,
+      "tag": "0023_audit_log_account_entries",
+      "breakpoints": true
     }
   ]
 }
