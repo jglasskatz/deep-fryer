@@ -242,7 +242,11 @@ export default async function RunDetailPage({
           ) : null}
         </section>
 
-        <RunCostSummary summary={summarizeRunCosts(run.tokenUsage, sessions.map(session => session.id))} runId={run.id} />
+        <RunCostSummary
+          summary={summarizeRunCosts(run.tokenUsage, { sessions, findings })}
+          runId={run.id}
+          dimensionNames={Object.fromEntries([...slugById].map(([id, slug]) => [id, nameBySlug.get(slug) ?? slug]))}
+        />
 
         {causeGroups.length > 0 || stoppedEarly ? (
           <section className="mt-8" aria-labelledby="why-heading">

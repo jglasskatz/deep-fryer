@@ -227,6 +227,24 @@ export async function tenantRuns(tenantId: string) {
   });
 }
 
+/**
+ * Each run's session ids, for the run list's and the portrait total's cost
+ * figures: a session with no usage record leaves its run's dollars partial
+ * (core summarizeRunCosts), as it does on the run's own page.
+ */
+export async function tenantRunSessionIds(tenantId: string): Promise<Map<string, string[]>> {
+  return userDb(async (db) => {
+    const rows = await db
+      .select({ id: researchSessions.id, runId: researchSessions.runId })
+      .from(researchSessions)
+      .innerJoin(researchRuns, eq(researchRuns.id, researchSessions.runId))
+      .where(eq(researchRuns.tenantId, tenantId));
+    const byRun = new Map<string, string[]>();
+    for (const row of rows) byRun.set(row.runId, [...(byRun.get(row.runId) ?? []), row.id]);
+    return byRun;
+  });
+}
+
 export async function runWithSessions(runId: string) {
   return userDb(async (db) => {
     const [run] = await db.select().from(researchRuns).where(eq(researchRuns.id, runId));
