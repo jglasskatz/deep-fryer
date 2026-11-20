@@ -176,6 +176,27 @@ describe.skipIf(!hasDb)('admin actions on their own transaction', () => {
     ]);
   });
 
+  it('starts a new portrait with stand-ins on, and stores only a known research mode', async () => {
+    const m = await import('@deep-fryer/db');
+    const { and, eq } = await import('drizzle-orm');
+    const { researchModeOf } = await import('@deep-fryer/core');
+    const stored = async () => {
+      const [row] = await m
+        .getDb()
+        .select()
+        .from(m.tenantConfig)
+        .where(and(eq(m.tenantConfig.tenantId, tenantId), eq(m.tenantConfig.key, 'research_mode')));
+      return row?.value;
+    };
+    expect(await stored()).toBe('right_first_then_fill');
+    signedIn = people.owner;
+    const { updateConfig } = await import('./actions');
+    expect(await updateConfig({ tenantSlug, key: 'research_mode', value: 'fill everything' })).toMatchObject({ ok: false });
+    expect(await stored()).toBe('right_first_then_fill');
+    expect(await updateConfig({ tenantSlug, key: 'research_mode', value: 'right_first' })).toEqual({ ok: true, data: undefined });
+    expect(researchModeOf(await stored())).toBe('right_first');
+  });
+
   it('saves the embed allowlist on its own transaction, audit entry included', async () => {
     signedIn = people.owner;
     const res = await onOneConnection(async () =>

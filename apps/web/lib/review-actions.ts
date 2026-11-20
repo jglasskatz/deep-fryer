@@ -27,10 +27,12 @@ import { getAuth, requireTenantRole } from './auth';
 import { audit } from './audit';
 import {
   bulkApprovalPlan,
+  isStandIn,
   liveDimensions,
   researchVersionData,
   runResearch,
   runSettled,
+  STAND_INS_ONLY_TEXT,
 } from './draft-portrait';
 import { publishVersionFor } from './publish';
 import { createPlannedRun } from './research';
@@ -99,6 +101,10 @@ async function appendResearchVersion(
  * from the current version. Publish is a separate act (default review policy
  * gates everything on a human decision) — pass `publish: true` for
  * approve-and-publish in one step.
+ *
+ * Stand-ins among the run's findings are left waiting: each is accepted or
+ * rejected on its own, never by approving the dimension. A dimension whose
+ * findings in the run are all stand-ins is refused, approving nothing.
  */
 export const approveFindings = action(async (input: {
   tenantSlug: string;
@@ -116,7 +122,7 @@ export const approveFindings = action(async (input: {
 
     // In the order they were recorded, as the draft doughnut reads them: the
     // first indicator is the wedge's headline.
-    const runFindings = await db
+    const recorded = await db
       .select({ finding: findings })
       .from(findings)
       .innerJoin(researchSessions, eq(findings.sessionId, researchSessions.id))
@@ -124,7 +130,9 @@ export const approveFindings = action(async (input: {
         and(eq(researchSessions.runId, input.runId), eq(findings.dimensionId, input.dimensionId)),
       )
       .orderBy(findings.createdAt, findings.id);
-    if (runFindings.length === 0) throw new UserError('No findings for this dimension in this run.');
+    if (recorded.length === 0) throw new UserError('No findings for this dimension in this run.');
+    const runFindings = recorded.filter(({ finding }) => !isStandIn(finding));
+    if (runFindings.length === 0) throw new UserError(STAND_INS_ONLY_TEXT);
     if (input.includeNarrative && runFindings.some(({ finding }) => finding.payload.kind === 'indicator' && finding.payload.narrative_draft && finding.verification?.narrative_supported !== 'pass')) {
       throw new UserError('The drafted narrative and actions need source verification before inclusion. Edit them manually or request research.');
     }

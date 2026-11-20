@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { defaultPortraitConfig, framework } from '@deep-fryer/contract';
 import { MAX_INDICATORS_PER_SESSION, renderPlan, planStrategy, renderVerifierPrompt, REGION_BRIEF_PLACEHOLDER } from './plan.js';
+import findingSchema from '@deep-fryer/contract/schemas/finding' with { type: 'json' };
+import { proxyFindingPayloadSchema } from '@deep-fryer/core';
 import { deterministicChecks, isFlagged, mergeVerification } from './verify.js';
 
 const config = defaultPortraitConfig('City of Santa Cruz', 'City of Santa Cruz municipal boundary');
@@ -156,6 +158,60 @@ describe('deterministicChecks', () => {
     expect(isFlagged(mergeVerification(parsed.checks, { content_supported: 'pass', narrative_supported: 'pass' }))).toBe(false);
     const bad = { ...narrative, actions: [{ ...narrative.actions[0]!, source_url: 'javascript:alert(1)' }] };
     expect((await deterministicChecks({ ...goodFinding, narrative_draft: bad }, config, 'housing', async () => true)).payload).toBeNull();
+  });
+
+  describe('stand-ins', () => {
+    const standIn = {
+      ...goodFinding,
+      kind: 'proxy',
+      indicator_slug: 'county-cost-burdened-renters',
+      proxy_for: 'cost-burdened-renters',
+      rationale: 'The county series counts the same renter households.',
+      confidence: 'low',
+      geographic_scale: 'county',
+    };
+
+    it('fail the schema check from a research session, which reports a gap instead', async () => {
+      let fetched = false;
+      const { payload, checks } = await deterministicChecks(standIn, config, 'housing', async () => (fetched = true));
+      expect(payload).toBeNull();
+      expect(checks.schema_ok).toBe(false);
+      expect(fetched).toBe(false);
+    });
+
+    it('are checked as a sourced indicator is, from the pass that proposes them', async () => {
+      const passed = await deterministicChecks(standIn, config, 'housing', async () => true, { allowProxy: true });
+      expect(passed.payload).toMatchObject({ kind: 'proxy', proxy_for: 'cost-burdened-renters', confidence: 'low' });
+      expect(passed.checks).toEqual({ schema_ok: true, url_ok: true, recency_ok: true, scale_ok: true });
+      const stale = await deterministicChecks({ ...standIn, year: 2005, geographic_scale: 'national' }, config, 'housing', async () => false, { allowProxy: true });
+      expect(stale.checks).toEqual({ schema_ok: true, url_ok: false, recency_ok: false, scale_ok: false });
+    });
+
+    it('must be low confidence and say what they stand in for and why', async () => {
+      for (const bad of [
+        { ...standIn, confidence: 'high' },
+        { ...standIn, proxy_for: undefined },
+        { ...standIn, rationale: '   ' },
+      ]) {
+        const { payload } = await deterministicChecks(bad, config, 'housing', async () => true, { allowProxy: true });
+        expect(payload).toBeNull();
+      }
+    });
+
+    it('are described in the shared finding schema field for field, apart from what a research session returns', () => {
+      const def = findingSchema.$defs.proxyFinding;
+      const shape = proxyFindingPayloadSchema.shape;
+      expect(Object.keys(def.properties).sort()).toEqual(Object.keys(shape).sort());
+      expect([...def.required].sort()).toEqual(
+        Object.entries(shape).filter(([, field]) => !field.safeParse(undefined).success).map(([key]) => key).sort(),
+      );
+      expect(JSON.stringify(findingSchema.oneOf)).not.toContain('proxyFinding');
+    });
+
+    it('still accept ordinary findings when stand-ins are allowed', async () => {
+      const { payload } = await deterministicChecks(goodFinding, config, 'housing', async () => true, { allowProxy: true });
+      expect(payload?.kind).toBe('indicator');
+    });
   });
 
   it('rejects malformed payloads at the schema gate', async () => {

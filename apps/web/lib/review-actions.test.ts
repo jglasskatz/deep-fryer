@@ -620,3 +620,204 @@ describe.skipIf(!hasDb)('approve all unflagged', () => {
     expect(await bulkAudit()).toHaveLength(4);
   });
 });
+
+/**
+ * Stand-ins (payload kind `proxy`) are accepted or rejected one at a time,
+ * never by an approval: the single approve takes the rest of the dimension
+ * and refuses a dimension of only stand-ins; "Approve all unflagged" takes
+ * the rest of the run and publishes nothing it offered.
+ */
+describe.skipIf(!hasDb)('stand-ins are never approved with a dimension', () => {
+  const saved = process.env.AUTH_SECRET;
+  const PASS = { url_ok: true, schema_ok: true, recency_ok: true, scale_ok: true, content_supported: 'pass' as const };
+  const ids: { tenantId?: string; organizationId?: string; users: string[]; sessions: string[] } = { users: [], sessions: [] };
+  let editor = '';
+  let tenantSlug = '';
+  let dims: { dimensionId: string; slug: string }[] = [];
+  let runId = '';
+  const findingIds = new Map<number, string[]>();
+  const standInIds: string[] = [];
+
+  const indicator = (slug: string) => ({
+    kind: 'indicator' as const,
+    indicator_slug: slug,
+    name: `Indicator ${slug}`,
+    value: 12,
+    unit: '%',
+    year: 2025,
+    target: 5,
+    level_pct: 20,
+    scoring: { threshold_ref: slug, function: 'lower_is_better' as const, inputs: { value: 12 }, worked_math: 'm' },
+    source: 'City statistics office',
+    source_url: 'https://stats.example.gov/series',
+    source_tier: 1,
+    evidence: { snapshot_path: 'evidence/a.png', captured_at: '2026-09-01T00:00:00Z' },
+    confidence: 'high' as const,
+    geographic_scale: 'city' as const,
+  });
+  const standIn = (slug: string, forSlug: string) => ({
+    ...indicator(slug),
+    kind: 'proxy' as const,
+    name: `Stand-in ${slug}`,
+    proxy_for: forSlug,
+    rationale: 'The county series counts the same households.',
+    confidence: 'low' as const,
+    geographic_scale: 'county' as const,
+  });
+  const gap = (slug: string) => ({ kind: 'gap' as const, indicator_slug: slug, reason: 'No series.', scales_tried: ['city'], searched_at: '2026-09-01T00:00:00Z' });
+
+  beforeAll(async () => {
+    process.env.AUTH_SECRET = 'test-secret';
+    const m = await import('@deep-fryer/db');
+    const db = m.getDb();
+    const provisioned = await m.provisionTenant(db, { slug: uniq(), name: 'Stand-in City' });
+    const { tenant } = provisioned;
+    tenantSlug = tenant.slug;
+    dims = provisioned.dimensions;
+    ids.tenantId = tenant.id;
+    ids.organizationId = tenant.organizationId;
+    const [person] = await db.insert(m.users).values({ email: `${uniq()}@editor.example.gov` }).returning();
+    editor = person!.id;
+    ids.users.push(editor);
+    await db.insert(m.tenantMembers).values({ tenantId: tenant.id, userId: editor, role: 'editor' });
+
+    const [run] = await db
+      .insert(m.researchRuns)
+      .values({ tenantId: tenant.id, status: 'complete', appliedAt: new Date(), plan: { sessions: [], config_hash: 'h', plugin_version: 'v' }, configSnapshot: {} as never })
+      .returning();
+    runId = run!.id;
+
+    const cases: { dim: number; findings: { payload: { kind: string; indicator_slug: string }; verification: unknown }[] }[] = [
+      // 0: two passing indicators and a passing stand-in.
+      { dim: 0, findings: [{ payload: indicator('a1'), verification: PASS }, { payload: standIn('a-county', 'a-missing'), verification: PASS }, { payload: indicator('a2'), verification: PASS }] },
+      // 1: only a stand-in.
+      { dim: 1, findings: [{ payload: standIn('b-county', 'b-missing'), verification: PASS }] },
+      // 2: a gap and a stand-in offered for it.
+      { dim: 2, findings: [{ payload: gap('c-missing'), verification: { ...PASS, content_supported: 'uncertain' } }, { payload: standIn('c-county', 'c-missing'), verification: PASS }] },
+      // 3: a passing indicator, and output that says it is a stand-in but
+      // failed the schema check (a research session may not return one), so
+      // it is stored as it came back and flagged.
+      { dim: 3, findings: [{ payload: indicator('d1'), verification: PASS }, { payload: standIn('d-county', 'd-missing'), verification: { ...PASS, schema_ok: false, content_supported: 'fail' } }] },
+    ];
+    for (const c of cases) {
+      const [session] = await db
+        .insert(m.researchSessions)
+        .values({ runId, kind: 'dimension', dimensionId: dims[c.dim]!.dimensionId, status: 'complete' })
+        .returning();
+      ids.sessions.push(session!.id);
+      for (const f of c.findings) {
+        const [row] = await db
+          .insert(m.findings)
+          .values({
+            sessionId: session!.id,
+            dimensionId: dims[c.dim]!.dimensionId,
+            indicatorSlug: f.payload.indicator_slug,
+            payload: f.payload as never,
+            verification: f.verification as never,
+          })
+          .returning();
+        if (f.payload.kind === 'proxy' && (f.verification as { schema_ok: boolean }).schema_ok) standInIds.push(row!.id);
+        else findingIds.set(c.dim, [...(findingIds.get(c.dim) ?? []), row!.id]);
+      }
+    }
+  });
+
+  afterAll(async () => {
+    signedIn = null;
+    if (saved === undefined) delete process.env.AUTH_SECRET;
+    else process.env.AUTH_SECRET = saved;
+    const m = await import('@deep-fryer/db');
+    const { eq, inArray, sql } = await import('drizzle-orm');
+    const db = m.getDb();
+    if (ids.sessions.length) {
+      await db.transaction(async (tx) => {
+        await tx.execute(sql`alter table findings disable trigger findings_immutable`);
+        await tx.delete(m.findings).where(inArray(m.findings.sessionId, ids.sessions));
+        await tx.execute(sql`alter table findings enable trigger findings_immutable`);
+      });
+      await db.delete(m.researchSessions).where(inArray(m.researchSessions.id, ids.sessions));
+    }
+    if (ids.tenantId) {
+      await db.delete(m.dimensions).where(eq(m.dimensions.tenantId, ids.tenantId));
+      await db.delete(m.tenants).where(eq(m.tenants.id, ids.tenantId));
+    }
+    if (ids.organizationId) await db.delete(m.organizations).where(eq(m.organizations.id, ids.organizationId));
+    if (ids.users.length) await db.delete(m.users).where(inArray(m.users.id, ids.users));
+  });
+
+  async function runVersions() {
+    const m = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const rows = await m.getDb().select().from(m.dimensionVersions).where(eq(m.dimensionVersions.researchRunId, runId));
+    const index = new Map(dims.map((d, i) => [d.dimensionId, i]));
+    return rows.map((v) => [index.get(v.dimensionId)!, v] as const).sort((a, b) => a[0] - b[0]);
+  }
+
+  const everyName = (versions: Awaited<ReturnType<typeof runVersions>>) =>
+    versions.flatMap(([, v]) => [...v.data.indicators.map((i) => i.name), ...(v.data.gaps ?? []).map((g) => g.indicator)]);
+
+  it('refuses a dimension whose findings are all stand-ins, approving nothing', async () => {
+    signedIn = editor;
+    const { approveFindings } = await import('./review-actions');
+    const res = await approveFindings({ tenantSlug, runId, dimensionId: dims[1]!.dimensionId, publish: true });
+    expect(res).toMatchObject({ ok: false, error: expect.stringContaining('stand-in') });
+    expect(res).toMatchObject({ error: expect.stringContaining('nothing was changed') });
+    expect(await runVersions()).toEqual([]);
+  });
+
+  it('approves the rest of a dimension and leaves its stand-in waiting', async () => {
+    signedIn = editor;
+    const { approveFindings } = await import('./review-actions');
+    const res = await approveFindings({ tenantSlug, runId, dimensionId: dims[2]!.dimensionId, publish: true });
+    expect(res).toMatchObject({ ok: true });
+    const versions = await runVersions();
+    expect(versions.map(([i]) => i)).toEqual([2]);
+    const version = versions[0]![1];
+    expect(version.data.indicators).toEqual([]);
+    expect(version.data.gaps?.map((g) => g.indicator)).toEqual(['c-missing']);
+  });
+
+  it('treats output that only claims to be a stand-in as a flag, which holds "Approve all unflagged" open until it is dealt with', async () => {
+    signedIn = editor;
+    const { approveFindings, approveUnflaggedFindings } = await import('./review-actions');
+    const passed = findingIds.get(0)!;
+    const held = await approveUnflaggedFindings({ tenantSlug, runId, expectedFindings: passed.length, spotChecked: passed });
+    // Every other dimension has been dealt with or holds only stand-ins: this
+    // flag alone holds the run open.
+    expect(held).toMatchObject({ ok: false, error: expect.stringContaining('1 dimension of this run still has flagged findings') });
+    expect((await runVersions()).map(([i]) => i)).toEqual([2]);
+
+    // Dealt with on its card like any malformed output: the approve takes the
+    // dimension, and does not say the run only suggested stand-ins.
+    const res = await approveFindings({ tenantSlug, runId, dimensionId: dims[3]!.dimensionId });
+    expect(res).toMatchObject({ ok: true });
+    const versions = await runVersions();
+    expect(versions.map(([i]) => i)).toEqual([2, 3]);
+    expect(versions[1]![1]).toMatchObject({ status: 'draft' });
+    expect(versions[1]![1].data.indicators.map((row) => row.name)).toEqual(['Indicator d1']);
+  });
+
+  it('"Approve all unflagged" approves the rest of the run and publishes no stand-in', async () => {
+    signedIn = editor;
+    const passed = findingIds.get(0)!;
+    const { approveUnflaggedFindings } = await import('./review-actions');
+    // The stand-ins hold nothing open, and are not counted among the findings to approve.
+    const res = await approveUnflaggedFindings({ tenantSlug, runId, expectedFindings: passed.length, spotChecked: passed });
+    expect(res).toMatchObject({ ok: true, data: { findings: 2 } });
+
+    const versions = await runVersions();
+    expect(versions.map(([i]) => i)).toEqual([0, 2, 3]);
+    expect(versions.find(([i]) => i === 0)![1].data.indicators.map((i) => i.name)).toEqual(['Indicator a1', 'Indicator a2']);
+    expect(everyName(versions).some((name) => /Stand-in|county/.test(name))).toBe(false);
+
+    const m = await import('@deep-fryer/db');
+    const { and, eq, inArray } = await import('drizzle-orm');
+    const db = m.getDb();
+    const approvedAudits = await db.select().from(m.auditLog).where(and(eq(m.auditLog.tenantId, ids.tenantId!), eq(m.auditLog.action, 'approve_finding')));
+    expect(approvedAudits.map((a) => a.entityId).sort()).toEqual([...passed].sort());
+    expect(await db.select().from(m.auditLog).where(inArray(m.auditLog.entityId, standInIds))).toEqual([]);
+    // The one published version holds the gap approved on its card, not its stand-in.
+    const published = await db.select().from(m.dimensions).where(eq(m.dimensions.tenantId, ids.tenantId!));
+    expect(published.filter((d) => d.publishedVersionId).map((d) => d.id)).toEqual([dims[2]!.dimensionId]);
+  });
+});

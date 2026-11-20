@@ -292,6 +292,173 @@
           "description": "The closest thing that was found but rejected, and why it was rejected."
         }
       }
+    },
+    "proxyFinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A stand-in: a sourced measure offered in place of an indicator that has no acceptable data. Only the pass that proposes stand-ins returns one; a research session reports a gap instead. A stand-in is never published until a person accepts it.",
+      "required": [
+        "kind",
+        "indicator_slug",
+        "proxy_for",
+        "rationale",
+        "name",
+        "value",
+        "unit",
+        "year",
+        "target",
+        "level_pct",
+        "scoring",
+        "source",
+        "source_url",
+        "source_tier",
+        "evidence",
+        "confidence",
+        "geographic_scale"
+      ],
+      "properties": {
+        "kind": {
+          "const": "proxy"
+        },
+        "indicator_slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "description": "Slug of the stand-in measure itself."
+        },
+        "proxy_for": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "description": "Slug of the indicator this measure stands in for."
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "description": "Why this measure is a fair substitute for the missing indicator."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "unit": {
+          "type": "string"
+        },
+        "year": {
+          "type": "integer",
+          "minimum": 1900,
+          "maximum": 2100
+        },
+        "target": {
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "level_pct": {
+          "type": "number"
+        },
+        "scoring": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "threshold_ref",
+            "function",
+            "inputs",
+            "worked_math"
+          ],
+          "properties": {
+            "threshold_ref": {
+              "type": "string"
+            },
+            "function": {
+              "enum": [
+                "higher_is_better",
+                "lower_is_better",
+                "band"
+              ]
+            },
+            "inputs": {
+              "type": "object",
+              "description": "The exact numbers fed to the mapping function (value, target, scale, low, high\u2026).",
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "worked_math": {
+              "type": "string",
+              "description": "The arithmetic written out, e.g. 'level_pct = (12.4 \u2212 5) \u2044 5 \u00d7 100 = +148.0'."
+            }
+          }
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "source_tier": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Which source-priority tier (portrait config) this source satisfied."
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "snapshot_path",
+            "captured_at"
+          ],
+          "properties": {
+            "snapshot_path": {
+              "type": "string",
+              "description": "Tenant-storage path of the page screenshot captured at retrieval time."
+            },
+            "pdf_path": {
+              "type": "string",
+              "description": "Tenant-storage path of the source PDF, when the source is a document."
+            },
+            "text_path": {
+              "type": "string",
+              "pattern": "^evidence/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\\.txt$",
+              "description": "Tenant-storage path of the readable text of the page and its PDF, when capture_evidence returned one. Copy it verbatim."
+            },
+            "no_readable_text": {
+              "const": true,
+              "description": "true when capture_evidence returned it: the page and its PDF had no readable text (a scanned document or an image). Copy it verbatim."
+            },
+            "captured_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "confidence": {
+          "const": "low",
+          "description": "A stand-in is always low confidence."
+        },
+        "geographic_scale": {
+          "enum": [
+            "city",
+            "county",
+            "regional",
+            "state",
+            "national",
+            "global"
+          ]
+        },
+        "notes": {
+          "type": "string",
+          "description": "Session's caveats about the value (methodology quirks, denominator choices\u2026)."
+        }
+      }
     }
   }
 }

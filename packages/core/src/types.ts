@@ -149,6 +149,15 @@ export interface NotificationConfig {
   email_on_flagged_finding: boolean;
 }
 
+/**
+ * How a portrait's research treats indicators it could not source:
+ * - `right_first`: only solid findings; a missing indicator stays a gap.
+ * - `right_first_then_fill`: the same, then a cheaper second pass proposes
+ *   labelled stand-in measures for the gaps. A stand-in waits for a person
+ *   to accept it; no ordinary approval ever publishes one.
+ */
+export type ResearchMode = 'right_first' | 'right_first_then_fill';
+
 /** All tenant_config keys with their value types. */
 export interface TenantConfigMap {
   region: PortraitConfig['region'];
@@ -161,6 +170,7 @@ export interface TenantConfigMap {
   notifications: NotificationConfig;
   features: FeaturesConfig;
   progress: ProgressConfig;
+  research_mode: ResearchMode;
 }
 
 export type TenantConfigKey = keyof TenantConfigMap;
@@ -217,7 +227,22 @@ export interface GapFindingPayload {
   nearest_data?: string;
 }
 
-export type FindingPayload = IndicatorFindingPayload | GapFindingPayload;
+/**
+ * A stand-in: a sourced measure offered in place of an indicator that has
+ * no acceptable data (`proxy_for`, that indicator's slug), with the reason
+ * it is a fair substitute. It carries every field a sourced indicator does,
+ * is always low confidence, and has no narrative draft. It never becomes
+ * part of a version through an ordinary approval: a person accepts or
+ * rejects each one on its own.
+ */
+export interface ProxyFindingPayload extends Omit<IndicatorFindingPayload, 'kind' | 'confidence' | 'narrative_draft'> {
+  kind: 'proxy';
+  proxy_for: string;
+  rationale: string;
+  confidence: 'low';
+}
+
+export type FindingPayload = IndicatorFindingPayload | GapFindingPayload | ProxyFindingPayload;
 
 /** One rendered session spec inside a research plan — inspectable before spend. */
 export interface PlannedSession {
