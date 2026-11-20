@@ -40,7 +40,7 @@ describe('action()', () => {
       ok: false,
       error: 'A change note is required.',
     });
-    const r = await action(async () => z.object({ email: z.string().email() }).parse({ email: 'x' }))();
+    const r = await action(async () => z.object({ email: z.email() }).parse({ email: 'x' }))();
     expect(r.ok).toBe(false);
     expect(!r.ok && r.error).toMatch(/^email: /);
   });

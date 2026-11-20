@@ -6,6 +6,7 @@ import { z } from 'zod';
 import {
   CONTRACT_PLANS,
   PLANS,
+  emailFormat,
   PURCHASABLE_PLANS,
   isPlanId,
   sellsInterval,
@@ -110,7 +111,7 @@ export const startCheckout = action(
 );
 
 const invoiceSchema = z.object({
-  billingEmail: z.string().trim().email('Enter the email invoices should go to.'),
+  billingEmail: z.string().trim().check(emailFormat('Enter the email invoices should go to.')),
   poNumber: z.string().trim().max(30, 'PO numbers are limited to 30 characters.').optional(),
   taxExempt: z.boolean(),
 });

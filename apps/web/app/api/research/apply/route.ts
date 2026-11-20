@@ -7,7 +7,7 @@ import { systemDb } from '@/lib/db';
 
 const bodySchema = z.object({
   tenant: z.string(),
-  run_id: z.string().uuid(),
+  run_id: z.guid(),
 });
 
 /** POST /api/research/apply — enqueue a planned run for the worker. */

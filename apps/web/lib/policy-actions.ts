@@ -8,6 +8,7 @@ import {
   POLICY_NO_BASELINE,
   policyEvaluationBrief,
   policyEvaluationContextSchema,
+  isParseableUrl,
   type PolicyEvaluationContext,
   standing,
   type ResearchQuotaCheck,
@@ -72,7 +73,7 @@ const inputSchema = z.object({
       .string()
       .trim()
       .max(L.sourceUrlMax, 'The source link is too long.')
-      .url('The source must be a full link, starting with https://.')
+      .refine(isParseableUrl, 'The source must be a full link, starting with https://.')
       // https only (the model may fetch it; the page links it): the same rule
       // the analysis schema applies to the sources it cites.
       .refine((u) => /^https:\/\//i.test(u), 'The source link must start with https://.')

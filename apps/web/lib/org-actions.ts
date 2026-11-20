@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { limitsInEffect, slugError, slugify, standing } from '@deep-fryer/core';
+import { emailFormat, limitsInEffect, slugError, slugify, standing } from '@deep-fryer/core';
 import {
   organizationBySlug,
   organizations,
@@ -152,7 +152,7 @@ export const startPortrait = action(
     const billingEmail = z
       .string()
       .trim()
-      .email('Enter a valid billing email.')
+      .check(emailFormat('Enter a valid billing email.'))
       .optional()
       .or(z.literal(''))
       .parse(input.billingEmail);

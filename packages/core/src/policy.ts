@@ -4,6 +4,7 @@ import { framework, type Threshold } from '@deep-fryer/contract';
 import { computeScoring, deriveVizLevel, pctToVizLevel } from './scoring.js';
 import type { DimensionData, Indicator, Ring } from './types.js';
 import { SLUG_RE } from './slugs.js';
+import { INVALID_URL, isParseableUrl } from './validators.js';
 
 /**
  * Policy analysis (SPEC-v5 §2): a policy brief in, projected impacts on the
@@ -62,7 +63,7 @@ export type ImpactDirection = z.infer<typeof impactDirectionSchema>;
 
 const httpsUrl = z
   .string()
-  .url()
+  .refine(isParseableUrl, INVALID_URL)
   .refine((u) => u.startsWith('https://'), 'sources must be https URLs');
 
 export const policyImpactSchema = z.object({

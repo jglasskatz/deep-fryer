@@ -258,7 +258,8 @@ export const policyAnalyze: Task = async (rawPayload, helpers) => {
     // A result read from malformed output is noted first (PARTIAL_OUTPUT_NOTE).
     const fitted = fitToContract(raw, published.map(d => d.slug));
     if (salvaged) fitted.adjustments.unshift(PARTIAL_OUTPUT_NOTE);
-    const parsed = policyAnalysisOutputSchema.safeParse(fitted.value);
+    // reportInput: an issue carries the value it refused (describeIssue names it).
+    const parsed = policyAnalysisOutputSchema.safeParse(fitted.value, { reportInput: true });
     if (!parsed.success) {
       throw new AnalysisFailure(
         salvaged
@@ -351,8 +352,8 @@ function describeIssue(error: ZodError): string {
   // Enum messages list every allowed value (21 slugs); the received value is
   // what staff need to see.
   const what =
-    issue.code === 'invalid_enum_value'
-      ? `unexpected value “${String(issue.received)}”`
+    issue.code === 'invalid_value'
+      ? `unexpected value “${String(issue.input)}”`
       : issue.message;
   return `${where}: ${what}`.slice(0, 200);
 }

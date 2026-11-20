@@ -1,5 +1,51 @@
 import { z } from 'zod';
 
+// ---- String formats ----
+//
+// zod 4's format schemas check differently from the zod 3 methods these
+// schemas used: z.url() trims and rewrites the value, z.email() has its own
+// pattern, z.iso.datetime() requires seconds and a colon in the offset. The
+// stored and published shapes must accept exactly what they accepted before,
+// so the checks are spelled out here.
+
+/** The email addresses accepted (zod 3's email pattern). */
+export const EMAIL_PATTERN = /^(?!\.)(?!.*\.\.)([A-Z0-9_'+\-\.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i;
+
+/** An email check to add to a string schema with `.check()`, after any trim. */
+export function emailFormat(error?: string) {
+  return z.email({ pattern: EMAIL_PATTERN, ...(error ? { error } : {}) });
+}
+
+/** True when the WHATWG URL parser reads the string as written. The value is never trimmed or rewritten. */
+export function isParseableUrl(value: string): boolean {
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** The message for a string that is not a URL. */
+export const INVALID_URL = 'Invalid URL';
+
+const DATE_SOURCE =
+  '((\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-((0[13578]|1[02])-(0[1-9]|[12]\\d|3[01])|(0[469]|11)-(0[1-9]|[12]\\d|30)|(02)-(0[1-9]|1\\d|2[0-8])))';
+
+/**
+ * An ISO 8601 date and time with a Z or numeric offset: seconds and
+ * fractions optional, offsets written +hh:mm or +hhmm (zod 3's
+ * datetime({ offset: true })).
+ */
+export const ISO_DATETIME_OFFSET_RE = new RegExp(
+  `^${DATE_SOURCE}T([01]\\d|2[0-3]):[0-5]\\d(:[0-5]\\d(\\.\\d+)?)?(Z|([+-]\\d{2}:?\\d{2}))$`,
+);
+
+/** A timestamp string with a Z or numeric offset. */
+export function isoDatetime() {
+  return z.string().regex(ISO_DATETIME_OFFSET_RE, 'Invalid ISO datetime');
+}
+
 export const confidenceSchema = z.enum(['high', 'medium', 'low']);
 export const geographicScaleSchema = z.enum([
   'city',
@@ -14,7 +60,7 @@ export const mappingFunctionSchema = z.enum(['higher_is_better', 'lower_is_bette
 export const indicatorScoringSchema = z.object({
   threshold_ref: z.string(),
   function: mappingFunctionSchema,
-  inputs: z.record(z.number()),
+  inputs: z.record(z.string(), z.number()),
   worked_math: z.string(),
 });
 
@@ -26,11 +72,11 @@ export const indicatorEvidenceSchema = z.object({
 
 export const sourcedActionSchema = z.object({
   text: z.string().trim().min(1).max(400),
-  source_url: z.string().url().regex(/^https:\/\//i),
+  source_url: z.string().refine(isParseableUrl, INVALID_URL).regex(/^https:\/\//i),
   evidence: indicatorEvidenceSchema.extend({
     snapshot_path: z.string().regex(/^evidence\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.png$/),
     pdf_path: z.string().regex(/^evidence\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.pdf$/).optional(),
-    captured_at: z.string().datetime({ offset: true }),
+    captured_at: isoDatetime(),
   }),
 });
 
@@ -89,7 +135,7 @@ export const indicatorFindingPayloadSchema = z.object({
   level_pct: z.number(),
   scoring: indicatorScoringSchema,
   source: z.string().min(1),
-  source_url: z.string().url(),
+  source_url: z.string().refine(isParseableUrl, INVALID_URL),
   source_tier: z.number().int().min(1),
   evidence: indicatorEvidenceSchema,
   confidence: confidenceSchema,
@@ -145,12 +191,12 @@ export const sourcePriorityConfigSchema = z.object({
 
 export const recencyConfigSchema = z.object({
   default_max_age_years: z.number().int().min(1),
-  per_dimension: z.record(z.number().int().min(1)).optional(),
+  per_dimension: z.record(z.string(), z.number().int().min(1)).optional(),
 });
 
 export const scalePolicyConfigSchema = z.object({
   default_accepted: z.array(geographicScaleSchema).min(1),
-  per_dimension: z.record(z.array(geographicScaleSchema).min(1)).optional(),
+  per_dimension: z.record(z.string(), z.array(geographicScaleSchema).min(1)).optional(),
 });
 
 export const thresholdOverrideSchema = z.object({
@@ -163,7 +209,7 @@ export const thresholdOverrideSchema = z.object({
   target_year: z.number().int().min(1900).max(2200).optional(),
 });
 
-export const thresholdOverridesConfigSchema = z.record(thresholdOverrideSchema);
+export const thresholdOverridesConfigSchema = z.record(z.string(), thresholdOverrideSchema);
 
 export const reviewPolicyConfigSchema = z.object({
   require_approval: z.enum(['all', 'none']),

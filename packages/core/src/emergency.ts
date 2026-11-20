@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { framework } from '@deep-fryer/contract';
 import type { Verdict } from './preflight.js';
+import { INVALID_URL, isParseableUrl } from './validators.js';
 
 /**
  * Emergency view (SPEC-v5 §3): staff-curated hazards rated by likelihood and
@@ -245,7 +246,7 @@ export const languageListSchema = z
     for (const tag of tags) {
       const canonical = canonicalLanguageTag(tag);
       if (!canonical) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `"${tag}" is not a language code (use BCP 47, e.g. es, zh-Hant)` });
+        ctx.addIssue({ code: 'custom', message: `"${tag}" is not a language code (use BCP 47, e.g. es, zh-Hant)` });
         return z.NEVER;
       }
       if (!out.includes(canonical)) out.push(canonical);
@@ -315,7 +316,7 @@ export interface NormalizedAlert {
 // be). Rejecting a whole feature over a missing headline would make its
 // stored copy look cancelled (see parseNwsAlerts).
 const nwsFeatureSchema = z.object({
-  id: z.string().url(),
+  id: z.string().refine(isParseableUrl, INVALID_URL),
   properties: z.object({
     id: z.string().min(1),
     event: z.string().min(1),

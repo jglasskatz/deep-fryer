@@ -16,7 +16,7 @@ export const findingAuditResultSchema = z.object({
   correction: findingCorrectionSchema.nullable().optional(),
 }).strict().superRefine((value, ctx) => {
   if ((value.disposition === 'edit') !== Boolean(value.correction)) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Only edit dispositions require a correction.' });
+    ctx.addIssue({ code: 'custom', message: 'Only edit dispositions require a correction.' });
   }
 });
 

@@ -52,7 +52,7 @@ export const createDimension = action(async (input: { tenantSlug: string; slug: 
 
 export const setDimensionArchived = action(async (input: { tenantSlug: string; dimensionId: string; archived: boolean; reason: string }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'owner');
-  const parsed = z.object({ dimensionId: z.string().uuid(), archived: z.boolean(), reason: z.string().trim().min(1).max(1200) }).parse(input);
+  const parsed = z.object({ dimensionId: z.guid(), archived: z.boolean(), reason: z.string().trim().min(1).max(1200) }).parse(input);
   await userDb(async db => {
     await db.select({ id: tenants.id }).from(tenants).where(eq(tenants.id, tenant.id)).for('update');
     const [dimension] = await db.select().from(dimensions).where(and(eq(dimensions.id, parsed.dimensionId), eq(dimensions.tenantId, tenant.id))).for('update');
@@ -65,7 +65,7 @@ export const setDimensionArchived = action(async (input: { tenantSlug: string; d
 
 export const reorderDimensions = action(async (input: { tenantSlug: string; dimensionIds: string[] }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'owner');
-  const ids = z.array(z.string().uuid()).min(1).max(200).parse(input.dimensionIds);
+  const ids = z.array(z.guid()).min(1).max(200).parse(input.dimensionIds);
   await userDb(async db => {
     await db.select({ id: tenants.id }).from(tenants).where(eq(tenants.id, tenant.id)).for('update');
     const active = await db.select({ id: dimensions.id }).from(dimensions).where(and(eq(dimensions.tenantId, tenant.id), isNull(dimensions.archivedAt))).orderBy(dimensions.displayOrder);
