@@ -19,7 +19,7 @@ import {
 } from '@deep-fryer/research';
 import { portraitConfigFromMap, tenantConfigMapIn } from './admin-data';
 import { UserError } from './action-result';
-import { assertFundingUsable } from './billing';
+import { assertFundingUsable, firstDoughnutSetting } from './billing';
 import { systemDb, userDb } from './db';
 import { alreadyAppliedMessage } from './run-progress';
 
@@ -204,7 +204,11 @@ export async function applyRun(tenantId: string, runId: string) {
 
     const org = await organizationForTenant(tx, tenantId);
     if (!org) throw new Error(`tenant ${tenantId} has no organization`);
-    const gate = await gateResearchSpend(tx, org.id, row.plan.sessions.length);
+    // The run itself goes to the gate, so a deployment whose groups' own keys pay for a first doughnut can tell one.
+    const gate = await gateResearchSpend(tx, org.id, row.plan.sessions.length, new Date(), {
+      firstDoughnut: firstDoughnutSetting(),
+      run: { tenantId, plan: row.plan },
+    });
     if (!gate.check.allowed) throw new UserError(gate.check.message ?? 'Research is not available on this plan.');
     // On a key this server cannot read, every session would fail in the worker: refuse now, applying nothing.
     assertFundingUsable(gate.funding);

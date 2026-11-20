@@ -28,6 +28,8 @@ and an SMTP relay are optional integrations.
   up. An organization's own Anthropic API
   key (below) pays for the model tokens, not for hosting, review or support,
   so it still needs a plan or contract; it only spares the plan's allowance.
+  The one exception is a setting you choose:
+  [`DF_FIRST_DOUGHNUT=own`](#how-a-group-pays-for-its-first-doughnut).
 - **Plan-funded research also needs this server's `ANTHROPIC_API_KEY`.**
   Without it, such research is refused before anything is spent ("nothing
   was charged", with `SUPPORT_EMAIL`), while organizations with their own key
@@ -95,6 +97,7 @@ Optional:
 |---|---|
 | `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` | self-serve online billing (§5). Without them, organizations run on contracts staff set |
 | `DF_SECRETS_KEY` | lets organizations store their own Anthropic API key ([below](#organizations-own-anthropic-api-keys-spec-v7-4)) |
+| `DF_FIRST_DOUGHNUT` | how a group pays for its first doughnut: `paid` (the default) or `own` ([below](#how-a-group-pays-for-its-first-doughnut)). Any other value stops the web app from starting |
 | `TERMS_URL` | your terms of use; the site footer links "Terms" to it. Unset, the footer has no Terms link |
 | `DF_SHOWCASE_ORG` | the slug of the organization the landing page showcases (as in `/o/<slug>`). It appears once that organization has a public portrait, never as a link that 404s; unset, or with nothing published yet, the landing page lists the deployment's public portraits instead |
 | `DF_DISABLED_FEATURES` | features off for the whole deployment ([Features](#features-spec-v7-3)). `self_serve` turns off public sign-up for a sales-led deployment: `/start` is a 404, no "build your city's doughnut" link appears, and staff create organizations with `create-tenant.ts` (§4). Reading published portraits is unaffected |
@@ -527,6 +530,39 @@ it with your other secrets and back it up: if it is changed, stored keys
 cannot be decrypted — the worker then fails those organizations' research
 with a message asking an owner to enter the key again, and never falls back
 to the deployment's key.
+
+### How a group pays for its first doughnut
+
+`DF_FIRST_DOUGHNUT` is one named choice, and the build step at `/start`, the
+billing page, the alerts on the admin pages and the research gate all follow
+it:
+
+| Value | A group's first doughnut |
+|---|---|
+| `paid` (the default; also when unset or blank) | needs a plan in good standing or a contract, like all research. Nothing changes from what is described above |
+| `own` | an organization without a plan in good standing may build its first doughnut once on its own Anthropic API key. The key pays for that build's model usage and this server pays nothing for it beyond hosting. Every other research spend, the second build included, needs a plan or a contract again |
+
+Under `own`, "first doughnut" means one full build (the region overview and
+every dimension of a portrait) in an organization that has never had
+research applied for any of its portraits; one run of a few dimensions, a
+policy analysis, a second portrait's build, or a rebuild after a failed run
+all need a plan. "Without a plan in good standing" covers no plan yet, a card
+checkout that did not finish, a plan whose first invoice is not paid yet,
+and a lapsed plan or contract. An organization in good standing pays as its
+plan says, and one with a trial from before trials were retired is decided
+as before. Two first builds clicked at the same moment in one organization
+are decided one after the other, so only one goes through. The run is
+recorded as paid by the organization's key, exactly as any run on a key is.
+
+`own` needs `DF_SECRETS_KEY`: without it organizations cannot store a key,
+so the app applies `paid`, and every screen says a plan or a contract is
+needed. `approval` and `starter` are
+planned but not built; the web app refuses to start with either, or with
+any value it does not know, and lists the accepted choices. The preflight
+reports the same.
+
+To change it, set it in `.env` (compose passes it to every service) and run
+`docker compose up -d web`.
 
 ## 5. Billing (optional)
 

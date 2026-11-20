@@ -16,6 +16,7 @@ import { getAuth, getOrgRole, getRole, roleAtLeast } from '@/lib/auth';
 import {
   apiKeyUnavailableNotice,
   billingSummary,
+  firstDoughnutRoute,
   firstUnbuiltPortrait,
   keyFundedSessionsNote,
   WARNING_COPY,
@@ -82,6 +83,12 @@ export default async function BillingPage({
   const contact = supportEmail();
   // Set when this server cannot store or read organization keys; its words depend on whether one is on file.
   const keyNotice = apiKeyUnavailableNotice(summary.apiKey !== null);
+  // What this deployment asks of a first doughnut (DF_FIRST_DOUGHNUT), worded as on the build step.
+  const route = firstDoughnutRoute({
+    subscription: sub,
+    researchApplied: summary.researchApplied,
+    keyOnFile: summary.apiKey !== null,
+  });
 
   let invoices: Stripe.Invoice[] = [];
   if (stripeConfigured() && org.stripeCustomerId) {
@@ -202,8 +209,8 @@ export default async function BillingPage({
             // In place of the standing message, which sends people to this page: here, say what is free and where to go.
             <p className="mt-2 text-sm">
               Without a plan this organization can hold {FREE_SETUP_LIMITS.portraits} portrait, private until it
-              is published, and up to {FREE_SETUP_LIMITS.seats} people to set it up and review it — free. Building
-              it, the research, needs a plan or a contract:{' '}
+              is published, and up to {FREE_SETUP_LIMITS.seats} people to set it up and review it — free.{' '}
+              {route.billingBuildNeeds}{' '}
               <a className="underline" href="#choose">
                 choose a plan below
               </a>
@@ -246,9 +253,11 @@ export default async function BillingPage({
             <>
               <p className="mt-1 text-sm">
                 {summary.apiKey && !keyNotice
-                  ? 'Research and policy sessions for this organization run on your key and are not counted against your plan.'
-                  : 'With your own Anthropic API key on file, research and policy sessions for this organization run on your key and are not counted against your plan.'}{' '}
-                A plan is still needed: your key pays for the model usage, the plan for hosting, review, and support.
+                  ? (route.keyLead?.onFile ??
+                    'Research and policy sessions for this organization run on your key and are not counted against your plan.')
+                  : (route.keyLead?.offFile ??
+                    'With your own Anthropic API key on file, research and policy sessions for this organization run on your key and are not counted against your plan.')}{' '}
+                {route.keyAndPlan}
               </p>
               <div className="mt-3">
                 <ResearchCostEstimate onKey showSingleSession />

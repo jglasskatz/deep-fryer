@@ -103,9 +103,12 @@ export default async function OrgPage({ params }: { params: Promise<{ org: strin
                 Billing
               </Link>
             </div>
-            {summary.blockedMessage ? (
+            {/* The first-doughnut note, where the deployment has one, in place of the plan's standing (lib/billing.ts). */}
+            {summary.firstDoughnutNote && !summary.firstDoughnutNote.alert ? (
+              <p className="mt-2 rounded bg-black/[0.03] p-2 text-sm">{summary.firstDoughnutNote.text}</p>
+            ) : summary.firstDoughnutNote || summary.blockedMessage ? (
               <p role="alert" className="mt-2 rounded bg-red-50 p-2 text-sm text-red-900">
-                {summary.blockedMessage}
+                {summary.firstDoughnutNote?.text ?? summary.blockedMessage}
               </p>
             ) : summary.standing.warning ? (
               <p className="mt-2 rounded bg-amber-50 p-2 text-sm text-amber-900">

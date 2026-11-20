@@ -166,6 +166,105 @@ describe.skipIf(!hasDb)('buildDoughnut and the organization-key gate', () => {
     expect(await runs()).toEqual([]);
   });
 
+  // DF_FIRST_DOUGHNUT: the operator's choice of how a group pays for its first doughnut. Unset is every test above.
+  describe('when the deployment lets a group’s own key pay for its first doughnut', () => {
+    const before = process.env.DF_FIRST_DOUGHNUT;
+    beforeAll(() => {
+      process.env.DF_FIRST_DOUGHNUT = 'own';
+    });
+    afterAll(() => {
+      if (before === undefined) delete process.env.DF_FIRST_DOUGHNUT;
+      else process.env.DF_FIRST_DOUGHNUT = before;
+    });
+
+    it('builds an organization’s first doughnut on its key with no plan, once', async () => {
+      const { buildDoughnut } = await import('./research-actions');
+      const m = await import('@deep-fryer/db');
+      const { eq } = await import('drizzle-orm');
+      const db = m.getDb();
+      const { org, tenant, runs, applyAudit } = await portrait({ allowance: null, withKey: true });
+
+      const res = await buildDoughnut({ tenantSlug: tenant.slug });
+      expect(res).toMatchObject({ ok: true, data: { sessionCount: 22, funding: 'organization_key' } });
+      const [run] = await runs();
+      expect(run).toMatchObject({ funding: 'organization_key', status: 'planned' });
+      expect(run!.appliedAt).toBeInstanceOf(Date);
+      expect((await applyAudit())[0]!.after).toMatchObject({ funding: 'organization_key', via: 'build_doughnut' });
+      expect(await m.subscriptionFor(db, org.id)).toBeNull();
+
+      // The second build is refused: on another of the organization's portraits…
+      const { tenant: east } = await m.provisionTenant(db, { slug: uniq(), name: 'Doughnut Town East', organizationId: org.id });
+      cleanup.push(() => db.delete(m.tenants).where(eq(m.tenants.id, east.id)));
+      const again = await buildDoughnut({ tenantSlug: east.slug });
+      expect(again).toMatchObject({ ok: false, error: expect.stringMatching(/^Choose a plan to build your doughnut/) });
+      expect(await db.select().from(m.researchRuns).where(eq(m.researchRuns.tenantId, east.id))).toEqual([]);
+      // …and on the same one once the first has finished.
+      await db.update(m.researchRuns).set({ status: 'complete', completedAt: new Date() }).where(eq(m.researchRuns.id, run!.id));
+      const rebuild = await buildDoughnut({ tenantSlug: tenant.slug });
+      expect(rebuild).toMatchObject({ ok: false, error: expect.stringMatching(/^Choose a plan to build your doughnut/) });
+      expect(await runs()).toHaveLength(1);
+    });
+
+    it('tells an organization with no plan and no key how to get its first doughnut, and plans nothing', async () => {
+      const { buildDoughnut } = await import('./research-actions');
+      const { FIRST_DOUGHNUT_ADD_KEY_MESSAGE } = await import('@deep-fryer/db');
+      const { tenant, runs } = await portrait({ allowance: null, withKey: false });
+
+      const res = await buildDoughnut({ tenantSlug: tenant.slug });
+      expect(res).toMatchObject({ ok: false, error: FIRST_DOUGHNUT_ADD_KEY_MESSAGE });
+      expect(await runs()).toEqual([]);
+    });
+
+    it('lets no other research through without a plan: one dimension is refused as before', async () => {
+      const { requestResearch } = await import('./insight-actions');
+      const { setPortraitFeatures } = await import('./test-features');
+      const { tenant, runs } = await portrait({ allowance: null, withKey: true });
+      await setPortraitFeatures(tenant.id, { request_research: true });
+      const one = await requestResearch({ tenantSlug: tenant.slug, dimensionSlug: 'housing', note: 'Use the 2025 data.' });
+      expect(one).toMatchObject({ ok: false, error: expect.stringMatching(/^Choose a plan to build your doughnut/) });
+      expect((await runs()).filter((r) => r.appliedAt)).toEqual([]);
+    });
+
+    it('builds the first doughnut of a group whose plan lapsed before it built anything on its key, and says why without one', async () => {
+      const { buildDoughnut } = await import('./research-actions');
+      const lapsed = await portrait({ allowance: 30, withKey: true, status: 'canceled' });
+      expect(await buildDoughnut({ tenantSlug: lapsed.tenant.slug })).toMatchObject({
+        ok: true,
+        data: { funding: 'organization_key' },
+      });
+      // Once it has finished, a second build needs the plan back.
+      const m = await import('@deep-fryer/db');
+      const { eq } = await import('drizzle-orm');
+      await m.getDb().update(m.researchRuns).set({ status: 'complete', completedAt: new Date() }).where(eq(m.researchRuns.tenantId, lapsed.tenant.id));
+      expect(await buildDoughnut({ tenantSlug: lapsed.tenant.slug })).toMatchObject({
+        ok: false,
+        error: expect.stringMatching(/^The subscription is canceled/),
+      });
+
+      const noKey = await portrait({ allowance: 30, withKey: false, status: 'canceled' });
+      const res = await buildDoughnut({ tenantSlug: noKey.tenant.slug });
+      expect(res).toMatchObject({
+        ok: false,
+        error: expect.stringMatching(/^The subscription is canceled\..* Your first doughnut can also be built on your organization’s own Anthropic API key/),
+      });
+      expect(await noKey.runs()).toEqual([]);
+    });
+
+    it('stays today’s rule where this server cannot store organization keys', async () => {
+      const { buildDoughnut } = await import('./research-actions');
+      const { tenant, runs } = await portrait({ allowance: null, withKey: true });
+      const secrets = process.env.DF_SECRETS_KEY;
+      delete process.env.DF_SECRETS_KEY;
+      try {
+        const res = await buildDoughnut({ tenantSlug: tenant.slug });
+        expect(res).toMatchObject({ ok: false, error: expect.stringMatching(/^Choose a plan to build your doughnut/) });
+        expect(await runs()).toEqual([]);
+      } finally {
+        process.env.DF_SECRETS_KEY = secrets;
+      }
+    });
+  });
+
   it('lets a policy analysis past a spent allowance on the organization key, and records who paid', async () => {
     const { createPolicyAnalysis } = await import('./policy-actions');
     const { setPortraitFeatures } = await import('./test-features');

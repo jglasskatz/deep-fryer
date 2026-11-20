@@ -24,6 +24,8 @@ x-app-env: &app-env
   S3_PUBLIC_URL: ${APP_URL:?set APP_URL}/files
   # Features switched off for the whole deployment (SPEC-v7 §3); web and worker read the same list.
   DF_DISABLED_FEATURES: ${DF_DISABLED_FEATURES:-}
+  # How a group pays for its first doughnut: paid (the default when empty) or own (docs/deploy.md).
+  DF_FIRST_DOUGHNUT: ${DF_FIRST_DOUGHNUT:-}
 
 # Sign-in, mail, billing and the public site's settings: the web app's
 # integrations, also given to the ops shell (migrate) so scripts/preflight.ts

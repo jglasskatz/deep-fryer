@@ -23,14 +23,15 @@ describe('waysToPay', () => {
     expect(waysToPay(facts())).toEqual({
       plan: { action: 'choose', viewerCan: true },
       contract: true,
-      ownKey: { viewerCan: true },
+      ownKey: { viewerCan: true, noPlanNeeded: false },
+      keyBuildsFirst: false,
       planAloneCannotBuild: false,
     });
   });
 
   it('always offers a contract, even where the server takes no online payment and stores no keys', () => {
     const ways = waysToPay(facts({ onlinePayment: false, keysStorable: false }));
-    expect(ways).toEqual({ plan: null, contract: true, ownKey: null, planAloneCannotBuild: false });
+    expect(ways).toEqual({ plan: null, contract: true, ownKey: null, keyBuildsFirst: false, planAloneCannotBuild: false });
   });
 
   it('offers the organization’s own key only where this server can store one, and not twice', () => {
@@ -62,5 +63,24 @@ describe('waysToPay', () => {
   it('warns that a plan alone cannot build on a server without a research key, unless the organization’s key pays', () => {
     expect(waysToPay(facts({ researchKeyConfigured: false })).planAloneCannotBuild).toBe(true);
     expect(waysToPay(facts({ researchKeyConfigured: false, keyOnFile: true })).planAloneCannotBuild).toBe(false);
+  });
+
+  // DF_FIRST_DOUGHNUT=own: the organization's own key may pay for its first doughnut with no plan.
+  it('says the own key needs no plan for a first doughnut where the deployment allows it, and nothing else changes', () => {
+    expect(waysToPay(facts({ firstOnOwnKey: true }))).toEqual({
+      plan: { action: 'choose', viewerCan: true },
+      contract: true,
+      ownKey: { viewerCan: true, noPlanNeeded: true },
+      keyBuildsFirst: false,
+      planAloneCannotBuild: false,
+    });
+    // A non-owner is told who can add the key, as before.
+    expect(waysToPay(facts({ firstOnOwnKey: true, orgRole: 'billing' })).ownKey).toEqual({ viewerCan: false, noPlanNeeded: true });
+  });
+
+  it('with the key already on file for a first doughnut, leaves nothing to choose before building', () => {
+    expect(waysToPay(facts({ firstOnOwnKey: true, keyOnFile: true }))).toMatchObject({ ownKey: null, keyBuildsFirst: true });
+    // Without the setting, a key on file still needs a plan.
+    expect(waysToPay(facts({ keyOnFile: true })).keyBuildsFirst).toBe(false);
   });
 });

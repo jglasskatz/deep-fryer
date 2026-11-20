@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { standing, standingMessage } from '@deep-fryer/core';
 import { withPostgresError } from './errors.js';
-import { decideResearchSpend } from './billing.js';
+import { FIRST_DOUGHNUT_ADD_KEY_MESSAGE, decideResearchSpend } from './billing.js';
 import type { Subscription } from './schema.js';
 
 /**
@@ -113,6 +114,80 @@ describe('decideResearchSpend', () => {
   });
 });
 
+// The deployment's first-doughnut choice (DF_FIRST_DOUGHNUT). `paid`, the default, is every test above.
+describe('decideResearchSpend with the first-doughnut choice', () => {
+  const own = (firstFullBuild: boolean) => ({ choice: 'own' as const, firstFullBuild });
+
+  it('under paid, refuses a first full build without a plan exactly as without the choice', () => {
+    for (const hasKey of [false, true]) {
+      const paidChoice = decideResearchSpend(null, 0, hasKey, 22, now, { choice: 'paid', firstFullBuild: true });
+      expect(paidChoice).toEqual(decideResearchSpend(null, 0, hasKey, 22, now));
+      expect(paidChoice.check.message).toMatch(/^Choose a plan to build your doughnut/);
+    }
+  });
+
+  it('under own, lets an organization with no plan build its first doughnut on its own key', () => {
+    expect(decideResearchSpend(null, 0, true, 22, now, own(true))).toEqual({
+      funding: 'organization_key',
+      check: { allowed: true, used: 0, limit: 0, remaining: 0, message: null },
+    });
+  });
+
+  it('under own, tells an organization with no plan and no key how to get its first doughnut', () => {
+    const { funding, check } = decideResearchSpend(null, 0, false, 22, now, own(true));
+    expect(funding).toBe('plan');
+    expect(check).toMatchObject({ allowed: false, limit: 0, remaining: 0 });
+    expect(check.message).toBe(FIRST_DOUGHNUT_ADD_KEY_MESSAGE);
+    expect(check.message).toMatch(/own Anthropic API key, with no plan/);
+  });
+
+  it('under own, refuses a second build, or anything but a full build, without a plan', () => {
+    for (const hasKey of [false, true]) {
+      expect(decideResearchSpend(null, 0, hasKey, 22, now, own(false)).check).toMatchObject({
+        allowed: false,
+        message: expect.stringMatching(/^Choose a plan to build your doughnut/),
+      });
+    }
+  });
+
+  it('under own, decides an organization in good standing, or one with a retired trial, as before', () => {
+    const trial = paid({ plan: 'trial', status: 'trialing', trialEndsAt: new Date(now.getTime() + 25 * DAY) });
+    for (const sub of [trial, paid(), paid({ researchSessionsOverride: 0 }), paid({ status: 'past_due' })]) {
+      for (const hasKey of [false, true]) {
+        expect(decideResearchSpend(sub, 0, hasKey, 22, now, own(true))).toEqual(decideResearchSpend(sub, 0, hasKey, 22, now));
+      }
+    }
+    expect(decideResearchSpend(trial, 0, true, 22, now, own(true)).check.allowed).toBe(false);
+  });
+
+  it('under own, lets an organization whose subscription has no standing build its first doughnut on its key', () => {
+    const withoutStanding = {
+      incomplete: paid({ status: 'incomplete' }),
+      awaiting_payment: paid({ collection: 'invoice', firstInvoicePaidAt: null }),
+      canceled: paid({ status: 'canceled' }),
+      unpaid: paid({ status: 'unpaid' }),
+      period_ended: paid({ collection: 'contract', currentPeriodEnd: new Date(now.getTime() - DAY) }),
+    };
+    for (const [reason, sub] of Object.entries(withoutStanding)) {
+      expect(standing(sub, now)).toMatchObject({ active: false, reason });
+      expect(decideResearchSpend(sub, 0, true, 22, now, own(true))).toEqual({
+        funding: 'organization_key',
+        check: { allowed: true, used: 0, limit: 0, remaining: 0, message: null },
+      });
+      // Without a key: why the plan does not count, then that the key route is open.
+      const noKey = decideResearchSpend(sub, 0, false, 22, now, own(true));
+      expect(noKey.check.allowed).toBe(false);
+      expect(noKey.check.message).toBe(
+        `${standingMessage(standing(sub, now).reason)} Your first doughnut can also be built on your organization’s own Anthropic API key, with no plan: an organization owner adds the key under Billing.`,
+      );
+      // Anything but a first full build is decided as before.
+      for (const hasKey of [false, true]) {
+        expect(decideResearchSpend(sub, 0, hasKey, 22, now, own(false))).toEqual(decideResearchSpend(sub, 0, hasKey, 22, now));
+      }
+    }
+  });
+});
+
 // ---- The stored decision (migration 0012), against Postgres -------------------
 
 const hasDb = Boolean(process.env.DATABASE_URL);
@@ -219,6 +294,179 @@ describe.skipIf(!hasDb)('research funding as stored on runs and analyses (Postgr
     } finally {
       await cleanup();
     }
+  });
+
+  describe('the first-doughnut choice at the gate', () => {
+    /** The plan "Build my doughnut" makes for this portrait: the region overview and one session per dimension. */
+    async function fullPlan(m: typeof import('./index.js'), db: import('./client.js').DbExecutor, tenantId: string) {
+      const { eq } = await import('drizzle-orm');
+      const dims = await db.select({ slug: m.dimensions.slug }).from(m.dimensions).where(eq(m.dimensions.tenantId, tenantId));
+      const session = { prompt: '', tool_allowlist: [], output_schema_ref: '', config_hash: '' };
+      return {
+        sessions: [
+          { kind: 'region_context' as const, ...session },
+          ...dims.map((d) => ({ kind: 'dimension' as const, dimension_slug: d.slug, ...session })),
+        ],
+        config_hash: 'h',
+        plugin_version: 'v',
+      };
+    }
+
+    it('without a choice or under paid, refuses a new organization’s first build with today’s message, key or not', async () => {
+      const { m, db, tenant, cleanup } = await portrait();
+      try {
+        const plan = await fullPlan(m, db, tenant.id);
+        for (const withKey of [false, true]) {
+          if (withKey) {
+            await m.upsertOrganizationApiKey(db, {
+              organizationId: tenant.organizationId, ciphertext: 'v1:stand-in:ciphertext', keyHint: 'Ab12', createdBy: null,
+              validatedAt: new Date(),
+            });
+          }
+          for (const options of [undefined, { firstDoughnut: 'paid' as const, run: { tenantId: tenant.id, plan } }]) {
+            const gate = await db.transaction((tx) =>
+              m.gateResearchSpend(tx, tenant.organizationId, plan.sessions.length, new Date(), options),
+            );
+            expect(gate.check).toMatchObject({ allowed: false, message: expect.stringMatching(/^Choose a plan to build your doughnut/) });
+          }
+        }
+      } finally {
+        await cleanup();
+      }
+    });
+
+    it('under own, applies one first full build on the organization’s key with no plan, and refuses the second', async () => {
+      const { m, db, eq, tenant, cleanup } = await portrait();
+      const second = await m.provisionTenant(db, { slug: uniq(), name: 'Funding Town East', organizationId: tenant.organizationId });
+      try {
+        const plan = await fullPlan(m, db, tenant.id);
+        const own = (tenantId: string, p: typeof plan) => ({ firstDoughnut: 'own' as const, run: { tenantId, plan: p } });
+        const gate = (options: ReturnType<typeof own>) =>
+          db.transaction((tx) => m.gateResearchSpend(tx, tenant.organizationId, options.run.plan.sessions.length, new Date(), options));
+
+        // No key yet: told how to get the first doughnut.
+        expect((await gate(own(tenant.id, plan))).check).toMatchObject({ allowed: false, message: m.FIRST_DOUGHNUT_ADD_KEY_MESSAGE });
+
+        await m.upsertOrganizationApiKey(db, {
+          organizationId: tenant.organizationId, ciphertext: 'v1:stand-in:ciphertext', keyHint: 'Ab12', createdBy: null,
+          validatedAt: new Date(),
+        });
+        // A run over some dimensions is not a full build, and one without the region overview is not either.
+        const someDimensions = { ...plan, sessions: plan.sessions.slice(0, 4) };
+        const noOverview = { ...plan, sessions: plan.sessions.slice(1) };
+        for (const p of [someDimensions, noOverview]) {
+          expect((await gate(own(tenant.id, p))).check.allowed).toBe(false);
+        }
+        // A full build is let through, on the organization's key.
+        const first = await gate(own(tenant.id, plan));
+        expect(first).toMatchObject({ subscription: null, funding: 'organization_key', check: { allowed: true, message: null } });
+
+        // Applied, as applyRun records it…
+        await db.insert(m.researchRuns).values({
+          tenantId: tenant.id, status: 'planned', plan, configSnapshot: {} as never, appliedAt: new Date(), funding: first.funding,
+        });
+        // …the second build is refused, on this portrait or another of the organization's.
+        const secondPlan = await fullPlan(m, db, second.tenant.id);
+        for (const options of [own(tenant.id, plan), own(second.tenant.id, secondPlan)]) {
+          expect((await gate(options)).check).toMatchObject({
+            allowed: false,
+            message: expect.stringMatching(/^Choose a plan to build your doughnut/),
+          });
+        }
+      } finally {
+        await db.delete(m.tenants).where(eq(m.tenants.id, second.tenant.id));
+        await cleanup();
+      }
+    });
+
+    it('under own, lets a group whose checkout did not finish, or whose invoice is unpaid, build its first doughnut on its key', async () => {
+      const rows = {
+        incomplete: { status: 'incomplete' as const, collection: 'card' as const },
+        awaiting_payment: { status: 'active' as const, collection: 'invoice' as const },
+      };
+      for (const [reason, row] of Object.entries(rows)) {
+        const { m, db, tenant, cleanup } = await portrait();
+        try {
+          const now = Date.now();
+          await db.insert(m.subscriptions).values({
+            organizationId: tenant.organizationId, plan: 'community', ...row,
+            currentPeriodStart: new Date(now - DAY), currentPeriodEnd: new Date(now + 29 * DAY),
+          });
+          const plan = await fullPlan(m, db, tenant.id);
+          const options = { firstDoughnut: 'own' as const, run: { tenantId: tenant.id, plan } };
+          const gate = () =>
+            db.transaction((tx) => m.gateResearchSpend(tx, tenant.organizationId, plan.sessions.length, new Date(), options));
+
+          // No key: the plan's own reason first, then the key route.
+          const noKey = await gate();
+          expect(noKey.subscription?.status).toBe(row.status);
+          expect(noKey.check.allowed).toBe(false);
+          expect(noKey.check.message).toBe(
+            `${standingMessage(standing(noKey.subscription).reason)} Your first doughnut can also be built on your organization’s own Anthropic API key, with no plan: an organization owner adds the key under Billing.`,
+          );
+
+          await m.upsertOrganizationApiKey(db, {
+            organizationId: tenant.organizationId, ciphertext: 'v1:stand-in:ciphertext', keyHint: 'Ab12', createdBy: null,
+            validatedAt: new Date(),
+          });
+          // Under paid, the first build is refused; under own, it goes through on the key.
+          const paidGate = await db.transaction((tx) =>
+            m.gateResearchSpend(tx, tenant.organizationId, plan.sessions.length, new Date(), { ...options, firstDoughnut: 'paid' }),
+          );
+          expect(paidGate.check.allowed).toBe(false);
+          const first = await gate();
+          expect({ reason, funding: first.funding, allowed: first.check.allowed }).toEqual({
+            reason, funding: 'organization_key', allowed: true,
+          });
+          await db.insert(m.researchRuns).values({
+            tenantId: tenant.id, status: 'planned', plan, configSnapshot: {} as never, appliedAt: new Date(), funding: first.funding,
+          });
+          // The second needs the plan to stand: refused with the plan's own reason, as under paid.
+          const second = await gate();
+          expect(second.check).toMatchObject({ allowed: false, message: standingMessage(standing(second.subscription).reason) });
+        } finally {
+          await cleanup();
+        }
+      }
+    });
+
+    it('under own, lets only one of two first builds started at once through', async () => {
+      const { m, db, eq, tenant, cleanup } = await portrait();
+      const second = await m.provisionTenant(db, { slug: uniq(), name: 'Funding Town West', organizationId: tenant.organizationId });
+      try {
+        await m.upsertOrganizationApiKey(db, {
+          organizationId: tenant.organizationId, ciphertext: 'v1:stand-in:ciphertext', keyHint: 'Ab12', createdBy: null,
+          validatedAt: new Date(),
+        });
+        /** What applyRun does inside its transaction: ask the gate, then record the applied run when it says yes. */
+        const apply = (tenantId: string, plan: Awaited<ReturnType<typeof fullPlan>>, hold: Promise<void>) =>
+          db.transaction(async (tx) => {
+            const g = await m.gateResearchSpend(tx, tenant.organizationId, plan.sessions.length, new Date(), {
+              firstDoughnut: 'own', run: { tenantId, plan },
+            });
+            if (g.check.allowed) {
+              await tx.insert(m.researchRuns).values({
+                tenantId, status: 'planned', plan, configSnapshot: {} as never, appliedAt: new Date(), funding: g.funding,
+              });
+            }
+            await hold;
+            return g.check.allowed;
+          });
+        let release!: () => void;
+        const held = new Promise<void>((resolve) => (release = resolve));
+        const firstApply = apply(tenant.id, await fullPlan(m, db, tenant.id), held);
+        // Give the first a moment to take the lock, then start the second while the first is still open.
+        await new Promise((r) => setTimeout(r, 200));
+        const secondApply = apply(second.tenant.id, await fullPlan(m, db, second.tenant.id), Promise.resolve());
+        await new Promise((r) => setTimeout(r, 200));
+        release();
+        expect(await Promise.all([firstApply, secondApply])).toEqual([true, false]);
+      } finally {
+        await db.delete(m.researchRuns).where(eq(m.researchRuns.tenantId, second.tenant.id));
+        await db.delete(m.tenants).where(eq(m.tenants.id, second.tenant.id));
+        await cleanup();
+      }
+    });
   });
 
   it('keeps funding, and applied runs, out of the app role\'s reach, and lets editors read funding on analyses', async () => {

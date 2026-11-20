@@ -33,6 +33,54 @@ export function secretsKeyProblem(raw: string): string | null {
   return null;
 }
 
+/**
+ * DF_FIRST_DOUGHNUT: how a group pays for the research behind its first
+ * doughnut on this deployment. One named choice, so every screen and the
+ * research gate read the same rule.
+ *
+ * - `paid` (the default, and what unset or blank means): a plan in good
+ *   standing or a contract, as for any research.
+ * - `own`: an organization with no plan may build its first doughnut once,
+ *   on its own research key; everything after that needs a plan or a
+ *   contract again. It only does anything where organizations can store a
+ *   key (DF_SECRETS_KEY).
+ */
+export const FIRST_DOUGHNUT_CHOICES = ['paid', 'own'] as const;
+export type FirstDoughnut = (typeof FIRST_DOUGHNUT_CHOICES)[number];
+
+/** Choices that are planned but not built: a deployment set to one refuses to start rather than run as `paid`. */
+const FIRST_DOUGHNUT_NOT_BUILT = ['approval', 'starter'] as const;
+
+function firstDoughnutRaw(env: Env): string {
+  return env.DF_FIRST_DOUGHNUT?.trim().toLowerCase() ?? '';
+}
+
+const isFirstDoughnut = (raw: string): raw is FirstDoughnut =>
+  (FIRST_DOUGHNUT_CHOICES as readonly string[]).includes(raw);
+
+/** What is wrong with DF_FIRST_DOUGHNUT, or null when it is unset or one of the accepted choices. */
+export function firstDoughnutProblem(env: Env): string | null {
+  const raw = firstDoughnutRaw(env);
+  if (raw === '' || isFirstDoughnut(raw)) return null;
+  const accepted = `accepted choices: ${FIRST_DOUGHNUT_CHOICES.join(', ')} (unset means paid)`;
+  if ((FIRST_DOUGHNUT_NOT_BUILT as readonly string[]).includes(raw)) {
+    return `DF_FIRST_DOUGHNUT=${raw} is not available yet; ${accepted}`;
+  }
+  // The value is the operator's own typing, not a secret, but a long or odd one is not echoed.
+  return `DF_FIRST_DOUGHNUT must be one of the accepted choices: ${FIRST_DOUGHNUT_CHOICES.join(', ')} (unset means paid)`;
+}
+
+/**
+ * The deployment's first-doughnut choice. Anything that is not an accepted
+ * choice reads as `paid`, the stricter rule, so a mistyped value outside
+ * production never hands out research; production refuses to start on it
+ * (productionEnvProblems).
+ */
+export function firstDoughnutChoice(env: Env): FirstDoughnut {
+  const raw = firstDoughnutRaw(env);
+  return isFirstDoughnut(raw) ? raw : 'paid';
+}
+
 export function productionEnvProblems(env: Env): string[] {
   const problems: string[] = [];
   const google = Boolean(env.AUTH_GOOGLE_ID && env.AUTH_GOOGLE_SECRET);
@@ -72,5 +120,7 @@ export function productionEnvProblems(env: Env): string[] {
     const problem = secretsKeyProblem(secretsKey);
     if (problem) problems.push(problem);
   }
+  const firstDoughnut = firstDoughnutProblem(env);
+  if (firstDoughnut) problems.push(firstDoughnut);
   return problems;
 }

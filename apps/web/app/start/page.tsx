@@ -12,7 +12,7 @@ import { ResearchCostEstimate } from '@/components/billing/ResearchCostEstimate'
 import { ContactText } from '@/components/billing/ContactText';
 import { AutoRefresh } from '@/components/admin/AutoRefresh';
 import { getAuth, getOrgRole, getRole, roleAtLeast } from '@/lib/auth';
-import { billingSummary, previewResearchSpend, researchUnavailableNotice } from '@/lib/billing';
+import { billingSummary, firstDoughnutRoute, previewResearchSpend, researchUnavailableNotice } from '@/lib/billing';
 import { systemDb, userDb } from '@/lib/db';
 import {
   bringYourOwnKeyAvailable,
@@ -53,7 +53,9 @@ const PLAN_WAY_TITLE = {
  *    (checkout on the billing page, which sends the person back here), a
  *    contract (always offered, by email), and — where this server can store
  *    keys — the organization's own Anthropic API key, which spares the
- *    plan's allowance but does not replace the plan. Then the estimate and
+ *    plan's allowance but does not replace the plan (except for a first
+ *    doughnut where the deployment says so: lib/billing.ts
+ *    firstDoughnutRoute). Then the estimate and
  *    "Build my doughnut", enabled only when the research gate would let the
  *    click through (lib/billing.ts previewResearchSpend). Skipping it leads
  *    to the portrait's admin.
@@ -156,7 +158,13 @@ async function buildStep(slug: string, paid: boolean, paidAt: number) {
     ),
   ]);
   const sessions = SESSIONS_PER_FULL_REFRESH;
-  const preview = previewResearchSpend(summary, sessions);
+  // "Build my doughnut" plans a full build, so the deployment's first-doughnut choice applies to it.
+  const preview = previewResearchSpend(summary, sessions, undefined, undefined, true);
+  const route = firstDoughnutRoute({
+    subscription: summary.subscription,
+    researchApplied: summary.researchApplied,
+    keyOnFile: summary.apiKey !== null,
+  });
   const onKey = preview.funding === 'organization_key';
   const billingHref = `/o/${org.slug}/billing`;
   const contact = supportEmail();
@@ -171,6 +179,7 @@ async function buildStep(slug: string, paid: boolean, paidAt: number) {
     keysStorable: bringYourOwnKeyAvailable(),
     researchKeyConfigured: deploymentResearchKeyConfigured(),
     orgRole,
+    firstOnOwnKey: route.onOwnKey,
   });
   const planName = summary.plan ? `${summary.plan.name} plan` : null;
   const planNotice = ways.planAloneCannotBuild ? researchUnavailableNotice() : null;
@@ -181,6 +190,8 @@ async function buildStep(slug: string, paid: boolean, paidAt: number) {
   // Nothing on the page then offers a way to pay — a second checkout would charge twice.
   const awaitingCheckout = paid && !summary.standing.active;
   const contactLine = contact ? `contact ${contact}` : 'contact whoever runs this server';
+  // Under the first-doughnut route, once that build is applied and still running: nothing to pay for until it ends.
+  const firstUnderWay = route.firstStarted && Boolean(running);
 
   return (
     <>
@@ -233,6 +244,20 @@ async function buildStep(slug: string, paid: boolean, paidAt: number) {
             plan appears above as soon as Stripe confirms it. Questions about the payment:{' '}
             <ContactText text={`${contactLine}.`} contact={contact} subject={contractSubject} />
           </p>
+        ) : ways.keyBuildsFirst ? (
+          // Before an unpaid invoice's words: the key on file pays for this build whatever the plan's state.
+          <p className="mt-2 text-sm">
+            <strong>Your Anthropic API key</strong> (<span className="font-mono">sk-ant-…{summary.apiKey?.keyHint}</span>){' '}
+            {route.keyPaysForFirst}{' '}
+            <Link className="underline" href={`${billingHref}#api-key`}>
+              Manage the key
+            </Link>
+          </p>
+        ) : firstUnderWay ? (
+          <p className="mt-2 text-sm">
+            <strong>{planName ? `Your ${planName} is not active.` : 'No plan yet.'}</strong> The research under way
+            will finish; more research after it needs a plan or a contract.
+          </p>
         ) : awaitingInvoice ? (
           <p className="mt-2 text-sm">
             <strong>Your {planName ?? 'plan'} starts once its first invoice is paid.</strong> The invoice went
@@ -240,12 +265,11 @@ async function buildStep(slug: string, paid: boolean, paidAt: number) {
             <Link className="underline" href={`${billingHref}#invoices`}>
               the billing page
             </Link>{' '}
-            lists it. Building the doughnut needs a plan that has been paid for, or a contract.
+            lists it. {route.awaitingInvoiceBuild}
           </p>
         ) : !summary.standing.active ? (
           <p className="mt-2 text-sm">
-            <strong>{planName ? `Your ${planName} is not active.` : 'No plan yet.'}</strong> Setting up
-            the portrait is free; building it needs a plan in good standing or a contract.
+            <strong>{planName ? `Your ${planName} is not active.` : 'No plan yet.'}</strong> {route.buildNeeds}
           </p>
         ) : onKey ? (
           <p className="mt-2 text-sm">
@@ -273,7 +297,7 @@ async function buildStep(slug: string, paid: boolean, paidAt: number) {
           </p>
         ) : null}
 
-        {awaitingCheckout ? null : !preview.allowed || !summary.standing.active ? (
+        {awaitingCheckout || firstUnderWay ? null : !preview.allowed || (!summary.standing.active && !ways.keyBuildsFirst) ? (
           <ul className="mt-4 space-y-3 text-sm">
             {ways.plan ? (
               <li>
@@ -317,9 +341,7 @@ async function buildStep(slug: string, paid: boolean, paidAt: number) {
             </li>
             {ways.ownKey ? (
               <li>
-                <strong>Use your own Anthropic API key.</strong> The sessions then run on your key and do not
-                use the plan&apos;s research allowance. A plan is still needed: your key pays for the model
-                usage, not for hosting, review, and support.{' '}
+                <strong>Use your own Anthropic API key.</strong> {route.ownKeyDoes}{' '}
                 {ways.ownKey.viewerCan ? (
                   <Link className="underline" href={`${billingHref}#api-key`}>
                     Add your key on the billing page
@@ -345,7 +367,8 @@ async function buildStep(slug: string, paid: boolean, paidAt: number) {
         ) : null}
 
         <div className="mt-4 rounded bg-black/[0.03] p-3">
-          <ResearchCostEstimate sessions={sessions} onKey={onKey} />
+          {/* Describes the way this step recommends: under the first-doughnut route that is the key, before one is added too. */}
+          <ResearchCostEstimate sessions={sessions} onKey={onKey || route.onOwnKey} />
         </div>
       </section>
 
