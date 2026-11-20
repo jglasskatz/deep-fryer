@@ -8,11 +8,14 @@ import {
   dimensionResearchSessions,
   MAX_INDICATORS_PER_RESEARCH_SESSION,
   type ResearchModels,
-  type ResearchStrategy,
   type ResearchPlan,
   type Ring,
 } from '@deep-fryer/core';
 import { agentTemplate, fillTemplate, pluginVersion, skill } from './plugin.js';
+import { OPERATOR_DEFAULTS, operatorDefaultModels, resolveStrategy } from './strategies.js';
+
+// The registry is part of planning: the package's callers reach it through this module.
+export * from './strategies.js';
 
 export interface PlanDimensionSpec {
   dimensionId: string;
@@ -26,8 +29,9 @@ export interface PlanDimensionSpec {
 export interface RenderPlanInput {
   config: PortraitConfig;
   dimensions: PlanDimensionSpec[];
-  strategy?: ResearchStrategy;
-  /** Operator defaults, frozen into a new plan when no preset is selected. */
+  /** A registry name (its newest version) or `name@version`; omitted, the plan records operator-defaults. */
+  strategy?: string;
+  /** Operator settings, frozen into a new plan when no strategy is chosen. */
   modelDefaults?: Partial<ResearchModels>;
 }
 
@@ -41,20 +45,28 @@ const REGION_TOOLS = ['WebSearch', 'WebFetch'];
 export const VERIFIER_TOOLS = ['WebFetch', 'Read'];
 /** Keep research contexts small; the worker still records each chunk independently. */
 export const MAX_INDICATORS_PER_SESSION = MAX_INDICATORS_PER_RESEARCH_SESSION;
+// The worker's fallbacks for plans that recorded no strategy (made before
+// the registry). Every new plan records its own models and caps from the
+// registry, so changing these changes no planned run.
 export const DEFAULT_SESSION_MAX_TURNS = 60;
 export const VERIFIER_MAX_TURNS = 12;
+export const AUDIT_MAX_TURNS = 16;
 export const DEFAULT_SESSION_MODEL = 'claude-sonnet-5';
 export const DEFAULT_VERIFIER_MODEL = 'claude-opus-5';
 
-/** Presets are inspectable run configuration, never a mutable worker toggle. */
-export function researchModels(strategy?: ResearchStrategy, defaults: Partial<ResearchModels> = {}): ResearchModels {
-  if (strategy === 'deep') return { session_model: DEFAULT_VERIFIER_MODEL, subagent_model: DEFAULT_SESSION_MODEL, verifier_model: DEFAULT_VERIFIER_MODEL };
-  if (strategy === 'standard') return { session_model: DEFAULT_SESSION_MODEL, subagent_model: null, verifier_model: DEFAULT_VERIFIER_MODEL };
-  return {
-    session_model: defaults.session_model || DEFAULT_SESSION_MODEL,
-    subagent_model: defaults.subagent_model || null,
-    verifier_model: defaults.verifier_model || DEFAULT_VERIFIER_MODEL,
-  };
+/** What a plan records about the strategy it was rendered from. */
+export type PlannedStrategy = Required<Pick<ResearchPlan, 'strategy' | 'strategy_version' | 'models' | 'caps'>>;
+
+/**
+ * Pure: the strategy record for a new plan. A chosen strategy (`deep`, or
+ * `deep@1` for an exact version) contributes its entry's models and caps
+ * whatever the operator's settings say; with no choice the plan records
+ * operator-defaults and the models those settings resolve to.
+ */
+export function planStrategy(strategy?: string, operatorSettings: Partial<ResearchModels> = {}): PlannedStrategy {
+  const entry = resolveStrategy(strategy ?? OPERATOR_DEFAULTS);
+  const models = entry.name === OPERATOR_DEFAULTS ? operatorDefaultModels(entry, operatorSettings) : { ...entry.models };
+  return { strategy: entry.name, strategy_version: entry.version, models, caps: { ...entry.caps } };
 }
 
 function renderTiers(config: PortraitConfig): string {
@@ -163,8 +175,7 @@ export function renderPlan(input: RenderPlanInput): ResearchPlan {
 
   return {
     sessions, config_hash: configHash, plugin_version: pluginVersion(),
-    ...(input.strategy ? { strategy: input.strategy } : {}),
-    models: researchModels(input.strategy, input.modelDefaults),
+    ...planStrategy(input.strategy, input.modelDefaults),
   };
 }
 

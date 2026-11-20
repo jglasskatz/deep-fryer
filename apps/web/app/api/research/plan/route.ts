@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { boundedRecord, REQUEST_LIMITS } from '@deep-fryer/core';
+import { boundedRecord, REQUEST_LIMITS, RESEARCH_STRATEGIES } from '@deep-fryer/core';
 import { driverError, tenantBySlug } from '@deep-fryer/db';
 import { userDb } from '@/lib/db';
 import { getAuth, getRole, roleAtLeast } from '@/lib/auth';
@@ -12,7 +12,8 @@ const bodySchema = z.object({
   tenant: z.string(),
   dimension_ids: z.array(z.guid()).max(REQUEST_LIMITS.dimensions).optional(),
   reviewer_notes: boundedRecord(z.string(), z.string(), REQUEST_LIMITS.dimensions).optional(),
-  strategy: z.enum(['standard', 'deep']).optional(),
+  // A strategy by name; the plan records its newest version.
+  strategy: z.enum(RESEARCH_STRATEGIES).optional(),
 });
 
 /**
@@ -47,7 +48,9 @@ export async function POST(request: Request) {
       config_hash: run.plan.config_hash,
       plugin_version: run.plan.plugin_version,
       strategy: run.plan.strategy,
+      strategy_version: run.plan.strategy_version,
       models: run.plan.models,
+      caps: run.plan.caps,
     });
   } catch (err) {
     // A failed query reports what the database said, never the SQL and

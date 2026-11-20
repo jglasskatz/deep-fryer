@@ -31,6 +31,7 @@ export interface PlannedRunInput {
   dimensionIds?: string[];
   reviewerNotes?: Record<string, string>;
   requestedBy?: string | null;
+  /** The newest version of this strategy is recorded on the plan; omitted, operator-defaults. */
   strategy?: ResearchStrategy;
 }
 
@@ -89,10 +90,13 @@ export async function createPlannedRunIn(db: DbExecutor, input: PlannedRunInput)
       });
     }
 
+    // With no strategy chosen, the plan records operator-defaults with this
+    // server's model settings as they are now; a chosen strategy ignores them.
     const plan = renderPlan({ config, dimensions: specs, strategy: input.strategy, modelDefaults: {
       session_model: process.env.ANTHROPIC_MODEL,
       subagent_model: process.env.RESEARCH_SUBAGENT_MODEL || null,
       verifier_model: process.env.VERIFIER_MODEL,
+      page_reader_model: process.env.ANTHROPIC_SMALL_FAST_MODEL,
     } });
 
     const [run] = await db

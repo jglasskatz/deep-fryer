@@ -97,6 +97,21 @@ describe('runSession containment', () => {
     expect(env.PATH).toBe(process.env.PATH);
   });
 
+  it('hands the subprocess the planned page reader and turn cap', async () => {
+    const savedReader = process.env.ANTHROPIC_SMALL_FAST_MODEL;
+    process.env.ANTHROPIC_SMALL_FAST_MODEL = 'worker-reader';
+    try {
+      const planned = await optionsFor({ prompt: 'p', allowedTools: ['WebFetch'], orchestrate: false, maxTurns: 12, pageReaderModel: 'planned-reader' });
+      expect(planned.options.maxTurns).toBe(12);
+      expect((planned.options.env as Record<string, string>).ANTHROPIC_SMALL_FAST_MODEL).toBe('planned-reader');
+      const historic = await optionsFor({ prompt: 'p', allowedTools: ['WebFetch'], orchestrate: false });
+      expect((historic.options.env as Record<string, string>).ANTHROPIC_SMALL_FAST_MODEL).toBe('worker-reader');
+    } finally {
+      if (savedReader === undefined) delete process.env.ANTHROPIC_SMALL_FAST_MODEL;
+      else process.env.ANTHROPIC_SMALL_FAST_MODEL = savedReader;
+    }
+  });
+
   it('keeps the delegation note and dispatch tool off a session that opts out of orchestration', async () => {
     process.env.RESEARCH_SUBAGENT_MODEL = 'claude-sonnet-5';
     const policy = await optionsFor({ prompt: 'Reply with only a JSON object.', allowedTools: POLICY_SESSION_TOOLS, orchestrate: false });
@@ -222,6 +237,24 @@ describe('sessionEnv', () => {
       CLAUDE_CODE_MAX_OUTPUT_TOKENS: '8000',
       no_proxy: 'localhost',
     });
+  });
+});
+
+describe('sessionEnv with a planned page reader', () => {
+  it('reads fetched pages through the plan’s page reader instead of the worker’s setting, on either key', async () => {
+    const { sessionEnv } = await import('./session.js');
+    const worker = { PATH: '/usr/bin', ANTHROPIC_API_KEY: 'k', ANTHROPIC_SMALL_FAST_MODEL: 'worker-reader' };
+    expect(sessionEnv(worker, { pageReaderModel: 'planned-reader' })).toEqual({ ...worker, ANTHROPIC_SMALL_FAST_MODEL: 'planned-reader' });
+    expect(sessionEnv(worker, { apiKey: 'sk-ant-org-key', pageReaderModel: 'planned-reader' })).toEqual({
+      PATH: '/usr/bin', ANTHROPIC_API_KEY: 'sk-ant-org-key', ANTHROPIC_SMALL_FAST_MODEL: 'planned-reader',
+    });
+  });
+
+  it('keeps the worker’s page reader when the plan recorded none, or a blank one', async () => {
+    const { sessionEnv } = await import('./session.js');
+    const worker = { PATH: '/usr/bin', ANTHROPIC_SMALL_FAST_MODEL: 'worker-reader' };
+    expect(sessionEnv(worker, {})).toEqual(worker);
+    expect(sessionEnv(worker, { pageReaderModel: '  ' })).toEqual(worker);
   });
 });
 

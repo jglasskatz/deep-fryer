@@ -269,10 +269,14 @@ const DEPLOYMENT_CREDENTIAL_PREFIXES = [
  * authenticates with that key instead of the deployment's ANTHROPIC_API_KEY,
  * and the deployment's other credential and routing settings are withheld
  * (DEPLOYMENT_CREDENTIAL_KEYS). Without it the environment is unchanged.
+ *
+ * With `pageReaderModel` — the page reader a run's plan recorded — the CLI
+ * reads fetched pages through that model instead of the worker's own
+ * ANTHROPIC_SMALL_FAST_MODEL, so the run uses what it was planned with.
  */
 export function sessionEnv(
   source: NodeJS.ProcessEnv = process.env,
-  options: { apiKey?: string } = {},
+  options: { apiKey?: string; pageReaderModel?: string } = {},
 ): Record<string, string> {
   const env: Record<string, string> = {};
   for (const [key, value] of Object.entries(source)) {
@@ -289,6 +293,9 @@ export function sessionEnv(
     }
     env.ANTHROPIC_API_KEY = options.apiKey;
   }
+  // A blank never replaces the worker's pin: the CLI treats '' as unset and
+  // would fall back to its own alias.
+  if (options.pageReaderModel?.trim()) env.ANTHROPIC_SMALL_FAST_MODEL = options.pageReaderModel.trim();
   return env;
 }
 
@@ -326,6 +333,8 @@ export async function runSession(input: {
   model?: string;
   /** A plan's explicit scout model; null disables scouts, undefined keeps legacy env defaults. */
   scoutModel?: string | null;
+  /** A plan's page reader (see sessionEnv); undefined keeps the worker's ANTHROPIC_SMALL_FAST_MODEL. */
+  pageReaderModel?: string;
   /**
    * Orchestrated mode (scouts via the dispatch tool, see SCOUT_MODEL). When
    * omitted it follows the research rule: on whenever RESEARCH_SUBAGENT_MODEL
@@ -453,7 +462,7 @@ export async function runSession(input: {
           disallowedTools: LOCAL_MACHINE_TOOLS.filter((t) => !allowed.includes(t)),
           permissionMode: 'dontAsk',
           ...(allowed.includes('Read') ? { hooks: { PreToolUse: [{ matcher: 'Read', hooks: [guardArchiveRead] }] } } : {}),
-          env: sessionEnv(process.env, { apiKey: input.apiKey }),
+          env: sessionEnv(process.env, { apiKey: input.apiKey, pageReaderModel: input.pageReaderModel }),
           maxTurns: input.maxTurns ?? DEFAULT_SESSION_MAX_TURNS,
           // The raw API stream events, for SessionMeter: only a call's
           // message_delta carries its final output count (see SessionMeter).

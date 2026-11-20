@@ -3,13 +3,13 @@ import type { JobHelpers } from 'graphile-worker';
 import type { SessionResult } from './session.js';
 
 const script = vi.hoisted(() => ({
-  calls: [] as { prompt: string; apiKey?: string; model?: string; orchestrate?: boolean; archivedExhibits?: unknown }[],
+  calls: [] as { prompt: string; apiKey?: string; model?: string; orchestrate?: boolean; archivedExhibits?: unknown; maxTurns?: number; pageReaderModel?: string }[],
   mode: 'valid' as 'valid' | 'invalid' | 'refused-result' | 'refused-throw' | 'transient',
   storageUnavailable: false,
 }));
 vi.mock('./session.js', async (original) => {
   const actual = await original<typeof import('./session.js')>();
-  return { ...actual, runSession: vi.fn(async (input: { prompt: string; apiKey?: string; model?: string; orchestrate?: boolean; archivedExhibits?: unknown }): Promise<SessionResult> => {
+  return { ...actual, runSession: vi.fn(async (input: { prompt: string; apiKey?: string; model?: string; orchestrate?: boolean; archivedExhibits?: unknown; maxTurns?: number; pageReaderModel?: string }): Promise<SessionResult> => {
     script.calls.push(input);
     const usage = { input_tokens: 17, output_tokens: 5, cache_read_tokens: 29, model: input.model };
     if (script.mode === 'refused-throw') throw new actual.SessionRunError(new Error('key refused'), { ...usage, partial: true }, 'authentication_failed');
@@ -70,6 +70,19 @@ describe.skipIf(!hasDb)('post-run audit persistence and metering', () => {
     expect(audits.every(row => row.appliedAt === null && row.disposition === 'approve')).toBe(true);
     expect(await auditResearchRun(run, helpers)).toEqual({});
     expect(script.calls).toHaveLength(8); // no repeated paid audit on retry
+  });
+
+  it('audits on the turn cap and page reader the run was planned with, and on the worker’s cap for a plan without one', async () => {
+    const { auditResearchRun } = await import('./research-audit.js');
+    const planned = await seed([2], true);
+    await auditResearchRun(planned.run, helpers, { verifierModel: 'frozen-audit-model', maxTurns: 9, pageReaderModel: 'planned-reader' });
+    expect(script.calls).toHaveLength(1);
+    expect(script.calls[0]).toMatchObject({ maxTurns: 9, pageReaderModel: 'planned-reader' });
+    script.calls.length = 0;
+    const historic = await seed([2], true);
+    await auditResearchRun(historic.run, helpers, { verifierModel: 'frozen-audit-model' });
+    expect(script.calls[0]).toMatchObject({ maxTurns: 16 });
+    expect(script.calls[0]).not.toHaveProperty('pageReaderModel');
   });
 
   it('keeps invalid/thrown model outputs visible for review, with their full spend', async () => {
