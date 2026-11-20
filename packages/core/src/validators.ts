@@ -65,9 +65,15 @@ export const indicatorScoringSchema = z.object({
   worked_math: z.string(),
 });
 
+/** Where capture_evidence stores a page's readable text: evidence/<name>.txt. */
+export const EVIDENCE_TEXT_PATH_RE = /^evidence\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.txt$/;
+
 export const indicatorEvidenceSchema = z.object({
   snapshot_path: z.string(),
   pdf_path: z.string().optional(),
+  // Both optional: evidence captured before text was kept has neither.
+  text_path: z.string().regex(EVIDENCE_TEXT_PATH_RE).optional(),
+  no_readable_text: z.literal(true).optional(),
   captured_at: z.string(),
 });
 

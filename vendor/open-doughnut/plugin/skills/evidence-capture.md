@@ -13,7 +13,8 @@ Rules:
 - Capture AFTER you have decided to accept the source, once per source (a
   source shared by two indicators needs only one capture; reference the same
   paths).
-- Put the returned `snapshot_path` / `pdf_path` and `captured_at` into the
-  finding's `evidence` field verbatim.
+- Put the returned `snapshot_path` / `pdf_path`, `text_path` or
+  `no_readable_text`, and `captured_at` into the finding's `evidence` field
+  verbatim. The text copy is how a reviewer reads what you read.
 - If capture fails (site blocks rendering), say so in the finding's notes —
   the verifier and reviewer will weigh it.

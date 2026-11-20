@@ -1,11 +1,53 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  captureEvidence,
   classifyExhibit,
+  composeReadableText,
   ExhibitRefusedError,
   MAX_SIGN_IN_PAGE_TEXT_CHARS,
   MIN_EXHIBIT_TEXT_CHARS,
+  PDF_TEXT_HEADING,
+  PDF_WITHOUT_TEXT_NOTE,
   type ExhibitSignals,
 } from './evidence.js';
+import { findingPayloadSchema } from '@deep-fryer/core';
+import type { TenantStorage } from './storage.js';
+import { scannedPdf, textPdf } from './test/pdf-fixture.js';
+
+/**
+ * captureEvidence drives a real browser over the public internet, so its tests stand in a scripted
+ * browser and network for Playwright and the egress guard: each test says what the page shows and
+ * what the PDF link returns, and everything after that (the gate, storage, text extraction) is real.
+ */
+const fake = vi.hoisted(() => ({
+  page: { status: 200, contentType: 'text/html', title: '', text: '' },
+  pdf: null as Buffer | null,
+}));
+
+vi.mock('@deep-fryer/research', () => ({
+  assertPublicHttpsUrl: async () => undefined,
+  guardedFetch: async () =>
+    fake.pdf ? new Response(new Uint8Array(fake.pdf), { status: 200 }) : new Response('gone', { status: 404 }),
+}));
+
+vi.mock('playwright-core', () => {
+  const response = {
+    status: () => fake.page.status,
+    headers: () => ({ 'content-type': fake.page.contentType }),
+  };
+  const page = {
+    on: () => undefined,
+    goto: async () => response,
+    title: async () => fake.page.title,
+    locator: () => ({
+      innerText: async () => fake.page.text,
+      filter: () => ({ count: async () => 0 }),
+    }),
+    screenshot: async () => Buffer.from('png bytes'),
+  };
+  const context = { route: async () => undefined, newPage: async () => page, close: async () => undefined };
+  return { chromium: { launch: async () => ({ newContext: async () => context, close: async () => undefined }) } };
+});
 
 /**
  * The exhibit gate decides, from what a loaded page reports about itself, whether its snapshot may
@@ -199,5 +241,163 @@ describe('ExhibitRefusedError', () => {
         'the value. Retry capture_evidence once if the block may be temporary; otherwise choose another source ' +
         'for this value.',
     );
+  });
+});
+
+/** Tenant storage in memory, refusing to overwrite as the real stores do. */
+function memoryStorage(): TenantStorage & { objects: Map<string, { body: Buffer; contentType: string }> } {
+  const objects = new Map<string, { body: Buffer; contentType: string }>();
+  return {
+    objects,
+    describe: () => 'memory',
+    async put(path, body, contentType) {
+      if (objects.has(path)) throw new Error(`evidence object already exists: ${path}`);
+      objects.set(path, { body, contentType });
+      return path;
+    },
+    async get(path) {
+      const object = objects.get(path);
+      if (!object) throw new Error('missing');
+      return object.body;
+    },
+  };
+}
+
+const REPORT_PAGE =
+  'Anytown Housing Report 2023. Median rent burden: 42.7% of renter households paid more than 30% of income. ' +
+  'Download the full report (PDF).';
+
+describe('captureEvidence keeps the text research read', () => {
+  beforeEach(() => {
+    fake.page = { status: 200, contentType: 'text/html; charset=utf-8', title: 'Housing Report | Anytown', text: REPORT_PAGE };
+    fake.pdf = null;
+  });
+
+  it('stores the text of a captured page, containing its figure, beside the snapshot', async () => {
+    const storage = memoryStorage();
+    const result = await captureEvidence(storage, 'https://anytown.example.gov/housing/report');
+    expect(result.text_path).toMatch(/^evidence\/[0-9a-f]{16}\.txt$/);
+    expect(result.text_path!.replace(/\.txt$/, '.png')).toBe(result.snapshot_path);
+    expect(result.no_readable_text).toBeUndefined();
+    const stored = storage.objects.get(result.text_path!)!;
+    expect(stored.contentType).toBe('text/plain; charset=utf-8');
+    expect(stored.body.toString('utf8')).toContain('Median rent burden: 42.7%');
+  });
+
+  it('stores the text layer of a captured PDF, containing its figure, with the page text', async () => {
+    fake.pdf = textPdf([['Table 3. Households on the waiting list: 1,234'], ['Median rent burden 42.7%']]);
+    const storage = memoryStorage();
+    const result = await captureEvidence(
+      storage,
+      'https://anytown.example.gov/housing/report',
+      'https://anytown.example.gov/housing/report.pdf',
+    );
+    expect(result.pdf_path).toBeDefined();
+    const text = storage.objects.get(result.text_path!)!.body.toString('utf8');
+    expect(text).toContain('Households on the waiting list: 1,234');
+    expect(text).toContain(PDF_TEXT_HEADING);
+    expect(text).toContain(REPORT_PAGE);
+  });
+
+  it('stores no text for a scanned PDF, and says the capture had none', async () => {
+    // A PDF opened directly: the browser's viewer shows no page text of its own.
+    fake.page = { status: 200, contentType: 'application/pdf', title: 'report.pdf', text: '' };
+    fake.pdf = scannedPdf();
+    const storage = memoryStorage();
+    const result = await captureEvidence(storage, 'https://anytown.example.gov/housing/scan.pdf');
+    expect(result.pdf_path).toBeDefined();
+    expect(result.text_path).toBeUndefined();
+    expect(result.no_readable_text).toBe(true);
+    expect([...storage.objects.keys()].some((key) => key.endsWith('.txt'))).toBe(false);
+    // The result reaches the researcher as JSON and is copied into the finding's evidence.
+    expect(JSON.parse(JSON.stringify(result))).toMatchObject({ no_readable_text: true });
+  });
+
+  it('still captures when the text copy cannot be stored', async () => {
+    const storage = memoryStorage();
+    const put = storage.put.bind(storage);
+    storage.put = async (path, body, contentType) => {
+      if (path.endsWith('.txt')) throw new Error('store unavailable');
+      return put(path, body, contentType);
+    };
+    const result = await captureEvidence(storage, 'https://anytown.example.gov/housing/report');
+    expect(result.snapshot_path).toMatch(/\.png$/);
+    expect(result.text_path).toBeUndefined();
+    expect(result.no_readable_text).toBeUndefined();
+  });
+
+  it('stores nothing, text included, for a page the gate refuses', async () => {
+    fake.page = { status: 403, contentType: 'text/html', title: 'Just a moment...', text: 'Verifying' };
+    const storage = memoryStorage();
+    await expect(captureEvidence(storage, 'https://anytown.example.gov/housing/report')).rejects.toThrow(ExhibitRefusedError);
+    expect(storage.objects.size).toBe(0);
+  });
+});
+
+describe('composeReadableText', () => {
+  it('stores a page alone as its text', () => {
+    expect(composeReadableText('  Rent burden 42.7%  ')).toBe('Rent burden 42.7%\n');
+  });
+
+  it('has nothing to store when neither the page nor its PDF has words', () => {
+    expect(composeReadableText('')).toBeNull();
+    expect(composeReadableText(' \n\t ', '')).toBeNull();
+  });
+
+  it('keeps a page with text and notes a PDF without any', () => {
+    const text = composeReadableText('Rent burden 42.7%', '')!;
+    expect(text).toContain('Rent burden 42.7%');
+    expect(text).toContain(PDF_WITHOUT_TEXT_NOTE);
+  });
+
+  it('adds no digits of its own, so a search for a figure finds only the source\'s', () => {
+    const text = composeReadableText('words', 'more words')!;
+    expect(text).not.toMatch(/\d/);
+    expect(PDF_WITHOUT_TEXT_NOTE).not.toMatch(/\d/);
+  });
+});
+
+describe('the capture result as a finding\'s evidence', () => {
+  const finding = (evidence: Record<string, unknown>) => ({
+    kind: 'indicator',
+    indicator_slug: 'rent-burden',
+    name: 'Rent burden',
+    value: 42.7,
+    unit: '% of households',
+    year: 2023,
+    target: 30,
+    level_pct: 42,
+    scoring: { threshold_ref: 'housing.rent', function: 'lower_is_better', inputs: {}, worked_math: '' },
+    source: 'Anytown Housing Report',
+    source_url: 'https://anytown.example.gov/housing/report',
+    source_tier: 1,
+    evidence,
+    confidence: 'high',
+    geographic_scale: 'city',
+  });
+
+  beforeEach(() => {
+    fake.page = { status: 200, contentType: 'text/html', title: 'Housing Report | Anytown', text: REPORT_PAGE };
+    fake.pdf = null;
+  });
+
+  it('keeps the text path and the no-text mark when copied into a finding', async () => {
+    const withText = await captureEvidence(memoryStorage(), 'https://anytown.example.gov/housing/report');
+    const parsed = findingPayloadSchema.parse(finding(JSON.parse(JSON.stringify(withText))));
+    expect(parsed.kind === 'indicator' && parsed.evidence.text_path).toBe(withText.text_path);
+
+    fake.page = { status: 200, contentType: 'application/pdf', title: 'scan.pdf', text: '' };
+    fake.pdf = scannedPdf();
+    const scanned = await captureEvidence(memoryStorage(), 'https://anytown.example.gov/housing/scan.pdf');
+    const parsedScan = findingPayloadSchema.parse(finding(JSON.parse(JSON.stringify(scanned))));
+    expect(parsedScan.kind === 'indicator' && parsedScan.evidence.no_readable_text).toBe(true);
+  });
+
+  it('accepts older evidence that has neither, and refuses a text path outside the evidence folder', () => {
+    const older = { snapshot_path: 'evidence/old001.png', captured_at: '2026-10-23T00:00:00Z' };
+    expect(findingPayloadSchema.safeParse(finding(older)).success).toBe(true);
+    expect(findingPayloadSchema.safeParse(finding({ ...older, text_path: '../other-tenant/evidence/x.txt' })).success).toBe(false);
+    expect(findingPayloadSchema.safeParse(finding({ ...older, text_path: 'evidence/x.png' })).success).toBe(false);
+    expect(findingPayloadSchema.safeParse(finding({ ...older, no_readable_text: false })).success).toBe(false);
   });
 });

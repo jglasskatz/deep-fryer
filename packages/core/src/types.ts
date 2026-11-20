@@ -27,6 +27,10 @@ export interface IndicatorScoring {
 export interface IndicatorEvidence {
   snapshot_path: string;
   pdf_path?: string;
+  /** Storage path of the readable text of the page and its PDF, when there was any. */
+  text_path?: string;
+  /** Set when the capture found no readable words (a scanned document, an image). */
+  no_readable_text?: true;
   captured_at: string;
 }
 
