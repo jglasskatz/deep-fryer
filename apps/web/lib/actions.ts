@@ -1,5 +1,7 @@
 'use server';
 
+import { randomBytes } from 'node:crypto';
+import path from 'node:path';
 import { revalidatePath } from 'next/cache';
 import { and, eq } from 'drizzle-orm';
 import {
@@ -21,6 +23,16 @@ import {
   tenantConfig,
   tenants,
 } from '@deep-fryer/db';
+import { tenantStorage } from '@deep-fryer/research';
+import {
+  LOGO_TOO_LARGE,
+  LOGO_WRONG_TYPE,
+  MAX_LOGO_BYTES,
+  brandingInputSchema,
+  logoStoragePath,
+  nextBranding,
+  sniffLogo,
+} from '@/components/site-header/branding';
 import { isOrigin } from './csp';
 import { getAuth, requireTenantRole } from './auth';
 import { audit } from './audit';
@@ -182,6 +194,60 @@ export const updateConfig = action(async (input: {
     revalidatePath(`/${tenant.slug}/admin/settings`);
     revalidatePath(`/${tenant.slug}/methodology`);
   });
+});
+
+/**
+ * The portrait's logo, colour and font (components/site-header/branding.ts),
+ * from the settings form as form data, since it can carry a file:
+ * `tenantSlug`, `colour` (#rrggbb, or empty for none), `font` (a key from
+ * the fixed list), `logo` (a file, optional) and `remove_logo` ("on").
+ *
+ * The colour must show against both page themes and the font must be on the
+ * list; the logo's kind is read from its bytes. A new logo is stored first,
+ * under a fresh name (storage never overwrites), then the branding row is
+ * written and audited in one transaction.
+ */
+export const updateBranding = action(async (request: FormData) => {
+  // Anything but form data is read as empty fields: it names no portrait, so
+  // the role check refuses it before anything else is read.
+  const form: Pick<FormData, 'get'> =
+    typeof (request as Partial<FormData> | null)?.get === 'function' ? request : { get: () => null };
+  const text = (name: string) => {
+    const v = form.get(name);
+    return typeof v === 'string' ? v : '';
+  };
+  const { tenant } = await requireTenantRole(text('tenantSlug'), 'owner');
+  const parsed = brandingInputSchema.safeParse({ colour: text('colour'), font: text('font') });
+  // The rules' own messages are written for the owner; they are shown as they are.
+  if (!parsed.success) throw new UserError(parsed.error.issues[0]?.message ?? 'These settings could not be saved.');
+  const input = parsed.data;
+
+  let logoPath: string | null | undefined;
+  const file = form.get('logo');
+  if (file instanceof Blob && file.size > 0) {
+    if (file.size > MAX_LOGO_BYTES) throw new UserError(LOGO_TOO_LARGE);
+    const bytes = Buffer.from(await file.arrayBuffer());
+    const kind = sniffLogo(bytes);
+    if (!kind) throw new UserError(LOGO_WRONG_TYPE);
+    const storage = await tenantStorage(tenant.slug, {
+      // Without object storage, files sit where the app serves them locally
+      // (lib/data.ts evidenceBase), as the worker's do.
+      localFallbackDir: path.resolve(process.cwd(), 'public', 'evidence', tenant.slug),
+    });
+    logoPath = await storage.put(logoStoragePath(kind, new Date(), randomBytes(4).toString('hex')), bytes, kind.contentType);
+  } else if (text('remove_logo') === 'on') {
+    logoPath = null;
+  }
+
+  await userDb(async (db) => {
+    const [current] = await db.select({ branding: tenants.branding }).from(tenants).where(eq(tenants.id, tenant.id));
+    const before = current?.branding ?? null;
+    const branding = nextBranding(before, { ...input, logoPath });
+    await db.update(tenants).set({ branding }).where(eq(tenants.id, tenant.id));
+    await audit(tenant.id, 'tenant', tenant.id, 'branding', before, branding, db);
+  });
+  revalidatePath(`/${tenant.slug}/admin/settings`);
+  revalidatePath(`/${tenant.slug}`, 'layout');
 });
 
 /**
