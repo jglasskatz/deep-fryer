@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defaultPortraitConfig, framework } from '@deep-fryer/contract';
-import { MAX_INDICATORS_PER_SESSION, renderPlan, renderVerifierPrompt, researchModels, REGION_BRIEF_PLACEHOLDER } from './plan.js';
+import { MAX_INDICATORS_PER_SESSION, renderPlan, planStrategy, renderVerifierPrompt, REGION_BRIEF_PLACEHOLDER } from './plan.js';
 import { deterministicChecks, isFlagged, mergeVerification } from './verify.js';
 
 const config = defaultPortraitConfig('City of Santa Cruz', 'City of Santa Cruz municipal boundary');
@@ -84,9 +84,9 @@ describe('renderPlan', () => {
   it('freezes the researcher/scout/verifier models in the inspectable plan', () => {
     const standard = renderPlan({ config, dimensions: [], strategy: 'standard', modelDefaults: { session_model: 'ignored-default', subagent_model: 'ignored-scout' } });
     expect(standard.strategy).toBe('standard');
-    expect(standard.models).toEqual({ session_model: 'claude-sonnet-5', subagent_model: null, verifier_model: 'claude-opus-5' });
-    expect(researchModels('deep')).toEqual({ session_model: 'claude-opus-5', subagent_model: 'claude-sonnet-5', verifier_model: 'claude-opus-5' });
-    expect(researchModels(undefined, { session_model: 'operator-researcher', verifier_model: 'operator-verifier', subagent_model: 'operator-scout' })).toEqual({ session_model: 'operator-researcher', verifier_model: 'operator-verifier', subagent_model: 'operator-scout' });
+    expect(standard.models).toEqual({ session_model: 'claude-sonnet-5', subagent_model: null, verifier_model: 'claude-opus-5', page_reader_model: 'claude-haiku-4-5-20251001' });
+    expect(planStrategy('deep').models).toEqual({ session_model: 'claude-opus-5', subagent_model: 'claude-sonnet-5', verifier_model: 'claude-opus-5', page_reader_model: 'claude-haiku-4-5-20251001' });
+    expect(planStrategy(undefined, { session_model: 'operator-researcher', verifier_model: 'operator-verifier', subagent_model: 'operator-scout' }).models).toEqual({ session_model: 'operator-researcher', verifier_model: 'operator-verifier', subagent_model: 'operator-scout', page_reader_model: 'claude-haiku-4-5-20251001' });
   });
 
   it('tells the independent verifier to read the archive first and discloses missing exhibits', () => {

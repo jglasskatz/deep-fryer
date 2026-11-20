@@ -148,4 +148,44 @@ describe.skipIf(!hasDb)('createPlannedRun', () => {
       await db.delete(organizations).where(eq(organizations.id, tenant.organizationId));
     }
   });
+
+  it('stores operator-defaults v1 with this server’s models when no strategy is chosen, and a chosen strategy’s own', async () => {
+    const { getDb, provisionTenant, organizations, tenants, researchRuns } = await import('@deep-fryer/db');
+    const { eq } = await import('drizzle-orm');
+    const db = getDb();
+    const { tenant } = await provisionTenant(db, { slug: uniq(), name: 'Strategy Town' });
+    const keys = ['ANTHROPIC_MODEL', 'RESEARCH_SUBAGENT_MODEL', 'VERIFIER_MODEL', 'ANTHROPIC_SMALL_FAST_MODEL'] as const;
+    const saved = Object.fromEntries(keys.map((k) => [k, process.env[k]]));
+    Object.assign(process.env, {
+      ANTHROPIC_MODEL: 'operator-researcher',
+      RESEARCH_SUBAGENT_MODEL: '',
+      VERIFIER_MODEL: 'operator-verifier',
+      ANTHROPIC_SMALL_FAST_MODEL: 'operator-reader',
+    });
+    try {
+      const { createPlannedRun } = await import('./research');
+      const unchosen = await createPlannedRun({ tenantId: tenant.id });
+      const deep = await createPlannedRun({ tenantId: tenant.id, strategy: 'deep' });
+      const stored = async (id: string) => (await db.select().from(researchRuns).where(eq(researchRuns.id, id)))[0]!.plan;
+      expect(await stored(unchosen.run.id)).toMatchObject({
+        strategy: 'operator-defaults',
+        strategy_version: 1,
+        models: { session_model: 'operator-researcher', subagent_model: null, verifier_model: 'operator-verifier', page_reader_model: 'operator-reader' },
+        caps: { session_max_turns: 60, verifier_max_turns: 12, audit_max_turns: 16 },
+      });
+      expect(await stored(deep.run.id)).toMatchObject({
+        strategy: 'deep',
+        strategy_version: 1,
+        models: { session_model: 'claude-opus-5', subagent_model: 'claude-sonnet-5', verifier_model: 'claude-opus-5', page_reader_model: 'claude-haiku-4-5-20251001' },
+      });
+    } finally {
+      for (const k of keys) {
+        if (saved[k] === undefined) delete process.env[k];
+        else process.env[k] = saved[k];
+      }
+      await db.delete(researchRuns).where(eq(researchRuns.tenantId, tenant.id));
+      await db.delete(tenants).where(eq(tenants.id, tenant.id));
+      await db.delete(organizations).where(eq(organizations.id, tenant.organizationId));
+    }
+  });
 });

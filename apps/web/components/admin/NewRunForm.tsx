@@ -68,6 +68,7 @@ export function NewRunForm({
           </label>
         </div>
         <p className="mt-2 text-xs text-[color:var(--color-muted)]">Estimates describe API usage, not a charge or spending cap. Actual usage and estimated cost appear on the run.</p>
+        <p className="mt-1 text-xs text-[color:var(--color-muted)]">The run page names the strategy and version the run used, with its models and limits, and they stay the same even if the defaults change later.</p>
       </fieldset>
       <div className="mt-3 grid grid-cols-1 gap-x-4 gap-y-1 text-sm sm:grid-cols-2 md:grid-cols-3">
         {dimensions.map((d) => (

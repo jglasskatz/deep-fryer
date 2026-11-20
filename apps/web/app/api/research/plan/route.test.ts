@@ -48,3 +48,39 @@ describe('research plan errors', () => {
     expect(await (await POST(request())).json()).toEqual({ error: 'Select at least one dimension.' });
   });
 });
+
+describe('the strategy a plan request names', () => {
+  beforeEach(() => {
+    mocks.tenant.mockReset().mockResolvedValue({ id: 't1' });
+    mocks.role.mockReset().mockResolvedValue('editor');
+    mocks.plan.mockReset().mockImplementation(async (input: { strategy?: 'standard' | 'deep' }) => {
+      const { planStrategy } = await import('@deep-fryer/research');
+      return {
+        run: { id: 'r1', status: 'planned', plan: { sessions: [], config_hash: 'h', plugin_version: 'p', ...planStrategy(input.strategy) } },
+        sessionCount: 0,
+      };
+    });
+  });
+  const named = (strategy: string) =>
+    new Request('https://example.org/api/research/plan', { method: 'POST', body: JSON.stringify({ tenant: 'somewhere', strategy }) });
+
+  it('answers with the version, models and caps the plan recorded', async () => {
+    const { POST } = await import('./route');
+    const body = await (await POST(named('deep'))).json();
+    expect(mocks.plan).toHaveBeenCalledWith(expect.objectContaining({ strategy: 'deep' }));
+    expect(body).toMatchObject({
+      strategy: 'deep',
+      strategy_version: 1,
+      models: { session_model: 'claude-opus-5', subagent_model: 'claude-sonnet-5', verifier_model: 'claude-opus-5', page_reader_model: 'claude-haiku-4-5-20251001' },
+      caps: { session_max_turns: 60, verifier_max_turns: 12, audit_max_turns: 16 },
+    });
+  });
+
+  it('refuses a strategy the registry does not offer, planning nothing', async () => {
+    const { POST } = await import('./route');
+    for (const strategy of ['fast', 'operator-defaults', 'deep@1']) {
+      expect((await POST(named(strategy))).status).toBe(400);
+    }
+    expect(mocks.plan).not.toHaveBeenCalled();
+  });
+});

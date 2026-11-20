@@ -14,5 +14,6 @@ describe('research strategy and session planning', () => {
     expect(html).toContain('value="deep"');
     expect(html).toContain('independent Opus verification stays the same');
     expect(html).toContain('not a charge or spending cap');
+    expect(html).toContain('The run page names the strategy and version the run used');
   });
 });

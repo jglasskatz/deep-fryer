@@ -5,10 +5,19 @@
  * configurations (e.g. session models) can be compared on yield and cost
  * before committing to the full NYC campaign.
  *
- *   tsx scripts/measure-strategies.ts plan --tenant bronx --dims housing,air-pollution,food,ocean-acidification,ozone-depletion
+ *   tsx scripts/measure-strategies.ts plan --tenant bronx --dims housing,air-pollution,food,ocean-acidification,ozone-depletion [--strategy deep@1]
  *   tsx scripts/measure-strategies.ts enqueue --run <runId>
  *   tsx scripts/measure-strategies.ts status
  *   tsx scripts/measure-strategies.ts score --label sonnet --runs <id>,<id> [--label2 opus --runs2 <id>,<id>]
+ *   tsx scripts/measure-strategies.ts score --strategy standard@1 --strategy2 deep@1 [--tenant bronx]
+ *
+ * `--strategy name@version` (or a bare name, for its newest version) plans
+ * with that registry entry (packages/research strategies.ts); without it the
+ * plan records operator-defaults and this shell's model settings. On
+ * `score`, `--strategy` selects every settled run whose plan recorded that
+ * entry (one portrait with --tenant), or, with --runs, refuses any listed
+ * run that recorded something else, so an arm is always the strategy it
+ * claims to be.
  *
  * `score` folds each run's usage records whole (core mergeUsage) and prices
  * them per model (core priceSessionUsage), so arms are compared in dollars —
@@ -16,7 +25,7 @@
  * tokens, which differ in price ~25× between models and in count between
  * tokenizers. Coverage divides by the indicators each plan asked for.
  */
-import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { frameworkDimension } from '@deep-fryer/contract';
 import {
   dimensions,
@@ -41,8 +50,10 @@ import {
   plannedIndicators,
   renderPlan,
   replicationAgreement,
+  resolveStrategy,
   scoreNegativeControls,
   scoreStrategy,
+  strategyRef,
   type PlanDimensionSpec,
   type ScoredFinding,
 } from '@deep-fryer/research';
@@ -117,13 +128,29 @@ async function plan() {
     };
   });
 
-  const rendered = renderPlan({ config, dimensions: specs });
+  const strategy = arg('strategy');
+  const rendered = renderPlan({
+    config,
+    dimensions: specs,
+    ...(strategy ? { strategy: strategyRef(resolveStrategy(strategy)) } : {}),
+    modelDefaults: {
+      session_model: process.env.ANTHROPIC_MODEL,
+      subagent_model: process.env.RESEARCH_SUBAGENT_MODEL || null,
+      verifier_model: process.env.VERIFIER_MODEL,
+      page_reader_model: process.env.ANTHROPIC_SMALL_FAST_MODEL,
+    },
+  });
   const [run] = await db
     .insert(researchRuns)
     .values({ tenantId: tenant.id, status: 'planned', plan: rendered, configSnapshot: config })
     .returning();
   if (!run) throw new Error('run insert failed');
-  console.log(JSON.stringify({ runId: run.id, sessions: rendered.sessions.length }));
+  console.log(JSON.stringify({ runId: run.id, sessions: rendered.sessions.length, strategy: recordedStrategy(rendered) }));
+}
+
+/** The registry entry a plan recorded, as `name@version`, or null for a plan from before strategies had versions. */
+function recordedStrategy(plan: { strategy?: string; strategy_version?: number }): string | null {
+  return plan.strategy && plan.strategy_version !== undefined ? `${plan.strategy}@${plan.strategy_version}` : null;
 }
 
 async function status() {
@@ -136,13 +163,15 @@ async function status() {
       .where(eq(researchSessions.runId, r.id));
     const byStatus: Record<string, number> = {};
     for (const s of sessions) byStatus[s.status] = (byStatus[s.status] ?? 0) + 1;
-    console.log(`${r.id}  ${r.status}  sessions=${JSON.stringify(byStatus)}`);
+    console.log(`${r.id}  ${r.status}  ${recordedStrategy(r.plan) ?? 'strategy-not-recorded'}  sessions=${JSON.stringify(byStatus)}`);
   }
 }
 
 /** What one run contributes to a scorecard, plus the per-run facts an arm comparison needs. */
 interface LoadedRun {
   runId: string;
+  /** The registry entry the plan recorded (`name@version`), or null when it recorded none. */
+  strategy: string | null;
   scored: ScoredFinding[];
   /** Every usage record of the run (region, research, verifiers) folded into one. */
   spend: SessionTokenUsage;
@@ -200,6 +229,7 @@ async function loadRun(runId: string): Promise<LoadedRun> {
   const models = [...new Set(records.flatMap(modelsInUsage))].sort();
   return {
     runId,
+    strategy: recordedStrategy(run.plan),
     scored,
     spend,
     indicatorsPlanned: plannedIndicators(run.plan).length,
@@ -217,8 +247,14 @@ async function loadRun(runId: string): Promise<LoadedRun> {
   };
 }
 
-async function scoreLabel(label: string, runIds: string[]) {
+async function scoreLabel(label: string, runIds: string[], strategy?: string) {
   const perRun = await Promise.all(runIds.map(loadRun));
+  const mismatched = strategy ? perRun.filter((r) => r.strategy !== strategy) : [];
+  if (mismatched.length) {
+    throw new Error(
+      `arm ${label} is ${strategy}, but ${mismatched.map((r) => `${r.runId} recorded ${r.strategy ?? 'no strategy'}`).join('; ')}`,
+    );
+  }
   const all = perRun.flatMap((r) => r.scored);
   const spend = perRun.map((r) => r.spend).reduce(mergeUsage, emptyUsage());
   const card = scoreStrategy(all, {
@@ -229,6 +265,7 @@ async function scoreLabel(label: string, runIds: string[]) {
   const agreement = perRun.length > 1 ? replicationAgreement(perRun.map((r) => r.scored)) : [];
   return {
     label,
+    strategy: strategy ?? null,
     runIds,
     // Dollars, per-model tokens and the unpriced models are on the scorecard
     // (dollars, tokens.by_model, unpriced); the rest is per run.
@@ -246,15 +283,44 @@ async function scoreLabel(label: string, runIds: string[]) {
   };
 }
 
+/** Every settled run whose plan recorded `ref` (optionally on one portrait), oldest first. */
+async function runsWithStrategy(ref: string, tenantSlug?: string): Promise<string[]> {
+  const db = getDb();
+  const entry = resolveStrategy(ref);
+  const where = [
+    inArray(researchRuns.status, ['complete', 'failed']),
+    sql`${researchRuns.plan}->>'strategy' = ${entry.name}`,
+    sql`(${researchRuns.plan}->>'strategy_version')::int = ${entry.version}`,
+  ];
+  if (tenantSlug) {
+    const tenant = await tenantBySlug(db, tenantSlug);
+    if (!tenant) throw new Error(`tenant ${tenantSlug} not found`);
+    where.push(eq(researchRuns.tenantId, tenant.id));
+  }
+  const rows = await db
+    .select({ id: researchRuns.id })
+    .from(researchRuns)
+    .where(and(...where))
+    .orderBy(researchRuns.createdAt);
+  if (!rows.length) throw new Error(`no settled run recorded ${strategyRef(entry)}`);
+  return rows.map((r) => r.id);
+}
+
+/** One arm: its runs from --runs<suffix>, or every run of --strategy<suffix>; null when neither was given. */
+async function arm(suffix: '' | '2', fallbackLabel: string) {
+  const ref = arg(`strategy${suffix}`);
+  const strategy = ref ? strategyRef(resolveStrategy(ref)) : undefined;
+  const listed = (arg(`runs${suffix}`) ?? '').split(',').filter(Boolean);
+  if (!listed.length && !strategy) return null;
+  const runs = listed.length ? listed : await runsWithStrategy(strategy!, arg('tenant'));
+  return scoreLabel(arg(`label${suffix}`) ?? strategy ?? fallbackLabel, runs, strategy);
+}
+
 async function score() {
-  const label = arg('label') ?? 'A';
-  const runs = (arg('runs') ?? '').split(',').filter(Boolean);
-  if (!runs.length) throw new Error('--runs required');
-  const out = [await scoreLabel(label, runs)];
-  const label2 = arg('label2');
-  const runs2 = (arg('runs2') ?? '').split(',').filter(Boolean);
-  if (label2 && runs2.length) out.push(await scoreLabel(label2, runs2));
-  console.log(JSON.stringify(out, null, 2));
+  const first = await arm('', 'A');
+  if (!first) throw new Error('--runs or --strategy required');
+  const second = await arm('2', 'B');
+  console.log(JSON.stringify(second ? [first, second] : [first], null, 2));
 }
 
 /**

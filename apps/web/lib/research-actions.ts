@@ -4,7 +4,12 @@ import { revalidatePath } from 'next/cache';
 import { and, eq, isNotNull, isNull, or } from 'drizzle-orm';
 import { z } from 'zod';
 import { researchRuns } from '@deep-fryer/db';
-import { boundedRecord, REQUEST_LIMITS, type ResearchStrategy } from '@deep-fryer/core';
+import {
+  boundedRecord,
+  isResearchStrategy,
+  REQUEST_LIMITS,
+  type ResearchStrategy,
+} from '@deep-fryer/core';
 import { getAuth, requireTenantRole } from './auth';
 import { applyRun, createPlannedRun } from './research';
 import { action, UserError } from './action-result';
@@ -24,7 +29,7 @@ export const planResearchAction = action(async (input: {
   strategy?: ResearchStrategy;
 }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
-  if (input.strategy !== undefined && input.strategy !== 'standard' && input.strategy !== 'deep') {
+  if (input.strategy !== undefined && !isResearchStrategy(input.strategy)) {
     throw new UserError('Choose the standard or deep research strategy.');
   }
   const lists = planLists.parse(input);

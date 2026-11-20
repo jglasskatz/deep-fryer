@@ -221,18 +221,51 @@ export interface ResearchPlan {
   sessions: PlannedSession[];
   config_hash: string;
   plugin_version: string;
-  /** Optional on historic plans, which retain the worker's env defaults. */
-  strategy?: ResearchStrategy;
+  /**
+   * The registry entry the plan was rendered from (packages/research
+   * strategies.ts), by name and version. Historic plans carry neither, or a
+   * name alone (plans made before strategies had versions); they run on the
+   * worker's own defaults for whatever they did not record.
+   */
+  strategy?: StrategyName;
+  strategy_version?: number;
   models?: ResearchModels;
+  /** Optional on historic plans, which run on the worker's turn-cap constants. */
+  caps?: ResearchCaps;
 }
 
-export type ResearchStrategy = 'standard' | 'deep';
+/** The strategies a person can choose when planning a run. */
+export const RESEARCH_STRATEGIES = ['standard', 'deep'] as const;
+export type ResearchStrategy = (typeof RESEARCH_STRATEGIES)[number];
+
+/** Every strategy name a plan can record: the choosable ones, and the one a plan with no choice records. */
+export type StrategyName = ResearchStrategy | 'operator-defaults';
+
+export function isResearchStrategy(value: unknown): value is ResearchStrategy {
+  return typeof value === 'string' && (RESEARCH_STRATEGIES as readonly string[]).includes(value);
+}
 
 /** Frozen at plan time so changing worker defaults cannot change approved spend. */
 export interface ResearchModels {
   session_model: string;
   subagent_model: string | null;
   verifier_model: string;
+  /**
+   * The model the CLI reads every fetched page through (its small/fast
+   * model). Absent on plans made before it was recorded, which keep the
+   * worker's own setting.
+   */
+  page_reader_model?: string;
+}
+
+/** Turn limits frozen into a plan, so a later change to the worker's constants cannot change a planned run. */
+export interface ResearchCaps {
+  /** Region-context and dimension research sessions. */
+  session_max_turns: number;
+  /** One verifier session per indicator finding. */
+  verifier_max_turns: number;
+  /** One post-run audit session per audited finding. */
+  audit_max_turns: number;
 }
 
 /**

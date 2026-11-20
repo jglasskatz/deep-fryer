@@ -5,6 +5,7 @@ import {
   emptyUsage,
   type ContentSupported,
   type FindingPayload,
+  type ResearchPlan,
   type RunTokenUsage,
   type SessionTokenUsage,
 } from '@deep-fryer/core';
@@ -195,7 +196,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
           // delegation note telling it to capture evidence — and it has no
           // capture tool, and writes a brief, not findings.
           orchestrate: false,
-          ...(plan.models ? { model: plan.models.session_model } : {}),
+          ...plannedResearchOptions(plan),
           ...keyOption,
         });
       } catch (err) {
@@ -263,7 +264,8 @@ export const researchApply: Task = async (rawPayload, helpers) => {
           prompt,
           allowedTools: spec.tool_allowlist,
           storage,
-          ...(plan.models ? { model: plan.models.session_model, scoutModel: plan.models.subagent_model } : {}),
+          ...plannedResearchOptions(plan),
+          ...(plan.models ? { scoutModel: plan.models.subagent_model } : {}),
           ...keyOption,
         });
       } catch (err) {
@@ -313,7 +315,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
             verdict = { content_supported: 'uncertain', verifier_note: `verifier did not run: ${keyFailure.message}` };
           } else {
             try {
-              const verified = await runVerifier(payload, config.region.name, apiKey, storage, plan.models?.verifier_model);
+              const verified = await runVerifier(payload, config.region.name, apiKey, storage, plan);
               verifierUsage = mergeUsage(verifierUsage, verified.usage);
               verdict = verified.verdict;
               if (verified.failure) noteFailure(verified.failure);
@@ -391,7 +393,12 @@ export const researchApply: Task = async (rawPayload, helpers) => {
     // share the run's funding/model policy and report their own usage; an
     // audit service/persistence failure must not discard completed research.
     try {
-      Object.assign(usage, await auditResearchRun(run, helpers, { apiKey, verifierModel: plan.models?.verifier_model }));
+      Object.assign(usage, await auditResearchRun(run, helpers, {
+        apiKey,
+        verifierModel: plan.models?.verifier_model,
+        ...(plan.caps ? { maxTurns: plan.caps.audit_max_turns } : {}),
+        ...(plan.models?.page_reader_model ? { pageReaderModel: plan.models.page_reader_model } : {}),
+      }));
     } catch {
       helpers.logger.warn(`run ${runId}: automatic audit could not finish; findings remain available for human review`);
     }
@@ -537,6 +544,24 @@ async function failPlannedSessions(db: DbExecutor, run: ResearchRun, message: st
 type Verdict = { content_supported: ContentSupported; verifier_note?: string; narrative_supported?: ContentSupported };
 
 /**
+ * Pure: what a research session (region context or dimension) takes from its
+ * run's plan — the researcher model, the turn cap and the page reader it
+ * recorded. Whatever a historic plan did not record is left out, so the
+ * session runner's own defaults apply, as they did when it was planned.
+ */
+export function plannedResearchOptions(plan: Pick<ResearchPlan, 'models' | 'caps'>): {
+  model?: string;
+  maxTurns?: number;
+  pageReaderModel?: string;
+} {
+  return {
+    ...(plan.models ? { model: plan.models.session_model } : {}),
+    ...(plan.caps ? { maxTurns: plan.caps.session_max_turns } : {}),
+    ...(plan.models?.page_reader_model ? { pageReaderModel: plan.models.page_reader_model } : {}),
+  };
+}
+
+/**
  * One verifier session on one indicator finding: the verdict (null when the
  * session failed or answered outside its contract) and what the session
  * used, folded by the caller into the dimension's `verifier:<id>` record.
@@ -557,7 +582,7 @@ async function runVerifier(
   regionName: string,
   apiKey: string | null,
   storage: TenantStorage,
-  plannedModel?: string,
+  plan: Pick<ResearchPlan, 'models' | 'caps'>,
 ): Promise<{
   verdict: Verdict | null;
   usage: SessionTokenUsage;
@@ -579,7 +604,7 @@ async function runVerifier(
   // The adversarial reviewer runs on the strongest model regardless of the
   // researcher's model — a constant, maximally-skeptical judge, so strategy
   // comparisons measure the researcher, never the leniency of its grader.
-  const model = plannedModel ?? process.env.VERIFIER_MODEL ?? 'claude-opus-5';
+  const model = plan.models?.verifier_model ?? process.env.VERIFIER_MODEL ?? 'claude-opus-5';
   let result: SessionResult;
   try {
     result = await runSession({
@@ -587,8 +612,11 @@ async function runVerifier(
       allowedTools: VERIFIER_TOOLS,
       archivedExhibits: archive.exhibits,
       orchestrate: false,
-      maxTurns: VERIFIER_MAX_TURNS,
+      // The plan's cap, never today's constant: a planned run keeps the
+      // limits it was planned with. Plans that recorded none use the constant.
+      maxTurns: plan.caps?.verifier_max_turns ?? VERIFIER_MAX_TURNS,
       model,
+      ...(plan.models?.page_reader_model ? { pageReaderModel: plan.models.page_reader_model } : {}),
       // Verifiers are part of the run's spend: the same key as its researchers,
       // which is the run's stored funding (the deployment's key when apiKey is null).
       ...(apiKey ? { apiKey } : {}),

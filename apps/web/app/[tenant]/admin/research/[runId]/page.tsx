@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { summarizeRunCosts } from '@deep-fryer/core';
+import { summarizeRunCosts, type ResearchPlan } from '@deep-fryer/core';
 import { RunCostSummary } from '@/components/admin/RunCostSummary';
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
@@ -26,6 +26,22 @@ import { RunPhaseBadge, SessionChipBadge } from '../RunBadges';
 import { ReplanFailed } from './ReplanFailed';
 
 export const dynamic = 'force-dynamic';
+
+/**
+ * The strategy a plan was rendered from, as the run page names it: name and
+ * version ("standard v1"). Plans made before strategies had versions say so
+ * instead of guessing one; a name they recorded is kept beside it.
+ */
+function strategyLabel(plan: ResearchPlan): { label: string; note: string | null } {
+  if (!plan.strategy || plan.strategy_version === undefined) {
+    return {
+      label: 'strategy not recorded',
+      note: plan.strategy ? `It was planned as ${plan.strategy}, before strategies had version numbers.` : null,
+    };
+  }
+  const name = plan.strategy === 'operator-defaults' ? 'server defaults' : plan.strategy;
+  return { label: `${name} v${plan.strategy_version}`, note: null };
+}
 
 /**
  * While a run is queued or running the page re-renders itself this often
@@ -91,6 +107,7 @@ export default async function RunDetailPage({
   const sinceApply = run.appliedAt ? now.getTime() - run.appliedAt.getTime() : 0;
   const tookMs = run.appliedAt && run.completedAt ? run.completedAt.getTime() - run.appliedAt.getTime() : null;
   const ownKey = run.funding === 'organization_key';
+  const strategy = strategyLabel(run.plan);
   const statusLine =
     phase === 'queued'
       ? 'Queued — starting shortly'
@@ -114,7 +131,7 @@ export default async function RunDetailPage({
         <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[color:var(--color-muted)]">
           <RunPhaseBadge phase={phase} />
           <span>
-            {run.plan.sessions.length} sessions · plugin v{run.plan.plugin_version} · config {run.plan.config_hash}
+            {run.plan.sessions.length} sessions · {strategy.label} · plugin v{run.plan.plugin_version} · config {run.plan.config_hash}
             {run.appliedAt
               ? ownKey
                 ? " · on your organization's own Anthropic API key"
@@ -301,13 +318,20 @@ export default async function RunDetailPage({
             The region brief placeholder is filled by the phase-0 session when the run starts.
           </p>
           <div className="mt-3 rounded bg-black/[0.04] p-3 text-xs">
-            <p className="font-medium">Research strategy: {run.plan.strategy === 'deep' ? 'Deep' : run.plan.strategy === 'standard' ? 'Standard' : 'Legacy defaults'}</p>
-            {run.plan.models ? <dl className="mt-2 grid gap-2 sm:grid-cols-3">
+            <p className="font-medium">Research strategy: {strategy.label}</p>
+            {strategy.note ? <p className="mt-1">{strategy.note}</p> : null}
+            {run.plan.models ? <dl className="mt-2 grid gap-2 sm:grid-cols-2 md:grid-cols-4">
               <div><dt>Researcher</dt><dd className="break-words font-mono">{run.plan.models.session_model}</dd></div>
               <div><dt>Scout</dt><dd className="break-words font-mono">{run.plan.models.subagent_model ?? 'No separate scout'}</dd></div>
               <div><dt>Independent verifier</dt><dd className="break-words font-mono">{run.plan.models.verifier_model}</dd></div>
+              <div><dt>Page reader</dt><dd className="break-words font-mono">{run.plan.models.page_reader_model ?? 'Not recorded: the worker’s own setting'}</dd></div>
             </dl> : <p className="mt-1">This older plan did not record model choices; it uses the worker defaults.</p>}
-            <p className="mt-2">New plans preserve these model choices when they run. Retrieved source text is archived when available so reviewers can inspect the evidence; retrieval or archival failures remain visible in verification results.</p>
+            {run.plan.caps ? <dl className="mt-2 grid gap-2 sm:grid-cols-3">
+              <div><dt>Turn limit, each research session</dt><dd>{run.plan.caps.session_max_turns}</dd></div>
+              <div><dt>Turn limit, each verifier check</dt><dd>{run.plan.caps.verifier_max_turns}</dd></div>
+              <div><dt>Turn limit, each audit check</dt><dd>{run.plan.caps.audit_max_turns}</dd></div>
+            </dl> : <p className="mt-1">This older plan did not record turn limits; it uses the worker&apos;s current limits.</p>}
+            <p className="mt-2">New plans keep these models and limits when they run, even if the defaults change later. Retrieved source text is archived when available so reviewers can inspect the evidence; retrieval or archival failures remain visible in verification results.</p>
           </div>
           <div className="mt-3 space-y-3">
             {run.plan.sessions.map((spec, i) => {

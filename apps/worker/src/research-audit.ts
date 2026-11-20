@@ -3,7 +3,7 @@ import { eq, inArray } from 'drizzle-orm';
 import type { JobHelpers } from 'graphile-worker';
 import { emptyUsage, findingAuditResultSchema, isFlagged, type FindingAuditResult, type RunTokenUsage } from '@deep-fryer/core';
 import { findingAudits, findings, getDb, researchSessions, tenants, type Finding, type ResearchRun } from '@deep-fryer/db';
-import { renderTierAuditPrompt } from '@deep-fryer/research';
+import { AUDIT_MAX_TURNS, renderTierAuditPrompt } from '@deep-fryer/research';
 import { loadFindingExhibits } from './archived-exhibits.js';
 import { extractJson, runSession, SessionRunError } from './session.js';
 import { tenantStorage } from './storage.js';
@@ -42,7 +42,9 @@ This is a machine recommendation for a human reviewer, never publication approva
 export async function auditResearchRun(
   run: ResearchRun,
   helpers: JobHelpers,
-  options: { apiKey?: string | null; verifierModel?: string } = {},
+  // The model, turn cap and page reader come from the run's plan; a plan that
+  // recorded none falls back to the worker's settings and AUDIT_MAX_TURNS.
+  options: { apiKey?: string | null; verifierModel?: string; maxTurns?: number; pageReaderModel?: string } = {},
 ): Promise<RunTokenUsage> {
   const db = getDb();
   const rows = await db.select({ finding: findings }).from(findings)
@@ -84,8 +86,9 @@ export async function auditResearchRun(
     if (!refusedKey) try {
       usage[key] = { ...emptyUsage(), partial: true };
       const result = await runSession({ prompt, allowedTools: ['WebSearch', 'WebFetch', 'Read'],
-        archivedExhibits: archive.exhibits, orchestrate: false, maxTurns: 16,
+        archivedExhibits: archive.exhibits, orchestrate: false, maxTurns: options.maxTurns ?? AUDIT_MAX_TURNS,
         model,
+        ...(options.pageReaderModel ? { pageReaderModel: options.pageReaderModel } : {}),
         ...(options.apiKey ? { apiKey: options.apiKey } : {}),
       });
       usage[key] = result.usage;
