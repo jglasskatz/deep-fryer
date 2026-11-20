@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { signOut } from '@/auth';
 import { FamilyNav } from './FamilyNav';
 import { HeaderMenuDismiss } from './HeaderMenuDismiss';
+import { brandingView, type BrandingView } from './branding';
 import { adminNavLinks, tenantNavLinks, type NavLink, type PortraitFeatures } from './nav-links';
 import { LanguageNotice, LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { InstallAppButton } from '@/components/pwa/InstallAppButton';
@@ -11,6 +12,7 @@ import { loginI18n } from '@/app/login/i18n';
 import { signInHref } from '@/app/login/sign-in';
 import { adminTenant } from '@/lib/admin-data';
 import { getAuth } from '@/lib/auth';
+import { evidenceUrl } from '@/lib/data';
 import { countHeldComments } from '@/lib/discussion';
 import { publishedCustomPages } from '@/lib/custom-pages';
 import { deploymentFeatureOn, portraitFeatures } from '@/lib/features';
@@ -49,6 +51,20 @@ async function adminQueueCounts(
     features.involvement ? countNewSubmissions(tenant.id) : 0,
   ]);
   return { heldComments, newSubmissions };
+}
+
+const NO_BRANDING: BrandingView = { logoSrc: null, colour: null, fontStack: null };
+
+/**
+ * The portrait's own logo, colour and font (branding.ts), for its public
+ * pages only; staff pages keep the app's look. Read from the portrait's one
+ * row as the reader, under the same rule as the page itself: everyone once
+ * the portrait is public, only its members before. Without a database the
+ * bundled demo portrait has no branding.
+ */
+async function portraitBranding(slug: string): Promise<BrandingView> {
+  const row = hasDatabase() ? await adminTenant(slug) : null;
+  return row ? brandingView(row.branding, (p) => evidenceUrl(slug, p)) : NO_BRANDING;
 }
 
 /**
@@ -96,6 +112,7 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
   const tenantOrg = tenant ? await organizationOfTenant(tenant.slug) : null;
   const languageHelp = org?.languageHelp ?? shownFamily?.organization.languageHelp ?? tenantOrg?.languageHelp ?? null;
   const publicPlane = variant === 'tenant' || variant === 'org';
+  const brand = variant === 'tenant' && tenant ? await portraitBranding(tenant.slug) : NO_BRANDING;
 
   const links: NavLink[] = [];
   if (variant === 'landing' || variant === 'account' || variant === 'architecture') {
@@ -240,8 +257,16 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
             <span aria-hidden className="text-[color:var(--color-muted)]">
               /
             </span>
-            <Link dir="auto" href={href(`/${tenant.slug}`)} className="truncate font-medium hover:underline">
-              {tenant.name}
+            <Link
+              dir="auto"
+              href={href(`/${tenant.slug}`)}
+              className={`truncate font-medium hover:underline ${brand.logoSrc ? 'flex min-w-0 items-center gap-2' : ''}`}
+            >
+              {/* The portrait's logo: its name follows, so the picture adds nothing to read out. */}
+              {brand.logoSrc ? (
+                <img src={brand.logoSrc} alt="" className="h-7 w-auto max-w-32 shrink-0 object-contain" />
+              ) : null}
+              {brand.logoSrc ? <span className="truncate">{tenant.name}</span> : tenant.name}
             </Link>
             {variant === 'admin' ? (
               <>
@@ -342,6 +367,17 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
             ))}
           </nav>
         </div>
+      ) : null}
+      {/* The portrait's colour, as a strip along the header's lower edge
+          (branding.ts checks it shows on both the light and dark page). */}
+      {brand.colour ? (
+        <div aria-hidden data-brand-strip className="h-1" style={{ backgroundColor: brand.colour }} />
+      ) : null}
+      {/* The portrait's font for the whole page, from the fixed list only:
+          the rule is built from our own stacks, never from stored text.
+          React places it in the document head. */}
+      {brand.fontStack ? (
+        <style href={`df-brand-font-${tenant?.slug}`} precedence="default">{`:root{--font-sans:${brand.fontStack}}`}</style>
       ) : null}
       {variant !== 'landing' && shownFamily ? (
         <FamilyNav family={shownFamily} currentSlug={tenant?.slug} currentView={familyView} />

@@ -4,6 +4,7 @@ import { appUrl } from '@/lib/env';
 import { publicPortraitSampleData } from '@/lib/sample-data';
 import { publicApiMetadata, absoluteEvidenceUrl } from '@/lib/public-api-metadata';
 import { publicJson, publicOptions } from '@/lib/public-json';
+import { publicBranding } from '@/components/site-header/branding';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,6 +45,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ tenant: 
         progress_csv: `${base}/api/v1/portraits/${tenant}/progress.csv`,
       },
       ...portrait,
+      // A stored logo is a path inside the portrait's storage: sent as its full address, like evidence files.
+      tenant: { ...portrait.tenant, branding: publicBranding(portrait.tenant.branding, (p) => absoluteEvidenceUrl(tenant, p)) },
       ...metadata,
       dimensions: portrait.dimensions.map((dimension) => ({
         ...dimension,

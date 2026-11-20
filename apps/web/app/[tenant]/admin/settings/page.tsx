@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { SettingsForms } from '@/components/admin/SettingsForms';
+import { brandingView } from '@/components/site-header/branding';
 import { tenantConfigMap } from '@/lib/admin-data';
+import { evidenceUrl } from '@/lib/data';
 import { requireAdminPage } from '@/lib/admin-guard';
 import { adminPageMetadata } from '@/lib/page-meta';
 import { EmbedSettings } from '@/components/admin/EmbedSettings';
@@ -59,6 +61,8 @@ export default async function SettingsPage({
             deploymentDisabled={[...deploymentDisabled()]}
             translationRequests={requests}
             translationRequestDays={TRANSLATION_REQUEST_WINDOW_DAYS}
+            branding={ctx.tenant.branding ?? null}
+            logoUrl={brandingView(ctx.tenant.branding, (p) => evidenceUrl(ctx.tenant.slug, p)).logoSrc}
           />
         </div>
         <div className="mt-6">

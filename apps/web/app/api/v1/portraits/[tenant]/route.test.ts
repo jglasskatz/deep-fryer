@@ -75,3 +75,16 @@ describe('the open-data API’s sample_data flag', () => {
     expect(privateResponse.headers.get('cache-control')).toBe('no-store');
   });
 });
+
+describe('the open-data API’s branding', () => {
+  it('sends a stored logo as its full address', async () => {
+    const { GET } = await import('./route');
+    portrait.tenant.branding = { logo_url: 'branding/logo-abc-1f.png', primary_color: '#2f7d32' };
+    try {
+      const body = await (await GET(new Request('http://x/api/v1/portraits/ithaca'), params('ithaca'))).json();
+      expect(body.tenant.branding).toEqual({ logo_url: 'https://example.org/branding/logo-abc-1f.png', primary_color: '#2f7d32' });
+    } finally {
+      portrait.tenant.branding = null;
+    }
+  });
+});
