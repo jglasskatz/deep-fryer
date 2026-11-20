@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import { researchRuns, researchSessions } from '@deep-fryer/db';
 import { getRole, roleAtLeast } from '@/lib/auth';
 import { systemDb } from '@/lib/db';
+import { isSignedIn, SIGN_IN_REQUIRED } from '@/lib/signed-in';
 
 /**
  * Session transcript (SPEC.md §8, §11): owner/audit access only. The default
@@ -13,6 +14,7 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  if (!(await isSignedIn())) return NextResponse.json(SIGN_IN_REQUIRED, { status: 401 });
   const { id } = await params;
   const db = systemDb();
 

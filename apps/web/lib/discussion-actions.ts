@@ -48,6 +48,8 @@ export const postComment = action(async (input: {
   parentId?: string;
   body: string;
 }) => {
+  // Someone signed out is refused before anything they sent is read.
+  const authorId = await requireUserId();
   const body = input.body.trim();
   if (!body) throw new UserError('Write something before posting.');
   if (body.length > MAX_COMMENT_LENGTH) {
@@ -59,7 +61,6 @@ export const postComment = action(async (input: {
   // Discussion is a feature a portrait turns on (SPEC-v7 §3): with it off the
   // thread is not rendered, and a forged post is refused here.
   await assertFeatureForTenant(tenant.id, 'discussion');
-  const authorId = await requireUserId();
   // The moderation policy is behavior config, which the user role cannot
   // read (migration 0005) — read it in the system context.
   const policy = await systemDb()
@@ -177,9 +178,10 @@ export const voteComment = action(async (input: {
   commentId: string;
   vote: 1 | -1 | 0;
 }) => {
-  if (![1, -1, 0].includes(input.vote)) throw new UserError('Invalid vote.');
   return userDb(async (db) => {
+    // Someone signed out is refused before the vote is looked at.
     const userId = await requireUserId();
+    if (![1, -1, 0].includes(input.vote)) throw new UserError('Invalid vote.');
     const tenant = await tenantBySlug(db, input.tenantSlug);
     if (!tenant) throw new UserError('Unknown portrait.');
     await assertFeatureForTenant(tenant.id, 'discussion', db);

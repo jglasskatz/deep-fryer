@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { boundedRecord, REQUEST_LIMITS as R } from './request-limits.js';
 
 // ---- String formats ----
 //
@@ -60,7 +61,7 @@ export const mappingFunctionSchema = z.enum(['higher_is_better', 'lower_is_bette
 export const indicatorScoringSchema = z.object({
   threshold_ref: z.string(),
   function: mappingFunctionSchema,
-  inputs: z.record(z.string(), z.number()),
+  inputs: boundedRecord(z.string(), z.number(), R.scoringInputs),
   worked_math: z.string(),
 });
 
@@ -105,7 +106,7 @@ export const indicatorSchema = z.object({
 export const dimensionGapSchema = z.object({
   indicator: z.string(),
   reason: z.string(),
-  scales_tried: z.array(geographicScaleSchema),
+  scales_tried: z.array(geographicScaleSchema).max(R.scales),
   searched_at: z.string(),
 });
 
@@ -114,10 +115,10 @@ export const dimensionDataSchema = z.object({
   icon: z.string(),
   description: z.string(),
   context: z.string(),
-  indicators: z.array(indicatorSchema),
-  gaps: z.array(dimensionGapSchema).optional(),
-  actions: z.array(z.string()),
-  action_sources: z.array(sourcedActionSchema).optional(),
+  indicators: z.array(indicatorSchema).max(R.indicatorsPerDimension),
+  gaps: z.array(dimensionGapSchema).max(R.gapsPerDimension).optional(),
+  actions: z.array(z.string()).max(R.actionsPerDimension),
+  action_sources: z.array(sourcedActionSchema).max(R.actionsPerDimension).optional(),
   policy_spotlight: z.string().optional(),
   justice_spotlight: z.string().optional(),
 });
@@ -176,7 +177,7 @@ export const sourceTierSchema = z.object({
   tier: z.number().int().min(1),
   name: z.string(),
   description: z.string(),
-  examples: z.array(z.string()).optional(),
+  examples: z.array(z.string()).max(R.tierExamples).optional(),
 });
 
 export const regionConfigSchema = z.object({
@@ -186,17 +187,17 @@ export const regionConfigSchema = z.object({
 });
 
 export const sourcePriorityConfigSchema = z.object({
-  tiers: z.array(sourceTierSchema).min(1),
+  tiers: z.array(sourceTierSchema).min(1).max(R.sourceTiers),
 });
 
 export const recencyConfigSchema = z.object({
   default_max_age_years: z.number().int().min(1),
-  per_dimension: z.record(z.string(), z.number().int().min(1)).optional(),
+  per_dimension: boundedRecord(z.string(), z.number().int().min(1), R.dimensions).optional(),
 });
 
 export const scalePolicyConfigSchema = z.object({
-  default_accepted: z.array(geographicScaleSchema).min(1),
-  per_dimension: z.record(z.string(), z.array(geographicScaleSchema).min(1)).optional(),
+  default_accepted: z.array(geographicScaleSchema).min(1).max(R.scales),
+  per_dimension: boundedRecord(z.string(), z.array(geographicScaleSchema).min(1).max(R.scales), R.dimensions).optional(),
 });
 
 export const thresholdOverrideSchema = z.object({
@@ -209,7 +210,7 @@ export const thresholdOverrideSchema = z.object({
   target_year: z.number().int().min(1900).max(2200).optional(),
 });
 
-export const thresholdOverridesConfigSchema = z.record(z.string(), thresholdOverrideSchema);
+export const thresholdOverridesConfigSchema = boundedRecord(z.string(), thresholdOverrideSchema, R.thresholdOverrides);
 
 export const reviewPolicyConfigSchema = z.object({
   require_approval: z.enum(['all', 'none']),
