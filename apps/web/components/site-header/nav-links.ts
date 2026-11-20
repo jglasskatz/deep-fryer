@@ -43,8 +43,9 @@ export function tenantNavLinks(
 
 /**
  * The staff links for a portrait (English: the admin pages exist only in
- * English). Content work first (review, then what residents send in:
- * comments), then the portrait's sections, then the team and the account.
+ * English). The data table first, which every member uses; then content
+ * work (review, then what residents send in: comments), then the
+ * portrait's sections, then the team and the account.
  * Discussion, Policy, Emergency, and Get involved follow their features;
  * a queue's badge is shown only with its link.
  */
@@ -63,6 +64,7 @@ export function adminNavLinks({
   const a = `/${tenantSlug}/admin`;
   const links: NavLink[] = [
     { href: a, label: 'Overview' },
+    { href: `${a}/data`, label: 'Data' },
     { href: `${a}/review`, label: 'Review' },
   ];
   if (features.discussion) {

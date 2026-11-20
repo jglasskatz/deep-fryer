@@ -42,6 +42,7 @@ describe('adminNavLinks', () => {
   it('shows only the core staff pages with every feature off', () => {
     expect(adminNavLinks({ tenantSlug: 'nyc', orgSlug: 'nyc', features: allOff, counts }).map((l) => l.label)).toEqual([
       'Overview',
+      'Data',
       'Review',
       'Research',
       'Portrait content',
@@ -64,6 +65,7 @@ describe('adminNavLinks', () => {
     const links = adminNavLinks({ tenantSlug: 'nyc', orgSlug: 'nyc', features: allOn, counts });
     expect(links.map((l) => l.label)).toEqual([
       'Overview',
+      'Data',
       'Review',
       'Discussion',
       'Research',
