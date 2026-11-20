@@ -10,7 +10,7 @@ import { audit } from './audit';
 import { configValueIn } from './admin-data';
 import { action, UserError } from './action-result';
 import { userDb } from './db';
-import { bulkApprovalPlan, liveDimensions, researchVersionData, runResearch, runSettled, spotCheckSample } from './draft-portrait';
+import { approvalFindings, bulkApprovalPlan, liveDimensions, researchVersionData, runResearch, runSettled, spotCheckSample, STAND_INS_ONLY_TEXT } from './draft-portrait';
 import { createPlannedRunIn } from './research';
 import { publishVersionFor } from './publish';
 
@@ -47,8 +47,13 @@ async function recordApplications(db: DbExecutor, tenant: Tenant, audits: Findin
   }
 }
 
-async function applyCard(db: DbExecutor, tenant: Tenant, runId: string, dimension: Dimension, rows: Finding[], audits: FindingAudit[]): Promise<AuditApplicationResult> {
-  const pending = audits.filter((a) => !a.appliedAt);
+async function applyCard(db: DbExecutor, tenant: Tenant, runId: string, dimension: Dimension, recorded: Finding[], audits: FindingAudit[]): Promise<AuditApplicationResult> {
+  // Stand-ins, and the recommendations about them, wait for their own
+  // decision: applying a card works on the rest of the dimension, and
+  // writes nothing for a dimension of only stand-ins.
+  const rows = approvalFindings(recorded);
+  if (rows.length === 0) throw new UserError(STAND_INS_ONLY_TEXT);
+  const pending = audits.filter((a) => !a.appliedAt && rows.some((f) => f.id === a.findingId));
   const decisions = new Map(rows.map((f) => [f.id, auditDecision(pending.filter((a) => a.findingId === f.id))]));
   const reruns = [...decisions.values()].filter((a) => a?.disposition === 're_research');
   const { userId } = await getAuth();
@@ -66,7 +71,7 @@ async function applyCard(db: DbExecutor, tenant: Tenant, runId: string, dimensio
     if (decision?.disposition === 'reject') {
       return { kind: 'gap', indicator_slug: finding.indicatorSlug,
         reason: `Excluded during review: ${decision.reason}`, searched_at: new Date().toISOString(),
-        scales_tried: finding.payload.kind === 'indicator' ? [finding.payload.geographic_scale] : finding.payload.scales_tried };
+        scales_tried: finding.payload.kind === 'indicator' || finding.payload.kind === 'proxy' ? [finding.payload.geographic_scale] : finding.payload.scales_tried };
     }
     if (decision?.disposition === 'edit') {
       edited = true;

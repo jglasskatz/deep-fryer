@@ -9,8 +9,10 @@ import {
   draftDimension,
   draftHref,
   draftNote,
+  approvalFindings,
   findingApprovable,
   findingFlagged,
+  isStandIn,
   researchVersionData,
   SPOT_CHECK_SIZE,
   spotCheckSample,
@@ -78,6 +80,18 @@ const gap = (slug: string): FindingPayload => ({
   scales_tried: ['city', 'county'],
   searched_at: '2026-09-01T00:00:00Z',
 });
+
+/** A stand-in offered for `forSlug`, otherwise a sourced indicator in every field. */
+function standIn(slug: string, forSlug: string, levelPct = 10): FindingPayload {
+  const { narrative_draft: _noNarrative, ...sourced } = indicator(slug, levelPct) as Extract<FindingPayload, { kind: 'indicator' }>;
+  return {
+    ...sourced,
+    kind: 'proxy',
+    proxy_for: forSlug,
+    rationale: 'The county series counts the same households.',
+    confidence: 'low',
+  };
+}
 
 let seq = 0;
 const finding = (payload: FindingPayload, verification: FindingVerification | null = PASS) => ({
@@ -242,6 +256,91 @@ describe('which findings need a look, and which may be approved in bulk', () => 
     expect(plan.disposed).toEqual({ approved: 1, reviewed_by_hand: 1, superseded: 1 });
     // Fewer passing findings than the sample size: every one is checked.
     expect(plan.sample.map((f) => f.id).sort()).toEqual(plan.eligible[0]!.findings.map((f) => f.id).sort());
+  });
+});
+
+describe('stand-ins wait for their own decision', () => {
+  it('never become part of a version, however well they checked out', () => {
+    const approved = researchVersionData(version('d').data, 'housing', [indicator('rent', 30), standIn('county-rent', 'evictions'), gap('evictions')]);
+    expect(approved.indicators.map((indicatorRow) => indicatorRow.name)).toEqual(['Indicator rent']);
+    expect(approved.gaps).toEqual([expect.objectContaining({ indicator: 'evictions' })]);
+    expect(researchVersionData(null, 'housing', [standIn('county-rent', 'evictions')])).toMatchObject({ indicators: [], gaps: undefined });
+  });
+
+  it('are never approvable, and approvals take everything else', () => {
+    const offered = finding(standIn('county-rent', 'evictions'));
+    expect(isStandIn(offered)).toBe(true);
+    expect(isStandIn(finding(indicator('a', 1)))).toBe(false);
+    expect(findingApprovable(offered)).toBe(false);
+    const rest = [finding(indicator('a', 1)), finding(gap('g'))];
+    expect(approvalFindings([rest[0]!, offered, rest[1]!])).toEqual(rest);
+  });
+
+  it('leave bulk approval to the rest of a dimension, and keep a dimension of only stand-ins out of it', () => {
+    const dims = [dim('a', { displayOrder: 1 }), dim('b', { displayOrder: 2 })];
+    const passing = [finding(indicator('a1', 1)), finding(indicator('a2', 5))];
+    const research: RunResearch = {
+      run: { id: 'run-1' } as ResearchRun,
+      sessionsByDim: new Map([['a', [{ id: 's1', status: 'complete' }]], ['b', [{ id: 's2', status: 'complete' }]]]),
+      findingsByDim: new Map([
+        // A stand-in whose checks failed does not hold the run's bulk approval open either.
+        ['a', [...passing, finding(standIn('a3', 'a-missing'), { ...PASS, url_ok: false })] as Finding[]],
+        ['b', [finding(standIn('b1', 'b-missing'))] as Finding[]],
+      ]),
+      runVersionByDim: new Map(),
+      reviewedByHand: new Set(),
+      supersededSlugs: new Set(),
+    };
+    const plan = bulkApprovalPlan(dims, research);
+    expect(plan.open).toEqual([]);
+    expect(plan.eligible.map((entry) => [entry.dimension.id, entry.findings.map((row) => row.id)])).toEqual([['a', passing.map((row) => row.id)]]);
+    expect(plan.findingCount).toBe(2);
+    expect(plan.sample.every((row) => !isStandIn(row))).toBe(true);
+  });
+
+  it('are only what passed the stand-in schema: output that merely says "proxy" is an ordinary flagged finding', () => {
+    // A research session may not return a stand-in, so its output fails the
+    // schema check and is stored as it came back, flagged.
+    const claimed = finding(standIn('a3', 'a-missing'), { ...PASS, schema_ok: false, content_supported: 'fail' });
+    expect(isStandIn(claimed)).toBe(false);
+    expect(findingFlagged(claimed)).toBe(true);
+    expect(findingApprovable(claimed)).toBe(false);
+    // Nor is a stand-in no check has judged yet set aside: it waits as unverified.
+    expect(isStandIn(finding(standIn('a4', 'a-missing'), null))).toBe(false);
+
+    const dims = [dim('a', { displayOrder: 1 })];
+    const passing = [finding(indicator('a1', 1)), finding(indicator('a2', 5))];
+    const research: RunResearch = {
+      run: { id: 'run-1' } as ResearchRun,
+      sessionsByDim: new Map([['a', [{ id: 's1', status: 'complete' }]]]),
+      findingsByDim: new Map([['a', [...passing, claimed] as Finding[]]]),
+      runVersionByDim: new Map(),
+      reviewedByHand: new Set(),
+      supersededSlugs: new Set(),
+    };
+    const plan = bulkApprovalPlan(dims, research);
+    expect(plan.open).toEqual([{ dimension: dims[0], reason: 'flagged' }]);
+    expect(plan.eligible).toEqual([]);
+
+    const housing = { id: 'a', slug: 'housing', ring: 'social' as const, displayOrder: 1, publishedVersionId: null };
+    const wedge = draftDimension({ dimension: housing, latest: null, published: null, runVersion: null, findings: [...passing, claimed], pending: false });
+    expect(wedge).toMatchObject({ source: 'research', findings: 3, flagged: 1 });
+  });
+
+  it('are left off the draft wedge, which shows what approving would publish', () => {
+    const housing = { id: 'd', slug: 'housing', ring: 'social' as const, displayOrder: 3, publishedVersionId: 'v-d-1' };
+    const published = version('d');
+    const mixed = [finding(indicator('rent', 30)), finding(standIn('county-rent', 'evictions', -90))];
+    const wedge = draftDimension({ dimension: housing, latest: published, published, runVersion: null, findings: mixed, pending: false });
+    expect(wedge).toMatchObject({ source: 'research', findings: 1, flagged: 0 });
+    expect(wedge.data!.indicators.map((indicatorRow) => indicatorRow.name)).toEqual(['Indicator rent']);
+    // Only stand-ins: the wedge stays as published.
+    const onlyStandIns = [finding(standIn('county-rent', 'evictions'))];
+    expect(draftDimension({ dimension: housing, latest: published, published, runVersion: null, findings: onlyStandIns, pending: false })).toMatchObject({
+      source: 'published',
+      findings: 0,
+      versionNum: 1,
+    });
   });
 });
 

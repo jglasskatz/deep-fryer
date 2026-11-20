@@ -174,9 +174,43 @@ export const gapFindingPayloadSchema = z.object({
   nearest_data: z.string().optional(),
 });
 
+/**
+ * A stand-in measure for an indicator with no acceptable data: a sourced
+ * indicator in every field, plus the slug of the indicator it replaces and
+ * why it is a fair substitute. Always low confidence; no narrative draft.
+ * It stands in for some other indicator, never for itself.
+ */
+export const proxyFindingPayloadSchema = indicatorFindingPayloadSchema
+  .omit({ narrative_draft: true })
+  .extend({
+    kind: z.literal('proxy'),
+    proxy_for: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),
+    rationale: z.string().trim().min(1),
+    confidence: z.literal('low'),
+  })
+  .refine((p) => p.proxy_for !== p.indicator_slug, {
+    message: 'A stand-in must name a different indicator than its own',
+    path: ['proxy_for'],
+  });
+
+/**
+ * What a research session returns, and what the public preview build reads
+ * from a campaign: an indicator or a gap (the root of finding.schema.json).
+ * Never a stand-in, so nothing that parses with this can publish one.
+ */
 export const findingPayloadSchema = z.discriminatedUnion('kind', [
   indicatorFindingPayloadSchema,
   gapFindingPayloadSchema,
+]);
+
+/**
+ * Every kind a stored finding may hold: an indicator, a gap, or a stand-in.
+ * Only the pass that proposes stand-ins parses with this.
+ */
+export const storedFindingPayloadSchema = z.discriminatedUnion('kind', [
+  indicatorFindingPayloadSchema,
+  gapFindingPayloadSchema,
+  proxyFindingPayloadSchema,
 ]);
 
 // ---- Tenant config (SPEC.md §6; portrait keys mirror portrait-config.schema.json) ----
@@ -260,6 +294,26 @@ export const progressConfigSchema = z.object({
   baseline_label: z.string().min(1).max(120),
 });
 
+export const researchModeSchema = z.enum(['right_first', 'right_first_then_fill']);
+
+/**
+ * The mode of a portrait with no stored `research_mode`: one made before the
+ * setting existed keeps researching as it always has, with no stand-ins,
+ * until its group turns them on. A new portrait is given its mode when it is
+ * made (defaultTenantConfig), so this applies only to older ones.
+ */
+export const RESEARCH_MODE_WHEN_UNSET = 'right_first' as const satisfies z.infer<typeof researchModeSchema>;
+
+/**
+ * A portrait's research mode from its stored setting (null or undefined when
+ * the row does not exist). A value that is not a known mode reads as unset,
+ * so a damaged row can never start a stand-in pass.
+ */
+export function researchModeOf(stored: unknown): z.infer<typeof researchModeSchema> {
+  const parsed = researchModeSchema.safeParse(stored);
+  return parsed.success ? parsed.data : RESEARCH_MODE_WHEN_UNSET;
+}
+
 /** Per-key validators for the tenant_config table — the settings write path. */
 export const tenantConfigSchemas = {
   region: regionConfigSchema,
@@ -272,4 +326,5 @@ export const tenantConfigSchemas = {
   notifications: notificationConfigSchema,
   features: featuresConfigSchema,
   progress: progressConfigSchema,
+  research_mode: researchModeSchema,
 } as const;

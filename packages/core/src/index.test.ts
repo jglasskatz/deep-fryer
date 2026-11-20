@@ -157,6 +157,30 @@ describe('config defaults ↔ schema key list', () => {
   });
 });
 
+describe('research mode setting', () => {
+  it('accepts the two modes and refuses anything else', async () => {
+    const { tenantConfigSchemas } = await import('./validators.js');
+    expect(tenantConfigSchemas.research_mode.safeParse('right_first').success).toBe(true);
+    expect(tenantConfigSchemas.research_mode.safeParse('right_first_then_fill').success).toBe(true);
+    for (const bad of ['fill', 'Right first', '', null, true, { mode: 'right_first' }]) {
+      expect(tenantConfigSchemas.research_mode.safeParse(bad).success, String(bad)).toBe(false);
+    }
+  });
+
+  it('gives a new portrait stand-ins for its gaps, and leaves a portrait without the setting as it was', async () => {
+    const { defaultTenantConfig } = await import('./config-defaults.js');
+    const { researchModeOf, RESEARCH_MODE_WHEN_UNSET } = await import('./validators.js');
+    expect(defaultTenantConfig('X', 'X').research_mode).toBe('right_first_then_fill');
+    expect(RESEARCH_MODE_WHEN_UNSET).toBe('right_first');
+    expect(researchModeOf(null)).toBe('right_first');
+    expect(researchModeOf(undefined)).toBe('right_first');
+    // A damaged row never starts a stand-in pass.
+    expect(researchModeOf('fill')).toBe('right_first');
+    expect(researchModeOf('right_first_then_fill')).toBe('right_first_then_fill');
+    expect(researchModeOf('right_first')).toBe('right_first');
+  });
+});
+
 describe('finding payload validators', () => {
   it('accepts a gap and rejects an indicator missing evidence', async () => {
     const { findingPayloadSchema } = await import('./validators.js');
@@ -187,5 +211,39 @@ describe('finding payload validators', () => {
         geographic_scale: 'city',
       }).success,
     ).toBe(false);
+  });
+
+  it('stores a stand-in, which research sessions may not return', async () => {
+    const { findingPayloadSchema, storedFindingPayloadSchema } = await import('./validators.js');
+    const standIn = {
+      kind: 'proxy',
+      indicator_slug: 'county-x',
+      proxy_for: 'x-y',
+      rationale: 'The county figure covers the same people.',
+      name: 'X (county)',
+      value: 1,
+      unit: 'u',
+      year: 2025,
+      target: 2,
+      level_pct: -50,
+      scoring: { threshold_ref: 'a.b', function: 'lower_is_better', inputs: {}, worked_math: 'x' },
+      source: 's',
+      source_url: 'https://example.gov',
+      source_tier: 1,
+      evidence: { snapshot_path: 'evidence/x.png', captured_at: '2026-09-01T00:00:00Z' },
+      confidence: 'low',
+      geographic_scale: 'county',
+    };
+    expect(storedFindingPayloadSchema.safeParse(standIn).success).toBe(true);
+    // The indicator-or-gap schema (research sessions, the public preview build) never takes one.
+    expect(findingPayloadSchema.safeParse(standIn).success).toBe(false);
+    expect(storedFindingPayloadSchema.safeParse({ ...standIn, confidence: 'medium' }).success).toBe(false);
+    expect(storedFindingPayloadSchema.safeParse({ ...standIn, rationale: '' }).success).toBe(false);
+    expect(storedFindingPayloadSchema.safeParse({ ...standIn, proxy_for: 'Not A Slug' }).success).toBe(false);
+    // It stands in for another indicator, never for itself.
+    expect(storedFindingPayloadSchema.safeParse({ ...standIn, proxy_for: standIn.indicator_slug }).success).toBe(false);
+    // A stand-in carries no narrative draft.
+    const parsed = storedFindingPayloadSchema.parse({ ...standIn, narrative_draft: { context: 'c', actions: [] } });
+    expect(parsed).not.toHaveProperty('narrative_draft');
   });
 });

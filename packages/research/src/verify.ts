@@ -4,6 +4,7 @@ import {
   findingPayloadSchema,
   isFlagged,
   maxDataAgeYears,
+  storedFindingPayloadSchema,
   type ContentSupported,
   type FindingPayload,
   type FindingVerification,
@@ -15,15 +16,22 @@ export { isFlagged };
 /**
  * Deterministic checks run before the verifier subagent (SPEC.md §8 Verify):
  * schema, URL resolution, recency policy, scale policy. Gap findings pass
- * url/recency/scale vacuously — a gap has nothing to fetch.
+ * url/recency/scale vacuously — a gap has nothing to fetch. A stand-in is
+ * checked exactly as a sourced indicator is.
+ *
+ * Only the pass that proposes stand-ins passes `allowProxy`: from any other
+ * session a stand-in fails the schema check, so research that should have
+ * reported a gap cannot slip a substitute measure into review instead.
  */
 export async function deterministicChecks(
   raw: unknown,
   config: PortraitConfig,
   dimensionSlug: string,
   fetchUrl: (url: string) => Promise<boolean> = defaultUrlCheck,
+  options: { allowProxy?: boolean } = {},
 ): Promise<{ payload: FindingPayload | null; checks: Omit<FindingVerification, 'content_supported' | 'verifier_note'> }> {
-  const parsed = findingPayloadSchema.safeParse(raw);
+  const schema = options.allowProxy ? storedFindingPayloadSchema : findingPayloadSchema;
+  const parsed = schema.safeParse(raw);
   if (!parsed.success) {
     return {
       payload: null,

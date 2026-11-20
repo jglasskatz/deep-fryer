@@ -131,6 +131,23 @@ describe.skipIf(!process.env.DATABASE_URL)('human application of machine audits 
     expect(await actions.applyMachineAudits(input(again))).toMatchObject({ ok: true, data: { runId: r.id } });
   });
 
+  it('applies nothing to a dimension whose findings are all stand-ins, and leaves their recommendations waiting', async () => {
+    const db = m.getDb(); const dimensionId = dims[6]!.dimensionId;
+    const { narrative_draft: _none, ...sourced } = payload;
+    const standIn = { ...sourced, kind: 'proxy' as const, indicator_slug: 'county-food-insecurity', proxy_for: payload.indicator_slug,
+      rationale: 'The county survey asks the same question.', confidence: 'low' as const, geographic_scale: 'county' as const };
+    const [run] = await db.insert(m.researchRuns).values({ tenantId: tenant.id, status: 'complete', appliedAt: new Date(),
+      plan: { sessions: [], config_hash: 'test', plugin_version: 'test' }, configSnapshot: defaultPortraitConfig('Audit City', 'Municipal limits') }).returning();
+    const [session] = await db.insert(m.researchSessions).values({ runId: run!.id, kind: 'dimension', dimensionId, status: 'complete' }).returning();
+    const [finding] = await db.insert(m.findings).values({ sessionId: session!.id, dimensionId, indicatorSlug: standIn.indicator_slug, payload: standIn, verification: pass }).returning();
+    const [recommendation] = await db.insert(m.findingAudits).values({ findingId: finding!.id, source: 'workflow', disposition: 'reject', reason: 'The county is a poor match.' }).returning();
+    const actions = await import('./machine-audit-actions');
+    const res = await actions.applyMachineAudits({ tenantSlug: tenant.slug, runId: run!.id, dimensionId, expectedAuditIds: [recommendation!.id] });
+    expect(res).toMatchObject({ ok: false, error: expect.stringContaining('only suggested stand-in measures') });
+    expect(await db.select().from(m.dimensionVersions).where(eq(m.dimensionVersions.researchRunId, run!.id))).toEqual([]);
+    expect((await db.select().from(m.findingAudits).where(eq(m.findingAudits.id, recommendation!.id)))[0]!.appliedAt).toBeNull();
+  });
+
   it('makes bulk opt-in, requires source spot checks and preserves pending audit flags', async () => {
     const f = await seed(4, 'approve'); const actions = await import('./machine-audit-actions');
     const request = { tenantSlug: tenant.slug, runId: f.run.id, expectedFindings: 1, spotChecked: [f.finding.id] };

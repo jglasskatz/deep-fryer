@@ -52,9 +52,10 @@ import { runPhase, type RunPhase } from './run-progress';
  * recorded, and the narrative fields — name, icon, description, context,
  * actions, spotlights — kept from `base`, the dimension's latest version.
  * Each indicator is keyed by its finding's slug, so a framework indicator
- * keeps its framework key whatever name the research gave it. A
- * finding whose payload is neither kind (output that did not match the
- * schema, kept for review as it was) contributes nothing.
+ * keeps its framework key whatever name the research gave it. A stand-in
+ * contributes nothing (a person accepts each one on its own, never through
+ * an approval), and neither does a finding whose payload is neither kind
+ * (output that did not match the schema, kept for review as it was).
  */
 export function researchVersionData(
   base: DimensionData | null | undefined,
@@ -113,6 +114,33 @@ export function researchVersionData(
 export type FindingLike = Pick<Finding, 'id' | 'payload' | 'verification'> & { auditBlocked?: boolean };
 
 /**
+ * A stand-in measure: payload kind `proxy` that passed the stand-in schema
+ * check, whatever its other checks said. It is judged on its own and never
+ * by approving a dimension, so approvals, bulk approval and the draft wedge
+ * all leave it waiting.
+ *
+ * Output that only claims to be a stand-in (its schema check failed — a
+ * research session's, say) is not one: it stays an ordinary flagged finding,
+ * dealt with on its card like any other malformed output, and holds bulk
+ * approval open until it is.
+ */
+export function isStandIn(f: Pick<FindingLike, 'payload' | 'verification'>): boolean {
+  return f.payload.kind === 'proxy' && f.verification?.schema_ok === true;
+}
+
+/** The findings an approval of a dimension takes: everything but stand-ins. */
+export function approvalFindings<F extends Pick<FindingLike, 'payload' | 'verification'>>(all: readonly F[]): F[] {
+  return all.filter((finding) => !isStandIn(finding));
+}
+
+/**
+ * Why an approval, or applying a machine audit, takes nothing from a
+ * dimension: every finding the run recorded for it is a stand-in.
+ */
+export const STAND_INS_ONLY_TEXT =
+  'This run only suggested stand-in measures for this dimension. Each stand-in is accepted or turned down on its own, not with the rest of the dimension, so nothing was changed.';
+
+/**
  * Whether a finding needs a reviewer's eye, as the review card counts its
  * "N flagged" badge (components/admin/ReviewCard.tsx): every gap card, and
  * every finding a check red-flagged (core isFlagged — never dropped).
@@ -124,7 +152,8 @@ export function findingFlagged(f: FindingLike): boolean {
 /**
  * Whether a finding may be approved without a reviewer opening its card: a
  * sourced indicator that was verified and passed every check. A finding the
- * verifier never judged (no verification yet) is not "passed".
+ * verifier never judged (no verification yet) is not "passed", and a
+ * stand-in never is, however well it checked out.
  */
 export function findingApprovable(f: FindingLike): boolean {
   return !f.auditBlocked && f.payload.kind === 'indicator' && f.verification !== null && !isFlagged(f.verification);
@@ -328,7 +357,9 @@ export function bulkApprovalPlan(dims: readonly Dimension[], research: RunResear
     sample: [],
   };
   for (const dimension of dims) {
-    const dimFindings = research.findingsByDim.get(dimension.id) ?? [];
+    // Stand-ins wait for their own decision: a dimension whose run findings
+    // are only stand-ins is not part of a bulk approval at all.
+    const dimFindings = approvalFindings(research.findingsByDim.get(dimension.id) ?? []);
     if (dimFindings.length === 0) continue;
     const sessions = research.sessionsByDim.get(dimension.id) ?? [];
     const verdict = bulkVerdict({
@@ -397,7 +428,9 @@ export interface DraftDimension {
  * Pure: one dimension's draft wedge. `findings` are the run's findings for it
  * from sessions that have finished — while a run is in progress a session
  * records its findings one by one, so a running session's would show a
- * wedge that changes as each lands.
+ * wedge that changes as each lands. Stand-ins among them are left out: the
+ * draft shows what approving would publish, and approving never publishes
+ * a stand-in.
  */
 export function draftDimension(input: {
   dimension: Pick<Dimension, 'id' | 'slug' | 'ring' | 'displayOrder' | 'publishedVersionId'>;
@@ -408,13 +441,14 @@ export function draftDimension(input: {
   pending: boolean;
 }): DraftDimension {
   const { dimension, latest, published, runVersion } = input;
+  const runFindings = approvalFindings(input.findings);
   const base = {
     dimensionId: dimension.id,
     slug: dimension.slug,
     ring: dimension.ring,
     displayOrder: dimension.displayOrder,
-    findings: input.findings.length,
-    flagged: input.findings.filter(findingFlagged).length,
+    findings: runFindings.length,
+    flagged: runFindings.filter(findingFlagged).length,
     pending: input.pending,
   };
   const fromVersion = (v: DimensionVersion, source: DraftSource): DraftDimension => ({
@@ -426,7 +460,7 @@ export function draftDimension(input: {
     versionNum: v.versionNum,
   });
 
-  if (input.findings.length > 0) {
+  if (runFindings.length > 0) {
     // Approved from this run and still a draft: that version is what
     // publishing will show. One that was published (and perhaps replaced
     // since) is not draft research any more.
@@ -435,7 +469,7 @@ export function draftDimension(input: {
       const data = researchVersionData(
         latest?.data,
         dimension.slug,
-        input.findings.map((f) => f.payload),
+        runFindings.map((f) => f.payload),
       );
       return { ...base, name: data.name || dimension.slug, data, vizLevel: deriveVizLevel(data), source: 'research', versionNum: null };
     }
