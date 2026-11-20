@@ -19,8 +19,9 @@
     "@keel_flow/schema": "^0.2.0"
   },
   "devDependencies": {
-    "@types/node": "^22.9.0",
+    "@types/node": "^26.6.6",
     "typescript": "^5.6.3",
-    "vitest": "^2.1.8"
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
   }
 }
