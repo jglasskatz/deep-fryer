@@ -67,6 +67,37 @@ async function pendingSeatReservations(db: DbExecutor, organizationId: string): 
   return Number(rows[0]?.n ?? 0);
 }
 
+/** An organization's seats as an invitation counts them. */
+export interface SeatsInEffect {
+  /** The seats in effect: the plan's while it is in good standing, else the free setup limit. */
+  limit: number;
+  /** People holding a role on the organization or one of its portraits. */
+  members: number;
+  /** Pending, unexpired invitations to people holding no role yet: each keeps a seat. */
+  pending: number;
+  /** How many more invitations can be sent; never below zero. */
+  left: number;
+}
+
+/**
+ * The count createInvitation refuses on, also read by pages that say how
+ * many more people can be invited (/start's last step), so the number a
+ * page shows is the one the invitation form applies.
+ */
+export async function seatsInEffect(
+  db: DbExecutor,
+  organizationId: string,
+  sub?: Awaited<ReturnType<typeof subscriptionFor>>,
+): Promise<SeatsInEffect> {
+  const subscription = sub === undefined ? await subscriptionFor(db, organizationId) : sub;
+  const limit = limitsInEffect(subscription).seats;
+  const [members, pending] = await Promise.all([
+    seatCount(db, organizationId),
+    pendingSeatReservations(db, organizationId),
+  ]);
+  return { limit, members, pending, left: Math.max(0, limit - members - pending) };
+}
+
 async function organizationIdFor(scope: InvitationScope): Promise<string> {
   if (scope.kind === 'organization') return scope.organizationId;
   const [t] = await systemDb()
@@ -95,12 +126,8 @@ export async function createInvitation(input: {
   const organizationId = await organizationIdFor(input.scope);
 
   const sub = await subscriptionFor(db, organizationId);
-  const limit = limitsInEffect(sub).seats;
-  const [seats, pending] = await Promise.all([
-    seatCount(db, organizationId),
-    pendingSeatReservations(db, organizationId),
-  ]);
-  if (seats + pending >= limit) {
+  const { limit, left } = await seatsInEffect(db, organizationId, sub);
+  if (left === 0) {
     throw new UserError(
       standing(sub).active
         ? `All ${limit} seats on this plan are in use or reserved by pending invitations. Remove someone, revoke an invitation, or upgrade the plan.`

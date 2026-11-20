@@ -38,8 +38,16 @@ const blankToUndefined = (v: unknown) => (typeof v === 'string' && v.trim() === 
  * the region brief.
  */
 const portraitSchema = z.object({
-  name: z.string().trim().min(2, 'Name the city.').max(120),
-  region: z.string().trim().min(2, 'Give the state/province and country, e.g. "NY, USA".').max(80),
+  name: z
+    .string()
+    .trim()
+    .min(2, 'Type the name of the place, at least 2 letters long.')
+    .max(120, 'Keep the name of the place to 120 characters or fewer.'),
+  region: z
+    .string()
+    .trim()
+    .min(2, 'Give the state/province and country, e.g. "NY, USA".')
+    .max(80, 'Keep the state and country to 80 characters or fewer.'),
   slug: z.preprocess(blankToUndefined, z.string().trim().toLowerCase().optional()),
   definition: z.preprocess(
     blankToUndefined,
@@ -47,13 +55,32 @@ const portraitSchema = z.object({
       .string()
       .trim()
       .min(10, 'Describe the boundary research should target (e.g. "City of Ithaca municipal boundary"), or leave it blank.')
-      .max(500)
+      .max(500, 'Keep the boundary to 500 characters or fewer.')
       .optional(),
   ),
-  population: z.preprocess(blankToUndefined, z.coerce.number().int().positive().max(100_000_000).optional()),
+  population: z.preprocess(
+    blankToUndefined,
+    z.coerce
+      .number('Give the population as a whole number, or leave it blank.')
+      .int('Give the population as a whole number, or leave it blank.')
+      .positive('Give the population as a whole number, or leave it blank.')
+      .max(100_000_000, 'Give the population as a whole number, or leave it blank.')
+      .optional(),
+  ),
 });
 
 type PortraitInput = z.infer<typeof portraitSchema>;
+
+/**
+ * The portrait form's fields, checked. Every message above is written for
+ * the person filling in the form, so it is shown as it stands, without the
+ * field's internal name in front (as a bare ZodError would show it).
+ */
+function parsePortrait(input: unknown): PortraitInput {
+  const result = portraitSchema.safeParse(input);
+  if (!result.success) throw new UserError(result.error.issues[0]?.message ?? 'Check the form and try again.');
+  return result.data;
+}
 
 /**
  * The boundary research targets when none is given. Precision is the point
@@ -65,15 +92,19 @@ function defaultBoundary(name: string, region: string): string {
   return `The legal boundary of ${name}, ${region}, as its own government defines it; figures for a larger surrounding area (county, metro area, or state) are not figures for ${name}.`;
 }
 
+/** The longest organization name the start form takes, the same as a place's name. */
+const ORGANIZATION_NAME_MAX = 120;
+
 /**
  * Who administers the portrait, when the form does not say: the name as
  * given when it already names a kind of government ("Tompkins County",
  * "Town of Ithaca"), otherwise "City of …".
  */
 function defaultOrganizationName(name: string): string {
-  return /\b(city|town|county|village|borough|township|parish|municipality|district|region)\b/i.test(name)
-    ? name
-    : `City of ${name}`;
+  if (/\b(city|town|county|village|borough|township|parish|municipality|district|region)\b/i.test(name)) return name;
+  const named = `City of ${name}`;
+  // A place name near the length limit stays as given, so the person is never asked to shorten a field they left blank.
+  return named.length <= ORGANIZATION_NAME_MAX ? named : name;
 }
 
 async function slugIsFree(db: DbExecutor, slug: string): Promise<boolean> {
@@ -131,8 +162,9 @@ async function writeRegion(db: DbExecutor, tenantId: string, p: PortraitInput, u
  * invite the people who set it up and review it, and change its settings
  * (core FREE_SETUP_LIMITS), but every research session is refused until it
  * has a paid plan or a contract. With nothing free to hand out, there is no
- * one-per-person limit to enforce either. Then /start offers step two for
- * the new portrait: how to pay, and "Build my doughnut".
+ * one-per-person limit to enforce either. Then /start shows the new
+ * portrait's remaining steps: what the group already has, how the research
+ * is paid for with "Build my doughnut", and looking it over together.
  *
  * Behind the deployment's self_serve feature, like the page: a sales-led
  * deployment creates organizations with scripts/create-tenant.ts instead.
@@ -142,17 +174,17 @@ export const startPortrait = action(
     assertDeploymentFeature('self_serve');
     const ctx = await getAuth();
     if (!ctx.userId) throw new UserError('Sign in to start a portrait.');
-    const p = portraitSchema.parse(input);
+    const p = parsePortrait(input);
     const organizationName = z
       .string()
       .trim()
       .min(2, 'Name the organization (e.g. "City of Ithaca"), or leave it blank.')
-      .max(120)
+      .max(ORGANIZATION_NAME_MAX, `Keep the organization name to ${ORGANIZATION_NAME_MAX} characters or fewer.`)
       .parse(input.organizationName?.trim() || defaultOrganizationName(p.name));
     const billingEmail = z
       .string()
       .trim()
-      .check(emailFormat('Enter a valid billing email.'))
+      .check(emailFormat('Enter a valid billing email under "More options", or leave it blank.'))
       .optional()
       .or(z.literal(''))
       .parse(input.billingEmail);
@@ -176,7 +208,7 @@ export const startPortrait = action(
       });
       await writeRegion(tx, tenant.id, p, ctx.userId);
     });
-    // Step two of /start: how the research is paid for, and "Build my doughnut".
+    // The rest of /start's steps, for the new portrait.
     redirect(`/start?portrait=${encodeURIComponent(slug)}`);
   },
 );
@@ -194,7 +226,7 @@ export const addPortrait = action(
     const org = await organizationBySlug(db, input.orgSlug);
     if (!org) throw new UserError('Unknown organization.');
     await requireOrgRole(org.id, ['owner']);
-    const p = portraitSchema.parse(input);
+    const p = parsePortrait(input);
 
     const sub = await subscriptionFor(db, org.id);
     const limit = limitsInEffect(sub).portraits;

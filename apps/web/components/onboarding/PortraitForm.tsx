@@ -12,23 +12,17 @@ const field = 'mt-1 w-full rounded border border-field-border bg-white px-2 py-1
  * first portrait — free to set up, with no plan yet) and the organization hub
  * (another portrait in an existing family).
  *
- * Two fields are required — the city's name and its state/country (SPEC-v7
- * §4: "that is all"). Everything else is under "More options" and may stay
+ * Two fields are required — the place's name (a city, town or county) and
+ * its state/country (SPEC-v7 §4: "that is all"); the browser checks their
+ * lengths before sending, with the same bounds as the server. Everything else is under "More options" and may stay
  * blank: the server derives the public address from the name (made unique
  * if taken), the boundary from name and region, and the organization name
  * from the city's (lib/org-actions.ts portraitSchema). A field left blank is
- * sent blank, so the server's default — not a guess made here — applies;
+ * sent blank, so the server's default — not a guess made here — applies
+ * (the billing email, left blank, is the address the person signed in with);
  * the address field shows the derived address until it is edited by hand.
  */
-export function PortraitForm({
-  mode,
-  orgSlug,
-  defaultBillingEmail,
-}: {
-  mode: 'start' | 'add';
-  orgSlug?: string;
-  defaultBillingEmail?: string | null;
-}) {
+export function PortraitForm({ mode, orgSlug }: { mode: 'start' | 'add'; orgSlug?: string }) {
   const { run, pending, error } = useAction();
   const [name, setName] = useState('');
   const [region, setRegion] = useState('');
@@ -37,7 +31,7 @@ export function PortraitForm({
   const [orgName, setOrgName] = useState('');
   const [definition, setDefinition] = useState('');
   const [population, setPopulation] = useState('');
-  const [billingEmail, setBillingEmail] = useState(defaultBillingEmail ?? '');
+  const [billingEmail, setBillingEmail] = useState('');
 
   return (
     <form
@@ -61,23 +55,35 @@ export function PortraitForm({
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
-          <span className="font-medium">City</span>
+          <span className="font-medium">Place</span>
+          <span id="place-help" className="block text-xs text-[color:var(--color-muted)]">
+            A city, town or county
+          </span>
           <input
             className={field}
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ithaca"
             autoComplete="address-level2"
+            aria-describedby="place-help"
+            minLength={2}
+            maxLength={120}
             required
           />
         </label>
         <label className="block text-sm">
           <span className="font-medium">State / country</span>
+          <span id="region-help" className="block text-xs text-[color:var(--color-muted)]">
+            Where it is, e.g. a state and country
+          </span>
           <input
             className={field}
             value={region}
             onChange={(e) => setRegion(e.target.value)}
             placeholder="NY, USA"
+            aria-describedby="region-help"
+            minLength={2}
+            maxLength={80}
             required
           />
         </label>
@@ -100,20 +106,23 @@ export function PortraitForm({
                   setSlugTouched(true);
                   setSlug(e.target.value.toLowerCase());
                 }}
-                pattern="[a-z0-9](?:[a-z0-9-]{0,46}[a-z0-9])?"
+                // The hyphen is escaped: browsers compile `pattern` with the v flag, where a bare one in a class is an error
+                // and the whole check is silently dropped.
+                pattern="[a-z0-9](?:[a-z0-9\-]{0,46}[a-z0-9])?"
                 aria-label="Portrait address"
                 aria-describedby="address-help"
               />
             </span>
             <span id="address-help" className="block text-xs text-[color:var(--color-muted)]">
-              Follows the city&apos;s name; if that address is taken, the state is added.
+              Follows the place&apos;s name; if that address is taken, the state is added.
             </span>
           </label>
           <label className="block">
             <span className="font-medium">Boundary</span>
             <span className="block text-xs text-[color:var(--color-muted)]">
-              The exact geography research targets. Left blank, it is the city&apos;s own legal boundary, and
-              county or metro figures do not count as the city&apos;s. You can refine it later in Settings.
+              The exact area research covers. Left blank, it is the place&apos;s own legal boundary, and figures
+              for a larger area, such as the county or metro area, do not count as its own. You can change it
+              later in Settings.
             </span>
             <textarea
               className={field}
@@ -141,7 +150,7 @@ export function PortraitForm({
                   className={field}
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
-                  placeholder="Left blank: named after the city"
+                  placeholder="Left blank: named after the place"
                 />
               </label>
               <label className="block">
@@ -151,7 +160,7 @@ export function PortraitForm({
                   type="email"
                   value={billingEmail}
                   onChange={(e) => setBillingEmail(e.target.value)}
-                  placeholder="accounts-payable@cityofexample.gov"
+                  placeholder="Left blank: the email you signed in with"
                 />
               </label>
             </div>
@@ -168,7 +177,7 @@ export function PortraitForm({
         className="rounded bg-[color:var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
         disabled={pending}
       >
-        {pending ? 'Creating…' : mode === 'start' ? 'Create the portrait' : 'Add portrait'}
+        {pending ? 'Setting up…' : mode === 'start' ? 'Save and continue' : 'Add portrait'}
       </button>
     </form>
   );

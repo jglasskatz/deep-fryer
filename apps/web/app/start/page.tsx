@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -8,12 +9,15 @@ import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { PortraitForm } from '@/components/onboarding/PortraitForm';
 import { BuildDoughnut } from '@/components/onboarding/BuildDoughnut';
 import { waysToPay } from '@/components/onboarding/payment-options';
+import { DOUGHNUT_ROUTES, routesWithoutResearch } from '@/components/onboarding/routes';
+import { LookItOver, StartStep, WhatYouHave, WithoutResearch } from '@/components/onboarding/StartSteps';
 import { ResearchCostEstimate } from '@/components/billing/ResearchCostEstimate';
 import { ContactText } from '@/components/billing/ContactText';
 import { AutoRefresh } from '@/components/admin/AutoRefresh';
 import { getAuth, getOrgRole, getRole, roleAtLeast } from '@/lib/auth';
 import { billingSummary, firstDoughnutRoute, previewResearchSpend, researchUnavailableNotice } from '@/lib/billing';
 import { systemDb, userDb } from '@/lib/db';
+import { seatsInEffect } from '@/lib/invitations';
 import {
   bringYourOwnKeyAvailable,
   deploymentResearchKeyConfigured,
@@ -23,7 +27,7 @@ import {
 } from '@/lib/env';
 import { requireDeploymentFeature } from '@/lib/features';
 
-export const metadata: Metadata = { title: 'Start a portrait' };
+export const metadata: Metadata = { title: 'Make a doughnut' };
 
 /**
  * How long after a checkout the build step keeps checking for the plan by
@@ -41,24 +45,31 @@ const PLAN_WAY_TITLE = {
 } as const;
 
 /**
- * Self-serve start (SPEC-v7 §4), in two steps on one address. Setting up is
- * free; building is not ("No free trials for making donuts, but free to
- * view"):
+ * Self-serve start (SPEC-v7 §4): "Make a doughnut for where you live", the
+ * first thing a group sees after signing in, as four plain steps on one
+ * page (START_STEPS):
  *
- * 1. `/start` — the city's name and state/country (PortraitForm), which
- *    creates the organization and the portrait, with no plan: the portrait
- *    is private until its first publish, and the organization may invite
- *    its people and change settings before paying anything.
- * 2. `/start?portrait=<slug>` — how the research is paid for: a plan
- *    (checkout on the billing page, which sends the person back here), a
- *    contract (always offered, by email), and — where this server can store
- *    keys — the organization's own Anthropic API key, which spares the
- *    plan's allowance but does not replace the plan (except for a first
- *    doughnut where the deployment says so: lib/billing.ts
- *    firstDoughnutRoute). Then the estimate and
- *    "Build my doughnut", enabled only when the research gate would let the
- *    click through (lib/billing.ts previewResearchSpend). Skipping it leads
- *    to the portrait's admin.
+ * 1. Name the place — the city's, town's or county's name and its state or
+ *    country (PortraitForm), which creates the organization and the
+ *    portrait with no plan; it stays private until its first publish.
+ * 2. What do you already have? — every way in from components/onboarding/
+ *    routes.ts, the one list each way adds itself to.
+ * 3. We make your doughnut — how the research is paid for (a plan, a
+ *    contract or, where this server can store keys, the organization's own
+ *    key: payment-options.ts waysToPay, worded by lib/billing.ts
+ *    firstDoughnutRoute), the estimate and "Build my doughnut", enabled
+ *    only when the research gate would let the click through
+ *    (previewResearchSpend). When research cannot run, it links every way
+ *    in that needs none, so a group without research still has a next step.
+ * 4. Look it over together — the portrait's admin page and draft, and how
+ *    many more people can be invited (lib/invitations.ts seatsInEffect, the
+ *    count the invitation form applies).
+ *
+ * `/start` shows step one to do and the rest as what comes next;
+ * `/start?portrait=<slug>` shows the same four with step one done, for an
+ * editor or owner of that portrait (anyone else with a role there is told
+ * who can; anyone without one gets the plain start page, which says nothing
+ * about whether the portrait exists).
  *
  * The whole page is the deployment's self_serve feature: off, it is a 404
  * (organizations are then created by staff).
@@ -76,72 +87,76 @@ export default async function StartPage({
   if (!auth.userId) redirect(`/login?next=${encodeURIComponent(here)}`);
 
   if (portrait) {
-    const step = await buildStep(portrait, checkout === 'success', Number(at));
-    // Unknown, or not a portrait this person may research: the plain start page.
-    if (!step) redirect('/start');
-    return (
-      <>
-        <SiteHeader variant="account" />
-        <main id="main" className="mx-auto max-w-2xl px-4 py-12 sm:px-6">{step}</main>
-      </>
-    );
+    const steps = await portraitSteps(portrait, checkout === 'success', Number(at));
+    // Unknown, or a portrait this person holds no role on: the plain start page.
+    if (!steps) redirect('/start');
+    return <StartShell>{steps}</StartShell>;
   }
 
-  const seats = FREE_SETUP_LIMITS.seats;
+  return (
+    <StartShell>
+      <h1 className="text-3xl font-bold">Make a doughnut for where you live</h1>
+      <p className="mt-3 text-[color:var(--color-muted)]">
+        A doughnut shows, topic by topic, whether everyone in a place has what they need, and whether the place
+        lives within what nature can give. Making one takes four steps. You can stop after any of them and come
+        back later, and nothing is public until your group publishes it.
+      </p>
+      <ol className="mt-8 space-y-4">
+        <StartStep index={0} state="current">
+          <p className="text-sm">
+            Type the name of your city, town or county and where it is. You can change the details later.
+          </p>
+          <div className="mt-4">
+            <PortraitForm mode="start" />
+          </div>
+        </StartStep>
+        <StartStep index={1} state="upcoming">
+          <WhatYouHave routes={DOUGHNUT_ROUTES} tenantSlug={null} />
+        </StartStep>
+        <StartStep index={2} state="upcoming">
+          <p className="text-sm">
+            We look up each number from public sources and record where it came from. Once the place is named,
+            this step says how the research is paid for.
+          </p>
+        </StartStep>
+        <StartStep index={3} state="upcoming">
+          <LookItOver tenantSlug={null} others={FREE_SETUP_LIMITS.seats - 1} />
+        </StartStep>
+      </ol>
+    </StartShell>
+  );
+}
+
+function StartShell({ children }: { children: ReactNode }) {
   return (
     <>
       <SiteHeader variant="account" />
       <main id="main" className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
-        <h1 className="text-3xl font-bold">Start a portrait</h1>
-        <p className="mt-3 text-[color:var(--color-muted)]">
-          Enter a city and its state or country — that is all it takes. Setting up is free: you get a
-          portrait with all 21 framework dimensions that stays private until your team publishes it,
-          and you can invite up to {seats - 1} colleagues and adjust its settings before choosing a plan.
-          Building the doughnut — the research behind every number — needs a plan; the next step shows
-          how to pay, and{' '}
-          <Link className="underline" href="/pricing">
-            pricing
-          </Link>{' '}
-          shows what each plan costs.
-        </p>
-        <ol className="mt-6 grid gap-2 text-sm sm:grid-cols-3">
-          <li className="rounded border border-black/10 p-3">
-            <strong>1. Set up, free.</strong> The city&apos;s name and state or country. Boundary, data
-            sources, and targets start from the framework&apos;s defaults.
-          </li>
-          <li className="rounded border border-black/10 p-3">
-            <strong>2. Build.</strong> Choose a plan or arrange a contract, and one click starts the
-            research: every number sourced, evidence captured, independently verified.
-          </li>
-          <li className="rounded border border-black/10 p-3">
-            <strong>3. Review &amp; publish.</strong> Staff approve each dimension; then anyone can
-            read the portrait, free.
-          </li>
-        </ol>
-        <div className="mt-8 rounded-lg border border-black/15 p-5">
-          <PortraitForm mode="start" defaultBillingEmail={auth.email} />
-        </div>
+        {children}
       </main>
     </>
   );
 }
 
 /**
- * Step two for portrait `slug`, or null when there is no such portrait or
- * the signed-in person may not start research on it (editor and up — the
- * same role applying a run needs). `paid` is set when a completed Stripe
- * Checkout sent the person back — by way of the billing page, which forwards
- * here (a canceled one stays there, to choose again) — and `paidAt` is when
- * the billing page did (epoch ms; NaN if absent).
+ * The four steps for portrait `slug`, step one done; null when there is no
+ * such portrait or the signed-in person holds no role on it. Starting
+ * research and adding data need editor and up (the role applying a run
+ * needs); a viewer or moderator is told so, and who can. `paid` is set when
+ * a completed Stripe Checkout sent the person back — by way of the billing
+ * page, which forwards here (a canceled one stays there, to choose again) —
+ * and `paidAt` is when the billing page did (epoch ms; NaN if absent).
  */
-async function buildStep(slug: string, paid: boolean, paidAt: number) {
+async function portraitSteps(slug: string, paid: boolean, paidAt: number) {
   const tenant = await tenantBySlug(systemDb(), slug);
   if (!tenant) return null;
-  if (!roleAtLeast(await getRole(tenant.id), 'editor')) return null;
+  const role = await getRole(tenant.id);
+  if (!role) return null;
+  if (!roleAtLeast(role, 'editor')) return <BelowEditor slug={tenant.slug} name={tenant.name} />;
   const org = await organizationForTenant(systemDb(), tenant.id);
   if (!org) return null;
 
-  const [summary, orgRole, inProgress] = await Promise.all([
+  const [summary, orgRole, inProgress, applied] = await Promise.all([
     billingSummary(org.id),
     getOrgRole(org.id),
     userDb((db) =>
@@ -156,7 +171,16 @@ async function buildStep(slug: string, paid: boolean, paidAt: number) {
         )
         .limit(1),
     ),
+    // Any applied run of this portrait: the draft doughnut page then has something to show.
+    userDb((db) =>
+      db
+        .select({ id: researchRuns.id })
+        .from(researchRuns)
+        .where(and(eq(researchRuns.tenantId, tenant.id), isNotNull(researchRuns.appliedAt)))
+        .limit(1),
+    ),
   ]);
+  const seats = await seatsInEffect(systemDb(), org.id, summary.subscription);
   const sessions = SESSIONS_PER_FULL_REFRESH;
   // "Build my doughnut" plans a full build, so the deployment's first-doughnut choice applies to it.
   const preview = previewResearchSpend(summary, sessions, undefined, undefined, true);
@@ -193,17 +217,13 @@ async function buildStep(slug: string, paid: boolean, paidAt: number) {
   // Under the first-doughnut route, once that build is applied and still running: nothing to pay for until it ends.
   const firstUnderWay = route.firstStarted && Boolean(running);
 
+  // Research cannot run for this group now, and none is under way or being paid for: say what can be done meanwhile.
+  const withoutResearch = !preview.allowed && !running && !awaitingCheckout && !firstUnderWay;
+
   return (
     <>
-      <p className="text-sm text-[color:var(--color-muted)]">
-        {tenant.name} · <span className="text-green-800">portrait created</span> · private until you publish
-      </p>
-      <h1 className="mt-1 text-3xl font-bold">Build the doughnut</h1>
-      <p className="mt-3 text-[color:var(--color-muted)]">
-        One click plans and starts the full research run: a region overview and all 21 dimensions.
-        Research takes a while; the run page shows progress, and nothing is public until your team
-        reviews and publishes it.
-      </p>
+      <h1 className="text-3xl font-bold break-words">Make a doughnut for {tenant.name}</h1>
+      <p className="mt-2 text-sm text-[color:var(--color-muted)]">Private until your group publishes it.</p>
 
       {paid ? (
         <>
@@ -234,161 +254,215 @@ async function buildStep(slug: string, paid: boolean, paidAt: number) {
         </>
       ) : null}
 
-      <section className="mt-8 rounded-lg border border-black/15 p-5" aria-labelledby="pay">
-        <h2 id="pay" className="text-lg font-semibold">
-          How the research is paid for
-        </h2>
-        {awaitingCheckout ? (
-          <p className="mt-2 text-sm">
-            <strong>Your card payment is being confirmed.</strong> There is nothing more to choose here: the
-            plan appears above as soon as Stripe confirms it. Questions about the payment:{' '}
-            <ContactText text={`${contactLine}.`} contact={contact} subject={contractSubject} />
+      <ol className="mt-8 space-y-4">
+        <StartStep index={0} state="done">
+          <p className="text-sm">
+            {tenant.name}
+            {tenant.region ? `, ${tenant.region},` : ''} is set up.{' '}
+            {role === 'owner' ? (
+              <Link className="underline" href={`/${tenant.slug}/admin/settings`}>
+                Change its boundary or other details in Settings
+              </Link>
+            ) : null}
           </p>
-        ) : ways.keyBuildsFirst ? (
-          // Before an unpaid invoice's words: the key on file pays for this build whatever the plan's state.
-          <p className="mt-2 text-sm">
-            <strong>Your Anthropic API key</strong> (<span className="font-mono">sk-ant-…{summary.apiKey?.keyHint}</span>){' '}
-            {route.keyPaysForFirst}{' '}
-            <Link className="underline" href={`${billingHref}#api-key`}>
-              Manage the key
-            </Link>
-          </p>
-        ) : firstUnderWay ? (
-          <p className="mt-2 text-sm">
-            <strong>{planName ? `Your ${planName} is not active.` : 'No plan yet.'}</strong> The research under way
-            will finish; more research after it needs a plan or a contract.
-          </p>
-        ) : awaitingInvoice ? (
-          <p className="mt-2 text-sm">
-            <strong>Your {planName ?? 'plan'} starts once its first invoice is paid.</strong> The invoice went
-            to your billing contact; it can be paid by ACH, check, or card, and{' '}
-            <Link className="underline" href={`${billingHref}#invoices`}>
-              the billing page
-            </Link>{' '}
-            lists it. {route.awaitingInvoiceBuild}
-          </p>
-        ) : !summary.standing.active ? (
-          <p className="mt-2 text-sm">
-            <strong>{planName ? `Your ${planName} is not active.` : 'No plan yet.'}</strong> {route.buildNeeds}
-          </p>
-        ) : onKey ? (
-          <p className="mt-2 text-sm">
-            <strong>Your Anthropic API key</strong> (<span className="font-mono">sk-ant-…{summary.apiKey?.keyHint}</span>)
-            pays for the model usage: the sessions run on your key and do not count against your{' '}
-            {planName ?? 'plan'}&apos;s allowance.{' '}
-            <Link className="underline" href={`${billingHref}#api-key`}>
-              Manage the key
-            </Link>
-          </p>
-        ) : (
-          <p className="mt-2 text-sm">
-            <strong>Your {planName ?? 'plan'}</strong>
-            {preview.allowed
-              ? ` — this uses ${sessions} of the ${preview.remaining} research sessions left this period.`
-              : '.'}
-          </p>
-        )}
+        </StartStep>
 
-        {/* Said before anyone pays for a plan that could not build here; not repeated when it is already the
-            reason under the button. */}
-        {planNotice && planNotice !== preview.message ? (
-          <p className="mt-3 rounded bg-amber-50 p-2 text-sm text-amber-900">
-            <ContactText text={planNotice} contact={contact} subject={contractSubject} />
-          </p>
-        ) : null}
+        <StartStep index={1} state="current">
+          <WhatYouHave routes={DOUGHNUT_ROUTES} tenantSlug={tenant.slug} />
+        </StartStep>
 
-        {awaitingCheckout || firstUnderWay ? null : !preview.allowed || (!summary.standing.active && !ways.keyBuildsFirst) ? (
-          <ul className="mt-4 space-y-3 text-sm">
-            {ways.plan ? (
-              <li>
-                <strong>{PLAN_WAY_TITLE[ways.plan.action]}</strong>{' '}
-                {ways.plan.viewerCan ? (
-                  ways.plan.action === 'pay' ? (
+        <StartStep index={2} state="upcoming">
+          <p className="text-sm text-[color:var(--color-muted)]">
+            One click plans and starts the full research: an overview of the place and all 21 topics, each number
+            with its source. Research takes a while; the run page shows how far it has got, and nothing is public
+            until your group reviews and publishes it.
+          </p>
+
+          <section className="mt-4 rounded-lg border border-black/15 p-4" aria-labelledby="pay">
+            <h3 id="pay" className="font-semibold">
+              How the research is paid for
+            </h3>
+            {awaitingCheckout ? (
+              <p className="mt-2 text-sm">
+                <strong>Your card payment is being confirmed.</strong> There is nothing more to choose here: the
+                plan appears above as soon as Stripe confirms it. Questions about the payment:{' '}
+                <ContactText text={`${contactLine}.`} contact={contact} subject={contractSubject} />
+              </p>
+            ) : ways.keyBuildsFirst ? (
+              // Before an unpaid invoice's words: the key on file pays for this build whatever the plan's state.
+              <p className="mt-2 text-sm">
+                <strong>Your Anthropic API key</strong> (<span className="font-mono">sk-ant-…{summary.apiKey?.keyHint}</span>){' '}
+                {route.keyPaysForFirst}{' '}
+                <Link className="underline" href={`${billingHref}#api-key`}>
+                  Manage the key
+                </Link>
+              </p>
+            ) : firstUnderWay ? (
+              <p className="mt-2 text-sm">
+                <strong>{planName ? `Your ${planName} is not active.` : 'No plan yet.'}</strong> The research under way
+                will finish; more research after it needs a plan or a contract.
+              </p>
+            ) : awaitingInvoice ? (
+              <p className="mt-2 text-sm">
+                <strong>Your {planName ?? 'plan'} starts once its first invoice is paid.</strong> The invoice went
+                to your billing contact; it can be paid by ACH, check, or card, and{' '}
+                <Link className="underline" href={`${billingHref}#invoices`}>
+                  the billing page
+                </Link>{' '}
+                lists it. {route.awaitingInvoiceBuild}
+              </p>
+            ) : !summary.standing.active ? (
+              <p className="mt-2 text-sm">
+                <strong>{planName ? `Your ${planName} is not active.` : 'No plan yet.'}</strong> {route.buildNeeds}
+              </p>
+            ) : onKey ? (
+              <p className="mt-2 text-sm">
+                <strong>Your Anthropic API key</strong> (<span className="font-mono">sk-ant-…{summary.apiKey?.keyHint}</span>)
+                pays for the model usage: the sessions run on your key and do not count against your{' '}
+                {planName ?? 'plan'}&apos;s allowance.{' '}
+                <Link className="underline" href={`${billingHref}#api-key`}>
+                  Manage the key
+                </Link>
+              </p>
+            ) : (
+              <p className="mt-2 text-sm">
+                <strong>Your {planName ?? 'plan'}</strong>
+                {preview.allowed
+                  ? ` — this uses ${sessions} of the ${preview.remaining} research sessions left this period.`
+                  : '.'}
+              </p>
+            )}
+
+            {/* Said before anyone pays for a plan that could not build here; not repeated when it is already the
+                reason under the button. */}
+            {planNotice && planNotice !== preview.message ? (
+              <p className="mt-3 rounded bg-amber-50 p-2 text-sm text-amber-900">
+                <ContactText text={planNotice} contact={contact} subject={contractSubject} />
+              </p>
+            ) : null}
+
+            {awaitingCheckout || firstUnderWay ? null : !preview.allowed || (!summary.standing.active && !ways.keyBuildsFirst) ? (
+              <ul className="mt-4 space-y-3 text-sm">
+                {ways.plan ? (
+                  <li>
+                    <strong>{PLAN_WAY_TITLE[ways.plan.action]}</strong>{' '}
+                    {ways.plan.viewerCan ? (
+                      ways.plan.action === 'pay' ? (
+                        <>
+                          <Link className="underline" href={`${billingHref}#invoices`}>
+                            Open the billing page
+                          </Link>{' '}
+                          to see the invoice and pay it by card, or pay it by ACH or check as it says. Research
+                          starts once it is paid.
+                        </>
+                      ) : (
+                        <>
+                          <Link className="underline" href={`${billingHref}#choose`}>
+                            {ways.plan.action === 'choose' ? 'Choose a plan on the billing page' : 'Open the billing page'}
+                          </Link>{' '}
+                          — pay by card and come straight back here to build, or ask for an annual invoice with a
+                          purchase order; research then starts once the invoice is paid.
+                        </>
+                      )
+                    ) : (
+                      'An organization owner or billing contact can do this on the billing page.'
+                    )}
+                  </li>
+                ) : null}
+                <li>
+                  <strong>Arrange a contract.</strong> For a contract, a purchase order, or terms of your own,{' '}
+                  {contact ? (
                     <>
-                      <Link className="underline" href={`${billingHref}#invoices`}>
-                        Open the billing page
-                      </Link>{' '}
-                      to see the invoice and pay it by card, or pay it by ACH or check as it says. Research
-                      starts once it is paid.
+                      email{' '}
+                      <a className="underline" href={`mailto:${contact}?subject=${encodeURIComponent(contractSubject)}`}>
+                        {contact}
+                      </a>
+                      .
                     </>
                   ) : (
-                    <>
-                      <Link className="underline" href={`${billingHref}#choose`}>
-                        {ways.plan.action === 'choose' ? 'Choose a plan on the billing page' : 'Open the billing page'}
-                      </Link>{' '}
-                      — pay by card and come straight back here to build, or ask for an annual invoice with a
-                      purchase order; research then starts once the invoice is paid.
-                    </>
-                  )
-                ) : (
-                  'An organization owner or billing contact can do this on the billing page.'
-                )}
-              </li>
-            ) : null}
-            <li>
-              <strong>Arrange a contract.</strong> For a contract, a purchase order, or terms of your own,{' '}
-              {contact ? (
-                <>
-                  email{' '}
-                  <a className="underline" href={`mailto:${contact}?subject=${encodeURIComponent(contractSubject)}`}>
-                    {contact}
-                  </a>
-                  .
-                </>
-              ) : (
-                'contact whoever runs this server.'
-              )}
-            </li>
-            {ways.ownKey ? (
-              <li>
-                <strong>Use your own Anthropic API key.</strong> {route.ownKeyDoes}{' '}
+                    'contact whoever runs this server.'
+                  )}
+                </li>
+                {ways.ownKey ? (
+                  <li>
+                    <strong>Use your own Anthropic API key.</strong> {route.ownKeyDoes}{' '}
+                    {ways.ownKey.viewerCan ? (
+                      <Link className="underline" href={`${billingHref}#api-key`}>
+                        Add your key on the billing page
+                      </Link>
+                    ) : (
+                      'An organization owner can add one on the billing page.'
+                    )}
+                  </li>
+                ) : null}
+              </ul>
+            ) : ways.ownKey ? (
+              <p className="mt-2 text-sm">
+                Or run it on your own Anthropic API key, leaving the plan&apos;s allowance untouched:{' '}
                 {ways.ownKey.viewerCan ? (
                   <Link className="underline" href={`${billingHref}#api-key`}>
-                    Add your key on the billing page
+                    add your key on the billing page
                   </Link>
                 ) : (
-                  'An organization owner can add one on the billing page.'
+                  'an organization owner can add one on the billing page'
                 )}
-              </li>
+                , then come back here.
+              </p>
             ) : null}
-          </ul>
-        ) : ways.ownKey ? (
-          <p className="mt-2 text-sm">
-            Or run it on your own Anthropic API key, leaving the plan&apos;s allowance untouched:{' '}
-            {ways.ownKey.viewerCan ? (
-              <Link className="underline" href={`${billingHref}#api-key`}>
-                add your key on the billing page
-              </Link>
+
+            <div className="mt-4 rounded bg-black/[0.03] p-3">
+              {/* Describes the way this step recommends: under the first-doughnut route that is the key, before one is added too. */}
+              <ResearchCostEstimate sessions={sessions} onKey={onKey || route.onOwnKey} />
+            </div>
+          </section>
+
+          <div className="mt-4">
+            {running ? (
+              <p className="text-sm">
+                Research for {tenant.name} is under way.{' '}
+                <Link className="font-medium underline" href={`/${tenant.slug}/admin/research/${running.id}`}>
+                  Follow the run
+                </Link>
+              </p>
             ) : (
-              'an organization owner can add one on the billing page'
+              <BuildDoughnut tenantSlug={tenant.slug} blockedReason={preview.allowed ? null : preview.message} />
             )}
-            , then come back here.
-          </p>
-        ) : null}
+          </div>
+          {withoutResearch ? <WithoutResearch routes={routesWithoutResearch()} tenantSlug={tenant.slug} /> : null}
+        </StartStep>
 
-        <div className="mt-4 rounded bg-black/[0.03] p-3">
-          {/* Describes the way this step recommends: under the first-doughnut route that is the key, before one is added too. */}
-          <ResearchCostEstimate sessions={sessions} onKey={onKey || route.onOwnKey} />
-        </div>
-      </section>
-
-      <div className="mt-8">
-        {running ? (
-          <p className="text-sm">
-            Research for {tenant.name} is under way.{' '}
-            <Link className="font-medium underline" href={`/${tenant.slug}/admin/research/${running.id}`}>
-              Follow the run
-            </Link>
-          </p>
-        ) : (
-          <BuildDoughnut tenantSlug={tenant.slug} blockedReason={preview.allowed ? null : preview.message} />
-        )}
-        <p className="mt-6 text-sm">
-          <Link className="underline" href={`/${tenant.slug}/admin?welcome=1`}>
-            Not now — set up the portrait first
-          </Link>
-        </p>
-      </div>
+        <StartStep index={3} state="upcoming">
+          <LookItOver
+            tenantSlug={tenant.slug}
+            tenantName={tenant.name}
+            seats={seats}
+            canInvite={role === 'owner'}
+            hasDraft={applied.length > 0}
+          />
+        </StartStep>
+      </ol>
     </>
+  );
+}
+
+/**
+ * /start?portrait=<slug> for someone who may look at the portrait but not
+ * change it (a viewer or moderator): what they can do instead of a page of
+ * steps they could not take.
+ */
+function BelowEditor({ slug, name }: { slug: string; name: string }) {
+  return (
+    <div className="break-words">
+      <h1 className="text-3xl font-bold">Make a doughnut for {name}</h1>
+      <p className="mt-4">
+        You can look at {name}, but only its editors and owners can add to its doughnut or start research. Ask one
+        of its owners to make you an editor.
+      </p>
+      <p className="mt-4 text-sm">
+        <Link className="underline" href={`/${encodeURIComponent(slug)}/admin`}>
+          Open the admin page for {name}
+        </Link>
+      </p>
+    </div>
   );
 }
