@@ -37,6 +37,9 @@ export const ht: Messages = {
     help: 'Pou jwenn èd gratis nan lang ou, kontakte: {contact}',
   },
   doughnut: {
+    shortcutsTheme: 'Peze D pou chanje ant mòd klè ak mòd fonse.',
+    shortcutsPortraits: 'Peze yon nimewo pou louvri yon lòt pòtre: {list}.',
+    shortcutsPortrait: '{key} pou {name}',
     chartLabel: 'Grafik Doughnut ki montre dimansyon fondasyon sosyal la ak plafon ekolojik la',
     summary:
       '{name}: {outside} sou {total} dimansyon deyò espas ki an sekirite e ki jis la. Apre sa, gen yon lis lyen pou chak dimansyon.',
@@ -133,6 +136,13 @@ export const ht: Messages = {
       'Pou kounye a, se sèlman mezi pwen depa a ki egziste; pwochen mizajou a ap montre evolisyon an.',
   },
   portrait: {
+    chips: {
+      label: 'Yon ti koudèy',
+      thriving: { one: '{n} an bon eta', other: '{n} an bon eta' },
+      attention: { one: '{n} bezwen atansyon', other: '{n} bezwen atansyon' },
+      critical: { one: '{n} kritik', other: '{n} kritik' },
+      unknown: { one: '{n} san done', other: '{n} san done' },
+    },
     metaDescription: 'Pòtre Doughnut {name}: fondasyon sosyal ak plafon ekolojik, ak sous ki dèyè chak chif.',
     population: 'popilasyon: {n}',
     clickHint: 'Chwazi yon segman pou wè endikatè yo, prèv yo, aksyon yo ak diskisyon an.',
@@ -159,6 +169,9 @@ export const ht: Messages = {
     legendNoData: 'Gri: poko gen done',
   },
   dimension: {
+    confidence: 'konfyans: {value}',
+    confidenceLevels: { high: 'wo', medium: 'mwayen', low: 'ba' },
+    snapshotClose: 'Fèmen',
     metaDescription: '{dimension} nan {name}: done yo, sous yo, ak sa ou ka fè.',
     updated: 'mizajou: {date}',
     target: 'sib: {value}',

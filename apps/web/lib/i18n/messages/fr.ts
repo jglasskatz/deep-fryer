@@ -37,6 +37,9 @@ export const fr: Messages = {
     help: 'Pour obtenir de l’aide gratuite dans votre langue, contactez : {contact}',
   },
   doughnut: {
+    shortcutsTheme: 'Appuyez sur D pour passer du mode clair au mode sombre.',
+    shortcutsPortraits: 'Appuyez sur un chiffre pour ouvrir un autre portrait : {list}.',
+    shortcutsPortrait: '{key} pour {name}',
     chartLabel: 'Graphique en donut des dimensions du plancher social et du plafond écologique',
     summary:
       '{name} : {outside} sur {total} dimensions hors de l’espace sûr et juste. Vous trouverez ci-dessous une liste de liens vers chaque dimension.',
@@ -133,6 +136,13 @@ export const fr: Messages = {
       'Seule la mesure de référence existe pour l’instant ; la prochaine mise à jour indiquera la tendance.',
   },
   portrait: {
+    chips: {
+      label: 'En un coup d’œil',
+      thriving: { one: '{n} en bon état', many: '{n} en bon état', other: '{n} en bon état' },
+      attention: { one: '{n} à surveiller', many: '{n} à surveiller', other: '{n} à surveiller' },
+      critical: { one: '{n} critique', many: '{n} critiques', other: '{n} critiques' },
+      unknown: { one: '{n} sans données', many: '{n} sans données', other: '{n} sans données' },
+    },
     metaDescription: '{name} : le portrait Doughnut — plancher social et plafond écologique, avec la source de chaque chiffre.',
     population: 'population : {n}',
     clickHint: 'Sélectionnez un segment pour afficher les indicateurs, les preuves, les actions et la discussion.',
@@ -161,6 +171,9 @@ export const fr: Messages = {
     legendNoData: 'Gris : pas encore de données',
   },
   dimension: {
+    confidence: 'confiance : {value}',
+    confidenceLevels: { high: 'élevée', medium: 'moyenne', low: 'faible' },
+    snapshotClose: 'Fermer',
     metaDescription: '{dimension} — {name} : les données, leurs sources et ce que vous pouvez faire.',
     updated: 'mis à jour : {date}',
     target: 'cible : {value}',

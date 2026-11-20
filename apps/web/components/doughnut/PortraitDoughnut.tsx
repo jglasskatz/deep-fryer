@@ -2,10 +2,19 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
-import { Doughnut, statusLabel, type DoughnutDimension } from './Doughnut';
+import {
+  Doughnut,
+  MAX_PORTRAIT_KEYS,
+  statusLabel,
+  type DoughnutDimension,
+  type DoughnutShortcut,
+  type DoughnutShortcuts,
+} from './Doughnut';
 import { formatIndicatorValue } from '@deep-fryer/core';
 import { DimensionList, type DimensionRing } from '@/components/portrait/DimensionList';
 import { PortraitCoreView, type PortraitPanelConfig } from '@/components/portrait/PortraitCoreView';
+import { SummaryChips, type SummaryChipLabels } from '@/components/portrait/SummaryChips';
+import { flipTheme } from '@/components/theme/theme-dom';
 import { fmt } from '@/lib/i18n/format';
 import type { DoughnutLabels } from '@/lib/i18n/doughnut';
 import type { PublishedDimension } from '@/lib/portrait';
@@ -18,6 +27,98 @@ export interface ExploreLabels {
   intro?: string;
   /** A line under the chart (how it works, or the demo's notice). */
   hint?: string;
+}
+
+/** The summary chips above the chart, in the reader's language. */
+export interface PortraitChips {
+  labels: SummaryChipLabels;
+  locale: string;
+}
+
+/**
+ * The doughnut's shortcut keys on the portrait's front page: number keys
+ * open the portraits of its family, in the family bar's order, and "d"
+ * switches light and dark.
+ */
+export interface PortraitShortcuts {
+  /** The family's portraits in the family bar's order (empty when the portrait stands alone). */
+  portraits: { slug: string; name: string; href: string }[];
+  /** This portrait's slug: its own number key does nothing. */
+  current: string;
+  /** The reader's language, for joining the list of portraits. */
+  locale: string;
+  labels: {
+    /** doughnut.shortcutsTheme, shortcutsPortraits and shortcutsPortrait. */
+    theme: string;
+    portraits: string;
+    portrait: string;
+    /** theme.toggle ("Theme: {mode}") and the two modes' names, announced after "d". */
+    toggle: string;
+    light: string;
+    dark: string;
+  };
+}
+
+/**
+ * Where the current portrait sits in its family list, or -1 when it is not
+ * there (none should be): then only the theme key is offered, so the keys
+ * that act and the keys described always agree.
+ */
+export function currentPortraitIndex(shortcuts: PortraitShortcuts): number {
+  return shortcuts.portraits.findIndex((p) => p.slug === shortcuts.current);
+}
+
+/**
+ * Join the portraits for the description in the reader's language ("A, B
+ * and C"). A language the browser has no list data for (Haitian Creole)
+ * would otherwise get the English "and", so it gets commas alone.
+ */
+function joinList(items: string[], locale: string): string {
+  let supported = false;
+  try {
+    supported = Intl.ListFormat.supportedLocalesOf([locale]).length > 0;
+  } catch {
+    // An ill-formed language tag: commas alone.
+  }
+  return supported ? new Intl.ListFormat(locale, { type: 'conjunction' }).format(items) : items.join(', ');
+}
+
+/**
+ * The keys in words, for the chart's description: the theme key, then each
+ * other portrait with its number ("2 for Santa Cruz County"). Only the first
+ * nine portraits have a key; the current one is left out, as its key does
+ * nothing.
+ */
+export function shortcutsDescription(shortcuts: PortraitShortcuts): string {
+  const { labels } = shortcuts;
+  if (currentPortraitIndex(shortcuts) < 0) return labels.theme;
+  const others = shortcuts.portraits
+    .slice(0, MAX_PORTRAIT_KEYS)
+    .map((p, i) => ({ ...p, key: i + 1 }))
+    .filter((p) => p.slug !== shortcuts.current)
+    .map((p) => fmt(labels.portrait, { key: p.key, name: p.name }));
+  if (others.length === 0) return labels.theme;
+  const list = joinList(others, shortcuts.locale);
+  return `${labels.theme} ${fmt(labels.portraits, { list })}`;
+}
+
+/**
+ * Carry out a shortcut: "d" flips the theme and says which is now on
+ * ("Theme: Dark"); a number opens that portrait, unless it is this one.
+ * Returns what to announce.
+ */
+export function runShortcut(
+  shortcut: DoughnutShortcut,
+  shortcuts: PortraitShortcuts,
+  act: { flipTheme: () => 'light' | 'dark'; open: (href: string) => void },
+): string | undefined {
+  if (shortcut.kind === 'theme') {
+    const now = act.flipTheme();
+    return fmt(shortcuts.labels.toggle, { mode: shortcuts.labels[now] });
+  }
+  const target = shortcuts.portraits[shortcut.index];
+  if (target && target.slug !== shortcuts.current) act.open(target.href);
+  return undefined;
 }
 
 /**
@@ -60,6 +161,8 @@ export function PortraitDoughnut({
   labels,
   explore,
   panel,
+  chips,
+  shortcuts,
 }: {
   tenantSlug: string;
   /** Used in the accessible summary ("Manhattan: 9 of 21 dimensions outside…"). */
@@ -77,9 +180,30 @@ export function PortraitDoughnut({
    * it; the family comparison's small multiples and embeds do not.
    */
   panel?: PortraitPanelConfig;
+  /** Summary chips above the chart (the portrait's own page; never in an embed). */
+  chips?: PortraitChips;
+  /** Shortcut keys on the focused chart (the portrait's own page; never in an embed). */
+  shortcuts?: PortraitShortcuts;
 }) {
   const router = useRouter();
   const embedded = Boolean(linkBase?.startsWith('http'));
+
+  const onShortcut = useCallback(
+    (shortcut: DoughnutShortcut): string | void =>
+      shortcuts ? runShortcut(shortcut, shortcuts, { flipTheme, open: (href) => router.push(href) }) : undefined,
+    [router, shortcuts],
+  );
+  const currentIndex = shortcuts ? currentPortraitIndex(shortcuts) : -1;
+  const keys: DoughnutShortcuts | undefined =
+    shortcuts && !embedded
+      ? {
+          // A portrait outside its own family list (none should be) gets the theme key only.
+          portraitCount: currentIndex >= 0 ? shortcuts.portraits.length : 0,
+          currentIndex: currentIndex >= 0 ? currentIndex : undefined,
+          description: shortcutsDescription(shortcuts),
+          onShortcut,
+        }
+      : undefined;
 
   const { social, ecological } = useMemo(() => {
     const social: DoughnutDimension[] = [];
@@ -134,6 +258,9 @@ export function PortraitDoughnut({
     gaps: unknown,
   });
 
+  const chipLine =
+    chips && !embedded ? <SummaryChips dims={all} labels={chips.labels} locale={chips.locale} className="mb-6" /> : null;
+
   if (panel && !embedded) {
     return (
       <PortraitCoreView
@@ -150,12 +277,15 @@ export function PortraitDoughnut({
         panel={panel}
         size={size}
         fullHref={hrefFor}
+        above={chipLine}
+        shortcuts={keys}
       />
     );
   }
 
   return (
     <div className="w-full" style={{ maxWidth: size }}>
+      {chipLine}
       <Doughnut
         social={social}
         ecological={ecological}
@@ -163,6 +293,7 @@ export function PortraitDoughnut({
         onSelect={handleSelect}
         ariaLabel={summary}
         labels={labels}
+        shortcuts={keys}
       />
       {explore && !embedded ? (
         <>

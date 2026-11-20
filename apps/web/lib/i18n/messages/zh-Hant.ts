@@ -36,6 +36,9 @@ export const zhHant: Messages = {
     help: '如需以您的語言獲得免費協助，請聯絡：{contact}',
   },
   doughnut: {
+    shortcutsTheme: '按 D 鍵可在淺色和深色模式之間切換。',
+    shortcutsPortraits: '按數字鍵可開啟其他畫像：{list}。',
+    shortcutsPortrait: '{key}：{name}',
     chartLabel: '顯示社會基礎和生態天花板各維度的甜甜圈圖',
     summary: '{name}：{total}個維度中有{outside}個超出安全且公正的空間。下方列出前往各維度的連結。',
     summaryWithGaps:
@@ -117,6 +120,13 @@ export const zhHant: Messages = {
     baseline_only: '目前只有基線測量數據；下次更新時將顯示趨勢。',
   },
   portrait: {
+    chips: {
+      label: '概覽',
+      thriving: { other: '良好：{n}項' },
+      attention: { other: '需要關注：{n}項' },
+      critical: { other: '嚴重：{n}項' },
+      unknown: { other: '無數據：{n}項' },
+    },
     metaDescription: '{name}的甜甜圈畫像：社會基礎與生態天花板，每個數字都附有資料來源。',
     population: '人口：{n}',
     clickHint: '選擇一個扇形區域，即可查看指標、證據、行動和討論。',
@@ -140,6 +150,9 @@ export const zhHant: Messages = {
     legendNoData: '灰色：暫無數據',
   },
   dimension: {
+    confidence: '可信度：{value}',
+    confidenceLevels: { high: '高', medium: '中', low: '低' },
+    snapshotClose: '關閉',
     metaDescription: '{name}的{dimension}：數據、資料來源，以及您可以做的事。',
     updated: '更新於{date}',
     target: '目標：{value}',

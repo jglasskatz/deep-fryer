@@ -37,6 +37,9 @@ export const bn: Messages = {
     help: 'আপনার ভাষায় বিনামূল্যে সহায়তার জন্য যোগাযোগ করুন: {contact}',
   },
   doughnut: {
+    shortcutsTheme: 'হালকা ও গাঢ় রঙের মধ্যে বদলাতে D চাপুন।',
+    shortcutsPortraits: 'অন্য একটি চিত্র খুলতে একটি সংখ্যা চাপুন: {list}।',
+    shortcutsPortrait: '{name}-এর জন্য {key}',
     chartLabel: 'সামাজিক ভিত্তি ও পরিবেশগত ঊর্ধ্বসীমার ক্ষেত্রগুলোর ডোনাট চার্ট',
     summary:
       '{name}: {total}টি ক্ষেত্রের মধ্যে {outside}টি নিরাপদ ও ন্যায্য পরিসরের বাইরে। এরপর প্রতিটি ক্ষেত্রের লিংকের একটি তালিকা রয়েছে।',
@@ -130,6 +133,13 @@ export const bn: Messages = {
     baseline_only: 'এখন পর্যন্ত শুধু ভিত্তিরেখার পরিমাপ আছে; পরবর্তী হালনাগাদে প্রবণতা দেখা যাবে।',
   },
   portrait: {
+    chips: {
+      label: 'এক নজরে',
+      thriving: { one: 'ভালো অবস্থায়: {n}', other: 'ভালো অবস্থায়: {n}' },
+      attention: { one: 'মনোযোগ প্রয়োজন: {n}', other: 'মনোযোগ প্রয়োজন: {n}' },
+      critical: { one: 'সংকটপূর্ণ: {n}', other: 'সংকটপূর্ণ: {n}' },
+      unknown: { one: 'তথ্য নেই: {n}', other: 'তথ্য নেই: {n}' },
+    },
     metaDescription: '{name}-এর ডোনাট চিত্র: সামাজিক ভিত্তি ও পরিবেশগত ঊর্ধ্বসীমা, প্রতিটি সংখ্যার তথ্যসূত্রসহ।',
     population: 'জনসংখ্যা: {n}',
     clickHint: 'সূচক, প্রমাণ, করণীয় ও আলোচনা দেখতে একটি অংশ বেছে নিন।',
@@ -157,6 +167,9 @@ export const bn: Messages = {
     legendNoData: 'ধূসর: এখনো কোনো তথ্য নেই',
   },
   dimension: {
+    confidence: 'আস্থা: {value}',
+    confidenceLevels: { high: 'উচ্চ', medium: 'মাঝারি', low: 'নিম্ন' },
+    snapshotClose: 'বন্ধ করুন',
     metaDescription: '{name}-এ {dimension}: তথ্য, তথ্যসূত্র এবং আপনি কী করতে পারেন।',
     updated: 'হালনাগাদ {date}',
     target: 'লক্ষ্যমাত্রা: {value}',

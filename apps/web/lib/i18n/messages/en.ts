@@ -56,6 +56,16 @@ export const en = {
     help: 'For free help in your language, contact: {contact}',
   },
   doughnut: {
+    /**
+     * The chart's shortcut keys, read to screen readers as its description
+     * once it has keyboard focus (the keys act only then). "D" is the key's
+     * label, not a word to translate.
+     */
+    shortcutsTheme: 'Press D to switch between light and dark.',
+    /** {list} is the other portraits, each written with shortcutsPortrait. */
+    shortcutsPortraits: 'Press a number to open another portrait: {list}.',
+    /** One portrait and its number key ("2 for Santa Cruz County"). */
+    shortcutsPortrait: '{key} for {name}',
     chartLabel: 'Doughnut chart of social foundation and ecological ceiling dimensions',
     summary:
       '{name}: {outside} of {total} dimensions outside the safe and just space. A list of links to each dimension follows.',
@@ -146,6 +156,20 @@ export const en = {
     baseline_only: 'Only the baseline measurement exists so far; the next refresh will show the trend.',
   },
   portrait: {
+    /**
+     * The chips above the doughnut: how many dimensions fall in each
+     * reading. "Thriving" is inside the safe space (green), "needs
+     * attention" just past a boundary (amber), "critical" well past it
+     * (red). {n} counts dimensions.
+     */
+    chips: {
+      /** The chips' accessible name. */
+      label: 'At a glance',
+      thriving: plural({ one: '{n} thriving', other: '{n} thriving' }),
+      attention: plural({ one: '{n} needs attention', other: '{n} need attention' }),
+      critical: plural({ one: '{n} critical', other: '{n} critical' }),
+      unknown: plural({ one: '{n} without data', other: '{n} without data' }),
+    },
     /** The portrait page's search and share description. */
     metaDescription: 'The doughnut portrait of {name}: the social foundation and the ecological ceiling, with the source behind every number.',
     population: 'pop. {n}',
@@ -174,6 +198,11 @@ export const en = {
     demoHint: 'Demo data — set DATABASE_URL and publish versions for real content.',
   },
   dimension: {
+    /** How sure the research is of a figure, after its year, target and scale. */
+    confidence: 'confidence: {value}',
+    confidenceLevels: { high: 'high', medium: 'medium', low: 'low' },
+    /** Closes the enlarged source snapshot. */
+    snapshotClose: 'Close',
     /** A dimension page's search and share description; {dimension} is its name. */
     metaDescription: '{dimension} in {name}: the data, its sources, and what you can do.',
     updated: 'updated {date}',

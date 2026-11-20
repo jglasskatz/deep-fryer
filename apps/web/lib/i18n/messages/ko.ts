@@ -36,6 +36,9 @@ export const ko: Messages = {
     help: '귀하의 언어로 무료 도움을 받으시려면 다음으로 문의하십시오: {contact}',
   },
   doughnut: {
+    shortcutsTheme: 'D 키를 누르면 밝은 화면과 어두운 화면이 전환됩니다.',
+    shortcutsPortraits: '숫자 키를 누르면 다른 프로필이 열립니다: {list}.',
+    shortcutsPortrait: '{key}번 {name}',
     chartLabel: '사회적 기초와 생태적 한계의 각 영역을 보여 주는 도넛 차트',
     summary:
       '{name}: 전체 {total}개 영역 중 {outside}개가 안전하고 정의로운 공간을 벗어나 있습니다. 아래에 각 영역으로 연결되는 링크 목록이 있습니다.',
@@ -118,6 +121,13 @@ export const ko: Messages = {
     baseline_only: '아직 기준선 측정값만 있습니다. 다음 업데이트 때 추세가 표시됩니다.',
   },
   portrait: {
+    chips: {
+      label: '한눈에 보기',
+      thriving: { other: '양호 {n}개' },
+      attention: { other: '주의 필요 {n}개' },
+      critical: { other: '심각 {n}개' },
+      unknown: { other: '데이터 없음 {n}개' },
+    },
     metaDescription: '{name}의 도넛 프로필: 사회적 기초와 생태적 한계, 모든 수치의 출처를 함께 제공합니다.',
     population: '인구 {n}명',
     clickHint: '도넛 조각을 선택하면 지표, 증거 자료, 실천 방안, 토론을 볼 수 있습니다.',
@@ -141,6 +151,9 @@ export const ko: Messages = {
     legendNoData: '회색: 아직 데이터 없음',
   },
   dimension: {
+    confidence: '신뢰도: {value}',
+    confidenceLevels: { high: '높음', medium: '보통', low: '낮음' },
+    snapshotClose: '닫기',
     metaDescription: '{name}의 {dimension}: 데이터, 출처, 주민이 할 수 있는 일.',
     updated: '{date} 업데이트',
     target: '목표: {value}',
