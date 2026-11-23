@@ -38,3 +38,69 @@ export function regionSummary(portrait) {
   const first = region.split(/(?<=[.!?])\s+/)[0];
   return first && first.length <= 120 ? first : `${portrait.group} portrait`;
 }
+/**
+ * Computed county population-weighted extreme-heat day means (e.g.
+ * 14.757709506983256) come from tract division; round only for display while
+ * preserving exact stored values in portraits.json and Definition details.
+ */
+export function isNoisyHeatMean(indicator) {
+  return (
+    indicator?.indicator_slug === 'extreme-heat-days' &&
+    typeof indicator.value === 'number' &&
+    Number.isFinite(indicator.value) &&
+    indicator.unit === 'population-weighted mean days/year'
+  );
+}
+export function displayIndicatorValue(indicator, formatValue) {
+  if (isNoisyHeatMean(indicator)) {
+    return `${Number(indicator.value.toFixed(1))} days/year (population-weighted mean)`;
+  }
+  return formatValue(indicator?.value, indicator?.unit);
+}
+export const POLICY_SLIDER_COLOURS = Object.freeze({
+  focus: '#0066cc',
+  improves: '#2e7d32',
+  mixed: '#b7791f',
+  withinTarget: '#8cd755',
+  unscored: '#777777',
+});
+export function clampSliderProgress(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(100, Math.round(n)));
+}
+export function interpolatePolicyLevels(policy, progress) {
+  const clamped = clampSliderProgress(progress);
+  const t = clamped / 100;
+  const impactBySlug = new Map(policy.impacts.map((item) => [item.slug, item]));
+  return policy.baseline.map((dim) => {
+    const type = dim.ring === 'social' ? 'inner' : 'outer';
+    const impact = impactBySlug.get(dim.slug);
+    if (!impact) {
+      const colour =
+        dim.level === 0
+          ? POLICY_SLIDER_COLOURS.withinTarget
+          : dim.level === null && dim.unscored
+            ? POLICY_SLIDER_COLOURS.unscored
+            : null;
+      return { type, name: dim.name, level: dim.level ?? 'NaN', colour };
+    }
+    const highlight =
+      clamped === 0
+        ? POLICY_SLIDER_COLOURS.focus
+        : impact.direction === 'improves'
+          ? POLICY_SLIDER_COLOURS.improves
+          : POLICY_SLIDER_COLOURS.mixed;
+    if (dim.level === null || impact.afterLevel === null) {
+      return { type, name: dim.name, level: dim.level ?? 'NaN', colour: highlight };
+    }
+    const startLevel = dim.ring === 'social' ? Math.min(100, dim.level) : dim.level;
+    const interpolated = Math.round(startLevel + (impact.afterLevel - startLevel) * t);
+    return {
+      type,
+      name: dim.name,
+      level: clamped === 0 ? dim.level : interpolated,
+      colour: highlight,
+    };
+  });
+}

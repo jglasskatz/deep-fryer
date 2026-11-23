@@ -38,6 +38,15 @@ try {
   assert.equal(Object.hasOwn(release, 'cost_scenarios'), false, 'Public download excludes internal research accounting');
   assert.equal(await page.getByRole('heading', { name: 'Research costs', exact: true }).count(), 0);
   assert.equal(await page.locator('a[href*="api/docs/pricing"]').count(), 0);
+  assert.equal(await page.locator('a[href*="research/argentina"]').count(), 0, 'Landing page must not promote the Argentina study');
+  assert.ok(await page.locator('#policy-doughnut').evaluate(canvas => canvas.width > 0 && canvas.height > 0), 'Landing policy slider canvas renders');
+  await page.locator('[data-policy-preset="100"]').click();
+  assert.equal(await page.locator('#policy-range').inputValue(), '100');
+  assert.match(await page.locator('#policy-state').innerText(), /With policy/);
+  await page.locator('[data-policy-id="nyc-clean-heat"]').click();
+  assert.equal(await page.locator('#policy-title').innerText(), 'Clean Heat oil phaseout');
+  await page.locator('[data-policy-preset="0"]').click();
+  assert.equal(await page.locator('#policy-range').inputValue(), '0');
   await mkdir('/private/tmp/deep-fryer-pages', { recursive: true }).catch(() => {});
   const screenshots = process.env.CI ? path.resolve('test-results/pages') : '/private/tmp/deep-fryer-pages';
   await mkdir(screenshots, { recursive: true });
