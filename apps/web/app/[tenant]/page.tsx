@@ -1,8 +1,12 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { buildSuggestedQuestions } from '@deep-fryer/core';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { PortraitDoughnut } from '@/components/doughnut/PortraitDoughnut';
+import { AskPortraitDrawer } from '@/components/portrait/AskPortraitDrawer';
 import { SampleDataNotice } from '@/components/sample-data/SampleDataNotice';
+import { adminTenant } from '@/lib/admin-data';
+import { getAuth, getRole } from '@/lib/auth';
 import { evidenceUrl, getPortrait, hasDatabase } from '@/lib/data';
 import { familyForTenant } from '@/lib/family';
 import { portraitFeatures } from '@/lib/features';
@@ -65,6 +69,25 @@ export default async function TenantPage({
   if (!portrait) notFound();
 
   const slug = portrait.tenant.slug;
+  let canIncludeDrafts = false;
+  if (features.ask_portrait) {
+    if (hasDatabase()) {
+      const auth = await getAuth();
+      if (auth.userId || auth.devMode) {
+        const tenantRow = await adminTenant(slug);
+        if (tenantRow) {
+          canIncludeDrafts = (await getRole(tenantRow.id)) !== null;
+        }
+      }
+    } else {
+      const auth = await getAuth();
+      canIncludeDrafts = auth.devMode;
+    }
+  }
+  const suggestedQuestions = features.ask_portrait
+    ? buildSuggestedQuestions(portrait.dimensions.map((d) => ({ slug: d.slug, name: d.data.name })))
+    : [];
+
   const views = portraitPanelViews(portrait.dimensions, {
     m,
     locale,
@@ -82,13 +105,25 @@ export default async function TenantPage({
       />
       <main id="main" className="mx-auto max-w-6xl px-4 sm:px-6 py-12">
         <header>
-          <h1 className="text-3xl font-bold">{portrait.tenant.name}</h1>
-          <p className="mt-1 text-sm text-[color:var(--color-muted)]">
-            <span lang="en">{portrait.tenant.region}</span>
-            {portrait.tenant.population
-              ? ` · ${fmt(m.portrait.population, { n: portrait.tenant.population.toLocaleString('en-US') })}`
-              : null}
-          </p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h1 className="text-3xl font-bold">{portrait.tenant.name}</h1>
+              <p className="mt-1 text-sm text-[color:var(--color-muted)]">
+                <span lang="en">{portrait.tenant.region}</span>
+                {portrait.tenant.population
+                  ? ` · ${fmt(m.portrait.population, { n: portrait.tenant.population.toLocaleString('en-US') })}`
+                  : null}
+              </p>
+            </div>
+            {features.ask_portrait ? (
+              <AskPortraitDrawer
+                tenantSlug={slug}
+                tenantName={portrait.tenant.name}
+                suggestedQuestions={suggestedQuestions}
+                canIncludeDrafts={canIncludeDrafts}
+              />
+            ) : null}
+          </div>
           {portrait.tenant.description ? (
             <p lang="en" className="mt-4 max-w-2xl">
               {portrait.tenant.description}

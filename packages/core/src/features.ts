@@ -17,6 +17,7 @@ export const PORTRAIT_FEATURES = [
   'family_compare',
   'request_research',
   'custom_pages',
+  'ask_portrait',
 ] as const;
 export type PortraitFeature = (typeof PORTRAIT_FEATURES)[number];
 
@@ -77,6 +78,12 @@ export const FEATURE_REGISTRY: Record<Feature, FeatureInfo> = {
   custom_pages: {
     label: 'Custom pages',
     description: 'Staff draft, review and publish additional civic information pages for this portrait.',
+    defaultOn: false,
+  },
+  ask_portrait: {
+    label: 'Ask this portrait',
+    description:
+      'An evidence-grounded Q&A assistant on the portrait page that answers only from archived portrait sources with clickable citations.',
     defaultOn: false,
   },
   deep_fry: {

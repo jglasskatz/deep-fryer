@@ -285,6 +285,7 @@ export const featuresConfigSchema = z
     family_compare: z.boolean(),
     request_research: z.boolean(),
     custom_pages: z.boolean(),
+    ask_portrait: z.boolean(),
   })
   .partial()
   .strict();

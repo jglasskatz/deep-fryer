@@ -33,6 +33,8 @@ import type {
   RunTokenUsage,
   PortraitConfig,
   TenantBranding,
+  KnowledgeVisibility,
+  KnowledgeSourceKind,
 } from '@deep-fryer/core';
 
 export const ringEnum = pgEnum('ring', ['social', 'ecological']);
@@ -82,6 +84,12 @@ export const collectionMethodEnum = pgEnum('collection_method', ['card', 'invoic
 const bytea = customType<{ data: Buffer; driverData: Buffer }>({
   dataType() {
     return 'bytea';
+  },
+});
+
+const tsvector = customType<{ data: string; driverData: string }>({
+  dataType() {
+    return 'tsvector';
   },
 });
 
@@ -1046,6 +1054,61 @@ export const signInRequests = pgTable(
     createdIdx: index('sign_in_requests_created_idx').on(t.createdAt),
   }),
 );
+
+// ---- Evidence-grounded RAG index (Ask this portrait) ----
+
+/**
+ * Citation-bearing text chunks derived from a portrait's published content
+ * (`visibility = 'public'`) and member-only drafts/analyses (`visibility =
+ * 'member'`). Works on standard Postgres 16 via native `tsvector` + GIN index
+ * (migration 0025); RLS guarantees anonymous callers and non-members read only
+ * `'public'` rows of live, published portraits.
+ */
+export const knowledgeChunks = pgTable(
+  'knowledge_chunks',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    visibility: text('visibility').$type<KnowledgeVisibility>().notNull(),
+    sourceKind: text('source_kind').$type<KnowledgeSourceKind>().notNull(),
+    sourceRef: text('source_ref').notNull(),
+    dimensionSlug: text('dimension_slug'),
+    title: text('title').notNull(),
+    citationLabel: text('citation_label').notNull(),
+    citationUrl: text('citation_url'),
+    content: text('content').notNull(),
+    searchVector: tsvector('search_vector').generatedAlwaysAs(
+      sql`setweight(to_tsvector('english', coalesce("title", '')), 'A') || setweight(to_tsvector('english', coalesce("dimension_slug", '') || ' ' || coalesce("citation_label", '')), 'B') || setweight(to_tsvector('english', coalesce("content", '')), 'C')`,
+    ),
+    contentHash: text('content_hash').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    tenantVisSourceUniq: unique('knowledge_chunks_tenant_vis_source_uniq').on(
+      t.tenantId,
+      t.visibility,
+      t.sourceKind,
+      t.sourceRef,
+    ),
+    tenantVisibilityIdx: index('knowledge_chunks_tenant_visibility_idx').on(t.tenantId, t.visibility),
+    tenantDimIdx: index('knowledge_chunks_tenant_dim_idx').on(t.tenantId, t.dimensionSlug),
+    searchVectorIdx: index('knowledge_chunks_search_vector_idx').using('gin', t.searchVector),
+    visibilityCheck: check('knowledge_chunks_visibility_check', sql`${t.visibility} IN ('public', 'member')`),
+    sourceKindCheck: check(
+      'knowledge_chunks_source_kind_check',
+      sql`${t.sourceKind} IN ('indicator', 'evidence_text', 'custom_page', 'policy_analysis', 'outreach')`,
+    ),
+    policyMemberOnlyCheck: check(
+      'knowledge_chunks_policy_member_only',
+      sql`${t.sourceKind} <> 'policy_analysis' OR ${t.visibility} = 'member'`,
+    ),
+  }),
+);
+
+export type KnowledgeChunk = typeof knowledgeChunks.$inferSelect;
+export type NewKnowledgeChunk = typeof knowledgeChunks.$inferInsert;
 
 export type TranslationRequest = typeof translationRequests.$inferSelect;
 export type OrganizationApiKey = typeof organizationApiKeys.$inferSelect;
