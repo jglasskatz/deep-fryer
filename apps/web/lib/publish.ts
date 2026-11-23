@@ -1,7 +1,7 @@
 import 'server-only';
 import { revalidatePath } from 'next/cache';
 import { and, eq, sql } from 'drizzle-orm';
-import { dimensions, dimensionVersions, type DbExecutor, type Tenant } from '@deep-fryer/db';
+import { dimensions, dimensionVersions, reindexDimensionKnowledge, type DbExecutor, type Tenant } from '@deep-fryer/db';
 import { audit } from './audit';
 import { UserError } from './action-result';
 import { configValueIn } from './admin-data';
@@ -66,6 +66,12 @@ export async function publishVersionFor(
       .update(dimensions)
       .set({ publishedVersionId: version.id })
       .where(eq(dimensions.id, dimension.id));
+
+    await reindexDimensionKnowledge(tx, {
+      tenantId: tenant.id,
+      tenantSlug: tenant.slug,
+      dimensionId: dimension.id,
+    });
   });
 
   await audit(

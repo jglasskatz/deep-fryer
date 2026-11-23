@@ -24,6 +24,7 @@ export const defaultRetention: RetentionConfig = {
 export const defaultFeatures: FeaturesConfig = {
   emergency: false,
   custom_pages: false,
+  ask_portrait: false,
   policy_analysis: false,
   involvement: false,
   discussion: false,

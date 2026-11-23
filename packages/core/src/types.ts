@@ -134,6 +134,7 @@ export interface RetentionConfig {
  */
 export interface FeaturesConfig {
   custom_pages?: boolean;
+  ask_portrait?: boolean;
   emergency?: boolean;
   policy_analysis?: boolean;
   involvement?: boolean;

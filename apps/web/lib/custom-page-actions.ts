@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { and, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { SLUG_RE } from '@deep-fryer/core';
-import { customPages, customPageVersions, tenantConfig } from '@deep-fryer/db';
+import { customPages, customPageVersions, reindexCustomPageKnowledge, tenantConfig } from '@deep-fryer/db';
 import { action, UserError } from './action-result';
 import { getAuth } from './auth';
 import { requireTenantRoleWithFeature } from './features';
@@ -71,6 +71,7 @@ export const publishCustomPage = action(async (input: { tenantSlug: string; page
     await db.update(customPages).set({ publishedVersionId: version.id }).where(eq(customPages.id, page.id));
     if (page.publishedVersionId && page.publishedVersionId !== version.id) await db.update(customPageVersions)
       .set({ status: 'archived' }).where(eq(customPageVersions.id, page.publishedVersionId));
+    await reindexCustomPageKnowledge(db, { tenantId: tenant.id, tenantSlug: tenant.slug, pageId: page.id });
     await audit(tenant.id, 'custom_page', page.id, 'publish', { published_version_id: page.publishedVersionId }, { published_version_id: version.id }, db);
     return page.slug;
   });
@@ -86,6 +87,7 @@ export const unpublishCustomPage = action(async (input: { tenantSlug: string; pa
     if (!page) throw new UserError('Unknown page.');
     await db.update(customPages).set({ publishedVersionId: null }).where(eq(customPages.id, page.id));
     if (page.publishedVersionId) await db.update(customPageVersions).set({ status: 'archived' }).where(eq(customPageVersions.id, page.publishedVersionId));
+    await reindexCustomPageKnowledge(db, { tenantId: tenant.id, tenantSlug: tenant.slug, pageId: page.id });
     await audit(tenant.id, 'custom_page', page.id, 'unpublish', { published_version_id: page.publishedVersionId }, null, db);
     return page.slug;
   });

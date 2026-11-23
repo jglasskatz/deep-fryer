@@ -28,6 +28,7 @@ const FEATURE_FOLDERS: { folder: string; feature: PortraitFeature; organization?
   { folder: 'app/[tenant]/admin/discussion', feature: 'discussion' },
   { folder: 'app/[tenant]/pages', feature: 'custom_pages' },
   { folder: 'app/[tenant]/admin/pages', feature: 'custom_pages' },
+  { folder: 'app/api/portraits/[tenant]/ask', feature: 'ask_portrait' },
   { folder: 'app/o/[org]/compare', feature: 'family_compare', organization: true },
   { folder: 'app/o/[org]/insights', feature: 'family_compare', organization: true },
 ];
