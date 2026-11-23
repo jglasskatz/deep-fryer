@@ -241,7 +241,7 @@ export const tenants = pgTable('tenants', {
    * Validated Phase-0 region brief cached from the latest completed
    * region_context session, keyed by config_hash and cached_at so targeted
    * re-runs can skip redundant Phase-0 sessions while the config is unchanged
-   * and the cache entry is <30 days old (migration 0033).
+   * and the cache entry is <30 days old (migration 0027).
    */
   regionBriefCache: jsonb('region_brief_cache').$type<RegionBriefCache>(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -394,7 +394,7 @@ export const researchSessions = pgTable(
     /**
      * Zero-based index into `research_runs.plan.sessions` for deterministic
      * chunk matching and crash-resumable checkpointing. Null on historic rows
-     * written before migration 0033.
+     * written before migration 0027.
      */
     planSessionIndex: integer('plan_session_index'),
     status: researchSessionStatusEnum('status').notNull().default('queued'),
@@ -454,7 +454,7 @@ export const findingAudits = pgTable('finding_audits', {
  * review-causes.ts): one row per finding a decision covers, written in the
  * same transaction as the decision itself. Insert-only: the app role may
  * read and insert, never update or delete, and no one may update a row
- * (migration 0032). A row names the run's strategy, version, models and
+ * (migration 0025). A row names the run's strategy, version, models and
  * provider as recorded when the run was planned and applied, so a decision
  * stays tied to what produced the finding.
  */
@@ -483,7 +483,7 @@ export const reviewLabels = pgTable('review_labels', {
   approvalCause: check('review_labels_approval_cause', sql`(${t.decision} = 'approve') = (${t.cause} = 'correct_as_cited')`),
   otherNote: check('review_labels_other_note', sql`${t.cause} <> 'other' OR coalesce(length(btrim(${t.note})), 0) > 0`),
   noteLength: check('review_labels_note_length', sql`${t.note} IS NULL OR char_length(${t.note}) <= 4000`),
-  provider: check('review_labels_provider', sql`${t.provider} = 'anthropic'`),
+  provider: check('review_labels_provider', sql`${t.provider} IN ('anthropic', 'openai', 'google')`),
 }));
 
 // ---- Discussion board (SPEC.md §7, §10) ----

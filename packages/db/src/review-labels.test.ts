@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { withPostgresError } from './errors.js';
 
 /**
- * Review labels (migration 0032) as the database itself enforces them,
+ * Review labels (migration 0025) as the database itself enforces them,
  * whatever the app does: an editor of the portrait may record a decision
  * as themself; nobody else may record one; once written, a label is never
  * changed, and the app role can neither change nor remove it.

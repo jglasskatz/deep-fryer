@@ -14,7 +14,7 @@ import type { DbExecutor } from './client.js';
 import { dimensions, findings, reviewLabels } from './schema.js';
 
 /**
- * Read helpers over `review_labels` (migration 0032), joined with dimension
+ * Read helpers over `review_labels` (migration 0025), joined with dimension
  * slugs and finding payloads/verifications so calibration dashboards and
  * strategy evaluation scripts can score precision, top causes, and verifier
  * false-pass rates.

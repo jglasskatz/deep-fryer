@@ -180,22 +180,22 @@
     {
       "idx": 25,
       "version": "7",
-      "when": 1795428857314,
-      "tag": "0025_knowledge_chunks",
-      "breakpoints": true
-    },
-    {
-      "idx": 32,
-      "version": "7",
       "when": 1795171689600,
-      "tag": "0032_review_labels",
+      "tag": "0025_review_labels",
       "breakpoints": true
     },
     {
-      "idx": 33,
+      "idx": 26,
       "version": "7",
-      "when": 1795258089600,
-      "tag": "0033_session_checkpointing",
+      "when": 1795428857314,
+      "tag": "0026_knowledge_chunks",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1795515257314,
+      "tag": "0027_session_checkpointing",
       "breakpoints": true
     }
   ]

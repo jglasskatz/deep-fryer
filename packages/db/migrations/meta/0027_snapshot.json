@@ -1,6 +1,6 @@
 {
   "id": "a54e7dc5-0a0f-43e2-9764-79fa5075ba4e",
-  "prevId": "1b674cb4-fa79-4049-91b0-4a3b2d2b109e",
+  "prevId": "078670a8-41aa-4bdd-bb31-a2443b43688f",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -3373,7 +3373,7 @@
         },
         "review_labels_provider": {
           "name": "review_labels_provider",
-          "value": "\"review_labels\".\"provider\" = 'anthropic'"
+          "value": "\"review_labels\".\"provider\" IN ('anthropic', 'openai', 'google')"
         }
       },
       "isRLSEnabled": false
@@ -4166,6 +4166,199 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.knowledge_chunks": {
+      "name": "knowledge_chunks",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_kind": {
+          "name": "source_kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_ref": {
+          "name": "source_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dimension_slug": {
+          "name": "dimension_slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "citation_label": {
+          "name": "citation_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "citation_url": {
+          "name": "citation_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "search_vector": {
+          "name": "search_vector",
+          "type": "tsvector",
+          "primaryKey": false,
+          "notNull": false,
+          "generated": {
+            "as": "setweight(to_tsvector('english', coalesce(\"title\", '')), 'A') || setweight(to_tsvector('english', coalesce(\"dimension_slug\", '') || ' ' || coalesce(\"citation_label\", '')), 'B') || setweight(to_tsvector('english', coalesce(\"content\", '')), 'C')",
+            "type": "stored"
+          }
+        },
+        "content_hash": {
+          "name": "content_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "knowledge_chunks_tenant_visibility_idx": {
+          "name": "knowledge_chunks_tenant_visibility_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "visibility",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "knowledge_chunks_tenant_dim_idx": {
+          "name": "knowledge_chunks_tenant_dim_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "dimension_slug",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "knowledge_chunks_search_vector_idx": {
+          "name": "knowledge_chunks_search_vector_idx",
+          "columns": [
+            {
+              "expression": "search_vector",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "knowledge_chunks_tenant_id_tenants_id_fk": {
+          "name": "knowledge_chunks_tenant_id_tenants_id_fk",
+          "tableFrom": "knowledge_chunks",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "knowledge_chunks_tenant_vis_source_uniq": {
+          "name": "knowledge_chunks_tenant_vis_source_uniq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tenant_id",
+            "visibility",
+            "source_kind",
+            "source_ref"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "knowledge_chunks_visibility_check": {
+          "name": "knowledge_chunks_visibility_check",
+          "value": "\"knowledge_chunks\".\"visibility\" IN ('public', 'member')"
+        },
+        "knowledge_chunks_source_kind_check": {
+          "name": "knowledge_chunks_source_kind_check",
+          "value": "\"knowledge_chunks\".\"source_kind\" IN ('indicator', 'evidence_text', 'custom_page', 'policy_analysis', 'outreach')"
+        },
+        "knowledge_chunks_policy_member_only": {
+          "name": "knowledge_chunks_policy_member_only",
+          "value": "\"knowledge_chunks\".\"source_kind\" <> 'policy_analysis' OR \"knowledge_chunks\".\"visibility\" = 'member'"
+        }
+      },
       "isRLSEnabled": false
     }
   },

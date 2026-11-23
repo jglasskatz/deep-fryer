@@ -38,7 +38,7 @@ export type ReviewCause = (typeof REVIEW_CAUSES)[number]['id'];
 /** Every cause a recorded decision can carry: the reviewer's choices and the approval's. */
 export type ReviewLabelCause = ReviewCause | typeof APPROVAL_CAUSE;
 
-/** Every recordable cause, as the database's check lists them (migration 0032). */
+/** Every recordable cause, as the database's check lists them (migration 0025). */
 export const REVIEW_LABEL_CAUSES: readonly ReviewLabelCause[] = [APPROVAL_CAUSE, ...REVIEW_CAUSES.map((c) => c.id)];
 
 /** The cause that needs the reviewer's own words. */

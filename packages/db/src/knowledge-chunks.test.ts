@@ -6,7 +6,7 @@ import { withPostgresError } from './errors.js';
 
 /**
  * Row-level security and retrieval tests for `knowledge_chunks` (migration
- * 0025). Integration tests execute real queries as `deep_fryer_app` via
+ * 0026). Integration tests execute real queries as `deep_fryer_app` via
  * `withAuthContext` whenever `DATABASE_URL` is configured, and skip cleanly
  * otherwise (following rls.test.ts).
  */
@@ -18,7 +18,7 @@ describe('knowledge_chunks migration & RLS contract', () => {
   it('enables RLS, grants app-role access, and enforces tenant_is_public and policy_analysis guards', () => {
     const migrationPath = path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
-      '../migrations/0025_knowledge_chunks.sql',
+      '../migrations/0026_knowledge_chunks.sql',
     );
     const sqlText = readFileSync(migrationPath, 'utf8');
     expect(sqlText).toContain('CREATE TABLE "knowledge_chunks"');

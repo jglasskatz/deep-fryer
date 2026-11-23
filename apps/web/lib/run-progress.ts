@@ -85,7 +85,7 @@ export interface SessionRow {
   id: string;
   kind: string;
   dimensionId: string | null;
-  /** Zero-based index into `plan.sessions` (null on historical rows written before migration 0033). */
+  /** Zero-based index into `plan.sessions` (null on historical rows written before migration 0027). */
   planSessionIndex?: number | null;
   status: string;
   startedAt: Date | null;

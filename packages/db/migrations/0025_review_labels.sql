@@ -18,7 +18,7 @@ CREATE TABLE "review_labels" (
 	CONSTRAINT "review_labels_approval_cause" CHECK (("review_labels"."decision" = 'approve') = ("review_labels"."cause" = 'correct_as_cited')),
 	CONSTRAINT "review_labels_other_note" CHECK ("review_labels"."cause" <> 'other' OR coalesce(length(btrim("review_labels"."note")), 0) > 0),
 	CONSTRAINT "review_labels_note_length" CHECK ("review_labels"."note" IS NULL OR char_length("review_labels"."note") <= 4000),
-	CONSTRAINT "review_labels_provider" CHECK ("review_labels"."provider" = 'anthropic')
+	CONSTRAINT "review_labels_provider" CHECK ("review_labels"."provider" IN ('anthropic', 'openai', 'google'))
 );
 --> statement-breakpoint
 ALTER TABLE "review_labels" ADD CONSTRAINT "review_labels_tenant_id_tenants_id_fk" FOREIGN KEY ("tenant_id") REFERENCES "public"."tenants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

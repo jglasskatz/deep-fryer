@@ -14,7 +14,7 @@ import {
 import { extractValuePassages } from './triage/passages.js';
 
 /**
- * Feedback & calibration engine over `review_labels` (migration 0032).
+ * Feedback & calibration engine over `review_labels` (migration 0025).
  *
  * Turns recorded human reviewer decisions (approve, edit, re-research, reject)
  * and their structured causes into:
