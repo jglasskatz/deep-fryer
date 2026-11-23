@@ -55,6 +55,12 @@ level_pct semantics: 0 = at the boundary, positive = shortfall/overshoot
 
 ## Evidence (required for every accepted source)
 
+When `WebFetch` hits HTTP 403 on `.gov` sites, returns an empty JavaScript shell
+(e.g. Socrata, ArcGIS, or Tableau portals), or truncates figures from a PDF,
+prefer the `read_source` tool (with optional `query` or `page_range` for long
+PDFs). It renders pages in a real browser, extracts PDF text layers, and caches
+the result so `capture_evidence` promotes already-read sources immediately.
+
 For each accepted source, call the `capture_evidence` tool with the source
 URL (and the direct PDF URL when the source is a document). It stores a
 snapshot next to the claim and returns the storage paths — put them in the

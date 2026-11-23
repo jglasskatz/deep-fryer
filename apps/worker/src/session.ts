@@ -36,6 +36,7 @@ import {
   valueOnPage,
 } from '@deep-fryer/research';
 import { buildCapturePreview, captureEvidence } from './evidence.js';
+import { getSharedSourceCache, readSourceWithCache, type SourceCache } from './source-cache.js';
 import { rejectedKeyError } from './org-key.js';
 import type { TenantStorage } from './storage.js';
 import { ARCHIVED_PDF, ARCHIVED_PDF_EXCERPT, ARCHIVED_SNAPSHOT, type ArchivedExhibits } from './archived-exhibits.js';
@@ -485,16 +486,9 @@ export function redactSecret(text: string, secret: string | undefined): string {
   return text.split(secret).join('[redacted API key]');
 }
 
-/**
- * One research session = one Agent SDK session in a scratch workspace
- * (SPEC.md §8 Apply). The full message stream is retained as the audit
- * transcript (gzipped JSONL). In production each session additionally runs
- * inside an ephemeral container behind the egress allowlist proxy — that
- * isolation lives in the deploy layer (see apps/worker/README.md); the tool
- * surface and the subprocess environment are restricted here, so a session
- * is contained even where that deploy layer is missing.
- */
-export async function runSession(input: {
+export type SessionMcpServer = ReturnType<typeof createSdkMcpServer>;
+
+export interface RunSessionArgs {
   prompt: string;
   /**
    * The session's entire tool surface: built-in tools by name (WebSearch,
@@ -503,6 +497,8 @@ export async function runSession(input: {
    */
   allowedTools: string[];
   storage?: TenantStorage;
+  /** Shared content-addressed source cache (defaults to the worker process shared cache). */
+  sourceCache?: SourceCache;
   /** Archived bytes loaded by the worker, for an independent verifier only. */
   archivedExhibits?: ArchivedExhibits;
   maxTurns?: number;
@@ -528,7 +524,28 @@ export async function runSession(input: {
   apiKey?: string;
   /** Portrait config & dimension context for synchronous validation/scoring in `submit_findings`. */
   submitFindingsContext?: SubmitFindingsContext;
-}): Promise<SessionResult> {
+  /**
+   * Optional additional in-process MCP servers mounted alongside `evidence`
+   * (e.g. deterministic civic data connectors such as `civic_data`).
+   */
+  extraMcpServers?: Record<string, SessionMcpServer>;
+  /**
+   * Optional additional allowed tool names merged (deduplicated) into the
+   * session's allowlist, subject to the same `Read` and local-tool guards.
+   */
+  extraAllowedTools?: string[];
+}
+
+/**
+ * One research session = one Agent SDK session in a scratch workspace
+ * (SPEC.md §8 Apply). The full message stream is retained as the audit
+ * transcript (gzipped JSONL). In production each session additionally runs
+ * inside an ephemeral container behind the egress allowlist proxy — that
+ * isolation lives in the deploy layer (see apps/worker/README.md); the tool
+ * surface and the subprocess environment are restricted here, so a session
+ * is contained even where that deploy layer is missing.
+ */
+export async function runSession(input: RunSessionArgs): Promise<SessionResult> {
   const workspace = await mkdtemp(path.join(tmpdir(), 'df-session-'));
   const transcriptLines: string[] = [];
   let resultText = '';
@@ -537,17 +554,59 @@ export async function runSession(input: {
   let submittedFindings: FindingPayload[] | undefined;
   const capturedSnapshotPaths = new Set<string>();
 
-  const mcpServers: Record<string, ReturnType<typeof createSdkMcpServer>> = {};
-  if (input.storage) {
+  const effectiveAllowedTools = [
+    ...new Set([...input.allowedTools, ...(input.extraAllowedTools ?? [])]),
+  ];
+  const sourceCache = input.sourceCache ?? getSharedSourceCache();
+
+  const mcpServers: Record<string, SessionMcpServer> = {
+    ...(input.extraMcpServers ?? {}),
+  };
+  const mountEvidenceServer =
+    Boolean(input.storage) || effectiveAllowedTools.includes('mcp__evidence__read_source');
+  if (mountEvidenceServer) {
     const storage = input.storage;
-    const readEvidenceText = async (textPath: string) => (await storage.get(textPath)).toString('utf8');
-    mcpServers.evidence = createSdkMcpServer({
-      name: 'evidence',
-      version: '1.0.0',
-      tools: [
+    const evidenceTools: NonNullable<Parameters<typeof createSdkMcpServer>[0]['tools']> = [
+      tool(
+        'read_source',
+        'Render a public HTTPS web page in headless Chromium or extract a PDF text layer (bounded, cached across dimensions and portrait runs). Prefer this over WebFetch when .gov portals return 403, empty JS shells, or truncated summaries. Supply query and/or page_range to focus excerpts on long PDFs.',
+        {
+          url: z.string().describe('The exact HTTPS URL of the web page or PDF document to read'),
+          query: z
+            .string()
+            .optional()
+            .describe('Optional keywords or candidate figure to focus the bounded excerpt around'),
+          page_range: z
+            .string()
+            .optional()
+            .describe('Optional 1-indexed PDF page or page range (e.g. "5" or "12-15")'),
+        },
+        async (args) => {
+          try {
+            const payload = await readSourceWithCache(sourceCache, storage, args);
+            return { content: [{ type: 'text', text: JSON.stringify(payload) }] };
+          } catch (err) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify({
+                    error: `read_source failed: ${err instanceof Error ? err.message : String(err)}`,
+                  }),
+                },
+              ],
+            };
+          }
+        },
+      ),
+    ];
+
+    if (storage) {
+      const readEvidenceText = async (textPath: string) => (await storage.get(textPath)).toString('utf8');
+      evidenceTools.push(
         tool(
           'capture_evidence',
-          'Capture an evidence snapshot of a source you have decided to accept: a full-page screenshot, plus the PDF when the source is a document. Returns storage paths, a bounded preview of extracted readable text, and optional value_on_page check.',
+          'Capture an evidence snapshot of a source you have decided to accept: a full-page screenshot, plus the PDF when the source is a document. Promotes already-cached sources instantly into immutable evidence storage. Returns storage paths, a bounded preview of extracted readable text, and optional value_on_page check.',
           {
             url: z.string().describe('The exact URL the value was read from'),
             pdf_url: z.string().optional().describe('Direct PDF URL when the source is a document'),
@@ -558,7 +617,7 @@ export async function runSession(input: {
           },
           async (args) => {
             try {
-              const result = await captureEvidence(storage, args.url, args.pdf_url);
+              const result = await captureEvidence(storage, args.url, args.pdf_url, { sourceCache });
               capturedSnapshotPaths.add(result.snapshot_path);
               let capturedText: string | null = null;
               if (result.text_path) {
@@ -635,13 +694,19 @@ export async function runSession(input: {
             };
           },
         ),
-      ],
+      );
+    }
+
+    mcpServers.evidence = createSdkMcpServer({
+      name: 'evidence',
+      version: '1.0.0',
+      tools: evidenceTools,
     });
   }
 
   const scoutModel = input.scoutModel === undefined ? SCOUT_MODEL() : input.scoutModel;
   const orchestrated =
-    input.orchestrate !== false && Boolean(scoutModel) && input.allowedTools.includes('WebSearch');
+    input.orchestrate !== false && Boolean(scoutModel) && effectiveAllowedTools.includes('WebSearch');
 
   // The explicit allowlist from the rendered plan is the entire tool surface
   // (SPEC §8). The SDK enforces that with three separate options, and all
@@ -663,7 +728,7 @@ export async function runSession(input: {
   // Even a stale/malicious plan cannot turn on general file reads. Read only
   // exists when trusted archive bytes were supplied, and the hook below
   // independently denies every file except the fixed copies in this workspace.
-  const scopedTools = input.allowedTools.filter((tool) => tool !== 'Read' || hasArchive);
+  const scopedTools = effectiveAllowedTools.filter((tool) => tool !== 'Read' || hasArchive);
   const allowed = orchestrated ? [...scopedTools, ...DISPATCH_TOOLS] : scopedTools;
   const builtIn = allowed.filter((t) => !t.startsWith('mcp__'));
 

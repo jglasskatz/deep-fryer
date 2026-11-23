@@ -45,10 +45,11 @@ export const REGION_BRIEF_PLACEHOLDER = '{{region_brief}}';
 export const DIMENSION_TOOLS = [
   'WebSearch',
   'WebFetch',
+  'mcp__evidence__read_source',
   'mcp__evidence__capture_evidence',
   'mcp__evidence__submit_findings',
 ];
-const REGION_TOOLS = ['WebSearch', 'WebFetch'];
+export const REGION_TOOLS = ['WebSearch', 'WebFetch', 'mcp__evidence__read_source'];
 export const VERIFIER_TOOLS = ['WebFetch', 'Read'];
 
 /**

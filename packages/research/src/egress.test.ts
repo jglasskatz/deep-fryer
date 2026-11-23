@@ -1,5 +1,20 @@
+import { EventEmitter } from 'node:events';
+import { Readable } from 'node:stream';
+import type { ClientRequest, IncomingMessage } from 'node:http';
+import type { RequestOptions as HttpsRequestOptions } from 'node:https';
+import type { LookupAddress } from 'node:dns';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { EgressBlockedError, assertPublicHttpsUrl, guardedFetch, isPrivateAddress } from './egress.js';
+import {
+  EgressBlockedError,
+  assertPublicHttpsUrl,
+  createPinnedLookup,
+  guardedFetch,
+  hasEgressProxy,
+  isPrivateAddress,
+  pinnedHttpsRequest,
+  validateAddress,
+  type GuardedFetchOptions,
+} from './egress.js';
 
 const resolveTo = (map: Record<string, string[]>) => async (host: string) => map[host] ?? [];
 
@@ -235,5 +250,174 @@ describe('guardedFetch', () => {
     );
     const res = await guardedFetch('https://public.example/a', {}, resolveTo({ 'public.example': ['8.8.8.8'] }));
     expect(await res.text()).toBe('ok');
+  });
+
+  it('pins the verified public IP from a single DNS lookup so DNS rebinding cannot reach a private IP', async () => {
+    // Attacker's TTL=0 DNS returns a public IP on first query and cloud metadata on second.
+    let calls = 0;
+    const rebindingResolve = vi.fn(async () => {
+      calls += 1;
+      return calls === 1 ? ['93.184.216.34'] : ['169.254.169.254'];
+    });
+
+    const resolvedFromPinned: Array<{ address: string | LookupAddress[]; family?: number }> = [];
+    const transport = vi.fn<NonNullable<GuardedFetchOptions['pinnedTransport']>>(async (validated, _init, pinnedLookup) => {
+      expect(validated.host).toBe('rebind.example.gov');
+      expect(validated.addresses).toEqual(['93.184.216.34']);
+
+      // Simulate undici / net.connect invoking the custom lookup callback twice (single & all).
+      await new Promise<void>((resolve, reject) => {
+        pinnedLookup('rebind.example.gov', {}, (err, address, family) => {
+          if (err) return reject(err);
+          resolvedFromPinned.push({ address, family });
+          resolve();
+        });
+      });
+      await new Promise<void>((resolve, reject) => {
+        pinnedLookup('rebind.example.gov', { all: true }, (err, addresses) => {
+          if (err) return reject(err);
+          resolvedFromPinned.push({ address: addresses });
+          resolve();
+        });
+      });
+
+      return new Response('verified public body', { status: 200 });
+    });
+
+    const res = await guardedFetch(
+      'https://rebind.example.gov/report.pdf',
+      {},
+      rebindingResolve,
+      { proxyUrl: null, pinnedTransport: transport },
+    );
+    expect(await res.text()).toBe('verified public body');
+    // DNS was queried strictly once — the pinned callback never triggers a second lookup.
+    expect(rebindingResolve).toHaveBeenCalledTimes(1);
+    expect(transport).toHaveBeenCalledTimes(1);
+    expect(resolvedFromPinned).toEqual([
+      { address: '93.184.216.34', family: 4 },
+      { address: [{ address: '93.184.216.34', family: 4 }] },
+    ]);
+  });
+
+  it('re-validates DNS on redirect hops and refuses if the host re-binds to a private IP', async () => {
+    let calls = 0;
+    const rebindingResolve = vi.fn(async () => {
+      calls += 1;
+      return calls === 1 ? ['93.184.216.34'] : ['169.254.169.254'];
+    });
+    const transport = vi.fn(async () => new Response(null, { status: 302, headers: { location: '/next' } }));
+
+    await expect(
+      guardedFetch('https://rebind.example.gov/start', {}, rebindingResolve, {
+        proxyUrl: null,
+        pinnedTransport: transport,
+      }),
+    ).rejects.toThrow(/non-public address 169\.254\.169\.254/);
+    expect(transport).toHaveBeenCalledTimes(1);
+    expect(rebindingResolve).toHaveBeenCalledTimes(2);
+  });
+
+  it('delegates to fetch when WORKER_HTTPS_PROXY is active', async () => {
+    const injectedFetch = vi.fn(async () => new Response('via-proxy', { status: 200 }));
+    const res = await guardedFetch(
+      'https://public.example/data',
+      {},
+      resolveTo({ 'public.example': ['8.8.8.8'] }),
+      { proxyUrl: 'http://egress-proxy:3128', fetch: injectedFetch },
+    );
+    expect(await res.text()).toBe('via-proxy');
+    expect(injectedFetch).toHaveBeenCalledTimes(1);
+    expect(hasEgressProxy({ WORKER_HTTPS_PROXY: 'http://egress:3128' })).toBe(true);
+    expect(hasEgressProxy({})).toBe(false);
+  });
+});
+
+describe('createPinnedLookup & pinnedHttpsRequest', () => {
+  it('returns pinned IPv4/IPv6 addresses, respects family filter, and refuses mismatches or private IPs', async () => {
+    expect(() => createPinnedLookup('example.gov', [])).toThrow(EgressBlockedError);
+    expect(() => createPinnedLookup('example.gov', ['127.0.0.1'])).toThrow(/non-public/);
+    expect(() => createPinnedLookup('example.gov', ['8.8.8.8', '::ffff:10.0.0.1'])).toThrow(/non-public/);
+
+    const lookupFn = createPinnedLookup('Data.Example.Gov', ['8.8.8.8', '2606:4700::1111']);
+
+    const v4 = await new Promise<{ address: string | LookupAddress[]; family?: number }>((resolve, reject) => {
+      lookupFn('data.example.gov', { family: 4 }, (err, address, family) =>
+        err ? reject(err) : resolve({ address, family }),
+      );
+    });
+    expect(v4).toEqual({ address: '8.8.8.8', family: 4 });
+
+    const v6 = await new Promise<{ address: string | LookupAddress[]; family?: number }>((resolve, reject) => {
+      lookupFn('data.example.gov', { family: 6 }, (err, address, family) =>
+        err ? reject(err) : resolve({ address, family }),
+      );
+    });
+    expect(v6).toEqual({ address: '2606:4700::1111', family: 6 });
+
+    const all = await new Promise<LookupAddress[]>((resolve, reject) => {
+      lookupFn('data.example.gov', { all: true }, (err, addresses) =>
+        err ? reject(err) : resolve(addresses as LookupAddress[]),
+      );
+    });
+    expect(all).toEqual([
+      { address: '8.8.8.8', family: 4 },
+      { address: '2606:4700::1111', family: 6 },
+    ]);
+
+    // Refuses any hostname other than the validated one.
+    await expect(
+      new Promise((resolve, reject) => {
+        lookupFn('evil.internal', {}, (err, address) => (err ? reject(err) : resolve(address)));
+      }),
+    ).rejects.toThrow(/unexpected host evil\.internal/);
+
+    // Returns ENOTFOUND when requested address family is absent.
+    const v4Only = createPinnedLookup('v4.example.gov', ['8.8.8.8']);
+    await expect(
+      new Promise((resolve, reject) => {
+        v4Only('v4.example.gov', { family: 6 }, (err, address) => (err ? reject(err) : resolve(address)));
+      }),
+    ).rejects.toMatchObject({ code: 'ENOTFOUND' });
+  });
+
+  it('preserves TLS SNI (servername), disables connection pooling, and streams the Web Response', async () => {
+    const validated = await validateAddress(
+      'https://data.example.gov/api/report.pdf?year=2025',
+      resolveTo({ 'data.example.gov': ['93.184.216.34'] }),
+    );
+    const pinnedLookup = createPinnedLookup(validated.host, validated.addresses);
+    let capturedUrl: URL | undefined;
+    let capturedOpts: HttpsRequestOptions | undefined;
+
+    const fakeRequest = (url: URL, options: HttpsRequestOptions, cb: (res: IncomingMessage) => void): ClientRequest => {
+      capturedUrl = url;
+      capturedOpts = options;
+      const req = Object.assign(new EventEmitter(), {
+        end: () => {
+          const stream = Readable.from([Buffer.from('PDF-bytes-123')]) as unknown as IncomingMessage;
+          stream.statusCode = 200;
+          stream.statusMessage = 'OK';
+          stream.headers = { 'content-type': 'application/pdf' };
+          cb(stream);
+        },
+      }) as unknown as ClientRequest;
+      return req;
+    };
+
+    const res = await pinnedHttpsRequest(
+      validated,
+      { method: 'GET', headers: { accept: 'application/pdf' } },
+      pinnedLookup,
+      fakeRequest,
+    );
+    expect(capturedUrl?.href).toBe('https://data.example.gov/api/report.pdf?year=2025');
+    expect(capturedOpts?.servername).toBe('data.example.gov');
+    expect(capturedOpts?.lookup).toBe(pinnedLookup);
+    expect(capturedOpts?.agent).toBe(false);
+    expect(capturedOpts?.headers).toEqual({ accept: 'application/pdf' });
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toBe('application/pdf');
+    expect(await res.text()).toBe('PDF-bytes-123');
   });
 });
