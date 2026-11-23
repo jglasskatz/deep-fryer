@@ -224,6 +224,26 @@ export interface FindingVerification {
   fail_reason?: string;
   /** Optional machine disposition suggested by the verifier when unambiguous from the exhibit. */
   suggested_disposition?: 'approve' | 'edit' | 're_research' | 'reject';
+  /** Optional advisory frame/construct triage metadata recorded alongside independent verification. */
+  triage?: FindingTriageVerification;
+}
+
+/**
+ * Advisory frame/construct triage metadata stored on `FindingVerification`.
+ * Strictly additive / flag-expanding: never approves or clears verifier flags.
+ */
+export interface FindingTriageVerification {
+  advisory_only: true;
+  severity: 'high' | 'medium' | 'low' | 'none';
+  flags: string[];
+  assessment: {
+    construct_match: 'match' | 'partial' | 'mismatch' | 'unclear';
+    epistemic_type: 'measured' | 'projection_or_goal' | 'modeled_estimate' | 'unclear';
+    geography_match: 'match' | 'broader_proxy' | 'mismatch' | 'unclear';
+    is_primary_source: 'primary' | 'secondary_republisher' | 'unclear';
+    reason: string;
+  };
+  model?: string;
 }
 
 /** What the value check found in a captured page's readable text. */

@@ -162,6 +162,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.135.0
         version: 0.135.0(zod@4.6.7)
+      '@deep-fryer/civic-data':
+        specifier: workspace:*
+        version: link:../../packages/civic-data
       '@deep-fryer/contract':
         specifier: workspace:*
         version: link:../../packages/contract

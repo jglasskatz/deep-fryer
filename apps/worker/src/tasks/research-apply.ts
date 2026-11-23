@@ -1,11 +1,18 @@
 import { gunzipSync, gzipSync } from 'node:zlib';
+import { createSdkMcpServer, tool } from '@anthropic-ai/claude-agent-sdk';
 import type { Task } from 'graphile-worker';
 import { and, eq, inArray, isNotNull, sql } from 'drizzle-orm';
+import {
+  CIVIC_DATA_MCP_SERVER_NAME,
+  CIVIC_DATA_MCP_TOOL_NAMES,
+  createCivicDataTools,
+} from '@deep-fryer/civic-data';
 import { frameworkDimension, type PortraitConfig } from '@deep-fryer/contract';
 import {
   emptyUsage,
   type ContentSupported,
   type FindingPayload,
+  type FindingTriageVerification,
   type FindingVerification,
   type IndicatorEvidence,
   type IndicatorFindingPayload,
@@ -65,8 +72,16 @@ import {
   runSession,
   runSessionWithRetry,
   SessionRunError,
+  type SessionMcpServer,
   type SessionResult,
 } from '../session.js';
+import { SourceCache } from '../source-cache.js';
+import {
+  createMessagesClient,
+  runFindingTriage,
+  type FindingTriageResult,
+  type MessagesApiClient,
+} from '../messages.js';
 import { tenantStorage } from '../storage.js';
 import { loadFindingExhibits } from '../archived-exhibits.js';
 import type { TenantStorage } from '../storage.js';
@@ -106,6 +121,43 @@ import { auditResearchRun } from '../research-audit.js';
  * the other namespaces (61_001..61_005).
  */
 export const LOCK_RESEARCH_APPLY = 61_006;
+
+/**
+ * Mount `@deep-fryer/civic-data` connectors as an in-process SDK MCP server
+ * (`civic_data`) backed by the portrait's `TenantStorage` so every successful
+ * federal/municipal API query is auto-archived into `evidence/<hash>.txt`.
+ */
+export function createCivicDataMcpServer(
+  storage: TenantStorage,
+  env: Record<string, string | undefined> = process.env,
+): SessionMcpServer {
+  const registry = createCivicDataTools({ storage, env });
+  return createSdkMcpServer({
+    name: registry.serverName,
+    version: registry.version,
+    tools: registry.tools.map((def) =>
+      tool(def.name, def.description, def.inputSchema, async (args) => {
+        const res = await def.handler(args);
+        return {
+          content: res.content,
+          ...(res.isError ? { isError: res.isError } : {}),
+        };
+      }),
+    ),
+  });
+}
+
+function hasRecordedUsage(usage: SessionTokenUsage | undefined): usage is SessionTokenUsage {
+  if (!usage) return false;
+  return Boolean(
+    usage.model ||
+      (usage.by_model && Object.keys(usage.by_model).length > 0) ||
+      usage.input_tokens > 0 ||
+      usage.output_tokens > 0 ||
+      (usage.cache_read_tokens ?? 0) > 0 ||
+      (usage.cache_write_tokens ?? 0) > 0,
+  );
+}
 
 /** Error raised when Phase 0 fails or yields an empty brief, failing the run loudly. */
 export class Phase0RegionBriefError extends Error {
@@ -509,6 +561,28 @@ export const researchApply: Task = async (rawPayload, helpers) => {
       const config = run.configSnapshot;
       const runStartedAt = new Date();
       const storage = await tenantStorage(tenant.slug);
+      // One shared SourceCache per run so Playwright renders and PDF text
+      // extraction are deduplicated across Phase 0, dimension sessions,
+      // recaptures, and evidence promotion.
+      const sourceCache = new SourceCache();
+      // Deterministic federal & municipal civic-data connectors mounted as
+      // an in-process MCP server (`civic_data`) backed by tenant storage.
+      const civicDataMcpOptions = {
+        extraMcpServers: {
+          [CIVIC_DATA_MCP_SERVER_NAME]: createCivicDataMcpServer(storage, process.env),
+        },
+        extraAllowedTools: [...CIVIC_DATA_MCP_TOOL_NAMES],
+      };
+      // Optional direct Messages API client for lightweight advisory triage.
+      // Never falls back to the deployment key on organization-key-funded runs.
+      let triageClient: MessagesApiClient | null = null;
+      if (apiKey || (run.funding !== 'organization_key' && process.env.ANTHROPIC_API_KEY)) {
+        try {
+          triageClient = createMessagesClient({ apiKey });
+        } catch {
+          triageClient = null;
+        }
+      }
       // A finding's captured text, through its tenant's archive only (the
       // schema already limits the path to evidence/<name>.txt).
       const readEvidenceText = async (textPath: string) => (await storage.get(textPath)).toString('utf8');
@@ -594,6 +668,8 @@ export const researchApply: Task = async (rawPayload, helpers) => {
             runSessionWithRetry({
               prompt: regionSpec.prompt,
               allowedTools: regionSpec.tool_allowlist,
+              sourceCache,
+              ...civicDataMcpOptions,
               // Never orchestrated: the region session has WebSearch, so with
               // RESEARCH_SUBAGENT_MODEL set it would otherwise get scouts and a
               // delegation note telling it to capture evidence — and it has no
@@ -682,6 +758,8 @@ export const researchApply: Task = async (rawPayload, helpers) => {
             prompt,
             allowedTools: spec.tool_allowlist,
             storage,
+            sourceCache,
+            ...civicDataMcpOptions,
             submitFindingsContext,
             ...plannedResearchOptions(plan),
             ...(initialScout !== undefined ? { scoutModel: initialScout } : {}),
@@ -750,7 +828,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
             checkValueOnPage: (payload) => checkValueOnPage(payload, readEvidenceText),
             recaptureEvidence: async (url, pdfUrl) => {
               try {
-                const captured = await captureEvidence(storage, url, pdfUrl);
+                const captured = await captureEvidence(storage, url, pdfUrl, { sourceCache });
                 capturedSnapshotPaths.add(captured.snapshot_path);
                 return captured;
               } catch {
@@ -762,6 +840,8 @@ export const researchApply: Task = async (rawPayload, helpers) => {
                 prompt: correctionPrompt,
                 allowedTools: spec.tool_allowlist,
                 storage,
+                sourceCache,
+                ...civicDataMcpOptions,
                 submitFindingsContext,
                 ...plannedResearchOptions(plan),
                 maxTurns,
@@ -776,6 +856,8 @@ export const researchApply: Task = async (rawPayload, helpers) => {
                 prompt: escalationPrompt,
                 allowedTools: spec.tool_allowlist,
                 storage,
+                sourceCache,
+                ...civicDataMcpOptions,
                 submitFindingsContext,
                 ...plannedEscalationOptions(plan),
                 maxTurns,
@@ -785,6 +867,35 @@ export const researchApply: Task = async (rawPayload, helpers) => {
               return res;
             },
             runVerifier: (payload) => runVerifier(payload, config.region.name, apiKey, storage, plan),
+            ...(triageClient
+              ? {
+                  runTriage: async (payload: IndicatorFindingPayload) => {
+                    const textPath = payload.evidence.text_path;
+                    if (!textPath) return null;
+                    let sourceText: string;
+                    try {
+                      sourceText = await readEvidenceText(textPath);
+                    } catch {
+                      return null;
+                    }
+                    if (!sourceText.trim()) return null;
+                    const fwInd = frameworkDimension(dimension.slug, dimension.canonicalSlug)?.indicators.find(
+                      (ind) => ind.slug === payload.indicator_slug,
+                    );
+                    return runFindingTriage(
+                      {
+                        client: triageClient,
+                        regionName: config.region.name,
+                        regionDefinition: config.region.definition,
+                        indicatorDefinition: fwInd?.name,
+                        portraitScale: config.scale_policy.default_accepted[0],
+                      },
+                      payload,
+                      sourceText,
+                    );
+                  },
+                }
+              : {}),
             onFailure: noteFailure,
             onKeyFailure: noteKeyFailure,
             warn: (msg) => helpers.logger.warn(msg),
@@ -795,6 +906,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
         const evalUsagePatch: RunTokenUsage = {
           [`verifier:${row.id}`]: evaluated.verifierUsage,
         };
+        if (evaluated.triageUsage) evalUsagePatch[`triage:${row.id}`] = evaluated.triageUsage;
         if (evaluated.correctionUsage) evalUsagePatch[`correction:${row.id}`] = evaluated.correctionUsage;
         if (evaluated.escalationUsage) evalUsagePatch[`escalation:${row.id}`] = evaluated.escalationUsage;
         await recordUsage(evalUsagePatch);
@@ -1152,6 +1264,8 @@ export interface DimensionFindingPipelineDeps {
     usage: SessionTokenUsage;
     failure?: { apiError?: string; apiErrorText?: string; usage: SessionTokenUsage };
   }>;
+  /** Optional advisory frame/construct triage run concurrently with `runVerifier` (never clears flags or breaks verification). */
+  runTriage?: (payload: IndicatorFindingPayload) => Promise<FindingTriageResult | null>;
   onFailure?: (report: { apiError?: string; apiErrorText?: string; usage: SessionTokenUsage }) => void;
   onKeyFailure?: (err: OrgKeyUnavailableError) => void;
   warn?: (message: string) => void;
@@ -1231,6 +1345,7 @@ export async function evaluateDimensionFindings(
 ): Promise<{
   records: { indicatorSlug: string; payload: FindingPayload; verification: FindingVerification }[];
   verifierUsage: SessionTokenUsage;
+  triageUsage?: SessionTokenUsage;
   correctionUsage?: SessionTokenUsage;
   escalationUsage?: SessionTokenUsage;
   correctionTranscript?: Buffer;
@@ -1239,6 +1354,7 @@ export async function evaluateDimensionFindings(
 }> {
   let keyFailure = input.initialKeyFailure;
   let verifierUsage = emptyUsage();
+  let triageUsage: SessionTokenUsage | undefined;
   let correctionUsage: SessionTokenUsage | undefined;
   let escalationUsage: SessionTokenUsage | undefined;
   let correctionTranscript: Buffer | undefined;
@@ -1251,6 +1367,7 @@ export async function evaluateDimensionFindings(
     indicatorSlug: string;
     salvaged: boolean;
     verdict: Verdict | null;
+    triage?: FindingTriageVerification;
     missing?: boolean;
     producedByStage: 'initial' | 'correction' | 'escalation';
     producedByModel?: string;
@@ -1396,42 +1513,96 @@ export async function evaluateDimensionFindings(
     }
   }
 
-  // Helper to verify one finding, folding verifier usage and honoring key refusals.
-  const verifyPayload = async (payload: FindingPayload | null, missing?: boolean): Promise<Verdict | null> => {
+  // Helper to verify one finding (and optionally run advisory triage in parallel),
+  // folding verifier and triage usage and honoring key refusals. Triage is strictly
+  // advisory: errors never break verification and never clear verifier flags.
+  const verifyPayload = async (
+    payload: FindingPayload | null,
+    missing?: boolean,
+  ): Promise<{ verdict: Verdict | null; triage?: FindingTriageVerification }> => {
     if (payload?.kind === 'indicator') {
       if (keyFailure) {
-        return { content_supported: 'uncertain', verifier_note: `verifier did not run: ${keyFailure.message}` };
+        return {
+          verdict: { content_supported: 'uncertain', verifier_note: `verifier did not run: ${keyFailure.message}` },
+        };
       }
-      try {
-        const verified = await deps.runVerifier(payload);
-        verifierUsage = mergeUsage(verifierUsage, verified.usage);
-        if (verified.failure) deps.onFailure?.(verified.failure);
-        return verified.verdict;
-      } catch (err) {
+      const runTriageSafely = async (): Promise<FindingTriageResult | null> => {
+        if (!deps.runTriage) return null;
+        try {
+          return await deps.runTriage(payload);
+        } catch (err) {
+          deps.warn?.(
+            `session ${input.sessionId}: advisory triage failed for ${payload.indicator_slug}: ${err instanceof Error ? err.message : String(err)}`,
+          );
+          return null;
+        }
+      };
+
+      const [verifierOutcome, triageResult] = await Promise.all([
+        deps.runVerifier(payload).then(
+          (value) => ({ ok: true as const, value }),
+          (err: unknown) => ({ ok: false as const, err }),
+        ),
+        runTriageSafely(),
+      ]);
+
+      if (triageResult && hasRecordedUsage(triageResult.usage)) {
+        triageUsage = triageUsage ? mergeUsage(triageUsage, triageResult.usage) : triageResult.usage;
+      }
+      const triage: FindingTriageVerification | undefined =
+        triageResult?.status === 'scored' && triageResult.assessment
+          ? {
+              advisory_only: true,
+              severity: triageResult.severity,
+              flags: triageResult.flags,
+              assessment: triageResult.assessment,
+              ...(triageResult.model ? { model: triageResult.model } : {}),
+            }
+          : undefined;
+
+      if (!verifierOutcome.ok) {
+        const err = verifierOutcome.err;
         if (!(err instanceof OrgKeyUnavailableError)) throw err;
         keyFailure ??= err;
         deps.onKeyFailure?.(err);
         if (err.usage) verifierUsage = mergeUsage(verifierUsage, err.usage);
-        return { content_supported: 'uncertain', verifier_note: `verifier did not run: ${err.message}` };
+        return {
+          verdict: { content_supported: 'uncertain', verifier_note: `verifier did not run: ${err.message}` },
+          ...(triage ? { triage } : {}),
+        };
       }
+
+      const verified = verifierOutcome.value;
+      verifierUsage = mergeUsage(verifierUsage, verified.usage);
+      if (verified.failure) deps.onFailure?.(verified.failure);
+      return {
+        verdict: verified.verdict,
+        ...(triage ? { triage } : {}),
+      };
     }
     if (payload?.kind === 'gap') {
       return {
-        content_supported: 'uncertain',
-        verifier_note: 'data gap — nothing to fetch; review the search trail',
+        verdict: {
+          content_supported: 'uncertain',
+          verifier_note: 'data gap — nothing to fetch; review the search trail',
+        },
       };
     }
     return {
-      content_supported: 'fail',
-      verifier_note: missing
-        ? 'planned indicator was omitted from initial session output'
-        : 'output did not conform to the finding schema',
+      verdict: {
+        content_supported: 'fail',
+        verifier_note: missing
+          ? 'planned indicator was omitted from initial session output'
+          : 'output did not conform to the finding schema',
+      },
     };
   };
 
-  // Stage 3: independent verifier on every finding with bounded concurrency (4).
+  // Stage 3: independent verifier (+ optional advisory triage) on every finding with bounded concurrency (4).
   await runWithConcurrency(entries, VERIFIER_CONCURRENCY, async (entry) => {
-    entry.verdict = await verifyPayload(entry.payload, entry.missing);
+    const out = await verifyPayload(entry.payload, entry.missing);
+    entry.verdict = out.verdict;
+    entry.triage = out.triage;
   });
 
   // Stage 4: selective hybrid escalation (only when escalation_model is set on the plan).
@@ -1504,7 +1675,7 @@ export async function evaluateDimensionFindings(
         await runWithConcurrency(toEvaluate, VERIFIER_CONCURRENCY, async ({ index, entry, candidate }) => {
           const prepared = await maybeRecaptureEvidence(candidate, entry.payload, deps.recaptureEvidence);
           const gated = await runGates(prepared);
-          const verdict = await verifyPayload(gated.payload);
+          const { verdict, triage } = await verifyPayload(gated.payload);
           if (
             shouldAcceptEscalation(
               {
@@ -1529,6 +1700,7 @@ export async function evaluateDimensionFindings(
               indicatorSlug: slugOf(gated.payload, prepared),
               salvaged: escSalvaged,
               verdict,
+              ...(triage ? { triage } : {}),
               missing: false,
               producedByStage: 'escalation',
               producedByModel: escResult!.usage.model ?? input.plan.models?.escalation_model ?? undefined,
@@ -1555,6 +1727,7 @@ export async function evaluateDimensionFindings(
               ...(entry.producedByModel ? { produced_by_model: entry.producedByModel } : {}),
             }
           : {}),
+        ...(entry.triage ? { triage: entry.triage } : {}),
       };
       return {
         indicatorSlug: entry.indicatorSlug,
@@ -1566,6 +1739,7 @@ export async function evaluateDimensionFindings(
   return {
     records,
     verifierUsage,
+    ...(triageUsage ? { triageUsage } : {}),
     ...(correctionUsage ? { correctionUsage } : {}),
     ...(escalationUsage ? { escalationUsage } : {}),
     ...(correctionTranscript ? { correctionTranscript } : {}),

@@ -5,7 +5,7 @@ import { computeConfigHash, REGION_BRIEF_CACHE_TTL_MS } from '@deep-fryer/resear
 
 vi.mock('server-only', () => ({}));
 
-import { resolveCachedRegionBrief } from './research';
+import { mergeReviewerNotesWithHistoricalGuidance, resolveCachedRegionBrief } from './research';
 
 describe('resolveCachedRegionBrief (targeted re-run Phase 0 caching)', () => {
   const config = defaultPortraitConfig('City of Santa Cruz', 'City of Santa Cruz municipal boundary');
@@ -37,5 +37,42 @@ describe('resolveCachedRegionBrief (targeted re-run Phase 0 caching)', () => {
       cached_at: new Date(now.getTime() - REGION_BRIEF_CACHE_TTL_MS).toISOString(),
     };
     expect(resolveCachedRegionBrief(stale, config, true, now)).toBeUndefined();
+  });
+});
+
+describe('mergeReviewerNotesWithHistoricalGuidance (review_labels feedback loop)', () => {
+  const labels = [
+    {
+      findingId: 'finding-1',
+      runId: 'run-1',
+      dimensionSlug: 'housing',
+      indicatorSlug: 'rent-burden',
+      decision: 'reject' as const,
+      cause: 'wrong_geography' as const,
+      note: 'Used county total instead of City of Santa Cruz ACS table.',
+      strategy: 'standard' as const,
+      strategyVersion: 1,
+      models: null,
+      createdAt: new Date('2026-11-20T00:00:00Z'),
+    },
+  ];
+
+  it('appends historical rejection guidance onto explicit reviewer notes', () => {
+    const merged = mergeReviewerNotesWithHistoricalGuidance('Prefer 2024 ACS 5-year.', labels, 'housing');
+    expect(merged).toContain('Prefer 2024 ACS 5-year.');
+    expect(merged).toContain('Prior review feedback for housing');
+    expect(merged).toContain('Wrong place or area');
+  });
+
+  it('emits historical guidance alone when no explicit reviewer note was passed', () => {
+    const merged = mergeReviewerNotesWithHistoricalGuidance(undefined, labels, 'housing');
+    expect(merged).toContain('Prior review feedback for housing');
+  });
+
+  it('leaves unrelated dimensions untouched', () => {
+    expect(mergeReviewerNotesWithHistoricalGuidance(undefined, labels, 'water')).toBeUndefined();
+    expect(mergeReviewerNotesWithHistoricalGuidance('Check municipal report.', labels, 'water')).toBe(
+      'Check municipal report.',
+    );
   });
 });

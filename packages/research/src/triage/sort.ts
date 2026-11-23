@@ -79,8 +79,9 @@ function cardRankKey(
   for (const finding of card.findings) {
     const existingFlagged = Boolean(finding.verification && isFlagged(finding.verification));
     const ctx = findingContext(finding, options.portraitScale);
-    const sev: TriageSeverity = finding.triage ? triageSeverity(finding.triage, ctx) : 'none';
-    const expanded = triageExpandsFlagged(existingFlagged, finding.triage, ctx);
+    const assessment = finding.triage ?? finding.verification?.triage?.assessment ?? null;
+    const sev: TriageSeverity = assessment ? triageSeverity(assessment, ctx) : 'none';
+    const expanded = triageExpandsFlagged(existingFlagged, assessment, ctx);
 
     if (existingFlagged) {
       hasVerifierOrDeterministicFlag = 1;
@@ -89,7 +90,7 @@ function cardRankKey(
     if (expanded) hasAnyFlag = 1;
     const rank = TRIAGE_SEVERITY_RANK[sev];
     if (rank > worstSeverityRank) worstSeverityRank = rank;
-    totalPriorityScore += triagePriorityScore(finding.triage, ctx);
+    totalPriorityScore += triagePriorityScore(assessment, ctx);
   }
 
   return {

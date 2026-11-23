@@ -6,6 +6,7 @@ import {
   dimensions,
   gateResearchSpend,
   latestVersion,
+  loadTenantReviewLabels,
   organizationForTenant,
   researchRuns,
   tenants,
@@ -14,11 +15,13 @@ import {
   type RunExecution,
 } from '@deep-fryer/db';
 import {
+  buildHistoricalGuidance,
   computeConfigHash,
   enqueueResearchApply,
   isValidRegionBriefCache,
   renderPlan,
   type PlanDimensionSpec,
+  type ReviewLabelEvalRow,
 } from '@deep-fryer/research';
 import { portraitConfigFromMap, tenantConfigMapIn } from './admin-data';
 import { UserError } from './action-result';
@@ -44,6 +47,22 @@ export function resolveCachedRegionBrief(
   if (!isTargetedRerun) return undefined;
   const configHash = computeConfigHash(config);
   return isValidRegionBriefCache(cache, configHash, now) ? cache.brief : undefined;
+}
+
+/**
+ * Pure: combine any explicit reviewer note for a dimension with sanitized,
+ * bounded historical guidance built from prior human defect `review_labels`
+ * so future runs learn from past rejections without dropping explicit notes.
+ */
+export function mergeReviewerNotesWithHistoricalGuidance(
+  explicitNote: string | undefined,
+  labels: readonly ReviewLabelEvalRow[],
+  dimensionSlug: string,
+): string | undefined {
+  const trimmed = explicitNote?.trim() ?? '';
+  const guidance = buildHistoricalGuidance(labels, dimensionSlug);
+  if (!guidance) return trimmed || undefined;
+  return trimmed ? `${trimmed}\n\n${guidance}` : guidance;
 }
 
 /**
@@ -87,6 +106,11 @@ export async function createPlannedRunIn(db: DbExecutor, input: PlannedRunInput)
       .orderBy(dimensions.displayOrder);
     if (dims.length === 0) throw new UserError('Select at least one dimension.');
 
+    // Load recent tenant review_labels on the same executor (single connection,
+    // RLS-scoped) so each planned dimension benefits from sanitized historical
+    // rejection guidance without opening a nested pooled connection.
+    const recentLabels = await loadTenantReviewLabels(db, input.tenantId);
+
     const specs: PlanDimensionSpec[] = [];
     for (const dim of dims) {
       const frameworkDim = frameworkDimension(dim.slug, dim.canonicalSlug);
@@ -103,7 +127,11 @@ export async function createPlannedRunIn(db: DbExecutor, input: PlannedRunInput)
         ring: dim.ring,
         name,
         indicators,
-        reviewerNotes: input.reviewerNotes?.[dim.id],
+        reviewerNotes: mergeReviewerNotesWithHistoricalGuidance(
+          input.reviewerNotes?.[dim.id],
+          recentLabels,
+          dim.slug,
+        ),
       });
     }
 

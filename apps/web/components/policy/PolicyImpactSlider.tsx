@@ -29,12 +29,12 @@ function directionBadge(direction: 'improves' | 'mixed'): { label: string; class
   if (direction === 'improves') {
     return {
       label: 'Directional improvement',
-      className: 'border-emerald-700/25 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200',
+      className: 'border-green-200 bg-green-50 text-green-900',
     };
   }
   return {
     label: 'Mixed / tradeoff',
-    className: 'border-amber-700/25 bg-amber-50 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200',
+    className: 'border-amber-200 bg-amber-50 text-amber-900',
   };
 }
 
@@ -263,7 +263,7 @@ export function PolicyImpactSlider({
               <div
                 className={`rounded-lg border p-3 ${
                   progress === 0
-                    ? 'border-[#0066cc]/40 bg-[#0066cc]/5'
+                    ? 'border-blue-300 bg-blue-50'
                     : 'border-black/10 bg-black/[0.02]'
                 }`}
               >
@@ -314,7 +314,7 @@ export function PolicyImpactSlider({
               </ul>
             </div>
 
-            <div className="mt-5 rounded-lg border-l-4 border-amber-700/50 bg-amber-50/70 p-3 text-xs text-[color:var(--color-fg)] dark:bg-amber-950/30">
+            <div className="mt-5 rounded-lg border-l-4 border-amber-500 bg-amber-50/70 p-3 text-xs text-[color:var(--color-fg)]">
               <p className="font-semibold">Scope &amp; caveat</p>
               <p className="mt-1 text-[color:var(--color-muted)]">{policy.caveat}</p>
             </div>

@@ -85,6 +85,9 @@ function placeRecord(
   if (key.startsWith('verifier:')) {
     return { role: 'verification', dimension_id: sessions.get(key.slice('verifier:'.length))?.dimensionId ?? null };
   }
+  if (key.startsWith('triage:')) {
+    return { role: 'verification', dimension_id: sessions.get(key.slice('triage:'.length))?.dimensionId ?? null };
+  }
   if (key.startsWith('correction:')) {
     return { role: 'research', dimension_id: sessions.get(key.slice('correction:'.length))?.dimensionId ?? null };
   }
@@ -105,7 +108,7 @@ function placeRecord(
  * about the side calls it left out, so it stays partial.
  */
 function recordsNothing(key: string, entry: SessionTokenUsage): boolean {
-  return key.startsWith('verifier:') && !entry.by_model && !entry.model
+  return (key.startsWith('verifier:') || key.startsWith('triage:')) && !entry.by_model && !entry.model
     && entry.input_tokens === 0 && entry.output_tokens === 0
     && !entry.cache_read_tokens && !entry.cache_write_tokens;
 }
