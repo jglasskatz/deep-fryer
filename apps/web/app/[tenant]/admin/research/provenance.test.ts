@@ -47,4 +47,19 @@ describe('provenance wording', () => {
     expect(runProvenanceSentence(run, ['a', 'b', 'c'])).toBe('Researched with m1, m2 and m3 on Anthropic, shared server');
     expect(runProvenanceSentence({ execution: null, tokenUsage: null }, ['a'])).toBe('Provider not recorded');
   });
+
+  it('includes correction and hybrid escalation research models in run provenance', () => {
+    const run = {
+      execution,
+      tokenUsage: {
+        a: { input_tokens: 10, output_tokens: 2, model: 'claude-sonnet-5' },
+        'correction:a': { input_tokens: 5, output_tokens: 1, model: 'claude-sonnet-5' },
+        'escalation:a': { input_tokens: 20, output_tokens: 4, model: 'claude-opus-5' },
+        'verifier:a': { input_tokens: 8, output_tokens: 1, model: 'claude-haiku-4-5' },
+      },
+    };
+    expect(runProvenanceSentence(run, ['a'])).toBe(
+      'Researched with claude-sonnet-5 and claude-opus-5 on Anthropic, shared server',
+    );
+  });
 });

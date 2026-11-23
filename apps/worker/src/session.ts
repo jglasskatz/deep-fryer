@@ -24,7 +24,7 @@ import { DEFAULT_SESSION_MAX_TURNS, DEFAULT_SESSION_MODEL } from '@deep-fryer/re
 import { captureEvidence } from './evidence.js';
 import { rejectedKeyError } from './org-key.js';
 import type { TenantStorage } from './storage.js';
-import { ARCHIVED_PDF, ARCHIVED_SNAPSHOT, type ArchivedExhibits } from './archived-exhibits.js';
+import { ARCHIVED_PDF, ARCHIVED_PDF_EXCERPT, ARCHIVED_SNAPSHOT, type ArchivedExhibits } from './archived-exhibits.js';
 
 // The fold the retry below uses, exported where the worker's callers look
 // for it; it lives in @deep-fryer/core because the measurement code folds
@@ -408,7 +408,12 @@ export async function runSession(input: {
   // - `permissionMode: 'dontAsk'` denies anything not pre-approved instead of
   //   falling back to default-mode rules (which auto-approve file reads).
   // Orchestrated mode adds only DISPATCH_TOOLS + the scout definition.
-  const hasArchive = Boolean(input.archivedExhibits?.pdf || input.archivedExhibits?.snapshot || input.archivedExhibits?.additional?.length);
+  const hasArchive = Boolean(
+    input.archivedExhibits?.pdf ||
+    input.archivedExhibits?.pdfExcerpt ||
+    input.archivedExhibits?.snapshot ||
+    input.archivedExhibits?.additional?.length,
+  );
   // Even a stale/malicious plan cannot turn on general file reads. Read only
   // exists when trusted archive bytes were supplied, and the hook below
   // independently denies every file except the fixed copies in this workspace.
@@ -419,11 +424,15 @@ export async function runSession(input: {
   try {
     const archivePaths = new Set<string>();
     const additional = input.archivedExhibits?.additional ?? [];
-    if (additional.length > 10 || additional.some(({ filename }) => !/^action-[1-5]-(?:snapshot\.png|source\.pdf)$/.test(filename))) {
+    if (
+      additional.length > 10 ||
+      additional.some(({ filename }) => !/^action-[1-5]-(?:snapshot\.png|source\.pdf|source-excerpt\.txt)$/.test(filename))
+    ) {
       throw new Error('invalid fixed action exhibit filename');
     }
     for (const [name, bytes] of [
       [ARCHIVED_PDF, input.archivedExhibits?.pdf],
+      [ARCHIVED_PDF_EXCERPT, input.archivedExhibits?.pdfExcerpt],
       [ARCHIVED_SNAPSHOT, input.archivedExhibits?.snapshot],
       ...additional.map(({ filename, body }) => [filename, body] as const),
     ] as const) {

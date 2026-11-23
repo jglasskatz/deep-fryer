@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { loadArchivedExhibits, loadFindingExhibits } from './archived-exhibits.js';
+import { ARCHIVED_PDF_EXCERPT, loadArchivedExhibits, loadFindingExhibits } from './archived-exhibits.js';
+import { OVERSIZED_PDF_EXCERPT_HEADER, PDF_PAGE_BREAK } from './text-extract.js';
 import type { IndicatorFindingPayload } from '@deep-fryer/core';
 import type { TenantStorage } from './storage.js';
 
@@ -56,5 +57,62 @@ describe('archived verifier exhibits', () => {
     expect(result.names).toEqual(['archived-source.pdf', 'archived-snapshot.png', 'action-1-snapshot.png']);
     expect(result.exhibits.additional).toEqual([{ filename: 'action-1-snapshot.png', body: Buffer.from('evidence/action.png') }]);
     expect(result.note).toContain('Action 2: The archived snapshot was not loaded');
+  });
+
+  it('extracts a bounded page-window text excerpt when an archived PDF exceeds 32 MiB and text_path exists', async () => {
+    const pages = [
+      'Cover page: Comprehensive City Report',
+      'Methodology overview',
+      'Table 8: Cost-burdened renters stood at 54.2% in 2024.',
+      'Appendix notes',
+    ];
+    const textCopy = `Text of the captured page\n\nDownload report\n\nText of the PDF document\n\n${pages.join(PDF_PAGE_BREAK)}\n`;
+    const payload = {
+      kind: 'indicator',
+      indicator_slug: 'cost-burdened-renters',
+      name: 'Cost-burdened renters',
+      value: 54.2,
+      unit: '%',
+      year: 2024,
+      source: 'City Planning',
+      source_url: 'https://city.example/huge-report.pdf#page=3',
+      notes: 'Table 8 on p. 3',
+      evidence: {
+        ...evidence,
+        text_path: 'evidence/capture.txt',
+      },
+    } as IndicatorFindingPayload;
+
+    const result = await loadFindingExhibits(
+      store(async (key) => {
+        if (key.endsWith('.pdf')) throw new Error('archived exhibit exceeds 33554432 bytes');
+        if (key === 'evidence/capture.txt') return Buffer.from(textCopy, 'utf8');
+        return Buffer.from('snapshot');
+      }),
+      payload,
+    );
+
+    expect(result.names).toEqual([ARCHIVED_PDF_EXCERPT, 'archived-snapshot.png']);
+    expect(result.exhibits.pdf).toBeUndefined();
+    expect(result.exhibits.pdfExcerpt).toBeDefined();
+    const excerptText = result.exhibits.pdfExcerpt!.toString('utf8');
+    expect(excerptText).toContain(OVERSIZED_PDF_EXCERPT_HEADER);
+    expect(excerptText).toContain('54.2%');
+    expect(result.note).toContain('exceeds the 32 MiB archive-reading limit');
+    expect(result.note).toContain(ARCHIVED_PDF_EXCERPT);
+  });
+
+  it('never reads an invalid or traversal text_path when falling back from an oversized PDF', async () => {
+    const get = vi.fn(async (key: string) => {
+      if (key.endsWith('.pdf')) throw new Error('archived exhibit exceeds 33554432 bytes');
+      return Buffer.from('snapshot');
+    });
+    const loaded = await loadArchivedExhibits(store(get), {
+      ...evidence,
+      text_path: '../other-tenant/evidence/secret.txt',
+    });
+    expect(get).not.toHaveBeenCalledWith('../other-tenant/evidence/secret.txt');
+    expect(loaded.exhibits.pdfExcerpt).toBeUndefined();
+    expect(loaded.note).toContain('pdf was not loaded: it exceeds the 32 MiB');
   });
 });

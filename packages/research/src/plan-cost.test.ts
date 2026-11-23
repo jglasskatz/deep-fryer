@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { defaultPortraitConfig, framework } from '@deep-fryer/contract';
 import { SESSIONS_PER_FULL_REFRESH, estimateRunCost, researchRunSessions } from '@deep-fryer/core';
-import { renderPlan } from './plan.js';
+import { estimatePlanCost, renderPlan } from './plan.js';
 
 /**
  * The cost estimate customers see (core research-cost.ts) counts sessions
@@ -41,5 +41,16 @@ describe('the cost estimate counts the sessions renderPlan emits', () => {
     // dimension is more than the two-session estimate for a sparse re-run.
     expect(plan.sessions).toHaveLength(4);
     expect(estimateRunCost(plan.sessions.length)).toEqual({ sessions: 4, lowUsd: 3.64, typicalUsd: 7.27, highUsd: 14.55 });
+  });
+
+  it('prices a rendered plan according to its chosen strategy (standard, hybrid, deep)', () => {
+    const dims = framework.dimensions.map(spec);
+    const standard = renderPlan({ config, dimensions: dims, strategy: 'standard' });
+    const hybrid = renderPlan({ config, dimensions: dims, strategy: 'hybrid' });
+    const deep = renderPlan({ config, dimensions: dims, strategy: 'deep' });
+    expect(hybrid.sessions).toHaveLength(SESSIONS_PER_FULL_REFRESH);
+    expect(estimatePlanCost(standard)).toEqual({ sessions: 22, lowUsd: 20, typicalUsd: 40, highUsd: 80 });
+    expect(estimatePlanCost(hybrid)).toEqual({ sessions: 22, lowUsd: 22, typicalUsd: 60, highUsd: 160 });
+    expect(estimatePlanCost(deep)).toEqual({ sessions: 22, lowUsd: 50, typicalUsd: 120, highUsd: 280 });
   });
 });

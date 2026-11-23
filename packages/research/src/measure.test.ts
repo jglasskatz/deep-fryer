@@ -159,19 +159,21 @@ describe('scoreStrategy', () => {
     expect(card.partialOutput).toBeCloseTo(0.5);
   });
 
-  it('charges verifier spend to the strategy and reports cost per verified finding', () => {
+  it('charges verifier, correction, and escalation spend to the strategy and reports cost per verified finding', () => {
     const usage = sessionSpend(
       {
         s1: { input_tokens: 1000, output_tokens: 200 },
+        'correction:s1': { input_tokens: 300, output_tokens: 50 },
+        'escalation:s1': { input_tokens: 500, output_tokens: 100 },
         'verifier:s1': { input_tokens: 700, output_tokens: 100 },
         s2: { input_tokens: 9999, output_tokens: 9999 },
       },
       's1',
     );
-    expect(usage).toEqual({ input_tokens: 1700, output_tokens: 300 });
+    expect(usage).toEqual({ input_tokens: 2500, output_tokens: 450 });
 
     const card = scoreStrategy([indicatorFinding({ verdict: 'pass' })], { indicatorsPlanned: 1, tokens: usage });
-    expect(card.costPerVerifiedFinding).toBe(2000);
+    expect(card.costPerVerifiedFinding).toBe(2950);
     // Old rows never said which model ran: their spend is unpriced, not $0.
     expect(card.unpriced).toEqual(['(model not recorded)']);
     expect(card.costPerVerifiedFindingUsd).toBeNull();
@@ -457,6 +459,41 @@ describe('scoreNegativeControls', () => {
     ]) {
       expect(scoreNegativeControls([f]).fabricationRate).toBe(1);
     }
+  });
+
+  it('honors portrait scale_policy so a city portrait permitting county/regional exempts verified non-local findings', () => {
+    const scalePolicy = {
+      default_accepted: ['city', 'county', 'regional'] as ('city' | 'county' | 'regional')[],
+      per_dimension: {
+        'air-pollution': ['city', 'county', 'regional'] as ('city' | 'county' | 'regional')[],
+      },
+    };
+    const countyVerified = indicatorFinding({
+      indicatorSlug: 'aragonite-saturation',
+      tenantSlug: 'santa-cruz',
+      value: 1.09,
+      scale: 'county',
+    });
+    const cityClaim = indicatorFinding({
+      indicatorSlug: 'aragonite-saturation',
+      tenantSlug: 'santa-cruz',
+      value: 2.7,
+      scale: 'city',
+    });
+    const unpermittedGlobal = indicatorFinding({
+      indicatorSlug: 'aragonite-saturation',
+      tenantSlug: 'santa-cruz',
+      value: 3.1,
+      scale: 'global',
+    });
+
+    const countyScore = scoreNegativeControls([countyVerified], NEGATIVE_CONTROLS, { scalePolicy });
+    expect(countyScore.fabricationRate).toBe(0);
+    expect(countyScore.results[0]).toMatchObject({ correct: true, observed: 'value', exempt: true });
+
+    // Local scale ('city') and unpermitted scale ('global') still count as fabrications.
+    expect(scoreNegativeControls([cityClaim], NEGATIVE_CONTROLS, { scalePolicy }).fabricationRate).toBe(1);
+    expect(scoreNegativeControls([unpermittedGlobal], NEGATIVE_CONTROLS, { scalePolicy }).fabricationRate).toBe(1);
   });
 
   it('ignores findings outside the control set', () => {

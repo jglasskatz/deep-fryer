@@ -291,7 +291,7 @@ export interface ResearchPlan {
 }
 
 /** The strategies a person can choose when planning a run. */
-export const RESEARCH_STRATEGIES = ['standard', 'deep'] as const;
+export const RESEARCH_STRATEGIES = ['standard', 'hybrid', 'deep'] as const;
 export type ResearchStrategy = (typeof RESEARCH_STRATEGIES)[number];
 
 /** Every strategy name a plan can record: the choosable ones, and the one a plan with no choice records. */
@@ -312,6 +312,13 @@ export interface ResearchModels {
    * worker's own setting.
    */
   page_reader_model?: string;
+  /**
+   * Stronger researcher model used for selective escalation on hybrid runs:
+   * only indicators that ended in a gap or failed verification after the
+   * initial pass are escalated to this model (orchestrating `subagent_model`
+   * scouts). Absent on standard, deep, and operator-defaults plans.
+   */
+  escalation_model?: string | null;
 }
 
 /** Turn limits frozen into a plan, so a later change to the worker's constants cannot change a planned run. */
@@ -322,6 +329,8 @@ export interface ResearchCaps {
   verifier_max_turns: number;
   /** One post-run audit session per audited finding. */
   audit_max_turns: number;
+  /** Optional bounded turn cap for selective escalation passes (hybrid strategy). */
+  escalation_max_turns?: number;
 }
 
 /**

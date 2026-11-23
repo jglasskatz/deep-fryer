@@ -30,7 +30,7 @@ export const planResearchAction = action(async (input: {
 }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
   if (input.strategy !== undefined && !isResearchStrategy(input.strategy)) {
-    throw new UserError('Choose the standard or deep research strategy.');
+    throw new UserError('Choose the standard, hybrid, or deep research strategy.');
   }
   const lists = planLists.parse(input);
   const auth = await getAuth();

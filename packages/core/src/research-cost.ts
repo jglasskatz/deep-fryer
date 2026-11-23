@@ -15,6 +15,7 @@
  * run ("Measuring it").
  */
 import { SESSIONS_PER_FULL_REFRESH } from './plans.js';
+import type { StrategyName } from './types.js';
 
 /** Bounded contexts for dense custom dimensions (SPEC-v3 W3.6). */
 export const MAX_INDICATORS_PER_RESEARCH_SESSION = 3;
@@ -81,21 +82,41 @@ export interface RunCostEstimate {
 const cents = (usd: number) => Math.round(usd * 100) / 100;
 
 /**
+ * Strategy cost multipliers relative to the standard baseline
+ * (docs/strategy-findings.md):
+ * - standard / operator-defaults: 1× baseline (Sonnet researchers + Opus verifier).
+ * - hybrid: Sonnet first, selectively escalating only gaps and verification
+ *   failures to Opus with Sonnet scouts (~1.1× when few escalate, ~1.5×
+ *   typical, ~2.0× on sparse/hard portraits).
+ * - deep: Opus orchestrating Sonnet scouts on every dimension (~2.5–3.5×).
+ */
+export const STRATEGY_COST_MULTIPLIERS: Readonly<
+  Record<StrategyName, { readonly low: number; readonly typical: number; readonly high: number }>
+> = {
+  standard: { low: 1, typical: 1, high: 1 },
+  'operator-defaults': { low: 1, typical: 1, high: 1 },
+  hybrid: { low: 1.1, typical: 1.5, high: 2.0 },
+  deep: { low: 2.5, typical: 3.0, high: 3.5 },
+};
+
+/**
  * Estimated API cost of a run of `sessionCount` research sessions (a policy
  * analysis is one, POLICY_ANALYSIS_SESSIONS; a one-dimension re-run is two,
  * researchRunSessions(1)). A full portrait, estimateRunCost(22), is exactly
  * the document's $20 / $40 / $80; a re-run, estimateRunCost(2), is
- * $1.82 / $3.64 / $7.27.
+ * $1.82 / $3.64 / $7.27. Pass `strategy` to scale the estimate for hybrid or
+ * deep runs; omitted defaults to the standard baseline.
  */
-export function estimateRunCost(sessionCount: number): RunCostEstimate {
+export function estimateRunCost(sessionCount: number, strategy: StrategyName = 'standard'): RunCostEstimate {
   if (!Number.isInteger(sessionCount) || sessionCount < 0) {
     throw new RangeError(`session count must be a whole number of sessions, got ${sessionCount}`);
   }
+  const m = STRATEGY_COST_MULTIPLIERS[strategy] ?? STRATEGY_COST_MULTIPLIERS.standard;
   return {
     sessions: sessionCount,
-    lowUsd: cents(sessionCount * RESEARCH_SESSION_COST_USD.low),
-    typicalUsd: cents(sessionCount * RESEARCH_SESSION_COST_USD.typical),
-    highUsd: cents(sessionCount * RESEARCH_SESSION_COST_USD.high),
+    lowUsd: cents(sessionCount * RESEARCH_SESSION_COST_USD.low * m.low),
+    typicalUsd: cents(sessionCount * RESEARCH_SESSION_COST_USD.typical * m.typical),
+    highUsd: cents(sessionCount * RESEARCH_SESSION_COST_USD.high * m.high),
   };
 }
 

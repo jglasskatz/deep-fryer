@@ -56,6 +56,15 @@ describe('estimateRunCost', () => {
     expect(() => estimateRunCost(-1)).toThrow(RangeError);
     expect(() => estimateRunCost(1.5)).toThrow(RangeError);
   });
+
+  it('scales estimates by strategy: standard baseline, hybrid selective escalation, and deep', () => {
+    expect(estimateRunCost(22, 'standard')).toEqual({ sessions: 22, lowUsd: 20, typicalUsd: 40, highUsd: 80 });
+    expect(estimateRunCost(22, 'operator-defaults')).toEqual({ sessions: 22, lowUsd: 20, typicalUsd: 40, highUsd: 80 });
+    expect(estimateRunCost(22, 'hybrid')).toEqual({ sessions: 22, lowUsd: 22, typicalUsd: 60, highUsd: 160 });
+    expect(estimateRunCost(22, 'deep')).toEqual({ sessions: 22, lowUsd: 50, typicalUsd: 120, highUsd: 280 });
+    expect(formatCostRange(estimateRunCost(22, 'hybrid'))).toBe('$22–160');
+    expect(formatCostRange(estimateRunCost(22, 'deep'))).toBe('$50–280');
+  });
 });
 
 describe('formatCostRange', () => {

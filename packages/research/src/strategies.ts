@@ -57,6 +57,21 @@ export const STRATEGIES: readonly StrategyEntry[] = Object.freeze([
     },
     caps: { session_max_turns: 60, verifier_max_turns: 12, audit_max_turns: 16 },
   }),
+  // Tiered strategy (docs/strategy-findings.md): Sonnet researches first;
+  // only indicators that end in a gap or fail independent verification
+  // escalate to a bounded Opus deep-discovery pass with Sonnet scouts.
+  frozen({
+    name: 'hybrid',
+    version: 1,
+    models: {
+      session_model: 'claude-sonnet-5',
+      subagent_model: 'claude-sonnet-5',
+      escalation_model: 'claude-opus-5',
+      verifier_model: 'claude-opus-5',
+      page_reader_model: HAIKU_4_5_PAGE_READER,
+    },
+    caps: { session_max_turns: 60, verifier_max_turns: 12, audit_max_turns: 16, escalation_max_turns: 40 },
+  }),
   // What a plan records when nobody chose a strategy: these models are the
   // fallbacks, and the operator's settings at planning time replace them
   // (operatorDefaultModels). The resolved models are what the plan keeps.

@@ -1,13 +1,18 @@
 import { gzipSync } from 'node:zlib';
 import type { Task } from 'graphile-worker';
 import { and, eq, inArray, isNotNull } from 'drizzle-orm';
+import type { PortraitConfig } from '@deep-fryer/contract';
 import {
   emptyUsage,
   type ContentSupported,
   type FindingPayload,
+  type FindingVerification,
+  type IndicatorEvidence,
+  type IndicatorFindingPayload,
   type ResearchPlan,
   type RunTokenUsage,
   type SessionTokenUsage,
+  type ValueOnPage,
 } from '@deep-fryer/core';
 import { keyHint } from '@deep-fryer/core/secrets';
 import {
@@ -23,15 +28,23 @@ import {
 } from '@deep-fryer/db';
 import {
   checkValueOnPage,
+  correctionReasons,
+  DEFAULT_ESCALATION_MAX_TURNS,
   deterministicChecks,
   mergeVerification,
+  planPreVerifierCorrection,
+  renderHybridEscalationPrompt,
   renderVerifierPrompt,
   REGION_BRIEF_PLACEHOLDER,
+  selectEscalationCandidates,
+  shouldAcceptCorrection,
+  shouldAcceptEscalation,
   VERIFIER_MAX_TURNS,
   VERIFIER_TOOLS,
   type ApplyJobPayload,
+  type DeterministicGateChecks,
 } from '@deep-fryer/research';
-import { closeEvidenceBrowser } from '../evidence.js';
+import { captureEvidence, closeEvidenceBrowser } from '../evidence.js';
 import {
   OrgKeyUnavailableError,
   modelNamedIn,
@@ -264,12 +277,13 @@ export const researchApply: Task = async (rawPayload, helpers) => {
       const prompt = spec.prompt.split(REGION_BRIEF_PLACEHOLDER).join(regionBrief);
       let result: SessionResult;
       try {
+        const initialScout = plannedInitialScoutModel(plan);
         result = await runSessionWithRetry({
           prompt,
           allowedTools: spec.tool_allowlist,
           storage,
           ...plannedResearchOptions(plan),
-          ...(plan.models ? { scoutModel: plan.models.subagent_model } : {}),
+          ...(initialScout !== undefined ? { scoutModel: initialScout } : {}),
           ...keyOption,
         });
       } catch (err) {
@@ -305,68 +319,69 @@ export const researchApply: Task = async (rawPayload, helpers) => {
         helpers.logger.error(`session ${row.id}: output was not parseable JSON`);
       }
 
-      // Every verifier session of this dimension, folded whole (cache tokens
-      // and per-model usage included) and filed under `verifier:<session id>`.
-      let verifierUsage = emptyUsage();
-      for (const raw of rawFindings) {
-        const deterministic = await deterministicChecks(raw, config, dimension.slug);
-        const payload = deterministic.payload;
-        // The value check reads the text kept with the capture, and is
-        // recorded before the verifier runs: a finding whose value is not on
-        // its page is flagged, and still gets its verifier.
-        const valueCheck = payload ? await checkValueOnPage(payload, readEvidenceText) : undefined;
-        const checks = valueCheck ? { ...deterministic.checks, value_on_page: valueCheck } : deterministic.checks;
-
-        let verdict: { content_supported: ContentSupported; verifier_note?: string; narrative_supported?: ContentSupported } | null;
-        if (payload?.kind === 'indicator') {
-          if (keyFailure) {
-            // The key was refused (here or in a concurrent session): starting
-            // a verifier on it would only be refused again.
-            verdict = { content_supported: 'uncertain', verifier_note: `verifier did not run: ${keyFailure.message}` };
-          } else {
+      const initialScout = plannedInitialScoutModel(plan);
+      const evaluated = await evaluateDimensionFindings(
+        {
+          sessionId: row.id,
+          config,
+          dimensionSlug: dimension.slug,
+          dimensionName: dimension.slug,
+          regionBrief,
+          plan,
+          rawFindings,
+          salvaged,
+          initialKeyFailure: keyFailure,
+        },
+        {
+          deterministicChecks: (raw, cfg, slug) => deterministicChecks(raw, cfg, slug),
+          checkValueOnPage: (payload) => checkValueOnPage(payload, readEvidenceText),
+          recaptureEvidence: async (url, pdfUrl) => {
             try {
-              const verified = await runVerifier(payload, config.region.name, apiKey, storage, plan);
-              verifierUsage = mergeUsage(verifierUsage, verified.usage);
-              verdict = verified.verdict;
-              if (verified.failure) noteFailure(verified.failure);
-            } catch (err) {
-              if (!(err instanceof OrgKeyUnavailableError)) throw err;
-              keyFailure ??= err;
-              noteKeyFailure(err);
-              if (err.usage) verifierUsage = mergeUsage(verifierUsage, err.usage);
-              verdict = { content_supported: 'uncertain', verifier_note: `verifier did not run: ${err.message}` };
+              return await captureEvidence(storage, url, pdfUrl);
+            } catch {
+              return null;
             }
-          }
-        } else if (payload?.kind === 'gap') {
-          verdict = {
-            content_supported: 'uncertain',
-            verifier_note: 'data gap — nothing to fetch; review the search trail',
-          };
-        } else {
-          verdict = {
-            content_supported: 'fail',
-            verifier_note: 'output did not conform to the finding schema',
-          };
-        }
+          },
+          runCorrectionSession: ({ prompt: correctionPrompt, maxTurns }) =>
+            runSessionWithRetry({
+              prompt: correctionPrompt,
+              allowedTools: spec.tool_allowlist,
+              storage,
+              ...plannedResearchOptions(plan),
+              maxTurns,
+              ...(initialScout !== undefined ? { scoutModel: initialScout } : {}),
+              ...keyOption,
+            }),
+          runEscalationSession: ({ prompt: escalationPrompt, maxTurns }) =>
+            runSessionWithRetry({
+              prompt: escalationPrompt,
+              allowedTools: spec.tool_allowlist,
+              storage,
+              ...plannedEscalationOptions(plan),
+              maxTurns,
+              ...keyOption,
+            }),
+          runVerifier: (payload) => runVerifier(payload, config.region.name, apiKey, storage, plan),
+          onFailure: noteFailure,
+          onKeyFailure: noteKeyFailure,
+          warn: (msg) => helpers.logger.warn(msg),
+        },
+      );
 
-        const indicatorSlug =
-          payload?.indicator_slug ??
-          (typeof raw === 'object' && raw !== null && 'indicator_slug' in raw
-            ? String((raw as { indicator_slug: unknown }).indicator_slug)
-            : 'unknown');
+      if (evaluated.keyFailure) keyFailure ??= evaluated.keyFailure;
+      if (evaluated.correctionUsage) usage[`correction:${row.id}`] = evaluated.correctionUsage;
+      if (evaluated.escalationUsage) usage[`escalation:${row.id}`] = evaluated.escalationUsage;
+      usage[`verifier:${row.id}`] = evaluated.verifierUsage;
 
-        if (payload?.kind === 'indicator' && payload.narrative_draft && !verdict?.narrative_supported) {
-          verdict = { content_supported: verdict?.content_supported ?? 'uncertain', ...verdict, narrative_supported: 'uncertain' };
-        }
+      for (const record of evaluated.records) {
         await db.insert(findings).values({
           sessionId: row.id,
           dimensionId: dimension.id,
-          indicatorSlug,
-          payload: (payload ?? raw) as FindingPayload,
-          verification: mergeVerification(salvaged ? { ...checks, partial_output: true } : checks, verdict),
+          indicatorSlug: record.indicatorSlug,
+          payload: record.payload,
+          verification: record.verification,
         });
       }
-      usage[`verifier:${row.id}`] = verifierUsage;
 
       await db
         .update(researchSessions)
@@ -568,6 +583,355 @@ export function plannedResearchOptions(plan: Pick<ResearchPlan, 'models' | 'caps
     ...(plan.models ? { model: plan.models.session_model } : {}),
     ...(plan.caps ? { maxTurns: plan.caps.session_max_turns } : {}),
     ...(plan.models?.page_reader_model ? { pageReaderModel: plan.models.page_reader_model } : {}),
+  };
+}
+
+/**
+ * Pure: scout model for a dimension's initial research pass. On a hybrid plan
+ * (`escalation_model` set), `subagent_model` is reserved for the Opus
+ * escalation pass so the initial Sonnet pass runs without subagent overhead.
+ */
+export function plannedInitialScoutModel(plan: Pick<ResearchPlan, 'models'>): string | null | undefined {
+  if (!plan.models) return undefined;
+  if (plan.models.escalation_model) return null;
+  return plan.models.subagent_model;
+}
+
+/**
+ * Pure: session options for a hybrid strategy's selective Opus escalation pass.
+ */
+export function plannedEscalationOptions(plan: Pick<ResearchPlan, 'models' | 'caps'>): {
+  model?: string;
+  scoutModel?: string | null;
+  maxTurns: number;
+  pageReaderModel?: string;
+} {
+  return {
+    ...(plan.models?.escalation_model ? { model: plan.models.escalation_model } : {}),
+    ...(plan.models ? { scoutModel: plan.models.subagent_model } : {}),
+    maxTurns: plan.caps?.escalation_max_turns ?? DEFAULT_ESCALATION_MAX_TURNS,
+    ...(plan.models?.page_reader_model ? { pageReaderModel: plan.models.page_reader_model } : {}),
+  };
+}
+
+export interface DimensionFindingPipelineDeps {
+  deterministicChecks: (
+    raw: unknown,
+    config: PortraitConfig,
+    dimensionSlug: string,
+  ) => Promise<{ payload: FindingPayload | null; checks: DeterministicGateChecks }>;
+  checkValueOnPage: (payload: FindingPayload) => Promise<ValueOnPage | undefined>;
+  recaptureEvidence?: (url: string, pdfUrl?: string) => Promise<IndicatorEvidence | null>;
+  runCorrectionSession: (input: { prompt: string; maxTurns: number }) => Promise<SessionResult>;
+  runEscalationSession: (input: { prompt: string; maxTurns: number }) => Promise<SessionResult>;
+  runVerifier: (payload: IndicatorFindingPayload) => Promise<{
+    verdict: Verdict | null;
+    usage: SessionTokenUsage;
+    failure?: { apiError?: string; apiErrorText?: string; usage: SessionTokenUsage };
+  }>;
+  onFailure?: (report: { apiError?: string; apiErrorText?: string; usage: SessionTokenUsage }) => void;
+  onKeyFailure?: (err: OrgKeyUnavailableError) => void;
+  warn?: (message: string) => void;
+}
+
+function slugOf(payload: FindingPayload | null, raw: unknown): string {
+  return (
+    payload?.indicator_slug ??
+    (typeof raw === 'object' && raw !== null && 'indicator_slug' in raw
+      ? String((raw as { indicator_slug: unknown }).indicator_slug)
+      : 'unknown')
+  );
+}
+
+/**
+ * Runs deterministic gates, at most 1 bounded pre-verifier self-correction pass
+ * for findings failing `value_on_page` or `home_page_link`, independent
+ * verification, and — on hybrid plans — selective Opus escalation ONLY for
+ * indicators that ended in a `gap` or failed verification.
+ *
+ * Extracted from `researchApply` so every stage, turn cap, metering bucket,
+ * and organization-key refusal path is unit-testable without Postgres.
+ */
+export async function evaluateDimensionFindings(
+  input: {
+    sessionId: string;
+    config: PortraitConfig;
+    dimensionSlug: string;
+    dimensionName: string;
+    regionBrief: string;
+    plan: Pick<ResearchPlan, 'models' | 'caps'>;
+    rawFindings: readonly unknown[];
+    salvaged: boolean;
+    initialKeyFailure: OrgKeyUnavailableError | null;
+  },
+  deps: DimensionFindingPipelineDeps,
+): Promise<{
+  records: { indicatorSlug: string; payload: FindingPayload; verification: FindingVerification }[];
+  verifierUsage: SessionTokenUsage;
+  correctionUsage?: SessionTokenUsage;
+  escalationUsage?: SessionTokenUsage;
+  keyFailure: OrgKeyUnavailableError | null;
+}> {
+  let keyFailure = input.initialKeyFailure;
+  let verifierUsage = emptyUsage();
+  let correctionUsage: SessionTokenUsage | undefined;
+  let escalationUsage: SessionTokenUsage | undefined;
+
+  interface WorkingEntry {
+    raw: unknown;
+    payload: FindingPayload | null;
+    checks: DeterministicGateChecks;
+    indicatorSlug: string;
+    salvaged: boolean;
+    verdict: Verdict | null;
+  }
+
+  const runGates = async (raw: unknown) => {
+    const det = await deps.deterministicChecks(raw, input.config, input.dimensionSlug);
+    const valCheck = det.payload ? await deps.checkValueOnPage(det.payload) : undefined;
+    const checks: DeterministicGateChecks = valCheck ? { ...det.checks, value_on_page: valCheck } : det.checks;
+    return { payload: det.payload, checks };
+  };
+
+  // Stage 1: cheap deterministic gates on every initial finding.
+  const entries: WorkingEntry[] = [];
+  for (const raw of input.rawFindings) {
+    const { payload, checks } = await runGates(raw);
+    entries.push({
+      raw,
+      payload,
+      checks,
+      indicatorSlug: slugOf(payload, raw),
+      salvaged: input.salvaged,
+      verdict: null,
+    });
+  }
+
+  // Stage 2: at most 1 bounded pre-verifier deterministic self-correction pass
+  // for findings where value_on_page === 'not_found' or home_page_link === true.
+  const flagged = entries.flatMap((entry) => {
+    if (entry.payload?.kind !== 'indicator') return [];
+    const reasons = correctionReasons(entry.payload, entry.checks);
+    return reasons.length > 0 ? [{ payload: entry.payload, checks: entry.checks, reasons }] : [];
+  });
+  const correctionPlan = planPreVerifierCorrection({
+    config: input.config,
+    dimensionSlug: input.dimensionSlug,
+    dimensionName: input.dimensionName,
+    regionBrief: input.regionBrief,
+    flagged,
+    sessionMaxTurns: input.plan.caps?.session_max_turns,
+  });
+
+  if (correctionPlan && !keyFailure) {
+    let correctionResult: SessionResult | null = null;
+    try {
+      correctionResult = await deps.runCorrectionSession({
+        prompt: correctionPlan.prompt,
+        maxTurns: correctionPlan.maxTurns,
+      });
+    } catch (err) {
+      if (!(err instanceof OrgKeyUnavailableError)) throw err;
+      keyFailure ??= err;
+      deps.onKeyFailure?.(err);
+      if (err.usage) correctionUsage = err.usage;
+    }
+
+    if (correctionResult) {
+      correctionUsage = correctionResult.usage;
+      if (!correctionResult.succeeded) deps.onFailure?.(correctionResult);
+      let correctedRaw: unknown[] = [];
+      let correctionSalvaged = false;
+      try {
+        const parsed = extractJson(correctionResult.resultText);
+        correctedRaw = Array.isArray(parsed.value) ? parsed.value : [parsed.value];
+        correctionSalvaged = parsed.salvaged;
+      } catch {
+        deps.warn?.(`session ${input.sessionId}: pre-verifier self-correction output was not parseable JSON; keeping initial findings`);
+      }
+
+      const flaggedSlugSet = new Set(correctionPlan.flaggedSlugs);
+      const candidatesBySlug = new Map<string, unknown>();
+      for (const candidate of correctedRaw) {
+        const slug = slugOf(null, candidate);
+        if (flaggedSlugSet.has(slug) && !candidatesBySlug.has(slug)) {
+          candidatesBySlug.set(slug, candidate);
+        }
+      }
+
+      for (let i = 0; i < entries.length; i++) {
+        const entry = entries[i]!;
+        if (entry.payload?.kind !== 'indicator' || !flaggedSlugSet.has(entry.indicatorSlug)) continue;
+        let candidate = candidatesBySlug.get(entry.indicatorSlug);
+        if (!candidate) continue;
+
+        // If the researcher updated source_url but forgot to call capture_evidence
+        // (reusing the old snapshot_path), re-capture best-effort before re-checking.
+        if (
+          deps.recaptureEvidence &&
+          typeof candidate === 'object' &&
+          candidate !== null &&
+          (candidate as { kind?: unknown }).kind === 'indicator'
+        ) {
+          const candObj = candidate as { source_url?: unknown; evidence?: { snapshot_path?: unknown } };
+          if (
+            typeof candObj.source_url === 'string' &&
+            candObj.source_url !== entry.payload.source_url &&
+            candObj.evidence?.snapshot_path === entry.payload.evidence.snapshot_path
+          ) {
+            const pdfUrl = candObj.source_url.toLowerCase().endsWith('.pdf') ? candObj.source_url : undefined;
+            const freshEvidence = await deps.recaptureEvidence(candObj.source_url, pdfUrl);
+            if (freshEvidence) {
+              candidate = { ...(candidate as Record<string, unknown>), evidence: freshEvidence };
+            }
+          }
+        }
+
+        const gated = await runGates(candidate);
+        if (shouldAcceptCorrection({ payload: entry.payload, checks: entry.checks }, gated)) {
+          entries[i] = {
+            raw: candidate,
+            payload: gated.payload,
+            checks: gated.checks,
+            indicatorSlug: slugOf(gated.payload, candidate),
+            salvaged: entry.salvaged || correctionSalvaged,
+            verdict: null,
+          };
+        }
+      }
+    }
+  }
+
+  // Helper to verify one finding, folding verifier usage and honoring key refusals.
+  const verifyPayload = async (payload: FindingPayload | null): Promise<Verdict | null> => {
+    if (payload?.kind === 'indicator') {
+      if (keyFailure) {
+        return { content_supported: 'uncertain', verifier_note: `verifier did not run: ${keyFailure.message}` };
+      }
+      try {
+        const verified = await deps.runVerifier(payload);
+        verifierUsage = mergeUsage(verifierUsage, verified.usage);
+        if (verified.failure) deps.onFailure?.(verified.failure);
+        return verified.verdict;
+      } catch (err) {
+        if (!(err instanceof OrgKeyUnavailableError)) throw err;
+        keyFailure ??= err;
+        deps.onKeyFailure?.(err);
+        if (err.usage) verifierUsage = mergeUsage(verifierUsage, err.usage);
+        return { content_supported: 'uncertain', verifier_note: `verifier did not run: ${err.message}` };
+      }
+    }
+    if (payload?.kind === 'gap') {
+      return {
+        content_supported: 'uncertain',
+        verifier_note: 'data gap — nothing to fetch; review the search trail',
+      };
+    }
+    return {
+      content_supported: 'fail',
+      verifier_note: 'output did not conform to the finding schema',
+    };
+  };
+
+  // Stage 3: independent verifier on every finding.
+  for (const entry of entries) {
+    entry.verdict = await verifyPayload(entry.payload);
+  }
+
+  // Stage 4: selective hybrid escalation (only when escalation_model is set on the plan).
+  if (input.plan.models?.escalation_model && !keyFailure) {
+    const escalationCandidates = selectEscalationCandidates(
+      entries.map((e) => ({ indicatorSlug: e.indicatorSlug, payload: e.payload, verdict: e.verdict })),
+    );
+    if (escalationCandidates.length > 0) {
+      const escalationPrompt = renderHybridEscalationPrompt({
+        config: input.config,
+        dimensionSlug: input.dimensionSlug,
+        dimensionName: input.dimensionName,
+        regionBrief: input.regionBrief,
+        candidates: escalationCandidates,
+      });
+      const maxTurns = input.plan.caps?.escalation_max_turns ?? DEFAULT_ESCALATION_MAX_TURNS;
+
+      let escResult: SessionResult | null = null;
+      try {
+        escResult = await deps.runEscalationSession({ prompt: escalationPrompt, maxTurns });
+      } catch (err) {
+        if (!(err instanceof OrgKeyUnavailableError)) throw err;
+        keyFailure ??= err;
+        deps.onKeyFailure?.(err);
+        if (err.usage) escalationUsage = err.usage;
+      }
+
+      if (escResult) {
+        escalationUsage = escResult.usage;
+        if (!escResult.succeeded) deps.onFailure?.(escResult);
+        let escRaw: unknown[] = [];
+        let escSalvaged = false;
+        try {
+          const parsed = extractJson(escResult.resultText);
+          escRaw = Array.isArray(parsed.value) ? parsed.value : [parsed.value];
+          escSalvaged = parsed.salvaged;
+        } catch {
+          deps.warn?.(`session ${input.sessionId}: hybrid escalation output was not parseable JSON; keeping initial findings`);
+        }
+
+        const escalatedSlugSet = new Set(escalationCandidates.map((c) => c.indicatorSlug));
+        const escBySlug = new Map<string, unknown>();
+        for (const candidate of escRaw) {
+          const slug = slugOf(null, candidate);
+          if (escalatedSlugSet.has(slug) && !escBySlug.has(slug)) {
+            escBySlug.set(slug, candidate);
+          }
+        }
+
+        for (let i = 0; i < entries.length; i++) {
+          const entry = entries[i]!;
+          if (!escalatedSlugSet.has(entry.indicatorSlug)) continue;
+          const candidate = escBySlug.get(entry.indicatorSlug);
+          if (!candidate) continue;
+
+          const gated = await runGates(candidate);
+          const verdict = await verifyPayload(gated.payload);
+          if (
+            shouldAcceptEscalation(
+              { indicatorSlug: entry.indicatorSlug, payload: entry.payload, verdict: entry.verdict },
+              { indicatorSlug: slugOf(gated.payload, candidate), payload: gated.payload, verdict },
+            )
+          ) {
+            entries[i] = {
+              raw: candidate,
+              payload: gated.payload,
+              checks: gated.checks,
+              indicatorSlug: slugOf(gated.payload, candidate),
+              salvaged: escSalvaged,
+              verdict,
+            };
+          }
+        }
+      }
+    }
+  }
+
+  // Stage 5: finalize records for persistence.
+  const records = entries.map((entry) => {
+    let verdict = entry.verdict;
+    if (entry.payload?.kind === 'indicator' && entry.payload.narrative_draft && !verdict?.narrative_supported) {
+      verdict = { content_supported: verdict?.content_supported ?? 'uncertain', ...verdict, narrative_supported: 'uncertain' };
+    }
+    return {
+      indicatorSlug: entry.indicatorSlug,
+      payload: (entry.payload ?? entry.raw) as FindingPayload,
+      verification: mergeVerification(entry.salvaged ? { ...entry.checks, partial_output: true } : entry.checks, verdict),
+    };
+  });
+
+  return {
+    records,
+    verifierUsage,
+    ...(correctionUsage ? { correctionUsage } : {}),
+    ...(escalationUsage ? { escalationUsage } : {}),
+    keyFailure,
   };
 }
 

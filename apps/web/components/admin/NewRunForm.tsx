@@ -57,14 +57,18 @@ export function NewRunForm({
       </p>
       <fieldset className="mt-4" disabled={pending}>
         <legend className="text-sm font-medium">Research strategy</legend>
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        <div className="mt-2 grid gap-2 sm:grid-cols-3">
           <label className="flex cursor-pointer items-start gap-3 rounded border border-black/15 p-3 text-sm">
             <input className="mt-1" type="radio" name="research-strategy" value="standard" checked={strategy === 'standard'} onChange={() => setStrategy('standard')} />
-            <span><strong className="block">Standard</strong><span className="block text-xs text-[color:var(--color-muted)]">Sonnet research with independent Opus verification. Estimated API usage: {formatCostRange(estimateRunCost(sessions))} for this selection.</span></span>
+            <span><strong className="block">Standard</strong><span className="block text-xs text-[color:var(--color-muted)]">Sonnet research with independent Opus verification. Estimated API usage: {formatCostRange(estimateRunCost(sessions, 'standard'))} for this selection.</span></span>
+          </label>
+          <label className="flex cursor-pointer items-start gap-3 rounded border border-black/15 p-3 text-sm">
+            <input className="mt-1" type="radio" name="research-strategy" value="hybrid" checked={strategy === 'hybrid'} onChange={() => setStrategy('hybrid')} />
+            <span><strong className="block">Hybrid</strong><span className="block text-xs text-[color:var(--color-muted)]">Sonnet first, selectively escalating only gaps and failed verifications to Opus with Sonnet scouts. Estimated API usage: {formatCostRange(estimateRunCost(sessions, 'hybrid'))} for this selection.</span></span>
           </label>
           <label className="flex cursor-pointer items-start gap-3 rounded border border-black/15 p-3 text-sm">
             <input className="mt-1" type="radio" name="research-strategy" value="deep" checked={strategy === 'deep'} onChange={() => setStrategy('deep')} />
-            <span><strong className="block">Deep</strong><span className="block text-xs text-[color:var(--color-muted)]">Opus leads the research with Sonnet scouts. Uses more API budget; independent Opus verification stays the same.</span></span>
+            <span><strong className="block">Deep</strong><span className="block text-xs text-[color:var(--color-muted)]">Opus leads the research with Sonnet scouts. Estimated API usage: {formatCostRange(estimateRunCost(sessions, 'deep'))}; independent Opus verification stays the same.</span></span>
           </label>
         </div>
         <p className="mt-2 text-xs text-[color:var(--color-muted)]">Estimates describe API usage, not a charge or spending cap. Actual usage and estimated cost appear on the run.</p>

@@ -155,13 +155,16 @@ describe('runSession containment', () => {
       workspace = options.cwd as string;
       expect(await readFile(path.join(workspace, 'archived-snapshot.png'), 'utf8')).toBe('captured source');
       expect(await readFile(path.join(workspace, 'archived-source.pdf'), 'utf8')).toBe('captured PDF');
+      expect(await readFile(path.join(workspace, 'archived-source-excerpt.txt'), 'utf8')).toBe('bounded PDF excerpt');
       expect((await stat(path.join(workspace, 'archived-snapshot.png'))).mode & 0o777).toBe(0o400);
+      expect((await stat(path.join(workspace, 'archived-source-excerpt.txt'))).mode & 0o777).toBe(0o400);
       const hooks = options.hooks as { PreToolUse: { matcher: string; hooks: ((input: unknown) => Promise<unknown>)[] }[] };
       expect(hooks.PreToolUse[0]!.matcher).toBe('Read');
       const guard = hooks.PreToolUse[0]!.hooks[0]!;
       const read = (file_path: unknown) => guard({ hook_event_name: 'PreToolUse', tool_name: 'Read', tool_input: { file_path } });
       expect(await read('archived-snapshot.png')).toEqual({});
       expect(await read(path.join(workspace, 'archived-source.pdf'))).toEqual({});
+      expect(await read('archived-source-excerpt.txt')).toEqual({});
       for (const file of ['../other-session/archived-source.pdf', '/etc/passwd', '../../.env', 'missing.png', 42]) {
         expect(await read(file)).toMatchObject({ hookSpecificOutput: { permissionDecision: 'deny' } });
       }
@@ -171,7 +174,11 @@ describe('runSession containment', () => {
     };
     const { options } = await optionsFor({
       prompt: 'Verify independently.', allowedTools: ['WebFetch', 'Read'], orchestrate: false,
-      archivedExhibits: { snapshot: Buffer.from('captured source'), pdf: Buffer.from('captured PDF') },
+      archivedExhibits: {
+        snapshot: Buffer.from('captured source'),
+        pdf: Buffer.from('captured PDF'),
+        pdfExcerpt: Buffer.from('bounded PDF excerpt'),
+      },
     });
     expect(options.tools).toEqual(['WebFetch', 'Read']);
     expect(options.disallowedTools).not.toContain('Read');

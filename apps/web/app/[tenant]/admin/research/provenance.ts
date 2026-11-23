@@ -126,7 +126,9 @@ export function runProvenanceSentence(
   run: { execution: RunExecution | null; tokenUsage: RunTokenUsage | null },
   researchSessionIds: readonly string[],
 ): string {
-  const records = researchSessionIds.flatMap((id) => run.tokenUsage?.[id] ?? []);
+  const records = researchSessionIds.flatMap((id) =>
+    [id, `correction:${id}`, `escalation:${id}`].flatMap((key) => run.tokenUsage?.[key] ?? []),
+  );
   if (records.length === 0) {
     return run.execution ? `Runs ${whereItRan(run.execution)}` : capitalizeFirst(PROVIDER_NOT_RECORDED);
   }

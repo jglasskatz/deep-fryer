@@ -20,6 +20,7 @@ import {
 const PUBLISHED: Record<string, string> = {
   'standard@1': '68964dcec8b45016',
   'deep@1': 'b75ed1874dd00bd0',
+  'hybrid@1': 'f0c659492033b985',
   'operator-defaults@1': 'fa2a7736d925f075',
 };
 
@@ -75,12 +76,26 @@ describe('the strategy registry', () => {
       models: { session_model: 'claude-opus-5', subagent_model: 'claude-sonnet-5', verifier_model: 'claude-opus-5', page_reader_model: 'claude-haiku-4-5-20251001' },
       caps: { session_max_turns: 60, verifier_max_turns: 12, audit_max_turns: 16 },
     });
+    expect(strategyEntry('hybrid', 1)).toEqual({
+      name: 'hybrid',
+      version: 1,
+      models: {
+        session_model: 'claude-sonnet-5',
+        subagent_model: 'claude-sonnet-5',
+        escalation_model: 'claude-opus-5',
+        verifier_model: 'claude-opus-5',
+        page_reader_model: 'claude-haiku-4-5-20251001',
+      },
+      caps: { session_max_turns: 60, verifier_max_turns: 12, audit_max_turns: 16, escalation_max_turns: 40 },
+    });
   });
 
   it('resolves a name to its newest version and name@version to that version exactly', () => {
     expect(resolveStrategy('deep')).toBe(latestStrategy('deep'));
     expect(resolveStrategy('deep@1')).toBe(strategyEntry('deep', 1));
-    expect(() => resolveStrategy('deep@9')).toThrow(/unknown research strategy "deep@9"; known: standard@1, deep@1, operator-defaults@1/);
+    expect(resolveStrategy('hybrid')).toBe(latestStrategy('hybrid'));
+    expect(resolveStrategy('hybrid@1')).toBe(strategyEntry('hybrid', 1));
+    expect(() => resolveStrategy('deep@9')).toThrow(/unknown research strategy "deep@9"; known: standard@1, deep@1, hybrid@1, operator-defaults@1/);
     expect(() => resolveStrategy('fast')).toThrow(/unknown research strategy/);
     expect(() => resolveStrategy('deep@0')).toThrow(/unknown research strategy/);
   });
@@ -99,6 +114,20 @@ describe('the strategy a plan records', () => {
       strategy_version: 1,
       models: { session_model: 'claude-opus-5', subagent_model: 'claude-sonnet-5', verifier_model: 'claude-opus-5', page_reader_model: 'claude-haiku-4-5-20251001' },
       caps: { session_max_turns: 60, verifier_max_turns: 12, audit_max_turns: 16 },
+    });
+
+    const hybridPlan = renderPlan({ config, dimensions: [], strategy: 'hybrid' });
+    expect(hybridPlan).toMatchObject({
+      strategy: 'hybrid',
+      strategy_version: 1,
+      models: {
+        session_model: 'claude-sonnet-5',
+        subagent_model: 'claude-sonnet-5',
+        escalation_model: 'claude-opus-5',
+        verifier_model: 'claude-opus-5',
+        page_reader_model: 'claude-haiku-4-5-20251001',
+      },
+      caps: { session_max_turns: 60, verifier_max_turns: 12, audit_max_turns: 16, escalation_max_turns: 40 },
     });
   });
 

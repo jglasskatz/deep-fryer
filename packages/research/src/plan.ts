@@ -3,6 +3,7 @@ import findingSchema from '@deep-fryer/contract/schemas/finding' with { type: 'j
 import type { FrameworkIndicator, PortraitConfig } from '@deep-fryer/contract';
 import {
   acceptedScales,
+  estimateRunCost,
   maxDataAgeYears,
   resolveThreshold,
   dimensionResearchSessions,
@@ -10,6 +11,7 @@ import {
   type ResearchModels,
   type ResearchPlan,
   type Ring,
+  type RunCostEstimate,
 } from '@deep-fryer/core';
 import { agentTemplate, fillTemplate, pluginVersion, skill } from './plugin.js';
 import { OPERATOR_DEFAULTS, operatorDefaultModels, resolveStrategy } from './strategies.js';
@@ -49,10 +51,17 @@ export const MAX_INDICATORS_PER_SESSION = MAX_INDICATORS_PER_RESEARCH_SESSION;
 // the registry). Every new plan records its own models and caps from the
 // registry, so changing these changes no planned run.
 export const DEFAULT_SESSION_MAX_TURNS = 60;
+export const DEFAULT_CORRECTION_MAX_TURNS = 16;
+export const DEFAULT_ESCALATION_MAX_TURNS = 40;
 export const VERIFIER_MAX_TURNS = 12;
 export const AUDIT_MAX_TURNS = 16;
 export const DEFAULT_SESSION_MODEL = 'claude-sonnet-5';
 export const DEFAULT_VERIFIER_MODEL = 'claude-opus-5';
+
+/** Estimated API usage for a rendered plan, honoring its chosen strategy (standard, hybrid, or deep). */
+export function estimatePlanCost(plan: Pick<ResearchPlan, 'sessions' | 'strategy'>): RunCostEstimate {
+  return estimateRunCost(plan.sessions.length, plan.strategy ?? 'standard');
+}
 
 /** What a plan records about the strategy it was rendered from. */
 export type PlannedStrategy = Required<Pick<ResearchPlan, 'strategy' | 'strategy_version' | 'models' | 'caps'>>;

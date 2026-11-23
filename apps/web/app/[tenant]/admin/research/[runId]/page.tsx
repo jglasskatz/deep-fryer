@@ -337,12 +337,14 @@ export default async function RunDetailPage({
             {strategy.note ? <p className="mt-1">{strategy.note}</p> : null}
             {run.plan.models ? <dl className="mt-2 grid gap-2 sm:grid-cols-2 md:grid-cols-4">
               <div><dt>Researcher</dt><dd className="break-words font-mono">{run.plan.models.session_model}</dd></div>
+              {run.plan.models.escalation_model ? <div><dt>Escalation researcher</dt><dd className="break-words font-mono">{run.plan.models.escalation_model}</dd></div> : null}
               <div><dt>Scout</dt><dd className="break-words font-mono">{run.plan.models.subagent_model ?? 'No separate scout'}</dd></div>
               <div><dt>Independent verifier</dt><dd className="break-words font-mono">{run.plan.models.verifier_model}</dd></div>
               <div><dt>Page reader</dt><dd className="break-words font-mono">{run.plan.models.page_reader_model ?? 'Not recorded: the worker’s own setting'}</dd></div>
             </dl> : <p className="mt-1">This older plan did not record model choices; it uses the worker defaults.</p>}
             {run.plan.caps ? <dl className="mt-2 grid gap-2 sm:grid-cols-3">
               <div><dt>Turn limit, each research session</dt><dd>{run.plan.caps.session_max_turns}</dd></div>
+              {run.plan.caps.escalation_max_turns !== undefined ? <div><dt>Turn limit, each escalation pass</dt><dd>{run.plan.caps.escalation_max_turns}</dd></div> : null}
               <div><dt>Turn limit, each verifier check</dt><dd>{run.plan.caps.verifier_max_turns}</dd></div>
               <div><dt>Turn limit, each audit check</dt><dd>{run.plan.caps.audit_max_turns}</dd></div>
             </dl> : <p className="mt-1">This older plan did not record turn limits; it uses the worker&apos;s current limits.</p>}

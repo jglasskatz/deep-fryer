@@ -95,6 +95,20 @@ describe('the strategy a run page names', () => {
     expect(page).not.toContain('not recorded');
   });
 
+  it('shows "hybrid v1" with its escalation researcher model and turn limit', async () => {
+    const { renderPlan } = await import('@deep-fryer/research');
+    const { defaultPortraitConfig } = await import('@deep-fryer/contract');
+    const planned = renderPlan({ config: defaultPortraitConfig('Santa Cruz', 'City limits'), dimensions: [], strategy: 'hybrid' });
+    state.plan = { ...planned, sessions };
+    const page = text(await runPage());
+    expect(page).toContain('2 sessions · hybrid v1 · plugin');
+    expect(page).toContain('Research strategy: hybrid v1');
+    expect(page).toContain('Researcher claude-sonnet-5');
+    expect(page).toContain('Escalation researcher claude-opus-5');
+    expect(page).toContain('Scout claude-sonnet-5');
+    expect(page).toContain('Turn limit, each escalation pass 40');
+  });
+
   it('names the version of a plan made with no strategy chosen', async () => {
     state.plan = {
       sessions, config_hash: 'h', plugin_version: '1.0.0',

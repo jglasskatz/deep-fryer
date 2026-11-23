@@ -68,10 +68,11 @@ function isVerified(finding: ContextFinding): boolean {
 
 /**
  * Where one usage record's dollars go. Keys are written by the worker: a
- * session's own id, `verifier:<session id>` for that session's verifier
- * calls, and `audit:<source>:<finding id>` for a machine audit. Without a
- * context the stage is read from the key alone and nothing is matched to a
- * dimension.
+ * session's own id, `correction:<session id>` for a pre-verifier self-correction
+ * pass, `escalation:<session id>` for a hybrid escalation pass,
+ * `verifier:<session id>` for that session's verifier calls, and
+ * `audit:<source>:<finding id>` for a machine audit. Without a context the
+ * stage is read from the key alone and nothing is matched to a dimension.
  */
 function placeRecord(
   key: string,
@@ -83,6 +84,12 @@ function placeRecord(
   if (key.startsWith('audit:')) return { role: 'audit', dimension_id: null };
   if (key.startsWith('verifier:')) {
     return { role: 'verification', dimension_id: sessions.get(key.slice('verifier:'.length))?.dimensionId ?? null };
+  }
+  if (key.startsWith('correction:')) {
+    return { role: 'research', dimension_id: sessions.get(key.slice('correction:'.length))?.dimensionId ?? null };
+  }
+  if (key.startsWith('escalation:')) {
+    return { role: 'research', dimension_id: sessions.get(key.slice('escalation:'.length))?.dimensionId ?? null };
   }
   const session = sessions.get(key);
   if (session?.kind === 'region_context') return { role: 'region_context', dimension_id: null };

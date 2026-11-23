@@ -57,7 +57,7 @@ const finding = {
   level_pct: 40,
   scoring: { threshold_ref: 'x.housing', function: 'lower_is_better', inputs: { value: 42, target: 30 }, worked_math: 'w' },
   source: 'City statistics office',
-  source_url: 'https://stats.example.gov/housing',
+  source_url: 'https://stats.example.gov/housing/cost-burdened-renters.pdf',
   source_tier: 1,
   evidence: { snapshot_path: 'evidence/housing.png', captured_at: '2026-10-01T00:00:00Z' },
   confidence: 'high',
