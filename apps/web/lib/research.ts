@@ -1,19 +1,22 @@
 import 'server-only';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { frameworkDimension } from '@deep-fryer/contract';
-import type { ResearchStrategy } from '@deep-fryer/core';
+import type { PortraitConfig, RegionBriefCache, ResearchStrategy } from '@deep-fryer/core';
 import {
   dimensions,
   gateResearchSpend,
   latestVersion,
   organizationForTenant,
   researchRuns,
+  tenants,
   type DbExecutor,
   type ResearchFunding,
   type RunExecution,
 } from '@deep-fryer/db';
 import {
+  computeConfigHash,
   enqueueResearchApply,
+  isValidRegionBriefCache,
   renderPlan,
   type PlanDimensionSpec,
 } from '@deep-fryer/research';
@@ -25,6 +28,23 @@ import { plannedIndicatorsForDimension } from './planned-indicators';
 import { alreadyAppliedMessage } from './run-progress';
 
 export { plannedIndicatorsForDimension };
+
+/**
+ * Pure: return a portrait's cached Phase-0 region brief when planning a
+ * targeted re-run (`dimensionIds?.length > 0`) and the cache entry matches the
+ * current config hash and is <30 days old; otherwise return undefined so a
+ * fresh Phase-0 session is planned.
+ */
+export function resolveCachedRegionBrief(
+  cache: RegionBriefCache | null | undefined,
+  config: PortraitConfig,
+  isTargetedRerun: boolean,
+  now: Date = new Date(),
+): string | undefined {
+  if (!isTargetedRerun) return undefined;
+  const configHash = computeConfigHash(config);
+  return isValidRegionBriefCache(cache, configHash, now) ? cache.brief : undefined;
+}
 
 /**
  * Plan (SPEC.md §8): render the full session list — prompts, tool
@@ -87,14 +107,33 @@ export async function createPlannedRunIn(db: DbExecutor, input: PlannedRunInput)
       });
     }
 
+    // On targeted re-runs, reuse the portrait's cached Phase-0 region brief
+    // when config_hash matches and cached_at is <30 days old, omitting the
+    // redundant Phase-0 session.
+    const isTargetedRerun = Boolean(input.dimensionIds?.length);
+    let cachedRegionBrief: string | undefined;
+    if (isTargetedRerun) {
+      const [tenantRow] = await db
+        .select({ regionBriefCache: tenants.regionBriefCache })
+        .from(tenants)
+        .where(eq(tenants.id, input.tenantId));
+      cachedRegionBrief = resolveCachedRegionBrief(tenantRow?.regionBriefCache, config, true);
+    }
+
     // With no strategy chosen, the plan records operator-defaults with this
     // server's model settings as they are now; a chosen strategy ignores them.
-    const plan = renderPlan({ config, dimensions: specs, strategy: input.strategy, modelDefaults: {
-      session_model: process.env.ANTHROPIC_MODEL,
-      subagent_model: process.env.RESEARCH_SUBAGENT_MODEL || null,
-      verifier_model: process.env.VERIFIER_MODEL,
-      page_reader_model: process.env.ANTHROPIC_SMALL_FAST_MODEL,
-    } });
+    const plan = renderPlan({
+      config,
+      dimensions: specs,
+      strategy: input.strategy,
+      ...(cachedRegionBrief ? { cachedRegionBrief } : {}),
+      modelDefaults: {
+        session_model: process.env.ANTHROPIC_MODEL,
+        subagent_model: process.env.RESEARCH_SUBAGENT_MODEL || null,
+        verifier_model: process.env.VERIFIER_MODEL,
+        page_reader_model: process.env.ANTHROPIC_SMALL_FAST_MODEL,
+      },
+    });
 
     const [run] = await db
       .insert(researchRuns)

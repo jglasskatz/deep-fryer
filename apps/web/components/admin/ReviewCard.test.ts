@@ -339,7 +339,11 @@ const render = (findings: ReviewFinding[]) =>
     ),
   );
 
-const optionsOf = (html: string) => [...html.matchAll(/<option value="([^"]*)"[^>]*>([^<]*)<\/option>/g)].map((m) => [m[1], m[2]]);
+const optionsOf = (html: string) => {
+  const gapSection = html.slice(html.indexOf('Indicator with no usable data'));
+  const selectHtml = /<select[\s\S]*?<\/select>/.exec(gapSection)?.[0] ?? '';
+  return [...selectHtml.matchAll(/<option value="([^"]*)"[^>]*>([^<]*)<\/option>/g)].map((m) => [m[1], m[2]]);
+};
 
 describe('ReviewCard gap form', () => {
   it('lists the card’s three indicators by name, then every indicator at once, last', () => {
@@ -539,5 +543,39 @@ describe('the review card asks why', () => {
     const html = render([]);
     expect(radios(html, 'rerun-cause-d1')).toHaveLength(REVIEW_CAUSES.length);
     expect(radios(html, 'gap-cause-d1')).toHaveLength(REVIEW_CAUSES.length);
+  });
+
+  it('offers a strategy selector defaulting to hybrid (with standard and deep) in the Re-research form', () => {
+    const html = render(three);
+    expect(html).toContain('aria-label="Research strategy for re-research"');
+    expect(html).toMatch(/<option value="hybrid" selected="">/);
+    expect(html).toContain('<option value="standard">');
+    expect(html).toContain('<option value="deep">');
+  });
+
+  it('preserves exact per-finding session transcript links across dense-dimension chunks', () => {
+    const html = renderToStaticMarkup(
+      createElement(ReviewCard, {
+        tenantSlug: 'nyc',
+        runId: 'r1',
+        dimensionId: 'd1',
+        dimensionName: 'Housing',
+        ring: 'social',
+        approvedVersionNum: null,
+        sessionId: 'sess-chunk-1',
+        sessionIds: ['sess-chunk-1', 'sess-chunk-2'],
+        canReadTranscript: true,
+        evidenceBase: '/evidence',
+        findings: [
+          finding({ id: 'f1', sessionId: 'sess-chunk-1', indicatorSlug: 'rent' }),
+          finding({ id: 'f2', sessionId: 'sess-chunk-2', payload: gap, indicatorSlug: 'water' }),
+        ],
+      }),
+    );
+    expect(html).toContain('href="/api/research/sessions/sess-chunk-1/transcript"');
+    expect(html).toContain('href="/api/research/sessions/sess-chunk-2/transcript"');
+    expect(html).toContain('>transcript 1</a>');
+    expect(html).toContain('>transcript 2</a>');
+    expect(html.match(/>session transcript<\/a>/g)).toHaveLength(2);
   });
 });

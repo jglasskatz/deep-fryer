@@ -285,10 +285,28 @@ export interface PlannedSession {
   config_hash: string;
 }
 
+/**
+ * Validated Phase-0 region context brief cached on `tenants.region_brief_cache`
+ * so targeted re-runs can skip redundant Phase-0 sessions when `config_hash`
+ * matches and the entry is still fresh (<30 days).
+ */
+export interface RegionBriefCache {
+  brief: string;
+  config_hash: string;
+  cached_at: string;
+  run_id: string;
+}
+
 export interface ResearchPlan {
   sessions: PlannedSession[];
   config_hash: string;
   plugin_version: string;
+  /**
+   * Validated cached Phase-0 region brief reused on targeted re-runs when the
+   * portrait's `region_brief_cache` matched `config_hash` and was <30 days old.
+   * When present, Phase 0 (`region_context`) is omitted from `sessions`.
+   */
+  cached_region_brief?: string;
   /**
    * The registry entry the plan was rendered from (packages/research
    * strategies.ts), by name and version. Historic plans carry neither, or a

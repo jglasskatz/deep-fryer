@@ -8,6 +8,7 @@ import {
   resolveThreshold,
   dimensionResearchSessions,
   MAX_INDICATORS_PER_RESEARCH_SESSION,
+  type RegionBriefCache,
   type ResearchModels,
   type ResearchPlan,
   type Ring,
@@ -35,9 +36,43 @@ export interface RenderPlanInput {
   strategy?: string;
   /** Operator settings, frozen into a new plan when no strategy is chosen. */
   modelDefaults?: Partial<ResearchModels>;
+  /**
+   * Validated cached Phase-0 region brief for targeted re-runs. When provided
+   * (non-empty), Phase 0 (`region_context`) is omitted from `plan.sessions` and
+   * `plan.cached_region_brief` carries the brief for the worker to substitute.
+   */
+  cachedRegionBrief?: string;
 }
 
 export const REGION_BRIEF_PLACEHOLDER = '{{region_brief}}';
+
+/** Maximum age (30 days) for reusing a cached Phase-0 region brief on targeted re-runs. */
+export const REGION_BRIEF_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+/** Pure: deterministic 16-hex-char fingerprint of a portrait's research config. */
+export function computeConfigHash(config: PortraitConfig): string {
+  return createHash('sha256')
+    .update(JSON.stringify(config))
+    .digest('hex')
+    .slice(0, 16);
+}
+
+/**
+ * Pure: whether a tenant's cached Phase-0 region brief is non-empty, matches
+ * the current config fingerprint, and is strictly younger than 30 days.
+ */
+export function isValidRegionBriefCache(
+  cache: RegionBriefCache | null | undefined,
+  configHash: string,
+  now: Date = new Date(),
+): cache is RegionBriefCache {
+  if (!cache || typeof cache.brief !== 'string' || !cache.brief.trim()) return false;
+  if (cache.config_hash !== configHash) return false;
+  if (typeof cache.cached_at !== 'string') return false;
+  const cachedAtMs = Date.parse(cache.cached_at);
+  if (!Number.isFinite(cachedAtMs)) return false;
+  return now.getTime() - cachedAtMs < REGION_BRIEF_CACHE_TTL_MS;
+}
 
 // Session execution policy (SPEC.md §8): tool allowlists and budgets are
 // research-plane policy, named here so the rendered plan and the worker
@@ -160,30 +195,28 @@ function renderThresholds(spec: PlanDimensionSpec, config: PortraitConfig): stri
  */
 export function renderPlan(input: RenderPlanInput): ResearchPlan {
   const { config } = input;
-  const configHash = createHash('sha256')
-    .update(JSON.stringify(config))
-    .digest('hex')
-    .slice(0, 16);
+  const configHash = computeConfigHash(config);
+  const cachedBrief = input.cachedRegionBrief?.trim() ? input.cachedRegionBrief : undefined;
 
   const skillsBlock = [skill('methodology'), skill('source-evaluation'), skill('evidence-capture')].join(
     '\n\n---\n\n',
   );
 
-  const regionPrompt = fillTemplate(agentTemplate('region-context'), {
-    region_name: config.region.name,
-    region_definition: config.region.definition,
-    region_context_notes: config.region.context_notes ?? '(none provided)',
-  });
-
-  const sessions: ResearchPlan['sessions'] = [
-    {
+  const sessions: ResearchPlan['sessions'] = [];
+  if (!cachedBrief) {
+    const regionPrompt = fillTemplate(agentTemplate('region-context'), {
+      region_name: config.region.name,
+      region_definition: config.region.definition,
+      region_context_notes: config.region.context_notes ?? '(none provided)',
+    });
+    sessions.push({
       kind: 'region_context',
       prompt: regionPrompt,
       tool_allowlist: REGION_TOOLS,
       output_schema_ref: 'markdown:region-brief',
       config_hash: configHash,
-    },
-  ];
+    });
+  }
 
   const researcherTemplate = agentTemplate('dimension-researcher');
   for (const dimension of input.dimensions) {
@@ -233,7 +266,10 @@ export function renderPlan(input: RenderPlanInput): ResearchPlan {
   }
 
   return {
-    sessions, config_hash: configHash, plugin_version: pluginVersion(),
+    sessions,
+    config_hash: configHash,
+    plugin_version: pluginVersion(),
+    ...(cachedBrief ? { cached_region_brief: cachedBrief } : {}),
     ...planStrategy(input.strategy, input.modelDefaults),
   };
 }

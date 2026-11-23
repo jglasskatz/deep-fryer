@@ -3,7 +3,10 @@ import { defaultPortraitConfig, framework } from '@deep-fryer/contract';
 import {
   MAX_INDICATORS_PER_SESSION,
   DIMENSION_TOOLS,
+  REGION_BRIEF_CACHE_TTL_MS,
+  computeConfigHash,
   dimensionNameFromPrompt,
+  isValidRegionBriefCache,
   plannedSlugsFromPrompt,
   plannedThresholdRefsFromPrompt,
   renderPlan,
@@ -99,6 +102,53 @@ describe('renderPlan', () => {
     expect(standard.models).toEqual({ session_model: 'claude-sonnet-5', subagent_model: null, verifier_model: 'claude-opus-5', page_reader_model: 'claude-haiku-4-5-20251001' });
     expect(planStrategy('deep').models).toEqual({ session_model: 'claude-opus-5', subagent_model: 'claude-sonnet-5', verifier_model: 'claude-opus-5', page_reader_model: 'claude-haiku-4-5-20251001' });
     expect(planStrategy(undefined, { session_model: 'operator-researcher', verifier_model: 'operator-verifier', subagent_model: 'operator-scout' }).models).toEqual({ session_model: 'operator-researcher', verifier_model: 'operator-verifier', subagent_model: 'operator-scout', page_reader_model: 'claude-haiku-4-5-20251001' });
+  });
+
+  it('omits Phase 0 and records cached_region_brief when a validated cached brief is supplied', () => {
+    const cached = renderPlan({
+      config,
+      dimensions: [
+        {
+          dimensionId: 'x',
+          slug: housing.slug,
+          ring: housing.ring,
+          name: housing.name,
+          indicators: housing.indicators,
+        },
+      ],
+      cachedRegionBrief: '## Santa Cruz cached brief\nCity municipal limits.',
+    });
+    expect(cached.sessions).toHaveLength(1);
+    expect(cached.sessions[0]?.kind).toBe('dimension');
+    expect(cached.sessions[0]?.dimension_slug).toBe('housing');
+    expect(cached.cached_region_brief).toBe('## Santa Cruz cached brief\nCity municipal limits.');
+    expect(cached.sessions[0]!.prompt).toContain(REGION_BRIEF_PLACEHOLDER);
+  });
+
+  it('validates cached region briefs against config_hash and the 30-day TTL', () => {
+    const hash = computeConfigHash(config);
+    const now = new Date('2026-11-24T00:00:00Z');
+    const fresh = {
+      brief: 'Valid region brief',
+      config_hash: hash,
+      cached_at: new Date(now.getTime() - REGION_BRIEF_CACHE_TTL_MS + 60_000).toISOString(),
+      run_id: 'run-1',
+    };
+    expect(isValidRegionBriefCache(fresh, hash, now)).toBe(true);
+    // Exactly 30 days old or older is invalid.
+    expect(
+      isValidRegionBriefCache(
+        { ...fresh, cached_at: new Date(now.getTime() - REGION_BRIEF_CACHE_TTL_MS).toISOString() },
+        hash,
+        now,
+      ),
+    ).toBe(false);
+    // Mismatched config_hash invalidates cache.
+    expect(isValidRegionBriefCache({ ...fresh, config_hash: 'different-hash' }, hash, now)).toBe(false);
+    // Blank brief or invalid date invalidates cache.
+    expect(isValidRegionBriefCache({ ...fresh, brief: '   ' }, hash, now)).toBe(false);
+    expect(isValidRegionBriefCache({ ...fresh, cached_at: 'not-a-date' }, hash, now)).toBe(false);
+    expect(isValidRegionBriefCache(null, hash, now)).toBe(false);
   });
 
   it('tells the independent verifier to read the archive first and discloses missing exhibits', () => {

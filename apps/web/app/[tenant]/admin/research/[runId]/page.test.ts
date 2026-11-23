@@ -259,4 +259,28 @@ describe('the run page says where its research ran', () => {
     expect(page).toContain('All 2 sessions finished — running automatic quality audits');
     expect(page).toContain('completing independent quality audits');
   });
+
+  it('notes cached region brief reuse on targeted re-run plans (P1.3)', async () => {
+    const base = finishedRun({ execution, tokenUsage: null });
+    state.data = {
+      ...base,
+      run: {
+        ...base.run,
+        status: 'planned',
+        appliedAt: null,
+        completedAt: null,
+        plan: {
+          sessions: [spec('dimension', 'housing')],
+          config_hash: 'h',
+          plugin_version: '1',
+          strategy: 'hybrid',
+          strategy_version: 1,
+          cached_region_brief: '# Cached Santa Cruz brief',
+        },
+      },
+      sessions: [],
+    };
+    const page = text(await runPage());
+    expect(page).toContain('reuses the portrait’s cached region brief instead of running a new phase-0 session');
+  });
 });

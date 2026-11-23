@@ -111,6 +111,7 @@ export default async function ReviewQueuePage({
                   ring={card.dimension.ring}
                   findings={card.findings.map((f) => ({
                     id: f.id,
+                    sessionId: f.sessionId,
                     indicatorSlug: f.indicatorSlug,
                     payload: f.payload,
                     verification: f.verification,
@@ -119,6 +120,7 @@ export default async function ReviewQueuePage({
                   }))}
                   approvedVersionNum={card.approvedVersionNum}
                   sessionId={card.sessionId}
+                  sessionIds={card.sessionIds}
                   canReadTranscript={ctx.role === 'owner'}
                   evidenceBase={evidenceBase(tenant)}
                 />

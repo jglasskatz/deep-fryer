@@ -255,6 +255,7 @@ export async function runWithSessions(runId: string) {
         runId: researchSessions.runId,
         dimensionId: researchSessions.dimensionId,
         kind: researchSessions.kind,
+        planSessionIndex: researchSessions.planSessionIndex,
         status: researchSessions.status,
         reviewerNotes: researchSessions.reviewerNotes,
         startedAt: researchSessions.startedAt,

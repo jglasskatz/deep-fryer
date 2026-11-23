@@ -7,12 +7,14 @@ import {
   deriveVizLevel,
   frameworkIndicatorKeys,
   isIndicatorKey,
+  isResearchStrategy,
   checkReviewCause,
   reviewLabelRows,
   WHOLE_DIMENSION_GAP,
   type DimensionData,
   type FindingPayload,
   type Indicator,
+  type ResearchStrategy,
   type ReviewLabelInput,
 } from '@deep-fryer/core';
 import {
@@ -352,8 +354,13 @@ export const reResearchDimension = action(async (input: {
   dimensionId: string;
   notes: string;
   cause: string;
+  /** Research strategy for the new run (`hybrid`, `standard`, or `deep`). */
+  strategy?: ResearchStrategy;
 }) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
+  if (input.strategy !== undefined && !isResearchStrategy(input.strategy)) {
+    throw new UserError('Choose the standard, hybrid, or deep research strategy.');
+  }
   const notes = typeof input.notes === 'string' ? input.notes.trim().slice(0, 4000) : '';
   const why = checkReviewCause(input.cause, notes);
   if (!why.ok) throw new UserError(`${why.problem} Nothing was planned.`);
@@ -366,6 +373,7 @@ export const reResearchDimension = action(async (input: {
       dimensionIds: [dimension.id],
       reviewerNotes: { [dimension.id]: notes },
       requestedBy: auth.userId,
+      strategy: input.strategy,
     });
     await recordReviewLabels(db, {
       tenantId: tenant.id,

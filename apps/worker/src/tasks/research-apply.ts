@@ -1,6 +1,6 @@
 import { gunzipSync, gzipSync } from 'node:zlib';
 import type { Task } from 'graphile-worker';
-import { and, eq, inArray, isNotNull } from 'drizzle-orm';
+import { and, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { frameworkDimension, type PortraitConfig } from '@deep-fryer/contract';
 import {
   emptyUsage,
@@ -9,6 +9,8 @@ import {
   type FindingVerification,
   type IndicatorEvidence,
   type IndicatorFindingPayload,
+  type PlannedSession,
+  type RegionBriefCache,
   type ResearchPlan,
   type RunTokenUsage,
   type SessionTokenUsage,
@@ -32,6 +34,7 @@ import {
   DEFAULT_ESCALATION_MAX_TURNS,
   deterministicChecks,
   dimensionNameFromPrompt,
+  isValidRegionBriefCache,
   mergeVerification,
   plannedSlugsFromPrompt,
   plannedThresholdRefsFromPrompt,
@@ -95,37 +98,788 @@ import { auditResearchRun } from '../research-audit.js';
  * records the reason, no further session or verifier starts on the key, and
  * every session that had not started is recorded as failed with that reason.
  */
+/**
+ * Advisory-lock namespace (first key of pg_try_advisory_lock(int, int)) that
+ * guarantees at most one live worker executes a given research run at once,
+ * while allowing crash redelivery to resume cleanly once the dead worker's
+ * connection drops and Postgres releases the session-level lock. Distinct from
+ * the other namespaces (61_001..61_005).
+ */
+export const LOCK_RESEARCH_APPLY = 61_006;
+
+/** Error raised when Phase 0 fails or yields an empty brief, failing the run loudly. */
+export class Phase0RegionBriefError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'Phase0RegionBriefError';
+  }
+}
+
+type ReservableClient = {
+  reserve: () => Promise<{
+    <T extends readonly unknown[] = readonly Record<string, unknown>[]>(
+      strings: TemplateStringsArray,
+      ...values: unknown[]
+    ): Promise<T>;
+    release: () => void;
+  }>;
+};
+
+/**
+ * Acquire a session-level Postgres advisory lock on `runId` using a dedicated
+ * reserved connection so the lock is held for the entire run duration, never
+ * leaks onto another pooled connection, and is automatically released by
+ * Postgres if the worker process crashes.
+ */
+export async function acquireRunExecutionLock(
+  db: DbExecutor & { $client?: unknown },
+  runId: string,
+): Promise<{ acquired: boolean; release: () => Promise<void> }> {
+  const client = db.$client as Partial<ReservableClient> | undefined;
+  if (typeof client?.reserve === 'function') {
+    const reserved = await client.reserve();
+    try {
+      const rows = await reserved<{ locked: boolean }[]>`
+        SELECT pg_try_advisory_lock(${LOCK_RESEARCH_APPLY}::int, hashtext(${runId})) AS locked
+      `;
+      if (!rows[0]?.locked) {
+        reserved.release();
+        return { acquired: false, release: async () => {} };
+      }
+      let released = false;
+      return {
+        acquired: true,
+        release: async () => {
+          if (released) return;
+          released = true;
+          try {
+            await reserved`
+              SELECT pg_advisory_unlock(${LOCK_RESEARCH_APPLY}::int, hashtext(${runId}))
+            `;
+          } finally {
+            reserved.release();
+          }
+        },
+      };
+    } catch (err) {
+      reserved.release();
+      throw err;
+    }
+  }
+  return { acquired: true, release: async () => {} };
+}
+
+/**
+ * Atomically merge stage/session usage keys into `research_runs.token_usage`
+ * via Postgres `coalesce(token_usage, '{}'::jsonb) || $patch::jsonb` so live
+ * `RunCostSummary` polling sees spend as sessions finish and worker restarts
+ * never lose spent-dollar telemetry.
+ */
+export async function persistTokenUsagePatch(
+  db: DbExecutor,
+  runId: string,
+  patch: RunTokenUsage,
+): Promise<void> {
+  if (Object.keys(patch).length === 0) return;
+  await db
+    .update(researchRuns)
+    .set({
+      tokenUsage: sql`coalesce(${researchRuns.tokenUsage}, '{}'::jsonb) || ${JSON.stringify(patch)}::jsonb`,
+    })
+    .where(eq(researchRuns.id, runId));
+}
+
+export interface ExistingSessionSnapshot {
+  id: string;
+  kind: string;
+  dimensionId: string | null;
+  planSessionIndex: number | null;
+  status: string;
+  transcript: Buffer | null;
+  startedAt: Date | null;
+}
+
+export interface ResumeState {
+  /** 0-based indices into `plan.sessions` already complete with persisted outputs (skip on resume). */
+  completedPlanIndices: Set<number>;
+  /** Existing session rows still in `queued` or `running` from an interrupted worker (mark failed/superseded). */
+  interruptedSessionIds: string[];
+  /** Recovered Phase-0 region brief if Phase 0 already completed before the crash, else null. */
+  recoveredRegionBrief: string | null;
+}
+
+/**
+ * Pure: extract a completed session's final result text from a gzipped (or raw
+ * UTF-8) JSONL transcript when present (used as a fallback to recover Phase 0's
+ * region brief during crash resume if the tenant cache was overwritten).
+ */
+export function extractRegionBriefFromTranscript(transcript: Buffer | null | undefined): string | null {
+  if (!transcript || transcript.length === 0) return null;
+  try {
+    const text = decodeTranscriptBuffer(transcript);
+    let found: string | null = null;
+    for (const line of text.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      try {
+        const frame = JSON.parse(trimmed) as { type?: unknown; result?: unknown };
+        if (frame.type === 'result' && typeof frame.result === 'string' && frame.result.trim()) {
+          found = frame.result;
+        }
+      } catch {
+        // Skip non-JSON lines.
+      }
+    }
+    return found;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Pure: inspect existing `research_sessions` rows and persisted findings counts
+ * for a run to determine which `planSessionIndex` entries can be safely skipped
+ * on crash resume, which interrupted `running`/`queued` rows should be marked
+ * superseded/retried, and whether Phase 0's region brief is already available.
+ */
+export function planSessionResumeState(input: {
+  runId: string;
+  plan: Pick<ResearchPlan, 'sessions' | 'config_hash' | 'cached_region_brief'>;
+  existingSessions: readonly ExistingSessionSnapshot[];
+  findingCountBySessionId: ReadonlyMap<string, number>;
+  dimIdBySlug: ReadonlyMap<string, string>;
+  tenantRegionBriefCache: RegionBriefCache | null | undefined;
+}): ResumeState {
+  const interruptedSessionIds: string[] = [];
+  const completeByPlanIndex = new Map<number, ExistingSessionSnapshot>();
+  const legacyCompleteByKey = new Map<string, ExistingSessionSnapshot[]>();
+
+  const sorted = [...input.existingSessions].sort(
+    (a, b) => (a.startedAt?.getTime() ?? 0) - (b.startedAt?.getTime() ?? 0) || a.id.localeCompare(b.id),
+  );
+
+  for (const row of sorted) {
+    if (row.status === 'queued' || row.status === 'running') {
+      interruptedSessionIds.push(row.id);
+      continue;
+    }
+    if (row.status !== 'complete') continue;
+    if (
+      typeof row.planSessionIndex === 'number' &&
+      row.planSessionIndex >= 0 &&
+      row.planSessionIndex < input.plan.sessions.length
+    ) {
+      completeByPlanIndex.set(row.planSessionIndex, row);
+    } else {
+      const key = `${row.kind}:${row.dimensionId ?? ''}`;
+      const list = legacyCompleteByKey.get(key) ?? [];
+      list.push(row);
+      legacyCompleteByKey.set(key, list);
+    }
+  }
+
+  const completedPlanIndices = new Set<number>();
+  let recoveredRegionBrief: string | null = null;
+
+  for (const [index, spec] of input.plan.sessions.entries()) {
+    const dimId = spec.dimension_slug ? input.dimIdBySlug.get(spec.dimension_slug) : undefined;
+    const key = `${spec.kind}:${dimId ?? ''}`;
+    const matched = completeByPlanIndex.get(index) ?? legacyCompleteByKey.get(key)?.shift();
+    if (!matched) continue;
+
+    if (spec.kind === 'region_context') {
+      const cache = input.tenantRegionBriefCache;
+      const briefFromCache =
+        cache &&
+        typeof cache.brief === 'string' &&
+        cache.brief.trim() &&
+        (cache.run_id === input.runId || cache.config_hash === input.plan.config_hash)
+          ? cache.brief
+          : null;
+      const briefFromPlan = input.plan.cached_region_brief?.trim() ? input.plan.cached_region_brief : null;
+      const briefFromTranscript = extractRegionBriefFromTranscript(matched.transcript);
+      const brief = briefFromCache ?? briefFromPlan ?? briefFromTranscript;
+      if (brief) {
+        completedPlanIndices.add(index);
+        recoveredRegionBrief = brief;
+      }
+      continue;
+    }
+
+    const findingCount = input.findingCountBySessionId.get(matched.id) ?? 0;
+    const expectedSlugs = plannedSlugsFromPrompt(spec.prompt);
+    if (findingCount > 0 || expectedSlugs.length === 0) {
+      completedPlanIndices.add(index);
+    }
+  }
+
+  return { completedPlanIndices, interruptedSessionIds, recoveredRegionBrief };
+}
+
+export interface Phase0Deps {
+  createSessionRow: (planSessionIndex: number) => Promise<{ id: string }>;
+  runRegionSession: (spec: PlannedSession) => Promise<SessionResult>;
+  recordUsage: (patch: RunTokenUsage) => Promise<void>;
+  updateSessionRow: (
+    rowId: string,
+    update: { status: 'complete' | 'failed'; transcript: Buffer; completedAt: Date },
+  ) => Promise<void>;
+  saveRegionBriefCache: (cache: RegionBriefCache) => Promise<void>;
+  onFailure?: (result: SessionResult) => void;
+  onKeyFailure?: (rowId: string, err: OrgKeyUnavailableError) => Promise<void>;
+  now?: () => Date;
+}
+
+/**
+ * Resolve the region brief for a run:
+ * - If Phase 0 is in `plan.sessions` and already completed on resume, reuse `recoveredRegionBrief`.
+ * - If Phase 0 is in `plan.sessions` and not yet completed, execute it, persist its usage
+ *   immediately, fail loudly if it errors or returns empty text, and cache the brief on the tenant.
+ * - If Phase 0 was omitted from `plan.sessions` (targeted re-run), validate and reuse
+ *   `plan.cached_region_brief` or a valid `tenantRegionBriefCache`, failing loudly if absent.
+ */
+export async function resolvePhase0RegionBrief(
+  input: {
+    runId: string;
+    plan: ResearchPlan;
+    tenantRegionBriefCache: RegionBriefCache | null | undefined;
+    resumeState: ResumeState;
+  },
+  deps: Phase0Deps,
+): Promise<{ brief: string; skipped: boolean }> {
+  const now = deps.now ?? (() => new Date());
+  const regionIndex = input.plan.sessions.findIndex((s) => s.kind === 'region_context');
+
+  if (regionIndex === -1) {
+    if (input.plan.cached_region_brief?.trim()) {
+      return { brief: input.plan.cached_region_brief, skipped: true };
+    }
+    if (isValidRegionBriefCache(input.tenantRegionBriefCache, input.plan.config_hash, now())) {
+      return { brief: input.tenantRegionBriefCache.brief, skipped: true };
+    }
+    throw new Phase0RegionBriefError(
+      'No Phase 0 (region_context) session was planned and no valid cached region brief is available; aborting run.',
+    );
+  }
+
+  if (input.resumeState.completedPlanIndices.has(regionIndex) && input.resumeState.recoveredRegionBrief) {
+    return { brief: input.resumeState.recoveredRegionBrief, skipped: true };
+  }
+
+  const regionSpec = input.plan.sessions[regionIndex]!;
+  const row = await deps.createSessionRow(regionIndex);
+  let result: SessionResult;
+  try {
+    result = await deps.runRegionSession(regionSpec);
+  } catch (err) {
+    if (err instanceof OrgKeyUnavailableError && deps.onKeyFailure) {
+      await deps.onKeyFailure(row.id, err);
+    }
+    throw err;
+  }
+
+  if (!result.succeeded) deps.onFailure?.(result);
+  await deps.recordUsage({ [row.id]: result.usage });
+
+  const briefText = result.resultText.trim();
+  const phase0Ok = result.succeeded && briefText.length > 0;
+  const emptyMsg =
+    'Phase 0 (region_context) returned an empty region brief; aborting run instead of running dimension sessions without context.';
+  const failedMsg =
+    'Phase 0 (region_context) failed; aborting run instead of running dimension sessions without context.';
+
+  await deps.updateSessionRow(row.id, {
+    status: phase0Ok ? 'complete' : 'failed',
+    transcript: phase0Ok
+      ? result.transcript
+      : result.succeeded
+        ? appendSessionErrorFrame(result.transcript, emptyMsg)
+        : result.transcript,
+    completedAt: now(),
+  });
+
+  if (!phase0Ok) {
+    throw new Phase0RegionBriefError(result.succeeded ? emptyMsg : failedMsg);
+  }
+
+  await deps.saveRegionBriefCache({
+    brief: result.resultText,
+    config_hash: input.plan.config_hash,
+    cached_at: now().toISOString(),
+    run_id: input.runId,
+  });
+
+  return { brief: result.resultText, skipped: false };
+}
+
 export const researchApply: Task = async (rawPayload, helpers) => {
   const { runId, unmetered } = rawPayload as ApplyJobPayload;
   const db = getDb();
 
-  // Atomic claim: only the transition planned → running executes the plan,
-  // and only for a run the research gate applied (applied_at set). applied_at
-  // is what puts a run in a billing period (packages/db researchSessionsUsed),
-  // so a run without it would spend sessions no allowance counts. That
-  // happens when the web app's enqueue failed after the job was in fact
-  // written — the connection dropped before the reply — and applyRun cleared
-  // applied_at again: the job is stale, and running it would be research
-  // nobody was charged for. The run stays planned, to be applied again. The
-  // one exception is an operator's measurement run, unapplied on purpose and
-  // marked so on its job (ApplyJobPayload.unmetered).
-  // A no-op claim otherwise means a duplicate/stale job or a crash-interrupted
-  // run redelivered by the queue — the latter is settled as failed below so
-  // it can never sit in `running` forever.
-  const claimable = and(
-    eq(researchRuns.id, runId),
-    eq(researchRuns.status, 'planned'),
-    unmetered ? undefined : isNotNull(researchRuns.appliedAt),
-  );
-  const [run] = await db.update(researchRuns).set({ status: 'running' }).where(claimable).returning();
-  if (!run) {
-    const [existing] = await db.select().from(researchRuns).where(eq(researchRuns.id, runId));
-    if (!existing) {
-      helpers.logger.error(`run ${runId} not found`);
-    } else if (existing.status === 'planned') {
-      helpers.logger.warn(`run ${runId} is planned but not applied (its apply was undone); skipping`);
-    } else if (existing.status === 'running') {
-      helpers.logger.error(`run ${runId} was interrupted mid-run; marking failed`);
+  // Prevent duplicate simultaneous execution across workers while allowing
+  // crash redelivery to resume cleanly once the dead worker's connection drops.
+  const lock = await acquireRunExecutionLock(db, runId);
+  if (!lock.acquired) {
+    helpers.logger.warn(`run ${runId} is already executing in another worker; skipping duplicate delivery`);
+    return;
+  }
+
+  try {
+    // Atomic claim: planned → running executes a newly applied run. If the run
+    // is already `running` and we hold the per-run advisory lock, the previous
+    // worker crashed mid-run — resume from checkpointed completed sessions
+    // instead of blindly discarding finished work!
+    const claimable = and(
+      eq(researchRuns.id, runId),
+      eq(researchRuns.status, 'planned'),
+      unmetered ? undefined : isNotNull(researchRuns.appliedAt),
+    );
+    let [run] = await db.update(researchRuns).set({ status: 'running' }).where(claimable).returning();
+    let resuming = false;
+    if (!run) {
+      const [existing] = await db.select().from(researchRuns).where(eq(researchRuns.id, runId));
+      if (!existing) {
+        helpers.logger.error(`run ${runId} not found`);
+        return;
+      }
+      if (existing.status === 'planned') {
+        helpers.logger.warn(`run ${runId} is planned but not applied (its apply was undone); skipping`);
+        return;
+      }
+      if (existing.status === 'running') {
+        run = existing;
+        resuming = true;
+        helpers.logger.warn(`run ${runId} was interrupted mid-run; resuming from completed sessions`);
+      } else {
+        helpers.logger.warn(`run ${runId} is ${existing.status}; skipping`);
+        return;
+      }
+    }
+
+    const usage: RunTokenUsage = { ...(run.tokenUsage ?? {}) };
+    const recordUsage = async (patch: RunTokenUsage) => {
+      if (Object.keys(patch).length === 0) return;
+      Object.assign(usage, patch);
+      await persistTokenUsagePatch(db, runId, patch);
+    };
+
+    const finish = async (status: 'complete' | 'failed') => {
+      await db
+        .update(researchRuns)
+        .set({
+          status,
+          completedAt: new Date(),
+          tokenUsage: sql`coalesce(${researchRuns.tokenUsage}, '{}'::jsonb) || ${JSON.stringify(usage)}::jsonb`,
+        })
+        .where(eq(researchRuns.id, runId));
+    };
+
+    try {
+      // First, before anything else can fail or spend: whose key this run uses,
+      // as the gate decided when the run was applied.
+      const apiKey = await sessionApiKey(db, run.tenantId, run.funding);
+      if (apiKey) {
+        // The hint (last four characters) is what the billing page shows; never more.
+        helpers.logger.info(`run ${runId}: running on the organization's own Anthropic API key (…${keyHint(apiKey)})`);
+      }
+      const keyOption = apiKey ? { apiKey } : {};
+
+      // A model id the API did not find (model_not_found) is logged for the
+      // operator, once per model per run: on the deployment's key it is always
+      // a model setting to fix, and on the organization's key it may be one
+      // (org-key.ts KEY_REJECTED_ERRORS). Staff read the reason on the run.
+      const modelsNotFound = new Set<string>();
+      const reportModelNotFound = (model: string | undefined) => {
+        const id = model ?? '(model not named)';
+        if (modelsNotFound.has(id)) return;
+        modelsNotFound.add(id);
+        helpers.logger.error(`run ${runId}: ${modelNotFoundLog(id, Boolean(apiKey))}`);
+      };
+      const noteFailure = (report: { apiError?: string; apiErrorText?: string; usage: SessionTokenUsage }) => {
+        if (report.apiError === 'model_not_found') reportModelNotFound(modelNamedIn(report.apiErrorText) ?? report.usage.model);
+      };
+      const noteKeyFailure = (err: OrgKeyUnavailableError) => {
+        if (err.rejection === 'model_not_found') reportModelNotFound(err.model);
+      };
+
+      const [tenant] = await db.select().from(tenants).where(eq(tenants.id, run.tenantId));
+      if (!tenant) throw new Error(`tenant ${run.tenantId} missing`);
+
+      const plan = run.plan;
+      const config = run.configSnapshot;
+      const runStartedAt = new Date();
+      const storage = await tenantStorage(tenant.slug);
+      // A finding's captured text, through its tenant's archive only (the
+      // schema already limits the path to evidence/<name>.txt).
+      const readEvidenceText = async (textPath: string) => (await storage.get(textPath)).toString('utf8');
+
+      const tenantDims = await db
+        .select()
+        .from(dimensions)
+        .where(eq(dimensions.tenantId, tenant.id));
+      const dimBySlug = new Map(tenantDims.map((d) => [d.slug, d]));
+      const dimIdBySlug = new Map(tenantDims.map((d) => [d.slug, d.id]));
+
+      // Load any existing sessions & finding counts for idempotent crash-resume.
+      const existingSessions = resuming
+        ? await db
+            .select({
+              id: researchSessions.id,
+              kind: researchSessions.kind,
+              dimensionId: researchSessions.dimensionId,
+              planSessionIndex: researchSessions.planSessionIndex,
+              status: researchSessions.status,
+              transcript: researchSessions.transcript,
+              startedAt: researchSessions.startedAt,
+            })
+            .from(researchSessions)
+            .where(eq(researchSessions.runId, runId))
+        : [];
+      const existingSessionIds = existingSessions.map((s) => s.id);
+      const findingCountRows = existingSessionIds.length
+        ? await db
+            .select({
+              sessionId: findings.sessionId,
+              count: sql<number>`count(*)::int`,
+            })
+            .from(findings)
+            .where(inArray(findings.sessionId, existingSessionIds))
+            .groupBy(findings.sessionId)
+        : [];
+      const findingCountBySessionId = new Map(findingCountRows.map((r) => [r.sessionId, r.count]));
+      const resumeState = planSessionResumeState({
+        runId,
+        plan,
+        existingSessions,
+        findingCountBySessionId,
+        dimIdBySlug,
+        tenantRegionBriefCache: tenant.regionBriefCache,
+      });
+
+      if (resumeState.interruptedSessionIds.length > 0) {
+        await db
+          .update(researchSessions)
+          .set({
+            status: 'failed',
+            transcript: sessionErrorTranscript('Session was interrupted by a worker restart and retried on resume.'),
+            completedAt: new Date(),
+          })
+          .where(inArray(researchSessions.id, resumeState.interruptedSessionIds));
+      }
+
+      // Phase 0: region context (run, resume, or reuse validated cached brief; fail loud on failure/empty).
+      const phase0 = await resolvePhase0RegionBrief(
+        {
+          runId,
+          plan,
+          tenantRegionBriefCache: tenant.regionBriefCache,
+          resumeState,
+        },
+        {
+          createSessionRow: async (planSessionIndex) => {
+            const [row] = await db
+              .insert(researchSessions)
+              .values({
+                runId,
+                kind: 'region_context',
+                planSessionIndex,
+                status: 'running',
+                startedAt: new Date(),
+              })
+              .returning();
+            if (!row) throw new Error('session insert failed');
+            return row;
+          },
+          runRegionSession: (regionSpec) =>
+            runSessionWithRetry({
+              prompt: regionSpec.prompt,
+              allowedTools: regionSpec.tool_allowlist,
+              // Never orchestrated: the region session has WebSearch, so with
+              // RESEARCH_SUBAGENT_MODEL set it would otherwise get scouts and a
+              // delegation note telling it to capture evidence — and it has no
+              // capture tool, and writes a brief, not findings.
+              orchestrate: false,
+              ...plannedResearchOptions(plan),
+              ...keyOption,
+            }),
+          recordUsage,
+          updateSessionRow: async (rowId, update) => {
+            await db.update(researchSessions).set(update).where(eq(researchSessions.id, rowId));
+          },
+          saveRegionBriefCache: async (cache) => {
+            await db.update(tenants).set({ regionBriefCache: cache }).where(eq(tenants.id, tenant.id));
+          },
+          onFailure: noteFailure,
+          onKeyFailure: async (rowId, err) => {
+            noteKeyFailure(err);
+            await recordKeyFailure(db, rowId, err, recordUsage);
+          },
+        },
+      );
+      const regionBrief = phase0.brief;
+
+      // Dimension sessions are independent once the region brief exists (each
+      // has its own session row, insert-only findings, per-session usage keys,
+      // and evidence captures run in isolated browser contexts), so they run
+      // under a bounded pool. RESEARCH_SESSION_CONCURRENCY=1 restores the old
+      // serial behavior; the practical ceiling is API throughput.
+      const concurrency = sessionConcurrency(process.env.RESEARCH_SESSION_CONCURRENCY);
+      if (!concurrency.valid) {
+        helpers.logger.warn(
+          `RESEARCH_SESSION_CONCURRENCY=${JSON.stringify(process.env.RESEARCH_SESSION_CONCURRENCY)} is not a whole number of at least 1; running ${concurrency.value} sessions at a time`,
+        );
+      }
+      const indexedDimensionSpecs = plan.sessions
+        .map((spec, planSessionIndex) => ({ spec, planSessionIndex }))
+        .filter(({ spec, planSessionIndex }) =>
+          spec.kind === 'dimension' && !resumeState.completedPlanIndices.has(planSessionIndex),
+        );
+
+      // Set once Anthropic refuses the organization's key (OrgKeyUnavailableError
+      // from a research or verifier session): from then on no session or
+      // verifier starts on it, and the run fails with this reason below.
+      let keyFailure: OrgKeyUnavailableError | null = null;
+
+      const processDimension = async ({
+        spec,
+        planSessionIndex,
+      }: (typeof indexedDimensionSpecs)[number]) => {
+        const dimension = spec.dimension_slug ? dimBySlug.get(spec.dimension_slug) : undefined;
+        if (!dimension) {
+          helpers.logger.error(`dimension ${spec.dimension_slug} not found; skipping session`);
+          return;
+        }
+        const [row] = await db
+          .insert(researchSessions)
+          .values({
+            runId,
+            dimensionId: dimension.id,
+            kind: 'dimension',
+            planSessionIndex,
+            status: 'running',
+            startedAt: new Date(),
+          })
+          .returning();
+        if (!row) throw new Error('session insert failed');
+
+        const prompt = spec.prompt.split(REGION_BRIEF_PLACEHOLDER).join(regionBrief);
+        const dimensionName =
+          dimensionNameFromPrompt(spec.prompt) ??
+          frameworkDimension(dimension.slug, dimension.canonicalSlug)?.name ??
+          dimension.slug;
+        const plannedSlugs = plannedSlugsFromPrompt(spec.prompt);
+        const thresholdRefs = plannedThresholdRefsFromPrompt(spec.prompt);
+        const submitFindingsContext = { config, dimensionSlug: dimension.slug, thresholdRefs };
+        const capturedSnapshotPaths = new Set<string>();
+        const trackCaptures = (paths?: readonly string[]) => {
+          for (const p of paths ?? []) capturedSnapshotPaths.add(p);
+        };
+
+        let result: SessionResult;
+        try {
+          const initialScout = plannedInitialScoutModel(plan);
+          result = await runSessionWithRetry({
+            prompt,
+            allowedTools: spec.tool_allowlist,
+            storage,
+            submitFindingsContext,
+            ...plannedResearchOptions(plan),
+            ...(initialScout !== undefined ? { scoutModel: initialScout } : {}),
+            ...keyOption,
+          });
+        } catch (err) {
+          if (!(err instanceof OrgKeyUnavailableError)) throw err;
+          keyFailure ??= err;
+          noteKeyFailure(err);
+          await recordKeyFailure(db, row.id, err, recordUsage);
+          return;
+        }
+        if (!result.succeeded) noteFailure(result);
+        trackCaptures(result.capturedSnapshotPaths);
+        await recordUsage({ [row.id]: result.usage });
+
+        let rawFindings: unknown[] = [];
+        let parseOk = true;
+        // Salvaged: the output was malformed and only a fragment of it read
+        // (session.ts extractJson). The session is NOT failed for it — its
+        // findings go to review and it was paid for, and a failed session is
+        // free (packages/db billing counts only non-failed ones) — but every
+        // finding it did return is flagged partial_output, so staff know the
+        // session may have said more than was recorded.
+        let salvaged = false;
+        if (result.submittedFindings?.length) {
+          rawFindings = result.submittedFindings;
+        } else {
+          try {
+            const parsed = extractJson(result.resultText);
+            rawFindings = Array.isArray(parsed.value) ? parsed.value : [parsed.value];
+            salvaged = parsed.salvaged;
+            if (salvaged) {
+              helpers.logger.warn(
+                `session ${row.id}: output was malformed JSON; ${rawFindings.length} finding(s) salvaged and flagged partial_output`,
+              );
+            }
+          } catch {
+            parseOk = false;
+            helpers.logger.error(`session ${row.id}: output was not parseable JSON`);
+          }
+        }
+
+        const initialScout = plannedInitialScoutModel(plan);
+        const evaluated = await evaluateDimensionFindings(
+          {
+            sessionId: row.id,
+            config,
+            dimensionSlug: dimension.slug,
+            dimensionName,
+            regionBrief,
+            plan,
+            rawFindings,
+            plannedSlugs,
+            thresholdRefs,
+            initialModel: result.usage.model,
+            salvaged,
+            initialKeyFailure: keyFailure,
+          },
+          {
+            deterministicChecks: (raw, cfg, slug) =>
+              deterministicChecks(raw, cfg, slug, undefined, {
+                runStartedAt,
+                capturedSnapshotPaths,
+              }),
+            checkValueOnPage: (payload) => checkValueOnPage(payload, readEvidenceText),
+            recaptureEvidence: async (url, pdfUrl) => {
+              try {
+                const captured = await captureEvidence(storage, url, pdfUrl);
+                capturedSnapshotPaths.add(captured.snapshot_path);
+                return captured;
+              } catch {
+                return null;
+              }
+            },
+            runCorrectionSession: async ({ prompt: correctionPrompt, maxTurns }) => {
+              const res = await runSessionWithRetry({
+                prompt: correctionPrompt,
+                allowedTools: spec.tool_allowlist,
+                storage,
+                submitFindingsContext,
+                ...plannedResearchOptions(plan),
+                maxTurns,
+                ...(initialScout !== undefined ? { scoutModel: initialScout } : {}),
+                ...keyOption,
+              });
+              trackCaptures(res.capturedSnapshotPaths);
+              return res;
+            },
+            runEscalationSession: async ({ prompt: escalationPrompt, maxTurns }) => {
+              const res = await runSessionWithRetry({
+                prompt: escalationPrompt,
+                allowedTools: spec.tool_allowlist,
+                storage,
+                submitFindingsContext,
+                ...plannedEscalationOptions(plan),
+                maxTurns,
+                ...keyOption,
+              });
+              trackCaptures(res.capturedSnapshotPaths);
+              return res;
+            },
+            runVerifier: (payload) => runVerifier(payload, config.region.name, apiKey, storage, plan),
+            onFailure: noteFailure,
+            onKeyFailure: noteKeyFailure,
+            warn: (msg) => helpers.logger.warn(msg),
+          },
+        );
+
+        if (evaluated.keyFailure) keyFailure ??= evaluated.keyFailure;
+        const evalUsagePatch: RunTokenUsage = {
+          [`verifier:${row.id}`]: evaluated.verifierUsage,
+        };
+        if (evaluated.correctionUsage) evalUsagePatch[`correction:${row.id}`] = evaluated.correctionUsage;
+        if (evaluated.escalationUsage) evalUsagePatch[`escalation:${row.id}`] = evaluated.escalationUsage;
+        await recordUsage(evalUsagePatch);
+
+        const combinedTranscript = combineStageTranscripts([
+          { stage: 'initial', transcript: result.transcript },
+          ...(evaluated.correctionTranscript ? [{ stage: 'correction' as const, transcript: evaluated.correctionTranscript }] : []),
+          ...(evaluated.escalationTranscript ? [{ stage: 'escalation' as const, transcript: evaluated.escalationTranscript }] : []),
+        ]);
+        // If initial output was unparseable but correction/escalation recovered findings, keep session status aligned.
+        const recoveredOutput = !parseOk && evaluated.records.some((r) => r.verification.schema_ok);
+        const sessionStatus = (result.succeeded && parseOk) || recoveredOutput ? 'complete' : 'failed';
+
+        // Checkpoint atomically: findings + session completion commit together so
+        // crash-resume never sees a `complete` session with partial findings.
+        await db.transaction(async (tx) => {
+          for (const record of evaluated.records) {
+            await tx.insert(findings).values({
+              sessionId: row.id,
+              dimensionId: dimension.id,
+              indicatorSlug: record.indicatorSlug,
+              payload: record.payload,
+              verification: record.verification,
+            });
+          }
+          await tx
+            .update(researchSessions)
+            .set({
+              status: sessionStatus,
+              transcript: combinedTranscript,
+              completedAt: new Date(),
+            })
+            .where(eq(researchSessions.id, row.id));
+        });
+      };
+
+      // Bounded pool: next session starts as soon as a slot frees. A refused
+      // key, or any other error, stops new sessions from starting; the ones
+      // already running finish (and record themselves) before the error is
+      // rethrown, so the run is never settled while a session still writes.
+      let cursor = 0;
+      let poolError: { error: unknown } | null = null;
+      await Promise.all(
+        Array.from({ length: Math.min(concurrency.value, indexedDimensionSpecs.length) }, async () => {
+          while (!keyFailure && !poolError && cursor < indexedDimensionSpecs.length) {
+            const entry = indexedDimensionSpecs[cursor++]!;
+            try {
+              await processDimension(entry);
+            } catch (error) {
+              poolError ??= { error };
+            }
+          }
+        }),
+      );
+      if (poolError) throw (poolError as { error: unknown }).error;
+      if (keyFailure) throw keyFailure;
+
+      // Independent post-run recommendations stay in the staff plane. They
+      // share the run's funding/model policy and report their own usage; an
+      // audit service/persistence failure must not discard completed research.
+      try {
+        const auditUsage = await auditResearchRun(run, helpers, {
+          apiKey,
+          verifierModel: plan.models?.verifier_model,
+          ...(plan.caps ? { maxTurns: plan.caps.audit_max_turns } : {}),
+          ...(plan.models?.page_reader_model ? { pageReaderModel: plan.models.page_reader_model } : {}),
+        });
+        await recordUsage(auditUsage);
+      } catch {
+        helpers.logger.warn(`run ${runId}: automatic audit could not finish; findings remain available for human review`);
+      }
+
+      const settled = settledRunStatus(
+        await db
+          .select({ kind: researchSessions.kind, status: researchSessions.status })
+          .from(researchSessions)
+          .where(eq(researchSessions.runId, runId)),
+      );
+      await finish(settled);
+      if (settled === 'complete') helpers.logger.info(`run ${runId} complete`);
+      else helpers.logger.error(`run ${runId} failed: no session succeeded`);
+    } catch (err) {
+      // Never the error's own message: a failed query's carries its SQL and bound values.
+      helpers.logger.error(`run ${runId} failed: ${logSafeError(err)}`);
+      if (err instanceof OrgKeyUnavailableError) await failPlannedSessions(db, run, err.message);
       await db
         .update(researchSessions)
         .set({ status: 'failed', completedAt: new Date() })
@@ -135,374 +889,15 @@ export const researchApply: Task = async (rawPayload, helpers) => {
             inArray(researchSessions.status, ['queued', 'running']),
           ),
         );
-      await db
-        .update(researchRuns)
-        .set({ status: 'failed', completedAt: new Date() })
-        .where(and(eq(researchRuns.id, runId), eq(researchRuns.status, 'running')));
-    } else {
-      helpers.logger.warn(`run ${runId} is ${existing.status}; skipping`);
+      await finish('failed');
+    } finally {
+      await closeEvidenceBrowser().catch(() => {});
     }
-    return;
-  }
-
-  const usage: RunTokenUsage = {};
-
-  const finish = async (status: 'complete' | 'failed') => {
-    await db
-      .update(researchRuns)
-      .set({ status, completedAt: new Date(), tokenUsage: usage })
-      .where(eq(researchRuns.id, runId));
-  };
-
-  try {
-    // First, before anything else can fail or spend: whose key this run uses,
-    // as the gate decided when the run was applied.
-    const apiKey = await sessionApiKey(db, run.tenantId, run.funding);
-    if (apiKey) {
-      // The hint (last four characters) is what the billing page shows; never more.
-      helpers.logger.info(`run ${runId}: running on the organization's own Anthropic API key (…${keyHint(apiKey)})`);
-    }
-    const keyOption = apiKey ? { apiKey } : {};
-
-    // A model id the API did not find (model_not_found) is logged for the
-    // operator, once per model per run: on the deployment's key it is always
-    // a model setting to fix, and on the organization's key it may be one
-    // (org-key.ts KEY_REJECTED_ERRORS). Staff read the reason on the run.
-    const modelsNotFound = new Set<string>();
-    const reportModelNotFound = (model: string | undefined) => {
-      const id = model ?? '(model not named)';
-      if (modelsNotFound.has(id)) return;
-      modelsNotFound.add(id);
-      helpers.logger.error(`run ${runId}: ${modelNotFoundLog(id, Boolean(apiKey))}`);
-    };
-    const noteFailure = (report: { apiError?: string; apiErrorText?: string; usage: SessionTokenUsage }) => {
-      if (report.apiError === 'model_not_found') reportModelNotFound(modelNamedIn(report.apiErrorText) ?? report.usage.model);
-    };
-    const noteKeyFailure = (err: OrgKeyUnavailableError) => {
-      if (err.rejection === 'model_not_found') reportModelNotFound(err.model);
-    };
-
-    const [tenant] = await db.select().from(tenants).where(eq(tenants.id, run.tenantId));
-    if (!tenant) throw new Error(`tenant ${run.tenantId} missing`);
-
-    const plan = run.plan;
-    const config = run.configSnapshot;
-    const runStartedAt = new Date();
-    const storage = await tenantStorage(tenant.slug);
-    // A finding's captured text, through its tenant's archive only (the
-    // schema already limits the path to evidence/<name>.txt).
-    const readEvidenceText = async (textPath: string) => (await storage.get(textPath)).toString('utf8');
-
-    const tenantDims = await db
-      .select()
-      .from(dimensions)
-      .where(eq(dimensions.tenantId, tenant.id));
-    const dimBySlug = new Map(tenantDims.map((d) => [d.slug, d]));
-
-    // Phase 0: region context.
-    const regionSpec = plan.sessions.find((s) => s.kind === 'region_context');
-    let regionBrief = '(no region brief produced)';
-    if (regionSpec) {
-      const [row] = await db
-        .insert(researchSessions)
-        .values({ runId, kind: 'region_context', status: 'running', startedAt: new Date() })
-        .returning();
-      if (!row) throw new Error('session insert failed');
-      let result: SessionResult;
-      try {
-        result = await runSessionWithRetry({
-          prompt: regionSpec.prompt,
-          allowedTools: regionSpec.tool_allowlist,
-          // Never orchestrated: the region session has WebSearch, so with
-          // RESEARCH_SUBAGENT_MODEL set it would otherwise get scouts and a
-          // delegation note telling it to capture evidence — and it has no
-          // capture tool, and writes a brief, not findings.
-          orchestrate: false,
-          ...plannedResearchOptions(plan),
-          ...keyOption,
-        });
-      } catch (err) {
-        if (err instanceof OrgKeyUnavailableError) {
-          noteKeyFailure(err);
-          await recordKeyFailure(db, row.id, err, usage);
-        }
-        throw err;
-      }
-      if (!result.succeeded) noteFailure(result);
-      usage[row.id] = result.usage;
-      await db
-        .update(researchSessions)
-        .set({
-          status: result.succeeded ? 'complete' : 'failed',
-          transcript: result.transcript,
-          completedAt: new Date(),
-        })
-        .where(eq(researchSessions.id, row.id));
-      if (result.succeeded && result.resultText.trim()) {
-        regionBrief = result.resultText;
-      }
-    }
-
-    // Dimension sessions are independent once the region brief exists (each
-    // has its own session row, insert-only findings, per-session usage keys,
-    // and evidence captures run in isolated browser contexts), so they run
-    // under a bounded pool. RESEARCH_SESSION_CONCURRENCY=1 restores the old
-    // serial behavior; the practical ceiling is API throughput.
-    const concurrency = sessionConcurrency(process.env.RESEARCH_SESSION_CONCURRENCY);
-    if (!concurrency.valid) {
-      helpers.logger.warn(
-        `RESEARCH_SESSION_CONCURRENCY=${JSON.stringify(process.env.RESEARCH_SESSION_CONCURRENCY)} is not a whole number of at least 1; running ${concurrency.value} sessions at a time`,
-      );
-    }
-    const dimensionSpecs = plan.sessions.filter((s) => s.kind === 'dimension');
-
-    // Set once Anthropic refuses the organization's key (OrgKeyUnavailableError
-    // from a research or verifier session): from then on no session or
-    // verifier starts on it, and the run fails with this reason below.
-    let keyFailure: OrgKeyUnavailableError | null = null;
-
-    const processDimension = async (spec: (typeof dimensionSpecs)[number]) => {
-      const dimension = spec.dimension_slug ? dimBySlug.get(spec.dimension_slug) : undefined;
-      if (!dimension) {
-        helpers.logger.error(`dimension ${spec.dimension_slug} not found; skipping session`);
-        return;
-      }
-      const [row] = await db
-        .insert(researchSessions)
-        .values({
-          runId,
-          dimensionId: dimension.id,
-          kind: 'dimension',
-          status: 'running',
-          startedAt: new Date(),
-        })
-        .returning();
-      if (!row) throw new Error('session insert failed');
-
-      const prompt = spec.prompt.split(REGION_BRIEF_PLACEHOLDER).join(regionBrief);
-      const dimensionName =
-        dimensionNameFromPrompt(spec.prompt) ??
-        frameworkDimension(dimension.slug, dimension.canonicalSlug)?.name ??
-        dimension.slug;
-      const plannedSlugs = plannedSlugsFromPrompt(spec.prompt);
-      const thresholdRefs = plannedThresholdRefsFromPrompt(spec.prompt);
-      const submitFindingsContext = { config, dimensionSlug: dimension.slug, thresholdRefs };
-      const capturedSnapshotPaths = new Set<string>();
-      const trackCaptures = (paths?: readonly string[]) => {
-        for (const p of paths ?? []) capturedSnapshotPaths.add(p);
-      };
-
-      let result: SessionResult;
-      try {
-        const initialScout = plannedInitialScoutModel(plan);
-        result = await runSessionWithRetry({
-          prompt,
-          allowedTools: spec.tool_allowlist,
-          storage,
-          submitFindingsContext,
-          ...plannedResearchOptions(plan),
-          ...(initialScout !== undefined ? { scoutModel: initialScout } : {}),
-          ...keyOption,
-        });
-      } catch (err) {
-        if (!(err instanceof OrgKeyUnavailableError)) throw err;
-        keyFailure ??= err;
-        noteKeyFailure(err);
-        await recordKeyFailure(db, row.id, err, usage);
-        return;
-      }
-      if (!result.succeeded) noteFailure(result);
-      trackCaptures(result.capturedSnapshotPaths);
-      usage[row.id] = result.usage;
-
-      let rawFindings: unknown[] = [];
-      let parseOk = true;
-      // Salvaged: the output was malformed and only a fragment of it read
-      // (session.ts extractJson). The session is NOT failed for it — its
-      // findings go to review and it was paid for, and a failed session is
-      // free (packages/db billing counts only non-failed ones) — but every
-      // finding it did return is flagged partial_output, so staff know the
-      // session may have said more than was recorded.
-      let salvaged = false;
-      if (result.submittedFindings?.length) {
-        rawFindings = result.submittedFindings;
-      } else {
-        try {
-          const parsed = extractJson(result.resultText);
-          rawFindings = Array.isArray(parsed.value) ? parsed.value : [parsed.value];
-          salvaged = parsed.salvaged;
-          if (salvaged) {
-            helpers.logger.warn(
-              `session ${row.id}: output was malformed JSON; ${rawFindings.length} finding(s) salvaged and flagged partial_output`,
-            );
-          }
-        } catch {
-          parseOk = false;
-          helpers.logger.error(`session ${row.id}: output was not parseable JSON`);
-        }
-      }
-
-      const initialScout = plannedInitialScoutModel(plan);
-      const evaluated = await evaluateDimensionFindings(
-        {
-          sessionId: row.id,
-          config,
-          dimensionSlug: dimension.slug,
-          dimensionName,
-          regionBrief,
-          plan,
-          rawFindings,
-          plannedSlugs,
-          thresholdRefs,
-          initialModel: result.usage.model,
-          salvaged,
-          initialKeyFailure: keyFailure,
-        },
-        {
-          deterministicChecks: (raw, cfg, slug) =>
-            deterministicChecks(raw, cfg, slug, undefined, {
-              runStartedAt,
-              capturedSnapshotPaths,
-            }),
-          checkValueOnPage: (payload) => checkValueOnPage(payload, readEvidenceText),
-          recaptureEvidence: async (url, pdfUrl) => {
-            try {
-              const captured = await captureEvidence(storage, url, pdfUrl);
-              capturedSnapshotPaths.add(captured.snapshot_path);
-              return captured;
-            } catch {
-              return null;
-            }
-          },
-          runCorrectionSession: async ({ prompt: correctionPrompt, maxTurns }) => {
-            const res = await runSessionWithRetry({
-              prompt: correctionPrompt,
-              allowedTools: spec.tool_allowlist,
-              storage,
-              submitFindingsContext,
-              ...plannedResearchOptions(plan),
-              maxTurns,
-              ...(initialScout !== undefined ? { scoutModel: initialScout } : {}),
-              ...keyOption,
-            });
-            trackCaptures(res.capturedSnapshotPaths);
-            return res;
-          },
-          runEscalationSession: async ({ prompt: escalationPrompt, maxTurns }) => {
-            const res = await runSessionWithRetry({
-              prompt: escalationPrompt,
-              allowedTools: spec.tool_allowlist,
-              storage,
-              submitFindingsContext,
-              ...plannedEscalationOptions(plan),
-              maxTurns,
-              ...keyOption,
-            });
-            trackCaptures(res.capturedSnapshotPaths);
-            return res;
-          },
-          runVerifier: (payload) => runVerifier(payload, config.region.name, apiKey, storage, plan),
-          onFailure: noteFailure,
-          onKeyFailure: noteKeyFailure,
-          warn: (msg) => helpers.logger.warn(msg),
-        },
-      );
-
-      if (evaluated.keyFailure) keyFailure ??= evaluated.keyFailure;
-      if (evaluated.correctionUsage) usage[`correction:${row.id}`] = evaluated.correctionUsage;
-      if (evaluated.escalationUsage) usage[`escalation:${row.id}`] = evaluated.escalationUsage;
-      usage[`verifier:${row.id}`] = evaluated.verifierUsage;
-
-      for (const record of evaluated.records) {
-        await db.insert(findings).values({
-          sessionId: row.id,
-          dimensionId: dimension.id,
-          indicatorSlug: record.indicatorSlug,
-          payload: record.payload,
-          verification: record.verification,
-        });
-      }
-
-      const combinedTranscript = combineStageTranscripts([
-        { stage: 'initial', transcript: result.transcript },
-        ...(evaluated.correctionTranscript ? [{ stage: 'correction' as const, transcript: evaluated.correctionTranscript }] : []),
-        ...(evaluated.escalationTranscript ? [{ stage: 'escalation' as const, transcript: evaluated.escalationTranscript }] : []),
-      ]);
-      // If initial output was unparseable but correction/escalation recovered findings, keep session status aligned.
-      const recoveredOutput = !parseOk && evaluated.records.some((r) => r.verification.schema_ok);
-      await db
-        .update(researchSessions)
-        .set({
-          status: (result.succeeded && parseOk) || recoveredOutput ? 'complete' : 'failed',
-          transcript: combinedTranscript,
-          completedAt: new Date(),
-        })
-        .where(eq(researchSessions.id, row.id));
-    };
-
-    // Bounded pool: next session starts as soon as a slot frees. A refused
-    // key, or any other error, stops new sessions from starting; the ones
-    // already running finish (and record themselves) before the error is
-    // rethrown, so the run is never settled while a session still writes.
-    let cursor = 0;
-    let poolError: { error: unknown } | null = null;
-    await Promise.all(
-      Array.from({ length: Math.min(concurrency.value, dimensionSpecs.length) }, async () => {
-        while (!keyFailure && !poolError && cursor < dimensionSpecs.length) {
-          const spec = dimensionSpecs[cursor++]!;
-          try {
-            await processDimension(spec);
-          } catch (error) {
-            poolError ??= { error };
-          }
-        }
-      }),
-    );
-    if (poolError) throw (poolError as { error: unknown }).error;
-    if (keyFailure) throw keyFailure;
-
-    // Independent post-run recommendations stay in the staff plane. They
-    // share the run's funding/model policy and report their own usage; an
-    // audit service/persistence failure must not discard completed research.
-    try {
-      Object.assign(usage, await auditResearchRun(run, helpers, {
-        apiKey,
-        verifierModel: plan.models?.verifier_model,
-        ...(plan.caps ? { maxTurns: plan.caps.audit_max_turns } : {}),
-        ...(plan.models?.page_reader_model ? { pageReaderModel: plan.models.page_reader_model } : {}),
-      }));
-    } catch {
-      helpers.logger.warn(`run ${runId}: automatic audit could not finish; findings remain available for human review`);
-    }
-
-    const settled = settledRunStatus(
-      await db
-        .select({ kind: researchSessions.kind, status: researchSessions.status })
-        .from(researchSessions)
-        .where(eq(researchSessions.runId, runId)),
-    );
-    await finish(settled);
-    if (settled === 'complete') helpers.logger.info(`run ${runId} complete`);
-    else helpers.logger.error(`run ${runId} failed: no session succeeded`);
-  } catch (err) {
-    // Never the error's own message: a failed query's carries its SQL and bound values.
-    helpers.logger.error(`run ${runId} failed: ${logSafeError(err)}`);
-    if (err instanceof OrgKeyUnavailableError) await failPlannedSessions(db, run, err.message);
-    await db
-      .update(researchSessions)
-      .set({ status: 'failed', completedAt: new Date() })
-      .where(
-        and(
-          eq(researchSessions.runId, runId),
-          inArray(researchSessions.status, ['queued', 'running']),
-        ),
-      );
-    await finish('failed');
+    // Settled either way: tell the people who review it.
+    await notifyRunFinished(runId);
   } finally {
-    await closeEvidenceBrowser().catch(() => {});
+    await lock.release();
   }
-  // Settled either way: tell the people who review it.
-  await notifyRunFinished(runId);
 };
 
 /** How many dimension sessions run at once when RESEARCH_SESSION_CONCURRENCY is unset or unusable. */
@@ -529,6 +924,13 @@ export function sessionConcurrency(raw: string | undefined): { value: number; va
 /** A failed session's transcript that is just the reason, as session.ts runSessionWithRetry records a thrown session. */
 const sessionErrorTranscript = (message: string) => gzipSync(JSON.stringify({ type: 'session_error', message }));
 
+/** Append a `session_error` JSONL frame to an existing gzipped/raw transcript so the reason stays visible alongside prior output. */
+function appendSessionErrorFrame(transcript: Buffer, message: string): Buffer {
+  const existing = decodeTranscriptBuffer(transcript).trim();
+  const errorLine = JSON.stringify({ type: 'session_error', message });
+  return gzipSync(existing ? `${existing}\n${errorLine}` : errorLine);
+}
+
 /**
  * The session in row `rowId` stopped because Anthropic refused the
  * organization's key: record what it spent before the refusal (the error's
@@ -539,9 +941,9 @@ async function recordKeyFailure(
   db: DbExecutor,
   rowId: string,
   err: OrgKeyUnavailableError,
-  usage: RunTokenUsage,
+  recordUsage: (patch: RunTokenUsage) => Promise<void>,
 ): Promise<void> {
-  if (err.usage) usage[rowId] = err.usage;
+  if (err.usage) await recordUsage({ [rowId]: err.usage });
   await db
     .update(researchSessions)
     .set({ status: 'failed', transcript: sessionErrorTranscript(err.message), completedAt: new Date() })
@@ -574,25 +976,35 @@ async function failPlannedSessions(db: DbExecutor, run: ResearchRun, message: st
     .update(researchSessions)
     .set({ status: 'failed', transcript, completedAt: now })
     .where(and(eq(researchSessions.runId, run.id), inArray(researchSessions.status, ['queued', 'running'])));
-  const started = new Map<string, number>();
+  const startedIndices = new Set<number>();
+  const startedLegacy = new Map<string, number>();
   for (const row of (
       await db
-        .select({ kind: researchSessions.kind, dimensionId: researchSessions.dimensionId })
+        .select({
+          kind: researchSessions.kind,
+          dimensionId: researchSessions.dimensionId,
+          planSessionIndex: researchSessions.planSessionIndex,
+        })
         .from(researchSessions)
         .where(eq(researchSessions.runId, run.id))
     )) {
-    const key = `${row.kind}:${row.dimensionId ?? ''}`;
-    started.set(key, (started.get(key) ?? 0) + 1);
+    if (typeof row.planSessionIndex === 'number') {
+      startedIndices.add(row.planSessionIndex);
+    } else {
+      const key = `${row.kind}:${row.dimensionId ?? ''}`;
+      startedLegacy.set(key, (startedLegacy.get(key) ?? 0) + 1);
+    }
   }
-  const rows = run.plan.sessions.flatMap((spec) => {
+  const rows = run.plan.sessions.flatMap((spec, planSessionIndex) => {
     const dimensionId = spec.dimension_slug ? idBySlug.get(spec.dimension_slug) : undefined;
     if (spec.kind === 'dimension' && !dimensionId) return [];
+    if (startedIndices.has(planSessionIndex)) return [];
     // Dense dimensions have several planned sessions with the same slug.
-    // Consume one started row per spec, instead of collapsing them in a Set.
+    // Consume one legacy started row per spec when planSessionIndex is null.
     const key = `${spec.kind}:${dimensionId ?? ''}`;
-    const count = started.get(key) ?? 0;
+    const count = startedLegacy.get(key) ?? 0;
     if (count > 0) {
-      started.set(key, count - 1);
+      startedLegacy.set(key, count - 1);
       return [];
     }
     return [
@@ -600,6 +1012,7 @@ async function failPlannedSessions(db: DbExecutor, run: ResearchRun, message: st
         runId: run.id,
         kind: spec.kind,
         dimensionId: dimensionId ?? null,
+        planSessionIndex,
         status: 'failed' as const,
         transcript,
         startedAt: now,

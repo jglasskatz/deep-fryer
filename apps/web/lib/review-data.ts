@@ -33,8 +33,46 @@ export interface ReviewCardData {
   dimensionName: string;
   findings: (Finding & { audits: ReviewAudit[] })[];
   sessionId: string | null;
+  /**
+   * Every distinct session ID backing this card's findings (preserving dense
+   * chunk order by `planSessionIndex` / `startedAt` so earlier chunk
+   * transcripts are never overwritten by later chunks).
+   */
+  sessionIds: string[];
   /** Set when this run's findings were already approved into a version. */
   approvedVersionNum: number | null;
+}
+
+/**
+ * Pure: collect the distinct ordered session IDs for one dimension's review
+ * card from its findings (`finding.sessionId`) and session rows, never
+ * overwriting earlier dense-dimension chunks.
+ */
+export function reviewCardSessionIds(
+  dimFindings: readonly { sessionId: string }[],
+  dimSessions: readonly { id: string; planSessionIndex?: number | null; startedAt?: Date | null }[],
+): string[] {
+  const metaById = new Map(dimSessions.map((s) => [s.id, s]));
+  const ids = new Set<string>();
+  for (const f of dimFindings) {
+    if (f.sessionId) ids.add(f.sessionId);
+  }
+  if (ids.size === 0) {
+    for (const s of dimSessions) ids.add(s.id);
+  }
+  return [...ids].sort((a, b) => {
+    const sa = metaById.get(a);
+    const sb = metaById.get(b);
+    const pa = sa?.planSessionIndex;
+    const pb = sb?.planSessionIndex;
+    if (typeof pa === 'number' && typeof pb === 'number' && pa !== pb) return pa - pb;
+    if (typeof pa === 'number' && typeof pb !== 'number') return -1;
+    if (typeof pa !== 'number' && typeof pb === 'number') return 1;
+    const ta = sa?.startedAt?.getTime() ?? 0;
+    const tb = sb?.startedAt?.getTime() ?? 0;
+    if (ta !== tb) return ta - tb;
+    return a.localeCompare(b);
+  });
 }
 
 /** A run that failed, as the review queue lists it: what it managed, and why it stopped. */
@@ -131,7 +169,12 @@ export async function reviewQueue(tenantId: string, runId?: string): Promise<Rev
 async function reviewCards(db: DbExecutor, selectedRun: ResearchRun): Promise<ReviewCardData[]> {
   // Explicit columns: the user role cannot read transcripts (migration 0005).
   const sessions = await db
-    .select({ id: researchSessions.id, dimensionId: researchSessions.dimensionId })
+    .select({
+      id: researchSessions.id,
+      dimensionId: researchSessions.dimensionId,
+      planSessionIndex: researchSessions.planSessionIndex,
+      startedAt: researchSessions.startedAt,
+    })
     .from(researchSessions)
     .where(eq(researchSessions.runId, selectedRun.id));
   const sessionIds = sessions.map((s) => s.id);
@@ -179,19 +222,26 @@ async function reviewCards(db: DbExecutor, selectedRun: ResearchRun): Promise<Re
     : [];
   const nameByDim = new Map(latestNames.map((r) => [r.dimensionId, r.name]));
 
-  const sessionByDim = new Map(
-    sessions.filter((s) => s.dimensionId).map((s) => [s.dimensionId as string, s.id]),
-  );
+  const sessionsByDim = new Map<string, typeof sessions>();
+  for (const s of sessions) {
+    if (!s.dimensionId) continue;
+    const list = sessionsByDim.get(s.dimensionId) ?? [];
+    list.push(s);
+    sessionsByDim.set(s.dimensionId, list);
+  }
 
   return dimensionIds
     .map((dimId) => {
       const dimension = dimById.get(dimId);
       if (!dimension) return null;
+      const dimFindings = withAudits.filter((f) => f.dimensionId === dimId);
+      const cardSessionIds = reviewCardSessionIds(dimFindings, sessionsByDim.get(dimId) ?? []);
       return {
         dimension,
         dimensionName: nameByDim.get(dimId) ?? dimension.slug,
-        findings: withAudits.filter((f) => f.dimensionId === dimId),
-        sessionId: sessionByDim.get(dimId) ?? null,
+        findings: dimFindings,
+        sessionId: cardSessionIds[0] ?? null,
+        sessionIds: cardSessionIds,
         approvedVersionNum: approvedByDim.get(dimId) ?? null,
       };
     })

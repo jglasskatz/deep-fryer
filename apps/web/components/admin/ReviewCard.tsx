@@ -11,6 +11,7 @@ import {
   WHOLE_DIMENSION_GAP,
   type FindingPayload,
   type FindingVerification,
+  type ResearchStrategy,
   type ReviewAudit,
   type ReviewCause,
 } from '@deep-fryer/core';
@@ -23,6 +24,8 @@ import { AuditOpinions, AuditApplyPreview, CausePicker } from './ReviewAudits';
 
 export interface ReviewFinding {
   id: string;
+  /** Exact research session that produced this finding (preserved across dense-dimension chunks). */
+  sessionId?: string;
   indicatorSlug: string;
   payload: FindingPayload;
   verification: FindingVerification | null;
@@ -263,6 +266,7 @@ export function ReviewCard({
   findings,
   approvedVersionNum,
   sessionId,
+  sessionIds,
   canReadTranscript,
   evidenceBase,
 }: {
@@ -274,18 +278,37 @@ export function ReviewCard({
   findings: ReviewFinding[];
   approvedVersionNum: number | null;
   sessionId: string | null;
+  sessionIds?: string[];
   canReadTranscript: boolean;
   evidenceBase: string;
 }) {
   const router = useRouter();
   const [notes, setNotes] = useState('');
   const [rerunCause, setRerunCause] = useState<ReviewCause | ''>('');
+  const [rerunStrategy, setRerunStrategy] = useState<ResearchStrategy>('hybrid');
   const [editCause, setEditCause] = useState<ReviewCause | ''>('');
   const [gap, setGap] = useState<GapFormState>(emptyGapForm);
   const [includeNarrative, setIncludeNarrative] = useState(false);
   const narrativeFindings = findings.filter(finding => finding.payload.kind === 'indicator' && finding.payload.narrative_draft);
   const narrativeSupported = narrativeFindings.length > 0 && narrativeFindings.every(finding => finding.verification?.narrative_supported === 'pass');
   const { run: act, pending, error } = useAction();
+
+  // Preserve every distinct chunk session ID (from findings or card metadata)
+  // so dense dimensions expose every chunk's transcript, not only the last.
+  const transcriptSessionIds = (() => {
+    const ordered: string[] = [];
+    const seen = new Set<string>();
+    const add = (id: string | null | undefined) => {
+      if (!id || seen.has(id)) return;
+      seen.add(id);
+      ordered.push(id);
+    };
+    for (const id of sessionIds ?? []) add(id);
+    for (const f of findings) add(f.sessionId);
+    add(sessionId);
+    return ordered;
+  })();
+  const hasMultipleSessions = transcriptSessionIds.length > 1;
 
   // Gap cards always warrant review attention; sourced findings use the
   // shared red-flag predicate (SPEC.md §8: flagged, never dropped).
@@ -311,21 +334,40 @@ export function ReviewCard({
           ) : flagged > 0 ? (
             <span className="rounded bg-red-100 px-2 py-0.5 text-red-900">{flagged} flagged</span>
           ) : null}
-          {canReadTranscript && sessionId ? (
+          {canReadTranscript && transcriptSessionIds.length === 1 ? (
             <a
               className="underline"
-              href={`/api/research/sessions/${sessionId}/transcript`}
+              href={`/api/research/sessions/${transcriptSessionIds[0]}/transcript`}
               target="_blank"
             >
               transcript
             </a>
+          ) : canReadTranscript && transcriptSessionIds.length > 1 ? (
+            transcriptSessionIds.map((sid, idx) => (
+              <a
+                key={sid}
+                className="underline"
+                href={`/api/research/sessions/${sid}/transcript`}
+                target="_blank"
+              >
+                transcript {idx + 1}
+              </a>
+            ))
           ) : null}
         </div>
       </div>
 
       <div className="mt-3 space-y-3">
         {findings.map((f) => (
-          <div key={f.id}><FindingRow finding={f} evidenceBase={evidenceBase} /><AuditOpinions audits={f.audits} /><NarrativeProposal finding={f} evidenceBase={evidenceBase} /></div>
+          <div key={f.id}>
+            <FindingRow
+              finding={f}
+              evidenceBase={evidenceBase}
+              transcriptHref={canReadTranscript && hasMultipleSessions && f.sessionId ? `/api/research/sessions/${f.sessionId}/transcript` : undefined}
+            />
+            <AuditOpinions audits={f.audits} />
+            <NarrativeProposal finding={f} evidenceBase={evidenceBase} />
+          </div>
         ))}
       </div>
 
@@ -393,6 +435,20 @@ export function ReviewCard({
               onChange={setRerunCause}
               other={{ hint: OTHER_IN_NOTES }}
             />
+            <label className="block">
+              <span className="font-medium">Research strategy</span>
+              <select
+                className="mt-1 min-h-11 w-full min-w-0 rounded border border-field-border bg-[color:var(--color-bg)] px-2"
+                aria-label="Research strategy for re-research"
+                value={rerunStrategy}
+                disabled={pending}
+                onChange={(e) => setRerunStrategy(e.target.value as ResearchStrategy)}
+              >
+                <option value="hybrid">Hybrid (Sonnet first, Opus escalation on gaps/failures)</option>
+                <option value="standard">Standard (Sonnet research, Opus verification)</option>
+                <option value="deep">Deep (Opus research with Sonnet scouts)</option>
+              </select>
+            </label>
             <textarea
               className="w-full rounded border border-field-border px-2 py-1"
               rows={3}
@@ -413,6 +469,7 @@ export function ReviewCard({
                       dimensionId,
                       notes,
                       cause: rerunCause,
+                      strategy: rerunStrategy,
                     }),
                   );
                   router.push(`/${tenantSlug}/admin/research/${newRun}`);
@@ -447,7 +504,15 @@ export function ReviewCard({
   );
 }
 
-export function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; evidenceBase: string }) {
+export function FindingRow({
+  finding,
+  evidenceBase,
+  transcriptHref,
+}: {
+  finding: ReviewFinding;
+  evidenceBase: string;
+  transcriptHref?: string;
+}) {
   const { payload, verification: v } = finding;
 
   if (payload.kind === 'gap') {
@@ -456,6 +521,11 @@ export function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; 
         <p className="font-medium">
           Data gap — {payload.indicator_slug}
           <span className="ml-2 rounded bg-black/10 px-1.5 py-0.5 text-[11px]">gap card</span>
+          {transcriptHref ? (
+            <a className="ml-2 text-xs font-normal underline" href={transcriptHref} target="_blank">
+              session transcript
+            </a>
+          ) : null}
         </p>
         <p className="mt-1">{payload.reason}</p>
         <p className="mt-1 text-xs text-[color:var(--color-muted)]">
@@ -522,6 +592,14 @@ export function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; 
             {payload.source} <span className="text-red-700">(unlinkable URL)</span>
           </span>
         )}
+        {transcriptHref ? (
+          <>
+            {' · '}
+            <a className="underline" href={transcriptHref} target="_blank">
+              session transcript
+            </a>
+          </>
+        ) : null}
       </p>
       <ProvenanceNote provenance={finding.provenance} />
       {v?.verifier_note && v.content_supported !== 'pass' ? (

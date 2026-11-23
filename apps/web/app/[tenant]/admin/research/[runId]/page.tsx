@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { summarizeRunCosts, type ResearchPlan } from '@deep-fryer/core';
+import { isResearchStrategy, summarizeRunCosts, type ResearchPlan } from '@deep-fryer/core';
 import { RunCostSummary } from '@/components/admin/RunCostSummary';
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
@@ -285,7 +285,11 @@ export default async function RunDetailPage({
             </ul>
             {settled && replanIds.length > 0 ? (
               <div className="mt-4">
-                <ReplanFailed tenantSlug={tenant} dimensionIds={replanIds} />
+                <ReplanFailed
+                  tenantSlug={tenant}
+                  dimensionIds={replanIds}
+                  strategy={isResearchStrategy(run.plan.strategy) ? run.plan.strategy : undefined}
+                />
                 <p className="mt-1 text-xs text-[color:var(--color-muted)]">
                   Planning is free: you see the new plan before anything runs, and apply it there.
                 </p>
@@ -340,8 +344,10 @@ export default async function RunDetailPage({
           </summary>
           <p className="mt-2 text-sm text-[color:var(--color-muted)]">
             This is exactly what runs — every prompt rendered from the plugin&apos;s skills and the
-            portrait&apos;s config when the run was planned, inspectable before any tokens are spent.
-            The region brief placeholder is filled by the phase-0 session when the run starts.
+            portrait&apos;s config when the run was planned, inspectable before any tokens are spent.{' '}
+            {run.plan.cached_region_brief
+              ? 'This targeted run reuses the portrait’s cached region brief instead of running a new phase-0 session.'
+              : 'The region brief placeholder is filled by the phase-0 session when the run starts.'}
           </p>
           <div className="mt-3 rounded bg-black/[0.04] p-3 text-xs">
             <p className="font-medium">Research strategy: {strategy.label}</p>

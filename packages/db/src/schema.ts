@@ -29,6 +29,7 @@ import type {
   FindingCorrection,
   FindingAuditSource,
   OutreachContactData,
+  RegionBriefCache,
   ResearchPlan,
   ResearchModels,
   ReviewDecision,
@@ -228,6 +229,13 @@ export const tenants = pgTable('tenants', {
    * queries.ts tenantIsPublic.
    */
   firstPublishedAt: timestamp('first_published_at', { withTimezone: true }),
+  /**
+   * Validated Phase-0 region brief cached from the latest completed
+   * region_context session, keyed by config_hash and cached_at so targeted
+   * re-runs can skip redundant Phase-0 sessions while the config is unchanged
+   * and the cache entry is <30 days old (migration 0033).
+   */
+  regionBriefCache: jsonb('region_brief_cache').$type<RegionBriefCache>(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   archivedAt: timestamp('archived_at', { withTimezone: true }),
 });
@@ -375,6 +383,12 @@ export const researchSessions = pgTable(
       .references(() => researchRuns.id, { onDelete: 'cascade' }),
     dimensionId: uuid('dimension_id').references(() => dimensions.id),
     kind: researchSessionKindEnum('kind').notNull(),
+    /**
+     * Zero-based index into `research_runs.plan.sessions` for deterministic
+     * chunk matching and crash-resumable checkpointing. Null on historic rows
+     * written before migration 0033.
+     */
+    planSessionIndex: integer('plan_session_index'),
     status: researchSessionStatusEnum('status').notNull().default('queued'),
     reviewerNotes: text('reviewer_notes'),
     transcript: bytea('transcript'),
@@ -383,6 +397,7 @@ export const researchSessions = pgTable(
   },
   (t) => ({
     runIdx: index('research_sessions_run_idx').on(t.runId),
+    runPlanSessionIdx: index('research_sessions_run_plan_idx').on(t.runId, t.planSessionIndex),
   }),
 );
 
