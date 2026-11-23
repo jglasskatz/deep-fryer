@@ -34,6 +34,7 @@ vi.mock('@/lib/admin-data', async (importOriginal) => ({
   tenantConfigMap: vi.fn(async () => ({})),
   tenantRuns: vi.fn(async () => []),
   tenantRunSessionIds: vi.fn(async () => new Map()),
+  tenantReviewLabels: vi.fn(async () => []),
   recentAudit: vi.fn(async () => []),
   commentCounts: vi.fn(async () => new Map()),
   stalenessOverview: vi.fn(() => []),

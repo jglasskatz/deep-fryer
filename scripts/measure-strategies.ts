@@ -8,8 +8,9 @@
  *   tsx scripts/measure-strategies.ts plan --tenant bronx --dims housing,air-pollution,food,ocean-acidification,ozone-depletion [--strategy deep@1]
  *   tsx scripts/measure-strategies.ts enqueue --run <runId>
  *   tsx scripts/measure-strategies.ts status
- *   tsx scripts/measure-strategies.ts score --label sonnet --runs <id>,<id> [--label2 opus --runs2 <id>,<id>]
- *   tsx scripts/measure-strategies.ts score --strategy standard@1 --strategy2 deep@1 [--tenant bronx]
+ *   tsx scripts/measure-strategies.ts score --label sonnet --runs <id>,<id> [--label2 opus --runs2 <id>,<id>] [--with-labels]
+ *   tsx scripts/measure-strategies.ts score --strategy standard@1 --strategy2 deep@1 [--tenant bronx] [--with-labels]
+ *   tsx scripts/measure-strategies.ts labels [--tenant bronx] [--strategy standard@1] [--runs <id>,<id>] [--dimension housing] [--export-fixtures <path>]
  *
  * `--strategy name@version` (or a bare name, for its newest version) plans
  * with that registry entry (packages/research strategies.ts); without it the
@@ -25,12 +26,14 @@
  * tokens, which differ in price ~25× between models and in count between
  * tokenizers. Coverage divides by the indicators each plan asked for.
  */
+import { writeFile } from 'node:fs/promises';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { frameworkDimension } from '@deep-fryer/contract';
 import {
   dimensions,
   findings,
   getDb,
+  loadStrategyReviewSummary,
   researchRuns,
   researchSessions,
   tenantBySlug,
@@ -48,6 +51,7 @@ import {
 import {
   enqueueResearchApply,
   NEGATIVE_CONTROLS,
+  exportRejectedFixtures,
   plannedIndicators,
   renderPlan,
   replicationAgreement,
@@ -55,6 +59,7 @@ import {
   scoreNegativeControls,
   scoreStrategy,
   strategyRef,
+  summarizeReviewLabels,
   type ControlResult,
   type PlanDimensionSpec,
   type ScoredFinding,
@@ -276,6 +281,10 @@ async function scoreLabel(label: string, runIds: string[], strategy?: string) {
         : controlResults.filter((r) => !r.correct).length / controlResults.length,
   };
   const agreement = perRun.length > 1 ? replicationAgreement(perRun.map((r) => r.scored)) : [];
+  const includeLabels = process.argv.includes('--with-labels');
+  const reviewLabelsSummary = includeLabels
+    ? summarizeReviewLabels((await loadStrategyReviewSummary(getDb(), { runIds })).rows)
+    : undefined;
   return {
     label,
     strategy: strategy ?? null,
@@ -293,6 +302,7 @@ async function scoreLabel(label: string, runIds: string[], strategy?: string) {
     refusalFallbacks: perRun.reduce((n, r) => n + r.refusalFallbacks, 0),
     negativeControls: controls,
     replication: agreement,
+    ...(reviewLabelsSummary ? { reviewLabels: reviewLabelsSummary } : {}),
   };
 }
 
@@ -351,11 +361,47 @@ async function enqueue() {
   console.log(`enqueued ${runId}`);
 }
 
+async function labels() {
+  const db = getDb();
+  const tenantSlug = arg('tenant');
+  let tenantId: string | undefined;
+  if (tenantSlug) {
+    const tenant = await tenantBySlug(db, tenantSlug);
+    if (!tenant) throw new Error(`tenant ${tenantSlug} not found`);
+    tenantId = tenant.id;
+  }
+  const ref = arg('strategy');
+  const entry = ref ? resolveStrategy(ref) : undefined;
+  const runIds = (arg('runs') ?? '').split(',').filter(Boolean);
+  const dimensionSlug = arg('dimension');
+
+  const loaded = await loadStrategyReviewSummary(db, {
+    ...(tenantId ? { tenantId } : {}),
+    ...(entry ? { strategy: entry.name, strategyVersion: entry.version } : {}),
+    ...(runIds.length ? { runIds } : {}),
+    ...(dimensionSlug ? { dimensionSlug } : {}),
+  });
+
+  const summary = summarizeReviewLabels(loaded.rows);
+  const exportPath = arg('export-fixtures');
+  if (exportPath) {
+    const fixtures = exportRejectedFixtures(loaded.rows);
+    await writeFile(exportPath, `${JSON.stringify(fixtures, null, 2)}\n`, 'utf8');
+    console.log(JSON.stringify({ summary, exportedFixtures: fixtures.length, exportPath }, null, 2));
+    return;
+  }
+  if (process.argv.includes('--fixtures')) {
+    console.log(JSON.stringify({ summary, fixtures: exportRejectedFixtures(loaded.rows) }, null, 2));
+    return;
+  }
+  console.log(JSON.stringify(summary, null, 2));
+}
+
 const cmd = process.argv[2];
-const commands: Record<string, () => Promise<void>> = { plan, enqueue, status, score };
+const commands: Record<string, () => Promise<void>> = { plan, enqueue, status, score, labels };
 const fn = commands[cmd ?? ''];
 if (!fn) {
-  console.error('usage: measure-strategies.ts <plan|enqueue|status|score> [flags]');
+  console.error('usage: measure-strategies.ts <plan|enqueue|status|score|labels> [flags]');
   process.exit(2);
 }
 fn().then(

@@ -5,6 +5,8 @@ export * from './page-text.js';
 export * from './measure.js';
 export * from './self-correct.js';
 export * from './hybrid.js';
+export * from './eval-labels.js';
+export * from './triage/index.js';
 export * from './queue.js';
 export * from './storage.js';
 export * from './egress.js';

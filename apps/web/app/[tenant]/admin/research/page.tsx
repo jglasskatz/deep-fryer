@@ -2,10 +2,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { frameworkDimension } from '@deep-fryer/contract';
 import { summarizePortraitCosts, summarizeRunCosts } from '@deep-fryer/core';
+import { summarizeReviewLabels } from '@deep-fryer/research';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { NewRunForm } from '@/components/admin/NewRunForm';
-import { tenantDimensions, tenantRunSessionIds, tenantRuns } from '@/lib/admin-data';
+import { tenantDimensions, tenantReviewLabels, tenantRunSessionIds, tenantRuns } from '@/lib/admin-data';
 import { PortraitCostTotal, RunCostCell } from '@/components/admin/RunCostSummary';
+import { ReviewCalibrationSummary } from '@/components/admin/ReviewCalibrationSummary';
 import { requireAdminPage } from '@/lib/admin-guard';
 import { adminPageMetadata } from '@/lib/page-meta';
 import { billingSummary, keyFundedSessionsNote } from '@/lib/billing';
@@ -29,12 +31,14 @@ export default async function ResearchPage({
 }) {
   const { tenant } = await params;
   const ctx = await requireAdminPage(tenant, 'editor');
-  const [runs, dims, billing, sessionIds] = await Promise.all([
+  const [runs, dims, billing, sessionIds, reviewLabels] = await Promise.all([
     tenantRuns(ctx.tenant.id),
     tenantDimensions(ctx.tenant.id),
     billingSummary(ctx.tenant.organizationId),
     tenantRunSessionIds(ctx.tenant.id),
+    tenantReviewLabels(ctx.tenant.id),
   ]);
+  const calibration = summarizeReviewLabels(reviewLabels);
   // Each run's own session rows, so a session that left no usage record keeps its run's dollars partial here too.
   const costRuns = runs.map((run) => ({ ...run, sessionIds: sessionIds.get(run.id) ?? [] }));
   const portraitTotal = summarizePortraitCosts(costRuns);
@@ -82,6 +86,8 @@ export default async function ResearchPage({
         <section className="mt-4 rounded border border-black/10 p-3" aria-label="Research spending">
           <PortraitCostTotal total={portraitTotal} />
         </section>
+
+        <ReviewCalibrationSummary summary={calibration} />
 
         <div className="mt-6">
           <NewRunForm
