@@ -1,3 +1,4 @@
+import { RESEARCH_PROVIDERS, type ResearchProvider } from './providers.js';
 import type { ResearchModels, ResearchPlan, StrategyName } from './types.js';
 
 /**
@@ -48,8 +49,8 @@ export const OTHER_CAUSE = 'other' satisfies ReviewCause;
 export const REVIEW_NOTE_MAX = 4000;
 
 /** Who may serve the model calls of a run whose findings are labelled; the database allows only these. */
-export const REVIEW_LABEL_PROVIDERS = ['anthropic'] as const;
-export type ReviewLabelProvider = (typeof REVIEW_LABEL_PROVIDERS)[number];
+export const REVIEW_LABEL_PROVIDERS = RESEARCH_PROVIDERS;
+export type ReviewLabelProvider = ResearchProvider;
 
 const causeIds: ReadonlySet<string> = new Set(REVIEW_CAUSES.map((c) => c.id));
 const labels: ReadonlyMap<string, string> = new Map<string, string>([

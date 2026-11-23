@@ -1,4 +1,10 @@
-import type { FindingVerification, RefusalFallbackEvent, RunTokenUsage, SessionTokenUsage } from '@deep-fryer/core';
+import {
+  PROVIDER_META,
+  type FindingVerification,
+  type RefusalFallbackEvent,
+  type RunTokenUsage,
+  type SessionTokenUsage,
+} from '@deep-fryer/core';
 // Type only: this module is also bundled into the review card, which runs in the browser.
 import type { RunExecution } from '@deep-fryer/db';
 
@@ -30,7 +36,11 @@ export interface FindingProvenance {
 
 export const PROVIDER_NOT_RECORDED = 'provider not recorded';
 
-const PROVIDER_NAMES: Record<RunExecution['provider'], string> = { anthropic: 'Anthropic' };
+const PROVIDER_NAMES: Record<RunExecution['provider'], string> = {
+  anthropic: PROVIDER_META.anthropic.displayName,
+  openai: PROVIDER_META.openai.displayName,
+  google: PROVIDER_META.google.displayName,
+};
 const EXECUTOR_NAMES: Record<RunExecution['executor'], string> = { shared_worker: 'shared server' };
 
 /** "Anthropic", or "provider not recorded" for a run applied before this was kept. */

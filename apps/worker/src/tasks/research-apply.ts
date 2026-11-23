@@ -9,7 +9,11 @@ import {
 } from '@deep-fryer/civic-data';
 import { frameworkDimension, type PortraitConfig } from '@deep-fryer/contract';
 import {
+  PROVIDER_META,
   emptyUsage,
+  parseResearchProvider,
+  providerForModel,
+  resolveProviderEnvKey,
   type ContentSupported,
   type FindingPayload,
   type FindingTriageVerification,
@@ -19,6 +23,7 @@ import {
   type PlannedSession,
   type RegionBriefCache,
   type ResearchPlan,
+  type ResearchProvider,
   type RunTokenUsage,
   type SessionTokenUsage,
   type ValueOnPage,
@@ -39,6 +44,7 @@ import {
   checkValueOnPage,
   correctionReasons,
   DEFAULT_ESCALATION_MAX_TURNS,
+  DEFAULT_SESSION_MODEL,
   deterministicChecks,
   dimensionNameFromPrompt,
   isValidRegionBriefCache,
@@ -78,6 +84,7 @@ import {
 import { SourceCache } from '../source-cache.js';
 import {
   createMessagesClient,
+  DEFAULT_TRIAGE_MODEL,
   runFindingTriage,
   type FindingTriageResult,
   type MessagesApiClient,
@@ -121,6 +128,46 @@ import { auditResearchRun } from '../research-audit.js';
  * the other namespaces (61_001..61_005).
  */
 export const LOCK_RESEARCH_APPLY = 61_006;
+
+/**
+ * Pure: resolve the active model provider for each stage of a research run
+ * from explicit env overrides (`RESEARCH_PROVIDER`, `VERIFIER_PROVIDER`) or
+ * the plan's frozen model IDs (`providerForModel`).
+ */
+export function resolveRunProviders(
+  plan: Pick<ResearchPlan, 'models'>,
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): {
+  researchProvider: ResearchProvider;
+  verifierProvider: ResearchProvider;
+  escalationProvider: ResearchProvider;
+  triageProvider: ResearchProvider;
+  triageModel: string;
+} {
+  const researchModel = plan.models?.session_model ?? env.ANTHROPIC_MODEL ?? DEFAULT_SESSION_MODEL;
+  const researchProvider =
+    parseResearchProvider(env.RESEARCH_PROVIDER) ?? providerForModel(researchModel, 'anthropic');
+  const verifierModel = plan.models?.verifier_model ?? env.VERIFIER_MODEL ?? 'claude-opus-5';
+  const verifierProvider =
+    parseResearchProvider(env.VERIFIER_PROVIDER) ?? providerForModel(verifierModel, 'anthropic');
+  const escalationModel = plan.models?.escalation_model ?? undefined;
+  const escalationProvider = escalationModel
+    ? providerForModel(escalationModel, researchProvider)
+    : researchProvider;
+  const triageModel =
+    env.TRIAGE_MODEL?.trim() ||
+    (researchProvider === 'anthropic'
+      ? DEFAULT_TRIAGE_MODEL
+      : PROVIDER_META[researchProvider].defaultFastModel);
+  const triageProvider = providerForModel(triageModel, researchProvider);
+  return {
+    researchProvider,
+    verifierProvider,
+    escalationProvider,
+    triageProvider,
+    triageModel,
+  };
+}
 
 /**
  * Mount `@deep-fryer/civic-data` connectors as an in-process SDK MCP server
@@ -527,37 +574,75 @@ export const researchApply: Task = async (rawPayload, helpers) => {
     };
 
     try {
-      // First, before anything else can fail or spend: whose key this run uses,
-      // as the gate decided when the run was applied.
-      const apiKey = await sessionApiKey(db, run.tenantId, run.funding);
+      const plan = run.plan;
+      const providers = resolveRunProviders(plan, process.env);
+
+      // Keep run provenance synced with the actual resolved research provider
+      // (covers runs applied before provider routing or unmetered runs).
+      if (!run.execution || run.execution.provider !== providers.researchProvider) {
+        const syncedExecution = {
+          provider: providers.researchProvider,
+          endpoint_host:
+            run.execution?.endpoint_host ??
+            (run.funding === 'organization_key'
+              ? PROVIDER_META[providers.researchProvider].firstPartyHost
+              : null),
+          executor: 'shared_worker' as const,
+          host_region: run.execution?.host_region ?? (process.env.DF_HOST_REGION?.trim() || null),
+        };
+        await db
+          .update(researchRuns)
+          .set({ execution: syncedExecution })
+          .where(eq(researchRuns.id, runId));
+      }
+
+      // First, before anything else can fail or spend: resolve whose key each
+      // provider in this run uses, as the gate decided when the run was applied.
+      const orgKeyByProvider = new Map<ResearchProvider, string | null>();
+      const resolveKeyForProvider = async (provider: ResearchProvider): Promise<string | null> => {
+        if (orgKeyByProvider.has(provider)) return orgKeyByProvider.get(provider)!;
+        const resolved = await sessionApiKey(db, run.tenantId, run.funding, process.env.DF_SECRETS_KEY, provider);
+        orgKeyByProvider.set(provider, resolved);
+        return resolved;
+      };
+      const apiKey = await resolveKeyForProvider(providers.researchProvider);
+      const verifierApiKey = await resolveKeyForProvider(providers.verifierProvider);
+      const escalationApiKey = plan.models?.escalation_model
+        ? await resolveKeyForProvider(providers.escalationProvider)
+        : apiKey;
       if (apiKey) {
         // The hint (last four characters) is what the billing page shows; never more.
-        helpers.logger.info(`run ${runId}: running on the organization's own Anthropic API key (…${keyHint(apiKey)})`);
+        helpers.logger.info(
+          `run ${runId}: running on the organization's own ${PROVIDER_META[providers.researchProvider].displayName} API key (…${keyHint(apiKey)})`,
+        );
       }
       const keyOption = apiKey ? { apiKey } : {};
+      const escalationKeyOption = escalationApiKey ? { apiKey: escalationApiKey } : {};
 
       // A model id the API did not find (model_not_found) is logged for the
       // operator, once per model per run: on the deployment's key it is always
       // a model setting to fix, and on the organization's key it may be one
       // (org-key.ts KEY_REJECTED_ERRORS). Staff read the reason on the run.
       const modelsNotFound = new Set<string>();
-      const reportModelNotFound = (model: string | undefined) => {
+      const reportModelNotFound = (model: string | undefined, provider: ResearchProvider = providers.researchProvider) => {
         const id = model ?? '(model not named)';
         if (modelsNotFound.has(id)) return;
         modelsNotFound.add(id);
-        helpers.logger.error(`run ${runId}: ${modelNotFoundLog(id, Boolean(apiKey))}`);
+        helpers.logger.error(`run ${runId}: ${modelNotFoundLog(id, Boolean(apiKey), provider)}`);
       };
       const noteFailure = (report: { apiError?: string; apiErrorText?: string; usage: SessionTokenUsage }) => {
-        if (report.apiError === 'model_not_found') reportModelNotFound(modelNamedIn(report.apiErrorText) ?? report.usage.model);
+        if (report.apiError === 'model_not_found') {
+          const modelId = modelNamedIn(report.apiErrorText) ?? report.usage.model;
+          reportModelNotFound(modelId, providerForModel(modelId, providers.researchProvider));
+        }
       };
       const noteKeyFailure = (err: OrgKeyUnavailableError) => {
-        if (err.rejection === 'model_not_found') reportModelNotFound(err.model);
+        if (err.rejection === 'model_not_found') reportModelNotFound(err.model, err.provider ?? providers.researchProvider);
       };
 
       const [tenant] = await db.select().from(tenants).where(eq(tenants.id, run.tenantId));
       if (!tenant) throw new Error(`tenant ${run.tenantId} missing`);
 
-      const plan = run.plan;
       const config = run.configSnapshot;
       const runStartedAt = new Date();
       const storage = await tenantStorage(tenant.slug);
@@ -566,22 +651,49 @@ export const researchApply: Task = async (rawPayload, helpers) => {
       // recaptures, and evidence promotion.
       const sourceCache = new SourceCache();
       // Deterministic federal & municipal civic-data connectors mounted as
-      // an in-process MCP server (`civic_data`) backed by tenant storage.
+      // both an Anthropic SDK MCP server (`civic_data`) and provider-agnostic
+      // ToolExecutor definitions for OpenAI / Google Gemini sessions.
+      const civicDataRegistry = createCivicDataTools({ storage, env: process.env });
       const civicDataMcpOptions = {
         extraMcpServers: {
-          [CIVIC_DATA_MCP_SERVER_NAME]: createCivicDataMcpServer(storage, process.env),
+          [CIVIC_DATA_MCP_SERVER_NAME]: createSdkMcpServer({
+            name: civicDataRegistry.serverName,
+            version: civicDataRegistry.version,
+            tools: civicDataRegistry.tools.map((def) =>
+              tool(def.name, def.description, def.inputSchema, async (args) => {
+                const res = await def.handler(args);
+                return {
+                  content: res.content,
+                  ...(res.isError ? { isError: res.isError } : {}),
+                };
+              }),
+            ),
+          }),
         },
+        civicDataTools: civicDataRegistry.tools,
         extraAllowedTools: [...CIVIC_DATA_MCP_TOOL_NAMES],
       };
-      // Optional direct Messages API client for lightweight advisory triage.
+      // Optional direct structured-message triage setup (Anthropic, OpenAI, or Gemini).
       // Never falls back to the deployment key on organization-key-funded runs.
+      const triageOrgKey =
+        run.funding === 'organization_key'
+          ? await resolveKeyForProvider(providers.triageProvider).catch(() => null)
+          : null;
       let triageClient: MessagesApiClient | null = null;
-      if (apiKey || (run.funding !== 'organization_key' && process.env.ANTHROPIC_API_KEY)) {
-        try {
-          triageClient = createMessagesClient({ apiKey });
-        } catch {
-          triageClient = null;
+      let triageEnabled = false;
+      if (providers.triageProvider === 'anthropic') {
+        if (triageOrgKey || (run.funding !== 'organization_key' && resolveProviderEnvKey('anthropic'))) {
+          try {
+            triageClient = createMessagesClient({ apiKey: triageOrgKey });
+            triageEnabled = true;
+          } catch {
+            triageClient = null;
+          }
         }
+      } else {
+        triageEnabled = Boolean(
+          triageOrgKey || (run.funding !== 'organization_key' && resolveProviderEnvKey(providers.triageProvider)),
+        );
       }
       // A finding's captured text, through its tenant's archive only (the
       // schema already limits the path to evidence/<name>.txt).
@@ -668,6 +780,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
             runSessionWithRetry({
               prompt: regionSpec.prompt,
               allowedTools: regionSpec.tool_allowlist,
+              provider: providers.researchProvider,
               sourceCache,
               ...civicDataMcpOptions,
               // Never orchestrated: the region session has WebSearch, so with
@@ -757,6 +870,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
           result = await runSessionWithRetry({
             prompt,
             allowedTools: spec.tool_allowlist,
+            provider: providers.researchProvider,
             storage,
             sourceCache,
             ...civicDataMcpOptions,
@@ -839,6 +953,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
               const res = await runSessionWithRetry({
                 prompt: correctionPrompt,
                 allowedTools: spec.tool_allowlist,
+                provider: providers.researchProvider,
                 storage,
                 sourceCache,
                 ...civicDataMcpOptions,
@@ -855,19 +970,21 @@ export const researchApply: Task = async (rawPayload, helpers) => {
               const res = await runSessionWithRetry({
                 prompt: escalationPrompt,
                 allowedTools: spec.tool_allowlist,
+                provider: providers.escalationProvider,
                 storage,
                 sourceCache,
                 ...civicDataMcpOptions,
                 submitFindingsContext,
                 ...plannedEscalationOptions(plan),
                 maxTurns,
-                ...keyOption,
+                ...escalationKeyOption,
               });
               trackCaptures(res.capturedSnapshotPaths);
               return res;
             },
-            runVerifier: (payload) => runVerifier(payload, config.region.name, apiKey, storage, plan),
-            ...(triageClient
+            runVerifier: (payload) =>
+              runVerifier(payload, config.region.name, verifierApiKey, storage, plan, providers.verifierProvider),
+            ...(triageEnabled
               ? {
                   runTriage: async (payload: IndicatorFindingPayload) => {
                     const textPath = payload.evidence.text_path;
@@ -884,7 +1001,11 @@ export const researchApply: Task = async (rawPayload, helpers) => {
                     );
                     return runFindingTriage(
                       {
-                        client: triageClient,
+                        ...(triageClient ? { client: triageClient } : {}),
+                        provider: providers.triageProvider,
+                        model: providers.triageModel,
+                        apiKey: triageOrgKey,
+                        isOrganizationKey: run.funding === 'organization_key',
                         regionName: config.region.name,
                         regionDefinition: config.region.definition,
                         indicatorDefinition: fwInd?.name,
@@ -969,8 +1090,9 @@ export const researchApply: Task = async (rawPayload, helpers) => {
       // audit service/persistence failure must not discard completed research.
       try {
         const auditUsage = await auditResearchRun(run, helpers, {
-          apiKey,
+          apiKey: verifierApiKey,
           verifierModel: plan.models?.verifier_model,
+          provider: providers.verifierProvider,
           ...(plan.caps ? { maxTurns: plan.caps.audit_max_turns } : {}),
           ...(plan.models?.page_reader_model ? { pageReaderModel: plan.models.page_reader_model } : {}),
         });
@@ -1770,6 +1892,7 @@ async function runVerifier(
   apiKey: string | null,
   storage: TenantStorage,
   plan: Pick<ResearchPlan, 'models' | 'caps'>,
+  provider?: ResearchProvider,
 ): Promise<{
   verdict: Verdict | null;
   usage: SessionTokenUsage;
@@ -1792,11 +1915,13 @@ async function runVerifier(
   // researcher's model — a constant, maximally-skeptical judge, so strategy
   // comparisons measure the researcher, never the leniency of its grader.
   const model = plan.models?.verifier_model ?? process.env.VERIFIER_MODEL ?? 'claude-opus-5';
+  const resolvedProvider = provider ?? providerForModel(model, 'anthropic');
   let result: SessionResult;
   try {
     result = await runSession({
       prompt,
       allowedTools: VERIFIER_TOOLS,
+      provider: resolvedProvider,
       archivedExhibits: archive.exhibits,
       orchestrate: false,
       // The plan's cap, never today's constant: a planned run keeps the
@@ -1809,14 +1934,15 @@ async function runVerifier(
       ...(apiKey ? { apiKey } : {}),
     });
   } catch (err) {
+    if (err instanceof OrgKeyUnavailableError) throw err;
     // A thrown session still spent what it streamed (SessionRunError).
     if (!(err instanceof SessionRunError)) return { verdict: null, usage: emptyUsage() };
-    const refused = apiKey ? rejectedKeyError(err, model, err.usage) : null;
+    const refused = apiKey ? rejectedKeyError(err, model, err.usage, resolvedProvider) : null;
     if (refused) throw refused;
     return { verdict: null, usage: err.usage, failure: err };
   }
   if (!result.succeeded) {
-    const refused = apiKey ? rejectedKeyError(result, model, result.usage) : null;
+    const refused = apiKey ? rejectedKeyError(result, model, result.usage, resolvedProvider) : null;
     if (refused) throw refused;
     return { verdict: null, usage: result.usage, failure: result };
   }

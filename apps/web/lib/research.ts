@@ -1,7 +1,15 @@
 import 'server-only';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { frameworkDimension } from '@deep-fryer/contract';
-import type { PortraitConfig, RegionBriefCache, ResearchStrategy } from '@deep-fryer/core';
+import {
+  PROVIDER_META,
+  parseResearchProvider,
+  providerForModel,
+  type PortraitConfig,
+  type RegionBriefCache,
+  type ResearchPlan,
+  type ResearchStrategy,
+} from '@deep-fryer/core';
 import {
   dimensions,
   gateResearchSpend,
@@ -178,9 +186,6 @@ export async function createPlannedRunIn(db: DbExecutor, input: PlannedRunInput)
     return { run, sessionCount: plan.sessions.length };
 }
 
-/** The model API's own host: where sessions go when nothing reroutes them. */
-const FIRST_PARTY_HOST = 'api.anthropic.com';
-
 function hostOf(url: string | undefined): string | null {
   if (!url?.trim()) return null;
   try {
@@ -192,23 +197,29 @@ function hostOf(url: string | undefined): string | null {
 
 /**
  * Where a run applied with this funding will execute, recorded on the run
- * beside `funding`. Every session runs on the shared worker and calls one
- * provider. On the organization's own key the worker withholds any base URL
- * the deployment set (apps/worker session.ts sessionEnv), so the calls go to
- * the first-party host. On the plan they go wherever the worker's own
- * environment points the model client, which this process cannot see: the
- * host is recorded only when the deployment names one to this process too,
- * and is null otherwise. The host region is likewise whatever the deployment
- * states, or null. The record is written once and never updated, so unknown
- * is recorded as unknown, never guessed.
+ * beside `funding`. Resolves the active provider from `RESEARCH_PROVIDER` or
+ * the plan's session model (`providerForModel`), defaulting to `'anthropic'`.
+ * On the organization's own key, calls go straight to the provider's first-party
+ * host; on the plan, the host is recorded only when a custom base URL is named.
  */
 export function runExecution(
   funding: ResearchFunding,
   env: Readonly<Record<string, string | undefined>> = process.env,
+  plan?: Pick<ResearchPlan, 'models'>,
 ): RunExecution {
+  const explicit = parseResearchProvider(env.RESEARCH_PROVIDER);
+  const model = plan?.models?.session_model ?? env.ANTHROPIC_MODEL;
+  const provider = explicit ?? providerForModel(model, 'anthropic');
+  const baseUrlEnv =
+    provider === 'openai'
+      ? env.OPENAI_BASE_URL
+      : provider === 'google'
+        ? env.GEMINI_BASE_URL
+        : env.ANTHROPIC_BASE_URL;
   return {
-    provider: 'anthropic',
-    endpoint_host: funding === 'organization_key' ? FIRST_PARTY_HOST : hostOf(env.ANTHROPIC_BASE_URL),
+    provider,
+    endpoint_host:
+      funding === 'organization_key' ? PROVIDER_META[provider].firstPartyHost : hostOf(baseUrlEnv),
     executor: 'shared_worker',
     host_region: env.DF_HOST_REGION?.trim() || null,
   };
@@ -277,7 +288,11 @@ export async function applyRun(tenantId: string, runId: string) {
 
     const [applied] = await tx
       .update(researchRuns)
-      .set({ appliedAt: new Date(), funding: gate.funding, execution: runExecution(gate.funding) })
+      .set({
+        appliedAt: new Date(),
+        funding: gate.funding,
+        execution: runExecution(gate.funding, process.env, row.plan),
+      })
       .where(eq(researchRuns.id, row.id))
       .returning();
     return applied!;

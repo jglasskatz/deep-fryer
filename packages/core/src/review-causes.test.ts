@@ -125,6 +125,18 @@ describe('reviewLabelRows', () => {
     expect(row).toMatchObject({ strategy: null, strategyVersion: null, models: null, provider: 'anthropic' });
   });
 
+  it('records openai and google providers on review labels', () => {
+    for (const provider of ['openai', 'google'] as const) {
+      const [row] = reviewLabelRows({
+        ...base,
+        run: { ...run, execution: { provider } },
+        findingIds: ['f1'],
+        decision: 'approve',
+      });
+      expect(row!.provider).toBe(provider);
+    }
+  });
+
   it('refuses to write a non-approval without a complete cause, or a provider the table does not allow', () => {
     expect(() => reviewLabelRows({ ...base, findingIds: ['f1'], decision: 'edit' })).toThrow();
     expect(() => reviewLabelRows({ ...base, findingIds: ['f1'], decision: 'reject', cause: 'other', note: ' ' })).toThrow();

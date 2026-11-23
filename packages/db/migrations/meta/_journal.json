@@ -197,6 +197,13 @@
       "when": 1795515257314,
       "tag": "0027_session_checkpointing",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1795601657314,
+      "tag": "0028_multi_provider_keys",
+      "breakpoints": true
     }
   ]
 }

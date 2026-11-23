@@ -1,12 +1,14 @@
 import { and, eq, gte, isNotNull, isNull, ne, sql } from 'drizzle-orm';
 import {
   POLICY_ANALYSIS_SESSIONS,
+  RESEARCH_PROVIDERS,
   checkResearchQuota,
   effectiveLimits,
   standing,
   standingMessage,
   type FirstDoughnut,
   type ResearchPlan,
+  type ResearchProvider,
   type ResearchQuotaCheck,
 } from '@deep-fryer/core';
 import type { DbExecutor } from './client.js';
@@ -200,19 +202,21 @@ export async function organizationByStripeCustomer(
 
 /** What may be shown about a key on file: which key (its hint) and when. */
 export interface OrganizationApiKeyInfo {
-  provider: string;
+  provider: ResearchProvider;
   keyHint: string;
   createdBy: string | null;
   createdAt: Date;
   validatedAt: Date | null;
 }
 
-/** The organization's key on file, without its ciphertext; null when there is none. */
-export async function organizationApiKeyInfo(
+const PROVIDER_ORDER = new Map<string, number>(RESEARCH_PROVIDERS.map((p, i) => [p, i]));
+
+/** All provider keys on file for `organizationId`, without ciphertext, ordered canonically. */
+export async function organizationApiKeysInfo(
   db: DbExecutor,
   organizationId: string,
-): Promise<OrganizationApiKeyInfo | null> {
-  const [row] = await db
+): Promise<OrganizationApiKeyInfo[]> {
+  const rows = await db
     .select({
       provider: organizationApiKeys.provider,
       keyHint: organizationApiKeys.keyHint,
@@ -222,22 +226,58 @@ export async function organizationApiKeyInfo(
     })
     .from(organizationApiKeys)
     .where(eq(organizationApiKeys.organizationId, organizationId));
-  return row ?? null;
+  return rows.sort(
+    (a, b) => (PROVIDER_ORDER.get(a.provider) ?? 99) - (PROVIDER_ORDER.get(b.provider) ?? 99),
+  );
 }
 
 /**
- * Store (or replace) the organization's key. `ciphertext` must already be
- * encrypted; the caller has validated the key with the provider just now,
- * so `validatedAt` is that moment. Nothing is returned — in particular not
- * the ciphertext, which the app role could not read back anyway.
+ * The organization's key on file (for `provider` if specified, otherwise the
+ * primary key preferring `'anthropic'`), without its ciphertext; null when
+ * none is stored.
+ */
+export async function organizationApiKeyInfo(
+  db: DbExecutor,
+  organizationId: string,
+  provider?: ResearchProvider,
+): Promise<OrganizationApiKeyInfo | null> {
+  if (provider) {
+    const [row] = await db
+      .select({
+        provider: organizationApiKeys.provider,
+        keyHint: organizationApiKeys.keyHint,
+        createdBy: organizationApiKeys.createdBy,
+        createdAt: organizationApiKeys.createdAt,
+        validatedAt: organizationApiKeys.validatedAt,
+      })
+      .from(organizationApiKeys)
+      .where(and(eq(organizationApiKeys.organizationId, organizationId), eq(organizationApiKeys.provider, provider)));
+    return row ?? null;
+  }
+  const all = await organizationApiKeysInfo(db, organizationId);
+  return all.find((k) => k.provider === 'anthropic') ?? all[0] ?? null;
+}
+
+/**
+ * Store (or replace) the organization's key for `provider` (default `'anthropic'`).
+ * `ciphertext` must already be encrypted; the caller has validated the key with
+ * the provider just now, so `validatedAt` is that moment. Nothing is returned —
+ * in particular not the ciphertext, which the app role could not read back anyway.
  */
 export async function upsertOrganizationApiKey(
   db: DbExecutor,
-  values: { organizationId: string; ciphertext: string; keyHint: string; createdBy: string | null; validatedAt: Date },
+  values: {
+    organizationId: string;
+    provider?: ResearchProvider;
+    ciphertext: string;
+    keyHint: string;
+    createdBy: string | null;
+    validatedAt: Date;
+  },
 ): Promise<void> {
   const now = new Date();
+  const provider: ResearchProvider = values.provider ?? 'anthropic';
   const row = {
-    provider: 'anthropic',
     ciphertext: values.ciphertext,
     keyHint: values.keyHint,
     createdBy: values.createdBy,
@@ -247,15 +287,22 @@ export async function upsertOrganizationApiKey(
   };
   await db
     .insert(organizationApiKeys)
-    .values({ organizationId: values.organizationId, ...row })
-    .onConflictDoUpdate({ target: organizationApiKeys.organizationId, set: row });
+    .values({ organizationId: values.organizationId, provider, ...row })
+    .onConflictDoUpdate({ target: [organizationApiKeys.organizationId, organizationApiKeys.provider], set: row });
 }
 
-/** Remove the organization's key. Returns the hint of the key removed, or null when none was on file. */
-export async function deleteOrganizationApiKey(db: DbExecutor, organizationId: string): Promise<string | null> {
+/**
+ * Remove the organization's key for `provider` (default `'anthropic'`).
+ * Returns the hint of the key removed, or null when none was on file.
+ */
+export async function deleteOrganizationApiKey(
+  db: DbExecutor,
+  organizationId: string,
+  provider: ResearchProvider = 'anthropic',
+): Promise<string | null> {
   const [row] = await db
     .delete(organizationApiKeys)
-    .where(eq(organizationApiKeys.organizationId, organizationId))
+    .where(and(eq(organizationApiKeys.organizationId, organizationId), eq(organizationApiKeys.provider, provider)))
     .returning({ keyHint: organizationApiKeys.keyHint });
   return row?.keyHint ?? null;
 }

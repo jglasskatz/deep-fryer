@@ -7,6 +7,7 @@
 import type { Env } from './deploy-env.js';
 import { emergencyConfigSchema } from './emergency.js';
 import { parseDisabledFeatures, resolvePortraitFeatures, unknownDisabledFeaturesMessage, type Feature } from './features.js';
+import { PROVIDER_META, type ResearchProvider } from './providers.js';
 import { SLUG_RE } from './slugs.js';
 
 export type Verdict = { status: 'pass' | 'fail' | 'warn'; detail: string };
@@ -254,6 +255,37 @@ export function anthropicModelVerdict(m: ResearchModel, status: number, body: un
     return { status: 'fail', detail: `${m.model} does not exist for this key (${said}): ${fix}; then docker compose up -d worker` };
   }
   return { status: 'warn', detail: `could not confirm ${m.model} (${said}): run the preflight again shortly` };
+}
+
+/**
+ * Judge a non-Anthropic model-provider live key probe (`GET /v1/models` for
+ * OpenAI, `GET /v1beta/models?pageSize=1` for Google Gemini).
+ */
+export function providerKeyVerdict(provider: ResearchProvider, status: number, body: unknown): Verdict {
+  const meta = PROVIDER_META[provider];
+  const envVar = meta.envKeys[0]!;
+  const b = (body && typeof body === 'object' ? body : {}) as {
+    error?: { message?: unknown; status?: unknown; code?: unknown };
+  };
+  const message =
+    typeof b.error?.message === 'string' ? b.error.message.split('\n')[0]!.slice(0, 160) : '';
+  const said = [`HTTP ${status}`, message].filter(Boolean).join(' ');
+  if (status === 200) {
+    return { status: 'pass', detail: `${envVar} accepted by ${meta.displayName}` };
+  }
+  if (status === 401 || (provider === 'google' && status === 400 && /api key not valid|api_key_invalid/i.test(message))) {
+    return {
+      status: 'fail',
+      detail: `${envVar} was refused by ${meta.displayName} (${said}): create a valid key in ${meta.consoleName}, put it in .env, then docker compose up -d worker web`,
+    };
+  }
+  if (status === 403) {
+    return {
+      status: 'fail',
+      detail: `${envVar} lacks API permission in ${meta.displayName} (${said}): check permissions in ${meta.consoleName}`,
+    };
+  }
+  return { status: 'warn', detail: `could not confirm ${envVar} with ${meta.displayName} (${said}): run preflight again shortly` };
 }
 
 /**

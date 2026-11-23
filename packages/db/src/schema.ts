@@ -31,6 +31,7 @@ import type {
   OutreachContactData,
   RegionBriefCache,
   ResearchPlan,
+  ResearchProvider,
   ResearchModels,
   ReviewDecision,
   ReviewLabelCause,
@@ -339,7 +340,7 @@ export const dimensionVersions = pgTable(
  */
 export interface RunExecution {
   /** Who served the model calls. */
-  provider: 'anthropic';
+  provider: ResearchProvider;
   /** Host name of the model API the sessions called, or null when it was not known at apply time. */
   endpoint_host: string | null;
   /** What ran the sessions: the deployment's one shared worker. */
@@ -1069,9 +1070,9 @@ export const organizationApiKeys = pgTable(
   'organization_api_keys',
   {
     organizationId: uuid('organization_id')
-      .primaryKey()
+      .notNull()
       .references(() => organizations.id, { onDelete: 'cascade' }),
-    provider: text('provider').notNull().default('anthropic'),
+    provider: text('provider').$type<ResearchProvider>().notNull().default('anthropic'),
     /** base64(iv) . base64(ciphertext) . base64(auth tag), versioned: "v1:…". */
     ciphertext: text('ciphertext').notNull(),
     /** The key's last four characters, to show which key is on file. */
@@ -1082,7 +1083,8 @@ export const organizationApiKeys = pgTable(
     validatedAt: timestamp('validated_at', { withTimezone: true }),
   },
   (t) => ({
-    provider: check('organization_api_keys_provider', sql`${t.provider} = 'anthropic'`),
+    pk: primaryKey({ columns: [t.organizationId, t.provider] }),
+    provider: check('organization_api_keys_provider', sql`${t.provider} IN ('anthropic', 'openai', 'google')`),
     hintLength: check('organization_api_keys_hint_length', sql`char_length(${t.keyHint}) <= 8`),
   }),
 );

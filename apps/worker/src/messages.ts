@@ -3,9 +3,11 @@ import type { z } from 'zod';
 import {
   LONG_PROMPT_THRESHOLD_TOKENS,
   emptyUsage,
+  providerForModel,
   type FindingPayload,
   type GeographicScale,
   type ModelTokenUsage,
+  type ResearchProvider,
   type SessionTokenUsage,
 } from '@deep-fryer/core';
 import {
@@ -19,6 +21,9 @@ import {
   type TriageFlag,
   type TriageSeverity,
 } from '@deep-fryer/research';
+import { runGoogleStructuredMessage } from './providers/google.js';
+import { runOpenAiStructuredMessage } from './providers/openai.js';
+import type { FetchLike } from './providers/types.js';
 
 /**
  * Direct, zero-subprocess Anthropic Messages API runner for lightweight
@@ -294,10 +299,16 @@ export async function runStructuredMessage<T>(
 // ---------------------------------------------------------------------------
 
 export interface FindingTriageDeps {
-  /** Optional injected SDK client (for tests or shared worker client). */
+  /** Optional injected Anthropic SDK client (for tests or shared worker client). */
   client?: MessagesApiClient;
   /** Optional API key used when `client` is not supplied. */
   apiKey?: string | null;
+  /** True when `apiKey` belongs to the organization (never falls back to deployment key). */
+  isOrganizationKey?: boolean;
+  /** Explicit provider override; when omitted, inferred from `model`. */
+  provider?: ResearchProvider;
+  /** Optional injectable fetch for OpenAI / Google Gemini adapters (tests). */
+  fetch?: FetchLike;
   /** Classifier model id; defaults to `TRIAGE_MODEL` env or `claude-haiku-5-5`. */
   model?: string;
   regionName: string;
@@ -361,29 +372,6 @@ export async function runFindingTriage(
     };
   }
 
-  let client: MessagesApiClient;
-  if (deps.client) {
-    client = deps.client;
-  } else {
-    try {
-      client = createMessagesClient({
-        apiKey: deps.apiKey,
-        timeoutMs: deps.timeoutMs,
-      });
-    } catch (err) {
-      return {
-        status: 'unavailable',
-        advisoryOnly: true,
-        assessment: null,
-        severity: 'none',
-        flags: [],
-        valueFound: null,
-        usage: emptyUsage(),
-        error: err instanceof Error ? err.message : String(err),
-      };
-    }
-  }
-
   const extracted = extractValuePassages({
     sourceText,
     value: finding.value,
@@ -401,16 +389,70 @@ export async function runFindingTriage(
   });
 
   const model = deps.model ?? process.env.TRIAGE_MODEL ?? DEFAULT_TRIAGE_MODEL;
-  const res = await runStructuredMessage({
-    client,
-    model,
-    system,
-    user,
-    schema: triageAssessmentSchema,
-    maxTokens: deps.maxTokens ?? DEFAULT_MESSAGE_MAX_TOKENS,
-    timeoutMs: deps.timeoutMs ?? DEFAULT_MESSAGE_TIMEOUT_MS,
-    signal: deps.signal,
-  });
+  const provider = deps.provider ?? providerForModel(model, 'anthropic');
+
+  let res: StructuredMessageResult<TriageAssessment>;
+  if (provider === 'openai' && !deps.client) {
+    res = await runOpenAiStructuredMessage({
+      model,
+      system,
+      user,
+      schema: triageAssessmentSchema,
+      apiKey: deps.apiKey,
+      isOrganizationKey: deps.isOrganizationKey,
+      maxTokens: deps.maxTokens ?? DEFAULT_MESSAGE_MAX_TOKENS,
+      timeoutMs: deps.timeoutMs ?? DEFAULT_MESSAGE_TIMEOUT_MS,
+      signal: deps.signal,
+      fetch: deps.fetch,
+    });
+  } else if (provider === 'google' && !deps.client) {
+    res = await runGoogleStructuredMessage({
+      model,
+      system,
+      user,
+      schema: triageAssessmentSchema,
+      apiKey: deps.apiKey,
+      isOrganizationKey: deps.isOrganizationKey,
+      maxTokens: deps.maxTokens ?? DEFAULT_MESSAGE_MAX_TOKENS,
+      timeoutMs: deps.timeoutMs ?? DEFAULT_MESSAGE_TIMEOUT_MS,
+      signal: deps.signal,
+      fetch: deps.fetch,
+    });
+  } else {
+    let client: MessagesApiClient;
+    if (deps.client) {
+      client = deps.client;
+    } else {
+      try {
+        client = createMessagesClient({
+          apiKey: deps.apiKey,
+          timeoutMs: deps.timeoutMs,
+        });
+      } catch (err) {
+        return {
+          status: 'unavailable',
+          advisoryOnly: true,
+          assessment: null,
+          severity: 'none',
+          flags: [],
+          valueFound: null,
+          usage: emptyUsage(),
+          error: err instanceof Error ? err.message : String(err),
+        };
+      }
+    }
+
+    res = await runStructuredMessage({
+      client,
+      model,
+      system,
+      user,
+      schema: triageAssessmentSchema,
+      maxTokens: deps.maxTokens ?? DEFAULT_MESSAGE_MAX_TOKENS,
+      timeoutMs: deps.timeoutMs ?? DEFAULT_MESSAGE_TIMEOUT_MS,
+      signal: deps.signal,
+    });
+  }
 
   if (!res.ok) {
     return {

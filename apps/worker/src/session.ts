@@ -11,6 +11,7 @@ import {
   type HookCallback,
 } from '@anthropic-ai/claude-agent-sdk';
 import { z } from 'zod';
+import type { CivicDataToolDefinition } from '@deep-fryer/civic-data';
 import { frameworkDimension, type PortraitConfig } from '@deep-fryer/contract';
 import {
   LONG_PROMPT_THRESHOLD_TOKENS,
@@ -22,11 +23,13 @@ import {
   isHomeOrSectionPage,
   maxDataAgeYears,
   mergeUsage,
+  providerForModel,
   resolveThreshold,
   type FindingPayload,
   type IndicatorFindingPayload,
   type ModelTokenUsage,
   type RefusalFallbackEvent,
+  type ResearchProvider,
   type SessionTokenUsage,
 } from '@deep-fryer/core';
 import {
@@ -37,7 +40,15 @@ import {
 } from '@deep-fryer/research';
 import { buildCapturePreview, captureEvidence } from './evidence.js';
 import { getSharedSourceCache, readSourceWithCache, type SourceCache } from './source-cache.js';
-import { rejectedKeyError } from './org-key.js';
+import { OrgKeyUnavailableError, rejectedKeyError } from './org-key.js';
+import {
+  ToolExecutor,
+  zodToJsonSchema,
+  type FetchLike,
+  type ProviderToolDefinition,
+} from './providers/types.js';
+import { runOpenAiSession } from './providers/openai.js';
+import { runGoogleSession } from './providers/google.js';
 import type { TenantStorage } from './storage.js';
 import { ARCHIVED_PDF, ARCHIVED_PDF_EXCERPT, ARCHIVED_SNAPSHOT, type ArchivedExhibits } from './archived-exhibits.js';
 
@@ -265,10 +276,14 @@ export class SessionRunError extends Error {
 export async function runSessionWithRetry(
   input: Parameters<typeof runSession>[0],
 ): Promise<SessionResult> {
+  const model = input.model ?? MODEL();
+  const provider = input.provider ?? providerForModel(model, 'anthropic');
   const attempt = async (): Promise<SessionResult> => {
     try {
       return await runSession(input);
     } catch (err) {
+      // Non-Anthropic adapters throw OrgKeyUnavailableError directly on org key refusals; never retry or swallow it.
+      if (err instanceof OrgKeyUnavailableError) throw err;
       // The message is stored in the transcript: an organization's key must
       // not ride along if a subprocess error ever echoed its environment.
       const message = redactSecret(err instanceof Error ? err.message : String(err), input.apiKey);
@@ -282,12 +297,11 @@ export async function runSessionWithRetry(
       };
     }
   };
-  const model = input.model ?? MODEL();
   const first = await attempt();
   if (first.succeeded) return first;
   // Built on either key, thrown only on the organization's: on the
   // deployment's key a refusal is returned as a failed session, as before.
-  const rejectedFirst = rejectedKeyError(first, model, first.usage);
+  const rejectedFirst = rejectedKeyError(first, model, first.usage, provider);
   if (rejectedFirst) {
     if (input.apiKey) throw rejectedFirst;
     return first;
@@ -298,7 +312,7 @@ export async function runSessionWithRetry(
     ...new Set([...(first.capturedSnapshotPaths ?? []), ...(second.capturedSnapshotPaths ?? [])]),
   ];
   // The key can also die between the attempts (credit running out mid-run).
-  const refused = !second.succeeded && input.apiKey ? rejectedKeyError(second, model, usage) : null;
+  const refused = !second.succeeded && input.apiKey ? rejectedKeyError(second, model, usage, provider) : null;
   if (refused) throw refused;
   return {
     ...second,
@@ -530,34 +544,271 @@ export interface RunSessionArgs {
    */
   extraMcpServers?: Record<string, SessionMcpServer>;
   /**
+   * Optional explicit model provider (`anthropic`, `openai`, `google`).
+   * When omitted, inferred from `model` via `providerForModel(model, 'anthropic')`.
+   */
+  provider?: ResearchProvider;
+  /**
+   * Optional civic-data tool definitions exposed directly to non-Anthropic
+   * providers (`ToolExecutor`) so OpenAI and Gemini sessions share the exact
+   * same deterministic connectors as Anthropic MCP sessions.
+   */
+  civicDataTools?: readonly CivicDataToolDefinition[];
+  /** Optional injectable fetch for non-Anthropic provider adapters (used in tests). */
+  providerFetch?: FetchLike;
+  /**
    * Optional additional allowed tool names merged (deduplicated) into the
    * session's allowlist, subject to the same `Read` and local-tool guards.
    */
   extraAllowedTools?: string[];
 }
 
+const READ_SOURCE_SCHEMA = z.object({
+  url: z.string().describe('The exact HTTPS URL of the web page or PDF document to read'),
+  query: z
+    .string()
+    .optional()
+    .describe('Optional keywords or candidate figure to focus the bounded excerpt around'),
+  page_range: z
+    .string()
+    .optional()
+    .describe('Optional 1-indexed PDF page or page range (e.g. "5" or "12-15")'),
+});
+
+const CAPTURE_EVIDENCE_SCHEMA = z.object({
+  url: z.string().describe('The exact URL the value was read from'),
+  pdf_url: z.string().optional().describe('Direct PDF URL when the source is a document'),
+  check_value: z
+    .union([z.number(), z.string()])
+    .optional()
+    .describe('Optional candidate value to check immediately against the captured readable text'),
+});
+
+const SUBMIT_FINDINGS_SCHEMA = z.object({
+  findings: z
+    .array(z.record(z.string(), z.unknown()))
+    .min(1)
+    .describe('Array of indicator or gap finding objects for this dimension'),
+});
+
+const READ_EXHIBIT_SCHEMA = z.object({
+  filename: z
+    .string()
+    .describe('Exact archived exhibit filename (e.g. "archived-source-excerpt.txt", "archived-snapshot.png", "archived-source.pdf")'),
+});
+
+function buildExhibitMap(archivedExhibits: ArchivedExhibits | undefined): Map<string, Buffer> {
+  const map = new Map<string, Buffer>();
+  if (!archivedExhibits) return map;
+  if (archivedExhibits.pdf) map.set(ARCHIVED_PDF, archivedExhibits.pdf);
+  if (archivedExhibits.pdfExcerpt) map.set(ARCHIVED_PDF_EXCERPT, archivedExhibits.pdfExcerpt);
+  if (archivedExhibits.snapshot) map.set(ARCHIVED_SNAPSHOT, archivedExhibits.snapshot);
+  const additional = archivedExhibits.additional ?? [];
+  if (
+    additional.length > 15 ||
+    additional.some(({ filename }) => !/^action-[1-5]-(?:snapshot\.png|source\.pdf|source-excerpt\.txt)$/.test(filename))
+  ) {
+    throw new Error('invalid fixed action exhibit filename');
+  }
+  for (const { filename, body } of additional) {
+    map.set(filename, body);
+  }
+  return map;
+}
+
 /**
- * One research session = one Agent SDK session in a scratch workspace
- * (SPEC.md §8 Apply). The full message stream is retained as the audit
- * transcript (gzipped JSONL). In production each session additionally runs
- * inside an ephemeral container behind the egress allowlist proxy — that
- * isolation lives in the deploy layer (see apps/worker/README.md); the tool
- * surface and the subprocess environment are restricted here, so a session
- * is contained even where that deploy layer is missing.
+ * One research session = one Agent SDK session (Anthropic) or native
+ * function-calling provider loop (OpenAI, Google Gemini) in a scratch
+ * workspace (SPEC.md §8 Apply). The full message stream is retained as the
+ * audit transcript (gzipped JSONL).
  */
 export async function runSession(input: RunSessionArgs): Promise<SessionResult> {
+  const effectiveModel = input.model ?? MODEL();
+  const provider = input.provider ?? providerForModel(effectiveModel, 'anthropic');
+  const effectiveAllowedTools = [
+    ...new Set([...input.allowedTools, ...(input.extraAllowedTools ?? [])]),
+  ];
+  const sourceCache = input.sourceCache ?? getSharedSourceCache();
+  let submittedFindings: FindingPayload[] | undefined;
+  const capturedSnapshotPaths = new Set<string>();
+
+  if (provider !== 'anthropic') {
+    const storage = input.storage;
+    const readEvidenceText = storage
+      ? async (textPath: string) => (await storage.get(textPath)).toString('utf8')
+      : undefined;
+    const toolDefs: ProviderToolDefinition[] = [];
+    const mountEvidence =
+      Boolean(storage) || effectiveAllowedTools.includes('mcp__evidence__read_source');
+
+    if (mountEvidence) {
+      toolDefs.push({
+        name: 'read_source',
+        description:
+          'Render a public HTTPS web page in headless Chromium or extract a PDF text layer (bounded, cached across dimensions and portrait runs). Supply query and/or page_range to focus excerpts on long PDFs.',
+        parameters: zodToJsonSchema(READ_SOURCE_SCHEMA),
+        execute: async (rawArgs) => {
+          const parsed = READ_SOURCE_SCHEMA.safeParse(rawArgs);
+          if (!parsed.success) {
+            return JSON.stringify({ error: `invalid arguments: ${parsed.error.message}` });
+          }
+          try {
+            const payload = await readSourceWithCache(sourceCache, storage, parsed.data);
+            return JSON.stringify(payload);
+          } catch (err) {
+            return JSON.stringify({
+              error: `read_source failed: ${err instanceof Error ? err.message : String(err)}`,
+            });
+          }
+        },
+      });
+
+      if (storage && readEvidenceText) {
+        toolDefs.push(
+          {
+            name: 'capture_evidence',
+            description:
+              'Capture an evidence snapshot of a source you have decided to accept: a full-page screenshot, plus the PDF when the source is a document. Returns storage paths, a bounded preview of extracted readable text, and optional value_on_page check.',
+            parameters: zodToJsonSchema(CAPTURE_EVIDENCE_SCHEMA),
+            execute: async (rawArgs) => {
+              const parsed = CAPTURE_EVIDENCE_SCHEMA.safeParse(rawArgs);
+              if (!parsed.success) {
+                return JSON.stringify({ error: `invalid arguments: ${parsed.error.message}` });
+              }
+              try {
+                const result = await captureEvidence(storage, parsed.data.url, parsed.data.pdf_url, { sourceCache });
+                capturedSnapshotPaths.add(result.snapshot_path);
+                let capturedText: string | null = null;
+                if (result.text_path) {
+                  try {
+                    capturedText = await readEvidenceText(result.text_path);
+                  } catch {
+                    capturedText = null;
+                  }
+                }
+                const preview = buildCapturePreview(capturedText);
+                return JSON.stringify({
+                  ...result,
+                  text_char_count: preview.text_char_count,
+                  text_preview: preview.text_preview,
+                  ...(parsed.data.check_value !== undefined
+                    ? { value_on_page: valueOnPage(parsed.data.check_value, capturedText) }
+                    : {}),
+                });
+              } catch (err) {
+                return JSON.stringify({
+                  error: `capture failed: ${err instanceof Error ? err.message : String(err)}`,
+                });
+              }
+            },
+          },
+          {
+            name: 'submit_findings',
+            description:
+              'Validate, deterministically score, and submit your completed findings array for this dimension. Returns concrete validation errors immediately so you can fix them in-session.',
+            parameters: zodToJsonSchema(SUBMIT_FINDINGS_SCHEMA),
+            execute: async (rawArgs) => {
+              const parsed = SUBMIT_FINDINGS_SCHEMA.safeParse(rawArgs);
+              if (!parsed.success) {
+                return JSON.stringify({ accepted: false, error: `invalid arguments: ${parsed.error.message}` });
+              }
+              const validation = await validateAndScoreSubmittedFindings(
+                parsed.data.findings,
+                input.submitFindingsContext,
+                readEvidenceText,
+              );
+              if (validation.accepted) {
+                submittedFindings = validation.findings;
+                return JSON.stringify({
+                  accepted: true,
+                  count: validation.findings.length,
+                  findings: validation.findings,
+                });
+              }
+              return JSON.stringify({ accepted: false, errors: validation.errors });
+            },
+          },
+        );
+      }
+    }
+
+    for (const civicDef of input.civicDataTools ?? []) {
+      if (effectiveAllowedTools.includes(civicDef.mcpName) || effectiveAllowedTools.includes(civicDef.name)) {
+        toolDefs.push({
+          name: civicDef.name,
+          description: civicDef.description,
+          parameters: zodToJsonSchema(civicDef.schema),
+          execute: async (args) => {
+            const res = await civicDef.handler(args);
+            return res.content.map((c) => c.text).join('\n');
+          },
+        });
+      }
+    }
+
+    const exhibitMap = buildExhibitMap(input.archivedExhibits);
+    if (exhibitMap.size > 0 && effectiveAllowedTools.includes('Read')) {
+      toolDefs.push({
+        name: 'read_exhibit',
+        description: `Read one of this finding's archived exhibits (available: ${[...exhibitMap.keys()].join(', ')}). Only these fixed files may be read.`,
+        parameters: zodToJsonSchema(READ_EXHIBIT_SCHEMA),
+        execute: async (rawArgs) => {
+          const parsed = READ_EXHIBIT_SCHEMA.safeParse(rawArgs);
+          if (!parsed.success) {
+            return JSON.stringify({ error: `invalid arguments: ${parsed.error.message}` });
+          }
+          const name = path.basename(parsed.data.filename.trim());
+          const body = exhibitMap.get(name);
+          if (!body) {
+            return JSON.stringify({
+              error: `Only this finding's archived exhibits may be read (available: ${[...exhibitMap.keys()].join(', ')}).`,
+            });
+          }
+          if (name.endsWith('.txt')) {
+            return body.toString('utf8');
+          }
+          return JSON.stringify({
+            filename: name,
+            bytes: body.byteLength,
+            note: 'Binary exhibit stored in archive; inspect archived-source-excerpt.txt for extracted readable text.',
+          });
+        },
+      });
+    }
+
+    const executor = new ToolExecutor(toolDefs);
+    const providerInput = {
+      provider,
+      model: effectiveModel,
+      prompt: input.prompt,
+      apiKey: input.apiKey,
+      isOrganizationKey: Boolean(input.apiKey),
+      maxTurns: input.maxTurns ?? DEFAULT_SESSION_MAX_TURNS,
+      tools: executor,
+      fetch: input.providerFetch,
+    };
+    const out =
+      provider === 'openai'
+        ? await runOpenAiSession(providerInput)
+        : await runGoogleSession(providerInput);
+
+    return {
+      resultText: out.resultText,
+      transcript: gzipSync(out.transcriptLines.join('\n')),
+      usage: out.usage,
+      succeeded: out.succeeded,
+      ...(out.apiError ? { apiError: out.apiError as SDKAssistantMessageError } : {}),
+      ...(out.apiErrorText ? { apiErrorText: redactErrorText(out.apiErrorText, input.apiKey) } : {}),
+      ...(submittedFindings ? { submittedFindings } : {}),
+      ...(capturedSnapshotPaths.size ? { capturedSnapshotPaths: [...capturedSnapshotPaths] } : {}),
+    };
+  }
+
   const workspace = await mkdtemp(path.join(tmpdir(), 'df-session-'));
   const transcriptLines: string[] = [];
   let resultText = '';
   let succeeded = false;
   const meter = new SessionMeter();
-  let submittedFindings: FindingPayload[] | undefined;
-  const capturedSnapshotPaths = new Set<string>();
-
-  const effectiveAllowedTools = [
-    ...new Set([...input.allowedTools, ...(input.extraAllowedTools ?? [])]),
-  ];
-  const sourceCache = input.sourceCache ?? getSharedSourceCache();
 
   const mcpServers: Record<string, SessionMcpServer> = {
     ...(input.extraMcpServers ?? {}),

@@ -56,9 +56,17 @@ x-integrations-env: &integrations-env
 # for the ops shell (migrate), whose preflight looks each model up with the
 # key — one block, so the preflight checks exactly what the worker runs.
 x-research-env: &research-env
-  # The deployment's key: pays for every research session a plan funds. Without it, plan-funded
-  # research is refused before any spend and only organizations with their own key can build.
+  # Deployment model-provider keys: pay for plan-funded research sessions (and ask_portrait Q&A).
+  # Configure one or more providers (Anthropic, OpenAI, Google Gemini).
   ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+  GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+  GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+  # Optional provider routing overrides (anthropic | openai | google). When empty, inferred from model ID.
+  RESEARCH_PROVIDER: ${RESEARCH_PROVIDER:-}
+  VERIFIER_PROVIDER: ${VERIFIER_PROVIDER:-}
+  ASK_PORTRAIT_PROVIDER: ${ASK_PORTRAIT_PROVIDER:-}
+  ASK_PORTRAIT_MODEL: ${ASK_PORTRAIT_MODEL:-}
   ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-5}
   # Model settings (docs/deploy.md "Models"). Compose's `${VAR:-default}` substitutes the default when VAR
   # is unset OR empty in .env or the shell, so a pinned model can be replaced but never blanked.
@@ -173,10 +181,19 @@ services:
         condition: service_completed_successfully
     environment:
       <<: [*app-env, *integrations-env]
-      # Whether the worker has a research key, without giving the web app the key: "true" when
-      # ANTHROPIC_API_KEY is set and non-empty, empty otherwise. Derived here, never set by hand;
-      # without it the web app refuses plan-funded research before any spend (lib/env.ts).
-      DF_RESEARCH_KEY_CONFIGURED: ${ANTHROPIC_API_KEY:+true}
+      # Whether the worker has a research key: "true" when any deployment provider key is set
+      # (or DF_RESEARCH_KEY_CONFIGURED=true is set explicitly in .env).
+      DF_RESEARCH_KEY_CONFIGURED: ${DF_RESEARCH_KEY_CONFIGURED:-${ANTHROPIC_API_KEY:+true}}
+      # Model keys & routing passed to web so `ask_portrait` Q&A works out of the box when enabled.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      RESEARCH_PROVIDER: ${RESEARCH_PROVIDER:-}
+      VERIFIER_PROVIDER: ${VERIFIER_PROVIDER:-}
+      ASK_PORTRAIT_PROVIDER: ${ASK_PORTRAIT_PROVIDER:-}
+      ASK_PORTRAIT_MODEL: ${ASK_PORTRAIT_MODEL:-}
+      ANTHROPIC_SMALL_FAST_MODEL: ${ANTHROPIC_SMALL_FAST_MODEL:-claude-haiku-4-5-20251001}
     expose:
       - '3000'
 

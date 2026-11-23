@@ -89,8 +89,8 @@ describe.skipIf(!hasDb)('saveApiKey and removeApiKey', () => {
     expect(row!.validatedAt).toBeInstanceOf(Date);
     expect(row!.ciphertext.startsWith('v1:')).toBe(true);
     expect(row!.ciphertext).not.toContain(API_KEY.slice(13, 30));
-    // Encrypted at rest under DF_SECRETS_KEY and bound to this organization.
-    expect(await decryptSecret(row!.ciphertext, parseSecretsKey(secretsKey), org.id)).toBe(API_KEY);
+    // Encrypted at rest under DF_SECRETS_KEY and bound to this organization + provider.
+    expect(await decryptSecret(row!.ciphertext, parseSecretsKey(secretsKey), `${org.id}:anthropic`)).toBe(API_KEY);
 
     const audit = await keyAudit();
     expect(audit.map((a) => a.tenantId).sort()).toEqual(portraits.map((p) => p.id).sort());

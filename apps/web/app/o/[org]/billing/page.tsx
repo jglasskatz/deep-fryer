@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import type Stripe from 'stripe';
-import { FREE_SETUP_LIMITS, PLANS, PURCHASABLE_PLANS, sellsInterval } from '@deep-fryer/core';
+import { FREE_SETUP_LIMITS, PLANS, PROVIDER_META, PURCHASABLE_PLANS, sellsInterval } from '@deep-fryer/core';
 import { organizationBySlug } from '@deep-fryer/db';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { UsageMeter } from '@/components/billing/UsageMeter';
@@ -247,16 +247,16 @@ export default async function BillingPage({
 
         <section id="api-key" className="mt-8 rounded-lg border border-black/10 p-4" aria-labelledby="api-key-heading">
           <h2 id="api-key-heading" className="text-lg font-semibold">
-            Your Anthropic API key
+            Model provider API keys
           </h2>
-          {keyNotice && !summary.apiKey ? null : (
+          {keyNotice && summary.apiKeys.length === 0 ? null : (
             <>
               <p className="mt-1 text-sm">
-                {summary.apiKey && !keyNotice
+                {summary.apiKeys.length > 0 && !keyNotice
                   ? (route.keyLead?.onFile ??
-                    'Research and policy sessions for this organization run on your key and are not counted against your plan.')
+                    'Research and policy sessions for this organization run on your configured provider keys and are not counted against your plan.')
                   : (route.keyLead?.offFile ??
-                    'With your own Anthropic API key on file, research and policy sessions for this organization run on your key and are not counted against your plan.')}{' '}
+                    'With your own Anthropic, OpenAI, or Google Gemini API key on file, research and policy sessions for this organization run on your key and are not counted against your plan.')}{' '}
                 {route.keyAndPlan}
               </p>
               <div className="mt-3">
@@ -276,26 +276,42 @@ export default async function BillingPage({
               <ApiKeyForm
                 orgSlug={org.slug}
                 canSave={bringYourOwnKeyAvailable()}
-                onFile={
-                  summary.apiKey
-                    ? {
-                        keyHint: summary.apiKey.keyHint,
-                        createdAt: summary.apiKey.createdAt.toISOString(),
-                        validatedAt: summary.apiKey.validatedAt?.toISOString() ?? null,
-                      }
-                    : null
-                }
+                onFile={summary.apiKeys.map((entry) => ({
+                  provider: entry.provider,
+                  keyHint: entry.keyHint,
+                  createdAt: entry.createdAt.toISOString(),
+                  validatedAt: entry.validatedAt?.toISOString() ?? null,
+                }))}
               />
-            ) : summary.apiKey ? (
-              <p className="text-sm">
-                {keyNotice ? 'The organization’s own key is on file' : 'Research runs on the organization’s own key'} (
-                <span className="font-mono">sk-ant-…{summary.apiKey.keyHint}</span>
-                , added {summary.apiKey.createdAt.toISOString().slice(0, 10)}). Only an organization owner can replace or
-                remove it.
-              </p>
+            ) : summary.apiKeys.length > 0 ? (
+              <div className="space-y-1 text-sm">
+                <p>
+                  {keyNotice
+                    ? 'The organization’s own provider keys are on file.'
+                    : 'Research runs on the organization’s own provider keys:'}{' '}
+                  Only an organization owner can add, replace, or remove them.
+                </p>
+                <ul className="list-disc pl-5 text-sm">
+                  {summary.apiKeys.map((entry) => {
+                    const meta = PROVIDER_META[entry.provider];
+                    return (
+                      <li key={entry.provider}>
+                        {meta.displayName}:{' '}
+                        <span className="font-mono">
+                          {meta.keyHintPrefix}
+                          {entry.keyHint}
+                        </span>{' '}
+                        <span className="text-[color:var(--color-muted)]">
+                          (added {entry.createdAt.toISOString().slice(0, 10)})
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             ) : keyNotice ? null : (
               <p className="text-sm text-[color:var(--color-muted)]">
-                No key on file. An organization owner can add one here.
+                No provider API keys on file. An organization owner can add one here.
               </p>
             )}
           </div>

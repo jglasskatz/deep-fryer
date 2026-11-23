@@ -5,9 +5,12 @@ import {
   emptyUsage,
   findingAuditResultSchema,
   isFlagged,
+  parseResearchProvider,
+  providerForModel,
   type FindingAuditResult,
   type FindingAuditSource,
   type ResearchPlan,
+  type ResearchProvider,
   type RunTokenUsage,
 } from '@deep-fryer/core';
 import { findingAudits, findings, getDb, researchSessions, tenants, type Finding, type ResearchRun } from '@deep-fryer/db';
@@ -15,7 +18,7 @@ import { AUDIT_MAX_TURNS, renderTierAuditPrompt } from '@deep-fryer/research';
 import { loadFindingExhibits } from './archived-exhibits.js';
 import { extractJson, runSession, SessionRunError } from './session.js';
 import { tenantStorage } from './storage.js';
-import { rejectedKeyError } from './org-key.js';
+import { OrgKeyUnavailableError, rejectedKeyError } from './org-key.js';
 import { runWithConcurrency } from './tasks/research-apply.js';
 
 export const TIER_AUDIT_SAMPLE_SIZE = 3;
@@ -169,6 +172,7 @@ export async function auditResearchRun(
   options: {
     apiKey?: string | null;
     verifierModel?: string;
+    provider?: ResearchProvider;
     maxTurns?: number;
     pageReaderModel?: string;
     concurrency?: number;
@@ -191,6 +195,8 @@ export async function auditResearchRun(
   const storage = await tenantStorage(tenant.slug).catch(() => null);
   let refusedKey = false;
   const model = options.verifierModel ?? process.env.VERIFIER_MODEL ?? 'claude-opus-5';
+  const provider =
+    options.provider ?? parseResearchProvider(process.env.VERIFIER_PROVIDER) ?? providerForModel(model, 'anthropic');
   const concurrency = Math.max(1, options.concurrency ?? AUDIT_CONCURRENCY);
 
   const processItem = async ({ finding, sources }: PlannedAuditItem) => {
@@ -246,6 +252,7 @@ export async function auditResearchRun(
         const result = await runSession({
           prompt,
           allowedTools: ['WebSearch', 'WebFetch', 'Read'],
+          provider,
           archivedExhibits: archive.exhibits,
           orchestrate: false,
           maxTurns: options.maxTurns ?? AUDIT_MAX_TURNS,
@@ -254,7 +261,7 @@ export async function auditResearchRun(
           ...(options.apiKey ? { apiKey: options.apiKey } : {}),
         });
         usage[key] = result.usage;
-        if (!result.succeeded && options.apiKey && rejectedKeyError(result, model, result.usage)) {
+        if (!result.succeeded && options.apiKey && rejectedKeyError(result, model, result.usage, provider)) {
           refusedKey = true;
         }
         if (result.succeeded) {
@@ -282,9 +289,12 @@ export async function auditResearchRun(
           }
         }
       } catch (error) {
-        if (error instanceof SessionRunError) {
+        if (error instanceof OrgKeyUnavailableError) {
+          if (error.usage) usage[key] = error.usage;
+          refusedKey = true;
+        } else if (error instanceof SessionRunError) {
           usage[key] = error.usage;
-          if (options.apiKey && rejectedKeyError(error, model, error.usage)) refusedKey = true;
+          if (options.apiKey && rejectedKeyError(error, model, error.usage, provider)) refusedKey = true;
         }
         helpers.logger.warn(`run ${run.id}: ${sources.join('+')} audit for finding ${finding.id} needs manual review`);
       }
