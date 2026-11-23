@@ -121,6 +121,83 @@ export function estimateRunCost(sessionCount: number, strategy: StrategyName = '
 }
 
 /**
+ * Estimated post-run automatic audit cost for one full 21-dimension portrait
+ * (after deduplicating workflow + tier_audit passes and skipping redundant
+ * re-audits on Opus-confirmed gaps and text-verified indicators), in US dollars.
+ */
+export const FULL_PORTRAIT_AUDIT_COST_USD = { low: 4, typical: 10, high: 20 } as const;
+
+const DIMENSIONS_PER_FULL_PORTRAIT = SESSIONS_PER_FULL_REFRESH - 1;
+
+export const AUDIT_COST_PER_DIMENSION_USD = {
+  low: FULL_PORTRAIT_AUDIT_COST_USD.low / DIMENSIONS_PER_FULL_PORTRAIT,
+  typical: FULL_PORTRAIT_AUDIT_COST_USD.typical / DIMENSIONS_PER_FULL_PORTRAIT,
+  high: FULL_PORTRAIT_AUDIT_COST_USD.high / DIMENSIONS_PER_FULL_PORTRAIT,
+} as const;
+
+/**
+ * Strategy audit multipliers: deep and hybrid runs resolve more gaps with Opus
+ * during the research pass itself, leaving fewer items for post-run workflow audit.
+ */
+export const AUDIT_STRATEGY_MULTIPLIERS: Readonly<Record<StrategyName, number>> = {
+  standard: 1,
+  'operator-defaults': 1,
+  hybrid: 0.75,
+  deep: 0.6,
+};
+
+export interface AuditCostEstimate {
+  lowUsd: number;
+  typicalUsd: number;
+  highUsd: number;
+}
+
+export interface TotalRunCostEstimate extends RunCostEstimate {
+  auditLowUsd: number;
+  auditTypicalUsd: number;
+  auditHighUsd: number;
+  totalLowUsd: number;
+  totalTypicalUsd: number;
+  totalHighUsd: number;
+}
+
+/**
+ * Estimated post-run audit spend for `dimensionCount` researched dimensions.
+ * Zero when no dimensions are researched (e.g. a policy analysis).
+ */
+export function estimateAuditCost(dimensionCount: number, strategy: StrategyName = 'standard'): AuditCostEstimate {
+  if (!Number.isInteger(dimensionCount) || dimensionCount < 0) {
+    throw new RangeError(`dimension count must be a non-negative whole number, got ${dimensionCount}`);
+  }
+  const m = AUDIT_STRATEGY_MULTIPLIERS[strategy] ?? AUDIT_STRATEGY_MULTIPLIERS.standard;
+  return {
+    lowUsd: cents(dimensionCount * AUDIT_COST_PER_DIMENSION_USD.low * m),
+    typicalUsd: cents(dimensionCount * AUDIT_COST_PER_DIMENSION_USD.typical * m),
+    highUsd: cents(dimensionCount * AUDIT_COST_PER_DIMENSION_USD.high * m),
+  };
+}
+
+/**
+ * Combined research + verifier + post-run audit estimate for a planned run of
+ * `sessionCount` sessions (1 region context + N dimension sessions when
+ * `sessionCount >= 2`; 0 audited dimensions for single-session work).
+ */
+export function estimateTotalRunCost(sessionCount: number, strategy: StrategyName = 'standard'): TotalRunCostEstimate {
+  const base = estimateRunCost(sessionCount, strategy);
+  const dimensionSessions = sessionCount >= 2 ? sessionCount - 1 : 0;
+  const audit = estimateAuditCost(dimensionSessions, strategy);
+  return {
+    ...base,
+    auditLowUsd: audit.lowUsd,
+    auditTypicalUsd: audit.typicalUsd,
+    auditHighUsd: audit.highUsd,
+    totalLowUsd: cents(base.lowUsd + audit.lowUsd),
+    totalTypicalUsd: cents(base.typicalUsd + audit.typicalUsd),
+    totalHighUsd: cents(base.highUsd + audit.highUsd),
+  };
+}
+
+/**
  * The range as people say it: "$20–80". Whole dollars, rounded outward
  * (down at the low end, up at the high end) so the quoted range always
  * contains the estimate; never below $1, because "$0" reads as free.

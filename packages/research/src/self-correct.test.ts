@@ -72,9 +72,36 @@ describe('pre-verifier deterministic self-correction planner', () => {
 
     expect(correctionReasons(indicator(), baseChecks({ value_on_page: 'not_found' }))).toEqual(['value_not_found']);
     expect(correctionReasons(indicator(), baseChecks({ home_page_link: true }))).toEqual(['home_page_link']);
+    expect(correctionReasons(indicator(), baseChecks({ url_ok: false }))).toEqual(['url_failed']);
+    expect(correctionReasons(indicator(), baseChecks({ recency_ok: false }))).toEqual(['recency_failed']);
+    expect(correctionReasons(indicator(), baseChecks({ scale_ok: false }))).toEqual(['scale_failed']);
     expect(
-      correctionReasons(indicator(), baseChecks({ value_on_page: 'not_found', home_page_link: true })),
-    ).toEqual(['value_not_found', 'home_page_link']);
+      correctionReasons(indicator(), baseChecks({ value_on_page: 'not_found', home_page_link: true, url_ok: false, recency_ok: false, scale_ok: false })),
+    ).toEqual(['value_not_found', 'home_page_link', 'url_failed', 'recency_failed', 'scale_failed']);
+  });
+
+  it('plans self-correction for missing planned indicators and failed url/recency/scale gates', () => {
+    const plan = planPreVerifierCorrection({
+      config,
+      dimensionSlug: 'housing',
+      dimensionName: 'Housing',
+      regionBrief: 'Coastal city in California.',
+      flagged: [
+        {
+          payload: indicator({ year: 2010, geographic_scale: 'national' }),
+          checks: baseChecks({ url_ok: false, recency_ok: false, scale_ok: false }),
+          reasons: ['url_failed', 'recency_failed', 'scale_failed'],
+        },
+      ],
+      missing: [{ slug: 'eviction-rate', name: 'Eviction filings', unit: 'per 1,000' }],
+    });
+    expect(plan).not.toBeNull();
+    expect(plan!.flaggedSlugs).toEqual(['cost-burdened-renters', 'eviction-rate']);
+    expect(plan!.prompt).toContain('URL DID NOT RESOLVE');
+    expect(plan!.prompt).toContain('RECENCY POLICY FAILED');
+    expect(plan!.prompt).toContain('GEOGRAPHIC SCALE POLICY FAILED');
+    expect(plan!.prompt).toContain('MISSING PLANNED INDICATOR');
+    expect(plan!.prompt).toContain('eviction-rate');
   });
 
   it('returns null when nothing is flagged and renders a targeted diagnostic prompt otherwise', () => {
@@ -142,12 +169,54 @@ describe('pre-verifier deterministic self-correction planner', () => {
         checks: baseChecks({ value_on_page: 'found', home_page_link: false }),
       }),
     ).toBe(true);
-    // Regressing url_ok without fixing either deterministic gate is rejected.
+    // Regressing ANY gate (even while fixing home_page_link or value_on_page) is rejected!
     expect(
       shouldAcceptCorrection(orig, {
         payload: indicator(),
-        checks: baseChecks({ url_ok: false, value_on_page: 'not_found', home_page_link: true }),
+        checks: baseChecks({ url_ok: false, value_on_page: 'found', home_page_link: false }),
       }),
     ).toBe(false);
+    expect(
+      shouldAcceptCorrection(orig, {
+        payload: indicator(),
+        checks: baseChecks({ recency_ok: false, value_on_page: 'found', home_page_link: false }),
+      }),
+    ).toBe(false);
+    expect(
+      shouldAcceptCorrection(orig, {
+        payload: indicator(),
+        checks: baseChecks({ scale_ok: false, value_on_page: 'found', home_page_link: false }),
+      }),
+    ).toBe(false);
+
+    // Turning value_on_page from 'not_found' into 'no_text' does NOT resolve value_not_found.
+    const valOnlyOrig = { payload: indicator(), checks: baseChecks({ value_on_page: 'not_found', home_page_link: false }) };
+    expect(
+      shouldAcceptCorrection(valOnlyOrig, {
+        payload: indicator(),
+        checks: baseChecks({ value_on_page: 'no_text', home_page_link: false }),
+      }),
+    ).toBe(false);
+    // Newly introducing home_page_link is rejected even if value_on_page is fixed.
+    expect(
+      shouldAcceptCorrection(valOnlyOrig, {
+        payload: indicator(),
+        checks: baseChecks({ value_on_page: 'found', home_page_link: true }),
+      }),
+    ).toBe(false);
+    // No-op (resolves nothing) is rejected.
+    expect(
+      shouldAcceptCorrection(valOnlyOrig, {
+        payload: indicator(),
+        checks: baseChecks({ value_on_page: 'not_found', home_page_link: false }),
+      }),
+    ).toBe(false);
+    // Fixing url_ok / recency_ok / scale_ok without regressions is accepted.
+    expect(
+      shouldAcceptCorrection(
+        { payload: indicator(), checks: baseChecks({ recency_ok: false }) },
+        { payload: indicator(), checks: baseChecks({ recency_ok: true }) },
+      ),
+    ).toBe(true);
   });
 });

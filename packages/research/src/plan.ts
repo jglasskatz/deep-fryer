@@ -42,9 +42,59 @@ export const REGION_BRIEF_PLACEHOLDER = '{{region_brief}}';
 // Session execution policy (SPEC.md §8): tool allowlists and budgets are
 // research-plane policy, named here so the rendered plan and the worker
 // cannot disagree about what runs.
-const DIMENSION_TOOLS = ['WebSearch', 'WebFetch', 'mcp__evidence__capture_evidence'];
+export const DIMENSION_TOOLS = [
+  'WebSearch',
+  'WebFetch',
+  'mcp__evidence__capture_evidence',
+  'mcp__evidence__submit_findings',
+];
 const REGION_TOOLS = ['WebSearch', 'WebFetch'];
 export const VERIFIER_TOOLS = ['WebFetch', 'Read'];
+
+/**
+ * Pure: extract the indicator slugs assigned to one rendered dimension prompt.
+ * Matches the exact line format emitted by `renderPlan` (`  - <name> (slug: <slug>, unit: <unit>)`).
+ */
+export function plannedSlugsFromPrompt(prompt: string): string[] {
+  const slugs: string[] = [];
+  const seen = new Set<string>();
+  for (const m of prompt.matchAll(/^ {2}- .*\(slug: ([a-z0-9][a-z0-9-]*), unit: /gm)) {
+    const slug = m[1]!;
+    if (!seen.has(slug)) {
+      seen.add(slug);
+      slugs.push(slug);
+    }
+  }
+  return slugs;
+}
+
+/**
+ * Pure: extract the human-readable dimension title from a rendered dimension prompt
+ * (`- Dimension: <name> (social foundation|ecological ceiling ring)`), or null if absent.
+ */
+export function dimensionNameFromPrompt(prompt: string): string | null {
+  const match = /^- Dimension:\s*(.+?)\s*\((?:social foundation|ecological ceiling) ring\)\s*$/m.exec(prompt);
+  return match?.[1]?.trim() || null;
+}
+
+/**
+ * Pure: extract threshold_ref mappings by indicator name/slug from a rendered dimension prompt's
+ * thresholds block (`- <name> (ref: <threshold_ref>): ...`) combined with the indicator list.
+ */
+export function plannedThresholdRefsFromPrompt(prompt: string): Record<string, string> {
+  const slugByName = new Map<string, string>();
+  for (const m of prompt.matchAll(/^ {2}- (.+?)\s*\(slug: ([a-z0-9][a-z0-9-]*), unit: /gm)) {
+    slugByName.set(m[1]!.trim(), m[2]!);
+  }
+  const refs: Record<string, string> = {};
+  for (const m of prompt.matchAll(/^- (.+?)\s*\(ref:\s*([^)]+)\):/gm)) {
+    const name = m[1]!.trim();
+    const ref = m[2]!.trim();
+    const slug = slugByName.get(name);
+    if (slug && ref) refs[slug] = ref;
+  }
+  return refs;
+}
 /** Keep research contexts small; the worker still records each chunk independently. */
 export const MAX_INDICATORS_PER_SESSION = MAX_INDICATORS_PER_RESEARCH_SESSION;
 // The worker's fallbacks for plans that recorded no strategy (made before

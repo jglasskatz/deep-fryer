@@ -39,10 +39,12 @@ describe('runPhase', () => {
     expect(runPhase({ status: 'planned', appliedAt: null })).toBe('unapplied');
     expect(runPhase({ status: 'planned', appliedAt: t(0) })).toBe('queued');
     expect(runPhase({ status: 'running', appliedAt: t(0) })).toBe('running');
+    expect(runPhase({ status: 'running', appliedAt: t(0) }, { allSessionsFinished: true })).toBe('auditing');
     expect(runPhase({ status: 'complete', appliedAt: t(0) })).toBe('complete');
     expect(runPhase({ status: 'failed', appliedAt: t(0) })).toBe('failed');
     expect(runInProgress('queued')).toBe(true);
     expect(runInProgress('running')).toBe(true);
+    expect(runInProgress('auditing')).toBe(true);
     expect(runInProgress('unapplied')).toBe(false);
     expect(runInProgress('complete')).toBe(false);
   });

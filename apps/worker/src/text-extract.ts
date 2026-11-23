@@ -216,10 +216,17 @@ export interface PdfExcerptQuery {
   keywords?: readonly string[];
 }
 
+/** Header marking a bounded extracted text excerpt mounted beside or in place of a raw PDF. */
+export const CAPTURED_TEXT_EXCERPT_HEADER = '[EXTRACTED TEXT EXCERPT FROM CAPTURED SOURCE]';
+
 export interface PdfExcerptOptions {
   maxBytes?: number;
   windowRadius?: number;
   maxPages?: number;
+  /** Override the default oversized-PDF header when mounting text for a normal or large PDF. */
+  headerTitle?: string;
+  /** Override the default reason sentence in the excerpt header. */
+  headerReason?: string;
 }
 
 export type PdfExcerptMatchBasis = 'cited_page' | 'value_match' | 'keyword_match' | 'opening_pages';
@@ -402,9 +409,11 @@ export function extractPageWindowExcerpt(
   const orderedPages = [...selected].sort((a, b) => a - b);
   const matchBasis = [...basis];
 
+  const headerTitle = options.headerTitle ?? OVERSIZED_PDF_EXCERPT_HEADER;
+  const headerReason = options.headerReason ?? 'Original PDF exceeded the 32 MiB direct archive limit';
   const makeHeader = (included: readonly number[]) =>
-    `${OVERSIZED_PDF_EXCERPT_HEADER}\n` +
-    `Original PDF exceeded the 32 MiB direct archive limit; showing bounded text excerpts ` +
+    `${headerTitle}\n` +
+    `${headerReason}; showing bounded text excerpts ` +
     `(pages ${formatPageRanges(included)} of ${totalPages} total pages; matched by ${matchBasis.join(', ')}).\n` +
     `Verify carefully; pages outside this excerpt are not shown.\n\n`;
 
@@ -448,6 +457,43 @@ export function extractPageWindowExcerpt(
     totalPages,
     matchBasis,
     truncated: truncated || boundedText !== finalText,
+  };
+}
+
+/**
+ * Pure: format bounded readable text from a captured source (`evidence/<hash>.txt`)
+ * for mounting as `archived-source-excerpt.txt`. Multi-page PDFs use
+ * `extractPageWindowExcerpt`; single-page PDFs or captured HTML pages are
+ * cleanly bounded to `maxBytes` (default 64 KiB) with an explicit header.
+ */
+export function buildArchivedTextExcerpt(
+  storedText: string,
+  query: PdfExcerptQuery,
+  options: PdfExcerptOptions = {},
+): PdfExcerptResult {
+  const pages = extractPdfTextPages(storedText);
+  if (pages.length > 1) {
+    return extractPageWindowExcerpt(pages, query, options);
+  }
+  const trimmed = (pages[0] ?? storedText).trim();
+  if (!trimmed) {
+    return { text: '', pagesIncluded: [], totalPages: 0, matchBasis: [], truncated: false };
+  }
+  const maxBytes = Math.max(1024, options.maxBytes ?? DEFAULT_PDF_EXCERPT_MAX_BYTES);
+  const headerTitle = options.headerTitle ?? CAPTURED_TEXT_EXCERPT_HEADER;
+  const header = `${headerTitle}\nExtracted readable text from the captured source.\n\n`;
+  const truncationSuffix = '\n[...excerpt truncated at byte limit...]';
+  const full = `${header}${trimmed}\n`;
+  if (Buffer.byteLength(full, 'utf8') <= maxBytes) {
+    return { text: full, pagesIncluded: [1], totalPages: 1, matchBasis: ['opening_pages'], truncated: false };
+  }
+  const available = Math.max(256, maxBytes - Buffer.byteLength(truncationSuffix, 'utf8'));
+  return {
+    text: truncateUtf8(full, available) + truncationSuffix,
+    pagesIncluded: [1],
+    totalPages: 1,
+    matchBasis: ['opening_pages'],
+    truncated: true,
   };
 }
 

@@ -169,6 +169,43 @@ describe('researchVersionData (what approving a run makes)', () => {
     const data = researchVersionData(null, 'housing', [{ not: 'a finding' } as never]);
     expect(data).toMatchObject({ name: 'housing', indicators: [], gaps: undefined, actions: [] });
   });
+
+  it('defensively recomputes level_pct and worked_math from computeScoring() when a threshold resolves (P0.2)', () => {
+    const badMath: FindingPayload = {
+      kind: 'indicator',
+      indicator_slug: 'cost-burdened-renters',
+      name: 'Cost-burdened renters',
+      value: 54,
+      unit: '%',
+      year: 2025,
+      target: 30,
+      level_pct: -42, // hallucinated sign error from LLM
+      scoring: {
+        threshold_ref: 'housing.cost-burdened-renters',
+        function: 'lower_is_better',
+        inputs: { value: 54, target: 30 },
+        worked_math: 'hallucinated math',
+      },
+      source: 'ACS',
+      source_url: 'https://data.census.gov/table/x',
+      source_tier: 2,
+      evidence: { snapshot_path: 'evidence/a.png', captured_at: '2026-09-01T00:00:00Z' },
+      confidence: 'high',
+      geographic_scale: 'city',
+    };
+    const data = researchVersionData(version('d').data, 'housing', [badMath]);
+    expect(data.indicators[0]!.level_pct).toBe(80);
+    expect(data.indicators[0]!.target).toBe(30);
+    expect(data.indicators[0]!.scoring?.worked_math).toContain('+80');
+
+    // Also respects portrait threshold overrides when passed.
+    const overridden = researchVersionData(version('d').data, 'housing', [badMath], false, {
+      'housing.cost-burdened-renters': { target: 25, rationale: 'local target' },
+    });
+    expect(overridden.indicators[0]!.target).toBe(25);
+    // (54 - 25) / 25 * 100 = 116 (scale defaults to |target| = 25)
+    expect(overridden.indicators[0]!.level_pct).toBe(116);
+  });
 });
 
 describe('which findings need a look, and which may be approved in bulk', () => {

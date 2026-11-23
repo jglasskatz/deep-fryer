@@ -11,17 +11,31 @@ import {
   type HookCallback,
 } from '@anthropic-ai/claude-agent-sdk';
 import { z } from 'zod';
+import { frameworkDimension, type PortraitConfig } from '@deep-fryer/contract';
 import {
   LONG_PROMPT_THRESHOLD_TOKENS,
+  acceptedScales,
   baseModelId,
+  computeScoring,
   emptyUsage,
+  findingPayloadSchema,
+  isHomeOrSectionPage,
+  maxDataAgeYears,
   mergeUsage,
+  resolveThreshold,
+  type FindingPayload,
+  type IndicatorFindingPayload,
   type ModelTokenUsage,
   type RefusalFallbackEvent,
   type SessionTokenUsage,
 } from '@deep-fryer/core';
-import { DEFAULT_SESSION_MAX_TURNS, DEFAULT_SESSION_MODEL } from '@deep-fryer/research';
-import { captureEvidence } from './evidence.js';
+import {
+  DEFAULT_SESSION_MAX_TURNS,
+  DEFAULT_SESSION_MODEL,
+  checkValueOnPage,
+  valueOnPage,
+} from '@deep-fryer/research';
+import { buildCapturePreview, captureEvidence } from './evidence.js';
 import { rejectedKeyError } from './org-key.js';
 import type { TenantStorage } from './storage.js';
 import { ARCHIVED_PDF, ARCHIVED_PDF_EXCERPT, ARCHIVED_SNAPSHOT, type ArchivedExhibits } from './archived-exhibits.js';
@@ -51,6 +65,161 @@ export interface SessionResult {
    * (org-key.ts keyRejection, modelNamedIn).
    */
   apiErrorText?: string;
+  /** Validated & deterministically scored findings submitted in-session via `submit_findings`. */
+  submittedFindings?: FindingPayload[];
+  /** Snapshot paths confirmed captured via `capture_evidence` during this session. */
+  capturedSnapshotPaths?: string[];
+}
+
+export interface SubmitFindingsContext {
+  config: PortraitConfig;
+  dimensionSlug: string;
+  /** Optional `indicator_slug -> threshold_ref` mapping from the planned dimension/framework. */
+  thresholdRefs?: Readonly<Record<string, string>>;
+}
+
+export interface SubmitFindingError {
+  index: number;
+  indicator_slug: string;
+  errors: string[];
+}
+
+/**
+ * Pure: deterministically compute `level_pct`, `target`, and `scoring` from
+ * `resolveThreshold` whenever an indicator has a finite numeric value and a
+ * resolvable threshold ref — never trusting LLM mental arithmetic.
+ */
+export function rescoreIndicatorPayload(
+  payload: IndicatorFindingPayload,
+  config: Pick<PortraitConfig, 'threshold_overrides'>,
+  dimensionSlug?: string,
+  thresholdRefs?: Readonly<Record<string, string>>,
+): IndicatorFindingPayload {
+  if (typeof payload.value !== 'number' || !Number.isFinite(payload.value)) return payload;
+  const fwRef = dimensionSlug
+    ? frameworkDimension(dimensionSlug)?.indicators.find((i) => i.slug === payload.indicator_slug)?.threshold_ref
+    : undefined;
+  const ref = payload.scoring?.threshold_ref || thresholdRefs?.[payload.indicator_slug] || fwRef || '';
+  if (!ref) return payload;
+  const threshold = resolveThreshold(ref, config.threshold_overrides);
+  if (!threshold) return payload;
+  const computed = computeScoring(payload.value, ref, threshold);
+  return {
+    ...payload,
+    target: threshold.target,
+    level_pct: computed.level_pct,
+    scoring: computed.scoring,
+  };
+}
+
+/**
+ * Pure (apart from `readEvidenceText` callback): validate and deterministically
+ * score findings submitted via `mcp__evidence__submit_findings` synchronously
+ * inside an active research session. Returns concrete validation errors back to
+ * the model while its search context is still warm.
+ */
+export async function validateAndScoreSubmittedFindings(
+  rawFindings: readonly unknown[],
+  ctx: SubmitFindingsContext | undefined,
+  readEvidenceText?: (textPath: string) => Promise<string>,
+): Promise<{
+  accepted: boolean;
+  findings: FindingPayload[];
+  errors: SubmitFindingError[];
+}> {
+  const validFindings: FindingPayload[] = [];
+  const errors: SubmitFindingError[] = [];
+
+  const fwDim = ctx ? frameworkDimension(ctx.dimensionSlug) : undefined;
+  const maxAge = ctx ? maxDataAgeYears(ctx.config.recency, ctx.dimensionSlug) : undefined;
+  const allowedScales = ctx ? acceptedScales(ctx.config.scale_policy, ctx.dimensionSlug) : undefined;
+  const currentYear = new Date().getUTCFullYear();
+
+  for (let i = 0; i < rawFindings.length; i++) {
+    const raw = rawFindings[i];
+    const obj = typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>) : null;
+    const slug = typeof obj?.indicator_slug === 'string' && obj.indicator_slug ? obj.indicator_slug : `item-${i}`;
+    let candidate: unknown = raw;
+
+    // Deterministically compute scoring from threshold contract before schema validation,
+    // allowing researchers to omit `target`/`level_pct`/`scoring` or correcting any math drift.
+    if (obj && obj.kind === 'indicator' && typeof obj.value === 'number' && Number.isFinite(obj.value) && ctx) {
+      const existingScoring =
+        typeof obj.scoring === 'object' && obj.scoring !== null ? (obj.scoring as Record<string, unknown>) : null;
+      const existingRef =
+        typeof existingScoring?.threshold_ref === 'string' && existingScoring.threshold_ref.trim()
+          ? existingScoring.threshold_ref.trim()
+          : undefined;
+      const fwRef = fwDim?.indicators.find((ind) => ind.slug === slug)?.threshold_ref;
+      const ref = existingRef ?? ctx.thresholdRefs?.[slug] ?? fwRef;
+      const threshold = ref ? resolveThreshold(ref, ctx.config.threshold_overrides) : undefined;
+      if (ref && threshold) {
+        const computed = computeScoring(obj.value, ref, threshold);
+        candidate = {
+          ...obj,
+          target: threshold.target,
+          level_pct: computed.level_pct,
+          scoring: computed.scoring,
+        };
+      }
+    }
+
+    const parsed = findingPayloadSchema.safeParse(candidate);
+    if (!parsed.success) {
+      errors.push({
+        index: i,
+        indicator_slug: slug,
+        errors: parsed.error.issues.map((issue) => `${issue.path.join('.') || 'finding'}: ${issue.message}`),
+      });
+      continue;
+    }
+
+    const payload = parsed.data as FindingPayload;
+    if (payload.kind === 'gap') {
+      validFindings.push(payload);
+      continue;
+    }
+
+    const itemErrors: string[] = [];
+    if (isHomeOrSectionPage(payload.source_url)) {
+      itemErrors.push(
+        `home_page_link: source_url "${payload.source_url}" is a publisher home or top-level section page. Cite the concrete report, data table, or direct PDF URL and call capture_evidence on it.`,
+      );
+    }
+    if (maxAge !== undefined) {
+      const age = currentYear - payload.year;
+      if (age < 0 || age > maxAge) {
+        itemErrors.push(
+          `recency_failed: year ${payload.year} is outside the allowed window (last ${maxAge} years; future projections are not observations). Find a compliant year or emit kind: "gap".`,
+        );
+      }
+    }
+    if (allowedScales && !allowedScales.includes(payload.geographic_scale)) {
+      itemErrors.push(
+        `scale_failed: geographic_scale "${payload.geographic_scale}" is not in accepted scales (${allowedScales.join(', ')}). Find a compliant scale or emit kind: "gap".`,
+      );
+    }
+    if (readEvidenceText && payload.evidence.text_path) {
+      const valStatus = await checkValueOnPage(payload, readEvidenceText);
+      if (valStatus === 'not_found') {
+        itemErrors.push(
+          `value_not_found: claimed value "${payload.value}" was not found in the captured readable text (${payload.evidence.text_path}). Verify the exact figure on the page, capture the concrete data table/PDF URL, or emit kind: "gap".`,
+        );
+      }
+    }
+
+    if (itemErrors.length > 0) {
+      errors.push({ index: i, indicator_slug: payload.indicator_slug, errors: itemErrors });
+    } else {
+      validFindings.push(payload);
+    }
+  }
+
+  return {
+    accepted: errors.length === 0 && validFindings.length > 0,
+    findings: validFindings,
+    errors,
+  };
 }
 
 /**
@@ -124,10 +293,17 @@ export async function runSessionWithRetry(
   }
   const second = await attempt();
   const usage = mergeUsage(first.usage, second.usage);
+  const capturedSnapshotPaths = [
+    ...new Set([...(first.capturedSnapshotPaths ?? []), ...(second.capturedSnapshotPaths ?? [])]),
+  ];
   // The key can also die between the attempts (credit running out mid-run).
   const refused = !second.succeeded && input.apiKey ? rejectedKeyError(second, model, usage) : null;
   if (refused) throw refused;
-  return { ...second, usage };
+  return {
+    ...second,
+    usage,
+    ...(capturedSnapshotPaths.length ? { capturedSnapshotPaths } : {}),
+  };
 }
 
 const MODEL = () => process.env.ANTHROPIC_MODEL ?? DEFAULT_SESSION_MODEL;
@@ -350,31 +526,58 @@ export async function runSession(input: {
    * into a log line, and it is redacted from the stored transcript.
    */
   apiKey?: string;
+  /** Portrait config & dimension context for synchronous validation/scoring in `submit_findings`. */
+  submitFindingsContext?: SubmitFindingsContext;
 }): Promise<SessionResult> {
   const workspace = await mkdtemp(path.join(tmpdir(), 'df-session-'));
   const transcriptLines: string[] = [];
   let resultText = '';
   let succeeded = false;
   const meter = new SessionMeter();
+  let submittedFindings: FindingPayload[] | undefined;
+  const capturedSnapshotPaths = new Set<string>();
 
   const mcpServers: Record<string, ReturnType<typeof createSdkMcpServer>> = {};
   if (input.storage) {
     const storage = input.storage;
+    const readEvidenceText = async (textPath: string) => (await storage.get(textPath)).toString('utf8');
     mcpServers.evidence = createSdkMcpServer({
       name: 'evidence',
       version: '1.0.0',
       tools: [
         tool(
           'capture_evidence',
-          'Capture an evidence snapshot of a source you have decided to accept: a full-page screenshot, plus the PDF when the source is a document. Returns storage paths for the finding\'s evidence field.',
+          'Capture an evidence snapshot of a source you have decided to accept: a full-page screenshot, plus the PDF when the source is a document. Returns storage paths, a bounded preview of extracted readable text, and optional value_on_page check.',
           {
             url: z.string().describe('The exact URL the value was read from'),
             pdf_url: z.string().optional().describe('Direct PDF URL when the source is a document'),
+            check_value: z
+              .union([z.number(), z.string()])
+              .optional()
+              .describe('Optional candidate value to check immediately against the captured readable text'),
           },
           async (args) => {
             try {
               const result = await captureEvidence(storage, args.url, args.pdf_url);
-              return { content: [{ type: 'text', text: JSON.stringify(result) }] };
+              capturedSnapshotPaths.add(result.snapshot_path);
+              let capturedText: string | null = null;
+              if (result.text_path) {
+                try {
+                  capturedText = await readEvidenceText(result.text_path);
+                } catch {
+                  capturedText = null;
+                }
+              }
+              const preview = buildCapturePreview(capturedText);
+              const responsePayload = {
+                ...result,
+                text_char_count: preview.text_char_count,
+                text_preview: preview.text_preview,
+                ...(args.check_value !== undefined
+                  ? { value_on_page: valueOnPage(args.check_value, capturedText) }
+                  : {}),
+              };
+              return { content: [{ type: 'text', text: JSON.stringify(responsePayload) }] };
             } catch (err) {
               return {
                 content: [
@@ -387,6 +590,49 @@ export async function runSession(input: {
                 ],
               };
             }
+          },
+        ),
+        tool(
+          'submit_findings',
+          'Validate, deterministically score, and submit your completed findings array for this dimension. Returns concrete validation errors (schema, home-page link, recency, scale, value_on_page) immediately so you can fix them in-session.',
+          {
+            findings: z
+              .array(z.record(z.string(), z.unknown()))
+              .min(1)
+              .describe('Array of indicator or gap finding objects for this dimension'),
+          },
+          async (args) => {
+            const validation = await validateAndScoreSubmittedFindings(
+              args.findings,
+              input.submitFindingsContext,
+              readEvidenceText,
+            );
+            if (validation.accepted) {
+              submittedFindings = validation.findings;
+              return {
+                content: [
+                  {
+                    type: 'text',
+                    text: JSON.stringify({
+                      accepted: true,
+                      count: validation.findings.length,
+                      findings: validation.findings,
+                    }),
+                  },
+                ],
+              };
+            }
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify({
+                    accepted: false,
+                    errors: validation.errors,
+                  }),
+                },
+              ],
+            };
           },
         ),
       ],
@@ -425,7 +671,7 @@ export async function runSession(input: {
     const archivePaths = new Set<string>();
     const additional = input.archivedExhibits?.additional ?? [];
     if (
-      additional.length > 10 ||
+      additional.length > 15 ||
       additional.some(({ filename }) => !/^action-[1-5]-(?:snapshot\.png|source\.pdf|source-excerpt\.txt)$/.test(filename))
     ) {
       throw new Error('invalid fixed action exhibit filename');
@@ -509,6 +755,8 @@ export async function runSession(input: {
     succeeded,
     ...(meter.apiError ? { apiError: meter.apiError } : {}),
     ...(meter.apiErrorText ? { apiErrorText: redactErrorText(meter.apiErrorText, input.apiKey) } : {}),
+    ...(submittedFindings ? { submittedFindings } : {}),
+    ...(capturedSnapshotPaths.size ? { capturedSnapshotPaths: [...capturedSnapshotPaths] } : {}),
   };
 }
 

@@ -1,4 +1,4 @@
-import type { RefusalFallbackEvent, RunTokenUsage, SessionTokenUsage } from '@deep-fryer/core';
+import type { FindingVerification, RefusalFallbackEvent, RunTokenUsage, SessionTokenUsage } from '@deep-fryer/core';
 // Type only: this module is also bundled into the review card, which runs in the browser.
 import type { RunExecution } from '@deep-fryer/db';
 
@@ -77,12 +77,35 @@ export function sessionModels(usage: SessionTokenUsage | null | undefined): Sess
   };
 }
 
-/** A finding's provenance: its run's execution and its own session's models. */
+/**
+ * A finding's provenance: its run's execution and the producing stage's model
+ * record (including refusal fallbacks). When an Opus escalation or bounded
+ * correction pass replaced the initial finding, reads `escalation:<sessionId>`
+ * or `correction:<sessionId>` (falling back to `verification.produced_by_model`
+ * when usage telemetry is absent).
+ */
 export function findingProvenance(
   run: { execution: RunExecution | null; tokenUsage: RunTokenUsage | null },
   sessionId: string,
+  verification?: Pick<FindingVerification, 'produced_by_stage' | 'produced_by_model'> | null,
 ): FindingProvenance {
-  return { execution: run.execution ?? null, session: sessionModels(run.tokenUsage?.[sessionId]) };
+  const stage = verification?.produced_by_stage;
+  let usage: SessionTokenUsage | undefined;
+  if (stage === 'escalation') {
+    usage = run.tokenUsage?.[`escalation:${sessionId}`];
+  } else if (stage === 'correction') {
+    usage = run.tokenUsage?.[`correction:${sessionId}`] ?? run.tokenUsage?.[sessionId];
+  } else {
+    usage = run.tokenUsage?.[sessionId];
+  }
+
+  let session = sessionModels(usage);
+  const recordedModel = namedModel(verification?.produced_by_model) ? verification!.produced_by_model : undefined;
+  if (recordedModel) {
+    if (!session) session = { model: recordedModel };
+    else if (!session.model) session = { ...session, model: recordedModel };
+  }
+  return { execution: run.execution ?? null, session };
 }
 
 /** Each distinct model that answered after another declined, with the model it stood in for. */

@@ -16,6 +16,77 @@ import { valueOnPage } from './page-text.js';
 
 export { isFlagged };
 
+export interface DeterministicCheckOptions {
+  allowProxy?: boolean;
+  /**
+   * When set (and `fetchUrl` is the default live probe), a finding whose
+   * `evidence.snapshot_path` was freshly captured during the current run
+   * short-circuits `defaultUrlCheck` to `true` after confirming the URL is
+   * public HTTPS — avoiding `.gov` WAF false `url_ok: false` flags after
+   * Playwright already loaded and archived the document.
+   */
+  runStartedAt?: Date | string;
+  /**
+   * Optional allowlist of snapshot paths confirmed captured by the worker
+   * during this run; when provided, `evidence.snapshot_path` must be in this set
+   * for the fresh-capture URL short-circuit to apply.
+   */
+  capturedSnapshotPaths?: ReadonlySet<string>;
+}
+
+const VALID_SNAPSHOT_PATH = /^evidence\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.png$/;
+const FRESH_CAPTURE_CLOCK_SKEW_MS = 60_000;
+
+/**
+ * Pure: true when `sourceUrl` is an https:// URL whose hostname is not an
+ * obvious loopback/private literal and `evidence.snapshot_path` was freshly
+ * captured in the current run window (and present in `capturedSnapshotPaths`
+ * when supplied).
+ */
+export function isFreshRunCapture(
+  sourceUrl: string,
+  evidence: { snapshot_path: string; captured_at: string },
+  options: Pick<DeterministicCheckOptions, 'runStartedAt' | 'capturedSnapshotPaths'>,
+  nowMs = Date.now(),
+): boolean {
+  if (!options.runStartedAt && !options.capturedSnapshotPaths) return false;
+  if (!VALID_SNAPSHOT_PATH.test(evidence.snapshot_path)) return false;
+  if (options.capturedSnapshotPaths && !options.capturedSnapshotPaths.has(evidence.snapshot_path)) {
+    return false;
+  }
+  let parsed: URL;
+  try {
+    parsed = new URL(sourceUrl);
+  } catch {
+    return false;
+  }
+  if (parsed.protocol !== 'https:') return false;
+  const host = parsed.hostname.toLowerCase();
+  if (
+    !host ||
+    host === 'localhost' ||
+    host.endsWith('.local') ||
+    host === '127.0.0.1' ||
+    host === '::1' ||
+    host.startsWith('10.') ||
+    host.startsWith('192.168.')
+  ) {
+    return false;
+  }
+  if (options.runStartedAt) {
+    const startMs =
+      options.runStartedAt instanceof Date
+        ? options.runStartedAt.getTime()
+        : Date.parse(options.runStartedAt);
+    const capturedMs = Date.parse(evidence.captured_at);
+    if (!Number.isFinite(startMs) || !Number.isFinite(capturedMs)) return false;
+    if (capturedMs < startMs - FRESH_CAPTURE_CLOCK_SKEW_MS || capturedMs > nowMs + FRESH_CAPTURE_CLOCK_SKEW_MS) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /**
  * Deterministic checks run before the verifier subagent (SPEC.md §8 Verify):
  * schema, URL resolution, recency policy, scale policy, and whether the
@@ -32,7 +103,7 @@ export async function deterministicChecks(
   config: PortraitConfig,
   dimensionSlug: string,
   fetchUrl: (url: string) => Promise<boolean> = defaultUrlCheck,
-  options: { allowProxy?: boolean } = {},
+  options: DeterministicCheckOptions = {},
 ): Promise<{ payload: FindingPayload | null; checks: Omit<FindingVerification, 'content_supported' | 'verifier_note'> }> {
   const schema = options.allowProxy ? storedFindingPayloadSchema : findingPayloadSchema;
   const parsed = schema.safeParse(raw);
@@ -61,7 +132,10 @@ export async function deterministicChecks(
     payload.geographic_scale,
   );
 
-  const urlOk = await fetchUrl(payload.source_url);
+  const urlOk =
+    fetchUrl === defaultUrlCheck && isFreshRunCapture(payload.source_url, payload.evidence, options)
+      ? true
+      : await fetchUrl(payload.source_url);
 
   return {
     payload,
@@ -122,12 +196,20 @@ async function defaultUrlCheck(url: string): Promise<boolean> {
 
 export function mergeVerification(
   checks: Omit<FindingVerification, 'content_supported' | 'verifier_note'>,
-  verdict: { content_supported: ContentSupported; verifier_note?: string; narrative_supported?: ContentSupported } | null,
+  verdict: {
+    content_supported: ContentSupported;
+    verifier_note?: string;
+    narrative_supported?: ContentSupported;
+    fail_reason?: string;
+    suggested_disposition?: 'approve' | 'edit' | 're_research' | 'reject';
+  } | null,
 ): FindingVerification {
   return {
     ...checks,
     content_supported: verdict?.content_supported ?? 'uncertain',
     verifier_note: verdict ? verdict.verifier_note : 'verifier session did not return a verdict',
     ...(verdict?.narrative_supported ? { narrative_supported: verdict.narrative_supported } : {}),
+    ...(verdict?.fail_reason ? { fail_reason: verdict.fail_reason } : {}),
+    ...(verdict?.suggested_disposition ? { suggested_disposition: verdict.suggested_disposition } : {}),
   };
 }

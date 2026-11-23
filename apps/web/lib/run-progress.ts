@@ -12,23 +12,28 @@ import type { PlannedSession } from '@deep-fryer/core';
  * a run that is queued: it must never offer "Apply" again, and the page
  * should say it is about to start rather than that it waits for a click.
  */
-export type RunPhase = 'unapplied' | 'queued' | 'running' | 'complete' | 'failed';
+export type RunPhase = 'unapplied' | 'queued' | 'running' | 'auditing' | 'complete' | 'failed';
 
-export function runPhase(run: { status: string; appliedAt: Date | null }): RunPhase {
+export function runPhase(
+  run: { status: string; appliedAt: Date | null },
+  options?: { allSessionsFinished?: boolean },
+): RunPhase {
   if (run.status === 'planned') return run.appliedAt ? 'queued' : 'unapplied';
-  if (run.status === 'running') return 'running';
+  if (run.status === 'running') return options?.allSessionsFinished ? 'auditing' : 'running';
   if (run.status === 'complete') return 'complete';
   return 'failed';
 }
 
 /** The run page and the runs list refresh themselves while a run can still change. */
-export const runInProgress = (phase: RunPhase): boolean => phase === 'queued' || phase === 'running';
+export const runInProgress = (phase: RunPhase): boolean =>
+  phase === 'queued' || phase === 'running' || phase === 'auditing';
 
 /** The word staff see for a run's state (the runs list badge, the run page heading). */
 export const RUN_PHASE_LABEL: Record<RunPhase, string> = {
   unapplied: 'planned',
   queued: 'queued',
   running: 'running',
+  auditing: 'auditing',
   complete: 'complete',
   failed: 'failed',
 };
@@ -46,6 +51,8 @@ export function alreadyAppliedMessage(run: { status: string; appliedAt: Date | n
       return 'This run was already applied and is queued — it starts shortly. Nothing was started twice; reload the page to follow its progress.';
     case 'running':
       return 'This run was already applied and is running now. Nothing was started twice; reload the page to follow its progress.';
+    case 'auditing':
+      return 'This run was already applied and is running automatic quality audits now. Nothing was started twice; reload the page to follow its progress.';
     case 'complete':
       return 'This run already finished. Its findings are in the review queue; plan a new run to research again.';
     case 'failed':

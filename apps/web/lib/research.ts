@@ -21,7 +21,10 @@ import { portraitConfigFromMap, tenantConfigMapIn } from './admin-data';
 import { UserError } from './action-result';
 import { assertFundingUsable, firstDoughnutSetting } from './billing';
 import { systemDb, userDb } from './db';
+import { plannedIndicatorsForDimension } from './planned-indicators';
 import { alreadyAppliedMessage } from './run-progress';
+
+export { plannedIndicatorsForDimension };
 
 /**
  * Plan (SPEC.md §8): render the full session list — prompts, tool
@@ -69,18 +72,10 @@ export async function createPlannedRunIn(db: DbExecutor, input: PlannedRunInput)
       const frameworkDim = frameworkDimension(dim.slug, dim.canonicalSlug);
       const latest = await latestVersion(db, dim.id);
       const name = latest?.data.name ?? frameworkDim?.name ?? dim.slug;
-      // The editor's actual list is authoritative, including removal of all
-      // indicators. A framework reference supplies thresholds, not a hidden
-      // replacement list. Unversioned seeded dimensions alone use defaults.
-      const indicators = latest
-        ? latest.data.indicators.map(ind => ({
-            slug: ind.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-            name: ind.name,
-            unit: ind.unit,
-            threshold_ref: ind.scoring?.threshold_ref ??
-              frameworkDim?.indicators.find(fi => fi.name === ind.name)?.threshold_ref ?? '',
-          }))
-        : frameworkDim?.indicators ?? [];
+      // Shared helper preserves ind.key (never mangling framework slugs from
+      // display names) and re-includes indicators recorded in latest.data.gaps
+      // so approved gaps are never erased on subsequent runs.
+      const indicators = plannedIndicatorsForDimension(latest, frameworkDim);
 
       specs.push({
         dimensionId: dim.id,

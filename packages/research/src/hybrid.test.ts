@@ -146,5 +146,57 @@ describe('hybrid escalation selection and prompt rendering', () => {
         verdict: { content_supported: 'fail' },
       }),
     ).toBe(false);
+
+    // Gap -> uncertain indicator: REJECT (must pass verification to replace an honest gap).
+    expect(
+      shouldAcceptEscalation(initialGap, {
+        indicatorSlug: 'aragonite-saturation',
+        payload: indicator('aragonite-saturation', 'Aragonite'),
+        checks: { schema_ok: true, url_ok: true, recency_ok: true, scale_ok: true },
+        verdict: { content_supported: 'uncertain' },
+      }),
+    ).toBe(false);
+
+    // Gap -> pass indicator that violates recency/scale/url deterministic gates: REJECT!
+    for (const badChecks of [
+      { schema_ok: true, url_ok: false, recency_ok: true, scale_ok: true },
+      { schema_ok: true, url_ok: true, recency_ok: false, scale_ok: true },
+      { schema_ok: true, url_ok: true, recency_ok: true, scale_ok: false },
+    ]) {
+      expect(
+        shouldAcceptEscalation(initialGap, {
+          indicatorSlug: 'aragonite-saturation',
+          payload: indicator('aragonite-saturation', 'Aragonite'),
+          checks: badChecks,
+          verdict: { content_supported: 'pass' },
+        }),
+      ).toBe(false);
+    }
+
+    // Gap -> pass indicator with passing deterministic gates: ACCEPT.
+    expect(
+      shouldAcceptEscalation(initialGap, {
+        indicatorSlug: 'aragonite-saturation',
+        payload: indicator('aragonite-saturation', 'Aragonite'),
+        checks: { schema_ok: true, url_ok: true, recency_ok: true, scale_ok: true },
+        verdict: { content_supported: 'pass' },
+      }),
+    ).toBe(true);
+  });
+
+  it('selects omitted/missing planned indicators for escalation with reason "missing"', () => {
+    const selected = selectEscalationCandidates([
+      { indicatorSlug: 'omitted-ind', payload: null, verdict: { content_supported: 'fail' }, missing: true },
+    ]);
+    expect(selected.map((c) => [c.indicatorSlug, c.reason])).toEqual([['omitted-ind', 'missing']]);
+    const prompt = renderHybridEscalationPrompt({
+      config,
+      dimensionSlug: 'housing',
+      dimensionName: 'Housing',
+      regionBrief: 'Coastal city.',
+      candidates: selected,
+    });
+    expect(prompt).toContain('OMITTED this planned indicator');
+    expect(prompt).toContain('omitted-ind');
   });
 });

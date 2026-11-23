@@ -84,6 +84,12 @@ and honest gaps before optional narrative drafts.
 
 ## Output
 
+If the `submit_findings` tool is available in your session, call it with your
+complete findings array before finishing: it deterministically computes
+`level_pct` / `scoring` from the portrait's threshold contract and validates
+schema, URL, recency, scale, and value-on-page checks immediately so you can
+fix any reported issue while your search context is warm.
+
 Return ONLY a JSON array of finding objects conforming to the finding schema
 below: one `kind: "indicator"` or `kind: "gap"` object per indicator listed
 above, in order. No prose before or after the JSON. Use exactly these field

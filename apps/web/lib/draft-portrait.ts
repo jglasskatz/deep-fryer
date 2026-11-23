@@ -2,12 +2,15 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 import { and, desc, eq, gt, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import {
+  computeScoring,
   deriveVizLevel,
   isFlagged,
+  resolveThreshold,
   type DimensionData,
   type DimensionGap,
   type FindingPayload,
   type Indicator,
+  type PortraitConfig,
 } from '@deep-fryer/core';
 import {
   dimensions,
@@ -62,20 +65,35 @@ export function researchVersionData(
   dimensionSlug: string,
   payloads: readonly FindingPayload[],
   includeNarrative = false,
+  thresholdOverrides?: PortraitConfig['threshold_overrides'],
 ): DimensionData {
   const indicators: Indicator[] = [];
   const gaps: DimensionGap[] = [];
   for (const p of payloads) {
     if (p.kind === 'indicator') {
+      // Defensively recompute level_pct and worked_math from the threshold contract
+      // whenever a numeric value has a resolvable threshold, never trusting LLM math.
+      let target = p.target;
+      let levelPct = p.level_pct;
+      let scoring = p.scoring;
+      if (typeof p.value === 'number' && Number.isFinite(p.value) && p.scoring?.threshold_ref) {
+        const threshold = resolveThreshold(p.scoring.threshold_ref, thresholdOverrides);
+        if (threshold) {
+          const computed = computeScoring(p.value, p.scoring.threshold_ref, threshold);
+          target = threshold.target;
+          levelPct = computed.level_pct;
+          scoring = computed.scoring;
+        }
+      }
       indicators.push({
         key: p.indicator_slug,
         name: p.name,
         value: p.value,
         unit: p.unit,
         year: p.year,
-        target: p.target,
-        level_pct: p.level_pct,
-        scoring: p.scoring,
+        target,
+        level_pct: levelPct,
+        scoring,
         source: p.source,
         source_url: p.source_url,
         source_tier: p.source_tier,

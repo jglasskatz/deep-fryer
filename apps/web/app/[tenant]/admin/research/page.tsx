@@ -11,6 +11,7 @@ import { adminPageMetadata } from '@/lib/page-meta';
 import { billingSummary, keyFundedSessionsNote } from '@/lib/billing';
 import { UsageMeter } from '@/components/billing/UsageMeter';
 import { AutoRefresh } from '@/components/admin/AutoRefresh';
+import { plannedIndicatorsForDimension } from '@/lib/planned-indicators';
 import { runInProgress, runPhase } from '@/lib/run-progress';
 import { RunPhaseBadge } from './RunBadges';
 
@@ -89,7 +90,10 @@ export default async function ResearchPage({
               id: dimension.id,
               name: published?.data.name ?? latest?.data.name ?? dimension.slug,
               ring: dimension.ring,
-              indicatorCount: frameworkDimension(dimension.slug, dimension.canonicalSlug)?.indicators.length ?? latest?.data.indicators.length ?? 0,
+              indicatorCount: plannedIndicatorsForDimension(
+                latest,
+                frameworkDimension(dimension.slug, dimension.canonicalSlug),
+              ).length,
             }))}
           />
         </div>

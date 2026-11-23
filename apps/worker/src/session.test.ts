@@ -802,3 +802,89 @@ describe('runSession and runSessionWithRetry metering', () => {
     expect(limited.apiErrorText).toBe('Rate limited for [redacted API key]');
   });
 });
+
+describe('submit_findings validation & deterministic computeScoring (P0.2)', () => {
+  it('deterministically computes level_pct and scoring (fixing wrong LLM math or omitted scoring) and validates gates synchronously', async () => {
+    const { defaultPortraitConfig } = await import('@deep-fryer/contract');
+    const { validateAndScoreSubmittedFindings } = await import('./session.js');
+    const cfg = defaultPortraitConfig('City of Santa Cruz', 'City limits');
+    const year = new Date().getUTCFullYear() - 1;
+
+    // Minimal submission omitting target/level_pct/scoring — computed deterministically!
+    const minimal = {
+      kind: 'indicator',
+      indicator_slug: 'cost-burdened-renters',
+      name: 'Renter households paying over 30% of income on housing',
+      value: 54.0,
+      unit: '%',
+      year,
+      source: 'ACS 2024',
+      source_url: 'https://data.census.gov/table/ACSDP5Y2024.DP04',
+      source_tier: 2,
+      evidence: {
+        snapshot_path: 'evidence/acs.png',
+        text_path: 'evidence/acs.txt',
+        captured_at: '2026-10-01T00:00:00Z',
+      },
+      confidence: 'high',
+      geographic_scale: 'city',
+    };
+
+    const files: Record<string, string> = {
+      'evidence/acs.txt': 'Table DP04: Gross rent 30% or more of household income: 54.0%',
+    };
+    const ok = await validateAndScoreSubmittedFindings(
+      [minimal],
+      { config: cfg, dimensionSlug: 'housing' },
+      async (p) => files[p]!,
+    );
+    expect(ok.accepted).toBe(true);
+    expect(ok.errors).toEqual([]);
+    expect(ok.findings).toHaveLength(1);
+    const scored = ok.findings[0]!;
+    expect(scored.kind).toBe('indicator');
+    if (scored.kind === 'indicator') {
+      // housing.cost-burdened-renters has target 30, lower_is_better, scale 30 -> (54 - 30) / 30 * 100 = 80
+      expect(scored.target).toBe(30);
+      expect(scored.level_pct).toBe(80);
+      expect(scored.scoring.threshold_ref).toBe('housing.cost-burdened-renters');
+      expect(scored.scoring.worked_math).toContain('+80');
+    }
+
+    // Wrong LLM mental arithmetic is deterministically overwritten too!
+    const wrongMath = {
+      ...minimal,
+      target: 30,
+      level_pct: -999,
+      scoring: { threshold_ref: 'housing.cost-burdened-renters', function: 'lower_is_better', inputs: { value: 54, target: 30 }, worked_math: 'hallucinated' },
+    };
+    const fixed = await validateAndScoreSubmittedFindings(
+      [wrongMath],
+      { config: cfg, dimensionSlug: 'housing' },
+      async (p) => files[p]!,
+    );
+    expect(fixed.accepted).toBe(true);
+    expect(fixed.findings[0]!.kind === 'indicator' && fixed.findings[0]!.level_pct).toBe(80);
+
+    // Fails synchronously with concrete errors for home-page link, stale year, disallowed scale, and value_not_found.
+    const bad = {
+      ...minimal,
+      value: 91.7,
+      year: 2010,
+      geographic_scale: 'national',
+      source_url: 'https://www.cityofsantacruz.com/housing',
+    };
+    const rejected = await validateAndScoreSubmittedFindings(
+      [bad],
+      { config: cfg, dimensionSlug: 'housing' },
+      async (p) => files[p]!,
+    );
+    expect(rejected.accepted).toBe(false);
+    expect(rejected.errors).toHaveLength(1);
+    const msgs = rejected.errors[0]!.errors.join('\n');
+    expect(msgs).toContain('home_page_link');
+    expect(msgs).toContain('recency_failed');
+    expect(msgs).toContain('scale_failed');
+    expect(msgs).toContain('value_not_found');
+  });
+});

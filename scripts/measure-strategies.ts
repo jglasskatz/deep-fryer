@@ -47,6 +47,7 @@ import {
 } from '@deep-fryer/core';
 import {
   enqueueResearchApply,
+  NEGATIVE_CONTROLS,
   plannedIndicators,
   renderPlan,
   replicationAgreement,
@@ -54,6 +55,7 @@ import {
   scoreNegativeControls,
   scoreStrategy,
   strategyRef,
+  type ControlResult,
   type PlanDimensionSpec,
   type ScoredFinding,
 } from '@deep-fryer/research';
@@ -172,6 +174,7 @@ interface LoadedRun {
   runId: string;
   /** The registry entry the plan recorded (`name@version`), or null when it recorded none. */
   strategy: string | null;
+  scalePolicy: PortraitConfig['scale_policy'];
   scored: ScoredFinding[];
   /** Every usage record of the run (region, research, verifiers) folded into one. */
   spend: SessionTokenUsage;
@@ -230,6 +233,7 @@ async function loadRun(runId: string): Promise<LoadedRun> {
   return {
     runId,
     strategy: recordedStrategy(run.plan),
+    scalePolicy: run.configSnapshot.scale_policy,
     scored,
     spend,
     indicatorsPlanned: plannedIndicators(run.plan).length,
@@ -261,7 +265,16 @@ async function scoreLabel(label: string, runIds: string[], strategy?: string) {
     indicatorsPlanned: perRun.reduce((n, r) => n + r.indicatorsPlanned, 0),
     tokens: spend,
   });
-  const controls = scoreNegativeControls(all);
+  const controlResults: ControlResult[] = perRun.flatMap(
+    (r) => scoreNegativeControls(r.scored, NEGATIVE_CONTROLS, { scalePolicy: r.scalePolicy }).results,
+  );
+  const controls = {
+    results: controlResults,
+    fabricationRate:
+      controlResults.length === 0
+        ? 0
+        : controlResults.filter((r) => !r.correct).length / controlResults.length,
+  };
   const agreement = perRun.length > 1 ? replicationAgreement(perRun.map((r) => r.scored)) : [];
   return {
     label,
@@ -271,7 +284,7 @@ async function scoreLabel(label: string, runIds: string[], strategy?: string) {
     // (dollars, tokens.by_model, unpriced); the rest is per run.
     scorecard: card,
     perModelTokens: spend.by_model ?? {},
-    runs: perRun.map(({ scored: _scored, spend: _spend, ...facts }) => facts),
+    runs: perRun.map(({ scored: _scored, spend: _spend, scalePolicy: _scalePolicy, ...facts }) => facts),
     sessions: {
       complete: perRun.reduce((n, r) => n + r.sessions.complete, 0),
       failed: perRun.reduce((n, r) => n + r.sessions.failed, 0),

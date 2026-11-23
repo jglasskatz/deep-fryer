@@ -10,6 +10,7 @@ const PHASE_CLASS: Record<RunPhase, string> = {
   unapplied: 'bg-black/5',
   queued: 'bg-amber-100 text-amber-900',
   running: 'bg-blue-100 text-blue-900',
+  auditing: 'bg-teal-100 text-teal-900',
   complete: 'bg-green-100 text-green-900',
   failed: 'bg-red-100 text-red-900',
 };

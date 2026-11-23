@@ -1,3 +1,4 @@
+import { gunzipSync, gzipSync } from 'node:zlib';
 import { describe, expect, it, vi } from 'vitest';
 import { defaultPortraitConfig } from '@deep-fryer/contract';
 import type { GapFindingPayload, IndicatorFindingPayload, SessionTokenUsage } from '@deep-fryer/core';
@@ -9,9 +10,11 @@ import {
 } from '@deep-fryer/research';
 import { orgKeyRejected } from '../org-key.js';
 import {
+  combineStageTranscripts,
   evaluateDimensionFindings,
   plannedEscalationOptions,
   plannedInitialScoutModel,
+  runWithConcurrency,
   type DimensionFindingPipelineDeps,
 } from './research-apply.js';
 
@@ -379,5 +382,176 @@ describe('Research Routine v2 — pre-verifier self-correction and hybrid escala
     expect(runEscalationSession).not.toHaveBeenCalled();
     expect(out.escalationUsage).toBeUndefined();
     expect(out.records[0]!.verification.content_supported).toBe('pass');
+  });
+
+  it('P0.1/P0.2/P0.4: escalates omitted planned slugs, recaptures changed escalation URLs, tags stage provenance, preserves transcripts, and rescores wrong LLM math', async () => {
+    const files: Record<string, string> = {
+      'evidence/ok.txt': 'Renter cost burden is 54.0% in 2025.',
+      'evidence/esc-recaptured.txt': 'Eviction rate was 4.2 per 1,000 in 2025.',
+    };
+    const initialWithBadMath = indicator('cost-burdened-renters', 'Cost-burdened renters', {
+      value: 54.0,
+      target: 30,
+      level_pct: -123, // hallucinated mental arithmetic — must be overwritten to +80!
+      scoring: {
+        threshold_ref: 'housing.cost-burdened-renters',
+        function: 'lower_is_better',
+        inputs: { value: 54, target: 30 },
+        worked_math: 'bad math',
+      },
+      evidence: { snapshot_path: 'evidence/ok.png', text_path: 'evidence/ok.txt', captured_at: '2026-10-01T00:00:00Z' },
+    });
+    const escalatedOmitted = indicator('evictions', 'Eviction filings', {
+      value: 4.2,
+      source_url: 'https://courts.example.gov/evictions-2025.pdf',
+      evidence: { snapshot_path: 'evidence/esc-recaptured.png', text_path: 'evidence/esc-recaptured.txt', captured_at: '2026-10-01T00:02:00Z' },
+    });
+
+    const correctionPrompts: string[] = [];
+    const escalationPrompts: string[] = [];
+    const out = await evaluateDimensionFindings(
+      {
+        sessionId: 'sess-p0',
+        config,
+        dimensionSlug: 'housing',
+        dimensionName: 'Housing',
+        regionBrief: 'Santa Cruz brief.',
+        plan: planStrategy('hybrid@1'),
+        // 'evictions' was planned but omitted by initial pass!
+        rawFindings: [initialWithBadMath],
+        plannedSlugs: ['cost-burdened-renters', 'evictions'],
+        salvaged: false,
+        initialKeyFailure: null,
+      },
+      {
+        deterministicChecks: (raw, cfg, slug) => deterministicChecks(raw, cfg, slug, async () => true),
+        checkValueOnPage: async (payload) =>
+          payload.kind === 'gap' ? undefined : valueOnPage(payload.value, files[payload.evidence.text_path ?? '']),
+        runCorrectionSession: vi.fn(async ({ prompt }) => {
+          correctionPrompts.push(prompt);
+          // Correction fails to recover 'evictions' (returns empty JSON) -> hybrid must still escalate it!
+          return {
+            resultText: '[]',
+            succeeded: true,
+            transcript: gzipSync('{"type":"correction_frame"}'),
+            usage: usageOf('claude-sonnet-5', 500, 50),
+          };
+        }),
+        runEscalationSession: vi.fn(async ({ prompt }) => {
+          escalationPrompts.push(prompt);
+          return {
+            resultText: '',
+            // Uses in-session submittedFindings directly (no extractJson needed)!
+            submittedFindings: [escalatedOmitted],
+            succeeded: true,
+            transcript: gzipSync('{"type":"escalation_frame"}'),
+            usage: usageOf('claude-opus-5', 2000, 300),
+          };
+        }),
+        runVerifier: vi.fn(async () => ({
+          verdict: { content_supported: 'pass' as const },
+          usage: usageOf('claude-opus-5', 400, 40),
+        })),
+      },
+    );
+
+    expect(correctionPrompts).toHaveLength(1);
+    expect(correctionPrompts[0]).toContain('MISSING PLANNED INDICATOR');
+    expect(correctionPrompts[0]).toContain('evictions');
+    expect(escalationPrompts).toHaveLength(1);
+    expect(escalationPrompts[0]).toContain('Housing');
+    expect(escalationPrompts[0]).toContain('OMITTED this planned indicator');
+    expect(escalationPrompts[0]).toContain('evictions');
+
+    const bySlug = Object.fromEntries(out.records.map((r) => [r.indicatorSlug, r]));
+    // Deterministic computeScoring fixed the wrong LLM math (-123 -> 80)!
+    expect((bySlug['cost-burdened-renters']!.payload as IndicatorFindingPayload).level_pct).toBe(80);
+    // Escalated indicator recorded stage & model provenance!
+    expect(bySlug.evictions!.verification.produced_by_stage).toBe('escalation');
+    expect(bySlug.evictions!.verification.produced_by_model).toBe('claude-opus-5');
+    expect(bySlug.evictions!.verification.content_supported).toBe('pass');
+
+    // Combined stage transcripts include initial + correction + escalation with stage markers.
+    expect(out.correctionTranscript).toBeDefined();
+    expect(out.escalationTranscript).toBeDefined();
+    const combined = gunzipSync(
+      combineStageTranscripts([
+        { stage: 'initial', transcript: gzipSync('{"type":"initial_frame"}') },
+        { stage: 'correction', transcript: out.correctionTranscript! },
+        { stage: 'escalation', transcript: out.escalationTranscript! },
+      ]),
+    ).toString('utf8');
+    expect(combined).toContain('{"type":"stage_marker","stage":"initial"}');
+    expect(combined).toContain('{"type":"initial_frame"}');
+    expect(combined).toContain('{"type":"stage_marker","stage":"correction"}');
+    expect(combined).toContain('{"type":"correction_frame"}');
+    expect(combined).toContain('{"type":"stage_marker","stage":"escalation"}');
+    expect(combined).toContain('{"type":"escalation_frame"}');
+  });
+
+  it('recaptures evidence on escalated candidates when Opus changed source_url without calling capture_evidence', async () => {
+    const initialFail = indicator('rent', 'Rent burden', {
+      source_url: 'https://old.example.gov/wrong.pdf',
+      evidence: { snapshot_path: 'evidence/old.png', text_path: 'evidence/old.txt', captured_at: '2026-10-01T00:00:00Z' },
+    });
+    const escalatedNewUrlOldSnap = indicator('rent', 'Rent burden', {
+      source_url: 'https://new.example.gov/right.pdf',
+      evidence: initialFail.evidence, // forgot to re-capture
+    });
+    const recaptureEvidence = vi.fn(async () => ({
+      snapshot_path: 'evidence/fresh-esc.png',
+      text_path: 'evidence/fresh-esc.txt',
+      captured_at: '2026-10-01T00:05:00Z',
+    }));
+    const runVerifier = vi.fn(async (p: IndicatorFindingPayload) => ({
+      verdict: { content_supported: p.source_url.includes('new.example.gov') ? ('pass' as const) : ('fail' as const) },
+      usage: usageOf('claude-opus-5', 300, 30),
+    }));
+
+    const out = await evaluateDimensionFindings(
+      {
+        sessionId: 'sess-esc-recap',
+        config,
+        dimensionSlug: 'housing',
+        dimensionName: 'Housing',
+        regionBrief: 'Brief.',
+        plan: planStrategy('hybrid@1'),
+        rawFindings: [initialFail],
+        salvaged: false,
+        initialKeyFailure: null,
+      },
+      {
+        deterministicChecks: (raw, cfg, slug) => deterministicChecks(raw, cfg, slug, async () => true),
+        checkValueOnPage: async () => 'found',
+        recaptureEvidence,
+        runCorrectionSession: vi.fn(),
+        runEscalationSession: vi.fn(async () => ({
+          resultText: JSON.stringify([escalatedNewUrlOldSnap]),
+          succeeded: true,
+          transcript: Buffer.from('esc'),
+          usage: usageOf('claude-opus-5', 1000, 200),
+        })),
+        runVerifier,
+      },
+    );
+
+    expect(recaptureEvidence).toHaveBeenCalledWith('https://new.example.gov/right.pdf', 'https://new.example.gov/right.pdf');
+    expect((out.records[0]!.payload as IndicatorFindingPayload).evidence.snapshot_path).toBe('evidence/fresh-esc.png');
+    expect(out.records[0]!.verification.content_supported).toBe('pass');
+  });
+
+  it('runs verifiers with bounded concurrency (<= 4 in-flight at once)', async () => {
+    let active = 0;
+    let peak = 0;
+    const out = await runWithConcurrency([1, 2, 3, 4, 5, 6, 7, 8], 4, async (n) => {
+      active += 1;
+      peak = Math.max(peak, active);
+      await new Promise((r) => setTimeout(r, 5));
+      active -= 1;
+      return n * 10;
+    });
+    expect(out).toEqual([10, 20, 30, 40, 50, 60, 70, 80]);
+    expect(peak).toBeGreaterThan(1);
+    expect(peak).toBeLessThanOrEqual(4);
   });
 });

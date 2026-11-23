@@ -247,4 +247,16 @@ describe('the run page says where its research ran', () => {
     state.data = { ...queued, run: { ...queued.run, status: 'planned', completedAt: null }, sessions: [] };
     expect(await runPage()).toContain('Runs on Anthropic, shared server');
   });
+
+  it('surfaces the auditing phase once all planned sessions finish while run is still running (P0.4)', async () => {
+    const running = finishedRun({ execution, tokenUsage: null });
+    state.data = {
+      ...running,
+      run: { ...running.run, status: 'running', completedAt: null },
+    };
+    const page = text(await runPage());
+    expect(page).toContain('auditing');
+    expect(page).toContain('All 2 sessions finished — running automatic quality audits');
+    expect(page).toContain('completing independent quality audits');
+  });
 });

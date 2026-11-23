@@ -1,9 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { defaultPortraitConfig, framework } from '@deep-fryer/contract';
-import { MAX_INDICATORS_PER_SESSION, renderPlan, planStrategy, renderVerifierPrompt, REGION_BRIEF_PLACEHOLDER } from './plan.js';
+import {
+  MAX_INDICATORS_PER_SESSION,
+  DIMENSION_TOOLS,
+  dimensionNameFromPrompt,
+  plannedSlugsFromPrompt,
+  plannedThresholdRefsFromPrompt,
+  renderPlan,
+  planStrategy,
+  renderVerifierPrompt,
+  REGION_BRIEF_PLACEHOLDER,
+} from './plan.js';
 import findingSchema from '@deep-fryer/contract/schemas/finding' with { type: 'json' };
 import { proxyFindingPayloadSchema } from '@deep-fryer/core';
-import { deterministicChecks, isFlagged, mergeVerification } from './verify.js';
+import { deterministicChecks, isFlagged, isFreshRunCapture, mergeVerification } from './verify.js';
 
 const config = defaultPortraitConfig('City of Santa Cruz', 'City of Santa Cruz municipal boundary');
 
@@ -232,6 +242,81 @@ describe('deterministicChecks', () => {
     expect(payload?.kind).toBe('gap');
     const verification = mergeVerification(checks, { content_supported: 'uncertain', verifier_note: 'gap' });
     expect(isFlagged(verification)).toBe(true);
+  });
+
+  it('short-circuits defaultUrlCheck to true when evidence.snapshot_path was freshly captured in the current run', async () => {
+    const runStartedAt = new Date(Date.now() - 10_000);
+    const freshFinding = {
+      ...goodFinding,
+      source_url: 'https://waf-blocked.example.gov/data/report.pdf',
+      evidence: { snapshot_path: 'evidence/fresh123.png', captured_at: new Date().toISOString() },
+    };
+    // Without touching live network, defaultUrlCheck short-circuits for a fresh run capture.
+    const { checks } = await deterministicChecks(freshFinding, config, 'housing', undefined, {
+      runStartedAt,
+      capturedSnapshotPaths: new Set(['evidence/fresh123.png']),
+    });
+    expect(checks.url_ok).toBe(true);
+
+    // A stale capture or unconfirmed snapshot path does NOT qualify for short-circuit.
+    expect(
+      isFreshRunCapture(
+        freshFinding.source_url,
+        { snapshot_path: 'evidence/fresh123.png', captured_at: '2020-01-01T00:00:00Z' },
+        { runStartedAt },
+      ),
+    ).toBe(false);
+    expect(
+      isFreshRunCapture(
+        freshFinding.source_url,
+        freshFinding.evidence,
+        { runStartedAt, capturedSnapshotPaths: new Set(['evidence/other.png']) },
+      ),
+    ).toBe(false);
+    // Internal or non-https URLs never short-circuit.
+    expect(
+      isFreshRunCapture(
+        'https://127.0.0.1/admin',
+        freshFinding.evidence,
+        { runStartedAt },
+      ),
+    ).toBe(false);
+  });
+
+  it('exposes submit_findings in DIMENSION_TOOLS and parses slugs, dimension name, and threshold refs from rendered prompts', () => {
+    expect(DIMENSION_TOOLS).toContain('mcp__evidence__submit_findings');
+    const rendered = renderPlan({
+      config,
+      dimensions: [
+        {
+          dimensionId: 'x',
+          slug: housing.slug,
+          ring: housing.ring,
+          name: housing.name,
+          indicators: housing.indicators,
+        },
+      ],
+    });
+    const prompt = rendered.sessions[1]!.prompt;
+    expect(plannedSlugsFromPrompt(prompt)).toEqual(housing.indicators.map((i) => i.slug));
+    expect(dimensionNameFromPrompt(prompt)).toBe(housing.name);
+    expect(plannedThresholdRefsFromPrompt(prompt)).toMatchObject({
+      [housing.indicators[0]!.slug]: housing.indicators[0]!.threshold_ref,
+    });
+  });
+
+  it('propagates optional fail_reason and suggested_disposition in mergeVerification', () => {
+    const merged = mergeVerification(
+      { schema_ok: true, url_ok: true, recency_ok: true, scale_ok: true },
+      {
+        content_supported: 'fail',
+        verifier_note: 'Table says 31%, not 42%.',
+        fail_reason: 'value_mismatch',
+        suggested_disposition: 'edit',
+      },
+    );
+    expect(merged.fail_reason).toBe('value_mismatch');
+    expect(merged.suggested_disposition).toBe('edit');
   });
 });
 

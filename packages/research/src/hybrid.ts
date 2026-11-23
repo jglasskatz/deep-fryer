@@ -7,13 +7,18 @@ import {
   type FindingPayload,
 } from '@deep-fryer/core';
 
+import type { DeterministicGateChecks } from './self-correct.js';
+
 /** Why the hybrid strategy selected an indicator for Opus deep-discovery escalation. */
-export type EscalationReason = 'gap' | 'verification_failed';
+export type EscalationReason = 'gap' | 'verification_failed' | 'missing';
 
 export interface EvaluatedFindingSnapshot {
   indicatorSlug: string;
   payload: FindingPayload | null;
+  checks?: DeterministicGateChecks;
   verdict: { content_supported: ContentSupported; verifier_note?: string } | null;
+  /** True when the planned indicator was omitted from the initial pass output. */
+  missing?: boolean;
 }
 
 export interface EscalationCandidate {
@@ -23,11 +28,12 @@ export interface EscalationCandidate {
 }
 
 /**
- * Pure: select ONLY indicators that ended in a `gap` or failed independent
- * verification (`content_supported === 'fail'`) after the initial pass.
- * Indicators that already passed verification (or are `uncertain`) stay untouched
- * so hybrid runs spend Opus deep-discovery tokens strictly where Sonnet failed
- * or could not locate a compliant source.
+ * Pure: select ONLY indicators that ended in a `gap`, were omitted (`missing`),
+ * or failed independent verification (`content_supported === 'fail'`) after
+ * the initial pass. Indicators that already passed verification (or are
+ * `uncertain`) stay untouched so hybrid runs spend Opus deep-discovery tokens
+ * strictly where Sonnet failed, omitted an indicator, or could not locate a
+ * compliant source.
  */
 export function selectEscalationCandidates(
   evaluated: readonly EvaluatedFindingSnapshot[],
@@ -36,7 +42,10 @@ export function selectEscalationCandidates(
   const seen = new Set<string>();
   for (const entry of evaluated) {
     if (!entry.indicatorSlug || entry.indicatorSlug === 'unknown' || seen.has(entry.indicatorSlug)) continue;
-    if (entry.payload?.kind === 'gap') {
+    if (entry.missing) {
+      seen.add(entry.indicatorSlug);
+      candidates.push({ indicatorSlug: entry.indicatorSlug, reason: 'missing', initial: entry });
+    } else if (entry.payload?.kind === 'gap') {
       seen.add(entry.indicatorSlug);
       candidates.push({ indicatorSlug: entry.indicatorSlug, reason: 'gap', initial: entry });
     } else if (entry.verdict?.content_supported === 'fail') {
@@ -75,6 +84,12 @@ export function renderHybridEscalationPrompt(input: {
   const items = input.candidates
     .map((candidate, idx) => {
       const { initial, reason, indicatorSlug } = candidate;
+      if (reason === 'missing') {
+        return [
+          `${idx + 1}. Indicator slug: ${indicatorSlug} (escalated because initial pass OMITTED this planned indicator)`,
+          `   - Note: ${initial.verdict?.verifier_note ?? 'planned indicator was missing or unparsed in initial session output'}`,
+        ].join('\n');
+      }
       if (reason === 'gap' && initial.payload?.kind === 'gap') {
         const g = initial.payload;
         return [
@@ -128,7 +143,7 @@ ${tiersBlock}
 
 ## Output
 
-Return ONLY a JSON array containing one finding object per escalated indicator listed above (in order, matching the exact \`indicator_slug\`), conforming to this schema:
+If \`submit_findings\` is available, call it with your escalated findings array to validate them immediately; also return ONLY a JSON array containing one finding object per escalated indicator listed above (in order, matching the exact \`indicator_slug\`), conforming to this schema:
 
 \`\`\`json
 ${JSON.stringify(findingSchema, null, 1)}
@@ -137,15 +152,23 @@ ${JSON.stringify(findingSchema, null, 1)}
 No prose before or after the JSON array.`;
 }
 
+function deterministicGatesPass(checks?: DeterministicGateChecks): boolean {
+  if (!checks) return true;
+  return checks.schema_ok && checks.url_ok && checks.recency_ok && checks.scale_ok;
+}
+
 /**
  * Pure: whether an escalated finding from the Opus deep-discovery pass should
  * replace the initial finding.
  * - Schema-invalid escalation output never replaces the initial finding.
- * - An honest gap is NEVER replaced by a verification-failed fabrication; it
- *   IS replaced by a verified (`pass`) or `uncertain` sourced indicator, or a
- *   more detailed gap.
- * - A verification-failed finding IS replaced by a verified (`pass`) or
- *   `uncertain` sourced indicator, OR by an honest `gap` (gaps outrank guesses).
+ * - An honest gap is replaced by a sourced indicator ONLY when independent
+ *   verification passed (`content_supported === 'pass'`) AND deterministic
+ *   gates (`url_ok && recency_ok && scale_ok`) pass — never by an `uncertain`,
+ *   stale, wrong-scale, or dead-link claim. A more detailed gap (adding
+ *   `nearest_data`) also upgrades a bare gap.
+ * - A missing, schema-invalid, or verification-failed finding IS replaced by
+ *   an honest `gap` (gaps outrank guesses), or by a policy-compliant sourced
+ *   indicator (`pass` or `uncertain` with passing deterministic gates).
  */
 export function shouldAcceptEscalation(
   initial: EvaluatedFindingSnapshot,
@@ -154,9 +177,11 @@ export function shouldAcceptEscalation(
   if (!escalated.payload) return false;
 
   const escalatedStatus = escalated.verdict?.content_supported ?? 'uncertain';
+  const gatesPass = deterministicGatesPass(escalated.checks);
+
   if (initial.payload?.kind === 'gap') {
     if (escalated.payload.kind === 'indicator') {
-      return escalatedStatus === 'pass' || escalatedStatus === 'uncertain';
+      return escalatedStatus === 'pass' && gatesPass;
     }
     if (escalated.payload.kind === 'gap') {
       return Boolean(escalated.payload.nearest_data) && !initial.payload.nearest_data;
@@ -164,10 +189,10 @@ export function shouldAcceptEscalation(
     return false;
   }
 
-  // Initial finding failed verification (or schema).
+  // Initial finding was missing, failed schema, or failed verification.
   if (escalated.payload.kind === 'gap') return true;
   if (escalated.payload.kind === 'indicator') {
-    return escalatedStatus === 'pass' || escalatedStatus === 'uncertain';
+    return (escalatedStatus === 'pass' || escalatedStatus === 'uncertain') && gatesPass;
   }
   return false;
 }

@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { SESSIONS_PER_FULL_REFRESH } from './plans.js';
 import { POLICY_ANALYSIS_SESSIONS } from './policy.js';
 import {
+  FULL_PORTRAIT_AUDIT_COST_USD,
   FULL_PORTRAIT_COST_USD,
   RESEARCH_SESSION_COST_USD,
+  estimateAuditCost,
   estimateRunCost,
+  estimateTotalRunCost,
   formatCostRange,
   formatTypicalCost,
   researchRunSessions,
@@ -85,5 +88,38 @@ describe('formatTypicalCost', () => {
     expect(formatTypicalCost(estimateRunCost(1))).toBe('$1.80');
     // Rounding up into $10 switches to whole dollars rather than printing "$10.00".
     expect(formatTypicalCost({ sessions: 0, lowUsd: 0, typicalUsd: 9.96, highUsd: 0 })).toBe('$10');
+  });
+});
+
+describe('estimateAuditCost & estimateTotalRunCost', () => {
+  it('models post-run audit spend for a full portrait and scales down for Opus-assisted strategies', () => {
+    expect(estimateAuditCost(21, 'standard')).toEqual({
+      lowUsd: FULL_PORTRAIT_AUDIT_COST_USD.low,
+      typicalUsd: FULL_PORTRAIT_AUDIT_COST_USD.typical,
+      highUsd: FULL_PORTRAIT_AUDIT_COST_USD.high,
+    });
+    expect(estimateAuditCost(21, 'hybrid').typicalUsd).toBe(7.5);
+    expect(estimateAuditCost(21, 'deep').typicalUsd).toBe(6);
+    expect(estimateAuditCost(0)).toEqual({ lowUsd: 0, typicalUsd: 0, highUsd: 0 });
+    expect(() => estimateAuditCost(-1)).toThrow(RangeError);
+  });
+
+  it('combines research and post-run audit estimates without adding audit cost to 1-session policy analyses', () => {
+    const full = estimateTotalRunCost(22, 'standard');
+    expect(full).toMatchObject({
+      sessions: 22,
+      lowUsd: 20,
+      typicalUsd: 40,
+      highUsd: 80,
+      auditLowUsd: 4,
+      auditTypicalUsd: 10,
+      auditHighUsd: 20,
+      totalLowUsd: 24,
+      totalTypicalUsd: 50,
+      totalHighUsd: 100,
+    });
+    const policy = estimateTotalRunCost(1, 'standard');
+    expect(policy.auditTypicalUsd).toBe(0);
+    expect(policy.totalTypicalUsd).toBe(policy.typicalUsd);
   });
 });

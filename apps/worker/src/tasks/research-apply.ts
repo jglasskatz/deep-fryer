@@ -1,7 +1,7 @@
-import { gzipSync } from 'node:zlib';
+import { gunzipSync, gzipSync } from 'node:zlib';
 import type { Task } from 'graphile-worker';
 import { and, eq, inArray, isNotNull } from 'drizzle-orm';
-import type { PortraitConfig } from '@deep-fryer/contract';
+import { frameworkDimension, type PortraitConfig } from '@deep-fryer/contract';
 import {
   emptyUsage,
   type ContentSupported,
@@ -31,7 +31,10 @@ import {
   correctionReasons,
   DEFAULT_ESCALATION_MAX_TURNS,
   deterministicChecks,
+  dimensionNameFromPrompt,
   mergeVerification,
+  plannedSlugsFromPrompt,
+  plannedThresholdRefsFromPrompt,
   planPreVerifierCorrection,
   renderHybridEscalationPrompt,
   renderVerifierPrompt,
@@ -55,6 +58,7 @@ import {
 import {
   extractJson,
   mergeUsage,
+  rescoreIndicatorPayload,
   runSession,
   runSessionWithRetry,
   SessionRunError,
@@ -183,6 +187,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
 
     const plan = run.plan;
     const config = run.configSnapshot;
+    const runStartedAt = new Date();
     const storage = await tenantStorage(tenant.slug);
     // A finding's captured text, through its tenant's archive only (the
     // schema already limits the path to evidence/<name>.txt).
@@ -275,6 +280,18 @@ export const researchApply: Task = async (rawPayload, helpers) => {
       if (!row) throw new Error('session insert failed');
 
       const prompt = spec.prompt.split(REGION_BRIEF_PLACEHOLDER).join(regionBrief);
+      const dimensionName =
+        dimensionNameFromPrompt(spec.prompt) ??
+        frameworkDimension(dimension.slug, dimension.canonicalSlug)?.name ??
+        dimension.slug;
+      const plannedSlugs = plannedSlugsFromPrompt(spec.prompt);
+      const thresholdRefs = plannedThresholdRefsFromPrompt(spec.prompt);
+      const submitFindingsContext = { config, dimensionSlug: dimension.slug, thresholdRefs };
+      const capturedSnapshotPaths = new Set<string>();
+      const trackCaptures = (paths?: readonly string[]) => {
+        for (const p of paths ?? []) capturedSnapshotPaths.add(p);
+      };
+
       let result: SessionResult;
       try {
         const initialScout = plannedInitialScoutModel(plan);
@@ -282,6 +299,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
           prompt,
           allowedTools: spec.tool_allowlist,
           storage,
+          submitFindingsContext,
           ...plannedResearchOptions(plan),
           ...(initialScout !== undefined ? { scoutModel: initialScout } : {}),
           ...keyOption,
@@ -294,6 +312,7 @@ export const researchApply: Task = async (rawPayload, helpers) => {
         return;
       }
       if (!result.succeeded) noteFailure(result);
+      trackCaptures(result.capturedSnapshotPaths);
       usage[row.id] = result.usage;
 
       let rawFindings: unknown[] = [];
@@ -305,18 +324,22 @@ export const researchApply: Task = async (rawPayload, helpers) => {
       // finding it did return is flagged partial_output, so staff know the
       // session may have said more than was recorded.
       let salvaged = false;
-      try {
-        const parsed = extractJson(result.resultText);
-        rawFindings = Array.isArray(parsed.value) ? parsed.value : [parsed.value];
-        salvaged = parsed.salvaged;
-        if (salvaged) {
-          helpers.logger.warn(
-            `session ${row.id}: output was malformed JSON; ${rawFindings.length} finding(s) salvaged and flagged partial_output`,
-          );
+      if (result.submittedFindings?.length) {
+        rawFindings = result.submittedFindings;
+      } else {
+        try {
+          const parsed = extractJson(result.resultText);
+          rawFindings = Array.isArray(parsed.value) ? parsed.value : [parsed.value];
+          salvaged = parsed.salvaged;
+          if (salvaged) {
+            helpers.logger.warn(
+              `session ${row.id}: output was malformed JSON; ${rawFindings.length} finding(s) salvaged and flagged partial_output`,
+            );
+          }
+        } catch {
+          parseOk = false;
+          helpers.logger.error(`session ${row.id}: output was not parseable JSON`);
         }
-      } catch {
-        parseOk = false;
-        helpers.logger.error(`session ${row.id}: output was not parseable JSON`);
       }
 
       const initialScout = plannedInitialScoutModel(plan);
@@ -325,42 +348,59 @@ export const researchApply: Task = async (rawPayload, helpers) => {
           sessionId: row.id,
           config,
           dimensionSlug: dimension.slug,
-          dimensionName: dimension.slug,
+          dimensionName,
           regionBrief,
           plan,
           rawFindings,
+          plannedSlugs,
+          thresholdRefs,
+          initialModel: result.usage.model,
           salvaged,
           initialKeyFailure: keyFailure,
         },
         {
-          deterministicChecks: (raw, cfg, slug) => deterministicChecks(raw, cfg, slug),
+          deterministicChecks: (raw, cfg, slug) =>
+            deterministicChecks(raw, cfg, slug, undefined, {
+              runStartedAt,
+              capturedSnapshotPaths,
+            }),
           checkValueOnPage: (payload) => checkValueOnPage(payload, readEvidenceText),
           recaptureEvidence: async (url, pdfUrl) => {
             try {
-              return await captureEvidence(storage, url, pdfUrl);
+              const captured = await captureEvidence(storage, url, pdfUrl);
+              capturedSnapshotPaths.add(captured.snapshot_path);
+              return captured;
             } catch {
               return null;
             }
           },
-          runCorrectionSession: ({ prompt: correctionPrompt, maxTurns }) =>
-            runSessionWithRetry({
+          runCorrectionSession: async ({ prompt: correctionPrompt, maxTurns }) => {
+            const res = await runSessionWithRetry({
               prompt: correctionPrompt,
               allowedTools: spec.tool_allowlist,
               storage,
+              submitFindingsContext,
               ...plannedResearchOptions(plan),
               maxTurns,
               ...(initialScout !== undefined ? { scoutModel: initialScout } : {}),
               ...keyOption,
-            }),
-          runEscalationSession: ({ prompt: escalationPrompt, maxTurns }) =>
-            runSessionWithRetry({
+            });
+            trackCaptures(res.capturedSnapshotPaths);
+            return res;
+          },
+          runEscalationSession: async ({ prompt: escalationPrompt, maxTurns }) => {
+            const res = await runSessionWithRetry({
               prompt: escalationPrompt,
               allowedTools: spec.tool_allowlist,
               storage,
+              submitFindingsContext,
               ...plannedEscalationOptions(plan),
               maxTurns,
               ...keyOption,
-            }),
+            });
+            trackCaptures(res.capturedSnapshotPaths);
+            return res;
+          },
           runVerifier: (payload) => runVerifier(payload, config.region.name, apiKey, storage, plan),
           onFailure: noteFailure,
           onKeyFailure: noteKeyFailure,
@@ -383,11 +423,18 @@ export const researchApply: Task = async (rawPayload, helpers) => {
         });
       }
 
+      const combinedTranscript = combineStageTranscripts([
+        { stage: 'initial', transcript: result.transcript },
+        ...(evaluated.correctionTranscript ? [{ stage: 'correction' as const, transcript: evaluated.correctionTranscript }] : []),
+        ...(evaluated.escalationTranscript ? [{ stage: 'escalation' as const, transcript: evaluated.escalationTranscript }] : []),
+      ]);
+      // If initial output was unparseable but correction/escalation recovered findings, keep session status aligned.
+      const recoveredOutput = !parseOk && evaluated.records.some((r) => r.verification.schema_ok);
       await db
         .update(researchSessions)
         .set({
-          status: result.succeeded && parseOk ? 'complete' : 'failed',
-          transcript: result.transcript,
+          status: (result.succeeded && parseOk) || recoveredOutput ? 'complete' : 'failed',
+          transcript: combinedTranscript,
           completedAt: new Date(),
         })
         .where(eq(researchSessions.id, row.id));
@@ -429,12 +476,10 @@ export const researchApply: Task = async (rawPayload, helpers) => {
     }
 
     const settled = settledRunStatus(
-      (
-        await db
-          .select({ status: researchSessions.status })
-          .from(researchSessions)
-          .where(eq(researchSessions.runId, runId))
-      ).map((r) => r.status),
+      await db
+        .select({ kind: researchSessions.kind, status: researchSessions.status })
+        .from(researchSessions)
+        .where(eq(researchSessions.runId, runId)),
     );
     await finish(settled);
     if (settled === 'complete') helpers.logger.info(`run ${runId} complete`);
@@ -565,8 +610,73 @@ async function failPlannedSessions(db: DbExecutor, run: ResearchRun, message: st
   if (rows.length) await db.insert(researchSessions).values(rows);
 }
 
+/** Maximum concurrent independent verifier calls per dimension. */
+export const VERIFIER_CONCURRENCY = 4;
+
+/**
+ * Pure: execute `worker` across `items` with at most `limit` in-flight calls,
+ * preserving result order.
+ */
+export async function runWithConcurrency<T, R>(
+  items: readonly T[],
+  limit: number,
+  worker: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  if (items.length === 0) return [];
+  const results = new Array<R>(items.length);
+  let cursor = 0;
+  const poolSize = Math.max(1, Math.min(limit, items.length));
+  await Promise.all(
+    Array.from({ length: poolSize }, async () => {
+      while (cursor < items.length) {
+        const index = cursor++;
+        results[index] = await worker(items[index]!, index);
+      }
+    }),
+  );
+  return results;
+}
+
+/**
+ * Pure: decode a gzipped (or raw UTF-8 in tests) JSONL transcript buffer to text.
+ */
+function decodeTranscriptBuffer(buf: Buffer): string {
+  if (buf.length >= 2 && buf[0] === 0x1f && buf[1] === 0x8b) {
+    return gunzipSync(buf).toString('utf8');
+  }
+  return buf.toString('utf8');
+}
+
+/**
+ * Pure: concatenate JSONL transcripts across `initial + correction + escalation`
+ * with explicit stage marker lines so the stored audit transcript always
+ * contains the session that produced the published figure. When only `initial`
+ * ran, returns its original Buffer unchanged.
+ */
+export function combineStageTranscripts(
+  stages: readonly { stage: 'initial' | 'correction' | 'escalation'; transcript: Buffer }[],
+): Buffer {
+  if (stages.length === 0) return gzipSync('');
+  if (stages.length === 1 && stages[0]!.stage === 'initial') {
+    return stages[0]!.transcript;
+  }
+  const lines: string[] = [];
+  for (const { stage, transcript } of stages) {
+    lines.push(JSON.stringify({ type: 'stage_marker', stage }));
+    const text = decodeTranscriptBuffer(transcript).trim();
+    if (text) lines.push(text);
+  }
+  return gzipSync(lines.join('\n'));
+}
+
 /** A verifier's answer, as merged into a finding's verification. */
-type Verdict = { content_supported: ContentSupported; verifier_note?: string; narrative_supported?: ContentSupported };
+type Verdict = {
+  content_supported: ContentSupported;
+  verifier_note?: string;
+  narrative_supported?: ContentSupported;
+  fail_reason?: string;
+  suggested_disposition?: 'approve' | 'edit' | 're_research' | 'reject';
+};
 
 /**
  * Pure: what a research session (region context or dimension) takes from its
@@ -644,13 +754,47 @@ function slugOf(payload: FindingPayload | null, raw: unknown): string {
 }
 
 /**
+ * Best-effort evidence recapture when a correction or escalation candidate
+ * updated `source_url` without re-calling `capture_evidence` (reusing the old
+ * `snapshot_path`).
+ */
+async function maybeRecaptureEvidence(
+  candidate: unknown,
+  previousPayload: FindingPayload | null,
+  recaptureEvidence?: (url: string, pdfUrl?: string) => Promise<IndicatorEvidence | null>,
+): Promise<unknown> {
+  if (
+    !recaptureEvidence ||
+    typeof candidate !== 'object' ||
+    candidate === null ||
+    (candidate as { kind?: unknown }).kind !== 'indicator'
+  ) {
+    return candidate;
+  }
+  const candObj = candidate as { source_url?: unknown; evidence?: { snapshot_path?: unknown } };
+  if (typeof candObj.source_url !== 'string') return candidate;
+  const prevUrl = previousPayload?.kind === 'indicator' ? previousPayload.source_url : undefined;
+  const prevSnap = previousPayload?.kind === 'indicator' ? previousPayload.evidence.snapshot_path : undefined;
+  if (prevUrl !== undefined && candObj.source_url !== prevUrl && candObj.evidence?.snapshot_path === prevSnap) {
+    const pdfUrl = candObj.source_url.toLowerCase().endsWith('.pdf') ? candObj.source_url : undefined;
+    const freshEvidence = await recaptureEvidence(candObj.source_url, pdfUrl);
+    if (freshEvidence) {
+      return { ...(candidate as Record<string, unknown>), evidence: freshEvidence };
+    }
+  }
+  return candidate;
+}
+
+/**
  * Runs deterministic gates, at most 1 bounded pre-verifier self-correction pass
- * for findings failing `value_on_page` or `home_page_link`, independent
- * verification, and — on hybrid plans — selective Opus escalation ONLY for
- * indicators that ended in a `gap` or failed verification.
+ * for findings failing deterministic gates or omitted planned indicators,
+ * bounded-concurrency independent verification, and — on hybrid plans —
+ * selective Opus escalation ONLY for indicators that ended in a `gap`, were
+ * omitted, or failed verification.
  *
  * Extracted from `researchApply` so every stage, turn cap, metering bucket,
- * and organization-key refusal path is unit-testable without Postgres.
+ * transcript capture, provenance tag, and organization-key refusal path is
+ * unit-testable without Postgres.
  */
 export async function evaluateDimensionFindings(
   input: {
@@ -661,6 +805,12 @@ export async function evaluateDimensionFindings(
     regionBrief: string;
     plan: Pick<ResearchPlan, 'models' | 'caps'>;
     rawFindings: readonly unknown[];
+    /** Planned indicator slugs for this dimension chunk; omitted slugs seed synthetic missing entries. */
+    plannedSlugs?: readonly string[];
+    /** Optional threshold_ref map by slug for deterministic computeScoring(). */
+    thresholdRefs?: Readonly<Record<string, string>>;
+    /** Model reported by the initial session's usage record (for provenance metadata). */
+    initialModel?: string;
     salvaged: boolean;
     initialKeyFailure: OrgKeyUnavailableError | null;
   },
@@ -670,12 +820,16 @@ export async function evaluateDimensionFindings(
   verifierUsage: SessionTokenUsage;
   correctionUsage?: SessionTokenUsage;
   escalationUsage?: SessionTokenUsage;
+  correctionTranscript?: Buffer;
+  escalationTranscript?: Buffer;
   keyFailure: OrgKeyUnavailableError | null;
 }> {
   let keyFailure = input.initialKeyFailure;
   let verifierUsage = emptyUsage();
   let correctionUsage: SessionTokenUsage | undefined;
   let escalationUsage: SessionTokenUsage | undefined;
+  let correctionTranscript: Buffer | undefined;
+  let escalationTranscript: Buffer | undefined;
 
   interface WorkingEntry {
     raw: unknown;
@@ -684,42 +838,77 @@ export async function evaluateDimensionFindings(
     indicatorSlug: string;
     salvaged: boolean;
     verdict: Verdict | null;
+    missing?: boolean;
+    producedByStage: 'initial' | 'correction' | 'escalation';
+    producedByModel?: string;
   }
 
   const runGates = async (raw: unknown) => {
     const det = await deps.deterministicChecks(raw, input.config, input.dimensionSlug);
-    const valCheck = det.payload ? await deps.checkValueOnPage(det.payload) : undefined;
+    const scoredPayload =
+      det.payload?.kind === 'indicator'
+        ? rescoreIndicatorPayload(det.payload, input.config, input.dimensionSlug, input.thresholdRefs)
+        : det.payload;
+    const valCheck = scoredPayload ? await deps.checkValueOnPage(scoredPayload) : undefined;
     const checks: DeterministicGateChecks = valCheck ? { ...det.checks, value_on_page: valCheck } : det.checks;
-    return { payload: det.payload, checks };
+    return { payload: scoredPayload, checks };
   };
 
-  // Stage 1: cheap deterministic gates on every initial finding.
+  // Stage 1: cheap deterministic gates on every initial finding, plus seed
+  // synthetic missing entries for any planned slugs omitted by the initial pass.
   const entries: WorkingEntry[] = [];
+  const seenSlugs = new Set<string>();
   for (const raw of input.rawFindings) {
     const { payload, checks } = await runGates(raw);
+    const indicatorSlug = slugOf(payload, raw);
+    if (indicatorSlug && indicatorSlug !== 'unknown') seenSlugs.add(indicatorSlug);
     entries.push({
       raw,
       payload,
       checks,
-      indicatorSlug: slugOf(payload, raw),
+      indicatorSlug,
       salvaged: input.salvaged,
       verdict: null,
+      producedByStage: 'initial',
+      producedByModel: input.initialModel,
+    });
+  }
+  for (const plannedSlug of input.plannedSlugs ?? []) {
+    if (!plannedSlug || seenSlugs.has(plannedSlug)) continue;
+    seenSlugs.add(plannedSlug);
+    entries.push({
+      raw: null,
+      payload: null,
+      checks: { schema_ok: false, url_ok: false, recency_ok: false, scale_ok: false },
+      indicatorSlug: plannedSlug,
+      salvaged: input.salvaged,
+      verdict: null,
+      missing: true,
+      producedByStage: 'initial',
+      producedByModel: input.initialModel,
     });
   }
 
   // Stage 2: at most 1 bounded pre-verifier deterministic self-correction pass
-  // for findings where value_on_page === 'not_found' or home_page_link === true.
+  // for findings failing deterministic gates or omitted planned indicators.
   const flagged = entries.flatMap((entry) => {
     if (entry.payload?.kind !== 'indicator') return [];
     const reasons = correctionReasons(entry.payload, entry.checks);
     return reasons.length > 0 ? [{ payload: entry.payload, checks: entry.checks, reasons }] : [];
   });
+  const missingPlanned = entries
+    .filter((entry) => entry.missing)
+    .map((entry) => ({
+      slug: entry.indicatorSlug,
+      ...(input.thresholdRefs?.[entry.indicatorSlug] ? { threshold_ref: input.thresholdRefs[entry.indicatorSlug] } : {}),
+    }));
   const correctionPlan = planPreVerifierCorrection({
     config: input.config,
     dimensionSlug: input.dimensionSlug,
     dimensionName: input.dimensionName,
     regionBrief: input.regionBrief,
     flagged,
+    missing: missingPlanned,
     sessionMaxTurns: input.plan.caps?.session_max_turns,
   });
 
@@ -739,15 +928,20 @@ export async function evaluateDimensionFindings(
 
     if (correctionResult) {
       correctionUsage = correctionResult.usage;
+      correctionTranscript = correctionResult.transcript;
       if (!correctionResult.succeeded) deps.onFailure?.(correctionResult);
       let correctedRaw: unknown[] = [];
       let correctionSalvaged = false;
-      try {
-        const parsed = extractJson(correctionResult.resultText);
-        correctedRaw = Array.isArray(parsed.value) ? parsed.value : [parsed.value];
-        correctionSalvaged = parsed.salvaged;
-      } catch {
-        deps.warn?.(`session ${input.sessionId}: pre-verifier self-correction output was not parseable JSON; keeping initial findings`);
+      if (correctionResult.submittedFindings?.length) {
+        correctedRaw = correctionResult.submittedFindings;
+      } else {
+        try {
+          const parsed = extractJson(correctionResult.resultText);
+          correctedRaw = Array.isArray(parsed.value) ? parsed.value : [parsed.value];
+          correctionSalvaged = parsed.salvaged;
+        } catch {
+          deps.warn?.(`session ${input.sessionId}: pre-verifier self-correction output was not parseable JSON; keeping initial findings`);
+        }
       }
 
       const flaggedSlugSet = new Set(correctionPlan.flaggedSlugs);
@@ -761,34 +955,18 @@ export async function evaluateDimensionFindings(
 
       for (let i = 0; i < entries.length; i++) {
         const entry = entries[i]!;
-        if (entry.payload?.kind !== 'indicator' || !flaggedSlugSet.has(entry.indicatorSlug)) continue;
+        if (!flaggedSlugSet.has(entry.indicatorSlug)) continue;
+        if (!entry.missing && entry.payload?.kind !== 'indicator') continue;
         let candidate = candidatesBySlug.get(entry.indicatorSlug);
         if (!candidate) continue;
 
-        // If the researcher updated source_url but forgot to call capture_evidence
-        // (reusing the old snapshot_path), re-capture best-effort before re-checking.
-        if (
-          deps.recaptureEvidence &&
-          typeof candidate === 'object' &&
-          candidate !== null &&
-          (candidate as { kind?: unknown }).kind === 'indicator'
-        ) {
-          const candObj = candidate as { source_url?: unknown; evidence?: { snapshot_path?: unknown } };
-          if (
-            typeof candObj.source_url === 'string' &&
-            candObj.source_url !== entry.payload.source_url &&
-            candObj.evidence?.snapshot_path === entry.payload.evidence.snapshot_path
-          ) {
-            const pdfUrl = candObj.source_url.toLowerCase().endsWith('.pdf') ? candObj.source_url : undefined;
-            const freshEvidence = await deps.recaptureEvidence(candObj.source_url, pdfUrl);
-            if (freshEvidence) {
-              candidate = { ...(candidate as Record<string, unknown>), evidence: freshEvidence };
-            }
-          }
-        }
+        candidate = await maybeRecaptureEvidence(candidate, entry.payload, deps.recaptureEvidence);
 
         const gated = await runGates(candidate);
-        if (shouldAcceptCorrection({ payload: entry.payload, checks: entry.checks }, gated)) {
+        const accepted = entry.missing
+          ? gated.payload !== null
+          : shouldAcceptCorrection({ payload: entry.payload as IndicatorFindingPayload, checks: entry.checks }, gated);
+        if (accepted) {
           entries[i] = {
             raw: candidate,
             payload: gated.payload,
@@ -796,6 +974,9 @@ export async function evaluateDimensionFindings(
             indicatorSlug: slugOf(gated.payload, candidate),
             salvaged: entry.salvaged || correctionSalvaged,
             verdict: null,
+            missing: false,
+            producedByStage: 'correction',
+            producedByModel: correctionResult.usage.model ?? entry.producedByModel,
           };
         }
       }
@@ -803,7 +984,7 @@ export async function evaluateDimensionFindings(
   }
 
   // Helper to verify one finding, folding verifier usage and honoring key refusals.
-  const verifyPayload = async (payload: FindingPayload | null): Promise<Verdict | null> => {
+  const verifyPayload = async (payload: FindingPayload | null, missing?: boolean): Promise<Verdict | null> => {
     if (payload?.kind === 'indicator') {
       if (keyFailure) {
         return { content_supported: 'uncertain', verifier_note: `verifier did not run: ${keyFailure.message}` };
@@ -829,19 +1010,27 @@ export async function evaluateDimensionFindings(
     }
     return {
       content_supported: 'fail',
-      verifier_note: 'output did not conform to the finding schema',
+      verifier_note: missing
+        ? 'planned indicator was omitted from initial session output'
+        : 'output did not conform to the finding schema',
     };
   };
 
-  // Stage 3: independent verifier on every finding.
-  for (const entry of entries) {
-    entry.verdict = await verifyPayload(entry.payload);
-  }
+  // Stage 3: independent verifier on every finding with bounded concurrency (4).
+  await runWithConcurrency(entries, VERIFIER_CONCURRENCY, async (entry) => {
+    entry.verdict = await verifyPayload(entry.payload, entry.missing);
+  });
 
   // Stage 4: selective hybrid escalation (only when escalation_model is set on the plan).
   if (input.plan.models?.escalation_model && !keyFailure) {
     const escalationCandidates = selectEscalationCandidates(
-      entries.map((e) => ({ indicatorSlug: e.indicatorSlug, payload: e.payload, verdict: e.verdict })),
+      entries.map((e) => ({
+        indicatorSlug: e.indicatorSlug,
+        payload: e.payload,
+        checks: e.checks,
+        verdict: e.verdict,
+        missing: e.missing,
+      })),
     );
     if (escalationCandidates.length > 0) {
       const escalationPrompt = renderHybridEscalationPrompt({
@@ -865,15 +1054,20 @@ export async function evaluateDimensionFindings(
 
       if (escResult) {
         escalationUsage = escResult.usage;
+        escalationTranscript = escResult.transcript;
         if (!escResult.succeeded) deps.onFailure?.(escResult);
         let escRaw: unknown[] = [];
         let escSalvaged = false;
-        try {
-          const parsed = extractJson(escResult.resultText);
-          escRaw = Array.isArray(parsed.value) ? parsed.value : [parsed.value];
-          escSalvaged = parsed.salvaged;
-        } catch {
-          deps.warn?.(`session ${input.sessionId}: hybrid escalation output was not parseable JSON; keeping initial findings`);
+        if (escResult.submittedFindings?.length) {
+          escRaw = escResult.submittedFindings;
+        } else {
+          try {
+            const parsed = extractJson(escResult.resultText);
+            escRaw = Array.isArray(parsed.value) ? parsed.value : [parsed.value];
+            escSalvaged = parsed.salvaged;
+          } catch {
+            deps.warn?.(`session ${input.sessionId}: hybrid escalation output was not parseable JSON; keeping initial findings`);
+          }
         }
 
         const escalatedSlugSet = new Set(escalationCandidates.map((c) => c.indicatorSlug));
@@ -885,52 +1079,84 @@ export async function evaluateDimensionFindings(
           }
         }
 
+        const toEvaluate: { index: number; entry: WorkingEntry; candidate: unknown }[] = [];
         for (let i = 0; i < entries.length; i++) {
           const entry = entries[i]!;
           if (!escalatedSlugSet.has(entry.indicatorSlug)) continue;
           const candidate = escBySlug.get(entry.indicatorSlug);
           if (!candidate) continue;
+          toEvaluate.push({ index: i, entry, candidate });
+        }
 
-          const gated = await runGates(candidate);
+        await runWithConcurrency(toEvaluate, VERIFIER_CONCURRENCY, async ({ index, entry, candidate }) => {
+          const prepared = await maybeRecaptureEvidence(candidate, entry.payload, deps.recaptureEvidence);
+          const gated = await runGates(prepared);
           const verdict = await verifyPayload(gated.payload);
           if (
             shouldAcceptEscalation(
-              { indicatorSlug: entry.indicatorSlug, payload: entry.payload, verdict: entry.verdict },
-              { indicatorSlug: slugOf(gated.payload, candidate), payload: gated.payload, verdict },
+              {
+                indicatorSlug: entry.indicatorSlug,
+                payload: entry.payload,
+                checks: entry.checks,
+                verdict: entry.verdict,
+                missing: entry.missing,
+              },
+              {
+                indicatorSlug: slugOf(gated.payload, prepared),
+                payload: gated.payload,
+                checks: gated.checks,
+                verdict,
+              },
             )
           ) {
-            entries[i] = {
-              raw: candidate,
+            entries[index] = {
+              raw: prepared,
               payload: gated.payload,
               checks: gated.checks,
-              indicatorSlug: slugOf(gated.payload, candidate),
+              indicatorSlug: slugOf(gated.payload, prepared),
               salvaged: escSalvaged,
               verdict,
+              missing: false,
+              producedByStage: 'escalation',
+              producedByModel: escResult!.usage.model ?? input.plan.models?.escalation_model ?? undefined,
             };
           }
-        }
+        });
       }
     }
   }
 
-  // Stage 5: finalize records for persistence.
-  const records = entries.map((entry) => {
-    let verdict = entry.verdict;
-    if (entry.payload?.kind === 'indicator' && entry.payload.narrative_draft && !verdict?.narrative_supported) {
-      verdict = { content_supported: verdict?.content_supported ?? 'uncertain', ...verdict, narrative_supported: 'uncertain' };
-    }
-    return {
-      indicatorSlug: entry.indicatorSlug,
-      payload: (entry.payload ?? entry.raw) as FindingPayload,
-      verification: mergeVerification(entry.salvaged ? { ...entry.checks, partial_output: true } : entry.checks, verdict),
-    };
-  });
+  // Stage 5: finalize records for persistence (skip unpopulated synthetic missing placeholders).
+  const records = entries
+    .filter((entry) => !(entry.missing && entry.raw === null))
+    .map((entry) => {
+      let verdict = entry.verdict;
+      if (entry.payload?.kind === 'indicator' && entry.payload.narrative_draft && !verdict?.narrative_supported) {
+        verdict = { content_supported: verdict?.content_supported ?? 'uncertain', ...verdict, narrative_supported: 'uncertain' };
+      }
+      const baseChecks: DeterministicGateChecks = {
+        ...(entry.salvaged ? { ...entry.checks, partial_output: true } : entry.checks),
+        ...(entry.producedByStage !== 'initial'
+          ? {
+              produced_by_stage: entry.producedByStage,
+              ...(entry.producedByModel ? { produced_by_model: entry.producedByModel } : {}),
+            }
+          : {}),
+      };
+      return {
+        indicatorSlug: entry.indicatorSlug,
+        payload: (entry.payload ?? entry.raw) as FindingPayload,
+        verification: mergeVerification(baseChecks, verdict),
+      };
+    });
 
   return {
     records,
     verifierUsage,
     ...(correctionUsage ? { correctionUsage } : {}),
     ...(escalationUsage ? { escalationUsage } : {}),
+    ...(correctionTranscript ? { correctionTranscript } : {}),
+    ...(escalationTranscript ? { escalationTranscript } : {}),
     keyFailure,
   };
 }
@@ -1012,6 +1238,8 @@ async function runVerifier(
       content_supported?: string;
       verifier_note?: string;
       narrative_supported?: string;
+      fail_reason?: string;
+      suggested_disposition?: string;
     };
     if (
       parsed.content_supported === 'pass' ||
@@ -1023,12 +1251,25 @@ async function runVerifier(
       const judgedBy = fallbacks.length
         ? ` [Verdict given by ${judges} after ${fallbacks[0]!.original_model} refused (refusal fallback).]`
         : '';
+      const failReason =
+        typeof parsed.fail_reason === 'string' && parsed.fail_reason.trim()
+          ? parsed.fail_reason.trim().slice(0, 200)
+          : undefined;
+      const suggestedDisposition =
+        parsed.suggested_disposition === 'approve' ||
+        parsed.suggested_disposition === 'edit' ||
+        parsed.suggested_disposition === 're_research' ||
+        parsed.suggested_disposition === 'reject'
+          ? parsed.suggested_disposition
+          : undefined;
       return {
         verdict: {
           content_supported: parsed.content_supported,
           verifier_note: [parsed.verifier_note, judgedBy.trim(), archive.note].filter(Boolean).join(' ') || undefined,
+          ...(failReason ? { fail_reason: failReason } : {}),
+          ...(suggestedDisposition ? { suggested_disposition: suggestedDisposition } : {}),
           ...(payload.narrative_draft ? {
-            narrative_supported: archive.note
+            narrative_supported: archive.actionArchiveNote
               ? 'uncertain' as const
               : ['pass', 'fail', 'uncertain'].includes(parsed.narrative_supported ?? '')
                 ? parsed.narrative_supported as ContentSupported : 'uncertain' as const,

@@ -82,9 +82,12 @@ export default async function RunDetailPage({
     anyFailed ? runFailureCauses(ctx.tenant.id, run.id) : Promise.resolve(new Map<string, FailureCause>()),
   ]);
 
-  const phase = runPhase(run);
+  const basePhase = runPhase(run);
   const now = new Date();
-  const progress = runProgress(run.plan.sessions, sessions, slugById, phase);
+  const progress = runProgress(run.plan.sessions, sessions, slugById, basePhase);
+  const phase = runPhase(run, {
+    allSessionsFinished: progress.total > 0 && progress.finished >= progress.total,
+  });
   const estimate = remainingEstimateMs(progress, phase, now);
   const nameOf = (key: string) => (key === 'region_context' ? 'Region context (phase 0)' : (nameBySlug.get(key) ?? key));
   const support = supportEmail();
@@ -112,11 +115,13 @@ export default async function RunDetailPage({
   const statusLine =
     phase === 'queued'
       ? 'Queued — starting shortly'
-      : phase === 'running'
-        ? `${progress.finished} of ${progress.total} sessions finished${progress.failed ? ` (${progress.failed} failed)` : ''}`
-        : phase === 'complete'
-          ? `Finished: ${progress.done} of ${progress.total} sessions completed${progress.failed ? `, ${progress.failed} failed` : ''}${progress.notRun ? `, ${progress.notRun} did not run` : ''}`
-          : `This run failed: ${progress.failed + progress.notRun} of ${progress.total} sessions did not complete`;
+      : phase === 'auditing'
+        ? `All ${progress.total} sessions finished — running automatic quality audits`
+        : phase === 'running'
+          ? `${progress.finished} of ${progress.total} sessions finished${progress.failed ? ` (${progress.failed} failed)` : ''}`
+          : phase === 'complete'
+            ? `Finished: ${progress.done} of ${progress.total} sessions completed${progress.failed ? `, ${progress.failed} failed` : ''}${progress.notRun ? `, ${progress.notRun} did not run` : ''}`
+            : `This run failed: ${progress.failed + progress.notRun} of ${progress.total} sessions did not complete`;
 
   return (
     <>
@@ -190,11 +195,11 @@ export default async function RunDetailPage({
                 </>
               ) : (
                 <>
-                  {phase === 'running' ? (
+                  {phase === 'running' || phase === 'auditing' ? (
                     <div
                       className="mt-2 h-2 max-w-xl rounded bg-black/10"
                       role="progressbar"
-                      aria-label="Sessions finished"
+                      aria-label={phase === 'auditing' ? 'Quality audits in progress' : 'Sessions finished'}
                       aria-valuemin={0}
                       aria-valuemax={progress.total}
                       aria-valuenow={progress.finished}
@@ -203,7 +208,13 @@ export default async function RunDetailPage({
                     </div>
                   ) : null}
                   <p className="mt-2 text-sm text-[color:var(--color-muted)]">
-                    {phase === 'running' ? (
+                    {phase === 'auditing' ? (
+                      <>
+                        Running for {formatDuration(sinceApply)}. All research sessions finished;
+                        completing independent quality audits before opening the review queue. This
+                        page updates by itself.
+                      </>
+                    ) : phase === 'running' ? (
                       <>
                         Running for {formatDuration(sinceApply)}.{' '}
                         {estimate !== null

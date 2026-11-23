@@ -14,6 +14,102 @@ export interface CaptureResult {
   captured_at: string;
 }
 
+/** Maximum PDF download size accepted during capture to prevent worker OOM (64 MiB). */
+export const MAX_PDF_DOWNLOAD_BYTES = 64 * 1024 * 1024;
+/** Maximum time allowed for downloading a source PDF during evidence capture. */
+export const PDF_DOWNLOAD_TIMEOUT_MS = 30_000;
+/** Default bounded preview length returned by `capture_evidence` MCP tool. */
+export const DEFAULT_CAPTURE_PREVIEW_CHARS = 2_000;
+
+/**
+ * Stream-read a fetch Response body with a strict byte cap so an oversized
+ * remote PDF cannot OOM or stall the worker process.
+ */
+export async function readResponseBytesCapped(
+  res: Pick<Response, 'headers' | 'body' | 'arrayBuffer'>,
+  maxBytes = MAX_PDF_DOWNLOAD_BYTES,
+): Promise<Buffer> {
+  const declaredLength = res.headers?.get?.('content-length');
+  if (declaredLength !== null && declaredLength !== undefined) {
+    const parsed = Number(declaredLength);
+    if (Number.isFinite(parsed) && parsed > maxBytes) {
+      await res.body?.cancel?.().catch(() => {});
+      throw new Error(`PDF download exceeds ${maxBytes} bytes (content-length ${parsed})`);
+    }
+  }
+  if (!res.body) {
+    const buf = Buffer.from(await res.arrayBuffer());
+    if (buf.byteLength > maxBytes) {
+      throw new Error(`PDF download exceeds ${maxBytes} bytes`);
+    }
+    return buf;
+  }
+  const reader = res.body.getReader();
+  const chunks: Buffer[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value || value.byteLength === 0) continue;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel().catch(() => {});
+        throw new Error(`PDF download exceeds ${maxBytes} bytes`);
+      }
+      chunks.push(Buffer.from(value.buffer, value.byteOffset, value.byteLength));
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  return Buffer.concat(chunks, total);
+}
+
+/**
+ * Pure: build a bounded preview (~2,000 chars) of captured readable text for
+ * `capture_evidence` tool results: opening context plus high-signal lines with
+ * numbers/tables when the full document exceeds `maxChars`.
+ */
+export function buildCapturePreview(
+  text: string | null | undefined,
+  maxChars = DEFAULT_CAPTURE_PREVIEW_CHARS,
+): { text_char_count: number; text_preview: string } {
+  if (!text) return { text_char_count: 0, text_preview: '' };
+  const charCount = text.length;
+  if (charCount <= maxChars) {
+    return { text_char_count: charCount, text_preview: text };
+  }
+  const openingBudget = Math.floor(maxChars * 0.6);
+  const opening = text.slice(0, openingBudget).trimEnd();
+  const rest = text.slice(openingBudget);
+  const separator = '\n\n[...table/numeric lines...]\n';
+  let remaining = maxChars - opening.length - separator.length;
+  if (remaining <= 80) {
+    return { text_char_count: charCount, text_preview: text.slice(0, maxChars) };
+  }
+  const signalLines: string[] = [];
+  for (const rawLine of rest.split('\n')) {
+    const line = rawLine.trim();
+    if (!line || !/\d/.test(line)) continue;
+    const addition = (signalLines.length ? '\n' : '') + line;
+    if (addition.length > remaining) {
+      if (signalLines.length === 0 && remaining > 20) {
+        signalLines.push(line.slice(0, remaining));
+      }
+      break;
+    }
+    signalLines.push(line);
+    remaining -= addition.length;
+  }
+  if (signalLines.length === 0) {
+    return { text_char_count: charCount, text_preview: text.slice(0, maxChars) };
+  }
+  return {
+    text_char_count: charCount,
+    text_preview: `${opening}${separator}${signalLines.join('\n')}`.slice(0, maxChars),
+  };
+}
+
 // One browser per worker process; each capture gets an isolated context.
 // Launching Chromium per capture would cost seconds on every source a run
 // touches. closeEvidenceBrowser() runs at the end of each research run.
@@ -333,9 +429,9 @@ export async function captureEvidence(
   const docUrl = pdfUrl ?? (url.toLowerCase().endsWith('.pdf') ? url : undefined);
   if (docUrl) {
     try {
-      const res = await guardedFetch(docUrl);
+      const res = await guardedFetch(docUrl, { signal: AbortSignal.timeout(PDF_DOWNLOAD_TIMEOUT_MS) });
       if (res.ok) {
-        const body = Buffer.from(await res.arrayBuffer());
+        const body = await readResponseBytesCapped(res, MAX_PDF_DOWNLOAD_BYTES);
         pdfPath = await storage.put(`evidence/${hash}.pdf`, body, 'application/pdf');
         // Archived as a PDF, so read as one whatever the server called it.
         pdfText = (await extractText(body, 'application/pdf')) ?? '';

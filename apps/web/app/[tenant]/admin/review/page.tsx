@@ -115,7 +115,7 @@ export default async function ReviewQueuePage({
                     payload: f.payload,
                     verification: f.verification,
                     audits: f.audits,
-                    provenance: findingProvenance(selectedRun!, f.sessionId),
+                    provenance: findingProvenance(selectedRun!, f.sessionId, f.verification),
                   }))}
                   approvedVersionNum={card.approvedVersionNum}
                   sessionId={card.sessionId}

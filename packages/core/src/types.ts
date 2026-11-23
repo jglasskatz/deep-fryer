@@ -211,6 +211,18 @@ export interface FindingVerification {
    * the check existed, which reads as false.
    */
   home_page_link?: boolean;
+  /**
+   * Which research stage produced this finding (`initial`, `correction`, or
+   * `escalation`). Used by review provenance so an Opus-escalated finding
+   * reports the escalation model and any fallback rather than the initial pass.
+   */
+  produced_by_stage?: 'initial' | 'correction' | 'escalation';
+  /** The model ID that produced this finding when recorded at the stage level. */
+  produced_by_model?: string;
+  /** Optional concise reason emitted by the verifier when content is not supported. */
+  fail_reason?: string;
+  /** Optional machine disposition suggested by the verifier when unambiguous from the exhibit. */
+  suggested_disposition?: 'approve' | 'edit' | 're_research' | 'reject';
 }
 
 /** What the value check found in a captured page's readable text. */
