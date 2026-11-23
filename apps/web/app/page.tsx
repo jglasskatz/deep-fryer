@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { PolicyImpactSlider } from '@/components/policy/PolicyImpactSlider';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { hasDatabase, publicPortraits, type PublicPortraitSummary } from '@/lib/data';
 import { deploymentFeatureOn, portraitFeatures } from '@/lib/features';
@@ -141,6 +142,8 @@ export default async function HomePage() {
             </div>
           </div>
         </section>
+
+        <PolicyImpactSlider />
 
         {showcase ? (
           <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6">

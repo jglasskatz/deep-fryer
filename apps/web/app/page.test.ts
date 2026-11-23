@@ -68,9 +68,12 @@ describe('the landing page', () => {
     else process.env.DF_SHOWCASE_ORG = saved;
   });
 
-  /** Every link goes to a page a signed-out visitor can open, given what is public. */
+  /** Every internal link goes to a page a signed-out visitor can open, given what is public. */
   function expectOnlyLiveLinks(hrefs: string[], live: string[]) {
-    for (const href of hrefs) expect(live, `link to ${href}`).toContain(href);
+    for (const href of hrefs) {
+      if (href.startsWith('https://')) continue;
+      expect(live, `link to ${href}`).toContain(href);
+    }
   }
 
   it('without a showcase, lists the public portraits and links nothing else that could 404', async () => {
@@ -133,5 +136,14 @@ describe('the landing page', () => {
     expect(page.hrefs).not.toContain('/start');
     expect(page.html).not.toContain('Build your city');
     expect(page.html).not.toMatch(/trial/i);
+  });
+
+  it('includes the interactive Before/After policy impact explorer without adding internal dead links', async () => {
+    const { html, hrefs } = await landing();
+    expect(html).toContain('Compare before and after real local policies');
+    expect(html).toContain('type="range"');
+    expect(html).toContain('Drought water rationing');
+    expect(hrefs.some((href) => href.startsWith('https://'))).toBe(true);
+    expectOnlyLiveLinks(hrefs, ['/start', '/pricing']);
   });
 });
