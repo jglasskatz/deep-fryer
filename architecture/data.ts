@@ -353,6 +353,25 @@ const data: ArchitectureMap = {
       },
     },
     {
+      id: "civic-data-connectors",
+      label: "Civic data connectors",
+      layer: "tools",
+      tech: "@deep-fryer/civic-data / MCP tools",
+      description: "Typed, read-only deterministic civic API connectors (US Census ACS 1-year/5-year with honest null handling for Census sentinel codes -666666666/-999999999/-888888888 and paired _M margins of error, BLS LAUS Public Data API v2 with footnotes and provisional flags, CDC PLACES SODA prevalence + 95% CIs, EPA Envirofacts SDWIS/TRI/AQS, allowlisted municipal Socrata SODA with <=500 row cap, ArcGIS FeatureServer/MapServer query?f=json with <=500 row cap, and US Census FIPS/portal resolution). Every request runs behind the public-HTTPS egress guard with API keys redacted from archived URLs; every successful query auto-archives a deterministic text table and canonical JSON exhibit into TenantStorage at evidence/<sha256>.txt so verifier checks can inspect the exact API response.",
+      keyFiles: ["packages/civic-data/package.json", "packages/civic-data/src/http.ts", "packages/civic-data/src/fips.ts", "packages/civic-data/src/connectors/census-acs.ts", "packages/civic-data/src/connectors/bls-laus.ts", "packages/civic-data/src/connectors/cdc-places.ts", "packages/civic-data/src/connectors/epa-envirofacts.ts", "packages/civic-data/src/connectors/socrata.ts", "packages/civic-data/src/connectors/arcgis.ts", "packages/civic-data/src/archive.ts", "packages/civic-data/src/mcp.ts"],
+      keyFunctionality: ["US Census FIPS & portal resolution", "Census ACS 1-yr/5-yr with MOE and sentinel-to-null conversion", "BLS LAUS v2 monthly/annual normalization and provisional flags", "CDC PLACES county/place/tract prevalence + 95% CIs", "EPA Envirofacts SDWIS/TRI/AQS bounded queries", "Allowlisted Socrata SoQL (<=500 rows) and ArcGIS FeatureServer/MapServer queries", "Content-addressed canonical evidence archiving (evidence/<sha256>.txt)", "Typed MCP tool registry (mcp__civic_data__*) with graceful non-US and missing-key fallbacks"],
+      fileCount: 12,
+      linesOfCode: "~1.9k",
+      principles: {
+        upholds: [
+          { id: "evidence-archived-at-access", reason: "Every successful connector lookup archives a SHA-256 content-addressed text table and canonical JSON exhibit into TenantStorage" },
+          { id: "wrong-way-impossible", reason: "All requests enforce HTTPS-only public addresses, civic Socrata domain allowlists, read-only SoQL/SQL checks, <=500 row caps, and API-key redaction from canonical URLs" },
+          { id: "gaps-outrank-guesses", reason: "Census sentinel missing codes (-666666666, -999999999, -888888888) and BLS missing markers become explicit null with suppression reasons rather than invented figures" },
+        ],
+        violates: [],
+      },
+    },
+    {
       id: "page-reader",
       label: "WebFetch page reader",
       layer: "tools",
@@ -438,6 +457,8 @@ const data: ArchitectureMap = {
     { from: "research-worker", to: "dimension-researcher", type: "calls", label: "spawns per dimension" },
     { from: "research-worker", to: "verifier-agent", type: "calls", label: "spawns per finding" },
     { from: "dimension-researcher", to: "capture-evidence-tool", type: "tool-call", label: "snapshots accepted sources" },
+    { from: "dimension-researcher", to: "civic-data-connectors", type: "tool-call", label: "queries deterministic federal & municipal APIs (mcp__civic_data__*)" },
+    { from: "civic-data-connectors", to: "capture-evidence-tool", type: "uses", label: "shares TenantStorage evidence/<sha256>.txt and egress guard" },
     { from: "dimension-researcher", to: "page-reader", type: "tool-call", label: "reads every fetched page through it (WebFetch)" },
     { from: "verifier-agent", to: "page-reader", type: "tool-call", label: "reads the source through it: the same reader as the researcher" },
     { from: "policy-analysis", to: "page-reader", type: "tool-call", label: "reads fetched pages through it (WebFetch)" },
@@ -449,7 +470,7 @@ const data: ArchitectureMap = {
     { id: "public-plane", label: "Public plane", description: "No AI visible; published versions only", nodeIds: ["web-app", "progress-engine", "service-worker", "language-access", "emergency-view", "theme", "get-involved", "discussion-moderation", "feature-flags"] },
     { id: "accounts-billing", label: "Accounts & billing", description: "Who may act, and what the organization's plan allows", nodeIds: ["accounts", "billing", "any-city-build"] },
     { id: "review-plane", label: "Review plane", description: "Human gate between research and publication", nodeIds: ["web-app", "research-verify-gate", "policy-analysis", "get-involved", "discussion-moderation"] },
-    { id: "research-plane", label: "Research plane", description: "Backstage research execution", nodeIds: ["research-worker", "dimension-researcher", "verifier-agent", "capture-evidence-tool", "page-reader"] },
+    { id: "research-plane", label: "Research plane", description: "Backstage research execution", nodeIds: ["research-worker", "dimension-researcher", "verifier-agent", "capture-evidence-tool", "civic-data-connectors", "page-reader"] },
     { id: "shared-contract-ctx", label: "Shared contract", description: "The product/OSS boundary", nodeIds: ["shared-contract"] },
   ],
 };
