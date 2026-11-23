@@ -7,4 +7,5 @@ export * from './auth-context.js';
 export * from './sign-in-requests.js';
 export * from './staff.js';
 export * from './transcript-retention.js';
+export * from './review-labels-eval.js';
 export * from './errors.js';
