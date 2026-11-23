@@ -3,6 +3,7 @@ import { defaultPortraitConfig, framework } from '@deep-fryer/contract';
 import {
   MAX_INDICATORS_PER_SESSION,
   DIMENSION_TOOLS,
+  REGION_TOOLS,
   REGION_BRIEF_CACHE_TTL_MS,
   computeConfigHash,
   dimensionNameFromPrompt,
@@ -333,8 +334,10 @@ describe('deterministicChecks', () => {
     ).toBe(false);
   });
 
-  it('exposes submit_findings in DIMENSION_TOOLS and parses slugs, dimension name, and threshold refs from rendered prompts', () => {
+  it('exposes read_source and submit_findings in DIMENSION_TOOLS / REGION_TOOLS and parses slugs, dimension name, and threshold refs from rendered prompts', () => {
+    expect(DIMENSION_TOOLS).toContain('mcp__evidence__read_source');
     expect(DIMENSION_TOOLS).toContain('mcp__evidence__submit_findings');
+    expect(REGION_TOOLS).toContain('mcp__evidence__read_source');
     const rendered = renderPlan({
       config,
       dimensions: [
@@ -347,6 +350,8 @@ describe('deterministicChecks', () => {
         },
       ],
     });
+    expect(rendered.sessions[0]!.tool_allowlist).toContain('mcp__evidence__read_source');
+    expect(rendered.sessions[1]!.tool_allowlist).toContain('mcp__evidence__read_source');
     const prompt = rendered.sessions[1]!.prompt;
     expect(plannedSlugsFromPrompt(prompt)).toEqual(housing.indicators.map((i) => i.slug));
     expect(dimensionNameFromPrompt(prompt)).toBe(housing.name);

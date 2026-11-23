@@ -888,3 +888,210 @@ describe('submit_findings validation & deterministic computeScoring (P0.2)', () 
     expect(msgs).toContain('value_not_found');
   });
 });
+
+describe('mcp__evidence__read_source & extraMcpServers hooks (P1.2)', () => {
+  type RegisteredTool = {
+    handler: (args: Record<string, unknown>, extra: Record<string, unknown>) => Promise<{
+      content: Array<{ type: string; text: string }>;
+    }>;
+  };
+  type McpServerWithTools = {
+    instance?: { _registeredTools?: Record<string, RegisteredTool> };
+  };
+
+  function memoryStorage(): import('./storage.js').TenantStorage & {
+    objects: Map<string, { body: Buffer; contentType: string }>;
+  } {
+    const objects = new Map<string, { body: Buffer; contentType: string }>();
+    return {
+      objects,
+      describe: () => 'memory:session-test',
+      async put(storagePath, body, contentType) {
+        if (objects.has(storagePath)) throw new Error(`evidence object already exists: ${storagePath}`);
+        objects.set(storagePath, { body: Buffer.from(body), contentType });
+        return storagePath;
+      },
+      async get(storagePath) {
+        const obj = objects.get(storagePath);
+        if (!obj) throw new Error(`ENOENT: ${storagePath}`);
+        return obj.body;
+      },
+    };
+  }
+
+  beforeEach(() => {
+    sdk.calls.length = 0;
+    sdk.scripts.length = 0;
+    sdk.inspect = undefined;
+  });
+
+  it('exposes read_source with query/page_range excerpting, shares SourceCache with capture_evidence, and blocks private IPs', async () => {
+    const { runSession } = await import('./session.js');
+    const { SourceCache } = await import('./source-cache.js');
+    const { PDF_PAGE_BREAK } = await import('./text-extract.js');
+
+    const storage = memoryStorage();
+    const pages = Array.from({ length: 8 }, (_, idx) =>
+      idx === 4
+        ? 'Page 5 Table 2: Median rent burden in 2024 was 54.2% of renter households.'
+        : `Page ${idx + 1} general context and methodology notes.`,
+    );
+    const pdfText = `Text of the PDF document\n\n${pages.join(PDF_PAGE_BREAK)}\n`;
+    const render = vi.fn(async (url: string) => ({
+      url,
+      finalUrl: url,
+      contentType: 'application/pdf',
+      status: 200,
+      capturedAt: '2026-11-24T12:00:00.000Z',
+      pngBytes: Buffer.from('png-bytes'),
+      pdfBytes: Buffer.from('%PDF-1.4 bytes'),
+      readableText: pdfText,
+    }));
+    const sourceCache = new SourceCache({ render, now: () => new Date('2026-11-24T12:00:00Z') });
+
+    const observed: Record<string, unknown> = {};
+    sdk.inspect = async ({ options }) => {
+      const servers = options.mcpServers as Record<string, McpServerWithTools>;
+      const tools = servers.evidence?.instance?._registeredTools ?? {};
+      expect(Object.keys(tools)).toEqual(
+        expect.arrayContaining(['read_source', 'capture_evidence', 'submit_findings']),
+      );
+
+      // 1. First read_source call with page_range (public IP literal avoids live DNS while exercising real egress guard).
+      const url = 'https://93.184.216.34/housing-element-2024.pdf';
+      const firstRaw = await tools.read_source!.handler({ url, page_range: '5' }, {});
+      observed.first = JSON.parse(firstRaw.content[0]!.text);
+
+      // 2. Second read_source call with query hits SourceCache (no second render).
+      const secondRaw = await tools.read_source!.handler({ url, query: '54.2% rent burden' }, {});
+      observed.second = JSON.parse(secondRaw.content[0]!.text);
+
+      // 3. capture_evidence on the same URL promotes from SourceCache without re-rendering!
+      const captureRaw = await tools.capture_evidence!.handler({ url, check_value: 54.2 }, {});
+      observed.capture = JSON.parse(captureRaw.content[0]!.text);
+
+      // 4. Private IP is refused cleanly by egress guard inside read_source.
+      const blockedRaw = await tools.read_source!.handler({ url: 'https://127.0.0.1/admin' }, {});
+      observed.blocked = JSON.parse(blockedRaw.content[0]!.text);
+    };
+
+    const result = await runSession({
+      prompt: 'Research housing.',
+      allowedTools: [
+        'WebSearch',
+        'WebFetch',
+        'mcp__evidence__read_source',
+        'mcp__evidence__capture_evidence',
+        'mcp__evidence__submit_findings',
+      ],
+      storage,
+      sourceCache,
+      orchestrate: false,
+    });
+
+    expect(result.succeeded).toBe(true);
+    expect(render).toHaveBeenCalledTimes(1);
+    expect(observed.first).toMatchObject({
+      url: 'https://93.184.216.34/housing-element-2024.pdf',
+      final_url: 'https://93.184.216.34/housing-element-2024.pdf',
+      content_type: 'application/pdf',
+      text_char_count: pdfText.length,
+      cache_hit: false,
+      truncated: true,
+      pages_included: [5],
+      total_pages: 8,
+    });
+    expect((observed.first as { excerpt: string }).excerpt).toContain('54.2%');
+    expect(observed.second).toMatchObject({
+      cache_hit: true,
+      content_type: 'application/pdf',
+    });
+    expect((observed.second as { excerpt: string }).excerpt).toContain('54.2%');
+    expect(observed.capture).toMatchObject({
+      value_on_page: 'found',
+    });
+    expect((observed.capture as { snapshot_path: string }).snapshot_path).toMatch(/^evidence\/[0-9a-f]{16}\.png$/);
+    expect(result.capturedSnapshotPaths).toContain((observed.capture as { snapshot_path: string }).snapshot_path);
+    expect((observed.blocked as { error: string }).error).toMatch(/read_source failed:.*non-public/);
+  });
+
+  it('mounts read_source for region_context sessions even when storage is omitted', async () => {
+    const { runSession } = await import('./session.js');
+    const { SourceCache } = await import('./source-cache.js');
+    const render = vi.fn(async (url: string) => ({
+      url,
+      finalUrl: url,
+      contentType: 'text/html',
+      status: 200,
+      capturedAt: '2026-11-24T12:00:00.000Z',
+      pngBytes: Buffer.from('png'),
+      readableText: 'City of Santa Cruz population 62,956 (2020 Census).\n',
+    }));
+    const sourceCache = new SourceCache({ render });
+
+    let toolNames: string[] = [];
+    let readResult: Record<string, unknown> | undefined;
+    sdk.inspect = async ({ options }) => {
+      const servers = options.mcpServers as Record<string, McpServerWithTools>;
+      const tools = servers.evidence?.instance?._registeredTools ?? {};
+      toolNames = Object.keys(tools);
+      const raw = await tools.read_source!.handler({ url: 'https://93.184.216.34/about' }, {});
+      readResult = JSON.parse(raw.content[0]!.text);
+    };
+
+    const res = await runSession({
+      prompt: 'Build region brief.',
+      allowedTools: ['WebSearch', 'WebFetch', 'mcp__evidence__read_source'],
+      sourceCache,
+      orchestrate: false,
+    });
+    expect(res.succeeded).toBe(true);
+    expect(toolNames).toEqual(['read_source']);
+    expect(readResult).toMatchObject({
+      cache_hit: false,
+      truncated: false,
+      excerpt: 'City of Santa Cruz population 62,956 (2020 Census).',
+    });
+  });
+
+  it('merges extraMcpServers and extraAllowedTools while preserving tool containment', async () => {
+    const { createSdkMcpServer, tool } = await import('@anthropic-ai/claude-agent-sdk');
+    const { z } = await import('zod');
+    const { runSession } = await import('./session.js');
+
+    const civicServer = createSdkMcpServer({
+      name: 'civic_data',
+      version: '1.0.0',
+      tools: [
+        tool(
+          'query_census_acs',
+          'Query Census ACS table',
+          { table: z.string() },
+          async (args) => ({ content: [{ type: 'text', text: JSON.stringify({ table: args.table }) }] }),
+        ),
+      ],
+    });
+
+    await runSession({
+      prompt: 'Research with civic APIs.',
+      allowedTools: ['WebSearch', 'WebFetch', 'mcp__evidence__read_source'],
+      extraMcpServers: { civic_data: civicServer },
+      extraAllowedTools: ['mcp__civic_data__query_census_acs', 'mcp__evidence__read_source', 'Read'],
+      orchestrate: false,
+    });
+
+    const { options } = sdk.calls.at(-1)!;
+    const servers = options.mcpServers as Record<string, unknown>;
+    expect(Object.keys(servers).sort()).toEqual(['civic_data', 'evidence']);
+    // Deduplicated, MCP tools kept out of built-in tools, Read still refused without archivedExhibits!
+    expect(options.allowedTools).toEqual([
+      'WebSearch',
+      'WebFetch',
+      'mcp__evidence__read_source',
+      'mcp__civic_data__query_census_acs',
+    ]);
+    expect(options.tools).toEqual(['WebSearch', 'WebFetch']);
+    expect(options.disallowedTools).toContain('Read');
+    expect(options.disallowedTools).toContain('Bash');
+  });
+});
