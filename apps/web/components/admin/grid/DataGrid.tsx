@@ -271,6 +271,11 @@ export interface DataGridProps {
   onDone?: (changes: StagedChange[]) => void;
   /** Opens the table in edit mode with these cells already staged (a file brought in on another page), as one undoable step. */
   startEditing?: { writes: CellWrite[]; label: string };
+  /**
+   * Incremented by the page after `onDone` saves successfully: clears the
+   * staged edit session, leaves edit mode, and announces `message`.
+   */
+  savedSignal?: { seq: number; message: string };
 }
 
 type Confirming = { kind: 'discard' } | { kind: 'leave'; href: string | null };
@@ -293,6 +298,7 @@ export function DataGrid({
   initial = EMPTY_GRID_STATE,
   onDone,
   startEditing,
+  savedSignal,
 }: DataGridProps) {
   const ids = useId();
   const dimensions = useMemo(() => rowDimensions(rows), [rows]);
@@ -479,6 +485,13 @@ export function DataGrid({
     setConfirming(null);
     setNotice(message);
   };
+
+  const lastSavedSeq = useRef(savedSignal?.seq ?? 0);
+  useEffect(() => {
+    if (!savedSignal || savedSignal.seq === lastSavedSeq.current) return;
+    lastSavedSeq.current = savedSignal.seq;
+    stopEditing(savedSignal.message);
+  }, [savedSignal]);
 
   const cancel = () => {
     if (changes > 0) setConfirming({ kind: 'discard' });

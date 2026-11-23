@@ -64,10 +64,16 @@ describe('the Data page', () => {
     expect(html).toContain('No usable figure found for Ocean Acidification:</span> No local monitoring series.');
   });
 
-  it('gives editors, and not viewers, a link to edit each dimension', async () => {
-    expect(await dataPage()).not.toContain('/santa-cruz/admin/dim/');
+  it('gives editors, and not viewers, a link to edit each dimension and the Edit button', async () => {
+    const viewerHtml = await dataPage();
+    expect(viewerHtml).not.toContain('/santa-cruz/admin/dim/');
+    expect(viewerHtml).not.toMatch(/<button[^>]*>Edit<\/button>/);
+    expect(viewerHtml).toContain('aria-readonly="true"');
+
     role = 'editor';
-    expect(await dataPage()).toContain('href="/santa-cruz/admin/dim/dim-food"');
+    const editorHtml = await dataPage();
+    expect(editorHtml).toContain('href="/santa-cruz/admin/dim/dim-food"');
+    expect(editorHtml).toMatch(/<button[^>]*>Edit<\/button>/);
   });
 
   it('opens with the view the address names', async () => {
