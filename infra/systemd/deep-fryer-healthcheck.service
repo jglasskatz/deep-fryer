@@ -1,0 +1,7 @@
+[Unit]
+Description=deep-fryer VPS healthcheck
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/deep-fryer/current/infra/scripts/healthcheck.sh
