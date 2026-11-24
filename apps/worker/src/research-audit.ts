@@ -71,6 +71,26 @@ export interface PlannedAuditItem {
 }
 
 /**
+ * Pure: whether an audit item inspects only mounted archived exhibits and needs
+ * no live web search (`workflow`-only audit on an indicator finding that has
+ * archived exhibits mounted). Such items run via the direct zero-subprocess
+ * Anthropic Messages runner (`direct: true`) instead of spawning a Claude Code
+ * CLI subprocess.
+ */
+export function isArchiveOnlyAudit(
+  finding: Pick<Finding, 'payload'>,
+  sources: readonly FindingAuditSource[],
+  archiveNames: readonly string[],
+): boolean {
+  return (
+    finding.payload.kind === 'indicator' &&
+    sources.length === 1 &&
+    sources[0] === 'workflow' &&
+    archiveNames.length > 0
+  );
+}
+
+/**
  * Pure: plan deduplicated post-run audit work.
  * - Skips redundant `workflow` re-audit per `shouldSkipWorkflowAudit`.
  * - Deduplicates by `finding.id` so no finding is ever audited twice: when a
@@ -249,10 +269,12 @@ export async function auditResearchRun(
     } else {
       try {
         usage[key] = { ...emptyUsage(), partial: true };
+        const archiveOnly = isArchiveOnlyAudit(finding, sources, archive.names);
         const result = await runSession({
           prompt,
-          allowedTools: ['WebSearch', 'WebFetch', 'Read'],
+          allowedTools: archiveOnly ? ['Read'] : ['WebSearch', 'WebFetch', 'Read'],
           provider,
+          ...(archiveOnly && provider === 'anthropic' ? { direct: true } : {}),
           archivedExhibits: archive.exhibits,
           orchestrate: false,
           maxTurns: options.maxTurns ?? AUDIT_MAX_TURNS,

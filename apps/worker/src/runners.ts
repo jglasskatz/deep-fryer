@@ -11,14 +11,27 @@ import { researchApply } from './tasks/research-apply.js';
 import { policyAnalyze, policySweep } from './tasks/policy-analyze.js';
 import { alertsRunnerOptions } from './tasks/alerts-sync.js';
 import { privacySweep } from './tasks/privacy-sweep.js';
+export {
+  DEFAULT_MAX_ACTIVE_SESSIONS,
+  SessionSemaphore,
+  getSharedSessionSemaphore,
+  parseMaxActiveSessions,
+  resetSharedSessionSemaphore,
+} from './session-semaphore.js';
+
+/** Default concurrency for the dedicated policy-analysis runner (P2.2). */
+export const POLICY_RUNNER_CONCURRENCY = 2;
 
 /**
- * The worker's three graphile-worker runners, as data so the wiring is
+ * The worker's four graphile-worker runners, as data so the wiring is
  * tested (runners.test.ts) rather than discovered in production.
  *
- * - The research runner executes model sessions — research runs and policy
- *   analyses — at WORKER_CONCURRENCY, plus the sweep that settles analyses
- *   whose worker died mid-session.
+ * - The research runner executes portrait research runs (`research_apply`) at
+ *   WORKER_CONCURRENCY, bounded globally alongside policy sessions by the
+ *   shared `MAX_ACTIVE_SESSIONS` semaphore (default 6).
+ * - The policy runner executes 90-second policy analyses (`policy_analyze`) at
+ *   concurrency 2 plus the stuck-analysis sweep (`policy_sweep`), so policy
+ *   scans never queue for 45 minutes behind a portrait build (P2.2).
  * - The alerts runner refreshes official NWS alerts every five minutes on its
  *   own slot (alerts-sync.ts), so a 40-minute research session never delays
  *   an alert.
@@ -36,6 +49,18 @@ export function researchRunnerOptions(connectionString: string, concurrency: num
     concurrency,
     taskList: {
       [APPLY_TASK]: researchApply,
+    },
+  };
+}
+
+export function policyRunnerOptions(
+  connectionString: string,
+  concurrency: number = POLICY_RUNNER_CONCURRENCY,
+): RunnerOptions {
+  return {
+    connectionString,
+    concurrency,
+    taskList: {
       [POLICY_TASK]: policyAnalyze,
       [POLICY_SWEEP_TASK]: policySweep,
     },
@@ -52,9 +77,14 @@ export function housekeepingRunnerOptions(connectionString: string): RunnerOptio
   };
 }
 
-export function workerRunners(connectionString: string, concurrency: number): RunnerOptions[] {
+export function workerRunners(
+  connectionString: string,
+  concurrency: number,
+  policyConcurrency: number = POLICY_RUNNER_CONCURRENCY,
+): RunnerOptions[] {
   return [
     researchRunnerOptions(connectionString, concurrency),
+    policyRunnerOptions(connectionString, policyConcurrency),
     alertsRunnerOptions(connectionString),
     housekeepingRunnerOptions(connectionString),
   ];

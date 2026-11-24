@@ -167,10 +167,10 @@ describe('research mode setting', () => {
     }
   });
 
-  it('gives a new portrait stand-ins for its gaps, and leaves a portrait without the setting as it was', async () => {
+  it('defaults a new portrait to right_first so settings match active worker execution', async () => {
     const { defaultTenantConfig } = await import('./config-defaults.js');
     const { researchModeOf, RESEARCH_MODE_WHEN_UNSET } = await import('./validators.js');
-    expect(defaultTenantConfig('X', 'X').research_mode).toBe('right_first_then_fill');
+    expect(defaultTenantConfig('X', 'X').research_mode).toBe('right_first');
     expect(RESEARCH_MODE_WHEN_UNSET).toBe('right_first');
     expect(researchModeOf(null)).toBe('right_first');
     expect(researchModeOf(undefined)).toBe('right_first');

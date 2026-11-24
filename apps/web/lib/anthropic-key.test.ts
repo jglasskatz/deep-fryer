@@ -6,6 +6,7 @@ import {
   KEY_UNCHECKED,
   KEY_UNREACHABLE,
   anthropicKeyError,
+  anthropicModelAccessMessage,
   apiKeyFormatProblem,
   validateAnthropicKey,
 } from './anthropic-key';
@@ -92,6 +93,25 @@ describe('validateAnthropicKey (mocked SDK)', () => {
     const list = vi.spyOn(Anthropic.Models.prototype, 'list');
     await expect(validateAnthropicKey('not-a-key')).rejects.toThrow(/start with "sk-ant-"/);
     expect(list).not.toHaveBeenCalled();
+  });
+
+  it('verifies required models via client.models.retrieve and returns an actionable error on 404 (P2.2)', async () => {
+    vi.spyOn(Anthropic.Models.prototype, 'list').mockImplementation(() => Promise.resolve({ data: [] }) as never);
+    const retrieve = vi.spyOn(Anthropic.Models.prototype, 'retrieve').mockImplementation(((modelId: string) => {
+      if (modelId === 'claude-opus-5-5') {
+        return Promise.reject(new Anthropic.NotFoundError(404, { type: 'error' }, 'model not found', new Headers()));
+      }
+      return Promise.resolve({ id: modelId });
+    }) as never);
+
+    await expect(validateAnthropicKey(WELL_FORMED, { requiredModels: ['claude-sonnet-5-5'] })).resolves.toBeUndefined();
+    expect(retrieve).toHaveBeenCalledWith('claude-sonnet-5-5');
+
+    const err = await validateAnthropicKey(WELL_FORMED, {
+      requiredModels: ['claude-sonnet-5-5', 'claude-opus-5-5'],
+    }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(UserError);
+    expect((err as Error).message).toBe(anthropicModelAccessMessage('claude-opus-5-5'));
   });
 });
 

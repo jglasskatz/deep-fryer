@@ -100,6 +100,43 @@ export const STRATEGY_COST_MULTIPLIERS: Readonly<
 };
 
 /**
+ * Strategy session-credit weights applied by the plan quota gate so higher-cost
+ * strategies (`hybrid` ~1.5×, `deep` ~3×) cannot arbitrage 3× deployment spend
+ * for 1× plan session allowance (P2.2).
+ */
+export const STRATEGY_SESSION_WEIGHTS: Readonly<Record<StrategyName, number>> = {
+  standard: 1,
+  'operator-defaults': 1,
+  hybrid: 1.5,
+  deep: 3,
+};
+
+/**
+ * Pure: plan-quota credit multiplier for a research strategy
+ * (`standard: 1`, `operator-defaults: 1`, `hybrid: 1.5`, `deep: 3`).
+ * Unknown or omitted strategies default to `1`.
+ */
+export function strategySessionWeight(strategy?: StrategyName | string | null): number {
+  if (!strategy) return 1;
+  return (STRATEGY_SESSION_WEIGHTS as Readonly<Record<string, number>>)[strategy] ?? 1;
+}
+
+/**
+ * Pure: integer plan-quota session credits required for `sessionCount` planned
+ * sessions under `strategy`, rounded up (`Math.ceil(sessionCount * weight)`).
+ */
+export function weightedSessionCredits(
+  sessionCount: number,
+  strategy?: StrategyName | string | null,
+): number {
+  if (!Number.isInteger(sessionCount) || sessionCount < 0) {
+    throw new RangeError(`session count must be a whole number of sessions, got ${sessionCount}`);
+  }
+  if (sessionCount === 0) return 0;
+  return Math.ceil(sessionCount * strategySessionWeight(strategy));
+}
+
+/**
  * Estimated API cost of a run of `sessionCount` research sessions (a policy
  * analysis is one, POLICY_ANALYSIS_SESSIONS; a one-dimension re-run is two,
  * researchRunSessions(1)). A full portrait, estimateRunCost(22), is exactly

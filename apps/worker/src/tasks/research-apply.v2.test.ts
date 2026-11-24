@@ -10,10 +10,15 @@ import {
 } from '@deep-fryer/research';
 import { orgKeyRejected } from '../org-key.js';
 import {
+  DEFAULT_MAX_RUN_USD,
+  checkRunBudget,
   combineStageTranscripts,
   evaluateDimensionFindings,
+  foldedRunSpendUsd,
   plannedEscalationOptions,
   plannedInitialScoutModel,
+  resolveMaxRunUsd,
+  runDimensionPoolWithBudget,
   runWithConcurrency,
   type DimensionFindingPipelineDeps,
 } from './research-apply.js';
@@ -553,5 +558,51 @@ describe('Research Routine v2 — pre-verifier self-correction and hybrid escala
     expect(out).toEqual([10, 20, 30, 40, 50, 60, 70, 80]);
     expect(peak).toBeGreaterThan(1);
     expect(peak).toBeLessThanOrEqual(4);
+  });
+});
+
+describe('MAX_RUN_USD hard dollar circuit breaker (P2.2)', () => {
+  it('parses MAX_RUN_USD with default $150 and falls back safely on invalid env values', () => {
+    expect(DEFAULT_MAX_RUN_USD).toBe(150);
+    expect(resolveMaxRunUsd(undefined)).toEqual({ value: 150, valid: true });
+    expect(resolveMaxRunUsd('')).toEqual({ value: 150, valid: true });
+    expect(resolveMaxRunUsd(' 85.5 ')).toEqual({ value: 85.5, valid: true });
+    for (const bad of ['0', '-50', 'abc', 'NaN', 'Infinity']) {
+      expect(resolveMaxRunUsd(bad)).toEqual({ value: 150, valid: false });
+    }
+  });
+
+  it('checks live folded spend via priceSessionUsage between sessions, halts remaining sessions, and preserves completed findings', async () => {
+    // claude-opus-5 rates: $5/M input, $25/M output -> 1,000,000 input + 200,000 output = $10 per session.
+    const tenDollarUsage = usageOf('claude-opus-5', 1_000_000, 200_000);
+    const liveUsage: Record<string, SessionTokenUsage> = {};
+    const completed: string[] = [];
+    const notes: string[] = [];
+
+    const result = await runDimensionPoolWithBudget({
+      items: ['housing', 'health', 'climate', 'water', 'energy'],
+      concurrency: 1,
+      getUsage: () => liveUsage,
+      maxRunUsd: 25,
+      onBudgetExceeded: (check) => {
+        if (check.note) notes.push(check.note);
+      },
+      runItem: async (slug) => {
+        completed.push(slug);
+        liveUsage[slug] = tenDollarUsage;
+      },
+    });
+
+    // 3 sessions spend $30 (>= $25 cap); remaining 2 sessions are never launched.
+    expect(completed).toEqual(['housing', 'health', 'climate']);
+    expect(result.completedCount).toBe(3);
+    expect(result.skippedCount).toBe(2);
+    expect(result.error).toBeNull();
+    expect(foldedRunSpendUsd(liveUsage).dollars).toBeCloseTo(30, 5);
+    expect(checkRunBudget(liveUsage, 25).exceeded).toBe(true);
+    expect(result.budgetCapNote).toMatch(/MAX_RUN_USD budget cap \(\$25\.00\)/);
+    expect(result.budgetCapNote).toContain('$30.00');
+    expect(result.budgetCapNote).toContain('preserved');
+    expect(notes).toHaveLength(1);
   });
 });

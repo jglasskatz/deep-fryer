@@ -23,10 +23,18 @@ export interface StrategyEntry {
   readonly version: number;
   readonly models: Readonly<StrategyModels>;
   readonly caps: Readonly<ResearchCaps>;
+  /**
+   * When true, this published version is available explicitly via `name@version`
+   * (e.g. `standard@2`, `hybrid@2`, `deep@2`) while unversioned `latestStrategy(name)`
+   * keeps the current default version until promoted after live bake-off.
+   */
+  readonly optIn?: boolean;
 }
 
 /** The page reader the deployment pinned when strategies were introduced (docker-compose.yml). */
 const HAIKU_4_5_PAGE_READER = 'claude-haiku-4-5-20251001';
+/** Claude 5.5 page reader / scout model for v2 opt-in strategies (P2.1). */
+const HAIKU_5_5_FAST_MODEL = 'claude-haiku-5-5';
 
 function frozen(entry: StrategyEntry): StrategyEntry {
   Object.freeze(entry.models);
@@ -86,6 +94,47 @@ export const STRATEGIES: readonly StrategyEntry[] = Object.freeze([
     },
     caps: { session_max_turns: 60, verifier_max_turns: 12, audit_max_turns: 16 },
   }),
+  // Claude 5.5 immutable v2 strategies (P2.1): opt-in via explicit `standard@2`,
+  // `deep@2`, `hybrid@2` while unversioned names remain on v1 until promoted.
+  // Pairs Sonnet 5.5 / Opus 5.5 with Haiku 5.5 scouts & page reader and the
+  // direct zero-subprocess <= 4-turn verifier cap.
+  frozen({
+    name: 'standard',
+    version: 2,
+    models: {
+      session_model: 'claude-sonnet-5-5',
+      subagent_model: null,
+      verifier_model: 'claude-opus-5-5',
+      page_reader_model: HAIKU_5_5_FAST_MODEL,
+    },
+    caps: { session_max_turns: 60, verifier_max_turns: 4, audit_max_turns: 16 },
+    optIn: true,
+  }),
+  frozen({
+    name: 'deep',
+    version: 2,
+    models: {
+      session_model: 'claude-opus-5-5',
+      subagent_model: HAIKU_5_5_FAST_MODEL,
+      verifier_model: 'claude-opus-5-5',
+      page_reader_model: HAIKU_5_5_FAST_MODEL,
+    },
+    caps: { session_max_turns: 60, verifier_max_turns: 4, audit_max_turns: 16 },
+    optIn: true,
+  }),
+  frozen({
+    name: 'hybrid',
+    version: 2,
+    models: {
+      session_model: 'claude-sonnet-5-5',
+      subagent_model: HAIKU_5_5_FAST_MODEL,
+      escalation_model: 'claude-opus-5-5',
+      verifier_model: 'claude-opus-5-5',
+      page_reader_model: HAIKU_5_5_FAST_MODEL,
+    },
+    caps: { session_max_turns: 60, verifier_max_turns: 4, audit_max_turns: 16, escalation_max_turns: 40 },
+    optIn: true,
+  }),
 ]);
 
 export const OPERATOR_DEFAULTS: StrategyName = 'operator-defaults';
@@ -95,9 +144,20 @@ export function strategyRef(entry: Pick<StrategyEntry, 'name' | 'version'>): str
   return `${entry.name}@${entry.version}`;
 }
 
-/** The newest version of a name, or undefined for a name the registry does not hold. */
-export function latestStrategy(name: string): StrategyEntry | undefined {
-  return STRATEGIES.filter((e) => e.name === name).reduce<StrategyEntry | undefined>(
+/**
+ * The newest active version of a name, or undefined for a name the registry does
+ * not hold. Opt-in versions (`optIn: true`, e.g. v2 5.5 strategies) are skipped
+ * unless `includeOptIn: true` is passed (or every entry for that name is opt-in),
+ * and are always selectable explicitly via `resolveStrategy('standard@2')`.
+ */
+export function latestStrategy(
+  name: string,
+  options: { includeOptIn?: boolean } = {},
+): StrategyEntry | undefined {
+  const all = STRATEGIES.filter((e) => e.name === name);
+  const candidates = options.includeOptIn ? all : all.filter((e) => !e.optIn);
+  const pool = candidates.length > 0 ? candidates : all;
+  return pool.reduce<StrategyEntry | undefined>(
     (best, e) => (!best || e.version > best.version ? e : best),
     undefined,
   );

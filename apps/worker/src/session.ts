@@ -1,4 +1,4 @@
-import { gzipSync } from 'node:zlib';
+import { gunzipSync, gzipSync } from 'node:zlib';
 import { mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -39,6 +39,11 @@ import {
   valueOnPage,
 } from '@deep-fryer/research';
 import { buildCapturePreview, captureEvidence } from './evidence.js';
+import {
+  buildArchivedExhibitMap,
+  runDirectAnthropicSession,
+  type MessagesApiClient,
+} from './messages.js';
 import { getSharedSourceCache, readSourceWithCache, type SourceCache } from './source-cache.js';
 import { OrgKeyUnavailableError, rejectedKeyError } from './org-key.js';
 import {
@@ -49,6 +54,7 @@ import {
 } from './providers/types.js';
 import { runOpenAiSession } from './providers/openai.js';
 import { runGoogleSession } from './providers/google.js';
+import { getSharedSessionSemaphore, type SessionSemaphore } from './session-semaphore.js';
 import type { TenantStorage } from './storage.js';
 import { ARCHIVED_PDF, ARCHIVED_PDF_EXCERPT, ARCHIVED_SNAPSHOT, type ArchivedExhibits } from './archived-exhibits.js';
 
@@ -255,14 +261,121 @@ export class SessionRunError extends Error {
   }
 }
 
+/** Hard turn cap for bounded synthesis-only recovery when a session hits `error_max_turns`. */
+export const MAX_TURNS_RECOVERY_LIMIT = 6;
+const MAX_SYNTHESIS_DIGEST_CHARS = 12_000;
+
+/**
+ * Pure: extract a bounded digest of assistant findings/notes from a previous
+ * session result & transcript so a `error_max_turns` recovery pass can emit
+ * findings already gathered without doing any new web searches.
+ */
+function extractGatheredNotesDigest(first: SessionResult): string {
+  const parts: string[] = [];
+  if (first.resultText.trim()) {
+    parts.push(first.resultText.trim());
+  }
+  if (first.transcript && first.transcript.length > 0) {
+    try {
+      const raw =
+        first.transcript.length >= 2 && first.transcript[0] === 0x1f && first.transcript[1] === 0x8b
+          ? gunzipSync(first.transcript).toString('utf8')
+          : first.transcript.toString('utf8');
+      for (const line of raw.split('\n')) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        try {
+          const frame = JSON.parse(trimmed) as {
+            type?: unknown;
+            message?: { content?: unknown };
+            content?: unknown;
+          };
+          if (frame.type !== 'assistant') continue;
+          const text = messageText(frame.message?.content ?? frame.content).trim();
+          if (text) parts.push(text);
+        } catch {
+          // Ignore non-JSON lines.
+        }
+      }
+    } catch {
+      // Ignore corrupt/unreadable transcript buffers.
+    }
+  }
+  const combined = parts.join('\n\n---\n\n').trim();
+  if (!combined) return '(no prior assistant notes captured)';
+  if (combined.length <= MAX_SYNTHESIS_DIGEST_CHARS) return combined;
+  // Keep the most recent gathered notes (end of transcript has the final collected figures/paths).
+  return `…[earlier notes truncated]\n${combined.slice(-MAX_SYNTHESIS_DIGEST_CHARS)}`;
+}
+
+/**
+ * Pure: detect whether a failed session stopped due to turn-cap exhaustion
+ * (`error_max_turns`), which should trigger bounded 6-turn synthesis recovery
+ * rather than replaying a full 60-turn open-web research prompt.
+ */
+export function isMaxTurnsExhaustion(result: Pick<SessionResult, 'succeeded' | 'usage'>): boolean {
+  if (result.succeeded) return false;
+  return (
+    result.usage.result_subtype === 'error_max_turns' ||
+    result.usage.terminal_reason === 'max_turns'
+  );
+}
+
+/**
+ * Pure: transform a session input that hit `error_max_turns` into a bounded
+ * 6-turn synthesis-only recovery prompt with zero web search / fetch tools.
+ * Retains only `mcp__evidence__submit_findings` when present so the agent can
+ * validate and emit findings already gathered in the first pass.
+ */
+export function buildSynthesisRecoveryInput(
+  input: RunSessionArgs,
+  first: SessionResult,
+): RunSessionArgs {
+  const allAllowed = [...new Set([...input.allowedTools, ...(input.extraAllowedTools ?? [])])];
+  const hasSubmitFindings = allAllowed.includes('mcp__evidence__submit_findings');
+  const recoveryTools = hasSubmitFindings ? ['mcp__evidence__submit_findings'] : [];
+  const capturedPaths = first.capturedSnapshotPaths ?? [];
+  const digest = extractGatheredNotesDigest(first);
+  const captureNote = capturedPaths.length
+    ? `\nCaptured evidence snapshot paths already stored in this session:\n${capturedPaths.map((p) => `- ${p}`).join('\n')}\n`
+    : '';
+
+  const recoveryPrompt = [
+    '## Synthesis-only recovery (turn limit reached)',
+    'Your previous research pass reached its turn limit (`error_max_turns`).',
+    'Do NOT perform any further web searches, page fetches, or subagent dispatches — all web/search tools are disabled for this recovery pass.',
+    hasSubmitFindings
+      ? 'Using ONLY the sources, figures, and captured evidence already gathered below, immediately call `mcp__evidence__submit_findings` and then emit ONLY the final JSON array matching the original output contract.'
+      : 'Using ONLY the sources, figures, and captured evidence already gathered below, immediately emit ONLY the final JSON output matching the original output contract.',
+    'For any indicator that you did not finish verifying with captured evidence, emit an honest `kind: "gap"` finding describing what was searched — never invent figures or URLs.',
+    captureNote,
+    '### Notes & evidence already gathered',
+    digest,
+    '',
+    '### Original assignment (for output schema and indicator slugs only — do NOT search again)',
+    input.prompt,
+  ].join('\n');
+
+  return {
+    ...input,
+    prompt: recoveryPrompt,
+    allowedTools: recoveryTools,
+    extraAllowedTools: [],
+    extraMcpServers: undefined,
+    civicDataTools: undefined,
+    orchestrate: false,
+    scoutModel: null,
+    maxTurns: MAX_TURNS_RECOVERY_LIMIT,
+  };
+}
+
 /**
  * Transient transport failures ("Connection closed mid-response", overloaded,
- * 5xx) and turn-cap exhaustion kill an entire session. The SDK surfaces some
- * of these as THROWN errors, not unsuccessful results — so the retry must
- * catch throws, and a double failure must return a failed result rather than
- * propagate, or one bad session kills the surrounding 21-session run. Usage
- * from both attempts is folded with mergeUsage — the spend was real either
- * way, and a thrown attempt contributes what it had streamed (SessionRunError).
+ * 5xx) kill a session and are retried once. Turn-cap exhaustion
+ * (`error_max_turns`) is NEVER retried with another full 60-turn identical
+ * prompt: instead it runs a bounded 6-turn synthesis-only recovery pass
+ * (no further web search, only `submit_findings` / JSON emission for findings
+ * already gathered). Usage from both attempts is folded with mergeUsage.
  *
  * The exception is a failure the key itself caused (org-key.ts
  * keyRejection: revoked, out of credit, model not found, a disabled
@@ -278,15 +391,15 @@ export async function runSessionWithRetry(
 ): Promise<SessionResult> {
   const model = input.model ?? MODEL();
   const provider = input.provider ?? providerForModel(model, 'anthropic');
-  const attempt = async (): Promise<SessionResult> => {
+  const attempt = async (args: RunSessionArgs): Promise<SessionResult> => {
     try {
-      return await runSession(input);
+      return await runSession(args);
     } catch (err) {
       // Non-Anthropic adapters throw OrgKeyUnavailableError directly on org key refusals; never retry or swallow it.
       if (err instanceof OrgKeyUnavailableError) throw err;
       // The message is stored in the transcript: an organization's key must
       // not ride along if a subprocess error ever echoed its environment.
-      const message = redactSecret(err instanceof Error ? err.message : String(err), input.apiKey);
+      const message = redactSecret(err instanceof Error ? err.message : String(err), args.apiKey);
       return {
         resultText: '',
         transcript: gzipSync(JSON.stringify({ type: 'session_error', message })),
@@ -297,7 +410,7 @@ export async function runSessionWithRetry(
       };
     }
   };
-  const first = await attempt();
+  const first = await attempt(input);
   if (first.succeeded) return first;
   // Built on either key, thrown only on the organization's: on the
   // deployment's key a refusal is returned as a failed session, as before.
@@ -306,22 +419,41 @@ export async function runSessionWithRetry(
     if (input.apiKey) throw rejectedFirst;
     return first;
   }
-  const second = await attempt();
+  // If the first attempt exhausted turns (`error_max_turns`), run a bounded
+  // 6-turn synthesis-only recovery pass instead of repeating a full 60-turn search.
+  const secondInput = isMaxTurnsExhaustion(first)
+    ? buildSynthesisRecoveryInput(input, first)
+    : input;
+  const second = await attempt(secondInput);
   const usage = mergeUsage(first.usage, second.usage);
   const capturedSnapshotPaths = [
     ...new Set([...(first.capturedSnapshotPaths ?? []), ...(second.capturedSnapshotPaths ?? [])]),
   ];
+  const submittedFindings = second.submittedFindings?.length
+    ? second.submittedFindings
+    : first.submittedFindings;
   // The key can also die between the attempts (credit running out mid-run).
   const refused = !second.succeeded && input.apiKey ? rejectedKeyError(second, model, usage, provider) : null;
   if (refused) throw refused;
   return {
     ...second,
     usage,
+    ...(submittedFindings ? { submittedFindings } : {}),
     ...(capturedSnapshotPaths.length ? { capturedSnapshotPaths } : {}),
   };
 }
 
 const MODEL = () => process.env.ANTHROPIC_MODEL ?? DEFAULT_SESSION_MODEL;
+
+/**
+ * Hard bounds enforced on Anthropic Claude Agent SDK CLI sessions (P2.1):
+ * - Every `source-scout` subagent is capped at `SCOUT_MAX_TURNS = 8` turns.
+ * - `CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION = '8'` caps total subagent dispatches.
+ * - `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION = '40'` caps server-side web searches.
+ */
+export const SCOUT_MAX_TURNS = 8;
+export const CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION = '8';
+export const CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION = '40';
 
 /**
  * Orchestrated mode: when RESEARCH_SUBAGENT_MODEL is set (e.g. 'claude-sonnet-5'),
@@ -332,7 +464,7 @@ const MODEL = () => process.env.ANTHROPIC_MODEL ?? DEFAULT_SESSION_MODEL;
  */
 const SCOUT_MODEL = () => process.env.RESEARCH_SUBAGENT_MODEL;
 
-const SCOUT_AGENT = (model: string) => ({
+export const SCOUT_AGENT = (model: string) => ({
   'source-scout': {
     description:
       'Fast scout for breadth work. Dispatch it for every initial source sweep (one scout per tier or portal), to check whether a portal/publisher has a candidate dataset before you descend a tier, and to skim a candidate page for the exact figure. It reports raw material only — you evaluate and synthesize.',
@@ -340,6 +472,7 @@ const SCOUT_AGENT = (model: string) => ({
       'You are a source scout for a civic research orchestrator. Execute exactly the search or fetch task you were given and report raw material: for each candidate source — URL, publisher, publication date, the exact quoted text containing any relevant figure (with enough surrounding text to locate it), the geography and year the figure covers, and your best guess at its source tier. Report dead ends honestly ("portal has no dataset for X"). Do NOT synthesize, conclude, score, or recommend which source to accept. Never state a figure you did not see verbatim on a fetched page.',
     tools: ['WebSearch', 'WebFetch'],
     model,
+    maxTurns: SCOUT_MAX_TURNS,
   },
 });
 
@@ -467,7 +600,7 @@ const DEPLOYMENT_CREDENTIAL_PREFIXES = [
  */
 export function sessionEnv(
   source: NodeJS.ProcessEnv = process.env,
-  options: { apiKey?: string; pageReaderModel?: string } = {},
+  options: { apiKey?: string; pageReaderModel?: string; subagentModel?: string | null } = {},
 ): Record<string, string> {
   const env: Record<string, string> = {};
   for (const [key, value] of Object.entries(source)) {
@@ -487,6 +620,16 @@ export function sessionEnv(
   // A blank never replaces the worker's pin: the CLI treats '' as unset and
   // would fall back to its own alias.
   if (options.pageReaderModel?.trim()) env.ANTHROPIC_SMALL_FAST_MODEL = options.pageReaderModel.trim();
+  // Pin subagent model explicitly so the orchestrator's Agent/Task tool call
+  // cannot silently override AgentDefinition.model (P2.1).
+  if (options.subagentModel?.trim()) env.CLAUDE_CODE_SUBAGENT_MODEL = options.subagentModel.trim();
+  // Enforce hard CLI subagent & web-search caps on every Claude Code session (P2.1).
+  if (!env.CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION?.trim()) {
+    env.CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION = CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION;
+  }
+  if (!env.CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION?.trim()) {
+    env.CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION = CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION;
+  }
   return env;
 }
 
@@ -561,6 +704,23 @@ export interface RunSessionArgs {
    * session's allowlist, subject to the same `Read` and local-tool guards.
    */
   extraAllowedTools?: string[];
+  /**
+   * When `true` and running on Anthropic, execute via `runDirectAnthropicSession`
+   * (`@anthropic-ai/sdk` Messages API with prompt caching, bounded `read_exhibit`
+   * loop `<= 4` turns, and strict JSON output) instead of spawning a Claude Code
+   * CLI subprocess. Used by verifiers (`runVerifier`) and archive-only post-run
+   * auditors (`auditResearchRun`).
+   */
+  direct?: boolean;
+  /** Optional system prompt override for direct Anthropic sessions. */
+  directSystemPrompt?: string;
+  /** Optional injectable Messages API client for direct Anthropic sessions (tests). */
+  anthropicClient?: MessagesApiClient;
+  /**
+   * Optional concurrency semaphore override; defaults to the worker's shared
+   * `MAX_ACTIVE_SESSIONS` semaphore (`null` disables permit acquisition).
+   */
+  semaphore?: SessionSemaphore | null;
 }
 
 const READ_SOURCE_SCHEMA = z.object({
@@ -597,32 +757,20 @@ const READ_EXHIBIT_SCHEMA = z.object({
     .describe('Exact archived exhibit filename (e.g. "archived-source-excerpt.txt", "archived-snapshot.png", "archived-source.pdf")'),
 });
 
-function buildExhibitMap(archivedExhibits: ArchivedExhibits | undefined): Map<string, Buffer> {
-  const map = new Map<string, Buffer>();
-  if (!archivedExhibits) return map;
-  if (archivedExhibits.pdf) map.set(ARCHIVED_PDF, archivedExhibits.pdf);
-  if (archivedExhibits.pdfExcerpt) map.set(ARCHIVED_PDF_EXCERPT, archivedExhibits.pdfExcerpt);
-  if (archivedExhibits.snapshot) map.set(ARCHIVED_SNAPSHOT, archivedExhibits.snapshot);
-  const additional = archivedExhibits.additional ?? [];
-  if (
-    additional.length > 15 ||
-    additional.some(({ filename }) => !/^action-[1-5]-(?:snapshot\.png|source\.pdf|source-excerpt\.txt)$/.test(filename))
-  ) {
-    throw new Error('invalid fixed action exhibit filename');
-  }
-  for (const { filename, body } of additional) {
-    map.set(filename, body);
-  }
-  return map;
-}
-
 /**
- * One research session = one Agent SDK session (Anthropic) or native
- * function-calling provider loop (OpenAI, Google Gemini) in a scratch
- * workspace (SPEC.md §8 Apply). The full message stream is retained as the
- * audit transcript (gzipped JSONL).
+ * One research session = one Agent SDK session (Anthropic open-web CLI),
+ * one direct zero-subprocess Anthropic Messages session (`direct: true`,
+ * for verifiers and archive-only auditors), or one native function-calling
+ * provider loop (OpenAI, Google Gemini). Bounded globally by the worker's
+ * shared `MAX_ACTIVE_SESSIONS` semaphore.
  */
 export async function runSession(input: RunSessionArgs): Promise<SessionResult> {
+  const semaphore = input.semaphore === undefined ? getSharedSessionSemaphore() : input.semaphore;
+  const runBody = () => runSessionUnbounded(input);
+  return semaphore ? semaphore.run(runBody) : runBody();
+}
+
+async function runSessionUnbounded(input: RunSessionArgs): Promise<SessionResult> {
   const effectiveModel = input.model ?? MODEL();
   const provider = input.provider ?? providerForModel(effectiveModel, 'anthropic');
   const effectiveAllowedTools = [
@@ -631,6 +779,27 @@ export async function runSession(input: RunSessionArgs): Promise<SessionResult> 
   const sourceCache = input.sourceCache ?? getSharedSourceCache();
   let submittedFindings: FindingPayload[] | undefined;
   const capturedSnapshotPaths = new Set<string>();
+
+  if (provider === 'anthropic' && input.direct) {
+    const out = await runDirectAnthropicSession({
+      prompt: input.prompt,
+      model: effectiveModel,
+      ...(input.directSystemPrompt ? { systemPrompt: input.directSystemPrompt } : {}),
+      archivedExhibits: input.archivedExhibits,
+      allowReadExhibit: effectiveAllowedTools.includes('Read'),
+      ...(input.maxTurns !== undefined ? { maxTurns: input.maxTurns } : {}),
+      ...(input.apiKey ? { apiKey: input.apiKey, isOrganizationKey: true } : {}),
+      ...(input.anthropicClient ? { client: input.anthropicClient } : {}),
+    });
+    return {
+      resultText: out.resultText,
+      transcript: out.transcript,
+      usage: out.usage,
+      succeeded: out.succeeded,
+      ...(out.apiError ? { apiError: out.apiError as SDKAssistantMessageError } : {}),
+      ...(out.apiErrorText ? { apiErrorText: redactErrorText(out.apiErrorText, input.apiKey) } : {}),
+    };
+  }
 
   if (provider !== 'anthropic') {
     const storage = input.storage;
@@ -746,7 +915,7 @@ export async function runSession(input: RunSessionArgs): Promise<SessionResult> 
       }
     }
 
-    const exhibitMap = buildExhibitMap(input.archivedExhibits);
+    const exhibitMap = buildArchivedExhibitMap(input.archivedExhibits);
     if (exhibitMap.size > 0 && effectiveAllowedTools.includes('Read')) {
       toolDefs.push({
         name: 'read_exhibit',
@@ -1033,7 +1202,11 @@ export async function runSession(input: RunSessionArgs): Promise<SessionResult> 
           disallowedTools: LOCAL_MACHINE_TOOLS.filter((t) => !allowed.includes(t)),
           permissionMode: 'dontAsk',
           ...(allowed.includes('Read') ? { hooks: { PreToolUse: [{ matcher: 'Read', hooks: [guardArchiveRead] }] } } : {}),
-          env: sessionEnv(process.env, { apiKey: input.apiKey, pageReaderModel: input.pageReaderModel }),
+          env: sessionEnv(process.env, {
+            apiKey: input.apiKey,
+            pageReaderModel: input.pageReaderModel,
+            ...(orchestrated && scoutModel ? { subagentModel: scoutModel } : {}),
+          }),
           maxTurns: input.maxTurns ?? DEFAULT_SESSION_MAX_TURNS,
           // The raw API stream events, for SessionMeter: only a call's
           // message_delta carries its final output count (see SessionMeter).

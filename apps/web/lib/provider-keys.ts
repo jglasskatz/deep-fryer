@@ -1,8 +1,14 @@
 import 'server-only';
-import { PROVIDER_META, type ResearchProvider } from '@deep-fryer/core';
+import { PROVIDER_META, providerForModel, type ResearchProvider } from '@deep-fryer/core';
 import { SecretDecryptError, decryptSecret, encryptSecret } from '@deep-fryer/core/secrets';
 import { UserError } from './action-result';
-import { apiKeyFormatProblem, validateAnthropicKey } from './anthropic-key';
+import {
+  anthropicModelAccessMessage,
+  apiKeyFormatProblem,
+  validateAnthropicKey,
+} from './anthropic-key';
+
+export { anthropicModelAccessMessage };
 
 /**
  * Multi-provider organization API key validation and AES-256-GCM binding
@@ -101,21 +107,54 @@ export function providerValidationMessages(provider: ResearchProvider) {
 }
 
 /**
+ * Deduplicated Anthropic researcher/verifier model IDs configured in env
+ * (`ANTHROPIC_MODEL`, `VERIFIER_MODEL`) to verify via `GET /v1/models/<id>`
+ * when an organization saves an Anthropic API key (P2.2).
+ */
+export function configuredAnthropicRequiredModels(
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): string[] {
+  const candidates = [env.ANTHROPIC_MODEL, env.VERIFIER_MODEL];
+  const models: string[] = [];
+  for (const raw of candidates) {
+    const id = raw?.trim();
+    if (!id) continue;
+    if (providerForModel(id, 'anthropic') !== 'anthropic') continue;
+    if (!models.includes(id)) models.push(id);
+  }
+  return models;
+}
+
+/**
  * Validate `apiKey` live against `provider`'s Models endpoint (zero tokens
- * consumed). Resolves on success; throws an owner-facing `UserError` otherwise.
+ * consumed). For Anthropic keys, optionally verifies `GET /v1/models/<id>` for
+ * each configured researcher/verifier model in `options.requiredModels` so org
+ * keys lacking model access fail fast with an actionable error instead of
+ * failing mid-run. Resolves on success; throws an owner-facing `UserError` otherwise.
  */
 export async function validateProviderKey(
   provider: ResearchProvider,
   apiKey: string,
-  options: { fetch?: typeof fetch } = {},
+  options: {
+    fetch?: typeof fetch;
+    requiredModels?: readonly (string | null | undefined)[];
+  } = {},
 ): Promise<void> {
   const problem = providerKeyFormatProblem(provider, apiKey);
   if (problem) throw new UserError(problem);
 
+  const requiredModels = [
+    ...new Set(
+      (options.requiredModels ?? [])
+        .map((m) => (typeof m === 'string' ? m.trim() : ''))
+        .filter((m) => m.length > 0),
+    ),
+  ];
+
   // When no custom fetch stub is provided for Anthropic, use the existing SDK
   // validator so existing Anthropic SDK spies and error mapping stay intact.
   if (provider === 'anthropic' && !options.fetch) {
-    await validateAnthropicKey(apiKey);
+    await validateAnthropicKey(apiKey, requiredModels.length ? { requiredModels } : undefined);
     return;
   }
 
@@ -146,7 +185,32 @@ export async function validateProviderKey(
     throw new UserError(msgs.unreachable);
   }
 
-  if (res.ok) return;
+  if (res.ok) {
+    if (provider === 'anthropic' && requiredModels.length > 0) {
+      for (const modelId of requiredModels) {
+        let modelRes: Response;
+        try {
+          modelRes = await fetchImpl(`https://api.anthropic.com/v1/models/${encodeURIComponent(modelId)}`, {
+            method: 'GET',
+            headers,
+            signal: AbortSignal.timeout(VALIDATE_TIMEOUT_MS),
+          });
+        } catch {
+          throw new UserError(msgs.unreachable);
+        }
+        if (modelRes.ok) continue;
+        if (modelRes.status === 404 || modelRes.status === 403) {
+          throw new UserError(anthropicModelAccessMessage(modelId));
+        }
+        if (modelRes.status === 401) throw new UserError(msgs.rejected);
+        console.warn(
+          `[api-key] Anthropic answered the model check for ${modelId} with HTTP ${modelRes.status}`,
+        );
+        throw new UserError(msgs.unchecked);
+      }
+    }
+    return;
+  }
   if (res.status === 401) throw new UserError(msgs.rejected);
   if (res.status === 403) throw new UserError(msgs.forbidden);
   // Google Gemini returns HTTP 400 with API_KEY_INVALID for malformed/revoked keys.
