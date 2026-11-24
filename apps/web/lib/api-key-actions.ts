@@ -16,7 +16,7 @@ import {
 import { action, UserError } from './action-result';
 import { audit } from './audit';
 import { getAuth, requireOrgRole } from './auth';
-import { encryptProviderKey, validateProviderKey } from './provider-keys';
+import { configuredAnthropicRequiredModels, encryptProviderKey, validateProviderKey } from './provider-keys';
 import { contactSentence } from './billing';
 import { systemDb, userDb } from './db';
 import { secretsKey } from './env';
@@ -120,7 +120,8 @@ export const saveApiKey = action(
     // Before anything reaches the provider: without DF_SECRETS_KEY nothing could be stored.
     const keyMaterial = encryptionKey();
     const key = typeof apiKey === 'string' ? apiKey.trim() : '';
-    await validateProviderKey(provider, key);
+    const requiredModels = provider === 'anthropic' ? configuredAnthropicRequiredModels(process.env) : [];
+    await validateProviderKey(provider, key, requiredModels.length ? { requiredModels } : undefined);
 
     const validatedAt = new Date();
     const ciphertext = await encryptProviderKey(key, keyMaterial, org.id, provider);

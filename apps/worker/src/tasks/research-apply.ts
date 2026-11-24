@@ -12,6 +12,7 @@ import {
   PROVIDER_META,
   emptyUsage,
   parseResearchProvider,
+  priceSessionUsage,
   providerForModel,
   resolveProviderEnvKey,
   type ContentSupported,
@@ -579,20 +580,21 @@ export const researchApply: Task = async (rawPayload, helpers) => {
 
       // Keep run provenance synced with the actual resolved research provider
       // (covers runs applied before provider routing or unmetered runs).
-      if (!run.execution || run.execution.provider !== providers.researchProvider) {
-        const syncedExecution = {
+      let currentExecution = run.execution;
+      if (!currentExecution || currentExecution.provider !== providers.researchProvider) {
+        currentExecution = {
           provider: providers.researchProvider,
           endpoint_host:
-            run.execution?.endpoint_host ??
+            currentExecution?.endpoint_host ??
             (run.funding === 'organization_key'
               ? PROVIDER_META[providers.researchProvider].firstPartyHost
               : null),
           executor: 'shared_worker' as const,
-          host_region: run.execution?.host_region ?? (process.env.DF_HOST_REGION?.trim() || null),
+          host_region: currentExecution?.host_region ?? (process.env.DF_HOST_REGION?.trim() || null),
         };
         await db
           .update(researchRuns)
-          .set({ execution: syncedExecution })
+          .set({ execution: currentExecution })
           .where(eq(researchRuns.id, runId));
       }
 
@@ -1064,41 +1066,71 @@ export const researchApply: Task = async (rawPayload, helpers) => {
         });
       };
 
+      // Hard per-run dollar circuit breaker (MAX_RUN_USD, default $150): checked
+      // between sessions using live priceSessionUsage(foldedUsage) so runaway
+      // retry or escalation loops halt cleanly with all completed findings preserved.
+      const maxRunBudget = resolveMaxRunUsd(process.env.MAX_RUN_USD);
+      if (!maxRunBudget.valid) {
+        helpers.logger.warn(
+          `MAX_RUN_USD=${JSON.stringify(process.env.MAX_RUN_USD)} is not a positive dollar amount; defaulting to $${DEFAULT_MAX_RUN_USD}`,
+        );
+      }
+
       // Bounded pool: next session starts as soon as a slot frees. A refused
-      // key, or any other error, stops new sessions from starting; the ones
-      // already running finish (and record themselves) before the error is
-      // rethrown, so the run is never settled while a session still writes.
-      let cursor = 0;
-      let poolError: { error: unknown } | null = null;
-      await Promise.all(
-        Array.from({ length: Math.min(concurrency.value, indexedDimensionSpecs.length) }, async () => {
-          while (!keyFailure && !poolError && cursor < indexedDimensionSpecs.length) {
-            const entry = indexedDimensionSpecs[cursor++]!;
-            try {
-              await processDimension(entry);
-            } catch (error) {
-              poolError ??= { error };
-            }
-          }
-        }),
-      );
-      if (poolError) throw (poolError as { error: unknown }).error;
+      // key, budget circuit-breaker trip, or any other error stops new sessions
+      // from starting; the ones already running finish (and record themselves)
+      // before settling, so the run is never settled while a session still writes.
+      const poolResult = await runDimensionPoolWithBudget({
+        items: indexedDimensionSpecs,
+        concurrency: concurrency.value,
+        getUsage: () => usage,
+        maxRunUsd: maxRunBudget.value,
+        shouldStop: () => Boolean(keyFailure),
+        onBudgetExceeded: (check) => {
+          helpers.logger.warn(`run ${runId}: ${check.note}`);
+        },
+        runItem: processDimension,
+      });
+      if (poolResult.error) throw poolResult.error;
       if (keyFailure) throw keyFailure;
+
+      let budgetCapNote = poolResult.budgetCapNote;
+      if (!budgetCapNote) {
+        const postDimBudget = checkRunBudget(usage, maxRunBudget.value);
+        if (postDimBudget.exceeded) {
+          budgetCapNote = postDimBudget.note;
+          helpers.logger.warn(`run ${runId}: ${budgetCapNote}`);
+        }
+      }
+
+      if (budgetCapNote && currentExecution) {
+        currentExecution = { ...currentExecution, budget_cap_note: budgetCapNote };
+        await db
+          .update(researchRuns)
+          .set({ execution: currentExecution })
+          .where(eq(researchRuns.id, runId));
+      }
 
       // Independent post-run recommendations stay in the staff plane. They
       // share the run's funding/model policy and report their own usage; an
       // audit service/persistence failure must not discard completed research.
-      try {
-        const auditUsage = await auditResearchRun(run, helpers, {
-          apiKey: verifierApiKey,
-          verifierModel: plan.models?.verifier_model,
-          provider: providers.verifierProvider,
-          ...(plan.caps ? { maxTurns: plan.caps.audit_max_turns } : {}),
-          ...(plan.models?.page_reader_model ? { pageReaderModel: plan.models.page_reader_model } : {}),
-        });
-        await recordUsage(auditUsage);
-      } catch {
-        helpers.logger.warn(`run ${runId}: automatic audit could not finish; findings remain available for human review`);
+      // When the hard MAX_RUN_USD circuit breaker tripped, skip launching new
+      // paid post-run audit sessions so spend stops immediately.
+      if (budgetCapNote) {
+        helpers.logger.warn(`run ${runId}: skipping automatic post-run audit after MAX_RUN_USD circuit breaker`);
+      } else {
+        try {
+          const auditUsage = await auditResearchRun(run, helpers, {
+            apiKey: verifierApiKey,
+            verifierModel: plan.models?.verifier_model,
+            provider: providers.verifierProvider,
+            ...(plan.caps ? { maxTurns: plan.caps.audit_max_turns } : {}),
+            ...(plan.models?.page_reader_model ? { pageReaderModel: plan.models.page_reader_model } : {}),
+          });
+          await recordUsage(auditUsage);
+        } catch {
+          helpers.logger.warn(`run ${runId}: automatic audit could not finish; findings remain available for human review`);
+        }
       }
 
       const settled = settledRunStatus(
@@ -1136,6 +1168,126 @@ export const researchApply: Task = async (rawPayload, helpers) => {
 
 /** How many dimension sessions run at once when RESEARCH_SESSION_CONCURRENCY is unset or unusable. */
 export const DEFAULT_SESSION_CONCURRENCY = 3;
+
+/** Hard per-run dollar circuit breaker ceiling when MAX_RUN_USD is unset (P2.2). */
+export const DEFAULT_MAX_RUN_USD = 150;
+
+/**
+ * Pure: parse `MAX_RUN_USD` into a positive dollar limit, falling back to
+ * `DEFAULT_MAX_RUN_USD` ($150) with `valid: false` on malformed values.
+ */
+export function resolveMaxRunUsd(raw: string | undefined = process.env.MAX_RUN_USD): {
+  value: number;
+  valid: boolean;
+} {
+  if (raw === undefined || raw.trim() === '') {
+    return { value: DEFAULT_MAX_RUN_USD, valid: true };
+  }
+  const trimmed = raw.trim();
+  const parsed = /^\d+(?:\.\d+)?$/.test(trimmed) ? Number.parseFloat(trimmed) : NaN;
+  return Number.isFinite(parsed) && parsed > 0
+    ? { value: parsed, valid: true }
+    : { value: DEFAULT_MAX_RUN_USD, valid: false };
+}
+
+/**
+ * Pure: fold every recorded session/stage usage record in `RunTokenUsage` via
+ * `mergeUsage` and price the live cumulative spend via `priceSessionUsage`.
+ */
+export function foldedRunSpendUsd(usage: RunTokenUsage): { dollars: number; unpriced: string[] } {
+  const values = Object.values(usage);
+  if (values.length === 0) return { dollars: 0, unpriced: [] };
+  let folded = values[0]!;
+  for (let i = 1; i < values.length; i++) {
+    folded = mergeUsage(folded, values[i]!);
+  }
+  return priceSessionUsage(folded);
+}
+
+export interface RunBudgetCheck {
+  exceeded: boolean;
+  spentUsd: number;
+  limitUsd: number;
+  note: string | null;
+}
+
+/**
+ * Pure: evaluate whether live folded run spend has reached or exceeded the
+ * configured `MAX_RUN_USD` circuit breaker.
+ */
+export function checkRunBudget(usage: RunTokenUsage, limitUsd: number = DEFAULT_MAX_RUN_USD): RunBudgetCheck {
+  const { dollars } = foldedRunSpendUsd(usage);
+  if (dollars >= limitUsd) {
+    return {
+      exceeded: true,
+      spentUsd: dollars,
+      limitUsd,
+      note: `Run halted early: live spend ($${dollars.toFixed(2)}) reached MAX_RUN_USD budget cap ($${limitUsd.toFixed(2)}). All completed sessions and findings were preserved.`,
+    };
+  }
+  return { exceeded: false, spentUsd: dollars, limitUsd, note: null };
+}
+
+/**
+ * Execute planned dimension items under a bounded concurrency pool while
+ * checking `checkRunBudget` before launching each next item. When the budget
+ * cap is reached, no further items are started, in-flight items finish cleanly,
+ * and `budgetCapNote` carries the explicit circuit-breaker explanation.
+ */
+export async function runDimensionPoolWithBudget<T>(options: {
+  items: readonly T[];
+  concurrency: number;
+  getUsage: () => RunTokenUsage;
+  maxRunUsd: number;
+  shouldStop?: () => boolean;
+  onBudgetExceeded?: (check: RunBudgetCheck) => void;
+  runItem: (item: T) => Promise<void>;
+}): Promise<{
+  completedCount: number;
+  skippedCount: number;
+  budgetCapNote: string | null;
+  error: unknown;
+}> {
+  let cursor = 0;
+  let completedCount = 0;
+  let budgetCapNote: string | null = null;
+  let poolError: { error: unknown } | null = null;
+  const workers = Math.max(1, Math.min(options.concurrency, options.items.length));
+
+  if (options.items.length === 0) {
+    return { completedCount: 0, skippedCount: 0, budgetCapNote: null, error: null };
+  }
+
+  await Promise.all(
+    Array.from({ length: workers }, async () => {
+      while (!poolError && !budgetCapNote && !options.shouldStop?.() && cursor < options.items.length) {
+        const budget = checkRunBudget(options.getUsage(), options.maxRunUsd);
+        if (budget.exceeded) {
+          if (!budgetCapNote) {
+            budgetCapNote = budget.note;
+            options.onBudgetExceeded?.(budget);
+          }
+          break;
+        }
+        const item = options.items[cursor++]!;
+        try {
+          await options.runItem(item);
+          completedCount++;
+        } catch (error) {
+          poolError ??= { error };
+        }
+      }
+    }),
+  );
+
+  const finalError = poolError as { error: unknown } | null;
+  return {
+    completedCount,
+    skippedCount: Math.max(0, options.items.length - cursor),
+    budgetCapNote,
+    error: finalError ? finalError.error : null,
+  };
+}
 
 /**
  * Pure: RESEARCH_SESSION_CONCURRENCY read as the dimension pool's size. Only
@@ -1922,6 +2074,9 @@ async function runVerifier(
       prompt,
       allowedTools: VERIFIER_TOOLS,
       provider: resolvedProvider,
+      // Zero-subprocess direct Anthropic Messages runner (<= 4 read_exhibit turns,
+      // prompt caching, strict JSON) eliminates ~10k-token CLI overhead per finding.
+      ...(resolvedProvider === 'anthropic' ? { direct: true } : {}),
       archivedExhibits: archive.exhibits,
       orchestrate: false,
       // The plan's cap, never today's constant: a planned run keeps the

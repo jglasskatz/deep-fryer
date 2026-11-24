@@ -6,10 +6,12 @@ import {
   effectiveLimits,
   standing,
   standingMessage,
+  weightedSessionCredits,
   type FirstDoughnut,
   type ResearchPlan,
   type ResearchProvider,
   type ResearchQuotaCheck,
+  type StrategyName,
 } from '@deep-fryer/core';
 import type { DbExecutor } from './client.js';
 import {
@@ -113,11 +115,18 @@ async function researchSessionsFunded(
   const rows = await db
     .select({
       used: sql<number>`coalesce(sum(
-        CASE WHEN ${researchRuns.status} IN ('planned', 'running')
-          THEN jsonb_array_length(${researchRuns.plan}->'sessions')
-          ELSE (SELECT count(*) FROM research_sessions s
-                 WHERE s.run_id = ${researchRuns.id} AND s.status <> 'failed')
-        END), 0)::int`,
+        ceil(
+          (CASE WHEN ${researchRuns.status} IN ('planned', 'running')
+            THEN jsonb_array_length(${researchRuns.plan}->'sessions')
+            ELSE (SELECT count(*) FROM research_sessions s
+                   WHERE s.run_id = ${researchRuns.id} AND s.status <> 'failed')
+          END)
+          * (CASE ${researchRuns.plan}->>'strategy'
+              WHEN 'deep' THEN 3.0
+              WHEN 'hybrid' THEN 1.5
+              ELSE 1.0
+            END)
+        )), 0)::int`,
     })
     .from(researchRuns)
     .innerJoin(tenants, eq(tenants.id, researchRuns.tenantId))
@@ -448,7 +457,9 @@ export function decideResearchSpend(
   requested: number,
   now: Date = new Date(),
   first: FirstDoughnutFacts = PAID_FIRST_DOUGHNUT,
+  strategy?: StrategyName,
 ): Omit<ResearchGate, 'subscription'> {
+  const requestedCredits = weightedSessionCredits(requested, strategy);
   if (first.choice === 'own' && first.firstFullBuild && firstDoughnutEligible(sub, now)) {
     if (hasOrganizationKey) {
       return {
@@ -458,15 +469,15 @@ export function decideResearchSpend(
     }
     return {
       funding: 'plan',
-      check: { ...checkResearchQuota(sub, used, requested, now), message: firstDoughnutAddKeyMessage(sub, now) },
+      check: { ...checkResearchQuota(sub, used, requestedCredits, now), message: firstDoughnutAddKeyMessage(sub, now) },
     };
   }
   if (!hasOrganizationKey) {
-    return { funding: 'plan', check: checkResearchQuota(sub, used, requested, now) };
+    return { funding: 'plan', check: checkResearchQuota(sub, used, requestedCredits, now) };
   }
   if (!sub || !standing(sub, now).active) {
     // Standing refusals read the same whoever pays; checkResearchQuota phrases them.
-    return { funding: 'organization_key', check: checkResearchQuota(sub, used, requested, now) };
+    return { funding: 'organization_key', check: checkResearchQuota(sub, used, requestedCredits, now) };
   }
   const limit = effectiveLimits(sub).researchSessions;
   return {
@@ -505,7 +516,11 @@ export async function gateResearchSpend(
   organizationId: string,
   requested: number,
   now: Date = new Date(),
-  options: { firstDoughnut?: FirstDoughnut; run?: { tenantId: string; plan: ResearchPlan } } = {},
+  options: {
+    firstDoughnut?: FirstDoughnut;
+    run?: { tenantId: string; plan: ResearchPlan };
+    strategy?: StrategyName;
+  } = {},
 ): Promise<ResearchGate> {
   const sub = await lockSubscription(tx, organizationId);
   const used = sub ? await researchSessionsUsed(tx, organizationId, sub.currentPeriodStart) : 0;
@@ -525,5 +540,6 @@ export async function gateResearchSpend(
       (await planIsFullBuild(tx, organizationId, options.run.tenantId, options.run.plan));
     first = { choice: 'own', firstFullBuild };
   }
-  return { subscription: sub, ...decideResearchSpend(sub, used, hasKey, requested, now, first) };
+  const strategy = options.strategy ?? options.run?.plan.strategy;
+  return { subscription: sub, ...decideResearchSpend(sub, used, hasKey, requested, now, first, strategy) };
 }

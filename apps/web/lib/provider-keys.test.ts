@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { SecretDecryptError, encryptSecret, parseSecretsKey } from '@deep-fryer/core/secrets';
 import { UserError } from './action-result';
 import {
+  anthropicModelAccessMessage,
+  configuredAnthropicRequiredModels,
   decryptProviderKey,
   encryptProviderKey,
   providerKeyAssociatedData,
@@ -112,5 +114,57 @@ describe('validateProviderKey (mocked fetch)', () => {
     await expect(validateProviderKey('google', GOOGLE_KEY, { fetch: invalidFetch })).rejects.toThrow(
       new UserError(providerValidationMessages('google').rejected),
     );
+  });
+
+  it('checks GET /v1/models/<id> for configured Anthropic researcher/verifier models and fails fast on missing model access (P2.2)', async () => {
+    const requestedUrls: string[] = [];
+    const okFetch = vi.fn(async (input: string | URL | Request) => {
+      requestedUrls.push(String(input));
+      return new Response(JSON.stringify({ id: 'ok' }), { status: 200 });
+    });
+
+    await expect(
+      validateProviderKey('anthropic', ANTHROPIC_KEY, {
+        fetch: okFetch,
+        requiredModels: ['claude-sonnet-5-5', 'claude-opus-5-5', 'claude-sonnet-5-5', '  '],
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(requestedUrls).toEqual([
+      'https://api.anthropic.com/v1/models?limit=1',
+      'https://api.anthropic.com/v1/models/claude-sonnet-5-5',
+      'https://api.anthropic.com/v1/models/claude-opus-5-5',
+    ]);
+
+    const missingOpusFetch = vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.endsWith('/claude-opus-5-5')) {
+        return new Response(JSON.stringify({ type: 'error', error: { type: 'not_found_error' } }), { status: 404 });
+      }
+      return new Response(JSON.stringify({ data: [] }), { status: 200 });
+    });
+
+    const err = await validateProviderKey('anthropic', ANTHROPIC_KEY, {
+      fetch: missingOpusFetch,
+      requiredModels: ['claude-sonnet-5-5', 'claude-opus-5-5'],
+    }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(UserError);
+    expect((err as Error).message).toBe(anthropicModelAccessMessage('claude-opus-5-5'));
+    expect((err as Error).message).toContain('claude-opus-5-5');
+    expect((err as Error).message).not.toContain(ANTHROPIC_KEY);
+
+    expect(
+      configuredAnthropicRequiredModels({
+        ANTHROPIC_MODEL: 'claude-sonnet-5-5',
+        VERIFIER_MODEL: 'claude-opus-5-5',
+      }),
+    ).toEqual(['claude-sonnet-5-5', 'claude-opus-5-5']);
+    // Non-Anthropic verifier models are ignored by Anthropic model validation.
+    expect(
+      configuredAnthropicRequiredModels({
+        ANTHROPIC_MODEL: 'claude-sonnet-5',
+        VERIFIER_MODEL: 'gpt-5',
+      }),
+    ).toEqual(['claude-sonnet-5']);
   });
 });

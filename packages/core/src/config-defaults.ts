@@ -56,9 +56,8 @@ export function defaultTenantConfig(regionName: string, regionDefinition: string
     notifications: defaultNotifications,
     features: defaultFeatures,
     progress: defaultProgressConfig,
-    // New portraits look for stand-ins for their gaps; a stand-in is never
-    // published until a person accepts it. Portraits made before this
-    // setting have no row and read as RESEARCH_MODE_WHEN_UNSET.
-    research_mode: 'right_first_then_fill',
+    // New portraits default to right_first so tenant settings accurately reflect
+    // current worker execution (stand-in proxy fill is opt-in once implemented).
+    research_mode: 'right_first',
   };
 }

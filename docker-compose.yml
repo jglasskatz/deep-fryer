@@ -212,9 +212,14 @@ services:
       # Dimension sessions one research run keeps going at once (a whole number >= 1). Run outside compose,
       # an empty value would mean 1 (Number('') is 0, floored to 1); here it means 3.
       RESEARCH_SESSION_CONCURRENCY: ${RESEARCH_SESSION_CONCURRENCY:-3}
+      # Shared worker-wide semaphore bounding total active research & policy sessions across all jobs (P2.2).
+      MAX_ACTIVE_SESSIONS: ${MAX_ACTIVE_SESSIONS:-6}
+      # Hard per-run dollar circuit breaker halting runaway retry/escalation loops cleanly (P2.2).
+      MAX_RUN_USD: ${MAX_RUN_USD:-150}
       # Decrypts organizations' own Anthropic API keys for their sessions (same value as web).
       DF_SECRETS_KEY: ${DF_SECRETS_KEY:-}
-      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-1}
+      # Concurrent research_apply jobs (policy_analyze runs on its own concurrency-2 runner; MAX_ACTIVE_SESSIONS caps total sessions).
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-2}
       # The egress proxy (docs/deploy.md "Worker egress"): the research traffic — the sessions' model
       # calls and page reads, Chromium's evidence captures, the worker's own source checks, PDF downloads
       # and NWS feed — goes through it. The sessions' CLI and Chromium read HTTPS_PROXY themselves; Node's

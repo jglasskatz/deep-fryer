@@ -5,6 +5,7 @@ import {
   FULL_PORTRAIT_AUDIT_COST_USD,
   FULL_PORTRAIT_COST_USD,
   RESEARCH_SESSION_COST_USD,
+  STRATEGY_SESSION_WEIGHTS,
   estimateAuditCost,
   estimateRunCost,
   estimateTotalRunCost,
@@ -12,6 +13,8 @@ import {
   formatTypicalCost,
   researchRunSessions,
   dimensionResearchSessions,
+  strategySessionWeight,
+  weightedSessionCredits,
 } from './research-cost.js';
 
 /** The numbers docs/research-cost.md states; this file and the document must agree. */
@@ -121,5 +124,35 @@ describe('estimateAuditCost & estimateTotalRunCost', () => {
     const policy = estimateTotalRunCost(1, 'standard');
     expect(policy.auditTypicalUsd).toBe(0);
     expect(policy.totalTypicalUsd).toBe(policy.typicalUsd);
+  });
+});
+
+describe('strategySessionWeight & weightedSessionCredits (P2.2)', () => {
+  it('weights standard/operator-defaults at 1x, hybrid at 1.5x, and deep at 3x', () => {
+    expect(STRATEGY_SESSION_WEIGHTS).toEqual({
+      standard: 1,
+      'operator-defaults': 1,
+      hybrid: 1.5,
+      deep: 3,
+    });
+    expect(strategySessionWeight('standard')).toBe(1);
+    expect(strategySessionWeight('operator-defaults')).toBe(1);
+    expect(strategySessionWeight('hybrid')).toBe(1.5);
+    expect(strategySessionWeight('deep')).toBe(3);
+    expect(strategySessionWeight(undefined)).toBe(1);
+    expect(strategySessionWeight(null)).toBe(1);
+  });
+
+  it('rounds weighted session credits up to integer plan credits and refuses negative/fractional counts', () => {
+    expect(weightedSessionCredits(22, 'standard')).toBe(22);
+    expect(weightedSessionCredits(22, 'operator-defaults')).toBe(22);
+    expect(weightedSessionCredits(22, 'hybrid')).toBe(33);
+    expect(weightedSessionCredits(22, 'deep')).toBe(66);
+    // Odd session counts round up on 1.5x hybrid weight.
+    expect(weightedSessionCredits(1, 'hybrid')).toBe(2);
+    expect(weightedSessionCredits(3, 'hybrid')).toBe(5);
+    expect(weightedSessionCredits(0, 'deep')).toBe(0);
+    expect(() => weightedSessionCredits(-1, 'deep')).toThrow(RangeError);
+    expect(() => weightedSessionCredits(2.5, 'hybrid')).toThrow(RangeError);
   });
 });

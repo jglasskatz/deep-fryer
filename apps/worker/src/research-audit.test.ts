@@ -227,4 +227,19 @@ describe('planAuditWork & shouldSkipWorkflowAudit (P0.4 deduplication)', () => {
     // g-opus was confirmed by Opus escalation -> skipped!
     expect(planned.find((p) => p.finding.id === 'g-opus')).toBeUndefined();
   });
+
+  it('routes archive-only indicator workflow audits to zero-subprocess direct Anthropic runner (P2.1)', async () => {
+    const { isArchiveOnlyAudit } = await import('./research-audit.js');
+    const ind = makeFinding('f1');
+    const gap = makeGap('g1');
+
+    // Indicator + workflow-only + mounted exhibits => archive-only direct mode!
+    expect(isArchiveOnlyAudit(ind, ['workflow'], ['archived-source-excerpt.txt'])).toBe(true);
+    // Missing exhibits => needs live WebFetch/WebSearch fallback.
+    expect(isArchiveOnlyAudit(ind, ['workflow'], [])).toBe(false);
+    // Gaps, tier_audit, and merged workflow+tier_audit require WebSearch.
+    expect(isArchiveOnlyAudit(gap, ['workflow'], ['archived-source-excerpt.txt'])).toBe(false);
+    expect(isArchiveOnlyAudit(ind, ['tier_audit'], ['archived-source-excerpt.txt'])).toBe(false);
+    expect(isArchiveOnlyAudit(ind, ['workflow', 'tier_audit'], ['archived-source-excerpt.txt'])).toBe(false);
+  });
 });

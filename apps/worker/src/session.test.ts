@@ -223,8 +223,12 @@ describe('runSession containment', () => {
 });
 
 describe('sessionEnv', () => {
-  it('passes the model client configuration and proxy settings, nothing else', async () => {
-    const { sessionEnv } = await import('./session.js');
+  it('passes the model client configuration, proxy settings, and P2.1 CLI safety caps, nothing else', async () => {
+    const {
+      CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION,
+      CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION,
+      sessionEnv,
+    } = await import('./session.js');
     expect(
       sessionEnv({
         ...SECRETS,
@@ -242,8 +246,21 @@ describe('sessionEnv', () => {
       ANTHROPIC_API_KEY: 'k',
       ANTHROPIC_BASE_URL: 'https://gateway',
       CLAUDE_CODE_MAX_OUTPUT_TOKENS: '8000',
+      CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION,
+      CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION,
       no_proxy: 'localhost',
     });
+  });
+
+  it('sets CLAUDE_CODE_SUBAGENT_MODEL explicitly when subagentModel is configured', async () => {
+    const { sessionEnv } = await import('./session.js');
+    const env = sessionEnv(
+      { PATH: '/usr/bin', ANTHROPIC_API_KEY: 'k' },
+      { subagentModel: 'claude-haiku-5-5' },
+    );
+    expect(env.CLAUDE_CODE_SUBAGENT_MODEL).toBe('claude-haiku-5-5');
+    expect(env.CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION).toBe('8');
+    expect(env.CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION).toBe('40');
   });
 });
 
@@ -251,17 +268,26 @@ describe('sessionEnv with a planned page reader', () => {
   it('reads fetched pages through the plan’s page reader instead of the worker’s setting, on either key', async () => {
     const { sessionEnv } = await import('./session.js');
     const worker = { PATH: '/usr/bin', ANTHROPIC_API_KEY: 'k', ANTHROPIC_SMALL_FAST_MODEL: 'worker-reader' };
-    expect(sessionEnv(worker, { pageReaderModel: 'planned-reader' })).toEqual({ ...worker, ANTHROPIC_SMALL_FAST_MODEL: 'planned-reader' });
+    const caps = { CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION: '8', CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION: '40' };
+    expect(sessionEnv(worker, { pageReaderModel: 'planned-reader' })).toEqual({
+      ...worker,
+      ...caps,
+      ANTHROPIC_SMALL_FAST_MODEL: 'planned-reader',
+    });
     expect(sessionEnv(worker, { apiKey: 'sk-ant-org-key', pageReaderModel: 'planned-reader' })).toEqual({
-      PATH: '/usr/bin', ANTHROPIC_API_KEY: 'sk-ant-org-key', ANTHROPIC_SMALL_FAST_MODEL: 'planned-reader',
+      PATH: '/usr/bin',
+      ANTHROPIC_API_KEY: 'sk-ant-org-key',
+      ANTHROPIC_SMALL_FAST_MODEL: 'planned-reader',
+      ...caps,
     });
   });
 
   it('keeps the worker’s page reader when the plan recorded none, or a blank one', async () => {
     const { sessionEnv } = await import('./session.js');
     const worker = { PATH: '/usr/bin', ANTHROPIC_SMALL_FAST_MODEL: 'worker-reader' };
-    expect(sessionEnv(worker, {})).toEqual(worker);
-    expect(sessionEnv(worker, { pageReaderModel: '  ' })).toEqual(worker);
+    const caps = { CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION: '8', CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION: '40' };
+    expect(sessionEnv(worker, {})).toEqual({ ...worker, ...caps });
+    expect(sessionEnv(worker, { pageReaderModel: '  ' })).toEqual({ ...worker, ...caps });
   });
 });
 
@@ -289,13 +315,20 @@ describe('sessionEnv with an organization key (SPEC-v7 §4)', () => {
       ANTHROPIC_API_KEY: 'sk-ant-org-key',
       ANTHROPIC_MODEL: 'claude-sonnet-5',
       CLAUDE_CODE_MAX_OUTPUT_TOKENS: '8000',
+      CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION: '8',
+      CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION: '40',
     });
   });
 
-  it('leaves the environment as it was without one', async () => {
+  it('leaves the environment as it was without one (plus P2.1 CLI safety caps)', async () => {
     const { sessionEnv } = await import('./session.js');
-    expect(sessionEnv(deployment, {})).toEqual(deployment);
-    expect(sessionEnv(deployment, { apiKey: '' })).toEqual(deployment);
+    const expected = {
+      ...deployment,
+      CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION: '8',
+      CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION: '40',
+    };
+    expect(sessionEnv(deployment, {})).toEqual(expected);
+    expect(sessionEnv(deployment, { apiKey: '' })).toEqual(expected);
   });
 
   it('hands the organization key to the session subprocess only', async () => {
@@ -1093,5 +1126,163 @@ describe('mcp__evidence__read_source & extraMcpServers hooks (P1.2)', () => {
     expect(options.tools).toEqual(['WebSearch', 'WebFetch']);
     expect(options.disallowedTools).toContain('Read');
     expect(options.disallowedTools).toContain('Bash');
+  });
+});
+
+describe('P2.1 & P2.2 runtime governance: direct Anthropic dispatch, scout caps, synthesis recovery & semaphore', () => {
+  beforeEach(() => {
+    sdk.calls.length = 0;
+    sdk.scripts.length = 0;
+    sdk.inspect = undefined;
+  });
+
+  it('enforces SCOUT_MAX_TURNS = 8 on SCOUT_AGENT and sets CLAUDE_CODE_SUBAGENT_MODEL + CLI caps in env', async () => {
+    const { runSession, SCOUT_MAX_TURNS } = await import('./session.js');
+    expect(SCOUT_MAX_TURNS).toBe(8);
+    await runSession({
+      prompt: 'Research housing.',
+      allowedTools: ['WebSearch', 'WebFetch'],
+      model: 'claude-opus-5-5',
+      scoutModel: 'claude-haiku-5-5',
+    });
+    const call = sdk.calls.at(-1)!;
+    expect(call.options.agents).toMatchObject({
+      'source-scout': { model: 'claude-haiku-5-5', maxTurns: 8 },
+    });
+    const env = call.options.env as Record<string, string>;
+    expect(env.CLAUDE_CODE_SUBAGENT_MODEL).toBe('claude-haiku-5-5');
+    expect(env.CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION).toBe('8');
+    expect(env.CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION).toBe('40');
+  });
+
+  it('runs direct: true Anthropic verifier/auditor sessions via Messages API without spawning the Claude Code CLI', async () => {
+    const { runSession } = await import('./session.js');
+    const create = vi.fn(async () => ({
+      model: 'claude-opus-5-5',
+      stop_reason: 'end_turn',
+      content: [{ type: 'text', text: '{"content_supported":"pass","verifier_note":"Verified directly"}' }],
+      usage: { input_tokens: 450, output_tokens: 35, cache_read_input_tokens: 200 },
+    }));
+
+    const res = await runSession({
+      prompt: 'Verify finding.',
+      allowedTools: ['WebFetch', 'Read'],
+      model: 'claude-opus-5-5',
+      direct: true,
+      archivedExhibits: { pdfExcerpt: Buffer.from('Verified figure: 42%') },
+      anthropicClient: { messages: { create } },
+    });
+
+    // Zero CLI subprocess spawned!
+    expect(sdk.calls).toHaveLength(0);
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(res.succeeded).toBe(true);
+    expect(JSON.parse(res.resultText)).toEqual({
+      content_supported: 'pass',
+      verifier_note: 'Verified directly',
+    });
+    expect(res.usage.input_tokens).toBe(450);
+    expect(res.usage.cache_read_tokens).toBe(200);
+  });
+
+  it('recovers from error_max_turns with a bounded 6-turn synthesis-only prompt instead of retrying 60 turns of web search', async () => {
+    const { MAX_TURNS_RECOVERY_LIMIT, runSessionWithRetry } = await import('./session.js');
+    expect(MAX_TURNS_RECOVERY_LIMIT).toBe(6);
+
+    sdk.scripts.push(
+      {
+        messages: [
+          { type: 'system', subtype: 'init', model: 'claude-sonnet-5' },
+          {
+            type: 'assistant',
+            parent_tool_use_id: null,
+            message: {
+              id: 'm1',
+              model: 'claude-sonnet-5',
+              content: [{ type: 'text', text: 'Gathered ACS DP04 figure: 54.0% cost-burdened renters (2024).' }],
+              usage: { input_tokens: 1_000, output_tokens: 120 },
+            },
+          },
+          {
+            type: 'result',
+            subtype: 'error_max_turns',
+            terminal_reason: 'max_turns',
+            num_turns: 60,
+            stop_reason: 'end_turn',
+            usage: { input_tokens: 1_000, output_tokens: 120 },
+            modelUsage: {
+              'claude-sonnet-5': { inputTokens: 1_000, outputTokens: 120, cacheReadInputTokens: 0, cacheCreationInputTokens: 0, webSearchRequests: 12 },
+            },
+          },
+        ],
+      },
+      {
+        messages: [
+          { type: 'system', subtype: 'init', model: 'claude-sonnet-5' },
+          {
+            type: 'result',
+            subtype: 'success',
+            result: '[{"kind":"gap","indicator_slug":"cost-burdened-renters","reason":"Gathered 54.0% before turn limit","scales_tried":["city"],"searched_at":"2026-11-24T00:00:00Z"}]',
+            num_turns: 2,
+            stop_reason: 'end_turn',
+            usage: { input_tokens: 400, output_tokens: 80 },
+            modelUsage: {
+              'claude-sonnet-5': { inputTokens: 400, outputTokens: 80, cacheReadInputTokens: 0, cacheCreationInputTokens: 0, webSearchRequests: 0 },
+            },
+          },
+        ],
+      },
+    );
+
+    const res = await runSessionWithRetry({
+      prompt: 'Research housing indicators.',
+      allowedTools: ['WebSearch', 'WebFetch', 'mcp__evidence__read_source', 'mcp__evidence__capture_evidence', 'mcp__evidence__submit_findings'],
+      extraAllowedTools: ['mcp__civic_data__query_census_acs'],
+      model: 'claude-sonnet-5',
+      scoutModel: 'claude-haiku-5-5',
+      maxTurns: 60,
+    });
+
+    expect(res.succeeded).toBe(true);
+    expect(sdk.calls).toHaveLength(2);
+    const recoveryCall = sdk.calls[1]!;
+    // Bounded 6-turn synthesis-only recovery: no web search, no scouts, only submit_findings retained!
+    expect(recoveryCall.options.maxTurns).toBe(6);
+    expect(recoveryCall.options.tools).toEqual([]);
+    expect(recoveryCall.options.allowedTools).toEqual(['mcp__evidence__submit_findings']);
+    expect(recoveryCall.options).not.toHaveProperty('agents');
+    expect(recoveryCall.prompt).toContain('Synthesis-only recovery');
+    expect(recoveryCall.prompt).toContain('54.0% cost-burdened renters');
+    // Token usage folded from both passes.
+    expect(res.usage.input_tokens).toBe(1_400);
+    expect(res.usage.output_tokens).toBe(200);
+  });
+
+  it('bounds concurrent runSession calls through the shared SessionSemaphore', async () => {
+    const { runSession } = await import('./session.js');
+    const { SessionSemaphore } = await import('./session-semaphore.js');
+    const sem = new SessionSemaphore(2);
+    let inFlight = 0;
+    let peak = 0;
+
+    sdk.inspect = async () => {
+      inFlight++;
+      peak = Math.max(peak, inFlight);
+      await new Promise((r) => setTimeout(r, 20));
+      inFlight--;
+    };
+
+    await Promise.all(
+      Array.from({ length: 5 }, () =>
+        runSession({
+          prompt: 'Concurrent session',
+          allowedTools: ['WebFetch'],
+          orchestrate: false,
+          semaphore: sem,
+        }),
+      ),
+    );
+    expect(peak).toBe(2);
+    expect(sem.activeCount).toBe(0);
   });
 });

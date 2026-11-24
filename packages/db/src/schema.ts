@@ -347,6 +347,8 @@ export interface RunExecution {
   executor: 'shared_worker';
   /** The region our host runs in, or null when the deployment does not say. */
   host_region: string | null;
+  /** Set when the worker's hard per-run MAX_RUN_USD circuit breaker halted remaining sessions early. */
+  budget_cap_note?: string | null;
 }
 
 export const researchRuns = pgTable('research_runs', {
