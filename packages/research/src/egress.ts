@@ -1,9 +1,31 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { lookup } from 'node:dns/promises';
 import type { LookupAddress, LookupOneOptions, LookupAllOptions } from 'node:dns';
 import https, { type RequestOptions as HttpsRequestOptions } from 'node:https';
 import type { IncomingMessage, ClientRequest } from 'node:http';
 import { isIP, type LookupFunction } from 'node:net';
 import { Readable } from 'node:stream';
+import { matchBlockedSource, type SourceBlocklist } from './source-blocklist.js';
+
+const activeEgressBlocklist = new AsyncLocalStorage<SourceBlocklist | undefined>();
+
+/**
+ * Return the ambient egress `SourceBlocklist` active in the current async
+ * execution context (set via `withEgressBlocklist`), if any.
+ */
+export function getActiveEgressBlocklist(): SourceBlocklist | undefined {
+  return activeEgressBlocklist.getStore();
+}
+
+/**
+ * Run `fn` with `blocklist` enforced automatically on every `guardedFetch`,
+ * `assertPublicHttpsUrl`, and `validateAddress` call inside its async tree
+ * (including `read_source`, `capture_evidence`, `@deep-fryer/civic-data`, and
+ * verifier URL checks).
+ */
+export function withEgressBlocklist<T>(blocklist: SourceBlocklist | undefined, fn: () => T): T {
+  return activeEgressBlocklist.run(blocklist, fn);
+}
 
 /**
  * Worker egress guard (SPEC-v3 §2.3). Research agents choose the URLs the
@@ -164,19 +186,27 @@ export interface ValidatedUrl {
 
 /**
  * Validate `raw` is an https URL without embedded credentials whose host
- * resolves exclusively to public IP addresses. Returns the parsed URL and its
- * verified public IP(s) so callers can pin the connection without a second DNS
- * lookup.
+ * resolves exclusively to public IP addresses and does not match any active
+ * `SourceBlocklist`. Returns the parsed URL and its verified public IP(s) so
+ * callers can pin the connection without a second DNS lookup.
  */
 export async function validateAddress(
   raw: string,
   resolve: (host: string) => Promise<string[]> = defaultResolve,
+  blocklist?: SourceBlocklist,
 ): Promise<ValidatedUrl> {
   let url: URL;
   try {
     url = new URL(raw);
   } catch {
     throw new EgressBlockedError(raw, 'not a URL');
+  }
+  const effectiveBlocklist = blocklist ?? getActiveEgressBlocklist();
+  if (effectiveBlocklist) {
+    const blocked = matchBlockedSource(raw, effectiveBlocklist);
+    if (blocked) {
+      throw new EgressBlockedError(raw, `blocked benchmark answer-key source: ${blocked.reason}`);
+    }
   }
   if (url.protocol !== 'https:') throw new EgressBlockedError(raw, 'only https is allowed');
   if (url.username || url.password) throw new EgressBlockedError(raw, 'credentials in URL');
@@ -188,12 +218,13 @@ export async function validateAddress(
   return { url, host, addresses };
 }
 
-/** Throws EgressBlockedError unless `raw` is an https URL whose host resolves only to public IPs. */
+/** Throws EgressBlockedError unless `raw` is an https URL whose host resolves only to public IPs and is not blocked. */
 export async function assertPublicHttpsUrl(
   raw: string,
   resolve: (host: string) => Promise<string[]> = defaultResolve,
+  blocklist?: SourceBlocklist,
 ): Promise<URL> {
-  const { url } = await validateAddress(raw, resolve);
+  const { url } = await validateAddress(raw, resolve, blocklist);
   return url;
 }
 
@@ -389,6 +420,12 @@ export interface GuardedFetchOptions {
     init: RequestInit,
     pinnedLookup: PinnedLookup,
   ) => Promise<Response>;
+  /**
+   * Optional benchmark answer-key source blocklist enforced before DNS lookup
+   * on the initial URL and on every redirect hop. Falls back to any ambient
+   * blocklist set via `withEgressBlocklist`.
+   */
+  blocklist?: SourceBlocklist;
 }
 
 const MAX_REDIRECTS = 5;
@@ -414,7 +451,7 @@ export async function guardedFetch(
 
   let current = url;
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-    const validated = await validateAddress(current, resolve);
+    const validated = await validateAddress(current, resolve, options.blocklist);
     let res: Response;
 
     if (options.pinnedTransport && !proxyActive) {

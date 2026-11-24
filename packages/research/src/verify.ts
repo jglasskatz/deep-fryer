@@ -11,8 +11,9 @@ import {
   type FindingVerification,
   type ValueOnPage,
 } from '@deep-fryer/core';
-import { guardedFetch } from './egress.js';
+import { getActiveEgressBlocklist, guardedFetch } from './egress.js';
 import { valueOnPage } from './page-text.js';
+import { matchBlockedSource, type SourceBlocklist } from './source-blocklist.js';
 
 export { isFlagged };
 
@@ -32,6 +33,8 @@ export interface DeterministicCheckOptions {
    * for the fresh-capture URL short-circuit to apply.
    */
   capturedSnapshotPaths?: ReadonlySet<string>;
+  /** Optional source blocklist; blocked URLs never pass `url_ok`. */
+  blocklist?: SourceBlocklist;
 }
 
 const VALID_SNAPSHOT_PATH = /^evidence\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.png$/;
@@ -46,12 +49,16 @@ const FRESH_CAPTURE_CLOCK_SKEW_MS = 60_000;
 export function isFreshRunCapture(
   sourceUrl: string,
   evidence: { snapshot_path: string; captured_at: string },
-  options: Pick<DeterministicCheckOptions, 'runStartedAt' | 'capturedSnapshotPaths'>,
+  options: Pick<DeterministicCheckOptions, 'runStartedAt' | 'capturedSnapshotPaths' | 'blocklist'>,
   nowMs = Date.now(),
 ): boolean {
   if (!options.runStartedAt && !options.capturedSnapshotPaths) return false;
   if (!VALID_SNAPSHOT_PATH.test(evidence.snapshot_path)) return false;
   if (options.capturedSnapshotPaths && !options.capturedSnapshotPaths.has(evidence.snapshot_path)) {
+    return false;
+  }
+  const activeBlocklist = options.blocklist ?? getActiveEgressBlocklist();
+  if (activeBlocklist && matchBlockedSource(sourceUrl, activeBlocklist)) {
     return false;
   }
   let parsed: URL;
@@ -135,7 +142,9 @@ export async function deterministicChecks(
   const urlOk =
     fetchUrl === defaultUrlCheck && isFreshRunCapture(payload.source_url, payload.evidence, options)
       ? true
-      : await fetchUrl(payload.source_url);
+      : fetchUrl === defaultUrlCheck
+        ? await defaultUrlCheck(payload.source_url, options.blocklist)
+        : await fetchUrl(payload.source_url);
 
   return {
     payload,
@@ -178,13 +187,14 @@ export async function checkValueOnPage(
  * pointing at an internal address fails the check (url_ok: false) and is
  * red-flagged for review instead of being fetched.
  */
-async function defaultUrlCheck(url: string): Promise<boolean> {
+async function defaultUrlCheck(url: string, blocklist?: SourceBlocklist): Promise<boolean> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 15_000);
+  const fetchOpts = blocklist ? { blocklist } : {};
   try {
-    let res = await guardedFetch(url, { method: 'HEAD', signal: controller.signal });
+    let res = await guardedFetch(url, { method: 'HEAD', signal: controller.signal }, undefined, fetchOpts);
     if (res.status === 405 || res.status === 501 || res.status === 403) {
-      res = await guardedFetch(url, { method: 'GET', signal: controller.signal });
+      res = await guardedFetch(url, { method: 'GET', signal: controller.signal }, undefined, fetchOpts);
     }
     return res.ok;
   } catch {

@@ -36,7 +36,11 @@ import {
   DEFAULT_SESSION_MAX_TURNS,
   DEFAULT_SESSION_MODEL,
   checkValueOnPage,
+  getActiveEgressBlocklist,
+  matchBlockedSource,
   valueOnPage,
+  withEgressBlocklist,
+  type SourceBlocklist,
 } from '@deep-fryer/research';
 import { buildCapturePreview, captureEvidence } from './evidence.js';
 import { getSharedSourceCache, readSourceWithCache, type SourceCache } from './source-cache.js';
@@ -561,6 +565,12 @@ export interface RunSessionArgs {
    * session's allowlist, subject to the same `Read` and local-tool guards.
    */
   extraAllowedTools?: string[];
+  /**
+   * Optional benchmark answer-key source blocklist enforced across egress
+   * fetches (`read_source`, `capture_evidence`, `civic_data`) and Anthropic
+   * `WebFetch` calls. Defaults to any ambient blocklist set via `withEgressBlocklist`.
+   */
+  sourceBlocklist?: SourceBlocklist;
 }
 
 const READ_SOURCE_SCHEMA = z.object({
@@ -623,6 +633,12 @@ function buildExhibitMap(archivedExhibits: ArchivedExhibits | undefined): Map<st
  * audit transcript (gzipped JSONL).
  */
 export async function runSession(input: RunSessionArgs): Promise<SessionResult> {
+  const effectiveBlocklist = input.sourceBlocklist ?? getActiveEgressBlocklist();
+  if (input.sourceBlocklist && input.sourceBlocklist !== getActiveEgressBlocklist()) {
+    return withEgressBlocklist(input.sourceBlocklist, () =>
+      runSession({ ...input, sourceBlocklist: undefined }),
+    );
+  }
   const effectiveModel = input.model ?? MODEL();
   const provider = input.provider ?? providerForModel(effectiveModel, 'anthropic');
   const effectiveAllowedTools = [
@@ -1022,6 +1038,29 @@ export async function runSession(input: RunSessionArgs): Promise<SessionResult> 
         },
       };
     };
+    const guardBlockedWebFetch: HookCallback = async (hook) => {
+      if (hook.hook_event_name !== 'PreToolUse' || hook.tool_name !== 'WebFetch' || !effectiveBlocklist) return {};
+      const targetUrl = (hook.tool_input as { url?: unknown } | null)?.url;
+      if (typeof targetUrl === 'string') {
+        const blocked = matchBlockedSource(targetUrl, effectiveBlocklist);
+        if (blocked) {
+          return {
+            hookSpecificOutput: {
+              hookEventName: 'PreToolUse',
+              permissionDecision: 'deny',
+              permissionDecisionReason: `blocked benchmark answer-key source: ${blocked.reason}`,
+            },
+          };
+        }
+      }
+      return {};
+    };
+    const preToolUseHooks = [
+      ...(allowed.includes('Read') ? [{ matcher: 'Read', hooks: [guardArchiveRead] }] : []),
+      ...(effectiveBlocklist && allowed.includes('WebFetch')
+        ? [{ matcher: 'WebFetch', hooks: [guardBlockedWebFetch] }]
+        : []),
+    ];
     try {
       const q = query({
         prompt: orchestrated ? input.prompt + DELEGATION_NOTE : input.prompt,
@@ -1032,7 +1071,7 @@ export async function runSession(input: RunSessionArgs): Promise<SessionResult> 
           allowedTools: allowed,
           disallowedTools: LOCAL_MACHINE_TOOLS.filter((t) => !allowed.includes(t)),
           permissionMode: 'dontAsk',
-          ...(allowed.includes('Read') ? { hooks: { PreToolUse: [{ matcher: 'Read', hooks: [guardArchiveRead] }] } } : {}),
+          ...(preToolUseHooks.length > 0 ? { hooks: { PreToolUse: preToolUseHooks } } : {}),
           env: sessionEnv(process.env, { apiKey: input.apiKey, pageReaderModel: input.pageReaderModel }),
           maxTurns: input.maxTurns ?? DEFAULT_SESSION_MAX_TURNS,
           // The raw API stream events, for SessionMeter: only a call's
