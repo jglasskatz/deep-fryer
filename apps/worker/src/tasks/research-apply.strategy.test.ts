@@ -129,7 +129,7 @@ describe.skipIf(!hasDb)('a run keeps the strategy it was planned with (Postgres,
 
     const { auditResearchRun } = await import('../research-audit.js');
     expect(auditResearchRun).toHaveBeenLastCalledWith(expect.objectContaining({ id: run.id }), helpers, {
-      apiKey: null, verifierModel: 'claude-opus-5', maxTurns: 16, pageReaderModel: reader,
+      apiKey: null, provider: 'anthropic', verifierModel: 'claude-opus-5', maxTurns: 16, pageReaderModel: reader,
     });
   });
 

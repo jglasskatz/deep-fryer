@@ -1873,11 +1873,20 @@ export async function evaluateDimensionFindings(
   };
 
   // Stage 3: independent verifier (+ optional advisory triage) on every finding with bounded concurrency (4).
-  await runWithConcurrency(entries, VERIFIER_CONCURRENCY, async (entry) => {
-    const out = await verifyPayload(entry.payload, entry.missing);
-    entry.verdict = out.verdict;
-    entry.triage = out.triage;
-  });
+  // Probe the first entry before fanning out so a rejected API key aborts without starting extra verifier calls.
+  if (entries.length > 0) {
+    const first = entries[0]!;
+    const firstOut = await verifyPayload(first.payload, first.missing);
+    first.verdict = firstOut.verdict;
+    first.triage = firstOut.triage;
+    if (entries.length > 1) {
+      await runWithConcurrency(entries.slice(1), VERIFIER_CONCURRENCY, async (entry) => {
+        const out = await verifyPayload(entry.payload, entry.missing);
+        entry.verdict = out.verdict;
+        entry.triage = out.triage;
+      });
+    }
+  }
 
   // Stage 4: selective hybrid escalation (only when escalation_model is set on the plan).
   if (input.plan.models?.escalation_model && !keyFailure) {

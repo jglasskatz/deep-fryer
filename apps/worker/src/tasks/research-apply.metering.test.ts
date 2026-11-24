@@ -260,7 +260,7 @@ describe.skipIf(!hasDb)('researchApply session handling (Postgres, scripted sess
     expect(script.verifier[0]).toContain('archived-snapshot.png');
     expect(script.verifier[0]).not.toContain('source-scout');
     const { auditResearchRun } = await import('../research-audit.js');
-    expect(auditResearchRun).toHaveBeenLastCalledWith(expect.objectContaining({ id: run.id }), helpers, { apiKey: null, verifierModel: 'planned-judge' });
+    expect(auditResearchRun).toHaveBeenLastCalledWith(expect.objectContaining({ id: run.id }), helpers, { apiKey: null, provider: 'anthropic', verifierModel: 'planned-judge' });
   });
 
   it('records audit spend without turning an independent audit failure into lost research', async () => {
