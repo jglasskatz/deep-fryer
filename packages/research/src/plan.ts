@@ -3,13 +3,16 @@ import findingSchema from '@deep-fryer/contract/schemas/finding' with { type: 'j
 import type { FrameworkIndicator, PortraitConfig } from '@deep-fryer/contract';
 import {
   acceptedScales,
+  estimateRunCost,
   maxDataAgeYears,
   resolveThreshold,
   dimensionResearchSessions,
   MAX_INDICATORS_PER_RESEARCH_SESSION,
+  type RegionBriefCache,
   type ResearchModels,
   type ResearchPlan,
   type Ring,
+  type RunCostEstimate,
 } from '@deep-fryer/core';
 import { agentTemplate, fillTemplate, pluginVersion, skill } from './plugin.js';
 import { OPERATOR_DEFAULTS, operatorDefaultModels, resolveStrategy } from './strategies.js';
@@ -33,26 +36,118 @@ export interface RenderPlanInput {
   strategy?: string;
   /** Operator settings, frozen into a new plan when no strategy is chosen. */
   modelDefaults?: Partial<ResearchModels>;
+  /**
+   * Validated cached Phase-0 region brief for targeted re-runs. When provided
+   * (non-empty), Phase 0 (`region_context`) is omitted from `plan.sessions` and
+   * `plan.cached_region_brief` carries the brief for the worker to substitute.
+   */
+  cachedRegionBrief?: string;
 }
 
 export const REGION_BRIEF_PLACEHOLDER = '{{region_brief}}';
 
+/** Maximum age (30 days) for reusing a cached Phase-0 region brief on targeted re-runs. */
+export const REGION_BRIEF_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+/** Pure: deterministic 16-hex-char fingerprint of a portrait's research config. */
+export function computeConfigHash(config: PortraitConfig): string {
+  return createHash('sha256')
+    .update(JSON.stringify(config))
+    .digest('hex')
+    .slice(0, 16);
+}
+
+/**
+ * Pure: whether a tenant's cached Phase-0 region brief is non-empty, matches
+ * the current config fingerprint, and is strictly younger than 30 days.
+ */
+export function isValidRegionBriefCache(
+  cache: RegionBriefCache | null | undefined,
+  configHash: string,
+  now: Date = new Date(),
+): cache is RegionBriefCache {
+  if (!cache || typeof cache.brief !== 'string' || !cache.brief.trim()) return false;
+  if (cache.config_hash !== configHash) return false;
+  if (typeof cache.cached_at !== 'string') return false;
+  const cachedAtMs = Date.parse(cache.cached_at);
+  if (!Number.isFinite(cachedAtMs)) return false;
+  return now.getTime() - cachedAtMs < REGION_BRIEF_CACHE_TTL_MS;
+}
+
 // Session execution policy (SPEC.md §8): tool allowlists and budgets are
 // research-plane policy, named here so the rendered plan and the worker
 // cannot disagree about what runs.
-const DIMENSION_TOOLS = ['WebSearch', 'WebFetch', 'mcp__evidence__capture_evidence'];
-const REGION_TOOLS = ['WebSearch', 'WebFetch'];
+export const DIMENSION_TOOLS = [
+  'WebSearch',
+  'WebFetch',
+  'mcp__evidence__read_source',
+  'mcp__evidence__capture_evidence',
+  'mcp__evidence__submit_findings',
+];
+export const REGION_TOOLS = ['WebSearch', 'WebFetch', 'mcp__evidence__read_source'];
 export const VERIFIER_TOOLS = ['WebFetch', 'Read'];
+
+/**
+ * Pure: extract the indicator slugs assigned to one rendered dimension prompt.
+ * Matches the exact line format emitted by `renderPlan` (`  - <name> (slug: <slug>, unit: <unit>)`).
+ */
+export function plannedSlugsFromPrompt(prompt: string): string[] {
+  const slugs: string[] = [];
+  const seen = new Set<string>();
+  for (const m of prompt.matchAll(/^ {2}- .*\(slug: ([a-z0-9][a-z0-9-]*), unit: /gm)) {
+    const slug = m[1]!;
+    if (!seen.has(slug)) {
+      seen.add(slug);
+      slugs.push(slug);
+    }
+  }
+  return slugs;
+}
+
+/**
+ * Pure: extract the human-readable dimension title from a rendered dimension prompt
+ * (`- Dimension: <name> (social foundation|ecological ceiling ring)`), or null if absent.
+ */
+export function dimensionNameFromPrompt(prompt: string): string | null {
+  const match = /^- Dimension:\s*(.+?)\s*\((?:social foundation|ecological ceiling) ring\)\s*$/m.exec(prompt);
+  return match?.[1]?.trim() || null;
+}
+
+/**
+ * Pure: extract threshold_ref mappings by indicator name/slug from a rendered dimension prompt's
+ * thresholds block (`- <name> (ref: <threshold_ref>): ...`) combined with the indicator list.
+ */
+export function plannedThresholdRefsFromPrompt(prompt: string): Record<string, string> {
+  const slugByName = new Map<string, string>();
+  for (const m of prompt.matchAll(/^ {2}- (.+?)\s*\(slug: ([a-z0-9][a-z0-9-]*), unit: /gm)) {
+    slugByName.set(m[1]!.trim(), m[2]!);
+  }
+  const refs: Record<string, string> = {};
+  for (const m of prompt.matchAll(/^- (.+?)\s*\(ref:\s*([^)]+)\):/gm)) {
+    const name = m[1]!.trim();
+    const ref = m[2]!.trim();
+    const slug = slugByName.get(name);
+    if (slug && ref) refs[slug] = ref;
+  }
+  return refs;
+}
 /** Keep research contexts small; the worker still records each chunk independently. */
 export const MAX_INDICATORS_PER_SESSION = MAX_INDICATORS_PER_RESEARCH_SESSION;
 // The worker's fallbacks for plans that recorded no strategy (made before
 // the registry). Every new plan records its own models and caps from the
 // registry, so changing these changes no planned run.
 export const DEFAULT_SESSION_MAX_TURNS = 60;
+export const DEFAULT_CORRECTION_MAX_TURNS = 16;
+export const DEFAULT_ESCALATION_MAX_TURNS = 40;
 export const VERIFIER_MAX_TURNS = 12;
 export const AUDIT_MAX_TURNS = 16;
 export const DEFAULT_SESSION_MODEL = 'claude-sonnet-5';
 export const DEFAULT_VERIFIER_MODEL = 'claude-opus-5';
+
+/** Estimated API usage for a rendered plan, honoring its chosen strategy (standard, hybrid, or deep). */
+export function estimatePlanCost(plan: Pick<ResearchPlan, 'sessions' | 'strategy'>): RunCostEstimate {
+  return estimateRunCost(plan.sessions.length, plan.strategy ?? 'standard');
+}
 
 /** What a plan records about the strategy it was rendered from. */
 export type PlannedStrategy = Required<Pick<ResearchPlan, 'strategy' | 'strategy_version' | 'models' | 'caps'>>;
@@ -101,30 +196,28 @@ function renderThresholds(spec: PlanDimensionSpec, config: PortraitConfig): stri
  */
 export function renderPlan(input: RenderPlanInput): ResearchPlan {
   const { config } = input;
-  const configHash = createHash('sha256')
-    .update(JSON.stringify(config))
-    .digest('hex')
-    .slice(0, 16);
+  const configHash = computeConfigHash(config);
+  const cachedBrief = input.cachedRegionBrief?.trim() ? input.cachedRegionBrief : undefined;
 
   const skillsBlock = [skill('methodology'), skill('source-evaluation'), skill('evidence-capture')].join(
     '\n\n---\n\n',
   );
 
-  const regionPrompt = fillTemplate(agentTemplate('region-context'), {
-    region_name: config.region.name,
-    region_definition: config.region.definition,
-    region_context_notes: config.region.context_notes ?? '(none provided)',
-  });
-
-  const sessions: ResearchPlan['sessions'] = [
-    {
+  const sessions: ResearchPlan['sessions'] = [];
+  if (!cachedBrief) {
+    const regionPrompt = fillTemplate(agentTemplate('region-context'), {
+      region_name: config.region.name,
+      region_definition: config.region.definition,
+      region_context_notes: config.region.context_notes ?? '(none provided)',
+    });
+    sessions.push({
       kind: 'region_context',
       prompt: regionPrompt,
       tool_allowlist: REGION_TOOLS,
       output_schema_ref: 'markdown:region-brief',
       config_hash: configHash,
-    },
-  ];
+    });
+  }
 
   const researcherTemplate = agentTemplate('dimension-researcher');
   for (const dimension of input.dimensions) {
@@ -174,7 +267,10 @@ export function renderPlan(input: RenderPlanInput): ResearchPlan {
   }
 
   return {
-    sessions, config_hash: configHash, plugin_version: pluginVersion(),
+    sessions,
+    config_hash: configHash,
+    plugin_version: pluginVersion(),
+    ...(cachedBrief ? { cached_region_brief: cachedBrief } : {}),
     ...planStrategy(input.strategy, input.modelDefaults),
   };
 }

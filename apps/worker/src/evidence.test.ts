@@ -401,3 +401,55 @@ describe('the capture result as a finding\'s evidence', () => {
     expect(findingPayloadSchema.safeParse(finding({ ...older, no_readable_text: false })).success).toBe(false);
   });
 });
+
+describe('PDF download byte cap & capture preview (P0.3)', () => {
+  it('stream-caps PDF downloads by content-length and by streamed chunk bytes', async () => {
+    const { readResponseBytesCapped } = await import('./evidence.js');
+
+    // Rejected immediately via content-length header.
+    const cancel = vi.fn(async () => {});
+    const declaredTooBig = {
+      headers: new Headers({ 'content-length': '2048' }),
+      body: { cancel, getReader: vi.fn() } as unknown as ReadableStream<Uint8Array>,
+      arrayBuffer: vi.fn(async () => new ArrayBuffer(0)),
+    };
+    await expect(readResponseBytesCapped(declaredTooBig, 1024)).rejects.toThrow(/exceeds 1024 bytes/);
+    expect(cancel).toHaveBeenCalled();
+
+    // Rejected mid-stream when chunks exceed cap without content-length.
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new Uint8Array(600));
+        controller.enqueue(new Uint8Array(600));
+        controller.close();
+      },
+    });
+    const streamedTooBig = new Response(stream);
+    await expect(readResponseBytesCapped(streamedTooBig, 1024)).rejects.toThrow(/exceeds 1024 bytes/);
+
+    // Succeeds when within cap.
+    const okStream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(Buffer.from('hello '));
+        controller.enqueue(Buffer.from('world'));
+        controller.close();
+      },
+    });
+    const okBuf = await readResponseBytesCapped(new Response(okStream), 1024);
+    expect(okBuf.toString('utf8')).toBe('hello world');
+  });
+
+  it('builds bounded ~2,000-char text previews preserving numeric/table lines', async () => {
+    const { buildCapturePreview } = await import('./evidence.js');
+    expect(buildCapturePreview(null)).toEqual({ text_char_count: 0, text_preview: '' });
+
+    const short = 'Rent burden was 54.2% in 2024.';
+    expect(buildCapturePreview(short)).toEqual({ text_char_count: short.length, text_preview: short });
+
+    const long = `${'Narrative intro text. '.repeat(120)}\nTable 4: Renter cost burden 54.2% (2024)\n${'More prose. '.repeat(120)}`;
+    const preview = buildCapturePreview(long, 2_000);
+    expect(preview.text_char_count).toBe(long.length);
+    expect(preview.text_preview.length).toBeLessThanOrEqual(2_000);
+    expect(preview.text_preview).toContain('54.2%');
+  });
+});

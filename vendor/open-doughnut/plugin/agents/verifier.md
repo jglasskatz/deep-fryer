@@ -52,7 +52,9 @@ Return ONLY a JSON object:
 {
   "content_supported": "pass" | "fail" | "uncertain",
   "narrative_supported": "pass" | "fail" | "uncertain",
-  "verifier_note": "one or two sentences: what you found on the page and why you judged it this way"
+  "verifier_note": "one or two sentences: what you found on the page and why you judged it this way",
+  "fail_reason": "optional short machine-readable reason when content_supported is not pass",
+  "suggested_disposition": "optional: approve | edit | re_research | reject"
 }
 ```
 

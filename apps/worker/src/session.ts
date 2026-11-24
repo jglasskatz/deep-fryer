@@ -1,4 +1,4 @@
-import { gzipSync } from 'node:zlib';
+import { gunzipSync, gzipSync } from 'node:zlib';
 import { mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -11,20 +11,56 @@ import {
   type HookCallback,
 } from '@anthropic-ai/claude-agent-sdk';
 import { z } from 'zod';
+import type { CivicDataToolDefinition } from '@deep-fryer/civic-data';
+import { frameworkDimension, type PortraitConfig } from '@deep-fryer/contract';
 import {
   LONG_PROMPT_THRESHOLD_TOKENS,
+  acceptedScales,
   baseModelId,
+  computeScoring,
   emptyUsage,
+  findingPayloadSchema,
+  isHomeOrSectionPage,
+  maxDataAgeYears,
   mergeUsage,
+  providerForModel,
+  resolveThreshold,
+  type FindingPayload,
+  type IndicatorFindingPayload,
   type ModelTokenUsage,
   type RefusalFallbackEvent,
+  type ResearchProvider,
   type SessionTokenUsage,
 } from '@deep-fryer/core';
-import { DEFAULT_SESSION_MAX_TURNS, DEFAULT_SESSION_MODEL } from '@deep-fryer/research';
-import { captureEvidence } from './evidence.js';
-import { rejectedKeyError } from './org-key.js';
+import {
+  DEFAULT_SESSION_MAX_TURNS,
+  DEFAULT_SESSION_MODEL,
+  checkValueOnPage,
+  getActiveEgressBlocklist,
+  matchBlockedSource,
+  valueOnPage,
+  withEgressBlocklist,
+  type SourceBlocklist,
+} from '@deep-fryer/research';
+import { buildCapturePreview, captureEvidence } from './evidence.js';
+import {
+  buildArchivedExhibitMap,
+  runDirectAnthropicSession,
+  type MessagesApiClient,
+} from './messages.js';
+import { getSharedSourceCache, readSourceWithCache, type SourceCache } from './source-cache.js';
+import { OrgKeyUnavailableError, rejectedKeyError } from './org-key.js';
+import {
+  ToolExecutor,
+  zodToJsonSchema,
+  type FetchLike,
+  type ProviderToolDefinition,
+} from './providers/types.js';
+import { runOpenAiSession } from './providers/openai.js';
+import { runGoogleSession } from './providers/google.js';
+import { getSharedSessionSemaphore, type SessionSemaphore } from './session-semaphore.js';
 import type { TenantStorage } from './storage.js';
-import { ARCHIVED_PDF, ARCHIVED_SNAPSHOT, type ArchivedExhibits } from './archived-exhibits.js';
+import { ARCHIVED_PDF, ARCHIVED_PDF_EXCERPT, ARCHIVED_SNAPSHOT, type ArchivedExhibits } from './archived-exhibits.js';
 
 // The fold the retry below uses, exported where the worker's callers look
 // for it; it lives in @deep-fryer/core because the measurement code folds
@@ -51,6 +87,161 @@ export interface SessionResult {
    * (org-key.ts keyRejection, modelNamedIn).
    */
   apiErrorText?: string;
+  /** Validated & deterministically scored findings submitted in-session via `submit_findings`. */
+  submittedFindings?: FindingPayload[];
+  /** Snapshot paths confirmed captured via `capture_evidence` during this session. */
+  capturedSnapshotPaths?: string[];
+}
+
+export interface SubmitFindingsContext {
+  config: PortraitConfig;
+  dimensionSlug: string;
+  /** Optional `indicator_slug -> threshold_ref` mapping from the planned dimension/framework. */
+  thresholdRefs?: Readonly<Record<string, string>>;
+}
+
+export interface SubmitFindingError {
+  index: number;
+  indicator_slug: string;
+  errors: string[];
+}
+
+/**
+ * Pure: deterministically compute `level_pct`, `target`, and `scoring` from
+ * `resolveThreshold` whenever an indicator has a finite numeric value and a
+ * resolvable threshold ref — never trusting LLM mental arithmetic.
+ */
+export function rescoreIndicatorPayload(
+  payload: IndicatorFindingPayload,
+  config: Pick<PortraitConfig, 'threshold_overrides'>,
+  dimensionSlug?: string,
+  thresholdRefs?: Readonly<Record<string, string>>,
+): IndicatorFindingPayload {
+  if (typeof payload.value !== 'number' || !Number.isFinite(payload.value)) return payload;
+  const fwRef = dimensionSlug
+    ? frameworkDimension(dimensionSlug)?.indicators.find((i) => i.slug === payload.indicator_slug)?.threshold_ref
+    : undefined;
+  const ref = payload.scoring?.threshold_ref || thresholdRefs?.[payload.indicator_slug] || fwRef || '';
+  if (!ref) return payload;
+  const threshold = resolveThreshold(ref, config.threshold_overrides);
+  if (!threshold) return payload;
+  const computed = computeScoring(payload.value, ref, threshold);
+  return {
+    ...payload,
+    target: threshold.target,
+    level_pct: computed.level_pct,
+    scoring: computed.scoring,
+  };
+}
+
+/**
+ * Pure (apart from `readEvidenceText` callback): validate and deterministically
+ * score findings submitted via `mcp__evidence__submit_findings` synchronously
+ * inside an active research session. Returns concrete validation errors back to
+ * the model while its search context is still warm.
+ */
+export async function validateAndScoreSubmittedFindings(
+  rawFindings: readonly unknown[],
+  ctx: SubmitFindingsContext | undefined,
+  readEvidenceText?: (textPath: string) => Promise<string>,
+): Promise<{
+  accepted: boolean;
+  findings: FindingPayload[];
+  errors: SubmitFindingError[];
+}> {
+  const validFindings: FindingPayload[] = [];
+  const errors: SubmitFindingError[] = [];
+
+  const fwDim = ctx ? frameworkDimension(ctx.dimensionSlug) : undefined;
+  const maxAge = ctx ? maxDataAgeYears(ctx.config.recency, ctx.dimensionSlug) : undefined;
+  const allowedScales = ctx ? acceptedScales(ctx.config.scale_policy, ctx.dimensionSlug) : undefined;
+  const currentYear = new Date().getUTCFullYear();
+
+  for (let i = 0; i < rawFindings.length; i++) {
+    const raw = rawFindings[i];
+    const obj = typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>) : null;
+    const slug = typeof obj?.indicator_slug === 'string' && obj.indicator_slug ? obj.indicator_slug : `item-${i}`;
+    let candidate: unknown = raw;
+
+    // Deterministically compute scoring from threshold contract before schema validation,
+    // allowing researchers to omit `target`/`level_pct`/`scoring` or correcting any math drift.
+    if (obj && obj.kind === 'indicator' && typeof obj.value === 'number' && Number.isFinite(obj.value) && ctx) {
+      const existingScoring =
+        typeof obj.scoring === 'object' && obj.scoring !== null ? (obj.scoring as Record<string, unknown>) : null;
+      const existingRef =
+        typeof existingScoring?.threshold_ref === 'string' && existingScoring.threshold_ref.trim()
+          ? existingScoring.threshold_ref.trim()
+          : undefined;
+      const fwRef = fwDim?.indicators.find((ind) => ind.slug === slug)?.threshold_ref;
+      const ref = existingRef ?? ctx.thresholdRefs?.[slug] ?? fwRef;
+      const threshold = ref ? resolveThreshold(ref, ctx.config.threshold_overrides) : undefined;
+      if (ref && threshold) {
+        const computed = computeScoring(obj.value, ref, threshold);
+        candidate = {
+          ...obj,
+          target: threshold.target,
+          level_pct: computed.level_pct,
+          scoring: computed.scoring,
+        };
+      }
+    }
+
+    const parsed = findingPayloadSchema.safeParse(candidate);
+    if (!parsed.success) {
+      errors.push({
+        index: i,
+        indicator_slug: slug,
+        errors: parsed.error.issues.map((issue) => `${issue.path.join('.') || 'finding'}: ${issue.message}`),
+      });
+      continue;
+    }
+
+    const payload = parsed.data as FindingPayload;
+    if (payload.kind === 'gap') {
+      validFindings.push(payload);
+      continue;
+    }
+
+    const itemErrors: string[] = [];
+    if (isHomeOrSectionPage(payload.source_url)) {
+      itemErrors.push(
+        `home_page_link: source_url "${payload.source_url}" is a publisher home or top-level section page. Cite the concrete report, data table, or direct PDF URL and call capture_evidence on it.`,
+      );
+    }
+    if (maxAge !== undefined) {
+      const age = currentYear - payload.year;
+      if (age < 0 || age > maxAge) {
+        itemErrors.push(
+          `recency_failed: year ${payload.year} is outside the allowed window (last ${maxAge} years; future projections are not observations). Find a compliant year or emit kind: "gap".`,
+        );
+      }
+    }
+    if (allowedScales && !allowedScales.includes(payload.geographic_scale)) {
+      itemErrors.push(
+        `scale_failed: geographic_scale "${payload.geographic_scale}" is not in accepted scales (${allowedScales.join(', ')}). Find a compliant scale or emit kind: "gap".`,
+      );
+    }
+    if (readEvidenceText && payload.evidence.text_path) {
+      const valStatus = await checkValueOnPage(payload, readEvidenceText);
+      if (valStatus === 'not_found') {
+        itemErrors.push(
+          `value_not_found: claimed value "${payload.value}" was not found in the captured readable text (${payload.evidence.text_path}). Verify the exact figure on the page, capture the concrete data table/PDF URL, or emit kind: "gap".`,
+        );
+      }
+    }
+
+    if (itemErrors.length > 0) {
+      errors.push({ index: i, indicator_slug: payload.indicator_slug, errors: itemErrors });
+    } else {
+      validFindings.push(payload);
+    }
+  }
+
+  return {
+    accepted: errors.length === 0 && validFindings.length > 0,
+    findings: validFindings,
+    errors,
+  };
 }
 
 /**
@@ -74,14 +265,121 @@ export class SessionRunError extends Error {
   }
 }
 
+/** Hard turn cap for bounded synthesis-only recovery when a session hits `error_max_turns`. */
+export const MAX_TURNS_RECOVERY_LIMIT = 6;
+const MAX_SYNTHESIS_DIGEST_CHARS = 12_000;
+
+/**
+ * Pure: extract a bounded digest of assistant findings/notes from a previous
+ * session result & transcript so a `error_max_turns` recovery pass can emit
+ * findings already gathered without doing any new web searches.
+ */
+function extractGatheredNotesDigest(first: SessionResult): string {
+  const parts: string[] = [];
+  if (first.resultText.trim()) {
+    parts.push(first.resultText.trim());
+  }
+  if (first.transcript && first.transcript.length > 0) {
+    try {
+      const raw =
+        first.transcript.length >= 2 && first.transcript[0] === 0x1f && first.transcript[1] === 0x8b
+          ? gunzipSync(first.transcript).toString('utf8')
+          : first.transcript.toString('utf8');
+      for (const line of raw.split('\n')) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        try {
+          const frame = JSON.parse(trimmed) as {
+            type?: unknown;
+            message?: { content?: unknown };
+            content?: unknown;
+          };
+          if (frame.type !== 'assistant') continue;
+          const text = messageText(frame.message?.content ?? frame.content).trim();
+          if (text) parts.push(text);
+        } catch {
+          // Ignore non-JSON lines.
+        }
+      }
+    } catch {
+      // Ignore corrupt/unreadable transcript buffers.
+    }
+  }
+  const combined = parts.join('\n\n---\n\n').trim();
+  if (!combined) return '(no prior assistant notes captured)';
+  if (combined.length <= MAX_SYNTHESIS_DIGEST_CHARS) return combined;
+  // Keep the most recent gathered notes (end of transcript has the final collected figures/paths).
+  return `…[earlier notes truncated]\n${combined.slice(-MAX_SYNTHESIS_DIGEST_CHARS)}`;
+}
+
+/**
+ * Pure: detect whether a failed session stopped due to turn-cap exhaustion
+ * (`error_max_turns`), which should trigger bounded 6-turn synthesis recovery
+ * rather than replaying a full 60-turn open-web research prompt.
+ */
+export function isMaxTurnsExhaustion(result: Pick<SessionResult, 'succeeded' | 'usage'>): boolean {
+  if (result.succeeded) return false;
+  return (
+    result.usage.result_subtype === 'error_max_turns' ||
+    result.usage.terminal_reason === 'max_turns'
+  );
+}
+
+/**
+ * Pure: transform a session input that hit `error_max_turns` into a bounded
+ * 6-turn synthesis-only recovery prompt with zero web search / fetch tools.
+ * Retains only `mcp__evidence__submit_findings` when present so the agent can
+ * validate and emit findings already gathered in the first pass.
+ */
+export function buildSynthesisRecoveryInput(
+  input: RunSessionArgs,
+  first: SessionResult,
+): RunSessionArgs {
+  const allAllowed = [...new Set([...input.allowedTools, ...(input.extraAllowedTools ?? [])])];
+  const hasSubmitFindings = allAllowed.includes('mcp__evidence__submit_findings');
+  const recoveryTools = hasSubmitFindings ? ['mcp__evidence__submit_findings'] : [];
+  const capturedPaths = first.capturedSnapshotPaths ?? [];
+  const digest = extractGatheredNotesDigest(first);
+  const captureNote = capturedPaths.length
+    ? `\nCaptured evidence snapshot paths already stored in this session:\n${capturedPaths.map((p) => `- ${p}`).join('\n')}\n`
+    : '';
+
+  const recoveryPrompt = [
+    '## Synthesis-only recovery (turn limit reached)',
+    'Your previous research pass reached its turn limit (`error_max_turns`).',
+    'Do NOT perform any further web searches, page fetches, or subagent dispatches — all web/search tools are disabled for this recovery pass.',
+    hasSubmitFindings
+      ? 'Using ONLY the sources, figures, and captured evidence already gathered below, immediately call `mcp__evidence__submit_findings` and then emit ONLY the final JSON array matching the original output contract.'
+      : 'Using ONLY the sources, figures, and captured evidence already gathered below, immediately emit ONLY the final JSON output matching the original output contract.',
+    'For any indicator that you did not finish verifying with captured evidence, emit an honest `kind: "gap"` finding describing what was searched — never invent figures or URLs.',
+    captureNote,
+    '### Notes & evidence already gathered',
+    digest,
+    '',
+    '### Original assignment (for output schema and indicator slugs only — do NOT search again)',
+    input.prompt,
+  ].join('\n');
+
+  return {
+    ...input,
+    prompt: recoveryPrompt,
+    allowedTools: recoveryTools,
+    extraAllowedTools: [],
+    extraMcpServers: undefined,
+    civicDataTools: undefined,
+    orchestrate: false,
+    scoutModel: null,
+    maxTurns: MAX_TURNS_RECOVERY_LIMIT,
+  };
+}
+
 /**
  * Transient transport failures ("Connection closed mid-response", overloaded,
- * 5xx) and turn-cap exhaustion kill an entire session. The SDK surfaces some
- * of these as THROWN errors, not unsuccessful results — so the retry must
- * catch throws, and a double failure must return a failed result rather than
- * propagate, or one bad session kills the surrounding 21-session run. Usage
- * from both attempts is folded with mergeUsage — the spend was real either
- * way, and a thrown attempt contributes what it had streamed (SessionRunError).
+ * 5xx) kill a session and are retried once. Turn-cap exhaustion
+ * (`error_max_turns`) is NEVER retried with another full 60-turn identical
+ * prompt: instead it runs a bounded 6-turn synthesis-only recovery pass
+ * (no further web search, only `submit_findings` / JSON emission for findings
+ * already gathered). Usage from both attempts is folded with mergeUsage.
  *
  * The exception is a failure the key itself caused (org-key.ts
  * keyRejection: revoked, out of credit, model not found, a disabled
@@ -95,13 +393,17 @@ export class SessionRunError extends Error {
 export async function runSessionWithRetry(
   input: Parameters<typeof runSession>[0],
 ): Promise<SessionResult> {
-  const attempt = async (): Promise<SessionResult> => {
+  const model = input.model ?? MODEL();
+  const provider = input.provider ?? providerForModel(model, 'anthropic');
+  const attempt = async (args: RunSessionArgs): Promise<SessionResult> => {
     try {
-      return await runSession(input);
+      return await runSession(args);
     } catch (err) {
+      // Non-Anthropic adapters throw OrgKeyUnavailableError directly on org key refusals; never retry or swallow it.
+      if (err instanceof OrgKeyUnavailableError) throw err;
       // The message is stored in the transcript: an organization's key must
       // not ride along if a subprocess error ever echoed its environment.
-      const message = redactSecret(err instanceof Error ? err.message : String(err), input.apiKey);
+      const message = redactSecret(err instanceof Error ? err.message : String(err), args.apiKey);
       return {
         resultText: '',
         transcript: gzipSync(JSON.stringify({ type: 'session_error', message })),
@@ -112,25 +414,50 @@ export async function runSessionWithRetry(
       };
     }
   };
-  const model = input.model ?? MODEL();
-  const first = await attempt();
+  const first = await attempt(input);
   if (first.succeeded) return first;
   // Built on either key, thrown only on the organization's: on the
   // deployment's key a refusal is returned as a failed session, as before.
-  const rejectedFirst = rejectedKeyError(first, model, first.usage);
+  const rejectedFirst = rejectedKeyError(first, model, first.usage, provider);
   if (rejectedFirst) {
     if (input.apiKey) throw rejectedFirst;
     return first;
   }
-  const second = await attempt();
+  // If the first attempt exhausted turns (`error_max_turns`), run a bounded
+  // 6-turn synthesis-only recovery pass instead of repeating a full 60-turn search.
+  const secondInput = isMaxTurnsExhaustion(first)
+    ? buildSynthesisRecoveryInput(input, first)
+    : input;
+  const second = await attempt(secondInput);
   const usage = mergeUsage(first.usage, second.usage);
+  const capturedSnapshotPaths = [
+    ...new Set([...(first.capturedSnapshotPaths ?? []), ...(second.capturedSnapshotPaths ?? [])]),
+  ];
+  const submittedFindings = second.submittedFindings?.length
+    ? second.submittedFindings
+    : first.submittedFindings;
   // The key can also die between the attempts (credit running out mid-run).
-  const refused = !second.succeeded && input.apiKey ? rejectedKeyError(second, model, usage) : null;
+  const refused = !second.succeeded && input.apiKey ? rejectedKeyError(second, model, usage, provider) : null;
   if (refused) throw refused;
-  return { ...second, usage };
+  return {
+    ...second,
+    usage,
+    ...(submittedFindings ? { submittedFindings } : {}),
+    ...(capturedSnapshotPaths.length ? { capturedSnapshotPaths } : {}),
+  };
 }
 
 const MODEL = () => process.env.ANTHROPIC_MODEL ?? DEFAULT_SESSION_MODEL;
+
+/**
+ * Hard bounds enforced on Anthropic Claude Agent SDK CLI sessions (P2.1):
+ * - Every `source-scout` subagent is capped at `SCOUT_MAX_TURNS = 8` turns.
+ * - `CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION = '8'` caps total subagent dispatches.
+ * - `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION = '40'` caps server-side web searches.
+ */
+export const SCOUT_MAX_TURNS = 8;
+export const CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION = '8';
+export const CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION = '40';
 
 /**
  * Orchestrated mode: when RESEARCH_SUBAGENT_MODEL is set (e.g. 'claude-sonnet-5'),
@@ -141,7 +468,7 @@ const MODEL = () => process.env.ANTHROPIC_MODEL ?? DEFAULT_SESSION_MODEL;
  */
 const SCOUT_MODEL = () => process.env.RESEARCH_SUBAGENT_MODEL;
 
-const SCOUT_AGENT = (model: string) => ({
+export const SCOUT_AGENT = (model: string) => ({
   'source-scout': {
     description:
       'Fast scout for breadth work. Dispatch it for every initial source sweep (one scout per tier or portal), to check whether a portal/publisher has a candidate dataset before you descend a tier, and to skim a candidate page for the exact figure. It reports raw material only — you evaluate and synthesize.',
@@ -149,6 +476,7 @@ const SCOUT_AGENT = (model: string) => ({
       'You are a source scout for a civic research orchestrator. Execute exactly the search or fetch task you were given and report raw material: for each candidate source — URL, publisher, publication date, the exact quoted text containing any relevant figure (with enough surrounding text to locate it), the geography and year the figure covers, and your best guess at its source tier. Report dead ends honestly ("portal has no dataset for X"). Do NOT synthesize, conclude, score, or recommend which source to accept. Never state a figure you did not see verbatim on a fetched page.',
     tools: ['WebSearch', 'WebFetch'],
     model,
+    maxTurns: SCOUT_MAX_TURNS,
   },
 });
 
@@ -276,7 +604,7 @@ const DEPLOYMENT_CREDENTIAL_PREFIXES = [
  */
 export function sessionEnv(
   source: NodeJS.ProcessEnv = process.env,
-  options: { apiKey?: string; pageReaderModel?: string } = {},
+  options: { apiKey?: string; pageReaderModel?: string; subagentModel?: string | null } = {},
 ): Record<string, string> {
   const env: Record<string, string> = {};
   for (const [key, value] of Object.entries(source)) {
@@ -296,6 +624,16 @@ export function sessionEnv(
   // A blank never replaces the worker's pin: the CLI treats '' as unset and
   // would fall back to its own alias.
   if (options.pageReaderModel?.trim()) env.ANTHROPIC_SMALL_FAST_MODEL = options.pageReaderModel.trim();
+  // Pin subagent model explicitly so the orchestrator's Agent/Task tool call
+  // cannot silently override AgentDefinition.model (P2.1).
+  if (options.subagentModel?.trim()) env.CLAUDE_CODE_SUBAGENT_MODEL = options.subagentModel.trim();
+  // Enforce hard CLI subagent & web-search caps on every Claude Code session (P2.1).
+  if (!env.CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION?.trim()) {
+    env.CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION = CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION;
+  }
+  if (!env.CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION?.trim()) {
+    env.CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION = CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION;
+  }
   return env;
 }
 
@@ -309,16 +647,9 @@ export function redactSecret(text: string, secret: string | undefined): string {
   return text.split(secret).join('[redacted API key]');
 }
 
-/**
- * One research session = one Agent SDK session in a scratch workspace
- * (SPEC.md §8 Apply). The full message stream is retained as the audit
- * transcript (gzipped JSONL). In production each session additionally runs
- * inside an ephemeral container behind the egress allowlist proxy — that
- * isolation lives in the deploy layer (see apps/worker/README.md); the tool
- * surface and the subprocess environment are restricted here, so a session
- * is contained even where that deploy layer is missing.
- */
-export async function runSession(input: {
+export type SessionMcpServer = ReturnType<typeof createSdkMcpServer>;
+
+export interface RunSessionArgs {
   prompt: string;
   /**
    * The session's entire tool surface: built-in tools by name (WebSearch,
@@ -327,6 +658,8 @@ export async function runSession(input: {
    */
   allowedTools: string[];
   storage?: TenantStorage;
+  /** Shared content-addressed source cache (defaults to the worker process shared cache). */
+  sourceCache?: SourceCache;
   /** Archived bytes loaded by the worker, for an independent verifier only. */
   archivedExhibits?: ArchivedExhibits;
   maxTurns?: number;
@@ -350,31 +683,398 @@ export async function runSession(input: {
    * into a log line, and it is redacted from the stored transcript.
    */
   apiKey?: string;
-}): Promise<SessionResult> {
+  /** Portrait config & dimension context for synchronous validation/scoring in `submit_findings`. */
+  submitFindingsContext?: SubmitFindingsContext;
+  /**
+   * Optional additional in-process MCP servers mounted alongside `evidence`
+   * (e.g. deterministic civic data connectors such as `civic_data`).
+   */
+  extraMcpServers?: Record<string, SessionMcpServer>;
+  /**
+   * Optional explicit model provider (`anthropic`, `openai`, `google`).
+   * When omitted, inferred from `model` via `providerForModel(model, 'anthropic')`.
+   */
+  provider?: ResearchProvider;
+  /**
+   * Optional civic-data tool definitions exposed directly to non-Anthropic
+   * providers (`ToolExecutor`) so OpenAI and Gemini sessions share the exact
+   * same deterministic connectors as Anthropic MCP sessions.
+   */
+  civicDataTools?: readonly CivicDataToolDefinition[];
+  /** Optional injectable fetch for non-Anthropic provider adapters (used in tests). */
+  providerFetch?: FetchLike;
+  /**
+   * Optional additional allowed tool names merged (deduplicated) into the
+   * session's allowlist, subject to the same `Read` and local-tool guards.
+   */
+  extraAllowedTools?: string[];
+  /**
+   * When `true` and running on Anthropic, execute via `runDirectAnthropicSession`
+   * (`@anthropic-ai/sdk` Messages API with prompt caching, bounded `read_exhibit`
+   * loop `<= 4` turns, and strict JSON output) instead of spawning a Claude Code
+   * CLI subprocess. Used by verifiers (`runVerifier`) and archive-only post-run
+   * auditors (`auditResearchRun`).
+   */
+  direct?: boolean;
+  /** Optional system prompt override for direct Anthropic sessions. */
+  directSystemPrompt?: string;
+  /** Optional injectable Messages API client for direct Anthropic sessions (tests). */
+  anthropicClient?: MessagesApiClient;
+  /**
+   * Optional concurrency semaphore override; defaults to the worker's shared
+   * `MAX_ACTIVE_SESSIONS` semaphore (`null` disables permit acquisition).
+   */
+  semaphore?: SessionSemaphore | null;
+  /**
+   * Optional benchmark answer-key source blocklist enforced across egress
+   * fetches (`read_source`, `capture_evidence`, `civic_data`) and Anthropic
+   * `WebFetch` calls. Defaults to any ambient blocklist set via `withEgressBlocklist`.
+   */
+  sourceBlocklist?: SourceBlocklist;
+}
+
+const READ_SOURCE_SCHEMA = z.object({
+  url: z.string().describe('The exact HTTPS URL of the web page or PDF document to read'),
+  query: z
+    .string()
+    .optional()
+    .describe('Optional keywords or candidate figure to focus the bounded excerpt around'),
+  page_range: z
+    .string()
+    .optional()
+    .describe('Optional 1-indexed PDF page or page range (e.g. "5" or "12-15")'),
+});
+
+const CAPTURE_EVIDENCE_SCHEMA = z.object({
+  url: z.string().describe('The exact URL the value was read from'),
+  pdf_url: z.string().optional().describe('Direct PDF URL when the source is a document'),
+  check_value: z
+    .union([z.number(), z.string()])
+    .optional()
+    .describe('Optional candidate value to check immediately against the captured readable text'),
+});
+
+const SUBMIT_FINDINGS_SCHEMA = z.object({
+  findings: z
+    .array(z.record(z.string(), z.unknown()))
+    .min(1)
+    .describe('Array of indicator or gap finding objects for this dimension'),
+});
+
+const READ_EXHIBIT_SCHEMA = z.object({
+  filename: z
+    .string()
+    .describe('Exact archived exhibit filename (e.g. "archived-source-excerpt.txt", "archived-snapshot.png", "archived-source.pdf")'),
+});
+
+/**
+ * One research session = one Agent SDK session (Anthropic open-web CLI),
+ * one direct zero-subprocess Anthropic Messages session (`direct: true`,
+ * for verifiers and archive-only auditors), or one native function-calling
+ * provider loop (OpenAI, Google Gemini). Bounded globally by the worker's
+ * shared `MAX_ACTIVE_SESSIONS` semaphore.
+ */
+export async function runSession(input: RunSessionArgs): Promise<SessionResult> {
+  const semaphore = input.semaphore === undefined ? getSharedSessionSemaphore() : input.semaphore;
+  const runBody = () => {
+    if (input.sourceBlocklist && input.sourceBlocklist !== getActiveEgressBlocklist()) {
+      return withEgressBlocklist(input.sourceBlocklist, () =>
+        runSessionUnbounded({ ...input, sourceBlocklist: undefined }),
+      );
+    }
+    return runSessionUnbounded(input);
+  };
+  return semaphore ? semaphore.run(runBody) : runBody();
+}
+
+async function runSessionUnbounded(input: RunSessionArgs): Promise<SessionResult> {
+  const effectiveBlocklist = input.sourceBlocklist ?? getActiveEgressBlocklist();
+  const effectiveModel = input.model ?? MODEL();
+  const provider = input.provider ?? providerForModel(effectiveModel, 'anthropic');
+  const effectiveAllowedTools = [
+    ...new Set([...input.allowedTools, ...(input.extraAllowedTools ?? [])]),
+  ];
+  const sourceCache = input.sourceCache ?? getSharedSourceCache();
+  let submittedFindings: FindingPayload[] | undefined;
+  const capturedSnapshotPaths = new Set<string>();
+
+  if (provider === 'anthropic' && input.direct) {
+    const out = await runDirectAnthropicSession({
+      prompt: input.prompt,
+      model: effectiveModel,
+      ...(input.directSystemPrompt ? { systemPrompt: input.directSystemPrompt } : {}),
+      archivedExhibits: input.archivedExhibits,
+      allowReadExhibit: effectiveAllowedTools.includes('Read'),
+      ...(input.maxTurns !== undefined ? { maxTurns: input.maxTurns } : {}),
+      ...(input.apiKey ? { apiKey: input.apiKey, isOrganizationKey: true } : {}),
+      ...(input.anthropicClient ? { client: input.anthropicClient } : {}),
+    });
+    return {
+      resultText: out.resultText,
+      transcript: out.transcript,
+      usage: out.usage,
+      succeeded: out.succeeded,
+      ...(out.apiError ? { apiError: out.apiError as SDKAssistantMessageError } : {}),
+      ...(out.apiErrorText ? { apiErrorText: redactErrorText(out.apiErrorText, input.apiKey) } : {}),
+    };
+  }
+
+  if (provider !== 'anthropic') {
+    const storage = input.storage;
+    const readEvidenceText = storage
+      ? async (textPath: string) => (await storage.get(textPath)).toString('utf8')
+      : undefined;
+    const toolDefs: ProviderToolDefinition[] = [];
+    const mountEvidence =
+      Boolean(storage) || effectiveAllowedTools.includes('mcp__evidence__read_source');
+
+    if (mountEvidence) {
+      toolDefs.push({
+        name: 'read_source',
+        description:
+          'Render a public HTTPS web page in headless Chromium or extract a PDF text layer (bounded, cached across dimensions and portrait runs). Supply query and/or page_range to focus excerpts on long PDFs.',
+        parameters: zodToJsonSchema(READ_SOURCE_SCHEMA),
+        execute: async (rawArgs) => {
+          const parsed = READ_SOURCE_SCHEMA.safeParse(rawArgs);
+          if (!parsed.success) {
+            return JSON.stringify({ error: `invalid arguments: ${parsed.error.message}` });
+          }
+          try {
+            const payload = await readSourceWithCache(sourceCache, storage, parsed.data);
+            return JSON.stringify(payload);
+          } catch (err) {
+            return JSON.stringify({
+              error: `read_source failed: ${err instanceof Error ? err.message : String(err)}`,
+            });
+          }
+        },
+      });
+
+      if (storage && readEvidenceText) {
+        toolDefs.push(
+          {
+            name: 'capture_evidence',
+            description:
+              'Capture an evidence snapshot of a source you have decided to accept: a full-page screenshot, plus the PDF when the source is a document. Returns storage paths, a bounded preview of extracted readable text, and optional value_on_page check.',
+            parameters: zodToJsonSchema(CAPTURE_EVIDENCE_SCHEMA),
+            execute: async (rawArgs) => {
+              const parsed = CAPTURE_EVIDENCE_SCHEMA.safeParse(rawArgs);
+              if (!parsed.success) {
+                return JSON.stringify({ error: `invalid arguments: ${parsed.error.message}` });
+              }
+              try {
+                const result = await captureEvidence(storage, parsed.data.url, parsed.data.pdf_url, { sourceCache });
+                capturedSnapshotPaths.add(result.snapshot_path);
+                let capturedText: string | null = null;
+                if (result.text_path) {
+                  try {
+                    capturedText = await readEvidenceText(result.text_path);
+                  } catch {
+                    capturedText = null;
+                  }
+                }
+                const preview = buildCapturePreview(capturedText);
+                return JSON.stringify({
+                  ...result,
+                  text_char_count: preview.text_char_count,
+                  text_preview: preview.text_preview,
+                  ...(parsed.data.check_value !== undefined
+                    ? { value_on_page: valueOnPage(parsed.data.check_value, capturedText) }
+                    : {}),
+                });
+              } catch (err) {
+                return JSON.stringify({
+                  error: `capture failed: ${err instanceof Error ? err.message : String(err)}`,
+                });
+              }
+            },
+          },
+          {
+            name: 'submit_findings',
+            description:
+              'Validate, deterministically score, and submit your completed findings array for this dimension. Returns concrete validation errors immediately so you can fix them in-session.',
+            parameters: zodToJsonSchema(SUBMIT_FINDINGS_SCHEMA),
+            execute: async (rawArgs) => {
+              const parsed = SUBMIT_FINDINGS_SCHEMA.safeParse(rawArgs);
+              if (!parsed.success) {
+                return JSON.stringify({ accepted: false, error: `invalid arguments: ${parsed.error.message}` });
+              }
+              const validation = await validateAndScoreSubmittedFindings(
+                parsed.data.findings,
+                input.submitFindingsContext,
+                readEvidenceText,
+              );
+              if (validation.accepted) {
+                submittedFindings = validation.findings;
+                return JSON.stringify({
+                  accepted: true,
+                  count: validation.findings.length,
+                  findings: validation.findings,
+                });
+              }
+              return JSON.stringify({ accepted: false, errors: validation.errors });
+            },
+          },
+        );
+      }
+    }
+
+    for (const civicDef of input.civicDataTools ?? []) {
+      if (effectiveAllowedTools.includes(civicDef.mcpName) || effectiveAllowedTools.includes(civicDef.name)) {
+        toolDefs.push({
+          name: civicDef.name,
+          description: civicDef.description,
+          parameters: zodToJsonSchema(civicDef.schema),
+          execute: async (args) => {
+            const res = await civicDef.handler(args);
+            return res.content.map((c) => c.text).join('\n');
+          },
+        });
+      }
+    }
+
+    const exhibitMap = buildArchivedExhibitMap(input.archivedExhibits);
+    if (exhibitMap.size > 0 && effectiveAllowedTools.includes('Read')) {
+      toolDefs.push({
+        name: 'read_exhibit',
+        description: `Read one of this finding's archived exhibits (available: ${[...exhibitMap.keys()].join(', ')}). Only these fixed files may be read.`,
+        parameters: zodToJsonSchema(READ_EXHIBIT_SCHEMA),
+        execute: async (rawArgs) => {
+          const parsed = READ_EXHIBIT_SCHEMA.safeParse(rawArgs);
+          if (!parsed.success) {
+            return JSON.stringify({ error: `invalid arguments: ${parsed.error.message}` });
+          }
+          const name = path.basename(parsed.data.filename.trim());
+          const body = exhibitMap.get(name);
+          if (!body) {
+            return JSON.stringify({
+              error: `Only this finding's archived exhibits may be read (available: ${[...exhibitMap.keys()].join(', ')}).`,
+            });
+          }
+          if (name.endsWith('.txt')) {
+            return body.toString('utf8');
+          }
+          return JSON.stringify({
+            filename: name,
+            bytes: body.byteLength,
+            note: 'Binary exhibit stored in archive; inspect archived-source-excerpt.txt for extracted readable text.',
+          });
+        },
+      });
+    }
+
+    const executor = new ToolExecutor(toolDefs);
+    const providerInput = {
+      provider,
+      model: effectiveModel,
+      prompt: input.prompt,
+      apiKey: input.apiKey,
+      isOrganizationKey: Boolean(input.apiKey),
+      maxTurns: input.maxTurns ?? DEFAULT_SESSION_MAX_TURNS,
+      tools: executor,
+      fetch: input.providerFetch,
+    };
+    const out =
+      provider === 'openai'
+        ? await runOpenAiSession(providerInput)
+        : await runGoogleSession(providerInput);
+
+    return {
+      resultText: out.resultText,
+      transcript: gzipSync(out.transcriptLines.join('\n')),
+      usage: out.usage,
+      succeeded: out.succeeded,
+      ...(out.apiError ? { apiError: out.apiError as SDKAssistantMessageError } : {}),
+      ...(out.apiErrorText ? { apiErrorText: redactErrorText(out.apiErrorText, input.apiKey) } : {}),
+      ...(submittedFindings ? { submittedFindings } : {}),
+      ...(capturedSnapshotPaths.size ? { capturedSnapshotPaths: [...capturedSnapshotPaths] } : {}),
+    };
+  }
+
   const workspace = await mkdtemp(path.join(tmpdir(), 'df-session-'));
   const transcriptLines: string[] = [];
   let resultText = '';
   let succeeded = false;
   const meter = new SessionMeter();
 
-  const mcpServers: Record<string, ReturnType<typeof createSdkMcpServer>> = {};
-  if (input.storage) {
+  const mcpServers: Record<string, SessionMcpServer> = {
+    ...(input.extraMcpServers ?? {}),
+  };
+  const mountEvidenceServer =
+    Boolean(input.storage) || effectiveAllowedTools.includes('mcp__evidence__read_source');
+  if (mountEvidenceServer) {
     const storage = input.storage;
-    mcpServers.evidence = createSdkMcpServer({
-      name: 'evidence',
-      version: '1.0.0',
-      tools: [
+    const evidenceTools: NonNullable<Parameters<typeof createSdkMcpServer>[0]['tools']> = [
+      tool(
+        'read_source',
+        'Render a public HTTPS web page in headless Chromium or extract a PDF text layer (bounded, cached across dimensions and portrait runs). Prefer this over WebFetch when .gov portals return 403, empty JS shells, or truncated summaries. Supply query and/or page_range to focus excerpts on long PDFs.',
+        {
+          url: z.string().describe('The exact HTTPS URL of the web page or PDF document to read'),
+          query: z
+            .string()
+            .optional()
+            .describe('Optional keywords or candidate figure to focus the bounded excerpt around'),
+          page_range: z
+            .string()
+            .optional()
+            .describe('Optional 1-indexed PDF page or page range (e.g. "5" or "12-15")'),
+        },
+        async (args) => {
+          try {
+            const payload = await readSourceWithCache(sourceCache, storage, args);
+            return { content: [{ type: 'text', text: JSON.stringify(payload) }] };
+          } catch (err) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify({
+                    error: `read_source failed: ${err instanceof Error ? err.message : String(err)}`,
+                  }),
+                },
+              ],
+            };
+          }
+        },
+      ),
+    ];
+
+    if (storage) {
+      const readEvidenceText = async (textPath: string) => (await storage.get(textPath)).toString('utf8');
+      evidenceTools.push(
         tool(
           'capture_evidence',
-          'Capture an evidence snapshot of a source you have decided to accept: a full-page screenshot, plus the PDF when the source is a document. Returns storage paths for the finding\'s evidence field.',
+          'Capture an evidence snapshot of a source you have decided to accept: a full-page screenshot, plus the PDF when the source is a document. Promotes already-cached sources instantly into immutable evidence storage. Returns storage paths, a bounded preview of extracted readable text, and optional value_on_page check.',
           {
             url: z.string().describe('The exact URL the value was read from'),
             pdf_url: z.string().optional().describe('Direct PDF URL when the source is a document'),
+            check_value: z
+              .union([z.number(), z.string()])
+              .optional()
+              .describe('Optional candidate value to check immediately against the captured readable text'),
           },
           async (args) => {
             try {
-              const result = await captureEvidence(storage, args.url, args.pdf_url);
-              return { content: [{ type: 'text', text: JSON.stringify(result) }] };
+              const result = await captureEvidence(storage, args.url, args.pdf_url, { sourceCache });
+              capturedSnapshotPaths.add(result.snapshot_path);
+              let capturedText: string | null = null;
+              if (result.text_path) {
+                try {
+                  capturedText = await readEvidenceText(result.text_path);
+                } catch {
+                  capturedText = null;
+                }
+              }
+              const preview = buildCapturePreview(capturedText);
+              const responsePayload = {
+                ...result,
+                text_char_count: preview.text_char_count,
+                text_preview: preview.text_preview,
+                ...(args.check_value !== undefined
+                  ? { value_on_page: valueOnPage(args.check_value, capturedText) }
+                  : {}),
+              };
+              return { content: [{ type: 'text', text: JSON.stringify(responsePayload) }] };
             } catch (err) {
               return {
                 content: [
@@ -389,13 +1089,62 @@ export async function runSession(input: {
             }
           },
         ),
-      ],
+        tool(
+          'submit_findings',
+          'Validate, deterministically score, and submit your completed findings array for this dimension. Returns concrete validation errors (schema, home-page link, recency, scale, value_on_page) immediately so you can fix them in-session.',
+          {
+            findings: z
+              .array(z.record(z.string(), z.unknown()))
+              .min(1)
+              .describe('Array of indicator or gap finding objects for this dimension'),
+          },
+          async (args) => {
+            const validation = await validateAndScoreSubmittedFindings(
+              args.findings,
+              input.submitFindingsContext,
+              readEvidenceText,
+            );
+            if (validation.accepted) {
+              submittedFindings = validation.findings;
+              return {
+                content: [
+                  {
+                    type: 'text',
+                    text: JSON.stringify({
+                      accepted: true,
+                      count: validation.findings.length,
+                      findings: validation.findings,
+                    }),
+                  },
+                ],
+              };
+            }
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify({
+                    accepted: false,
+                    errors: validation.errors,
+                  }),
+                },
+              ],
+            };
+          },
+        ),
+      );
+    }
+
+    mcpServers.evidence = createSdkMcpServer({
+      name: 'evidence',
+      version: '1.0.0',
+      tools: evidenceTools,
     });
   }
 
   const scoutModel = input.scoutModel === undefined ? SCOUT_MODEL() : input.scoutModel;
   const orchestrated =
-    input.orchestrate !== false && Boolean(scoutModel) && input.allowedTools.includes('WebSearch');
+    input.orchestrate !== false && Boolean(scoutModel) && effectiveAllowedTools.includes('WebSearch');
 
   // The explicit allowlist from the rendered plan is the entire tool surface
   // (SPEC §8). The SDK enforces that with three separate options, and all
@@ -408,22 +1157,31 @@ export async function runSession(input: {
   // - `permissionMode: 'dontAsk'` denies anything not pre-approved instead of
   //   falling back to default-mode rules (which auto-approve file reads).
   // Orchestrated mode adds only DISPATCH_TOOLS + the scout definition.
-  const hasArchive = Boolean(input.archivedExhibits?.pdf || input.archivedExhibits?.snapshot || input.archivedExhibits?.additional?.length);
+  const hasArchive = Boolean(
+    input.archivedExhibits?.pdf ||
+    input.archivedExhibits?.pdfExcerpt ||
+    input.archivedExhibits?.snapshot ||
+    input.archivedExhibits?.additional?.length,
+  );
   // Even a stale/malicious plan cannot turn on general file reads. Read only
   // exists when trusted archive bytes were supplied, and the hook below
   // independently denies every file except the fixed copies in this workspace.
-  const scopedTools = input.allowedTools.filter((tool) => tool !== 'Read' || hasArchive);
+  const scopedTools = effectiveAllowedTools.filter((tool) => tool !== 'Read' || hasArchive);
   const allowed = orchestrated ? [...scopedTools, ...DISPATCH_TOOLS] : scopedTools;
   const builtIn = allowed.filter((t) => !t.startsWith('mcp__'));
 
   try {
     const archivePaths = new Set<string>();
     const additional = input.archivedExhibits?.additional ?? [];
-    if (additional.length > 10 || additional.some(({ filename }) => !/^action-[1-5]-(?:snapshot\.png|source\.pdf)$/.test(filename))) {
+    if (
+      additional.length > 15 ||
+      additional.some(({ filename }) => !/^action-[1-5]-(?:snapshot\.png|source\.pdf|source-excerpt\.txt)$/.test(filename))
+    ) {
       throw new Error('invalid fixed action exhibit filename');
     }
     for (const [name, bytes] of [
       [ARCHIVED_PDF, input.archivedExhibits?.pdf],
+      [ARCHIVED_PDF_EXCERPT, input.archivedExhibits?.pdfExcerpt],
       [ARCHIVED_SNAPSHOT, input.archivedExhibits?.snapshot],
       ...additional.map(({ filename, body }) => [filename, body] as const),
     ] as const) {
@@ -451,6 +1209,29 @@ export async function runSession(input: {
         },
       };
     };
+    const guardBlockedWebFetch: HookCallback = async (hook) => {
+      if (hook.hook_event_name !== 'PreToolUse' || hook.tool_name !== 'WebFetch' || !effectiveBlocklist) return {};
+      const targetUrl = (hook.tool_input as { url?: unknown } | null)?.url;
+      if (typeof targetUrl === 'string') {
+        const blocked = matchBlockedSource(targetUrl, effectiveBlocklist);
+        if (blocked) {
+          return {
+            hookSpecificOutput: {
+              hookEventName: 'PreToolUse',
+              permissionDecision: 'deny',
+              permissionDecisionReason: `blocked benchmark answer-key source: ${blocked.reason}`,
+            },
+          };
+        }
+      }
+      return {};
+    };
+    const preToolUseHooks = [
+      ...(allowed.includes('Read') ? [{ matcher: 'Read', hooks: [guardArchiveRead] }] : []),
+      ...(effectiveBlocklist && allowed.includes('WebFetch')
+        ? [{ matcher: 'WebFetch', hooks: [guardBlockedWebFetch] }]
+        : []),
+    ];
     try {
       const q = query({
         prompt: orchestrated ? input.prompt + DELEGATION_NOTE : input.prompt,
@@ -461,8 +1242,12 @@ export async function runSession(input: {
           allowedTools: allowed,
           disallowedTools: LOCAL_MACHINE_TOOLS.filter((t) => !allowed.includes(t)),
           permissionMode: 'dontAsk',
-          ...(allowed.includes('Read') ? { hooks: { PreToolUse: [{ matcher: 'Read', hooks: [guardArchiveRead] }] } } : {}),
-          env: sessionEnv(process.env, { apiKey: input.apiKey, pageReaderModel: input.pageReaderModel }),
+          ...(preToolUseHooks.length > 0 ? { hooks: { PreToolUse: preToolUseHooks } } : {}),
+          env: sessionEnv(process.env, {
+            apiKey: input.apiKey,
+            pageReaderModel: input.pageReaderModel,
+            ...(orchestrated && scoutModel ? { subagentModel: scoutModel } : {}),
+          }),
           maxTurns: input.maxTurns ?? DEFAULT_SESSION_MAX_TURNS,
           // The raw API stream events, for SessionMeter: only a call's
           // message_delta carries its final output count (see SessionMeter).
@@ -500,6 +1285,8 @@ export async function runSession(input: {
     succeeded,
     ...(meter.apiError ? { apiError: meter.apiError } : {}),
     ...(meter.apiErrorText ? { apiErrorText: redactErrorText(meter.apiErrorText, input.apiKey) } : {}),
+    ...(submittedFindings ? { submittedFindings } : {}),
+    ...(capturedSnapshotPaths.size ? { capturedSnapshotPaths: [...capturedSnapshotPaths] } : {}),
   };
 }
 

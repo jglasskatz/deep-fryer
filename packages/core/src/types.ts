@@ -134,6 +134,7 @@ export interface RetentionConfig {
  */
 export interface FeaturesConfig {
   custom_pages?: boolean;
+  ask_portrait?: boolean;
   emergency?: boolean;
   policy_analysis?: boolean;
   involvement?: boolean;
@@ -195,7 +196,58 @@ export interface FindingVerification {
    * findings recorded before the check existed, which reads as false.
    */
   partial_output?: boolean;
+  /**
+   * Whether the claimed value was found, written in one of its usual forms,
+   * in the readable text kept with the captured page (packages/research
+   * page-text.ts). `no_text` when the capture kept no text to look in.
+   * Recorded before the verifier runs; a finding whose value was not found
+   * is flagged for review (core isFlagged), and the verifier still judges
+   * it. Absent on findings recorded before the check existed, and on gaps.
+   */
+  value_on_page?: ValueOnPage;
+  /**
+   * True when the cited link is a publisher's home or section page rather
+   * than the page or document holding the figure (core source-links.ts).
+   * Such a finding is flagged for review. Absent on findings recorded before
+   * the check existed, which reads as false.
+   */
+  home_page_link?: boolean;
+  /**
+   * Which research stage produced this finding (`initial`, `correction`, or
+   * `escalation`). Used by review provenance so an Opus-escalated finding
+   * reports the escalation model and any fallback rather than the initial pass.
+   */
+  produced_by_stage?: 'initial' | 'correction' | 'escalation';
+  /** The model ID that produced this finding when recorded at the stage level. */
+  produced_by_model?: string;
+  /** Optional concise reason emitted by the verifier when content is not supported. */
+  fail_reason?: string;
+  /** Optional machine disposition suggested by the verifier when unambiguous from the exhibit. */
+  suggested_disposition?: 'approve' | 'edit' | 're_research' | 'reject';
+  /** Optional advisory frame/construct triage metadata recorded alongside independent verification. */
+  triage?: FindingTriageVerification;
 }
+
+/**
+ * Advisory frame/construct triage metadata stored on `FindingVerification`.
+ * Strictly additive / flag-expanding: never approves or clears verifier flags.
+ */
+export interface FindingTriageVerification {
+  advisory_only: true;
+  severity: 'high' | 'medium' | 'low' | 'none';
+  flags: string[];
+  assessment: {
+    construct_match: 'match' | 'partial' | 'mismatch' | 'unclear';
+    epistemic_type: 'measured' | 'projection_or_goal' | 'modeled_estimate' | 'unclear';
+    geography_match: 'match' | 'broader_proxy' | 'mismatch' | 'unclear';
+    is_primary_source: 'primary' | 'secondary_republisher' | 'unclear';
+    reason: string;
+  };
+  model?: string;
+}
+
+/** What the value check found in a captured page's readable text. */
+export type ValueOnPage = 'found' | 'not_found' | 'no_text';
 
 export interface IndicatorFindingPayload {
   kind: 'indicator';
@@ -254,10 +306,28 @@ export interface PlannedSession {
   config_hash: string;
 }
 
+/**
+ * Validated Phase-0 region context brief cached on `tenants.region_brief_cache`
+ * so targeted re-runs can skip redundant Phase-0 sessions when `config_hash`
+ * matches and the entry is still fresh (<30 days).
+ */
+export interface RegionBriefCache {
+  brief: string;
+  config_hash: string;
+  cached_at: string;
+  run_id: string;
+}
+
 export interface ResearchPlan {
   sessions: PlannedSession[];
   config_hash: string;
   plugin_version: string;
+  /**
+   * Validated cached Phase-0 region brief reused on targeted re-runs when the
+   * portrait's `region_brief_cache` matched `config_hash` and was <30 days old.
+   * When present, Phase 0 (`region_context`) is omitted from `sessions`.
+   */
+  cached_region_brief?: string;
   /**
    * The registry entry the plan was rendered from (packages/research
    * strategies.ts), by name and version. Historic plans carry neither, or a
@@ -272,7 +342,7 @@ export interface ResearchPlan {
 }
 
 /** The strategies a person can choose when planning a run. */
-export const RESEARCH_STRATEGIES = ['standard', 'deep'] as const;
+export const RESEARCH_STRATEGIES = ['standard', 'hybrid', 'deep'] as const;
 export type ResearchStrategy = (typeof RESEARCH_STRATEGIES)[number];
 
 /** Every strategy name a plan can record: the choosable ones, and the one a plan with no choice records. */
@@ -293,6 +363,13 @@ export interface ResearchModels {
    * worker's own setting.
    */
   page_reader_model?: string;
+  /**
+   * Stronger researcher model used for selective escalation on hybrid runs:
+   * only indicators that ended in a gap or failed verification after the
+   * initial pass are escalated to this model (orchestrating `subagent_model`
+   * scouts). Absent on standard, deep, and operator-defaults plans.
+   */
+  escalation_model?: string | null;
 }
 
 /** Turn limits frozen into a plan, so a later change to the worker's constants cannot change a planned run. */
@@ -303,6 +380,8 @@ export interface ResearchCaps {
   verifier_max_turns: number;
   /** One post-run audit session per audited finding. */
   audit_max_turns: number;
+  /** Optional bounded turn cap for selective escalation passes (hybrid strategy). */
+  escalation_max_turns?: number;
 }
 
 /**

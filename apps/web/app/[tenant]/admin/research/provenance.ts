@@ -1,4 +1,10 @@
-import type { RefusalFallbackEvent, RunTokenUsage, SessionTokenUsage } from '@deep-fryer/core';
+import {
+  PROVIDER_META,
+  type FindingVerification,
+  type RefusalFallbackEvent,
+  type RunTokenUsage,
+  type SessionTokenUsage,
+} from '@deep-fryer/core';
 // Type only: this module is also bundled into the review card, which runs in the browser.
 import type { RunExecution } from '@deep-fryer/db';
 
@@ -30,7 +36,11 @@ export interface FindingProvenance {
 
 export const PROVIDER_NOT_RECORDED = 'provider not recorded';
 
-const PROVIDER_NAMES: Record<RunExecution['provider'], string> = { anthropic: 'Anthropic' };
+const PROVIDER_NAMES: Record<RunExecution['provider'], string> = {
+  anthropic: PROVIDER_META.anthropic.displayName,
+  openai: PROVIDER_META.openai.displayName,
+  google: PROVIDER_META.google.displayName,
+};
 const EXECUTOR_NAMES: Record<RunExecution['executor'], string> = { shared_worker: 'shared server' };
 
 /** "Anthropic", or "provider not recorded" for a run applied before this was kept. */
@@ -77,12 +87,35 @@ export function sessionModels(usage: SessionTokenUsage | null | undefined): Sess
   };
 }
 
-/** A finding's provenance: its run's execution and its own session's models. */
+/**
+ * A finding's provenance: its run's execution and the producing stage's model
+ * record (including refusal fallbacks). When an Opus escalation or bounded
+ * correction pass replaced the initial finding, reads `escalation:<sessionId>`
+ * or `correction:<sessionId>` (falling back to `verification.produced_by_model`
+ * when usage telemetry is absent).
+ */
 export function findingProvenance(
   run: { execution: RunExecution | null; tokenUsage: RunTokenUsage | null },
   sessionId: string,
+  verification?: Pick<FindingVerification, 'produced_by_stage' | 'produced_by_model'> | null,
 ): FindingProvenance {
-  return { execution: run.execution ?? null, session: sessionModels(run.tokenUsage?.[sessionId]) };
+  const stage = verification?.produced_by_stage;
+  let usage: SessionTokenUsage | undefined;
+  if (stage === 'escalation') {
+    usage = run.tokenUsage?.[`escalation:${sessionId}`];
+  } else if (stage === 'correction') {
+    usage = run.tokenUsage?.[`correction:${sessionId}`] ?? run.tokenUsage?.[sessionId];
+  } else {
+    usage = run.tokenUsage?.[sessionId];
+  }
+
+  let session = sessionModels(usage);
+  const recordedModel = namedModel(verification?.produced_by_model) ? verification!.produced_by_model : undefined;
+  if (recordedModel) {
+    if (!session) session = { model: recordedModel };
+    else if (!session.model) session = { ...session, model: recordedModel };
+  }
+  return { execution: run.execution ?? null, session };
 }
 
 /** Each distinct model that answered after another declined, with the model it stood in for. */
@@ -126,7 +159,9 @@ export function runProvenanceSentence(
   run: { execution: RunExecution | null; tokenUsage: RunTokenUsage | null },
   researchSessionIds: readonly string[],
 ): string {
-  const records = researchSessionIds.flatMap((id) => run.tokenUsage?.[id] ?? []);
+  const records = researchSessionIds.flatMap((id) =>
+    [id, `correction:${id}`, `escalation:${id}`].flatMap((key) => run.tokenUsage?.[key] ?? []),
+  );
   if (records.length === 0) {
     return run.execution ? `Runs ${whereItRan(run.execution)}` : capitalizeFirst(PROVIDER_NOT_RECORDED);
   }

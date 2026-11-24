@@ -2,15 +2,18 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { frameworkDimension } from '@deep-fryer/contract';
 import { summarizePortraitCosts, summarizeRunCosts } from '@deep-fryer/core';
+import { summarizeReviewLabels } from '@deep-fryer/research';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { NewRunForm } from '@/components/admin/NewRunForm';
-import { tenantDimensions, tenantRunSessionIds, tenantRuns } from '@/lib/admin-data';
+import { tenantDimensions, tenantReviewLabels, tenantRunSessionIds, tenantRuns } from '@/lib/admin-data';
 import { PortraitCostTotal, RunCostCell } from '@/components/admin/RunCostSummary';
+import { ReviewCalibrationSummary } from '@/components/admin/ReviewCalibrationSummary';
 import { requireAdminPage } from '@/lib/admin-guard';
 import { adminPageMetadata } from '@/lib/page-meta';
 import { billingSummary, keyFundedSessionsNote } from '@/lib/billing';
 import { UsageMeter } from '@/components/billing/UsageMeter';
 import { AutoRefresh } from '@/components/admin/AutoRefresh';
+import { plannedIndicatorsForDimension } from '@/lib/planned-indicators';
 import { runInProgress, runPhase } from '@/lib/run-progress';
 import { RunPhaseBadge } from './RunBadges';
 
@@ -28,12 +31,14 @@ export default async function ResearchPage({
 }) {
   const { tenant } = await params;
   const ctx = await requireAdminPage(tenant, 'editor');
-  const [runs, dims, billing, sessionIds] = await Promise.all([
+  const [runs, dims, billing, sessionIds, reviewLabels] = await Promise.all([
     tenantRuns(ctx.tenant.id),
     tenantDimensions(ctx.tenant.id),
     billingSummary(ctx.tenant.organizationId),
     tenantRunSessionIds(ctx.tenant.id),
+    tenantReviewLabels(ctx.tenant.id),
   ]);
+  const calibration = summarizeReviewLabels(reviewLabels);
   // Each run's own session rows, so a session that left no usage record keeps its run's dollars partial here too.
   const costRuns = runs.map((run) => ({ ...run, sessionIds: sessionIds.get(run.id) ?? [] }));
   const portraitTotal = summarizePortraitCosts(costRuns);
@@ -82,6 +87,8 @@ export default async function ResearchPage({
           <PortraitCostTotal total={portraitTotal} />
         </section>
 
+        <ReviewCalibrationSummary summary={calibration} />
+
         <div className="mt-6">
           <NewRunForm
             tenantSlug={tenant}
@@ -89,7 +96,10 @@ export default async function ResearchPage({
               id: dimension.id,
               name: published?.data.name ?? latest?.data.name ?? dimension.slug,
               ring: dimension.ring,
-              indicatorCount: frameworkDimension(dimension.slug, dimension.canonicalSlug)?.indicators.length ?? latest?.data.indicators.length ?? 0,
+              indicatorCount: plannedIndicatorsForDimension(
+                latest,
+                frameworkDimension(dimension.slug, dimension.canonicalSlug),
+              ).length,
             }))}
           />
         </div>

@@ -134,8 +134,8 @@ describe.skipIf(!hasDb)('involvement admin actions under row-level security', ()
 
   it('uses actual tenant dimensions end-to-end and retains history after archives', async () => {
     signedIn = people.editor;
-    const m = await import('@deep-fryer/db'); const {eq}=await import('drizzle-orm'); const db=m.getDb();
-    const [heat]=await db.insert(m.dimensions).values({tenantId,slug:'extreme-heat',ring:'ecological',displayOrder:99}).returning();
+    const m = await import('@deep-fryer/db'); const {and,eq}=await import('drizzle-orm'); const db=m.getDb();
+    const [heat]=await db.select().from(m.dimensions).where(and(eq(m.dimensions.tenantId,tenantId),eq(m.dimensions.slug,'extreme-heat')));
     const [shade]=await db.insert(m.dimensions).values({tenantId,slug:'local-shade',ring:'ecological',displayOrder:100}).returning();
     await publishInvolvementTestDimensions(tenantId,['extreme-heat']);
     const a=await import('./involvement-admin-actions');

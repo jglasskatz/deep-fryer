@@ -69,6 +69,7 @@ export const WEB_SEARCH_USD_PER_REQUEST = 0.01;
  * guessed.
  */
 export const MODEL_PRICES: Readonly<Record<string, ModelPricing>> = {
+  // Anthropic
   'claude-sonnet-5': { standard: { input: 2, output: 10, cacheRead: 0.2 } },
   'claude-sonnet-5-5': { standard: { input: 2, output: 10, cacheRead: 0.1 } },
   'claude-opus-5': { standard: { input: 5, output: 25, cacheRead: 0.5 } },
@@ -78,32 +79,45 @@ export const MODEL_PRICES: Readonly<Record<string, ModelPricing>> = {
     longPrompt: { input: 0.5, output: 2.5, cacheRead: 0.05 },
   },
   'claude-haiku-4-5': { standard: { input: 1, output: 5, cacheRead: 0.1 } },
+  // OpenAI
+  'gpt-5': { standard: { input: 1.25, output: 10, cacheRead: 0.125 } },
+  'gpt-5-mini': { standard: { input: 0.25, output: 2, cacheRead: 0.025 } },
+  'gpt-4.1': { standard: { input: 2, output: 8, cacheRead: 0.5 } },
+  'gpt-4.1-mini': { standard: { input: 0.4, output: 1.6, cacheRead: 0.1 } },
+  o3: { standard: { input: 2, output: 8, cacheRead: 0.5 } },
+  'o4-mini': { standard: { input: 1.1, output: 4.4, cacheRead: 0.275 } },
+  // Google Gemini
+  'gemini-2.5-pro': { standard: { input: 1.25, output: 10, cacheRead: 0.3125 } },
+  'gemini-2.5-flash': { standard: { input: 0.3, output: 2.5, cacheRead: 0.075 } },
+  'gemini-3.8-flash': { standard: { input: 0.3, output: 2.5, cacheRead: 0.075 } },
 };
 
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
  * The table entry for `modelId`, or null when the table does not price
- * it. A model id matches a table id only as `^id(-\d{8})?$` — the id
- * itself or the id with a release-date suffix (`claude-haiku-4-5-20251001`).
- * Never by prefix or substring: `claude-sonnet-5-5` must not match
- * `claude-sonnet-5`, and an id we have not seen (`claude-opus-5[1m]`, a
- * provider-specific id) is unpriced rather than priced as its neighbour.
+ * it. A model id matches a table id only as `^id(-\d{8}|-\d{4}-\d{2}-\d{2})?$` — the id
+ * itself or the id with a release-date suffix (`claude-haiku-4-5-20251001`,
+ * `gpt-4.1-2025-04-14`). Never by prefix or substring: `claude-sonnet-5-5`
+ * must not match `claude-sonnet-5`, and an id we have not seen
+ * (`claude-opus-5[1m]`, a provider-specific id) is unpriced rather than
+ * priced as its neighbour.
  */
 export function modelPricing(modelId: string): ModelPricing | null {
+  const normalized = modelId.replace(/^models\//, '');
   for (const [id, pricing] of Object.entries(MODEL_PRICES)) {
-    if (new RegExp(`^${escapeRegExp(id)}(-\\d{8})?$`).test(modelId)) return pricing;
+    if (new RegExp(`^${escapeRegExp(id)}(?:-\\d{8}|-\\d{4}-\\d{2}-\\d{2})?$`).test(normalized)) return pricing;
   }
   return null;
 }
 
 /**
- * Pure: `modelId` without a trailing `-YYYYMMDD` release date — the same
- * equivalence modelPricing uses, for matching a dated id the API returned
- * on a message against the undated id the CLI keys `modelUsage` by.
+ * Pure: `modelId` without a trailing `-YYYYMMDD` or `-YYYY-MM-DD` release date —
+ * the same equivalence modelPricing uses, for matching a dated id the API returned
+ * on a message against the undated id keyed in `modelUsage`.
  */
 export function baseModelId(modelId: string): string {
-  return modelId.replace(/-\d{8}$/, '');
+  return modelId.replace(/^models\//, '').replace(/(?:-\d{8}|-\d{4}-\d{2}-\d{2})$/, '');
 }
 
 type TokenFields = { input_tokens: number; output_tokens: number; cache_read_tokens: number; cache_write_tokens: number };

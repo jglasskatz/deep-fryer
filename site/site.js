@@ -1,6 +1,6 @@
 import { DoughnutRenderer } from './doughnut-renderer.js';
 import { formatIndicatorValue } from './format.js';
-import { dimensionColour, dimensionStatus } from './portrait-presentation.js';
+import { dimensionColour, dimensionStatus, displayIndicatorValue } from './portrait-presentation.js';
 const collection = JSON.parse(document.getElementById('portrait-data').textContent);
 const portraits = new Map(collection.portraits.map(p => [p.slug, p]));
 const links = [...document.querySelectorAll('.portrait-switcher a')];
@@ -49,7 +49,7 @@ function selectPortrait(slug, restoreDimension = true) {
     add('strong', d.name);
     add('p', `${d.ring === 'social' ? 'Social foundation' : 'Ecological ceiling'} · ${dimensionStatus(d)}`);
     for (const indicator of d.indicators.slice(0, 2)) {
-      add('p', `${indicator.name}: ${formatIndicatorValue(indicator.value, indicator.unit)} ${indicator.year ? `(${indicator.year})` : ''}`);
+      add('p', `${indicator.name}: ${displayIndicatorValue(indicator, formatIndicatorValue)} ${indicator.year ? `(${indicator.year})` : ''}`);
       add('small', `${collection.statuses[indicator.status]} · ${indicator.geography || 'See source context'}`);
       if (indicator.value_label) add('small', indicator.value_label);
       if (indicator.report_verification) add('small', `Checked against 2025 report, page ${indicator.report_verification.page}`);

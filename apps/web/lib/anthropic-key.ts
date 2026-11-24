@@ -42,6 +42,12 @@ export const KEY_FORBIDDEN =
 export const KEY_UNREACHABLE = 'We could not reach Anthropic to check the key; try again.';
 export const KEY_UNCHECKED = 'Anthropic could not check the key just now; try again in a minute.';
 
+/** Owner-actionable error when a valid Anthropic key lacks access to a configured model (P2.2). */
+export function anthropicModelAccessMessage(modelId: string): string {
+  const safeId = modelId.trim().slice(0, 80);
+  return `Anthropic accepted that key, but it does not have access to the required model "${safeId}". Enable access to "${safeId}" in the Anthropic Console (or use a key from a workspace with access), then try again.`;
+}
+
 /** What is wrong with the key's form, or null when it is worth asking Anthropic about. */
 export function apiKeyFormatProblem(apiKey: string): string | null {
   if (!apiKey) return 'Paste your Anthropic API key.';
@@ -93,7 +99,10 @@ export function anthropicKeyError(err: unknown): UserError {
  * ANTHROPIC_AUTH_TOKEN in this server's environment can never be sent
  * alongside it (or make an invalid key look valid).
  */
-export async function validateAnthropicKey(apiKey: string): Promise<void> {
+export async function validateAnthropicKey(
+  apiKey: string,
+  options: { requiredModels?: readonly (string | null | undefined)[] } = {},
+): Promise<void> {
   const problem = apiKeyFormatProblem(apiKey);
   if (problem) throw new UserError(problem);
   const client = new Anthropic({
@@ -107,5 +116,22 @@ export async function validateAnthropicKey(apiKey: string): Promise<void> {
     await client.models.list({ limit: 1 });
   } catch (err) {
     throw anthropicKeyError(err);
+  }
+  const models = [
+    ...new Set(
+      (options.requiredModels ?? [])
+        .map((m) => (typeof m === 'string' ? m.trim() : ''))
+        .filter((m) => m.length > 0),
+    ),
+  ];
+  for (const modelId of models) {
+    try {
+      await client.models.retrieve(modelId);
+    } catch (err) {
+      if (err instanceof Anthropic.NotFoundError || err instanceof Anthropic.PermissionDeniedError) {
+        throw new UserError(anthropicModelAccessMessage(modelId));
+      }
+      throw anthropicKeyError(err);
+    }
   }
 }

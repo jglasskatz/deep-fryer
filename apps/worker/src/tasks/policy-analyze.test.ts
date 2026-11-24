@@ -390,12 +390,12 @@ describe.skipIf(!hasDb)('policyAnalyze (Postgres, mocked session)', () => {
   it('keeps exact custom identity and incomplete estimates qualitative without publishing', async () => {
     const {tenant,analysis}=await seed();const m=await import('@deep-fryer/db');const {and,eq}=await import('drizzle-orm');const db=m.getDb();
     const [dimension]=await db.select().from(m.dimensions).where(and(eq(m.dimensions.tenantId,tenant.id),eq(m.dimensions.slug,'housing')));
-    await db.update(m.dimensions).set({slug:'extreme-heat',canonicalSlug:null}).where(eq(m.dimensions.id,dimension!.id));
-    session.succeeded=true;session.resultText=JSON.stringify({summary:'Conditional estimate only.',impacts:[{...validImpact,dimension_slug:'extreme-heat',indicator:RENT,projected_value:46,projected_year:2030,sources:[]}]});
+    await db.update(m.dimensions).set({slug:'local-heat-risk',canonicalSlug:null}).where(eq(m.dimensions.id,dimension!.id));
+    session.succeeded=true;session.resultText=JSON.stringify({summary:'Conditional estimate only.',impacts:[{...validImpact,dimension_slug:'local-heat-risk',indicator:RENT,projected_value:46,projected_year:2030,sources:[]}]});
     const row=await run(analysis.id);
-    expect(row.status).toBe('complete');expect(row.projections![0]!.dimension_slug).toBe('extreme-heat');
+    expect(row.status).toBe('complete');expect(row.projections![0]!.dimension_slug).toBe('local-heat-risk');
     expect(row.projections![0]!.projected_viz).toBeNull();expect(row.projections![0]!.unquantified_reasons.join(' ')).toMatch(/unit|source/);
-    expect(session.lastInput!.prompt).toContain('extreme-heat');expect(session.lastInput!.prompt).not.toContain('ozone-depletion');
+    expect(session.lastInput!.prompt).toContain('local-heat-risk');expect(session.lastInput!.prompt).not.toContain('ozone-depletion');
     const [after]=await db.select().from(m.dimensions).where(eq(m.dimensions.id,dimension!.id));
     expect(after!.publishedVersionId).toBe(dimension!.publishedVersionId);
   });

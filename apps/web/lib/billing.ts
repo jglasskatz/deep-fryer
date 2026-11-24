@@ -17,7 +17,7 @@ import {
   decideResearchSpend,
   firstDoughnutAddKeyMessage,
   firstDoughnutEligible,
-  organizationApiKeyInfo,
+  organizationApiKeysInfo,
   organizationHasAppliedResearch,
   portraitCount,
   researchRuns,
@@ -61,10 +61,12 @@ export interface BillingSummary {
    */
   usage: { researchSessions: number; researchSessionsOnKey: number; portraits: number; seats: number };
   /**
-   * The organization's own Anthropic API key on file (SPEC-v7 §4) — its
-   * hint and dates only; the ciphertext is never selected — or null.
+   * The organization's primary API key on file (preferring Anthropic, else the
+   * first configured provider) — hint and dates only; ciphertext is never selected.
    */
   apiKey: OrganizationApiKeyInfo | null;
+  /** All configured provider keys on file for this organization (hints and dates only). */
+  apiKeys: OrganizationApiKeyInfo[];
   /** Research has been applied for one of the organization's portraits at some point: its first doughnut is behind it. */
   researchApplied: boolean;
   /**
@@ -80,14 +82,15 @@ export interface BillingSummary {
 export const billingSummary = cache(async (organizationId: string): Promise<BillingSummary> => {
   const db = systemDb();
   const sub = await subscriptionFor(db, organizationId);
-  const [researchSessions, researchSessionsOnKey, portraits, seats, apiKey, researchApplied] = await Promise.all([
+  const [researchSessions, researchSessionsOnKey, portraits, seats, apiKeys, researchApplied] = await Promise.all([
     sub ? researchSessionsUsed(db, organizationId, sub.currentPeriodStart) : 0,
     sub ? researchSessionsOnOrganizationKey(db, organizationId, sub.currentPeriodStart) : 0,
     portraitCount(db, organizationId),
     seatCount(db, organizationId),
-    organizationApiKeyInfo(db, organizationId),
+    organizationApiKeysInfo(db, organizationId),
     organizationHasAppliedResearch(db, organizationId),
   ]);
+  const apiKey = apiKeys.find((k) => k.provider === 'anthropic') ?? apiKeys[0] ?? null;
   const s = standing(sub);
   // With no key on file the plan pays, and the plan's sessions run on the deployment's key.
   const planUnusable = s.active && apiKey === null && !deploymentResearchKeyConfigured();
@@ -100,6 +103,7 @@ export const billingSummary = cache(async (organizationId: string): Promise<Bill
     limits: sub ? effectiveLimits(sub) : null,
     usage: { researchSessions, researchSessionsOnKey, portraits, seats },
     apiKey,
+    apiKeys,
     researchApplied,
     firstDoughnutNote: route.note,
   };

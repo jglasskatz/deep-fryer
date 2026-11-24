@@ -5,22 +5,27 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { framework } from '@deep-fryer/contract';
 import {
+  checkReviewCause,
   formatIndicatorValue,
   isFlagged,
   WHOLE_DIMENSION_GAP,
   type FindingPayload,
   type FindingVerification,
+  type ResearchStrategy,
   type ReviewAudit,
+  type ReviewCause,
 } from '@deep-fryer/core';
 import { approveFindings, flagGap, reResearchDimension } from '@/lib/review-actions';
 import { useAction } from '@/lib/use-action';
 import { unwrap } from '@/lib/action-result';
 import { safeHref } from '@/lib/safe-url';
 import { provenanceSentence, type FindingProvenance } from '@/app/[tenant]/admin/research/provenance';
-import { AuditOpinions, AuditApplyPreview } from './ReviewAudits';
+import { AuditOpinions, AuditApplyPreview, CausePicker } from './ReviewAudits';
 
 export interface ReviewFinding {
   id: string;
+  /** Exact research session that produced this finding (preserved across dense-dimension chunks). */
+  sessionId?: string;
   indicatorSlug: string;
   payload: FindingPayload;
   verification: FindingVerification | null;
@@ -45,6 +50,28 @@ const PARTIAL_OUTPUT_NOTE =
 const READABLE_TEXT_LINK = 'text research read';
 const NO_READABLE_TEXT_NOTE =
   'No readable text: research could not read any words on this page or document. It may be a scanned image, so check the snapshot or PDF by eye.';
+
+/**
+ * What the two cheap source checks recorded (FindingVerification.value_on_page
+ * and home_page_link), as the badge says it and as the note under the
+ * finding explains it. A finding recorded before the checks existed has
+ * neither field and shows neither.
+ */
+export const VALUE_FOUND_LABEL = 'value found on the captured page';
+export const VALUE_NOT_FOUND_LABEL = 'value not found';
+export const NO_TEXT_LABEL = 'no readable text';
+export const HOME_PAGE_LABEL = 'home-page link';
+
+export function valueNotFoundNote(value: string): string {
+  return `Value not found: ${value} does not appear in the text research read from the captured page. Check the snapshot or the text by eye before approving, or re-research.`;
+}
+const NO_TEXT_TO_CHECK_NOTE =
+  'No readable text: research had no text from this page to look for the value in, so check the snapshot or PDF by eye.';
+/** The text was kept with the capture, but the check could not open it when it looked. */
+const TEXT_NOT_OPENED_NOTE =
+  'No readable text: research kept the text of this page but could not open it to look for the value, so check the snapshot or the text by eye.';
+export const HOME_PAGE_NOTE =
+  "Home-page link: the source link goes to a website's home page or one of its sections, not the page or document with the number, so readers cannot check the figure from it. Find the exact page or document, then edit the finding or re-research.";
 
 function PartialOutputNote() {
   return <p className="mt-2 rounded bg-red-50 p-2 text-xs text-red-900">{PARTIAL_OUTPUT_NOTE}</p>;
@@ -89,6 +116,8 @@ export function gapSavedMessage(versionNum: number, requiresSecondReview: boolea
 /** The gap form as the reviewer sees it: what is chosen and typed, and how the last save went. */
 export interface GapFormState {
   indicator: string;
+  /** Why research's finding cannot be used (core review-causes.ts). */
+  cause: ReviewCause | '';
   reason: string;
   /** True from the click until the server answers. */
   saving: boolean;
@@ -101,7 +130,18 @@ export interface GapFormState {
 /** Shown when the save request gets no answer at all. */
 export const NO_ANSWER = 'The server did not answer, so the gap may not have been saved. Reload the page to check, then try again.';
 
-export const emptyGapForm: GapFormState = { indicator: '', reason: '', saving: false, error: '', saved: '' };
+export const emptyGapForm: GapFormState = { indicator: '', cause: '', reason: '', saving: false, error: '', saved: '' };
+
+/** Where the "Something else" words go when a decision already has a text box. */
+export const OTHER_IN_REASON = 'Say what is wrong in the reason below.';
+export const OTHER_IN_NOTES = 'Say what is wrong in the notes below.';
+export const OTHER_IN_CHANGE_NOTE = 'Say what is wrong in the change note when you save.';
+
+/** The editor, opened to correct one run's findings for a dimension, with the reviewer's cause. */
+export function reviewEditHref(tenantSlug: string, dimensionId: string, runId: string, cause: ReviewCause): string {
+  const query = new URLSearchParams({ run: runId, cause });
+  return `/${tenantSlug}/admin/dim/${dimensionId}?${query.toString()}`;
+}
 
 /**
  * Send the form's chosen indicator and reason, and return the form as it
@@ -110,11 +150,11 @@ export const emptyGapForm: GapFormState = { indicator: '', reason: '', saving: f
  */
 export async function submitGap(
   send: typeof flagGap,
-  where: { tenantSlug: string; dimensionId: string },
+  where: { tenantSlug: string; runId: string; dimensionId: string },
   form: GapFormState,
 ): Promise<GapFormState> {
   try {
-    const result = await send({ ...where, indicator: form.indicator, reason: form.reason });
+    const result = await send({ ...where, indicator: form.indicator, reason: form.reason, cause: form.cause });
     if (result.ok) {
       return { ...emptyGapForm, saved: gapSavedMessage(result.data.versionNum, result.data.requiresSecondReview) };
     }
@@ -131,12 +171,15 @@ export async function submitGap(
  * passes the form in and is told of each change and of the click.
  */
 export function GapForm({
+  name,
   choices,
   form,
   busy,
   onChange,
   onSave,
 }: {
+  /** A name for the form's cause buttons, unique on the page. */
+  name: string;
   choices: { value: string; label: string }[];
   form: GapFormState;
   /** Another action on the card is running. */
@@ -145,6 +188,7 @@ export function GapForm({
   onSave: () => void;
 }) {
   const locked = busy || form.saving;
+  const causeReady = checkReviewCause(form.cause, form.reason).ok;
   return (
     <div className="mt-2 w-full max-w-80 space-y-2">
       <label className="block">
@@ -163,6 +207,14 @@ export function GapForm({
           ))}
         </select>
       </label>
+      <CausePicker
+        name={name}
+        legend="Why can't research's finding be used?"
+        value={form.cause}
+        disabled={locked}
+        onChange={(cause) => onChange({ cause })}
+        other={{ hint: OTHER_IN_REASON }}
+      />
       <label className="block">
         <span className="font-medium">Reason</span>
         <textarea
@@ -182,7 +234,7 @@ export function GapForm({
       <button
         type="button"
         className="min-h-11 rounded bg-black px-3 py-1.5 font-medium text-white disabled:opacity-50"
-        disabled={locked || !form.indicator || !form.reason.trim()}
+        disabled={locked || !form.indicator || !form.reason.trim() || !causeReady}
         onClick={onSave}
       >
         {form.saving ? 'Saving…' : 'Save gap as draft'}
@@ -191,12 +243,13 @@ export function GapForm({
   );
 }
 
-function Badge({ ok, label, title }: { ok: boolean; label: string; title?: string }) {
+/** A check's result: green when it passed, red when it failed, grey when it could not be made. */
+function Badge({ ok, label, title, neutral }: { ok: boolean; label: string; title?: string; neutral?: boolean }) {
   return (
     <span
       title={title}
       className={`rounded px-1.5 py-0.5 text-[11px] ${
-        ok ? 'bg-green-100 text-green-900' : 'bg-red-100 text-red-900'
+        neutral ? 'bg-black/10' : ok ? 'bg-green-100 text-green-900' : 'bg-red-100 text-red-900'
       }`}
     >
       {label}
@@ -213,6 +266,7 @@ export function ReviewCard({
   findings,
   approvedVersionNum,
   sessionId,
+  sessionIds,
   canReadTranscript,
   evidenceBase,
 }: {
@@ -224,16 +278,37 @@ export function ReviewCard({
   findings: ReviewFinding[];
   approvedVersionNum: number | null;
   sessionId: string | null;
+  sessionIds?: string[];
   canReadTranscript: boolean;
   evidenceBase: string;
 }) {
   const router = useRouter();
   const [notes, setNotes] = useState('');
+  const [rerunCause, setRerunCause] = useState<ReviewCause | ''>('');
+  const [rerunStrategy, setRerunStrategy] = useState<ResearchStrategy>('hybrid');
+  const [editCause, setEditCause] = useState<ReviewCause | ''>('');
   const [gap, setGap] = useState<GapFormState>(emptyGapForm);
   const [includeNarrative, setIncludeNarrative] = useState(false);
   const narrativeFindings = findings.filter(finding => finding.payload.kind === 'indicator' && finding.payload.narrative_draft);
   const narrativeSupported = narrativeFindings.length > 0 && narrativeFindings.every(finding => finding.verification?.narrative_supported === 'pass');
   const { run: act, pending, error } = useAction();
+
+  // Preserve every distinct chunk session ID (from findings or card metadata)
+  // so dense dimensions expose every chunk's transcript, not only the last.
+  const transcriptSessionIds = (() => {
+    const ordered: string[] = [];
+    const seen = new Set<string>();
+    const add = (id: string | null | undefined) => {
+      if (!id || seen.has(id)) return;
+      seen.add(id);
+      ordered.push(id);
+    };
+    for (const id of sessionIds ?? []) add(id);
+    for (const f of findings) add(f.sessionId);
+    add(sessionId);
+    return ordered;
+  })();
+  const hasMultipleSessions = transcriptSessionIds.length > 1;
 
   // Gap cards always warrant review attention; sourced findings use the
   // shared red-flag predicate (SPEC.md §8: flagged, never dropped).
@@ -259,21 +334,40 @@ export function ReviewCard({
           ) : flagged > 0 ? (
             <span className="rounded bg-red-100 px-2 py-0.5 text-red-900">{flagged} flagged</span>
           ) : null}
-          {canReadTranscript && sessionId ? (
+          {canReadTranscript && transcriptSessionIds.length === 1 ? (
             <a
               className="underline"
-              href={`/api/research/sessions/${sessionId}/transcript`}
+              href={`/api/research/sessions/${transcriptSessionIds[0]}/transcript`}
               target="_blank"
             >
               transcript
             </a>
+          ) : canReadTranscript && transcriptSessionIds.length > 1 ? (
+            transcriptSessionIds.map((sid, idx) => (
+              <a
+                key={sid}
+                className="underline"
+                href={`/api/research/sessions/${sid}/transcript`}
+                target="_blank"
+              >
+                transcript {idx + 1}
+              </a>
+            ))
           ) : null}
         </div>
       </div>
 
       <div className="mt-3 space-y-3">
         {findings.map((f) => (
-          <div key={f.id}><FindingRow finding={f} evidenceBase={evidenceBase} /><AuditOpinions audits={f.audits} /><NarrativeProposal finding={f} evidenceBase={evidenceBase} /></div>
+          <div key={f.id}>
+            <FindingRow
+              finding={f}
+              evidenceBase={evidenceBase}
+              transcriptHref={canReadTranscript && hasMultipleSessions && f.sessionId ? `/api/research/sessions/${f.sessionId}/transcript` : undefined}
+            />
+            <AuditOpinions audits={f.audits} />
+            <NarrativeProposal finding={f} evidenceBase={evidenceBase} />
+          </div>
         ))}
       </div>
 
@@ -301,18 +395,60 @@ export function ReviewCard({
         >
           Approve &amp; publish
         </button>
-        <Link
-          className="inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:bg-black/5"
-          href={`/${tenantSlug}/admin/dim/${dimensionId}`}
-        >
-          Edit
-        </Link>
+        <details className="text-xs">
+          <summary className="min-h-11 cursor-pointer rounded border px-3 py-3 hover:bg-black/5">
+            Edit…
+          </summary>
+          <div className="mt-2 w-full max-w-80 space-y-2">
+            <CausePicker
+              name={`edit-cause-${dimensionId}`}
+              legend="Why edit?"
+              value={editCause}
+              onChange={setEditCause}
+              other={{ hint: OTHER_IN_CHANGE_NOTE }}
+            />
+            {editCause ? (
+              <Link
+                className="inline-flex min-h-11 items-center rounded bg-black px-3 py-1.5 font-medium text-white"
+                href={reviewEditHref(tenantSlug, dimensionId, runId, editCause)}
+              >
+                Open the editor
+              </Link>
+            ) : (
+              <button type="button" className="min-h-11 rounded bg-black px-3 py-1.5 font-medium text-white disabled:opacity-50" disabled>
+                Open the editor
+              </button>
+            )}
+          </div>
+        </details>
 
         <details className="text-xs">
           <summary className="min-h-11 cursor-pointer rounded border px-3 py-3 hover:bg-black/5">
             Re-research…
           </summary>
-          <div className="mt-2 w-full max-w-80">
+          <div className="mt-2 w-full max-w-80 space-y-2">
+            <CausePicker
+              name={`rerun-cause-${dimensionId}`}
+              legend="Why re-research?"
+              value={rerunCause}
+              disabled={pending}
+              onChange={setRerunCause}
+              other={{ hint: OTHER_IN_NOTES }}
+            />
+            <label className="block">
+              <span className="font-medium">Research strategy</span>
+              <select
+                className="mt-1 min-h-11 w-full min-w-0 rounded border border-field-border bg-[color:var(--color-bg)] px-2"
+                aria-label="Research strategy for re-research"
+                value={rerunStrategy}
+                disabled={pending}
+                onChange={(e) => setRerunStrategy(e.target.value as ResearchStrategy)}
+              >
+                <option value="hybrid">Hybrid (Sonnet first, Opus escalation on gaps/failures)</option>
+                <option value="standard">Standard (Sonnet research, Opus verification)</option>
+                <option value="deep">Deep (Opus research with Sonnet scouts)</option>
+              </select>
+            </label>
             <textarea
               className="w-full rounded border border-field-border px-2 py-1"
               rows={3}
@@ -323,14 +459,17 @@ export function ReviewCard({
             />
             <button
               className="mt-1 min-h-11 rounded bg-black px-3 py-1.5 font-medium text-white disabled:opacity-50"
-              disabled={pending || !notes.trim()}
+              disabled={pending || !notes.trim() || !checkReviewCause(rerunCause, notes).ok}
               onClick={() =>
                 act(async () => {
                   const { runId: newRun } = unwrap(
                     await reResearchDimension({
                       tenantSlug,
+                      runId,
                       dimensionId,
                       notes,
+                      cause: rerunCause,
+                      strategy: rerunStrategy,
                     }),
                   );
                   router.push(`/${tenantSlug}/admin/research/${newRun}`);
@@ -347,6 +486,7 @@ export function ReviewCard({
             Flag gap…
           </summary>
           <GapForm
+            name={`gap-cause-${dimensionId}`}
             choices={gapChoices(findings)}
             form={gap}
             busy={pending}
@@ -354,7 +494,7 @@ export function ReviewCard({
             onSave={() => {
               const sending = { ...gap, saving: true, error: '', saved: '' };
               setGap(sending);
-              act(async () => setGap(await submitGap(flagGap, { tenantSlug, dimensionId }, sending)));
+              act(async () => setGap(await submitGap(flagGap, { tenantSlug, runId, dimensionId }, sending)));
             }}
           />
         </details>
@@ -364,7 +504,15 @@ export function ReviewCard({
   );
 }
 
-export function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; evidenceBase: string }) {
+export function FindingRow({
+  finding,
+  evidenceBase,
+  transcriptHref,
+}: {
+  finding: ReviewFinding;
+  evidenceBase: string;
+  transcriptHref?: string;
+}) {
   const { payload, verification: v } = finding;
 
   if (payload.kind === 'gap') {
@@ -373,6 +521,11 @@ export function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; 
         <p className="font-medium">
           Data gap — {payload.indicator_slug}
           <span className="ml-2 rounded bg-black/10 px-1.5 py-0.5 text-[11px]">gap card</span>
+          {transcriptHref ? (
+            <a className="ml-2 text-xs font-normal underline" href={transcriptHref} target="_blank">
+              session transcript
+            </a>
+          ) : null}
         </p>
         <p className="mt-1">{payload.reason}</p>
         <p className="mt-1 text-xs text-[color:var(--color-muted)]">
@@ -410,6 +563,10 @@ export function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; 
                 label={`source ${v.content_supported}`}
                 title={v.verifier_note}
               />
+              {v.value_on_page === 'found' ? <Badge ok label={VALUE_FOUND_LABEL} /> : null}
+              {v.value_on_page === 'not_found' ? <Badge ok={false} label={VALUE_NOT_FOUND_LABEL} /> : null}
+              {v.value_on_page === 'no_text' ? <Badge ok={false} neutral label={NO_TEXT_LABEL} /> : null}
+              {v.home_page_link ? <Badge ok={false} label={HOME_PAGE_LABEL} /> : null}
               {v.partial_output ? <Badge ok={false} label="partial output" title={PARTIAL_OUTPUT_NOTE} /> : null}
             </>
           ) : null}
@@ -435,6 +592,14 @@ export function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; 
             {payload.source} <span className="text-red-700">(unlinkable URL)</span>
           </span>
         )}
+        {transcriptHref ? (
+          <>
+            {' · '}
+            <a className="underline" href={transcriptHref} target="_blank">
+              session transcript
+            </a>
+          </>
+        ) : null}
       </p>
       <ProvenanceNote provenance={finding.provenance} />
       {v?.verifier_note && v.content_supported !== 'pass' ? (
@@ -442,6 +607,15 @@ export function FindingRow({ finding, evidenceBase }: { finding: ReviewFinding; 
           Verifier: {v.verifier_note}
         </p>
       ) : null}
+      {v?.value_on_page === 'not_found' ? (
+        <p className="mt-2 break-words rounded bg-red-50 p-2 text-xs text-red-900">{valueNotFoundNote(formatIndicatorValue(payload.value, null))}</p>
+      ) : null}
+      {v?.value_on_page === 'no_text' && !payload.evidence?.no_readable_text ? (
+        <p className="mt-2 rounded bg-amber-50 p-2 text-xs text-amber-900">
+          {payload.evidence?.text_path ? TEXT_NOT_OPENED_NOTE : NO_TEXT_TO_CHECK_NOTE}
+        </p>
+      ) : null}
+      {v?.home_page_link ? <p className="mt-2 rounded bg-red-50 p-2 text-xs text-red-900">{HOME_PAGE_NOTE}</p> : null}
       {v?.partial_output ? <PartialOutputNote /> : null}
       {payload.notes ? (
         <p className="mt-1 text-xs text-[color:var(--color-muted)]">Session notes: {payload.notes}</p>

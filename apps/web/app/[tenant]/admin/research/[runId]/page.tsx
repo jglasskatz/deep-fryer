@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { summarizeRunCosts, type ResearchPlan } from '@deep-fryer/core';
+import { isResearchStrategy, summarizeRunCosts, type ResearchPlan } from '@deep-fryer/core';
 import { RunCostSummary } from '@/components/admin/RunCostSummary';
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
@@ -82,9 +82,12 @@ export default async function RunDetailPage({
     anyFailed ? runFailureCauses(ctx.tenant.id, run.id) : Promise.resolve(new Map<string, FailureCause>()),
   ]);
 
-  const phase = runPhase(run);
+  const basePhase = runPhase(run);
   const now = new Date();
-  const progress = runProgress(run.plan.sessions, sessions, slugById, phase);
+  const progress = runProgress(run.plan.sessions, sessions, slugById, basePhase);
+  const phase = runPhase(run, {
+    allSessionsFinished: progress.total > 0 && progress.finished >= progress.total,
+  });
   const estimate = remainingEstimateMs(progress, phase, now);
   const nameOf = (key: string) => (key === 'region_context' ? 'Region context (phase 0)' : (nameBySlug.get(key) ?? key));
   const support = supportEmail();
@@ -112,11 +115,13 @@ export default async function RunDetailPage({
   const statusLine =
     phase === 'queued'
       ? 'Queued — starting shortly'
-      : phase === 'running'
-        ? `${progress.finished} of ${progress.total} sessions finished${progress.failed ? ` (${progress.failed} failed)` : ''}`
-        : phase === 'complete'
-          ? `Finished: ${progress.done} of ${progress.total} sessions completed${progress.failed ? `, ${progress.failed} failed` : ''}${progress.notRun ? `, ${progress.notRun} did not run` : ''}`
-          : `This run failed: ${progress.failed + progress.notRun} of ${progress.total} sessions did not complete`;
+      : phase === 'auditing'
+        ? `All ${progress.total} sessions finished — running automatic quality audits`
+        : phase === 'running'
+          ? `${progress.finished} of ${progress.total} sessions finished${progress.failed ? ` (${progress.failed} failed)` : ''}`
+          : phase === 'complete'
+            ? `Finished: ${progress.done} of ${progress.total} sessions completed${progress.failed ? `, ${progress.failed} failed` : ''}${progress.notRun ? `, ${progress.notRun} did not run` : ''}`
+            : `This run failed: ${progress.failed + progress.notRun} of ${progress.total} sessions did not complete`;
 
   return (
     <>
@@ -190,11 +195,11 @@ export default async function RunDetailPage({
                 </>
               ) : (
                 <>
-                  {phase === 'running' ? (
+                  {phase === 'running' || phase === 'auditing' ? (
                     <div
                       className="mt-2 h-2 max-w-xl rounded bg-black/10"
                       role="progressbar"
-                      aria-label="Sessions finished"
+                      aria-label={phase === 'auditing' ? 'Quality audits in progress' : 'Sessions finished'}
                       aria-valuemin={0}
                       aria-valuemax={progress.total}
                       aria-valuenow={progress.finished}
@@ -203,7 +208,13 @@ export default async function RunDetailPage({
                     </div>
                   ) : null}
                   <p className="mt-2 text-sm text-[color:var(--color-muted)]">
-                    {phase === 'running' ? (
+                    {phase === 'auditing' ? (
+                      <>
+                        Running for {formatDuration(sinceApply)}. All research sessions finished;
+                        completing independent quality audits before opening the review queue. This
+                        page updates by itself.
+                      </>
+                    ) : phase === 'running' ? (
                       <>
                         Running for {formatDuration(sinceApply)}.{' '}
                         {estimate !== null
@@ -274,7 +285,11 @@ export default async function RunDetailPage({
             </ul>
             {settled && replanIds.length > 0 ? (
               <div className="mt-4">
-                <ReplanFailed tenantSlug={tenant} dimensionIds={replanIds} />
+                <ReplanFailed
+                  tenantSlug={tenant}
+                  dimensionIds={replanIds}
+                  strategy={isResearchStrategy(run.plan.strategy) ? run.plan.strategy : undefined}
+                />
                 <p className="mt-1 text-xs text-[color:var(--color-muted)]">
                   Planning is free: you see the new plan before anything runs, and apply it there.
                 </p>
@@ -329,20 +344,24 @@ export default async function RunDetailPage({
           </summary>
           <p className="mt-2 text-sm text-[color:var(--color-muted)]">
             This is exactly what runs — every prompt rendered from the plugin&apos;s skills and the
-            portrait&apos;s config when the run was planned, inspectable before any tokens are spent.
-            The region brief placeholder is filled by the phase-0 session when the run starts.
+            portrait&apos;s config when the run was planned, inspectable before any tokens are spent.{' '}
+            {run.plan.cached_region_brief
+              ? 'This targeted run reuses the portrait’s cached region brief instead of running a new phase-0 session.'
+              : 'The region brief placeholder is filled by the phase-0 session when the run starts.'}
           </p>
           <div className="mt-3 rounded bg-black/[0.04] p-3 text-xs">
             <p className="font-medium">Research strategy: {strategy.label}</p>
             {strategy.note ? <p className="mt-1">{strategy.note}</p> : null}
             {run.plan.models ? <dl className="mt-2 grid gap-2 sm:grid-cols-2 md:grid-cols-4">
               <div><dt>Researcher</dt><dd className="break-words font-mono">{run.plan.models.session_model}</dd></div>
+              {run.plan.models.escalation_model ? <div><dt>Escalation researcher</dt><dd className="break-words font-mono">{run.plan.models.escalation_model}</dd></div> : null}
               <div><dt>Scout</dt><dd className="break-words font-mono">{run.plan.models.subagent_model ?? 'No separate scout'}</dd></div>
               <div><dt>Independent verifier</dt><dd className="break-words font-mono">{run.plan.models.verifier_model}</dd></div>
               <div><dt>Page reader</dt><dd className="break-words font-mono">{run.plan.models.page_reader_model ?? 'Not recorded: the worker’s own setting'}</dd></div>
             </dl> : <p className="mt-1">This older plan did not record model choices; it uses the worker defaults.</p>}
             {run.plan.caps ? <dl className="mt-2 grid gap-2 sm:grid-cols-3">
               <div><dt>Turn limit, each research session</dt><dd>{run.plan.caps.session_max_turns}</dd></div>
+              {run.plan.caps.escalation_max_turns !== undefined ? <div><dt>Turn limit, each escalation pass</dt><dd>{run.plan.caps.escalation_max_turns}</dd></div> : null}
               <div><dt>Turn limit, each verifier check</dt><dd>{run.plan.caps.verifier_max_turns}</dd></div>
               <div><dt>Turn limit, each audit check</dt><dd>{run.plan.caps.audit_max_turns}</dd></div>
             </dl> : <p className="mt-1">This older plan did not record turn limits; it uses the worker&apos;s current limits.</p>}

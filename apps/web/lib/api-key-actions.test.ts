@@ -89,8 +89,8 @@ describe.skipIf(!hasDb)('saveApiKey and removeApiKey', () => {
     expect(row!.validatedAt).toBeInstanceOf(Date);
     expect(row!.ciphertext.startsWith('v1:')).toBe(true);
     expect(row!.ciphertext).not.toContain(API_KEY.slice(13, 30));
-    // Encrypted at rest under DF_SECRETS_KEY and bound to this organization.
-    expect(await decryptSecret(row!.ciphertext, parseSecretsKey(secretsKey), org.id)).toBe(API_KEY);
+    // Encrypted at rest under DF_SECRETS_KEY and bound to this organization + provider.
+    expect(await decryptSecret(row!.ciphertext, parseSecretsKey(secretsKey), `${org.id}:anthropic`)).toBe(API_KEY);
 
     const audit = await keyAudit();
     expect(audit.map((a) => a.tenantId).sort()).toEqual(portraits.map((p) => p.id).sort());
@@ -115,7 +115,7 @@ describe.skipIf(!hasDb)('saveApiKey and removeApiKey', () => {
     anthropicAccepts();
     await saveApiKey(org.slug, API_KEY);
 
-    expect(await removeApiKey(org.slug)).toEqual({ ok: true, data: { removed: true } });
+    expect(await removeApiKey(org.slug)).toEqual({ ok: true, data: { removed: true, provider: 'anthropic' } });
     expect(await stored()).toBeNull();
     expect((await keyAudit()).filter((a) => a.action === 'remove')[0]).toMatchObject({ before: { key_hint: 'Jk8M' }, after: null });
     expect(await removeApiKey(org.slug)).toEqual({ ok: false, error: 'There is no API key on file for this organization.' });
@@ -260,7 +260,7 @@ describe.skipIf(!hasDb)('saveApiKey and removeApiKey as a signed-in owner', () =
     const saveRes = await onOneConnection(async () => (await import('./api-key-actions')).saveApiKey(org.slug, API_KEY));
     expect(saveRes).toMatchObject({ ok: true, data: { keyHint: 'Jk8M' } });
     const removeRes = await onOneConnection(async () => (await import('./api-key-actions')).removeApiKey(org.slug));
-    expect(removeRes).toEqual({ ok: true, data: { removed: true } });
+    expect(removeRes).toEqual({ ok: true, data: { removed: true, provider: 'anthropic' } });
 
     const log = await db
       .select()

@@ -55,6 +55,12 @@ level_pct semantics: 0 = at the boundary, positive = shortfall/overshoot
 
 ## Evidence (required for every accepted source)
 
+When `WebFetch` hits HTTP 403 on `.gov` sites, returns an empty JavaScript shell
+(e.g. Socrata, ArcGIS, or Tableau portals), or truncates figures from a PDF,
+prefer the `read_source` tool (with optional `query` or `page_range` for long
+PDFs). It renders pages in a real browser, extracts PDF text layers, and caches
+the result so `capture_evidence` promotes already-read sources immediately.
+
 For each accepted source, call the `capture_evidence` tool with the source
 URL (and the direct PDF URL when the source is a document). It stores a
 snapshot next to the claim and returns the storage paths — put them in the
@@ -83,6 +89,12 @@ This work uses the same session and turn budget; prioritize sourced values
 and honest gaps before optional narrative drafts.
 
 ## Output
+
+If the `submit_findings` tool is available in your session, call it with your
+complete findings array before finishing: it deterministically computes
+`level_pct` / `scoring` from the portrait's threshold contract and validates
+schema, URL, recency, scale, and value-on-page checks immediately so you can
+fix any reported issue while your search context is warm.
 
 Return ONLY a JSON array of finding objects conforming to the finding schema
 below: one `kind: "indicator"` or `kind: "gap"` object per indicator listed

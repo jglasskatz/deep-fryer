@@ -12,23 +12,28 @@ import type { PlannedSession } from '@deep-fryer/core';
  * a run that is queued: it must never offer "Apply" again, and the page
  * should say it is about to start rather than that it waits for a click.
  */
-export type RunPhase = 'unapplied' | 'queued' | 'running' | 'complete' | 'failed';
+export type RunPhase = 'unapplied' | 'queued' | 'running' | 'auditing' | 'complete' | 'failed';
 
-export function runPhase(run: { status: string; appliedAt: Date | null }): RunPhase {
+export function runPhase(
+  run: { status: string; appliedAt: Date | null },
+  options?: { allSessionsFinished?: boolean },
+): RunPhase {
   if (run.status === 'planned') return run.appliedAt ? 'queued' : 'unapplied';
-  if (run.status === 'running') return 'running';
+  if (run.status === 'running') return options?.allSessionsFinished ? 'auditing' : 'running';
   if (run.status === 'complete') return 'complete';
   return 'failed';
 }
 
 /** The run page and the runs list refresh themselves while a run can still change. */
-export const runInProgress = (phase: RunPhase): boolean => phase === 'queued' || phase === 'running';
+export const runInProgress = (phase: RunPhase): boolean =>
+  phase === 'queued' || phase === 'running' || phase === 'auditing';
 
 /** The word staff see for a run's state (the runs list badge, the run page heading). */
 export const RUN_PHASE_LABEL: Record<RunPhase, string> = {
   unapplied: 'planned',
   queued: 'queued',
   running: 'running',
+  auditing: 'auditing',
   complete: 'complete',
   failed: 'failed',
 };
@@ -46,6 +51,8 @@ export function alreadyAppliedMessage(run: { status: string; appliedAt: Date | n
       return 'This run was already applied and is queued — it starts shortly. Nothing was started twice; reload the page to follow its progress.';
     case 'running':
       return 'This run was already applied and is running now. Nothing was started twice; reload the page to follow its progress.';
+    case 'auditing':
+      return 'This run was already applied and is running automatic quality audits now. Nothing was started twice; reload the page to follow its progress.';
     case 'complete':
       return 'This run already finished. Its findings are in the review queue; plan a new run to research again.';
     case 'failed':
@@ -78,6 +85,8 @@ export interface SessionRow {
   id: string;
   kind: string;
   dimensionId: string | null;
+  /** Zero-based index into `plan.sessions` (null on historical rows written before migration 0027). */
+  planSessionIndex?: number | null;
   status: string;
   startedAt: Date | null;
   completedAt: Date | null;
@@ -106,14 +115,33 @@ export interface RunProgress {
 const specKey = (spec: PlannedSession): string =>
   spec.kind === 'region_context' ? 'region_context' : (spec.dimension_slug ?? '');
 
+function sessionStatusRank(status: string): number {
+  if (status === 'complete') return 3;
+  if (status === 'running') return 2;
+  if (status === 'queued') return 1;
+  return 0;
+}
+
+/**
+ * When crash-resume produces multiple rows for the same `planSessionIndex`
+ * (e.g., an interrupted superseded `failed` row plus a retried `running` or
+ * `complete` row), select the authoritative row for the progress view.
+ */
+function pickPreferredSession(existing: SessionRow, candidate: SessionRow): SessionRow {
+  const rankDiff = sessionStatusRank(candidate.status) - sessionStatusRank(existing.status);
+  if (rankDiff !== 0) return rankDiff > 0 ? candidate : existing;
+  const startDiff = (candidate.startedAt?.getTime() ?? 0) - (existing.startedAt?.getTime() ?? 0);
+  if (startDiff !== 0) return startDiff > 0 ? candidate : existing;
+  return candidate.id.localeCompare(existing.id) > 0 ? candidate : existing;
+}
+
 /**
  * Pure: every planned session with its row (if it started) and its chip,
- * plus the counts the page summarizes. Rows are matched to the plan by
- * dimension (slugById maps a row's dimension id to the slug the plan names),
- * the region-context session by kind. Dense dimensions have several rows:
- * consume each once in start order, so one finished part cannot make every
- * part appear finished. These historic rows carry no chunk identifier, so
- * progress labels the dimension rather than claiming a particular chunk.
+ * plus the counts the page summarizes. Rows with `planSessionIndex` are
+ * matched deterministically to `specs[planSessionIndex]` (so concurrent dense
+ * chunks and resumed sessions always land on their exact slot). Historical
+ * rows with `planSessionIndex == null` fall back to start-time order by
+ * dimension slug / kind.
  */
 export function runProgress(
   specs: readonly PlannedSession[],
@@ -121,18 +149,34 @@ export function runProgress(
   slugById: ReadonlyMap<string, string>,
   phase: RunPhase,
 ): RunProgress {
-  const rowsByKey = new Map<string, SessionRow[]>();
-  for (const session of [...sessions].sort((a, b) =>
-    (a.startedAt?.getTime() ?? 0) - (b.startedAt?.getTime() ?? 0) || a.id.localeCompare(b.id))) {
+  const rowsByPlanIndex = new Map<number, SessionRow>();
+  const legacyRowsByKey = new Map<string, SessionRow[]>();
+  const sorted = [...sessions].sort(
+    (a, b) => (a.startedAt?.getTime() ?? 0) - (b.startedAt?.getTime() ?? 0) || a.id.localeCompare(b.id),
+  );
+  for (const session of sorted) {
+    if (
+      typeof session.planSessionIndex === 'number' &&
+      Number.isInteger(session.planSessionIndex) &&
+      session.planSessionIndex >= 0 &&
+      session.planSessionIndex < specs.length
+    ) {
+      const prev = rowsByPlanIndex.get(session.planSessionIndex);
+      rowsByPlanIndex.set(
+        session.planSessionIndex,
+        prev ? pickPreferredSession(prev, session) : session,
+      );
+      continue;
+    }
     const key = session.kind === 'region_context' ? 'region_context' : (slugById.get(session.dimensionId ?? '') ?? '');
-    const rows = rowsByKey.get(key) ?? [];
+    const rows = legacyRowsByKey.get(key) ?? [];
     rows.push(session);
-    rowsByKey.set(key, rows);
+    legacyRowsByKey.set(key, rows);
   }
   const settled = phase === 'complete' || phase === 'failed';
-  const items = specs.map((spec): PlannedSessionProgress => {
+  const items = specs.map((spec, index): PlannedSessionProgress => {
     const key = specKey(spec);
-    const session = rowsByKey.get(key)?.shift() ?? null;
+    const session = rowsByPlanIndex.get(index) ?? legacyRowsByKey.get(key)?.shift() ?? null;
     let chip: SessionChip;
     if (!session) chip = settled ? 'not_run' : 'queued';
     else if (session.status === 'complete') chip = 'done';

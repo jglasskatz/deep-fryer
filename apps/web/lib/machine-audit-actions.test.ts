@@ -65,6 +65,8 @@ describe.skipIf(!process.env.DATABASE_URL)('human application of machine audits 
     return { run: run!, finding: finding!, audit: audit!, dimensionId };
   }
   const input = (f: Awaited<ReturnType<typeof seed>>) => ({ tenantSlug: tenant.slug, runId: f.run.id, dimensionId: f.dimensionId, expectedAuditIds: [f.audit.id] });
+  const why = (f: Awaited<ReturnType<typeof seed>>, cause: string, note?: string) => ({ ...input(f), causes: { [f.finding.id]: { cause, ...(note ? { note } : {}) } } });
+  const labelsOf = (findingId: string) => m.getDb().select().from(m.reviewLabels).where(eq(m.reviewLabels.findingId, findingId));
 
   it('keeps recommendations private and immutable independently of application authorization', async () => {
     const f = await seed(0, 'approve');
@@ -84,14 +86,22 @@ describe.skipIf(!process.env.DATABASE_URL)('human application of machine audits 
     const f = await seed(1, 'edit', { value: 10 });
     const actions = await import('./machine-audit-actions');
     expect((await actions.applyMachineAudits({ ...input(f), expectedAuditIds: [] })).ok).toBe(false);
-    const result = await onOneConnection(() => actions.applyMachineAudits(input(f)));
+    // An edit needs the reviewer's cause; without one, or with "Something else" and no words, nothing is applied.
+    expect(await actions.applyMachineAudits(input(f))).toEqual({ ok: false, error: 'Choose why for each change before applying the recommendations. Nothing was applied.' });
+    expect(await actions.applyMachineAudits(why(f, 'other'))).toEqual({ ok: false, error: expect.stringContaining('say in a few words what is wrong') });
+    expect(await actions.applyMachineAudits(why(f, 'looks_off'))).toMatchObject({ ok: false });
+    expect(await m.getDb().select().from(m.dimensionVersions).where(eq(m.dimensionVersions.researchRunId, f.run.id))).toEqual([]);
+    expect(await labelsOf(f.finding.id)).toEqual([]);
+    const result = await onOneConnection(() => actions.applyMachineAudits(why(f, 'wrong_measure')));
     expect(result.ok).toBe(true); if (!result.ok || !result.data.versionId) throw new Error('missing draft');
     const [v] = await m.getDb().select().from(m.dimensionVersions).where(eq(m.dimensionVersions.id, result.data.versionId));
     expect(v).toMatchObject({ origin: 'human', status: 'draft', createdBy: editor });
     expect(v!.data.indicators[0]).toMatchObject({ value: 10, level_pct: 100 });
     expect((await m.getDb().select().from(m.findings).where(eq(m.findings.id, f.finding.id)))[0]!.payload).toEqual(payload);
-    const repeated = await actions.applyMachineAudits(input(f));
+    expect(await labelsOf(f.finding.id)).toEqual([expect.objectContaining({ decision: 'edit', cause: 'wrong_measure', note: null, runId: f.run.id, reviewerId: editor, provider: 'anthropic' })]);
+    const repeated = await actions.applyMachineAudits(why(f, 'wrong_measure'));
     expect(repeated).toMatchObject({ ok: true, data: { versionId: result.data.versionId } });
+    expect(await labelsOf(f.finding.id)).toHaveLength(1);
     const versions = await m.getDb().select().from(m.dimensionVersions).where(eq(m.dimensionVersions.researchRunId, f.run.id));
     expect(versions).toHaveLength(1);
     const applied = (await m.getDb().select().from(m.findingAudits).where(eq(m.findingAudits.id, f.audit.id)))[0]!;
@@ -101,8 +111,8 @@ describe.skipIf(!process.env.DATABASE_URL)('human application of machine audits 
     await m.getDb().update(m.tenantConfig).set({ value: { require_approval: 'all', dual_review_on_edits: true, first_post_requires_approval: false } })
       .where(and(eq(m.tenantConfig.tenantId, tenant.id), eq(m.tenantConfig.key, 'review_policy')));
     expect((await actions.publishReviewed({ tenantSlug: tenant.slug, versionIds: [v!.id] })).ok).toBe(false);
-    const gap = await (await import('./review-actions')).flagGap({ tenantSlug: tenant.slug, dimensionId: dims[8]!.dimensionId,
-      indicator: 'gender-pay-ratio', reason: 'No supported local value is available.' });
+    const gap = await (await import('./review-actions')).flagGap({ tenantSlug: tenant.slug, runId: f.run.id, dimensionId: dims[8]!.dimensionId,
+      indicator: 'gender-pay-ratio', reason: 'No supported local value is available.', cause: 'unsupported' });
     expect(gap).toMatchObject({ ok: true, data: { requiresSecondReview: true } });
     expect((await m.latestVersion(m.getDb(), dims[8]!.dimensionId))!.status).toBe('draft');
     await expect(m.withPostgresError(m.withAuthContext(m.getDb(), editor, (db) => db.update(m.dimensionVersions)
@@ -119,16 +129,21 @@ describe.skipIf(!process.env.DATABASE_URL)('human application of machine audits 
   it('rejects into an honest gap and plans re-research without spending or publishing', async () => {
     const reject = await seed(2, 'reject'); const again = await seed(3, 're_research');
     const actions = await import('./machine-audit-actions');
-    const rejected = await actions.applyMachineAudits(input(reject));
+    const rejected = await actions.applyMachineAudits(why(reject, 'other', 'The survey counts households, not people.'));
     expect(rejected.ok).toBe(true); if (!rejected.ok || !rejected.data.versionId) throw new Error('missing draft');
     const v = (await m.getDb().select().from(m.dimensionVersions).where(eq(m.dimensionVersions.id, rejected.data.versionId)))[0]!;
     expect(v.data.indicators).toEqual([]); expect(v.data.gaps).toHaveLength(1); expect(v.vizLevel).toBeNull();
-    const rerun = await onOneConnection(() => actions.applyMachineAudits(input(again)));
+    expect(await labelsOf(reject.finding.id)).toEqual([expect.objectContaining({ decision: 'reject', cause: 'other', note: 'The survey counts households, not people.' })]);
+    expect(await actions.applyMachineAudits(input(again))).toMatchObject({ ok: false, error: expect.stringContaining('Choose why') });
+    expect(await m.getDb().select().from(m.researchRuns).where(eq(m.researchRuns.requestedBy, editor))).toEqual([]);
+    const rerun = await onOneConnection(() => actions.applyMachineAudits(why(again, 'out_of_date')));
     expect(rerun.ok).toBe(true); if (!rerun.ok || !rerun.data.runId) throw new Error('missing rerun');
     const r = (await m.getDb().select().from(m.researchRuns).where(eq(m.researchRuns.id, rerun.data.runId)))[0]!;
     expect(r).toMatchObject({ status: 'planned', appliedAt: null, requestedBy: editor });
     expect(r.plan.sessions.some((s) => s.prompt.includes('Source exhibit supports'))).toBe(true);
-    expect(await actions.applyMachineAudits(input(again))).toMatchObject({ ok: true, data: { runId: r.id } });
+    expect(await labelsOf(again.finding.id)).toEqual([expect.objectContaining({ decision: 're_research', cause: 'out_of_date' })]);
+    expect(await actions.applyMachineAudits(why(again, 'out_of_date'))).toMatchObject({ ok: true, data: { runId: r.id } });
+    expect(await labelsOf(again.finding.id)).toHaveLength(1);
   });
 
   it('applies nothing to a dimension whose findings are all stand-ins, and leaves their recommendations waiting', async () => {
@@ -156,6 +171,8 @@ describe.skipIf(!process.env.DATABASE_URL)('human application of machine audits 
       .where(and(eq(m.tenantConfig.tenantId, tenant.id), eq(m.tenantConfig.key, 'review_policy')));
     expect((await actions.applyMachineApproved({ ...request, spotChecked: [] })).ok).toBe(false);
     expect(await actions.applyMachineApproved(request)).toMatchObject({ ok: true, data: { findings: 1 } });
+    // Approved without being asked why: each is recorded as correct as cited.
+    expect(await labelsOf(f.finding.id)).toEqual([expect.objectContaining({ decision: 'approve', cause: 'correct_as_cited' })]);
     expect(await actions.applyMachineApproved(request)).toMatchObject({ ok: true, data: { findings: 0 } });
     const bad = await seed(5, 're_research');
     const ordinary = await (await import('./review-actions')).approveUnflaggedFindings({ tenantSlug: tenant.slug, runId: bad.run.id, expectedFindings: 1, spotChecked: [bad.finding.id] });

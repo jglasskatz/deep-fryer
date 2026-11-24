@@ -15,6 +15,7 @@
  * run ("Measuring it").
  */
 import { SESSIONS_PER_FULL_REFRESH } from './plans.js';
+import type { StrategyName } from './types.js';
 
 /** Bounded contexts for dense custom dimensions (SPEC-v3 W3.6). */
 export const MAX_INDICATORS_PER_RESEARCH_SESSION = 3;
@@ -81,21 +82,155 @@ export interface RunCostEstimate {
 const cents = (usd: number) => Math.round(usd * 100) / 100;
 
 /**
+ * Strategy cost multipliers relative to the standard baseline
+ * (docs/strategy-findings.md):
+ * - standard / operator-defaults: 1× baseline (Sonnet researchers + Opus verifier).
+ * - hybrid: Sonnet first, selectively escalating only gaps and verification
+ *   failures to Opus with Sonnet scouts (~1.1× when few escalate, ~1.5×
+ *   typical, ~2.0× on sparse/hard portraits).
+ * - deep: Opus orchestrating Sonnet scouts on every dimension (~2.5–3.5×).
+ */
+export const STRATEGY_COST_MULTIPLIERS: Readonly<
+  Record<StrategyName, { readonly low: number; readonly typical: number; readonly high: number }>
+> = {
+  standard: { low: 1, typical: 1, high: 1 },
+  'operator-defaults': { low: 1, typical: 1, high: 1 },
+  hybrid: { low: 1.1, typical: 1.5, high: 2.0 },
+  deep: { low: 2.5, typical: 3.0, high: 3.5 },
+};
+
+/**
+ * Strategy session-credit weights applied by the plan quota gate so higher-cost
+ * strategies (`hybrid` ~1.5×, `deep` ~3×) cannot arbitrage 3× deployment spend
+ * for 1× plan session allowance (P2.2).
+ */
+export const STRATEGY_SESSION_WEIGHTS: Readonly<Record<StrategyName, number>> = {
+  standard: 1,
+  'operator-defaults': 1,
+  hybrid: 1.5,
+  deep: 3,
+};
+
+/**
+ * Pure: plan-quota credit multiplier for a research strategy
+ * (`standard: 1`, `operator-defaults: 1`, `hybrid: 1.5`, `deep: 3`).
+ * Unknown or omitted strategies default to `1`.
+ */
+export function strategySessionWeight(strategy?: StrategyName | string | null): number {
+  if (!strategy) return 1;
+  return (STRATEGY_SESSION_WEIGHTS as Readonly<Record<string, number>>)[strategy] ?? 1;
+}
+
+/**
+ * Pure: integer plan-quota session credits required for `sessionCount` planned
+ * sessions under `strategy`, rounded up (`Math.ceil(sessionCount * weight)`).
+ */
+export function weightedSessionCredits(
+  sessionCount: number,
+  strategy?: StrategyName | string | null,
+): number {
+  if (!Number.isInteger(sessionCount) || sessionCount < 0) {
+    throw new RangeError(`session count must be a whole number of sessions, got ${sessionCount}`);
+  }
+  if (sessionCount === 0) return 0;
+  return Math.ceil(sessionCount * strategySessionWeight(strategy));
+}
+
+/**
  * Estimated API cost of a run of `sessionCount` research sessions (a policy
  * analysis is one, POLICY_ANALYSIS_SESSIONS; a one-dimension re-run is two,
  * researchRunSessions(1)). A full portrait, estimateRunCost(22), is exactly
  * the document's $20 / $40 / $80; a re-run, estimateRunCost(2), is
- * $1.82 / $3.64 / $7.27.
+ * $1.82 / $3.64 / $7.27. Pass `strategy` to scale the estimate for hybrid or
+ * deep runs; omitted defaults to the standard baseline.
  */
-export function estimateRunCost(sessionCount: number): RunCostEstimate {
+export function estimateRunCost(sessionCount: number, strategy: StrategyName = 'standard'): RunCostEstimate {
   if (!Number.isInteger(sessionCount) || sessionCount < 0) {
     throw new RangeError(`session count must be a whole number of sessions, got ${sessionCount}`);
   }
+  const m = STRATEGY_COST_MULTIPLIERS[strategy] ?? STRATEGY_COST_MULTIPLIERS.standard;
   return {
     sessions: sessionCount,
-    lowUsd: cents(sessionCount * RESEARCH_SESSION_COST_USD.low),
-    typicalUsd: cents(sessionCount * RESEARCH_SESSION_COST_USD.typical),
-    highUsd: cents(sessionCount * RESEARCH_SESSION_COST_USD.high),
+    lowUsd: cents(sessionCount * RESEARCH_SESSION_COST_USD.low * m.low),
+    typicalUsd: cents(sessionCount * RESEARCH_SESSION_COST_USD.typical * m.typical),
+    highUsd: cents(sessionCount * RESEARCH_SESSION_COST_USD.high * m.high),
+  };
+}
+
+/**
+ * Estimated post-run automatic audit cost for one full 21-dimension portrait
+ * (after deduplicating workflow + tier_audit passes and skipping redundant
+ * re-audits on Opus-confirmed gaps and text-verified indicators), in US dollars.
+ */
+export const FULL_PORTRAIT_AUDIT_COST_USD = { low: 4, typical: 10, high: 20 } as const;
+
+const DIMENSIONS_PER_FULL_PORTRAIT = SESSIONS_PER_FULL_REFRESH - 1;
+
+export const AUDIT_COST_PER_DIMENSION_USD = {
+  low: FULL_PORTRAIT_AUDIT_COST_USD.low / DIMENSIONS_PER_FULL_PORTRAIT,
+  typical: FULL_PORTRAIT_AUDIT_COST_USD.typical / DIMENSIONS_PER_FULL_PORTRAIT,
+  high: FULL_PORTRAIT_AUDIT_COST_USD.high / DIMENSIONS_PER_FULL_PORTRAIT,
+} as const;
+
+/**
+ * Strategy audit multipliers: deep and hybrid runs resolve more gaps with Opus
+ * during the research pass itself, leaving fewer items for post-run workflow audit.
+ */
+export const AUDIT_STRATEGY_MULTIPLIERS: Readonly<Record<StrategyName, number>> = {
+  standard: 1,
+  'operator-defaults': 1,
+  hybrid: 0.75,
+  deep: 0.6,
+};
+
+export interface AuditCostEstimate {
+  lowUsd: number;
+  typicalUsd: number;
+  highUsd: number;
+}
+
+export interface TotalRunCostEstimate extends RunCostEstimate {
+  auditLowUsd: number;
+  auditTypicalUsd: number;
+  auditHighUsd: number;
+  totalLowUsd: number;
+  totalTypicalUsd: number;
+  totalHighUsd: number;
+}
+
+/**
+ * Estimated post-run audit spend for `dimensionCount` researched dimensions.
+ * Zero when no dimensions are researched (e.g. a policy analysis).
+ */
+export function estimateAuditCost(dimensionCount: number, strategy: StrategyName = 'standard'): AuditCostEstimate {
+  if (!Number.isInteger(dimensionCount) || dimensionCount < 0) {
+    throw new RangeError(`dimension count must be a non-negative whole number, got ${dimensionCount}`);
+  }
+  const m = AUDIT_STRATEGY_MULTIPLIERS[strategy] ?? AUDIT_STRATEGY_MULTIPLIERS.standard;
+  return {
+    lowUsd: cents(dimensionCount * AUDIT_COST_PER_DIMENSION_USD.low * m),
+    typicalUsd: cents(dimensionCount * AUDIT_COST_PER_DIMENSION_USD.typical * m),
+    highUsd: cents(dimensionCount * AUDIT_COST_PER_DIMENSION_USD.high * m),
+  };
+}
+
+/**
+ * Combined research + verifier + post-run audit estimate for a planned run of
+ * `sessionCount` sessions (1 region context + N dimension sessions when
+ * `sessionCount >= 2`; 0 audited dimensions for single-session work).
+ */
+export function estimateTotalRunCost(sessionCount: number, strategy: StrategyName = 'standard'): TotalRunCostEstimate {
+  const base = estimateRunCost(sessionCount, strategy);
+  const dimensionSessions = sessionCount >= 2 ? sessionCount - 1 : 0;
+  const audit = estimateAuditCost(dimensionSessions, strategy);
+  return {
+    ...base,
+    auditLowUsd: audit.lowUsd,
+    auditTypicalUsd: audit.typicalUsd,
+    auditHighUsd: audit.highUsd,
+    totalLowUsd: cents(base.lowUsd + audit.lowUsd),
+    totalTypicalUsd: cents(base.typicalUsd + audit.typicalUsd),
+    totalHighUsd: cents(base.highUsd + audit.highUsd),
   };
 }
 

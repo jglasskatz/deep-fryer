@@ -7,6 +7,11 @@ import { gridRows, type GridRow } from '@/lib/grid-data';
 import { DataGrid, type DataGridProps } from './DataGrid';
 import { EMPTY_GRID_STATE, type DataGridState } from './grid-state';
 import { santaCruzFixture } from './test-fixture';
+import { uploadReportLines } from './UploadReport';
+import { NOT_A_LINK_NOTE, NOT_A_YEAR_NOTE, parseSpreadsheet } from '@/lib/spreadsheet-import';
+import { CellEditor } from './CellEditor';
+import { EMPTY_SESSION, editorStartText } from './edit-session';
+import { GRID_COLUMNS, gridCsv, parseCsv } from '@/lib/grid-columns';
 
 /**
  * The data table as the server renders it, for a portrait the size of Santa
@@ -112,6 +117,8 @@ describe('DataGrid', () => {
   it('scrolls wide tables inside their own box, which clips the hidden "none" of empty cells', () => {
     // Without a positioned box, those hidden words are placed against the page and widen it on a phone.
     expect(render()).toMatch(/<div class="relative [^"]*overflow-auto[^"]*"><table/);
+    // A cell scrolled into view stops clear of the sticky first column at its widest (11rem, or 18rem, plus 1.5rem of padding).
+    expect(render()).toMatch(/<div class="relative [^"]*scroll-pl-\[12\.5rem\][^"]*sm:scroll-pl-\[19\.5rem\]/);
   });
 
   it('links each dimension to its editing page only for people who may edit', () => {
@@ -221,4 +228,186 @@ describe('DataGrid', () => {
       expect(html).not.toContain(word);
     }
   });
+
+  it('is read only, with no Edit button, unless the page offers editing', () => {
+    const html = render();
+    expect(html).not.toMatch(/<button[^>]*>Edit<\/button>/);
+    expect(html).toContain('aria-readonly="true"');
+    expect(render({ onDone: () => {} })).toMatch(/<button[^>]*>Edit<\/button>/);
+  });
 });
+
+describe('a cell’s box', () => {
+  const box = (column: 'geographic_scale' | 'confidence' | 'value', initialText: string) =>
+    renderToStaticMarkup(
+      createElement(CellEditor, { column, initialText, label: 'Scale of Food insecurity rate', onCommit() {}, onCancel() {}, onPasteBlock() {} }),
+    );
+
+  it('opens a Scale menu on the choice a typed letter begins, never on "Choose…"', () => {
+    const food = allRows().find((r) => r.rowId === 'food/food-insecurity-rate')!;
+    const html = box('geographic_scale', editorStartText(EMPTY_SESSION, food, 'geographic_scale', 'r'));
+    expect(html).toMatch(/<select[^>]*aria-label="Scale of Food insecurity rate"/);
+    expect(html).toContain('<option value="regional" selected="">Regional</option>');
+    expect(html).not.toMatch(/<option value="" disabled="" selected=""/);
+    expect(box('confidence', editorStartText(EMPTY_SESSION, food, 'confidence', 'h'))).toContain('<option value="high" selected="">High</option>');
+  });
+
+  it('opens a text box with what the cell holds', () => {
+    expect(box('value', '12.4')).toMatch(/<textarea[^>]*>12\.4<\/textarea>/);
+  });
+});
+
+describe('DataGrid in edit mode', () => {
+  const editing = (writes: { rowId: string; column: string; text: string }[], props: Partial<DataGridProps> = {}) =>
+    render({ onDone: () => {}, startEditing: { writes: writes as never, label: 'test changes' }, ...props });
+  /** The opening tag and content of one body cell, by row ID and column label. */
+  const cellOf = (html: string, rowId: string, label: string) => {
+    const rowHtml = html.slice(html.indexOf(`id="row-${rowId}"`));
+    const cells = rowHtml.slice(0, rowHtml.indexOf('</tr>')).split(/(?=<t[hd] )/).slice(1);
+    const labels = ['Indicator', 'Value', 'Unit', 'Year', 'Target', 'Status', 'Dimension', 'Source', 'Link', 'Supporting source', 'Scale', 'Confidence', 'Evidence'];
+    return cells[labels.indexOf(label)] ?? '';
+  };
+  const highlighted = (html: string) => (html.match(/<t[hd] [^>]*class="(?:[^"]* )?bg-amber-100[ "]/g) ?? []).length;
+
+  it('says nothing is saved until Done, and offers Undo, Redo, Upload CSV, Cancel and Done', () => {
+    const html = editing([]);
+    expect(html).toContain('Editing</h2>');
+    expect(html).toContain('Nothing is saved until you press Done.');
+    for (const label of ['Upload CSV', 'Cancel', 'Done']) expect(html).toMatch(new RegExp(`<button[^>]*>${label}</button>`));
+    expect(html).toMatch(/<button[^>]*aria-label="Undo"[^>]*disabled=""[^>]*>Undo<\/button>/);
+    expect(html).toContain('No changes yet.');
+    expect(html).not.toMatch(/<table[^>]*aria-readonly/);
+    expect(html).toContain('Type to replace what is in a cell');
+    // Where a browser sends no paste to a picked cell, the box it opens into takes one.
+    expect(html).toContain('if nothing is pasted, click the cell again so its box opens, then paste');
+    expect(html).toMatch(/<input[^>]*type="file"[^>]*accept=".csv,text\/csv"/);
+    // The question asked before leaving is in the page, closed until it is needed.
+    expect(html).toMatch(/<dialog(?![^>]* open)[^>]*>[\s\S]*Leave without saving\?/);
+  });
+
+  it('highlights a typed cell, with what it was, and makes every cell that can be typed in a stop for the keyboard', () => {
+    const html = editing([{ rowId: 'food/food-insecurity-rate', column: 'value', text: '13.1' }]);
+    const value = cellOf(html, 'food/food-insecurity-rate', 'Value');
+    expect(value).toMatch(/class="(?:[^"]* )?bg-amber-100[ "]/);
+    expect(value).toContain('<span class="sr-only">Changed: </span><bdi class="break-words">13.1</bdi>');
+    expect(value).toContain('Was: 12.4');
+    expect(html).toContain('1 change, not saved yet.');
+    expect(html).toMatch(/aria-label="Undo test changes"/);
+    // Links show their full address while editing, so a click picks the cell instead of opening the page.
+    const link = cellOf(html, 'food/food-insecurity-rate', 'Link');
+    expect(link).toContain('data-cell=');
+    expect(link).not.toContain('<a ');
+    expect(link).toContain('https://www.datasharescc.org/indicators/index/view?indicatorId=2107');
+    // Columns worked out by the app say they cannot be typed in.
+    expect(cellOf(html, 'food/food-insecurity-rate', 'Status')).toContain('aria-readonly="true"');
+  });
+
+  it('highlights exactly the 12 cells of a pasted 3-by-4 range', () => {
+    const rows = allRows().slice(0, 3);
+    const block = [['13.1', '% of people', '2024', '9'], ['10.2', '% of homes', '2023', '8'], ['44', '% of pupils', '2025', '30']];
+    const writes = rows.flatMap((r, i) => (['value', 'unit', 'year', 'target'] as const).map((column, j) => ({ rowId: r.rowId, column, text: block[i]![j]! })));
+    const html = editing(writes);
+    expect(highlighted(html)).toBe(12);
+    expect(html).toContain('12 changes, not saved yet.');
+    expect(cellOf(html, rows[2]!.rowId, 'Unit')).toContain('% of pupils');
+  });
+
+  it('marks a cell that cannot be saved as written, says why, and counts it', () => {
+    const html = editing([
+      { rowId: 'food/food-insecurity-rate', column: 'year', text: 'last year' },
+      { rowId: 'food/households-receiving-calfresh', column: 'value', text: '11' },
+    ]);
+    const year = cellOf(html, 'food/food-insecurity-rate', 'Year');
+    expect(year).toMatch(/class="[^"]*bg-red-50[^"]*outline-red-700/);
+    expect(year).toContain('Write the year as a whole number, like 2024.');
+    const supporting = cellOf(html, 'food/households-receiving-calfresh', 'Supporting source');
+    expect(supporting).toMatch(/class="[^"]*bg-red-50/);
+    expect(supporting).toContain('A new value needs a link to where this number came from.');
+    expect(html).toContain('2 cells need fixing.');
+  });
+
+  it('notes what can be saved but is worth a second look, without counting it as needing fixing', () => {
+    const html = editing([
+      { rowId: 'food/food-insecurity-rate', column: 'year', text: '24' },
+      { rowId: 'food/food-insecurity-rate', column: 'source_url', text: 'see the PDF' },
+    ]);
+    const year = cellOf(html, 'food/food-insecurity-rate', 'Year');
+    expect(year).toMatch(/class="(?:[^"]* )?bg-amber-100[ "]/);
+    expect(year).not.toContain('bg-red-50');
+    expect(year).toContain(`Check: ${NOT_A_YEAR_NOTE}`);
+    expect(cellOf(html, 'food/food-insecurity-rate', 'Link')).toContain(`Check: ${NOT_A_LINK_NOTE}`);
+    expect(html).not.toContain('need fixing');
+    expect(html).not.toContain('needs fixing');
+    expect(html).toContain('2 cells have a note to check; they do not stop you finishing.');
+  });
+
+  it('shows an emptied value as missing data, to be saved as such', () => {
+    const html = editing([{ rowId: 'health/uninsured-rate', column: 'value', text: '' }]);
+    const value = cellOf(html, 'health/uninsured-rate', 'Value');
+    expect(value).toContain(`${en.doughnut.dataNeeded}</span>`);
+    expect(value).toContain('Will be saved as missing data.');
+    expect(value).toContain('Was: 5.1');
+    // Missing data needs no supporting link.
+    expect(html).not.toContain('cells need fixing');
+  });
+
+  it('shows a choice by its word, and a very long typed name wrapped in its column', () => {
+    const long = 'A very long indicator name '.repeat(8).trim();
+    const html = editing([
+      { rowId: 'food/food-insecurity-rate', column: 'geographic_scale', text: 'regional' },
+      { rowId: 'food/food-insecurity-rate', column: 'indicator', text: long },
+    ]);
+    expect(cellOf(html, 'food/food-insecurity-rate', 'Scale')).toContain('<span class="sr-only">Changed: </span>Regional');
+    const name = cellOf(html, 'food/food-insecurity-rate', 'Indicator');
+    expect(name).toContain(`<span class="whitespace-pre-line break-words">${long}</span>`);
+    expect(name).toMatch(/max-w-\[11rem\]/);
+    // The sticky first column keeps an opaque highlight of its own.
+    expect(name).toMatch(/class="[^"]*sticky[^"]* bg-amber-100[ "]/);
+    expect(name).not.toContain('bg-[color:var(--color-bg)]');
+  });
+
+  it('ignores staged changes when the page offers no editing', () => {
+    const html = render({ startEditing: { writes: [{ rowId: 'food/food-insecurity-rate', column: 'value', text: '13.1' }], label: 'x' } });
+    expect(html).not.toContain('Editing</h2>');
+    expect(highlighted(html)).toBe(0);
+  });
+
+  it('reports what an uploaded file changed and what it left out, in plain words', () => {
+    const rows = allRows();
+    const records = parseCsv(gridCsv(rows, { statusWord: () => '' }));
+    const valueAt = GRID_COLUMNS.findIndex((c) => c.key === 'value');
+    records[1]![valueAt] = '13.1';
+    records[2]![valueAt] = '10';
+    records.splice(records.findIndex((r) => r[0] === 'energy/energy-burden'), 1);
+    records.push(['', '', 'A new indicator']);
+    const report = parseSpreadsheet(records, rows);
+    const lines = uploadReportLines({ fileName: 'santa-cruz-data.csv', staged: report.edits.length, report });
+    expect(lines.outcome).toBe('2 changes from santa-cruz-data.csv are now in the table, highlighted. Nothing is saved until you press Done.');
+    expect(lines.notes).toEqual([
+      '1 row of the table is not in the file. Nothing changes for it: Energy: Energy burden.',
+      `Line ${records.length} has no Row ID, so it could not be matched to an indicator and was not read.`,
+    ]);
+    const nothing = uploadReportLines({ fileName: 'a.csv', staged: 0, report: parseSpreadsheet(parseCsv(gridCsv(rows, { statusWord: () => '' })), rows) });
+    expect(nothing).toEqual({ outcome: 'a.csv has nothing different from the table, so nothing changed.', notes: [] });
+
+    // Dimension or Status changed in the file: not read, and said so.
+    const moved = parseCsv(gridCsv(rows, { statusWord: () => '' }));
+    const dimensionAt = GRID_COLUMNS.findIndex((c) => c.key === 'dimension');
+    const statusAt = GRID_COLUMNS.findIndex((c) => c.key === 'status');
+    moved[moved.findIndex((r) => r[0] === 'food/food-insecurity-rate')]![dimensionAt] = 'Health';
+    moved[moved.findIndex((r) => r[0] === 'energy/energy-burden')]![statusAt] = 'Thriving';
+    const ignored = uploadReportLines({ fileName: 'f.csv', staged: 0, report: parseSpreadsheet(moved, rows, { statusWord: () => '' }) });
+    expect(ignored.outcome).toBe('Nothing in the table changed. Parts of f.csv were not read; they are listed below.');
+    expect(ignored.notes).toEqual([
+      '2 rows have a different Dimension, Status or Evidence in the file. These columns cannot be changed from a file, so those cells were not read: Food: Food insecurity rate (Dimension); Energy: Energy burden (Status). Status is worked out from the value and the target.',
+    ]);
+
+    // Another portrait's file: no line matches.
+    const other = parseCsv(gridCsv(rows, { statusWord: () => '' })).map((r, i) => (i === 0 ? r : [`elsewhere/${r[0]}`, ...r.slice(1)]));
+    const stranger = uploadReportLines({ fileName: 'other.csv', staged: 0, report: parseSpreadsheet(other, rows) });
+    expect(stranger.outcome).toBe('None of the rows in other.csv are in this table, so nothing changed. Is it the download of another portrait?');
+    const failed = uploadReportLines({ fileName: 'b.csv', staged: 0, report: parseSpreadsheet([['Indicator']], rows) });
+    expect(failed.outcome).toMatch(/^Nothing was read from b\.csv\. The file has no Row ID and Version columns/);
+  });
+});
+

@@ -124,6 +124,24 @@ describe('run cost breakdown by stage and dimension', () => {
     expect(result).toMatchObject({ coverage: 'partial', estimated_usd: null, known_estimated_usd: 0 });
     expect(result.sessions[0]?.limitations).toContain('Legacy main-loop accounting; other model calls are not fully recorded.');
   });
+
+  it('attributes correction:<session> and escalation:<session> records to research on their dimension', () => {
+    const result = summarizeRunCosts(
+      { ...records, 'correction:a': usage, 'escalation:b': usage },
+      context,
+    );
+    expect(result.coverage).toBe('complete');
+    expect(result.unattributed_estimated_usd).toBeNull();
+    // Initial a + b + correction:a + escalation:b = 4 research records
+    expect(result.research_estimated_usd).toBeCloseTo(0.0245 * 4);
+    expect(result.sessions.find((s) => s.session === 'correction:a')).toMatchObject({ role: 'research', dimension_id: 'dim-a' });
+    expect(result.sessions.find((s) => s.session === 'escalation:b')).toMatchObject({ role: 'research', dimension_id: 'dim-b' });
+    const [a, b] = result.dimensions;
+    expect(a!.research_estimated_usd).toBeCloseTo(0.0245 * 2);
+    expect(b!.research_estimated_usd).toBeCloseTo(0.0245 * 2);
+    const sum = result.dimensions.reduce((n, d) => n + d.known_estimated_usd, 0) + result.region_context_estimated_usd!;
+    expect(sum).toBeCloseTo(result.estimated_usd!, 12);
+  });
 });
 
 describe('portrait cost total', () => {

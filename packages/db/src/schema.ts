@@ -29,10 +29,19 @@ import type {
   FindingCorrection,
   FindingAuditSource,
   OutreachContactData,
+  RegionBriefCache,
   ResearchPlan,
+  ResearchProvider,
+  ResearchModels,
+  ReviewDecision,
+  ReviewLabelCause,
+  ReviewLabelProvider,
   RunTokenUsage,
   PortraitConfig,
+  StrategyName,
   TenantBranding,
+  KnowledgeVisibility,
+  KnowledgeSourceKind,
 } from '@deep-fryer/core';
 
 export const ringEnum = pgEnum('ring', ['social', 'ecological']);
@@ -82,6 +91,12 @@ export const collectionMethodEnum = pgEnum('collection_method', ['card', 'invoic
 const bytea = customType<{ data: Buffer; driverData: Buffer }>({
   dataType() {
     return 'bytea';
+  },
+});
+
+const tsvector = customType<{ data: string; driverData: string }>({
+  dataType() {
+    return 'tsvector';
   },
 });
 
@@ -223,6 +238,13 @@ export const tenants = pgTable('tenants', {
    * queries.ts tenantIsPublic.
    */
   firstPublishedAt: timestamp('first_published_at', { withTimezone: true }),
+  /**
+   * Validated Phase-0 region brief cached from the latest completed
+   * region_context session, keyed by config_hash and cached_at so targeted
+   * re-runs can skip redundant Phase-0 sessions while the config is unchanged
+   * and the cache entry is <30 days old (migration 0027).
+   */
+  regionBriefCache: jsonb('region_brief_cache').$type<RegionBriefCache>(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   archivedAt: timestamp('archived_at', { withTimezone: true }),
 });
@@ -318,13 +340,15 @@ export const dimensionVersions = pgTable(
  */
 export interface RunExecution {
   /** Who served the model calls. */
-  provider: 'anthropic';
+  provider: ResearchProvider;
   /** Host name of the model API the sessions called, or null when it was not known at apply time. */
   endpoint_host: string | null;
   /** What ran the sessions: the deployment's one shared worker. */
   executor: 'shared_worker';
   /** The region our host runs in, or null when the deployment does not say. */
   host_region: string | null;
+  /** Set when the worker's hard per-run MAX_RUN_USD circuit breaker halted remaining sessions early. */
+  budget_cap_note?: string | null;
 }
 
 export const researchRuns = pgTable('research_runs', {
@@ -370,6 +394,12 @@ export const researchSessions = pgTable(
       .references(() => researchRuns.id, { onDelete: 'cascade' }),
     dimensionId: uuid('dimension_id').references(() => dimensions.id),
     kind: researchSessionKindEnum('kind').notNull(),
+    /**
+     * Zero-based index into `research_runs.plan.sessions` for deterministic
+     * chunk matching and crash-resumable checkpointing. Null on historic rows
+     * written before migration 0027.
+     */
+    planSessionIndex: integer('plan_session_index'),
     status: researchSessionStatusEnum('status').notNull().default('queued'),
     reviewerNotes: text('reviewer_notes'),
     transcript: bytea('transcript'),
@@ -378,6 +408,7 @@ export const researchSessions = pgTable(
   },
   (t) => ({
     runIdx: index('research_sessions_run_idx').on(t.runId),
+    runPlanSessionIdx: index('research_sessions_run_plan_idx').on(t.runId, t.planSessionIndex),
   }),
 );
 
@@ -419,6 +450,43 @@ export const findingAudits = pgTable('finding_audits', {
   appliedAt: timestamp('applied_at', { withTimezone: true }),
 }, (t) => ({
   findingSource: unique('finding_audits_finding_source_uniq').on(t.findingId, t.source),
+}));
+
+/**
+ * Every reviewer decision on a research finding, with its cause (core
+ * review-causes.ts): one row per finding a decision covers, written in the
+ * same transaction as the decision itself. Insert-only: the app role may
+ * read and insert, never update or delete, and no one may update a row
+ * (migration 0025). A row names the run's strategy, version, models and
+ * provider as recorded when the run was planned and applied, so a decision
+ * stays tied to what produced the finding.
+ */
+export const reviewLabels = pgTable('review_labels', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  /** Null only when the dimension had no findings in the run. */
+  findingId: uuid('finding_id').references(() => findings.id, { onDelete: 'cascade' }),
+  runId: uuid('run_id').notNull().references(() => researchRuns.id, { onDelete: 'cascade' }),
+  dimensionId: uuid('dimension_id').notNull().references(() => dimensions.id, { onDelete: 'cascade' }),
+  decision: text('decision').$type<ReviewDecision>().notNull(),
+  cause: text('cause').$type<ReviewLabelCause>().notNull(),
+  note: text('note'),
+  strategy: text('strategy').$type<StrategyName>(),
+  strategyVersion: integer('strategy_version'),
+  models: jsonb('models').$type<ResearchModels>(),
+  provider: text('provider').$type<ReviewLabelProvider>().notNull().default('anthropic'),
+  reviewerId: uuid('reviewer_id').notNull().references(() => users.id),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  tenantCreatedIdx: index('review_labels_tenant_created_idx').on(t.tenantId, t.createdAt),
+  findingIdx: index('review_labels_finding_idx').on(t.findingId),
+  runIdx: index('review_labels_run_idx').on(t.runId),
+  decision: check('review_labels_decision', sql`${t.decision} IN ('approve', 'edit', 're_research', 'reject')`),
+  cause: check('review_labels_cause', sql`${t.cause} IN ('correct_as_cited', 'wrong_geography', 'wrong_year', 'value_not_on_page', 'home_page_link', 'wrong_measure', 'out_of_date', 'source_unreadable', 'better_source', 'unsupported', 'placeholder', 'other')`),
+  approvalCause: check('review_labels_approval_cause', sql`(${t.decision} = 'approve') = (${t.cause} = 'correct_as_cited')`),
+  otherNote: check('review_labels_other_note', sql`${t.cause} <> 'other' OR coalesce(length(btrim(${t.note})), 0) > 0`),
+  noteLength: check('review_labels_note_length', sql`${t.note} IS NULL OR char_length(${t.note}) <= 4000`),
+  provider: check('review_labels_provider', sql`${t.provider} IN ('anthropic', 'openai', 'google')`),
 }));
 
 // ---- Discussion board (SPEC.md §7, §10) ----
@@ -1004,9 +1072,9 @@ export const organizationApiKeys = pgTable(
   'organization_api_keys',
   {
     organizationId: uuid('organization_id')
-      .primaryKey()
+      .notNull()
       .references(() => organizations.id, { onDelete: 'cascade' }),
-    provider: text('provider').notNull().default('anthropic'),
+    provider: text('provider').$type<ResearchProvider>().notNull().default('anthropic'),
     /** base64(iv) . base64(ciphertext) . base64(auth tag), versioned: "v1:…". */
     ciphertext: text('ciphertext').notNull(),
     /** The key's last four characters, to show which key is on file. */
@@ -1017,7 +1085,8 @@ export const organizationApiKeys = pgTable(
     validatedAt: timestamp('validated_at', { withTimezone: true }),
   },
   (t) => ({
-    provider: check('organization_api_keys_provider', sql`${t.provider} = 'anthropic'`),
+    pk: primaryKey({ columns: [t.organizationId, t.provider] }),
+    provider: check('organization_api_keys_provider', sql`${t.provider} IN ('anthropic', 'openai', 'google')`),
     hintLength: check('organization_api_keys_hint_length', sql`char_length(${t.keyHint}) <= 8`),
   }),
 );
@@ -1046,6 +1115,61 @@ export const signInRequests = pgTable(
     createdIdx: index('sign_in_requests_created_idx').on(t.createdAt),
   }),
 );
+
+// ---- Evidence-grounded RAG index (Ask this portrait) ----
+
+/**
+ * Citation-bearing text chunks derived from a portrait's published content
+ * (`visibility = 'public'`) and member-only drafts/analyses (`visibility =
+ * 'member'`). Works on standard Postgres 16 via native `tsvector` + GIN index
+ * (migration 0025); RLS guarantees anonymous callers and non-members read only
+ * `'public'` rows of live, published portraits.
+ */
+export const knowledgeChunks = pgTable(
+  'knowledge_chunks',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    visibility: text('visibility').$type<KnowledgeVisibility>().notNull(),
+    sourceKind: text('source_kind').$type<KnowledgeSourceKind>().notNull(),
+    sourceRef: text('source_ref').notNull(),
+    dimensionSlug: text('dimension_slug'),
+    title: text('title').notNull(),
+    citationLabel: text('citation_label').notNull(),
+    citationUrl: text('citation_url'),
+    content: text('content').notNull(),
+    searchVector: tsvector('search_vector').generatedAlwaysAs(
+      sql`setweight(to_tsvector('english', coalesce("title", '')), 'A') || setweight(to_tsvector('english', coalesce("dimension_slug", '') || ' ' || coalesce("citation_label", '')), 'B') || setweight(to_tsvector('english', coalesce("content", '')), 'C')`,
+    ),
+    contentHash: text('content_hash').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    tenantVisSourceUniq: unique('knowledge_chunks_tenant_vis_source_uniq').on(
+      t.tenantId,
+      t.visibility,
+      t.sourceKind,
+      t.sourceRef,
+    ),
+    tenantVisibilityIdx: index('knowledge_chunks_tenant_visibility_idx').on(t.tenantId, t.visibility),
+    tenantDimIdx: index('knowledge_chunks_tenant_dim_idx').on(t.tenantId, t.dimensionSlug),
+    searchVectorIdx: index('knowledge_chunks_search_vector_idx').using('gin', t.searchVector),
+    visibilityCheck: check('knowledge_chunks_visibility_check', sql`${t.visibility} IN ('public', 'member')`),
+    sourceKindCheck: check(
+      'knowledge_chunks_source_kind_check',
+      sql`${t.sourceKind} IN ('indicator', 'evidence_text', 'custom_page', 'policy_analysis', 'outreach')`,
+    ),
+    policyMemberOnlyCheck: check(
+      'knowledge_chunks_policy_member_only',
+      sql`${t.sourceKind} <> 'policy_analysis' OR ${t.visibility} = 'member'`,
+    ),
+  }),
+);
+
+export type KnowledgeChunk = typeof knowledgeChunks.$inferSelect;
+export type NewKnowledgeChunk = typeof knowledgeChunks.$inferInsert;
 
 export type TranslationRequest = typeof translationRequests.$inferSelect;
 export type OrganizationApiKey = typeof organizationApiKeys.$inferSelect;
@@ -1271,6 +1395,8 @@ export type NewResearchSession = typeof researchSessions.$inferInsert;
 export type Finding = typeof findings.$inferSelect;
 export type NewFinding = typeof findings.$inferInsert;
 export type FindingAudit = typeof findingAudits.$inferSelect;
+export type ReviewLabel = typeof reviewLabels.$inferSelect;
+export type NewReviewLabel = typeof reviewLabels.$inferInsert;
 export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
 export type CommentVote = typeof commentVotes.$inferSelect;

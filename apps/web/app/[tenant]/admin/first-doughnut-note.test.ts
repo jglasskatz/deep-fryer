@@ -34,6 +34,7 @@ vi.mock('@/lib/admin-data', async (importOriginal) => ({
   tenantConfigMap: vi.fn(async () => ({})),
   tenantRuns: vi.fn(async () => []),
   tenantRunSessionIds: vi.fn(async () => new Map()),
+  tenantReviewLabels: vi.fn(async () => []),
   recentAudit: vi.fn(async () => []),
   commentCounts: vi.fn(async () => new Map()),
   stalenessOverview: vi.fn(() => []),
@@ -43,6 +44,11 @@ vi.mock('@/lib/features', async (importOriginal) => ({
   portraitFeaturesById: vi.fn(async () => ({})),
 }));
 vi.mock('@/lib/discussion', () => ({ countHeldComments: vi.fn(async () => 0) }));
+// Where the doughnut stands reads the database; a blank portrait here.
+vi.mock('@/lib/portrait-stage', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@/lib/portrait-stage')>();
+  return { ...real, portraitStageFacts: vi.fn(async () => real.BLANK_FACTS) };
+});
 vi.mock('@/lib/involvement-admin', () => ({ countNewSubmissions: vi.fn(async () => 0) }));
 vi.mock('@/lib/member-data', () => ({
   tenantMembersList: vi.fn(async () => []),

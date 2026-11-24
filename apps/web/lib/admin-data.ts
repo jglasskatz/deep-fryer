@@ -15,6 +15,7 @@ import {
   dimensionVersions,
   findings,
   latestVersionsByDimension,
+  loadTenantReviewLabels,
   researchRuns,
   researchSessions,
   tenantBySlug,
@@ -22,6 +23,7 @@ import {
   type DbExecutor,
   type Dimension,
   type DimensionVersion,
+  type LoadedReviewLabel,
   type Tenant,
 } from '@deep-fryer/db';
 
@@ -255,6 +257,7 @@ export async function runWithSessions(runId: string) {
         runId: researchSessions.runId,
         dimensionId: researchSessions.dimensionId,
         kind: researchSessions.kind,
+        planSessionIndex: researchSessions.planSessionIndex,
         status: researchSessions.status,
         reviewerNotes: researchSessions.reviewerNotes,
         startedAt: researchSessions.startedAt,
@@ -285,4 +288,9 @@ export async function commentCounts(tenantId: string): Promise<Map<string, numbe
       .groupBy(comments.dimensionId);
     return new Map(rows.map((r) => [r.dimensionId, r.count]));
   });
+}
+
+/** Recorded reviewer labels for one portrait, read under the signed-in editor's RLS context. */
+export async function tenantReviewLabels(tenantId: string): Promise<LoadedReviewLabel[]> {
+  return userDb((db) => loadTenantReviewLabels(db, tenantId));
 }

@@ -14,6 +14,158 @@ export interface CaptureResult {
   captured_at: string;
 }
 
+/** Maximum PDF download size accepted during capture to prevent worker OOM (64 MiB). */
+export const MAX_PDF_DOWNLOAD_BYTES = 64 * 1024 * 1024;
+/** Maximum time allowed for downloading a source PDF during evidence capture. */
+export const PDF_DOWNLOAD_TIMEOUT_MS = 30_000;
+/** Default bounded preview length returned by `capture_evidence` MCP tool. */
+export const DEFAULT_CAPTURE_PREVIEW_CHARS = 2_000;
+/** Maximum concurrent Playwright browser contexts allowed in one worker process to cap RAM. */
+export const MAX_BROWSER_CONTEXTS = 6;
+
+/**
+ * Bounded FIFO semaphore limiting concurrent Chromium contexts across
+ * `read_source` and `capture_evidence` calls so parallel dimension sessions
+ * cannot OOM worker RAM.
+ */
+export class BrowserContextSemaphore {
+  readonly maxConcurrency: number;
+  private active = 0;
+  private readonly queue: Array<() => void> = [];
+
+  constructor(maxConcurrency = MAX_BROWSER_CONTEXTS) {
+    if (!Number.isInteger(maxConcurrency) || maxConcurrency < 1) {
+      throw new RangeError(`maxConcurrency must be a positive integer, got ${maxConcurrency}`);
+    }
+    this.maxConcurrency = maxConcurrency;
+  }
+
+  get activeCount(): number {
+    return this.active;
+  }
+
+  get pendingCount(): number {
+    return this.queue.length;
+  }
+
+  async acquire(): Promise<() => void> {
+    if (this.active >= this.maxConcurrency) {
+      await new Promise<void>((resolve) => {
+        this.queue.push(resolve);
+      });
+    }
+    this.active += 1;
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      this.active -= 1;
+      const next = this.queue.shift();
+      if (next) next();
+    };
+  }
+
+  async run<T>(fn: () => Promise<T>): Promise<T> {
+    const release = await this.acquire();
+    try {
+      return await fn();
+    } finally {
+      release();
+    }
+  }
+}
+
+export const defaultBrowserSemaphore = new BrowserContextSemaphore(MAX_BROWSER_CONTEXTS);
+
+/**
+ * Stream-read a fetch Response body with a strict byte cap so an oversized
+ * remote PDF cannot OOM or stall the worker process.
+ */
+export async function readResponseBytesCapped(
+  res: Pick<Response, 'headers' | 'body' | 'arrayBuffer'>,
+  maxBytes = MAX_PDF_DOWNLOAD_BYTES,
+): Promise<Buffer> {
+  const declaredLength = res.headers?.get?.('content-length');
+  if (declaredLength !== null && declaredLength !== undefined) {
+    const parsed = Number(declaredLength);
+    if (Number.isFinite(parsed) && parsed > maxBytes) {
+      await res.body?.cancel?.().catch(() => {});
+      throw new Error(`PDF download exceeds ${maxBytes} bytes (content-length ${parsed})`);
+    }
+  }
+  if (!res.body) {
+    const buf = Buffer.from(await res.arrayBuffer());
+    if (buf.byteLength > maxBytes) {
+      throw new Error(`PDF download exceeds ${maxBytes} bytes`);
+    }
+    return buf;
+  }
+  const reader = res.body.getReader();
+  const chunks: Buffer[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value || value.byteLength === 0) continue;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel().catch(() => {});
+        throw new Error(`PDF download exceeds ${maxBytes} bytes`);
+      }
+      chunks.push(Buffer.from(value.buffer, value.byteOffset, value.byteLength));
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  return Buffer.concat(chunks, total);
+}
+
+/**
+ * Pure: build a bounded preview (~2,000 chars) of captured readable text for
+ * `capture_evidence` tool results: opening context plus high-signal lines with
+ * numbers/tables when the full document exceeds `maxChars`.
+ */
+export function buildCapturePreview(
+  text: string | null | undefined,
+  maxChars = DEFAULT_CAPTURE_PREVIEW_CHARS,
+): { text_char_count: number; text_preview: string } {
+  if (!text) return { text_char_count: 0, text_preview: '' };
+  const charCount = text.length;
+  if (charCount <= maxChars) {
+    return { text_char_count: charCount, text_preview: text };
+  }
+  const openingBudget = Math.floor(maxChars * 0.6);
+  const opening = text.slice(0, openingBudget).trimEnd();
+  const rest = text.slice(openingBudget);
+  const separator = '\n\n[...table/numeric lines...]\n';
+  let remaining = maxChars - opening.length - separator.length;
+  if (remaining <= 80) {
+    return { text_char_count: charCount, text_preview: text.slice(0, maxChars) };
+  }
+  const signalLines: string[] = [];
+  for (const rawLine of rest.split('\n')) {
+    const line = rawLine.trim();
+    if (!line || !/\d/.test(line)) continue;
+    const addition = (signalLines.length ? '\n' : '') + line;
+    if (addition.length > remaining) {
+      if (signalLines.length === 0 && remaining > 20) {
+        signalLines.push(line.slice(0, remaining));
+      }
+      break;
+    }
+    signalLines.push(line);
+    remaining -= addition.length;
+  }
+  if (signalLines.length === 0) {
+    return { text_char_count: charCount, text_preview: text.slice(0, maxChars) };
+  }
+  return {
+    text_char_count: charCount,
+    text_preview: `${opening}${separator}${signalLines.join('\n')}`.slice(0, maxChars),
+  };
+}
+
 // One browser per worker process; each capture gets an isolated context.
 // Launching Chromium per capture would cost seconds on every source a run
 // touches. closeEvidenceBrowser() runs at the end of each research run.
@@ -256,11 +408,144 @@ export function composeReadableText(pageText: string, pdfText?: string): string 
   return `${parts.join('\n\n')}\n`;
 }
 
+export interface RenderedSourceDocument {
+  url: string;
+  finalUrl: string;
+  contentType: string;
+  status?: number;
+  capturedAt: string;
+  pngBytes: Buffer;
+  pdfBytes?: Buffer;
+  readableText: string | null;
+  noReadableText?: true;
+  pdfUrl?: string;
+}
+
+/**
+ * Render a public HTTPS source page in an isolated Playwright context (bounded
+ * by `semaphore`), pass the exhibit gate, optionally download and extract text
+ * from an associated or direct PDF via pinned-IP `guardedFetch`, and return the
+ * raw bytes + composed readable text without writing to storage yet.
+ */
+export async function renderSourceDocument(
+  url: string,
+  pdfUrl?: string,
+  opts: { semaphore?: BrowserContextSemaphore } = {},
+): Promise<RenderedSourceDocument> {
+  await assertPublicHttpsUrl(url);
+  const capturedAt = new Date().toISOString();
+  const semaphore = opts.semaphore ?? defaultBrowserSemaphore;
+
+  let pngBytes: Buffer;
+  let pageText: string;
+  let finalUrl = url;
+  let contentType = 'text/html';
+  let status: number | undefined;
+
+  await semaphore.run(async () => {
+    const context = await (await browser()).newContext({
+      viewport: { width: 1280, height: 1600 },
+    });
+    try {
+      await context.route('**/*', async (route) => {
+        const target = route.request().url();
+        if (target.startsWith('data:') || target.startsWith('blob:')) return route.continue();
+        try {
+          await assertPublicHttpsUrl(target);
+          await route.continue();
+        } catch {
+          await route.abort('blockedbyclient');
+        }
+      });
+      const page = await context.newPage();
+      // The gate judges the document the browser ended on. goto's Response is that document unless the
+      // page navigated again while it settled, which is exactly what a passed challenge does: Cloudflare
+      // answers 403 "Just a moment…", then reloads the real page with 200. So every main-frame document
+      // response is recorded and the last one wins, with goto's own Response as the fallback. (Guarded:
+      // a service-worker request has no frame, and a listener that threw would surface as an unhandled
+      // error, not as this capture's failure.)
+      const documents: PageResponse[] = [];
+      page.on('response', (res) => {
+        try {
+          if (res.request().isNavigationRequest() && res.frame() === page.mainFrame()) documents.push(res);
+        } catch {
+          // Not a main-frame document.
+        }
+      });
+      const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 45_000 });
+      const signals = await readExhibitSignals(page, documents.at(-1) ?? response);
+      const problems = classifyExhibit(signals);
+      if (problems.length > 0) throw new ExhibitRefusedError(problems);
+      pageText = signals.visibleText;
+      status = signals.status;
+      contentType = signals.contentType ?? 'text/html';
+      finalUrl = typeof page.url === 'function' ? page.url() || url : url;
+      pngBytes = Buffer.from(await page.screenshot({ fullPage: true }));
+    } finally {
+      await context.close();
+    }
+  });
+
+  let pdfBytes: Buffer | undefined;
+  let pdfText: string | undefined;
+  const isPdfDoc =
+    Boolean(pdfUrl) ||
+    url.toLowerCase().endsWith('.pdf') ||
+    finalUrl.toLowerCase().endsWith('.pdf') ||
+    /application\/(?:x-)?pdf\b/i.test(contentType);
+  const docUrl = pdfUrl ?? (isPdfDoc ? finalUrl : undefined);
+  if (docUrl) {
+    try {
+      const res = await guardedFetch(docUrl, { signal: AbortSignal.timeout(PDF_DOWNLOAD_TIMEOUT_MS) });
+      if (res.ok) {
+        pdfBytes = await readResponseBytesCapped(res, MAX_PDF_DOWNLOAD_BYTES);
+        // Archived as a PDF, so read as one whatever the server called it.
+        pdfText = (await extractText(pdfBytes, 'application/pdf')) ?? '';
+      }
+    } catch {
+      // PDF capture is best-effort; the page screenshot is the primary record.
+    }
+  }
+
+  const readableText = composeReadableText(pageText!, pdfText);
+  return {
+    url,
+    finalUrl,
+    contentType,
+    status,
+    capturedAt,
+    pngBytes: pngBytes!,
+    ...(pdfBytes ? { pdfBytes } : {}),
+    readableText,
+    ...(readableText === null ? { noReadableText: true as const } : {}),
+    ...(pdfUrl ? { pdfUrl } : {}),
+  };
+}
+
+/** Minimal cache adapter interface accepted by `captureEvidence` (implemented by `SourceCache`). */
+export interface CaptureSourceCacheAdapter {
+  promoteIfCached(storage: TenantStorage, url: string, pdfUrl?: string): Promise<CaptureResult | null>;
+  recordRendered(storage: TenantStorage, rendered: RenderedSourceDocument): Promise<void>;
+}
+
+export interface CaptureEvidenceOptions {
+  /** Optional shared source cache: promotes cached artifacts into `evidence/` without re-launching Playwright. */
+  sourceCache?: CaptureSourceCacheAdapter;
+  /** Optional bounded browser context semaphore (defaults to `defaultBrowserSemaphore`). */
+  semaphore?: BrowserContextSemaphore;
+}
+
 /**
  * Evidence capture (SPEC.md §8, decision D): Playwright screenshot of the
  * source page, plus the PDF itself when the source is a document, plus the
  * readable text of both (the page's visible text, the PDF's text layer) as
  * evidence/<hash>.txt, so a reviewer can read what research read.
+ *
+ * When a `sourceCache` is supplied and already holds a same-day capture for the
+ * normalized URL, it promotes the cached artifact into immutable `evidence/`
+ * directly without re-launching Playwright; on a cache miss it renders once
+ * (under the bounded Chromium context semaphore), writes immutable `evidence/`,
+ * and populates the cache for subsequent dimensions or reads.
  *
  * Egress (SPEC-v3 §2.3): the page URL, every request the page makes
  * (including redirect hops, which Chromium issues as new requests), and the
@@ -281,80 +566,51 @@ export async function captureEvidence(
   storage: TenantStorage,
   url: string,
   pdfUrl?: string,
+  opts: CaptureEvidenceOptions = {},
 ): Promise<CaptureResult> {
-  await assertPublicHttpsUrl(url);
-  const capturedAt = new Date().toISOString();
-  const hash = createHash('sha256').update(`${url}\n${capturedAt}`).digest('hex').slice(0, 16);
-
-  const context = await (await browser()).newContext({
-    viewport: { width: 1280, height: 1600 },
-  });
-  let snapshotPath: string;
-  let pageText: string;
-  try {
-    await context.route('**/*', async (route) => {
-      const target = route.request().url();
-      if (target.startsWith('data:') || target.startsWith('blob:')) return route.continue();
-      try {
-        await assertPublicHttpsUrl(target);
-        await route.continue();
-      } catch {
-        await route.abort('blockedbyclient');
-      }
-    });
-    const page = await context.newPage();
-    // The gate judges the document the browser ended on. goto's Response is that document unless the
-    // page navigated again while it settled, which is exactly what a passed challenge does: Cloudflare
-    // answers 403 "Just a moment…", then reloads the real page with 200. So every main-frame document
-    // response is recorded and the last one wins, with goto's own Response as the fallback. (Guarded:
-    // a service-worker request has no frame, and a listener that threw would surface as an unhandled
-    // error, not as this capture's failure.)
-    const documents: PageResponse[] = [];
-    page.on('response', (res) => {
-      try {
-        if (res.request().isNavigationRequest() && res.frame() === page.mainFrame()) documents.push(res);
-      } catch {
-        // Not a main-frame document.
-      }
-    });
-    const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 45_000 });
-    const signals = await readExhibitSignals(page, documents.at(-1) ?? response);
-    const problems = classifyExhibit(signals);
-    if (problems.length > 0) throw new ExhibitRefusedError(problems);
-    pageText = signals.visibleText;
-    const png = await page.screenshot({ fullPage: true });
-    snapshotPath = await storage.put(`evidence/${hash}.png`, Buffer.from(png), 'image/png');
-  } finally {
-    await context.close();
+  if (opts.sourceCache) {
+    try {
+      const promoted = await opts.sourceCache.promoteIfCached(storage, url, pdfUrl);
+      if (promoted) return promoted;
+    } catch {
+      // Cache promotion is an optimization; fall back cleanly to live render if unreadable.
+    }
   }
 
+  const rendered = await renderSourceDocument(url, pdfUrl, { semaphore: opts.semaphore });
+  const hash = createHash('sha256').update(`${url}\n${rendered.capturedAt}`).digest('hex').slice(0, 16);
+
+  const snapshotPath = await storage.put(`evidence/${hash}.png`, rendered.pngBytes, 'image/png');
+
   let pdfPath: string | undefined;
-  let pdfText: string | undefined;
-  const docUrl = pdfUrl ?? (url.toLowerCase().endsWith('.pdf') ? url : undefined);
-  if (docUrl) {
+  if (rendered.pdfBytes) {
     try {
-      const res = await guardedFetch(docUrl);
-      if (res.ok) {
-        const body = Buffer.from(await res.arrayBuffer());
-        pdfPath = await storage.put(`evidence/${hash}.pdf`, body, 'application/pdf');
-        // Archived as a PDF, so read as one whatever the server called it.
-        pdfText = (await extractText(body, 'application/pdf')) ?? '';
-      }
+      pdfPath = await storage.put(`evidence/${hash}.pdf`, rendered.pdfBytes, 'application/pdf');
     } catch {
       // PDF capture is best-effort; the page screenshot is the primary record.
     }
   }
 
-  const result: CaptureResult = { snapshot_path: snapshotPath, pdf_path: pdfPath, captured_at: capturedAt };
-  const text = composeReadableText(pageText, pdfText);
-  if (text === null) {
+  const result: CaptureResult = { snapshot_path: snapshotPath, pdf_path: pdfPath, captured_at: rendered.capturedAt };
+  if (rendered.readableText === null) {
     result.no_readable_text = true;
   } else {
     try {
-      result.text_path = await storage.put(`evidence/${hash}.txt`, Buffer.from(text, 'utf8'), 'text/plain; charset=utf-8');
+      result.text_path = await storage.put(
+        `evidence/${hash}.txt`,
+        Buffer.from(rendered.readableText, 'utf8'),
+        'text/plain; charset=utf-8',
+      );
     } catch {
       // Like the PDF, the text copy is best-effort: without it the capture still stands.
     }
   }
+
+  if (opts.sourceCache) {
+    await opts.sourceCache.recordRendered(storage, rendered).catch(() => {
+      // Cache population is best-effort and never invalidates a completed capture.
+    });
+  }
+
   return result;
 }

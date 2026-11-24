@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { extractText, htmlToText, PDF_PAGE_BREAK } from './text-extract.js';
+import {
+  extractPageWindowExcerpt,
+  extractPdfPageWindowFromBytes,
+  extractPdfTextPages,
+  extractText,
+  htmlToText,
+  OVERSIZED_PDF_EXCERPT_HEADER,
+  parseCitedPageNumbers,
+  PDF_PAGE_BREAK,
+} from './text-extract.js';
 import { scannedPdf, textPdf } from './test/pdf-fixture.js';
 
 describe('extractText: PDF', () => {
@@ -96,5 +105,70 @@ describe('extractText: other kinds', () => {
   it('returns null for a kind it does not read, such as a spreadsheet or an image', async () => {
     expect(await extractText(Buffer.from('PK\x03\x04'), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')).toBeNull();
     expect(await extractText(Buffer.from([0x89, 0x50, 0x4e, 0x47]), 'image/png')).toBeNull();
+  });
+});
+
+describe('large-PDF page-window excerpt extraction', () => {
+  it('parses cited page numbers from URL fragments and prose locators, capping huge ranges', () => {
+    expect(parseCitedPageNumbers('https://city.gov/report.pdf#page=14', 'See p. 7 and pp. 20–22')).toEqual([7, 14, 20, 21, 22]);
+    // Bogus huge range is capped at 10 pages from start.
+    expect(parseCitedPageNumbers(undefined, 'pp. 5-9999')).toHaveLength(10);
+  });
+
+  it('splits stored capture text into PDF pages and ignores scanned-PDF markers', () => {
+    const stored =
+      'Text of the captured page\n\nDownload report\n\nText of the PDF document\n\nPage one\n\f\nPage two\n\f\nPage three\n';
+    expect(extractPdfTextPages(stored)).toEqual(['Page one', 'Page two', 'Page three']);
+    expect(extractPdfTextPages('Text of the PDF document\n\nThis PDF has no readable text. It may be a scanned image.\n')).toEqual([]);
+  });
+
+  it('extracts a bounded window around cited pages and value/keyword hits with an explicit header', () => {
+    const pages = Array.from({ length: 20 }, (_, i) => `Page ${i + 1} general background content.`);
+    pages[11] = 'Table 4: Renter cost burden reached 54.2% of households in 2024.';
+
+    const byValue = extractPageWindowExcerpt(pages, {
+      claimedValue: '54.2%',
+      indicatorName: 'Cost-burdened renters',
+    });
+    expect(byValue.text).toContain(OVERSIZED_PDF_EXCERPT_HEADER);
+    expect(byValue.matchBasis).toContain('value_match');
+    expect(byValue.pagesIncluded).toEqual([11, 12, 13]);
+    expect(byValue.text).toContain('--- Page 12 of 20 ---');
+    expect(byValue.text).toContain('54.2%');
+
+    const byLocator = extractPageWindowExcerpt(pages, {
+      sourceUrl: 'https://city.gov/huge-report.pdf#page=5',
+      locatorText: 'Table on page 5',
+    });
+    expect(byLocator.matchBasis).toContain('cited_page');
+    expect(byLocator.pagesIncluded).toEqual([4, 5, 6]);
+  });
+
+  it('falls back to opening pages when nothing matches and strictly bounds output bytes', () => {
+    const hugePages = Array.from({ length: 10 }, (_, i) => `Page ${i + 1}: ` + 'x'.repeat(2000));
+    const fallback = extractPageWindowExcerpt(hugePages, { indicatorName: 'Unmatched indicator' }, { maxBytes: 1500 });
+    expect(fallback.matchBasis).toEqual(['opening_pages']);
+    expect(Buffer.byteLength(fallback.text, 'utf8')).toBeLessThanOrEqual(1500);
+    expect(fallback.truncated).toBe(true);
+    expect(fallback.text).toContain(OVERSIZED_PDF_EXCERPT_HEADER);
+  });
+
+  it('extracts a targeted page window directly from PDF bytes', async () => {
+    const pdf = textPdf([
+      ['Cover page: Annual Environmental Report'],
+      ['Chapter 1: Introduction'],
+      ['Chapter 2: Methodology'],
+      ['Chapter 3: Air Quality — Annual PM2.5 average was 6.51 ug/m3 in 2024'],
+      ['Chapter 4: Appendix'],
+    ]);
+    const excerpt = await extractPdfPageWindowFromBytes(pdf, {
+      claimedValue: 6.51,
+      indicatorName: 'PM2.5 annual',
+    });
+    expect(excerpt).not.toBeNull();
+    expect(excerpt!.pagesIncluded).toEqual([3, 4, 5]);
+    expect(excerpt!.text).toContain('6.51');
+    expect(excerpt!.text).toContain(OVERSIZED_PDF_EXCERPT_HEADER);
+    expect(await extractPdfPageWindowFromBytes(scannedPdf(), { claimedValue: 6.51 })).toBeNull();
   });
 });

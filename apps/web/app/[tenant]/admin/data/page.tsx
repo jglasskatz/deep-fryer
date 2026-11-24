@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
-import { DataGrid } from '@/components/admin/grid/DataGrid';
 import { gridStateFromParams, gridStateQuery } from '@/components/admin/grid/grid-state';
 import { tenantDimensions } from '@/lib/admin-data';
 import { requireAdminPage } from '@/lib/admin-guard';
@@ -9,6 +8,7 @@ import { roleAtLeast } from '@/lib/auth';
 import { evidenceUrl } from '@/lib/data';
 import { dimensionsWithoutRows, gridRows } from '@/lib/grid-data';
 import { adminPageMetadata } from '@/lib/page-meta';
+import { DataGridClient } from './DataGridClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,14 +50,14 @@ export default async function DataPage({
           Every indicator in this portrait, as it stands in each dimension&apos;s latest version, published or not.
           Search, filter and sort the table, or download it to read in a spreadsheet.
         </p>
-        <DataGrid
+        <DataGridClient
           // A link to another view of this page (another filter or sort) starts the table afresh from it.
           key={gridStateQuery(initial)}
           tenantSlug={ctx.tenant.slug}
           rows={rows}
           emptyDimensions={dimensionsWithoutRows(dims, rows)}
           dimensionCount={dims.length}
-          canOpenDimension={roleAtLeast(ctx.role, 'editor')}
+          canEdit={roleAtLeast(ctx.role, 'editor')}
           initial={initial}
         />
       </main>

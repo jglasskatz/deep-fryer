@@ -1,9 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import { defaultPortraitConfig, framework } from '@deep-fryer/contract';
-import { MAX_INDICATORS_PER_SESSION, renderPlan, planStrategy, renderVerifierPrompt, REGION_BRIEF_PLACEHOLDER } from './plan.js';
+import {
+  MAX_INDICATORS_PER_SESSION,
+  DIMENSION_TOOLS,
+  REGION_TOOLS,
+  REGION_BRIEF_CACHE_TTL_MS,
+  computeConfigHash,
+  dimensionNameFromPrompt,
+  isValidRegionBriefCache,
+  plannedSlugsFromPrompt,
+  plannedThresholdRefsFromPrompt,
+  renderPlan,
+  planStrategy,
+  renderVerifierPrompt,
+  REGION_BRIEF_PLACEHOLDER,
+} from './plan.js';
 import findingSchema from '@deep-fryer/contract/schemas/finding' with { type: 'json' };
 import { proxyFindingPayloadSchema } from '@deep-fryer/core';
-import { deterministicChecks, isFlagged, mergeVerification } from './verify.js';
+import { deterministicChecks, isFlagged, isFreshRunCapture, mergeVerification } from './verify.js';
 
 const config = defaultPortraitConfig('City of Santa Cruz', 'City of Santa Cruz municipal boundary');
 
@@ -91,6 +105,53 @@ describe('renderPlan', () => {
     expect(planStrategy(undefined, { session_model: 'operator-researcher', verifier_model: 'operator-verifier', subagent_model: 'operator-scout' }).models).toEqual({ session_model: 'operator-researcher', verifier_model: 'operator-verifier', subagent_model: 'operator-scout', page_reader_model: 'claude-haiku-4-5-20251001' });
   });
 
+  it('omits Phase 0 and records cached_region_brief when a validated cached brief is supplied', () => {
+    const cached = renderPlan({
+      config,
+      dimensions: [
+        {
+          dimensionId: 'x',
+          slug: housing.slug,
+          ring: housing.ring,
+          name: housing.name,
+          indicators: housing.indicators,
+        },
+      ],
+      cachedRegionBrief: '## Santa Cruz cached brief\nCity municipal limits.',
+    });
+    expect(cached.sessions).toHaveLength(1);
+    expect(cached.sessions[0]?.kind).toBe('dimension');
+    expect(cached.sessions[0]?.dimension_slug).toBe('housing');
+    expect(cached.cached_region_brief).toBe('## Santa Cruz cached brief\nCity municipal limits.');
+    expect(cached.sessions[0]!.prompt).toContain(REGION_BRIEF_PLACEHOLDER);
+  });
+
+  it('validates cached region briefs against config_hash and the 30-day TTL', () => {
+    const hash = computeConfigHash(config);
+    const now = new Date('2026-11-24T00:00:00Z');
+    const fresh = {
+      brief: 'Valid region brief',
+      config_hash: hash,
+      cached_at: new Date(now.getTime() - REGION_BRIEF_CACHE_TTL_MS + 60_000).toISOString(),
+      run_id: 'run-1',
+    };
+    expect(isValidRegionBriefCache(fresh, hash, now)).toBe(true);
+    // Exactly 30 days old or older is invalid.
+    expect(
+      isValidRegionBriefCache(
+        { ...fresh, cached_at: new Date(now.getTime() - REGION_BRIEF_CACHE_TTL_MS).toISOString() },
+        hash,
+        now,
+      ),
+    ).toBe(false);
+    // Mismatched config_hash invalidates cache.
+    expect(isValidRegionBriefCache({ ...fresh, config_hash: 'different-hash' }, hash, now)).toBe(false);
+    // Blank brief or invalid date invalidates cache.
+    expect(isValidRegionBriefCache({ ...fresh, brief: '   ' }, hash, now)).toBe(false);
+    expect(isValidRegionBriefCache({ ...fresh, cached_at: 'not-a-date' }, hash, now)).toBe(false);
+    expect(isValidRegionBriefCache(null, hash, now)).toBe(false);
+  });
+
   it('tells the independent verifier to read the archive first and discloses missing exhibits', () => {
     const input = { indicator_name: 'Rent burden', claimed_value: '42', unit: '%', year: '2025', geography: 'City', source_name: 'ACS', source_url: 'https://example.gov/report' };
     const prompt = renderVerifierPrompt({ ...input, archived_exhibits: ['archived-source.pdf', 'archived-snapshot.png'] });
@@ -128,7 +189,7 @@ describe('deterministicChecks', () => {
   it('passes a compliant finding', async () => {
     const { payload, checks } = await deterministicChecks(goodFinding, config, 'housing', async () => true);
     expect(payload?.kind).toBe('indicator');
-    expect(checks).toEqual({ schema_ok: true, url_ok: true, recency_ok: true, scale_ok: true });
+    expect(checks).toEqual({ schema_ok: true, url_ok: true, recency_ok: true, scale_ok: true, home_page_link: false });
   });
 
   it('flags stale years and disallowed scales', async () => {
@@ -182,9 +243,9 @@ describe('deterministicChecks', () => {
     it('are checked as a sourced indicator is, from the pass that proposes them', async () => {
       const passed = await deterministicChecks(standIn, config, 'housing', async () => true, { allowProxy: true });
       expect(passed.payload).toMatchObject({ kind: 'proxy', proxy_for: 'cost-burdened-renters', confidence: 'low' });
-      expect(passed.checks).toEqual({ schema_ok: true, url_ok: true, recency_ok: true, scale_ok: true });
+      expect(passed.checks).toEqual({ schema_ok: true, url_ok: true, recency_ok: true, scale_ok: true, home_page_link: false });
       const stale = await deterministicChecks({ ...standIn, year: 2005, geographic_scale: 'national' }, config, 'housing', async () => false, { allowProxy: true });
-      expect(stale.checks).toEqual({ schema_ok: true, url_ok: false, recency_ok: false, scale_ok: false });
+      expect(stale.checks).toEqual({ schema_ok: true, url_ok: false, recency_ok: false, scale_ok: false, home_page_link: false });
     });
 
     it('must be low confidence and say what they stand in for and why', async () => {
@@ -232,6 +293,85 @@ describe('deterministicChecks', () => {
     expect(payload?.kind).toBe('gap');
     const verification = mergeVerification(checks, { content_supported: 'uncertain', verifier_note: 'gap' });
     expect(isFlagged(verification)).toBe(true);
+  });
+
+  it('short-circuits defaultUrlCheck to true when evidence.snapshot_path was freshly captured in the current run', async () => {
+    const runStartedAt = new Date(Date.now() - 10_000);
+    const freshFinding = {
+      ...goodFinding,
+      source_url: 'https://waf-blocked.example.gov/data/report.pdf',
+      evidence: { snapshot_path: 'evidence/fresh123.png', captured_at: new Date().toISOString() },
+    };
+    // Without touching live network, defaultUrlCheck short-circuits for a fresh run capture.
+    const { checks } = await deterministicChecks(freshFinding, config, 'housing', undefined, {
+      runStartedAt,
+      capturedSnapshotPaths: new Set(['evidence/fresh123.png']),
+    });
+    expect(checks.url_ok).toBe(true);
+
+    // A stale capture or unconfirmed snapshot path does NOT qualify for short-circuit.
+    expect(
+      isFreshRunCapture(
+        freshFinding.source_url,
+        { snapshot_path: 'evidence/fresh123.png', captured_at: '2020-01-01T00:00:00Z' },
+        { runStartedAt },
+      ),
+    ).toBe(false);
+    expect(
+      isFreshRunCapture(
+        freshFinding.source_url,
+        freshFinding.evidence,
+        { runStartedAt, capturedSnapshotPaths: new Set(['evidence/other.png']) },
+      ),
+    ).toBe(false);
+    // Internal or non-https URLs never short-circuit.
+    expect(
+      isFreshRunCapture(
+        'https://127.0.0.1/admin',
+        freshFinding.evidence,
+        { runStartedAt },
+      ),
+    ).toBe(false);
+  });
+
+  it('exposes read_source and submit_findings in DIMENSION_TOOLS / REGION_TOOLS and parses slugs, dimension name, and threshold refs from rendered prompts', () => {
+    expect(DIMENSION_TOOLS).toContain('mcp__evidence__read_source');
+    expect(DIMENSION_TOOLS).toContain('mcp__evidence__submit_findings');
+    expect(REGION_TOOLS).toContain('mcp__evidence__read_source');
+    const rendered = renderPlan({
+      config,
+      dimensions: [
+        {
+          dimensionId: 'x',
+          slug: housing.slug,
+          ring: housing.ring,
+          name: housing.name,
+          indicators: housing.indicators,
+        },
+      ],
+    });
+    expect(rendered.sessions[0]!.tool_allowlist).toContain('mcp__evidence__read_source');
+    expect(rendered.sessions[1]!.tool_allowlist).toContain('mcp__evidence__read_source');
+    const prompt = rendered.sessions[1]!.prompt;
+    expect(plannedSlugsFromPrompt(prompt)).toEqual(housing.indicators.map((i) => i.slug));
+    expect(dimensionNameFromPrompt(prompt)).toBe(housing.name);
+    expect(plannedThresholdRefsFromPrompt(prompt)).toMatchObject({
+      [housing.indicators[0]!.slug]: housing.indicators[0]!.threshold_ref,
+    });
+  });
+
+  it('propagates optional fail_reason and suggested_disposition in mergeVerification', () => {
+    const merged = mergeVerification(
+      { schema_ok: true, url_ok: true, recency_ok: true, scale_ok: true },
+      {
+        content_supported: 'fail',
+        verifier_note: 'Table says 31%, not 42%.',
+        fail_reason: 'value_mismatch',
+        suggested_disposition: 'edit',
+      },
+    );
+    expect(merged.fail_reason).toBe('value_mismatch');
+    expect(merged.suggested_disposition).toBe('edit');
   });
 });
 

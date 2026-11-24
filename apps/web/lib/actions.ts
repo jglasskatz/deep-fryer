@@ -6,11 +6,13 @@ import { revalidatePath } from 'next/cache';
 import { and, eq } from 'drizzle-orm';
 import {
   assignIndicatorKeys,
+  checkReviewCause,
   computeScoring,
   deriveVizLevel,
   dimensionDataSchema,
   frameworkIndicatorKeys,
   resolveThreshold,
+  reviewLabelRows,
   tenantConfigSchemas,
   type DimensionData,
   type Indicator,
@@ -21,7 +23,11 @@ import {
   appendDimensionVersion,
   dimensions,
   dimensionVersions,
+  findings,
   latestVersion,
+  researchRuns,
+  researchSessions,
+  reviewLabels,
   tenantConfig,
   tenants,
 } from '@deep-fryer/db';
@@ -42,6 +48,7 @@ import { configValueIn } from './admin-data';
 import { action, UserError } from './action-result';
 import { publishVersionFor } from './publish';
 import { userDb } from './db';
+import { approvalFindings } from './draft-portrait';
 
 /**
  * Re-run the thresholds engine over numeric indicators (SPEC.md §8 Scoring):
@@ -83,7 +90,16 @@ export interface SaveDimensionEditInput {
   dimensionId: string;
   data: DimensionData;
   changeNote: string;
+  /**
+   * Set when the editor was opened from a research run's review card: the
+   * run whose findings this edit corrects, and the reviewer's cause. The
+   * edit is then recorded as a decision on each of that run's findings for
+   * the dimension (review_labels), with the change note as its note.
+   */
+  review?: { runId: string; cause: string };
 }
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Human edit → new immutable version, origin 'human' (SPEC.md §7):
@@ -92,12 +108,17 @@ export interface SaveDimensionEditInput {
  * research. Rows are matched to the previous version by key (core
  * assignIndicatorKeys), so renaming an indicator is not a value change; a
  * row with no key yet is matched by name.
+ *
+ * Opened from a review card (`review`), the edit needs a cause, and the
+ * version and its review labels are written on one transaction.
  */
 export const saveDimensionEdit = action(async (input: SaveDimensionEditInput) => {
   const { tenant } = await requireTenantRole(input.tenantSlug, 'editor');
   return userDb(async (db) => {
     const changeNote = input.changeNote.trim();
     if (!changeNote) throw new UserError('A change note is required for human edits.');
+    const why = input.review ? checkReviewCause(input.review.cause, changeNote) : null;
+    if (why && !why.ok) throw new UserError(`${why.problem} Nothing was saved.`);
 
     const submitted = dimensionDataSchema.parse(input.data) as DimensionData;
 
@@ -155,6 +176,32 @@ export const saveDimensionEdit = action(async (input: SaveDimensionEditInput) =>
       { dimension: dimension.slug, version_num: version.versionNum, change_note: changeNote },
       db,
     );
+
+    if (input.review && why?.ok) {
+      const runId = input.review.runId;
+      const [run] = typeof runId === 'string' && UUID_RE.test(runId)
+        ? await db.select().from(researchRuns).where(and(eq(researchRuns.id, runId), eq(researchRuns.tenantId, tenant.id)))
+        : [];
+      if (!run) {
+        throw new UserError('The research run this edit came from is not part of this portrait. Go back to the review page and open the editor again. Nothing was saved.');
+      }
+      const edited = await db
+        .select({ finding: findings })
+        .from(findings)
+        .innerJoin(researchSessions, eq(findings.sessionId, researchSessions.id))
+        .where(and(eq(researchSessions.runId, run.id), eq(findings.dimensionId, dimension.id)));
+      if (!auth.userId) throw new UserError('Sign in to review findings.');
+      await db.insert(reviewLabels).values(reviewLabelRows({
+        tenantId: tenant.id,
+        dimensionId: dimension.id,
+        run,
+        findingIds: approvalFindings(edited.map((r) => r.finding)).map((f) => f.id),
+        decision: 'edit',
+        cause: why.cause,
+        note: changeNote,
+        reviewerId: auth.userId,
+      }));
+    }
 
     revalidatePath(`/${tenant.slug}/admin`);
     return { versionId: version.id, versionNum: version.versionNum };

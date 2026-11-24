@@ -2,13 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { SESSIONS_PER_FULL_REFRESH } from './plans.js';
 import { POLICY_ANALYSIS_SESSIONS } from './policy.js';
 import {
+  FULL_PORTRAIT_AUDIT_COST_USD,
   FULL_PORTRAIT_COST_USD,
   RESEARCH_SESSION_COST_USD,
+  STRATEGY_SESSION_WEIGHTS,
+  estimateAuditCost,
   estimateRunCost,
+  estimateTotalRunCost,
   formatCostRange,
   formatTypicalCost,
   researchRunSessions,
   dimensionResearchSessions,
+  strategySessionWeight,
+  weightedSessionCredits,
 } from './research-cost.js';
 
 /** The numbers docs/research-cost.md states; this file and the document must agree. */
@@ -56,6 +62,15 @@ describe('estimateRunCost', () => {
     expect(() => estimateRunCost(-1)).toThrow(RangeError);
     expect(() => estimateRunCost(1.5)).toThrow(RangeError);
   });
+
+  it('scales estimates by strategy: standard baseline, hybrid selective escalation, and deep', () => {
+    expect(estimateRunCost(22, 'standard')).toEqual({ sessions: 22, lowUsd: 20, typicalUsd: 40, highUsd: 80 });
+    expect(estimateRunCost(22, 'operator-defaults')).toEqual({ sessions: 22, lowUsd: 20, typicalUsd: 40, highUsd: 80 });
+    expect(estimateRunCost(22, 'hybrid')).toEqual({ sessions: 22, lowUsd: 22, typicalUsd: 60, highUsd: 160 });
+    expect(estimateRunCost(22, 'deep')).toEqual({ sessions: 22, lowUsd: 50, typicalUsd: 120, highUsd: 280 });
+    expect(formatCostRange(estimateRunCost(22, 'hybrid'))).toBe('$22–160');
+    expect(formatCostRange(estimateRunCost(22, 'deep'))).toBe('$50–280');
+  });
 });
 
 describe('formatCostRange', () => {
@@ -76,5 +91,68 @@ describe('formatTypicalCost', () => {
     expect(formatTypicalCost(estimateRunCost(1))).toBe('$1.80');
     // Rounding up into $10 switches to whole dollars rather than printing "$10.00".
     expect(formatTypicalCost({ sessions: 0, lowUsd: 0, typicalUsd: 9.96, highUsd: 0 })).toBe('$10');
+  });
+});
+
+describe('estimateAuditCost & estimateTotalRunCost', () => {
+  it('models post-run audit spend for a full portrait and scales down for Opus-assisted strategies', () => {
+    expect(estimateAuditCost(21, 'standard')).toEqual({
+      lowUsd: FULL_PORTRAIT_AUDIT_COST_USD.low,
+      typicalUsd: FULL_PORTRAIT_AUDIT_COST_USD.typical,
+      highUsd: FULL_PORTRAIT_AUDIT_COST_USD.high,
+    });
+    expect(estimateAuditCost(21, 'hybrid').typicalUsd).toBe(7.5);
+    expect(estimateAuditCost(21, 'deep').typicalUsd).toBe(6);
+    expect(estimateAuditCost(0)).toEqual({ lowUsd: 0, typicalUsd: 0, highUsd: 0 });
+    expect(() => estimateAuditCost(-1)).toThrow(RangeError);
+  });
+
+  it('combines research and post-run audit estimates without adding audit cost to 1-session policy analyses', () => {
+    const full = estimateTotalRunCost(22, 'standard');
+    expect(full).toMatchObject({
+      sessions: 22,
+      lowUsd: 20,
+      typicalUsd: 40,
+      highUsd: 80,
+      auditLowUsd: 4,
+      auditTypicalUsd: 10,
+      auditHighUsd: 20,
+      totalLowUsd: 24,
+      totalTypicalUsd: 50,
+      totalHighUsd: 100,
+    });
+    const policy = estimateTotalRunCost(1, 'standard');
+    expect(policy.auditTypicalUsd).toBe(0);
+    expect(policy.totalTypicalUsd).toBe(policy.typicalUsd);
+  });
+});
+
+describe('strategySessionWeight & weightedSessionCredits (P2.2)', () => {
+  it('weights standard/operator-defaults at 1x, hybrid at 1.5x, and deep at 3x', () => {
+    expect(STRATEGY_SESSION_WEIGHTS).toEqual({
+      standard: 1,
+      'operator-defaults': 1,
+      hybrid: 1.5,
+      deep: 3,
+    });
+    expect(strategySessionWeight('standard')).toBe(1);
+    expect(strategySessionWeight('operator-defaults')).toBe(1);
+    expect(strategySessionWeight('hybrid')).toBe(1.5);
+    expect(strategySessionWeight('deep')).toBe(3);
+    expect(strategySessionWeight(undefined)).toBe(1);
+    expect(strategySessionWeight(null)).toBe(1);
+  });
+
+  it('rounds weighted session credits up to integer plan credits and refuses negative/fractional counts', () => {
+    expect(weightedSessionCredits(22, 'standard')).toBe(22);
+    expect(weightedSessionCredits(22, 'operator-defaults')).toBe(22);
+    expect(weightedSessionCredits(22, 'hybrid')).toBe(33);
+    expect(weightedSessionCredits(22, 'deep')).toBe(66);
+    // Odd session counts round up on 1.5x hybrid weight.
+    expect(weightedSessionCredits(1, 'hybrid')).toBe(2);
+    expect(weightedSessionCredits(3, 'hybrid')).toBe(5);
+    expect(weightedSessionCredits(0, 'deep')).toBe(0);
+    expect(() => weightedSessionCredits(-1, 'deep')).toThrow(RangeError);
+    expect(() => weightedSessionCredits(2.5, 'hybrid')).toThrow(RangeError);
   });
 });

@@ -47,4 +47,53 @@ describe('provenance wording', () => {
     expect(runProvenanceSentence(run, ['a', 'b', 'c'])).toBe('Researched with m1, m2 and m3 on Anthropic, shared server');
     expect(runProvenanceSentence({ execution: null, tokenUsage: null }, ['a'])).toBe('Provider not recorded');
   });
+
+  it('includes correction and hybrid escalation research models in run provenance', () => {
+    const run = {
+      execution,
+      tokenUsage: {
+        a: { input_tokens: 10, output_tokens: 2, model: 'claude-sonnet-5' },
+        'correction:a': { input_tokens: 5, output_tokens: 1, model: 'claude-sonnet-5' },
+        'escalation:a': { input_tokens: 20, output_tokens: 4, model: 'claude-opus-5' },
+        'verifier:a': { input_tokens: 8, output_tokens: 1, model: 'claude-haiku-4-5' },
+      },
+    };
+    expect(runProvenanceSentence(run, ['a'])).toBe(
+      'Researched with claude-sonnet-5 and claude-opus-5 on Anthropic, shared server',
+    );
+  });
+
+  it('reports escalation model and escalation refusal fallback on findingProvenance when escalation produced the finding (P0.1)', async () => {
+    const { provenanceSentence } = await import('./provenance');
+    const run = {
+      execution,
+      tokenUsage: {
+        a: { input_tokens: 10, output_tokens: 2, model: 'claude-sonnet-5' },
+        'correction:a': { input_tokens: 5, output_tokens: 1, model: 'claude-sonnet-5' },
+        'escalation:a': {
+          input_tokens: 20,
+          output_tokens: 4,
+          model: 'claude-opus-5',
+          refusal_fallbacks: [fallback('claude-opus-5', 'claude-opus-4-8')],
+        },
+      },
+    };
+    const initial = findingProvenance(run, 'a');
+    expect(provenanceSentence(initial)).toBe('Researched with claude-sonnet-5 on Anthropic, shared server');
+
+    const escalated = findingProvenance(run, 'a', {
+      produced_by_stage: 'escalation',
+      produced_by_model: 'claude-opus-5',
+    });
+    expect(provenanceSentence(escalated)).toBe(
+      'Researched with claude-opus-5 on Anthropic, shared server. When claude-opus-5 declined part of the work, claude-opus-4-8 answered.',
+    );
+
+    // Falls back to produced_by_model when escalation usage telemetry is missing.
+    const noTelemetry = findingProvenance({ execution, tokenUsage: null }, 'a', {
+      produced_by_stage: 'escalation',
+      produced_by_model: 'claude-opus-5',
+    });
+    expect(provenanceSentence(noTelemetry)).toBe('Researched with claude-opus-5 on Anthropic, shared server');
+  });
 });

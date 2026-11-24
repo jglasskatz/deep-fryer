@@ -39,10 +39,12 @@ describe('runPhase', () => {
     expect(runPhase({ status: 'planned', appliedAt: null })).toBe('unapplied');
     expect(runPhase({ status: 'planned', appliedAt: t(0) })).toBe('queued');
     expect(runPhase({ status: 'running', appliedAt: t(0) })).toBe('running');
+    expect(runPhase({ status: 'running', appliedAt: t(0) }, { allSessionsFinished: true })).toBe('auditing');
     expect(runPhase({ status: 'complete', appliedAt: t(0) })).toBe('complete');
     expect(runPhase({ status: 'failed', appliedAt: t(0) })).toBe('failed');
     expect(runInProgress('queued')).toBe(true);
     expect(runInProgress('running')).toBe(true);
+    expect(runInProgress('auditing')).toBe(true);
     expect(runInProgress('unapplied')).toBe(false);
     expect(runInProgress('complete')).toBe(false);
   });
@@ -103,6 +105,43 @@ describe('runProgress', () => {
     const p = runProgress(plan(3), [row('region', 'failed', 0, 1), row(0, 'failed', 1, 2)], slugById, 'failed');
     expect(p.items.map((i) => i.chip)).toEqual(['failed', 'failed', 'not_run', 'not_run']);
     expect(p).toMatchObject({ finished: 2, failed: 2, notRun: 2 });
+  });
+
+  it('matches dense chunks deterministically by planSessionIndex even when chunks execute out of order', () => {
+    const specs = [spec('region_context'), spec('dimension', 'd0'), spec('dimension', 'd0'), spec('dimension', 'd0')];
+    // Chunk 3 (planSessionIndex 3) started and finished before Chunk 1 (planSessionIndex 1) even started.
+    const chunk3: SessionRow = { ...row(0, 'complete', 1, 2), id: 'chunk-3', planSessionIndex: 3 };
+    const chunk2: SessionRow = { ...row(0, 'running', 2), id: 'chunk-2', planSessionIndex: 2 };
+    const region: SessionRow = { ...row('region', 'complete', 0, 1), planSessionIndex: 0 };
+    const progress = runProgress(specs, [chunk3, chunk2, region], slugById, 'running');
+    expect(progress.items.map((item) => [item.session?.id ?? null, item.chip])).toEqual([
+      ['s-region', 'done'],
+      [null, 'queued'],
+      ['chunk-2', 'running'],
+      ['chunk-3', 'done'],
+    ]);
+  });
+
+  it('selects the active or completed retry row when crash-resume produced multiple rows for one planSessionIndex', () => {
+    const specs = [spec('region_context'), spec('dimension', 'd0'), spec('dimension', 'd1')];
+    const region: SessionRow = { ...row('region', 'complete', 0, 1), planSessionIndex: 0 };
+    const interruptedD0: SessionRow = { ...row(0, 'failed', 1, 2), id: 'd0-interrupted', planSessionIndex: 1 };
+    const retriedD0: SessionRow = { ...row(0, 'complete', 3, 5), id: 'd0-retried', planSessionIndex: 1 };
+    const interruptedD1: SessionRow = { ...row(1, 'failed', 1, 2), id: 'd1-interrupted', planSessionIndex: 2 };
+    const retriedD1: SessionRow = { ...row(1, 'running', 3), id: 'd1-retried', planSessionIndex: 2 };
+
+    const progress = runProgress(
+      specs,
+      [region, interruptedD0, retriedD0, interruptedD1, retriedD1],
+      slugById,
+      'running',
+    );
+    expect(progress.items.map((item) => [item.session?.id ?? null, item.chip])).toEqual([
+      ['s-region', 'done'],
+      ['d0-retried', 'done'],
+      ['d1-retried', 'running'],
+    ]);
+    expect(progress).toMatchObject({ total: 3, done: 2, running: 1, failed: 0 });
   });
 });
 

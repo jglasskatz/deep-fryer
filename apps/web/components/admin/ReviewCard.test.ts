@@ -2,8 +2,9 @@ import React, { createElement, isValidElement, type ReactElement, type ReactNode
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { AppRouterContext } from 'next/dist/shared/lib/app-router-context.shared-runtime';
-import type { FindingPayload, IndicatorEvidence } from '@deep-fryer/core';
+import { REVIEW_CAUSES, type FindingPayload, type IndicatorEvidence } from '@deep-fryer/core';
 import type { RunExecution } from '@deep-fryer/db';
+import { CausePicker } from './ReviewAudits';
 import {
   emptyGapForm,
   FindingRow,
@@ -12,6 +13,7 @@ import {
   gapChoices,
   gapSavedMessage,
   ReviewCard,
+  reviewEditHref,
   submitGap,
   type GapFormState,
   type ReviewFinding,
@@ -192,6 +194,85 @@ describe('the review card and the text research read', () => {
   });
 });
 
+describe('the review card and the cheap source checks', () => {
+  const checked = (over: Partial<NonNullable<ReviewFinding['verification']>>, evidence?: IndicatorEvidence): ReviewFinding => {
+    const f = capturedFinding(evidence ?? { snapshot_path: 'evidence/abc123.png', text_path: 'evidence/abc123.txt', captured_at: CAPTURED });
+    return { ...f, verification: { ...f.verification!, ...over } };
+  };
+  const flaggedCount = (html: string) => /(\d+) flagged/.exec(html)?.[1] ?? null;
+
+  it('says the value was found, and does not flag the finding for it', () => {
+    const html = renderCard(checked({ value_on_page: 'found', home_page_link: false }));
+    expect(html).toContain('value found on the captured page');
+    expect(html).not.toContain('value not found');
+    // The home-page note and badge; the card's list of causes names it too.
+    expect(html).not.toContain('Home-page link:');
+    expect(html).not.toContain('>home-page link<');
+    expect(flaggedCount(html)).toBeNull();
+  });
+
+  it('says the value was not found, explains it in plain words, and flags the finding', () => {
+    const html = renderCard(checked({ value_on_page: 'not_found' }));
+    expect(html).toContain('>value not found<');
+    expect(html).toContain('Value not found: 42.7 does not appear in the text research read from the captured page.');
+    expect(html).toContain('>text research read</a>');
+    expect(flaggedCount(html)).toBe('1');
+  });
+
+  it('says there was no readable text, without flagging the finding for it', () => {
+    const html = renderCard(checked({ value_on_page: 'no_text' }, { snapshot_path: 'evidence/abc123.png', captured_at: CAPTURED }));
+    expect(html).toContain('>no readable text<');
+    expect(html).toContain('No readable text: research had no text from this page to look for the value in');
+    expect(flaggedCount(html)).toBeNull();
+  });
+
+  it('writes the missing value the way the card writes it above', () => {
+    const f = checked({ value_on_page: 'not_found' });
+    const html = renderCard({ ...f, payload: { ...f.payload, value: 1_200_000, unit: 'people' } as FindingPayload });
+    expect(html).toContain('1,200,000 people');
+    expect(html).toContain('Value not found: 1,200,000 does not appear in the text research read');
+  });
+
+  it('says the kept text could not be opened, rather than that there was none, when the text link is there', () => {
+    const html = renderCard(checked({ value_on_page: 'no_text' }));
+    expect(html).toContain('>text research read</a>');
+    expect(html).toContain('No readable text: research kept the text of this page but could not open it to look for the value');
+    expect(html).not.toContain('research had no text from this page');
+    expect(flaggedCount(html)).toBeNull();
+  });
+
+  it('shows one note, not two, for a scanned document with no readable text', () => {
+    const html = renderCard(
+      checked({ value_on_page: 'no_text' }, { snapshot_path: 'evidence/scan01.png', pdf_path: 'evidence/scan01.pdf', no_readable_text: true, captured_at: CAPTURED }),
+    );
+    expect(html).toContain('No readable text: research could not read any words on this page or document.');
+    expect(html).not.toContain('research had no text from this page');
+  });
+
+  it('flags a home-page link and says what to do about it', () => {
+    const html = renderCard(checked({ value_on_page: 'found', home_page_link: true }));
+    expect(html).toContain('>home-page link<');
+    expect(html).toContain('Home-page link: the source link goes to a website&#x27;s home page or one of its sections');
+    expect(flaggedCount(html)).toBe('1');
+  });
+
+  it('shows neither check on a finding recorded before the checks existed', () => {
+    const html = renderCard(checked({}));
+    // The badges and notes, not the card's list of causes, which names a home-page link too.
+    expect(html).not.toMatch(/value found|value not found|no readable text|home-page link:/i);
+    expect(html).not.toContain('>home-page link<');
+    expect(html).not.toContain('undefined');
+  });
+
+  it('keeps a very long claimed value inside the note', () => {
+    const long = 'a'.repeat(400);
+    const f = checked({ value_on_page: 'not_found' });
+    const html = renderCard({ ...f, payload: { ...f.payload, value: long } as FindingPayload });
+    expect(html).toContain(`Value not found: ${long} does not appear`);
+    expect(html).toMatch(/class="mt-2 break-words[^"]*">Value not found/);
+  });
+});
+
 /**
  * The review card's gap form: the reviewer picks which indicator has no
  * usable data — every indicator at once is offered, last — and the button
@@ -258,7 +339,11 @@ const render = (findings: ReviewFinding[]) =>
     ),
   );
 
-const optionsOf = (html: string) => [...html.matchAll(/<option value="([^"]*)"[^>]*>([^<]*)<\/option>/g)].map((m) => [m[1], m[2]]);
+const optionsOf = (html: string) => {
+  const gapSection = html.slice(html.indexOf('Indicator with no usable data'));
+  const selectHtml = /<select[\s\S]*?<\/select>/.exec(gapSection)?.[0] ?? '';
+  return [...selectHtml.matchAll(/<option value="([^"]*)"[^>]*>([^<]*)<\/option>/g)].map((m) => [m[1], m[2]]);
+};
 
 describe('ReviewCard gap form', () => {
   it('lists the card’s three indicators by name, then every indicator at once, last', () => {
@@ -312,6 +397,7 @@ function elementsOf(node: ReactNode): ReactElement<Props>[] {
 }
 
 const formProps = (form: Partial<GapFormState>, more: { busy?: boolean; onChange?: (p: Partial<GapFormState>) => void; onSave?: () => void } = {}) => ({
+  name: 'gap-cause-d1',
   choices: gapChoices(three),
   form: { ...emptyGapForm, ...form },
   busy: more.busy ?? false,
@@ -330,14 +416,35 @@ describe('Gap form states', () => {
     expect(changes).toEqual([{ indicator: 'life-expectancy' }, { reason: 'No city-level life table.' }]);
   });
 
-  it('saves when the button is pressed, once something is chosen and a reason given', () => {
+  it('passes the cause picked to the card', () => {
+    const changes: Partial<GapFormState>[] = [];
+    const tree = elementsOf(GapForm(formProps({}, { onChange: (p) => changes.push(p) })));
+    (tree.find((e) => e.type === CausePicker)!.props as unknown as { onChange: (c: string) => void }).onChange('wrong_year');
+    expect(changes).toEqual([{ cause: 'wrong_year' }]);
+  });
+
+  it('saves when the button is pressed, once an indicator and a cause are chosen and a reason given', () => {
     const onSave = vi.fn();
-    const tree = elementsOf(GapForm(formProps({ indicator: 'life-expectancy', reason: 'None.' }, { onSave })));
+    const tree = elementsOf(GapForm(formProps({ indicator: 'life-expectancy', cause: 'wrong_year', reason: 'None.' }, { onSave })));
     const button = tree.find((e) => e.type === 'button')!;
     expect(button.props).toMatchObject({ disabled: false });
     button.props.onClick!();
     expect(onSave).toHaveBeenCalledOnce();
-    expect(renderForm({ indicator: 'life-expectancy', reason: 'None.' })).toMatch(/<option value="life-expectancy" selected="">/);
+    expect(renderForm({ indicator: 'life-expectancy', cause: 'wrong_year', reason: 'None.' })).toMatch(/<option value="life-expectancy" selected="">/);
+  });
+
+  it('waits for a cause before it can save', () => {
+    const html = renderForm({ indicator: 'life-expectancy', reason: 'None.' });
+    expect(html).toContain('Why can&#x27;t research&#x27;s finding be used?');
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Save gap as draft<\/button>/);
+    expect(renderForm({ indicator: 'life-expectancy', cause: 'wrong_year', reason: 'None.' })).toMatch(/<input type="radio" name="gap-cause-d1" checked="" value="wrong_year"/);
+  });
+
+  it('says where the words go for "Something else", and needs them', () => {
+    const blank = renderForm({ indicator: 'life-expectancy', cause: 'other', reason: '  ' });
+    expect(blank).toContain('Say what is wrong in the reason below.');
+    expect(blank).toMatch(/<button[^>]*disabled=""[^>]*>Save gap as draft<\/button>/);
+    expect(renderForm({ indicator: 'life-expectancy', cause: 'other', reason: 'Counts visits, not people.' })).not.toMatch(/<button[^>]*disabled=""/);
   });
 
   it('shows the save in progress, with every field held still', () => {
@@ -365,13 +472,13 @@ describe('Gap form states', () => {
 });
 
 describe('submitGap', () => {
-  const where = { tenantSlug: 'nyc', dimensionId: 'd1' };
-  const chosen: GapFormState = { ...emptyGapForm, indicator: 'life-expectancy', reason: 'No city-level life table.', saving: true };
+  const where = { tenantSlug: 'nyc', runId: 'r1', dimensionId: 'd1' };
+  const chosen: GapFormState = { ...emptyGapForm, indicator: 'life-expectancy', cause: 'wrong_geography', reason: 'No city-level life table.', saving: true };
 
-  it('sends the chosen indicator, then empties the form and says the gap is a draft', async () => {
+  it('sends the run, the chosen indicator and the cause, then empties the form and says the gap is a draft', async () => {
     const send = vi.fn(async () => ({ ok: true as const, data: { versionId: 'v', versionNum: 7, requiresSecondReview: false } }));
     const after = await submitGap(send, where, chosen);
-    expect(send).toHaveBeenCalledWith({ tenantSlug: 'nyc', dimensionId: 'd1', indicator: 'life-expectancy', reason: 'No city-level life table.' });
+    expect(send).toHaveBeenCalledWith({ tenantSlug: 'nyc', runId: 'r1', dimensionId: 'd1', indicator: 'life-expectancy', reason: 'No city-level life table.', cause: 'wrong_geography' });
     expect(after).toEqual({ ...emptyGapForm, saved: gapSavedMessage(7, false) });
   });
 
@@ -386,5 +493,89 @@ describe('submitGap', () => {
     });
     expect(await submitGap(send, where, chosen)).toEqual({ ...chosen, saving: false, error: NO_ANSWER });
     expect(NO_ANSWER).not.toMatch(/fetch|network|error/i);
+  });
+});
+
+/**
+ * Every decision but an approval needs a cause: the card offers the same
+ * causes, in the same order, as one row of radio buttons for re-research,
+ * for a gap and before opening the editor.
+ */
+describe('the review card asks why', () => {
+  const causeLabels = REVIEW_CAUSES.map((c) => c.label.replaceAll("'", '&#x27;'));
+  const radios = (html: string, name: string) =>
+    [...html.matchAll(new RegExp(`<input type="radio" name="${name}" value="([a-z_]+)"`, 'g'))].map((m) => m[1]);
+
+  it('offers every cause, in order, for re-research, a gap and an edit', () => {
+    const html = render(three);
+    for (const name of ['rerun-cause-d1', 'gap-cause-d1', 'edit-cause-d1']) {
+      expect(radios(html, name)).toEqual(REVIEW_CAUSES.map((c) => c.id));
+    }
+    let at = 0;
+    for (const label of causeLabels) {
+      const next = html.indexOf(`<span>${label}</span>`, at);
+      expect(next, label).toBeGreaterThan(-1);
+      at = next;
+    }
+    expect(html).toContain('Why re-research?');
+    expect(html).toContain('Why edit?');
+    expect(html).not.toContain('Correct as cited');
+  });
+
+  it('keeps each button waiting until a cause is picked', () => {
+    const html = render(three);
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Plan re-research<\/button>/);
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Open the editor<\/button>/);
+    // No cause is picked for the reviewer.
+    expect(html).not.toMatch(/type="radio"[^>]*checked=""/);
+  });
+
+  it('lays the causes out to wrap on a narrow screen, each a full-size target', () => {
+    const html = render(three);
+    expect(html).toMatch(/<div class="mt-1 flex flex-wrap gap-1.5"><label class="inline-flex min-h-11/);
+  });
+
+  it('opens the editor on the run and cause picked', () => {
+    expect(reviewEditHref('nyc', 'd1', 'r1', 'wrong_year')).toBe('/nyc/admin/dim/d1?run=r1&cause=wrong_year');
+  });
+
+  it('still asks why on a card with no findings', () => {
+    const html = render([]);
+    expect(radios(html, 'rerun-cause-d1')).toHaveLength(REVIEW_CAUSES.length);
+    expect(radios(html, 'gap-cause-d1')).toHaveLength(REVIEW_CAUSES.length);
+  });
+
+  it('offers a strategy selector defaulting to hybrid (with standard and deep) in the Re-research form', () => {
+    const html = render(three);
+    expect(html).toContain('aria-label="Research strategy for re-research"');
+    expect(html).toMatch(/<option value="hybrid" selected="">/);
+    expect(html).toContain('<option value="standard">');
+    expect(html).toContain('<option value="deep">');
+  });
+
+  it('preserves exact per-finding session transcript links across dense-dimension chunks', () => {
+    const html = renderToStaticMarkup(
+      createElement(ReviewCard, {
+        tenantSlug: 'nyc',
+        runId: 'r1',
+        dimensionId: 'd1',
+        dimensionName: 'Housing',
+        ring: 'social',
+        approvedVersionNum: null,
+        sessionId: 'sess-chunk-1',
+        sessionIds: ['sess-chunk-1', 'sess-chunk-2'],
+        canReadTranscript: true,
+        evidenceBase: '/evidence',
+        findings: [
+          finding({ id: 'f1', sessionId: 'sess-chunk-1', indicatorSlug: 'rent' }),
+          finding({ id: 'f2', sessionId: 'sess-chunk-2', payload: gap, indicatorSlug: 'water' }),
+        ],
+      }),
+    );
+    expect(html).toContain('href="/api/research/sessions/sess-chunk-1/transcript"');
+    expect(html).toContain('href="/api/research/sessions/sess-chunk-2/transcript"');
+    expect(html).toContain('>transcript 1</a>');
+    expect(html).toContain('>transcript 2</a>');
+    expect(html.match(/>session transcript<\/a>/g)).toHaveLength(2);
   });
 });

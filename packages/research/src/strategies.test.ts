@@ -20,7 +20,11 @@ import {
 const PUBLISHED: Record<string, string> = {
   'standard@1': '68964dcec8b45016',
   'deep@1': 'b75ed1874dd00bd0',
+  'hybrid@1': 'f0c659492033b985',
   'operator-defaults@1': 'fa2a7736d925f075',
+  'standard@2': '3457db7ea8c40a83',
+  'deep@2': '0ca42210c21e3ef3',
+  'hybrid@2': 'd3f17309e3c767ee',
 };
 
 const config = defaultPortraitConfig('City of Santa Cruz', 'City of Santa Cruz municipal boundary');
@@ -35,20 +39,20 @@ describe('the strategy registry', () => {
     const edited: StrategyEntry = { ...standard, caps: { ...standard.caps, verifier_max_turns: 20 } };
     const inPlace = STRATEGIES.map((e) => (e === standard ? edited : e));
     expect(registryDrift(inPlace, PUBLISHED)).toEqual([
-      'standard@1 was changed after it was published; leave it as it was and add standard@2 instead',
+      'standard@1 was changed after it was published; leave it as it was and add standard@3 instead',
     ]);
 
     // The same change as a new version passes once its fingerprint is recorded.
-    const next: StrategyEntry = { ...edited, version: 2 };
+    const next: StrategyEntry = { ...edited, version: 3 };
     expect(registryDrift([...STRATEGIES, next], PUBLISHED)).toEqual([
-      `standard@2 is new: record its fingerprint ${strategyFingerprint(next)}`,
+      `standard@3 is new: record its fingerprint ${strategyFingerprint(next)}`,
     ]);
-    expect(registryDrift([...STRATEGIES, next], { ...PUBLISHED, 'standard@2': strategyFingerprint(next) })).toEqual([]);
+    expect(registryDrift([...STRATEGIES, next], { ...PUBLISHED, 'standard@3': strategyFingerprint(next) })).toEqual([]);
   });
 
   it('fails when a published entry is removed or a name and version is defined twice', () => {
-    const withoutDeep = STRATEGIES.filter((e) => e.name !== 'deep');
-    expect(registryDrift(withoutDeep, PUBLISHED)).toEqual(['deep@1 was removed, but runs planned with it still name it']);
+    const withoutDeepV1 = STRATEGIES.filter((e) => !(e.name === 'deep' && e.version === 1));
+    expect(registryDrift(withoutDeepV1, PUBLISHED)).toEqual(['deep@1 was removed, but runs planned with it still name it']);
     expect(registryDrift([...STRATEGIES, strategyEntry('deep', 1)!], PUBLISHED)).toEqual(['deep@1 is defined twice']);
   });
 
@@ -75,12 +79,26 @@ describe('the strategy registry', () => {
       models: { session_model: 'claude-opus-5', subagent_model: 'claude-sonnet-5', verifier_model: 'claude-opus-5', page_reader_model: 'claude-haiku-4-5-20251001' },
       caps: { session_max_turns: 60, verifier_max_turns: 12, audit_max_turns: 16 },
     });
+    expect(strategyEntry('hybrid', 1)).toEqual({
+      name: 'hybrid',
+      version: 1,
+      models: {
+        session_model: 'claude-sonnet-5',
+        subagent_model: 'claude-sonnet-5',
+        escalation_model: 'claude-opus-5',
+        verifier_model: 'claude-opus-5',
+        page_reader_model: 'claude-haiku-4-5-20251001',
+      },
+      caps: { session_max_turns: 60, verifier_max_turns: 12, audit_max_turns: 16, escalation_max_turns: 40 },
+    });
   });
 
   it('resolves a name to its newest version and name@version to that version exactly', () => {
     expect(resolveStrategy('deep')).toBe(latestStrategy('deep'));
     expect(resolveStrategy('deep@1')).toBe(strategyEntry('deep', 1));
-    expect(() => resolveStrategy('deep@9')).toThrow(/unknown research strategy "deep@9"; known: standard@1, deep@1, operator-defaults@1/);
+    expect(resolveStrategy('hybrid')).toBe(latestStrategy('hybrid'));
+    expect(resolveStrategy('hybrid@1')).toBe(strategyEntry('hybrid', 1));
+    expect(() => resolveStrategy('deep@9')).toThrow(/unknown research strategy "deep@9"; known: standard@1, deep@1, hybrid@1, operator-defaults@1/);
     expect(() => resolveStrategy('fast')).toThrow(/unknown research strategy/);
     expect(() => resolveStrategy('deep@0')).toThrow(/unknown research strategy/);
   });
@@ -100,6 +118,20 @@ describe('the strategy a plan records', () => {
       models: { session_model: 'claude-opus-5', subagent_model: 'claude-sonnet-5', verifier_model: 'claude-opus-5', page_reader_model: 'claude-haiku-4-5-20251001' },
       caps: { session_max_turns: 60, verifier_max_turns: 12, audit_max_turns: 16 },
     });
+
+    const hybridPlan = renderPlan({ config, dimensions: [], strategy: 'hybrid' });
+    expect(hybridPlan).toMatchObject({
+      strategy: 'hybrid',
+      strategy_version: 1,
+      models: {
+        session_model: 'claude-sonnet-5',
+        subagent_model: 'claude-sonnet-5',
+        escalation_model: 'claude-opus-5',
+        verifier_model: 'claude-opus-5',
+        page_reader_model: 'claude-haiku-4-5-20251001',
+      },
+      caps: { session_max_turns: 60, verifier_max_turns: 12, audit_max_turns: 16, escalation_max_turns: 40 },
+    });
   });
 
   it('records operator-defaults v1 and the models the operator’s settings resolve to when no strategy is chosen', () => {
@@ -116,6 +148,67 @@ describe('the strategy a plan records', () => {
 
     // With no settings at all, the entry's own models.
     expect(renderPlan({ config, dimensions: [] }).models).toEqual(strategyEntry('operator-defaults', 1)!.models);
+  });
+
+  it('provides immutable Claude 5.5 v2 entries (standard@2, deep@2, hybrid@2) as explicit opt-ins while keeping v1 default', () => {
+    expect(latestStrategy('standard')).toBe(strategyEntry('standard', 1));
+    expect(latestStrategy('deep')).toBe(strategyEntry('deep', 1));
+    expect(latestStrategy('hybrid')).toBe(strategyEntry('hybrid', 1));
+    expect(latestStrategy('standard', { includeOptIn: true })).toBe(strategyEntry('standard', 2));
+    expect(latestStrategy('deep', { includeOptIn: true })).toBe(strategyEntry('deep', 2));
+    expect(latestStrategy('hybrid', { includeOptIn: true })).toBe(strategyEntry('hybrid', 2));
+
+    expect(resolveStrategy('standard@2')).toEqual({
+      name: 'standard',
+      version: 2,
+      models: {
+        session_model: 'claude-sonnet-5-5',
+        subagent_model: null,
+        verifier_model: 'claude-opus-5-5',
+        page_reader_model: 'claude-haiku-5-5',
+      },
+      caps: { session_max_turns: 60, verifier_max_turns: 4, audit_max_turns: 16 },
+      optIn: true,
+    });
+    expect(resolveStrategy('deep@2')).toEqual({
+      name: 'deep',
+      version: 2,
+      models: {
+        session_model: 'claude-opus-5-5',
+        subagent_model: 'claude-haiku-5-5',
+        verifier_model: 'claude-opus-5-5',
+        page_reader_model: 'claude-haiku-5-5',
+      },
+      caps: { session_max_turns: 60, verifier_max_turns: 4, audit_max_turns: 16 },
+      optIn: true,
+    });
+    expect(resolveStrategy('hybrid@2')).toEqual({
+      name: 'hybrid',
+      version: 2,
+      models: {
+        session_model: 'claude-sonnet-5-5',
+        subagent_model: 'claude-haiku-5-5',
+        escalation_model: 'claude-opus-5-5',
+        verifier_model: 'claude-opus-5-5',
+        page_reader_model: 'claude-haiku-5-5',
+      },
+      caps: { session_max_turns: 60, verifier_max_turns: 4, audit_max_turns: 16, escalation_max_turns: 40 },
+      optIn: true,
+    });
+
+    const planV2 = renderPlan({ config, dimensions: [], strategy: 'hybrid@2' });
+    expect(planV2).toMatchObject({
+      strategy: 'hybrid',
+      strategy_version: 2,
+      models: {
+        session_model: 'claude-sonnet-5-5',
+        subagent_model: 'claude-haiku-5-5',
+        escalation_model: 'claude-opus-5-5',
+        verifier_model: 'claude-opus-5-5',
+        page_reader_model: 'claude-haiku-5-5',
+      },
+      caps: { session_max_turns: 60, verifier_max_turns: 4, audit_max_turns: 16, escalation_max_turns: 40 },
+    });
   });
 
   it('copies the entry into the plan, so a stored plan never shares the registry’s objects', () => {

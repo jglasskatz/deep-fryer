@@ -11,5 +11,5 @@ export function portraitFramework(declared) {
   const allowed = (['carmel', 'monterey-county'].includes(declared.slug) && declared.status === 'research-preview') ||
     (['santa-cruz', 'santa-cruz-county', 'watsonville'].includes(declared.slug) && declared.status === 'legacy-source');
   if (!allowed || declared.framework_profile !== profile.id) throw new Error('Unauthorized portrait framework profile');
-  return { dimensions: framework.dimensions.map(d => d.slug === profile.replaces ? profile.dimension : d), profile: profile.id, sha256: profileHash };
+  return { dimensions: framework.dimensions.map(d => (d.slug === profile.replaces || d.slug === profile.dimension.slug) ? profile.dimension : d), profile: profile.id, sha256: profileHash };
 }

@@ -2,7 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { eq } from 'drizzle-orm';
-import { encryptSecret, keyHint, parseSecretsKey, SecretsKeyError } from '@deep-fryer/core/secrets';
+import { PROVIDER_META, isResearchProvider, type ResearchProvider } from '@deep-fryer/core';
+import { keyHint, parseSecretsKey, SecretsKeyError } from '@deep-fryer/core/secrets';
 import {
   deleteOrganizationApiKey,
   organizationApiKeyInfo,
@@ -15,7 +16,7 @@ import {
 import { action, UserError } from './action-result';
 import { audit } from './audit';
 import { getAuth, requireOrgRole } from './auth';
-import { validateAnthropicKey } from './anthropic-key';
+import { configuredAnthropicRequiredModels, encryptProviderKey, validateProviderKey } from './provider-keys';
 import { contactSentence } from './billing';
 import { systemDb, userDb } from './db';
 import { secretsKey } from './env';
@@ -106,61 +107,78 @@ async function auditKeyChange(
 }
 
 /**
- * Validate, encrypt, and store (or replace) the organization's key. Returns
- * only what the page may show: the hint and when it was validated.
+ * Validate, encrypt, and store (or replace) the organization's key for
+ * `provider` (default `'anthropic'`). Returns only what the page may show:
+ * the provider, hint, and validation timestamp.
  */
-export const saveApiKey = action(async (orgSlug: string, apiKey: string) => {
-  const org = await orgForOwner(orgSlug);
-  // Before anything reaches Anthropic: without DF_SECRETS_KEY nothing could be stored.
-  const keyMaterial = encryptionKey();
-  const key = typeof apiKey === 'string' ? apiKey.trim() : '';
-  await validateAnthropicKey(key);
+export const saveApiKey = action(
+  async (orgSlug: string, apiKey: string, provider: ResearchProvider = 'anthropic') => {
+    const org = await orgForOwner(orgSlug);
+    if (!isResearchProvider(provider)) {
+      throw new UserError('Choose a supported model provider (Anthropic, OpenAI, or Google Gemini).');
+    }
+    // Before anything reaches the provider: without DF_SECRETS_KEY nothing could be stored.
+    const keyMaterial = encryptionKey();
+    const key = typeof apiKey === 'string' ? apiKey.trim() : '';
+    const requiredModels = provider === 'anthropic' ? configuredAnthropicRequiredModels(process.env) : [];
+    await validateProviderKey(provider, key, requiredModels.length ? { requiredModels } : undefined);
 
-  const validatedAt = new Date();
-  const ciphertext = await encryptSecret(key, keyMaterial, org.id);
-  const hint = keyHint(key);
-  const auth = await getAuth();
-  await userDb(async (db) => {
-    const previous = await organizationApiKeyInfo(db, org.id);
-    await upsertOrganizationApiKey(db, {
-      organizationId: org.id,
-      ciphertext,
-      keyHint: hint,
-      createdBy: auth.userId,
-      validatedAt,
+    const validatedAt = new Date();
+    const ciphertext = await encryptProviderKey(key, keyMaterial, org.id, provider);
+    const hint = keyHint(key);
+    const auth = await getAuth();
+    await userDb(async (db) => {
+      const previous = await organizationApiKeyInfo(db, org.id, provider);
+      await upsertOrganizationApiKey(db, {
+        organizationId: org.id,
+        provider,
+        ciphertext,
+        keyHint: hint,
+        createdBy: auth.userId,
+        validatedAt,
+      });
+      await auditKeyChange(
+        db,
+        org,
+        previous ? 'replace' : 'save',
+        previous ? { key_hint: previous.keyHint } : null,
+        { key_hint: hint, provider, validated_at: validatedAt.toISOString() },
+      );
     });
-    await auditKeyChange(
-      db,
-      org,
-      previous ? 'replace' : 'save',
-      previous ? { key_hint: previous.keyHint } : null,
-      { key_hint: hint, provider: 'anthropic', validated_at: validatedAt.toISOString() },
-    );
-  });
 
-  revalidatePath(`/o/${org.slug}/billing`);
-  revalidatePath('/start');
-  return { keyHint: hint, validatedAt: validatedAt.toISOString() };
-});
+    revalidatePath(`/o/${org.slug}/billing`);
+    revalidatePath('/start');
+    return { provider, keyHint: hint, validatedAt: validatedAt.toISOString() };
+  },
+);
 
 /**
- * Remove the organization's key at once. Research applied from now on is
- * checked against the plan's allowance and runs on the deployment's key; a
- * run the worker has already started keeps the key it started with. Work the
- * gate put on the key that has not started yet fails when the worker reaches
- * it (apps/worker org-key.ts ORG_KEY_REMOVED) — it never moves onto the
- * deployment's key, because it was never checked against the allowance.
+ * Remove the organization's key for `provider` (default `'anthropic'`).
+ * Research applied from now on is checked against the plan's allowance and
+ * runs on the deployment's key; a run the worker has already started keeps
+ * the key it started with.
  */
-export const removeApiKey = action(async (orgSlug: string) => {
-  const org = await orgForOwner(orgSlug);
-  const removed = await userDb(async (db) => {
-    const hint = await deleteOrganizationApiKey(db, org.id);
-    if (hint !== null) await auditKeyChange(db, org, 'remove', { key_hint: hint }, null);
-    return hint;
-  });
-  if (removed === null) throw new UserError('There is no API key on file for this organization.');
+export const removeApiKey = action(
+  async (orgSlug: string, provider: ResearchProvider = 'anthropic') => {
+    const org = await orgForOwner(orgSlug);
+    if (!isResearchProvider(provider)) {
+      throw new UserError('Choose a supported model provider (Anthropic, OpenAI, or Google Gemini).');
+    }
+    const removed = await userDb(async (db) => {
+      const hint = await deleteOrganizationApiKey(db, org.id, provider);
+      if (hint !== null) await auditKeyChange(db, org, 'remove', { key_hint: hint }, null);
+      return hint;
+    });
+    if (removed === null) {
+      throw new UserError(
+        provider === 'anthropic'
+          ? 'There is no API key on file for this organization.'
+          : `There is no ${PROVIDER_META[provider].displayName} API key on file for this organization.`,
+      );
+    }
 
-  revalidatePath(`/o/${org.slug}/billing`);
-  revalidatePath('/start');
-  return { removed: true };
-});
+    revalidatePath(`/o/${org.slug}/billing`);
+    revalidatePath('/start');
+    return { removed: true, provider };
+  },
+);

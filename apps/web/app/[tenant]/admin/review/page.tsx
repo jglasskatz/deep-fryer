@@ -111,14 +111,16 @@ export default async function ReviewQueuePage({
                   ring={card.dimension.ring}
                   findings={card.findings.map((f) => ({
                     id: f.id,
+                    sessionId: f.sessionId,
                     indicatorSlug: f.indicatorSlug,
                     payload: f.payload,
                     verification: f.verification,
                     audits: f.audits,
-                    provenance: findingProvenance(selectedRun!, f.sessionId),
+                    provenance: findingProvenance(selectedRun!, f.sessionId, f.verification),
                   }))}
                   approvedVersionNum={card.approvedVersionNum}
                   sessionId={card.sessionId}
+                  sessionIds={card.sessionIds}
                   canReadTranscript={ctx.role === 'owner'}
                   evidenceBase={evidenceBase(tenant)}
                 />

@@ -95,6 +95,20 @@ describe('the strategy a run page names', () => {
     expect(page).not.toContain('not recorded');
   });
 
+  it('shows "hybrid v1" with its escalation researcher model and turn limit', async () => {
+    const { renderPlan } = await import('@deep-fryer/research');
+    const { defaultPortraitConfig } = await import('@deep-fryer/contract');
+    const planned = renderPlan({ config: defaultPortraitConfig('Santa Cruz', 'City limits'), dimensions: [], strategy: 'hybrid' });
+    state.plan = { ...planned, sessions };
+    const page = text(await runPage());
+    expect(page).toContain('2 sessions · hybrid v1 · plugin');
+    expect(page).toContain('Research strategy: hybrid v1');
+    expect(page).toContain('Researcher claude-sonnet-5');
+    expect(page).toContain('Escalation researcher claude-opus-5');
+    expect(page).toContain('Scout claude-sonnet-5');
+    expect(page).toContain('Turn limit, each escalation pass 40');
+  });
+
   it('names the version of a plan made with no strategy chosen', async () => {
     state.plan = {
       sessions, config_hash: 'h', plugin_version: '1.0.0',
@@ -232,5 +246,41 @@ describe('the run page says where its research ran', () => {
     const queued = finishedRun({ execution, tokenUsage: null });
     state.data = { ...queued, run: { ...queued.run, status: 'planned', completedAt: null }, sessions: [] };
     expect(await runPage()).toContain('Runs on Anthropic, shared server');
+  });
+
+  it('surfaces the auditing phase once all planned sessions finish while run is still running (P0.4)', async () => {
+    const running = finishedRun({ execution, tokenUsage: null });
+    state.data = {
+      ...running,
+      run: { ...running.run, status: 'running', completedAt: null },
+    };
+    const page = text(await runPage());
+    expect(page).toContain('auditing');
+    expect(page).toContain('All 2 sessions finished — running automatic quality audits');
+    expect(page).toContain('completing independent quality audits');
+  });
+
+  it('notes cached region brief reuse on targeted re-run plans (P1.3)', async () => {
+    const base = finishedRun({ execution, tokenUsage: null });
+    state.data = {
+      ...base,
+      run: {
+        ...base.run,
+        status: 'planned',
+        appliedAt: null,
+        completedAt: null,
+        plan: {
+          sessions: [spec('dimension', 'housing')],
+          config_hash: 'h',
+          plugin_version: '1',
+          strategy: 'hybrid',
+          strategy_version: 1,
+          cached_region_brief: '# Cached Santa Cruz brief',
+        },
+      },
+      sessions: [],
+    };
+    const page = text(await runPage());
+    expect(page).toContain('reuses the portrait’s cached region brief instead of running a new phase-0 session');
   });
 });

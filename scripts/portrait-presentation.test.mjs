@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { dimensionColour, dimensionState, dimensionStatus, hasValue, regionSummary } from '../site/portrait-presentation.js';
+import { clampSliderProgress, dimensionColour, dimensionState, dimensionStatus, displayIndicatorValue, hasValue, interpolatePolicyLevels, isNoisyHeatMean, regionSummary } from '../site/portrait-presentation.js';
 test('a missing score distinguishes available values from missing data without inferring a score', () => {
  const dimension={ring:'social',level:null,indicators:[{value:null}]};
  assert.equal(dimensionState(dimension),'unknown');assert.equal(dimensionStatus(dimension),'Data needed');
@@ -53,4 +53,46 @@ test('within-target label is green without changing zero magnitude or selection'
  assert.equal(dimensionColour(zero,true),'#0066cc');
  assert.equal(dimensionStatus(zero),'Within target');
  assert.deepEqual(zero,before);
+});
+
+test('extreme-heat tract-weighted means round cleanly for display while other indicators preserve full source precision', () => {
+ const raw = (v, u) => `${v}${u ? ` ${u}` : ''}`;
+ const scHeat = { indicator_slug: 'extreme-heat-days', value: 14.757709506983256, unit: 'population-weighted mean days/year' };
+ const before = structuredClone(scHeat);
+ assert.equal(isNoisyHeatMean(scHeat), true);
+ assert.equal(displayIndicatorValue(scHeat, raw), '14.8 days/year (population-weighted mean)');
+ assert.deepEqual(scHeat, before);
+ const montereyHeat = { indicator_slug: 'extreme-heat-days', value: 14.513427283259714, unit: 'population-weighted mean days/year' };
+ assert.equal(displayIndicatorValue(montereyHeat, raw), '14.5 days/year (population-weighted mean)');
+ // Chemical releases and Gini values pass through untouched.
+ const chem = { indicator_slug: 'tri-releases-per-capita', value: 0.0009642343384170714, unit: 'lb per resident per year' };
+ assert.equal(isNoisyHeatMean(chem), false);
+ assert.equal(displayIndicatorValue(chem, raw), '0.0009642343384170714 lb per resident per year');
+ const gini = { value: 0.4936, unit: 'Gini 0–1' };
+ assert.equal(displayIndicatorValue(gini, raw), '0.4936 Gini 0–1');
+});
+
+test('static policy slider interpolates scored wedges smoothly and keeps unscored wedges unscored', () => {
+ assert.equal(clampSliderProgress(-10), 0);
+ assert.equal(clampSliderProgress(50.4), 50);
+ assert.equal(clampSliderProgress(200), 100);
+ const policy = {
+  baseline: [
+   { slug: 'freshwater-withdrawals', name: 'Freshwater Withdrawals', ring: 'ecological', level: 50, unscored: false },
+   { slug: 'housing', name: 'Housing', ring: 'social', level: null, unscored: true },
+  ],
+  impacts: [
+   { slug: 'freshwater-withdrawals', direction: 'improves', afterLevel: 24 },
+   { slug: 'housing', direction: 'improves', afterLevel: null },
+  ],
+ };
+ const before = interpolatePolicyLevels(policy, 0);
+ const after = interpolatePolicyLevels(policy, 100);
+ assert.equal(before[0].level, 50);
+ assert.equal(before[0].colour, '#0066cc');
+ assert.equal(after[0].level, 24);
+ assert.equal(after[0].colour, '#2e7d32');
+ assert.equal(before[1].level, 'NaN');
+ assert.equal(after[1].level, 'NaN');
+ assert.equal(after[1].colour, '#2e7d32');
 });

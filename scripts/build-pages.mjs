@@ -6,7 +6,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import ts from 'typescript';
 import { validatePublicInvolvement } from './public-involvement.mjs';
-import { dimensionState, dimensionStatus, hasValue, regionSummary } from '../site/portrait-presentation.js';
+import { dimensionState, dimensionStatus, displayIndicatorValue, hasValue, isNoisyHeatMean, regionSummary } from '../site/portrait-presentation.js';
 import { validateRelease, escapeHtml as h, inside, publicAssetPath, indicatorAssets, assertNoLiveArchives } from './pages-contract.mjs';
 import { isRenderable, publishedArchiveName } from '../site/published-name.js';
 const source = path.resolve('site');
@@ -18,7 +18,7 @@ const formatterCode = ts.transpileModule(await readFile('packages/core/src/forma
 }).outputText;
 const { formatIndicatorValue } = await import(`data:text/javascript;base64,${Buffer.from(formatterCode).toString('base64')}`);
 function indicatorValue(indicator) {
-  return formatIndicatorValue(indicator.value, indicator.unit);
+  return displayIndicatorValue(indicator, formatIndicatorValue);
 }
 const text = JSON.stringify(publicRelease(), null, 2) + '\n';
 const release = validateRelease(JSON.parse(text));
@@ -36,7 +36,7 @@ for (const asset of requiredAssets) {
 await rm(output, { recursive: true, force: true });
 await mkdir(path.join(output, 'assets'), { recursive: true });
 await writeFile(path.join(output, 'assets/format.js'), formatterCode);
-for (const name of ['site.css', 'site.js', 'portrait-presentation.js']) await copyFile(path.join(source, name), path.join(output, 'assets', name));
+for (const name of ['site.css', 'site.js', 'portrait-presentation.js', 'policy-slider.js']) await copyFile(path.join(source, name), path.join(output, 'assets', name));
 await copyFile('apps/web/components/doughnut/doughnut-renderer.js', path.join(output, 'assets/doughnut-renderer.js'));
 await mkdir(path.join(output, 'data'), { recursive: true });
 await writeFile(path.join(output, 'data/portraits.json'), text);
@@ -54,12 +54,131 @@ function portraitBadge(portrait) {
 }
 // A community fork shares the checked imports' status, so its collection card says what it is before anyone opens it.
 const cardBadge = portrait => portrait.data_import?.kind === 'community-fork' ? '<span class="tag legacy-source community-fork">Community data · not checked</span>' : portraitBadge(portrait);
-function shell(title, prefix, body, data) {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Explore social and ecological wellbeing through evidence-backed doughnut portraits."><title>${h(title)} · deep-fryer</title><link rel="stylesheet" href="${prefix}assets/site.css"></head><body><a class="skip" href="#main">Skip to content</a><header><a class="brand" href="${prefix}"><span aria-hidden="true">◉</span> deep-fryer</a><nav><a href="${prefix}#portraits">Portraits</a><a href="${prefix}policies/">Policy evidence</a><a href="${prefix}#method">Method</a><a href="https://github.com/jglasskatz/deep-fryer">Source code ↗</a></nav></header><main id="main">${body}</main><footer>Built with deep-fryer · <a href="${prefix}data/portraits.json">Download this data snapshot</a> · <a href="${prefix}data/evidence-manifest.json">Evidence checksums</a><p>Snapshot captured ${h(release.captured_at)}. Source years vary by indicator.</p></footer>${data ? `<script id="portrait-data" type="application/json">${JSON.stringify(data).replaceAll('<', '\\u003c')}</script><script type="module" src="${prefix}assets/site.js"></script>` : ''}</body></html>`;
+function shell(title, prefix, body, data, extraScripts = '') {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Explore social and ecological wellbeing through evidence-backed doughnut portraits."><title>${h(title)} · deep-fryer</title><link rel="stylesheet" href="${prefix}assets/site.css"></head><body><a class="skip" href="#main">Skip to content</a><header><a class="brand" href="${prefix}"><span aria-hidden="true">◉</span> deep-fryer</a><nav><a href="${prefix}#portraits">Portraits</a><a href="${prefix}policies/">Policy evidence</a><a href="${prefix}#method">Method</a><a href="https://github.com/jglasskatz/deep-fryer">Source code ↗</a></nav></header><main id="main">${body}</main><footer>Built with deep-fryer · <a href="${prefix}data/portraits.json">Download this data snapshot</a> · <a href="${prefix}data/evidence-manifest.json">Evidence checksums</a><p>Snapshot captured ${h(release.captured_at)}. Source years vary by indicator.</p></footer>${data ? `<script id="portrait-data" type="application/json">${JSON.stringify(data).replaceAll('<', '\\u003c')}</script><script type="module" src="${prefix}assets/site.js"></script>` : ''}${extraScripts}</body></html>`;
 }
+const policyAtlas = JSON.parse(await readFile(path.join(source, 'policy-view/policy-data.json'), 'utf8'));
+const policyById = new Map(policyAtlas.policies.map(p => [p.id, p]));
+function baselineFor(slug) {
+  const portrait = release.portraits.find(p => p.slug === slug);
+  if (!portrait) throw new Error(`Missing baseline portrait for policy slider: ${slug}`);
+  return portrait.dimensions.map(d => ({
+    slug: d.slug,
+    name: d.slug === 'nitrogen-phosphorus-loading' ? 'Nitrogen & Phosphorus' : d.name.replace(/\b[a-z]/g, ch => ch.toUpperCase()),
+    ring: d.ring,
+    level: d.level,
+    unscored: dimensionState(d) === 'unscored',
+  }));
+}
+function sliderCase(spec) {
+  const record = policyById.get(spec.id);
+  if (!record) throw new Error(`Missing policy study in policy-data.json: ${spec.id}`);
+  const baseline = baselineFor(spec.portraitSlug);
+  const nameBySlug = new Map(baseline.map(d => [d.slug, d.name]));
+  const primarySource = record.sources[spec.sourceIndex ?? 0];
+  return {
+    id: record.id,
+    place: spec.place,
+    title: record.title,
+    shortLabel: spec.shortLabel,
+    year: spec.year,
+    jurisdiction: record.jurisdiction,
+    mechanism: record.mechanism,
+    baselineMetric: spec.baselineMetric,
+    observedShift: spec.observedShift,
+    evidenceGrade: record.tierLabel,
+    evidenceKind: record.headline.kind,
+    caveat: spec.caveat,
+    source: { title: primarySource.title, url: primarySource.url },
+    baseline,
+    impacts: spec.impacts.map(impact => ({ ...impact, name: nameBySlug.get(impact.slug) ?? impact.slug })),
+    sliderReadout: spec.sliderReadout,
+  };
+}
+const landingPolicies = [
+  sliderCase({
+    id: 'sc-water-rationing',
+    portraitSlug: 'santa-cruz',
+    place: 'Santa Cruz, CA',
+    shortLabel: 'SC · Water rationing',
+    year: '2014 response',
+    baselineMetric: '95% surface-water dependent; same-month 2013 service-area demand baseline',
+    observedShift: '−26% average monthly water use (Jun–Nov 2014 vs Jun–Nov 2013; 47 gal/person/day residential)',
+    caveat: 'Utility service-area result (not city limits or whole county) with no untreated comparison: drought, publicity, restrictions, and price responses cannot be separated, and ecological streamflow closure was not measured.',
+    impacts: [
+      { slug: 'freshwater-withdrawals', direction: 'improves', afterLevel: 24, note: 'Observed 26% average monthly demand savings across the utility service area (Jun–Nov 2014).' },
+      { slug: 'water-sanitation', direction: 'mixed', afterLevel: -50, note: 'Affordability and fixed revenue-recovery fee pressures on lower-income households were not locally quantified.' },
+    ],
+    sliderReadout: { before: '2013 service-area baseline (0% emergency cut)', after: '−26% avg monthly use (47 gal/person/day)' },
+  }),
+  sliderCase({
+    id: 'sc-adu-reform',
+    portraitSlug: 'santa-cruz',
+    place: 'Santa Cruz County, CA',
+    shortLabel: 'SC · ADU reform',
+    year: '2018–2021 + state laws',
+    sourceIndex: 2,
+    baselineMetric: '28 annual ADU building permits issued in 2017 (unincorporated county); Housing baseline unscored',
+    observedShift: '28 → 103 annual ADU permits (2017 to 2024; 2024 count includes one tiny home on wheels)',
+    caveat: 'Permitting output only — not completed or occupied homes, and no rent-reduction estimate. State/local laws shifted alongside demand and credit conditions; Housing stays unscored without an invented threshold.',
+    impacts: [
+      { slug: 'housing', direction: 'improves', afterLevel: null, note: 'Unscored baseline dimension: annual permits rose from 28 (2017) to 103 (2024), highlighted directionally without inventing a threshold score.' },
+    ],
+    sliderReadout: { before: '28 annual ADU permits (2017)', after: '103 annual ADU permits (2024)' },
+  }),
+  sliderCase({
+    id: 'nyc-right-to-counsel',
+    portraitSlug: 'nyc',
+    place: 'New York City, NY',
+    shortLabel: 'NYC · Right to Counsel',
+    year: '2017 law (Local Law 136)',
+    baselineMetric: '51.6% renter households cost-burdened · 101.9 unhoused per 10,000 residents (NYC baseline)',
+    observedShift: '−1.0 pp eviction probability across housing-court cases during rollout (−8.4 pp IV local effect among induced tenants; 727,692 cases)',
+    caveat: 'Early-rollout estimate, not current effectiveness: NYC Comptroller (May 2025) found representation fell from 71% (Q4 FY21) to 42% (Q4 FY24), and from 81% to 31% in the Bronx. No measured homelessness or long-run rent effect.',
+    impacts: [
+      { slug: 'housing', direction: 'improves', afterLevel: 86, note: '−1.0 pp reduced-form eviction probability across targeted ZIP cases (−8.4 pp IV local effect among represented compliers).' },
+      { slug: 'peace-justice', direction: 'improves', afterLevel: 90, note: '+12.4 pp first-stage representation probability; +85 days to judgment in primary IV specification.' },
+      { slug: 'social-equity', direction: 'mixed', afterLevel: 72, note: 'Larger estimated gains for high-risk tenants, but post-2021 representation gaps concentrated in the Bronx.' },
+    ],
+    sliderReadout: { before: 'Pre-rollout housing-court baseline (2016)', after: '−1.0 pp rollout eviction probability (−8.4 pp IV)' },
+  }),
+  sliderCase({
+    id: 'nyc-clean-heat',
+    portraitSlug: 'nyc',
+    place: 'New York City, NY',
+    shortLabel: 'NYC · Clean Heat',
+    year: '2011–2015',
+    baselineMetric: '6.26 µg/m³ annual mean PM2.5 (NYC portrait; 2011 pre-conversion NYCCAS surface)',
+    observedShift: '−0.12 µg/m³ ambient PM2.5 (95% CI −0.15 to −0.09), −0.28 ppb SO₂, and −0.29 ppb NO₂ per 10 converted buildings/tract',
+    caveat: 'Per-10-building tract coefficient is not a total citywide causal effect. A separate 48-apartment study found unchanged indoor PM2.5 (12.8 µg/m³, p = .99); avoided deaths cited by officials are modeled, not counted.',
+    impacts: [
+      { slug: 'air-pollution', direction: 'improves', afterLevel: 30, note: 'Adjusted ambient reductions of −0.12 µg/m³ PM2.5, −0.28 ppb SO₂, and −0.29 ppb NO₂ per 10 converted buildings/tract.' },
+      { slug: 'health', direction: 'mixed', afterLevel: 100, note: 'Held steady: ambient pollution associations do not establish indoor exposure or counted mortality gains.' },
+    ],
+    sliderReadout: { before: '2011 pre-phaseout ambient baseline', after: '−0.12 µg/m³ PM2.5 per 10 converted buildings/tract' },
+  }),
+  sliderCase({
+    id: 'nyc-universal-school-meals',
+    portraitSlug: 'nyc',
+    place: 'New York City, NY',
+    shortLabel: 'NYC · School meals',
+    year: '2017 citywide (2010–2013 eval)',
+    baselineMetric: '16.8% food insecurity · 64.0% poor / 45.6% non-poor middle-school reference lunch uptake',
+    observedShift: '+5.4 pp lunch participation for poor students (+11.0 pp non-poor); +0.032 to +0.083 SD math test scores',
+    caveat: 'Evaluated earlier 2010–2013 middle-school provision, not the 2017 citywide rollout. Household food security, nutritional sufficiency, and meal-production ecological footprints were not measured.',
+    impacts: [
+      { slug: 'food', direction: 'improves', afterLevel: 82, note: '+5.4 pp lunch participation among poor middle-school students (+11.0 pp non-poor); food security itself not measured.' },
+      { slug: 'education', direction: 'improves', afterLevel: 58, note: 'Math +0.032 SD (poor) / +0.083 SD (non-poor) and ELA +0.027 / +0.059 SD under DiD identifying assumptions.' },
+    ],
+    sliderReadout: { before: 'Means-tested lunch baseline (64.0% poor uptake)', after: '+5.4 pp poor / +11.0 pp non-poor lunch uptake' },
+  }),
+];
+const initialPolicy = landingPolicies[0];
+const policySliderSection = `<section id="policy-slider" class="policy-slider" aria-labelledby="policy-slider-heading"><p class="eyebrow">POLICY EVIDENCE EXPLORER</p><h2 id="policy-slider-heading">Compare before and after real local policies.</h2><p class="lead-sub">Slide between a city’s real baseline doughnut and source-checked retrospective policy outcomes from Santa Cruz and New York City — with research design, scope limits, and primary citations alongside the chart.</p><div class="policy-tabs" role="tablist" aria-label="Researched city policies">${landingPolicies.map((p, idx) => `<button type="button" role="tab" data-policy-id="${h(p.id)}" aria-selected="${idx === 0 ? 'true' : 'false'}">${h(p.shortLabel)}</button>`).join('')}</div><div class="policy-grid"><div class="policy-chart-card"><canvas id="policy-doughnut" width="560" height="560" role="img" aria-label="${h(initialPolicy.place)} doughnut showing ${h(initialPolicy.title)} (Before (baseline portrait))."></canvas><div class="policy-controls"><div class="policy-controls-head"><label for="policy-range">Before ↔ With policy</label><span id="policy-state" aria-live="polite">Before (baseline portrait)</span></div><div class="policy-range-row"><button type="button" class="policy-preset" data-policy-preset="0" aria-pressed="true">Before</button><input id="policy-range" type="range" min="0" max="100" step="1" value="0" aria-valuetext="Before policy: ${h(initialPolicy.sliderReadout.before)}"><button type="button" class="policy-preset" data-policy-preset="100" aria-pressed="false">With policy</button></div><p class="policy-active-line"><strong>Active view:</strong> <span id="policy-active-view">${h(initialPolicy.sliderReadout.before)}</span></p><p class="policy-disclaimer">Wedge movement illustrates direction and study scale — none of these studies directly establishes a Doughnut threshold crossing.</p></div></div><div class="policy-detail-card" role="tabpanel" aria-label="Policy evidence details"><div class="policy-badges"><span id="policy-place" class="policy-badge">${h(initialPolicy.place)}</span><span id="policy-year" class="policy-badge">${h(initialPolicy.year)}</span><span id="policy-grade" class="policy-badge grade">${h(initialPolicy.evidenceGrade)}</span></div><h3 id="policy-title">${h(initialPolicy.title)}</h3><p id="policy-scope" class="policy-scope">${h(initialPolicy.jurisdiction)} · ${h(initialPolicy.evidenceKind)}</p><p id="policy-mechanism" class="policy-mechanism">${h(initialPolicy.mechanism)}</p><dl class="policy-metrics"><div id="policy-baseline-box" class="policy-metric-box" data-active="true"><dt>Baseline (Before)</dt><dd id="policy-baseline">${h(initialPolicy.baselineMetric)}</dd></div><div id="policy-shift-box" class="policy-metric-box" data-active="false"><dt>Observed shift (With policy)</dt><dd id="policy-shift">${h(initialPolicy.observedShift)}</dd></div></dl><h4 class="policy-impacts-heading">Highlighted doughnut dimensions</h4><ul id="policy-impacts" class="policy-impacts">${initialPolicy.impacts.map(impact => `<li><div class="policy-impact-head"><strong>${h(impact.name)}</strong><span class="policy-direction ${h(impact.direction)}">${impact.direction === 'improves' ? 'Directional improvement' : 'Mixed / tradeoff'}</span></div><p>${h(impact.note)}</p></li>`).join('')}</ul><div class="policy-caveat"><strong>Scope &amp; caveat</strong><p id="policy-caveat">${h(initialPolicy.caveat)}</p></div><p class="policy-source"><strong>Primary source:</strong> <a id="policy-source" href="${h(initialPolicy.source.url)}" target="_blank" rel="noopener noreferrer">${h(initialPolicy.source.title)} ↗</a></p><p class="policy-atlas-link"><a href="policies/">Explore all 10 policy case studies and evaluator →</a></p></div></div></section>`;
+const policySliderScripts = `<script id="policy-slider-data" type="application/json">${JSON.stringify(landingPolicies).replaceAll('<', '\\u003c')}</script><script type="module" src="assets/policy-slider.js"></script>`;
 const groups = [...new Set(release.portraits.map(p => p.group))];
 const cards = groups.map(group => `<section><h2>${h(group)}</h2><div class="cards">${release.portraits.filter(p => p.group === group).map(p => `<a class="card" href="${p.slug}/">${cardBadge(p)}<h3>${h(p.name)}</h3><p>${h(regionSummary(p))}</p><span class="card-link">Explore portrait →</span></a>`).join('')}</div></section>`).join('');
-await writeFile(path.join(output, 'index.html'), shell('Doughnut portraits', '', `<section class="hero"><p class="eyebrow">PEOPLE · PLACE · PLANET</p><h1>A good life.<br>Within our planet’s limits.</h1><p class="lead">Explore what communities need to thrive, where ecological pressures are too high, and what the evidence can—and cannot—tell us.</p><a class="button" href="#portraits">Explore the portraits ↓</a><div class="hero-ring" aria-hidden="true"></div></section><div id="portraits">${cards}</div><section class="method"><p class="eyebrow">LONGITUDINAL RESEARCH</p><h2>Argentina through time.</h2><p>A partial social Doughnut and ecological trends, with fixed benchmarks, explicit gaps and original sources. Follow the evidence from 2013 onward.</p><a class="button" href="research/argentina/">Explore the research portrait →</a></section><section id="method" class="method"><p class="eyebrow">HOW TO READ A PORTRAIT</p><h2>The space between two boundaries.</h2><p>The inner ring describes social foundations. The outer ring describes ecological ceilings. Colored wedges show shortfalls or overshoots against the portrait’s documented thresholds. Dark grey segments mark available values without a score. Grey segments mark data gaps. Neither is treated as zero or as a safe result.</p><p>Every dimension includes all of its indicators, source dates, geography and available evidence. Updated portraits combine the existing baseline with independently checked research amendments. Each indicator retains its own review status. Findings without a defensible target remain unscored; updated findings remain provisional until reviewed for publication.</p><p>A doughnut portrait brings local evidence together to help communities discuss priorities and find ways to take part. Explore a dimension to see its measures, sources, limitations and ways to get involved.</p></section>`));
+await writeFile(path.join(output, 'index.html'), shell('Doughnut portraits', '', `<section class="hero"><p class="eyebrow">PEOPLE · PLACE · PLANET</p><h1>A good life.<br>Within our planet’s limits.</h1><p class="lead">Explore what communities need to thrive, where ecological pressures are too high, and what the evidence can—and cannot—tell us.</p><a class="button" href="#portraits">Explore the portraits ↓</a><div class="hero-ring" aria-hidden="true"></div></section><div id="portraits">${cards}</div>${policySliderSection}<section id="method" class="method"><p class="eyebrow">HOW TO READ A PORTRAIT</p><h2>The space between two boundaries.</h2><p>The inner ring describes social foundations. The outer ring describes ecological ceilings. Colored wedges show shortfalls or overshoots against the portrait’s documented thresholds. Dark grey segments mark available values without a score. Grey segments mark data gaps. Neither is treated as zero or as a safe result.</p><p>Every dimension includes all of its indicators, source dates, geography and available evidence. Updated portraits combine the existing baseline with independently checked research amendments. Each indicator retains its own review status. Findings without a defensible target remain unscored; updated findings remain provisional until reviewed for publication.</p><p>A doughnut portrait brings local evidence together to help communities discuss priorities and find ways to take part. Explore a dimension to see its measures, sources, limitations and ways to get involved.</p></section>`, null, policySliderScripts));
 function supportingSources(indicator) {
   if (!indicator.supporting_evidence?.length) return '';
   return `<details class="supporting-sources"><summary>Supporting source exhibits</summary><ul>${indicator.supporting_evidence.map(source => `<li>${h(source.label)} · <a href="${h(source.source_url)}" rel="noopener noreferrer">Original source ↗</a> · <a href="../${h(source.evidence_path)}">Archived screenshot</a>${source.pdf_path ? ` · <a href="../${h(source.pdf_path)}">Archived PDF</a>` : ''}</li>`).join('')}</ul></details>`;
@@ -82,6 +201,7 @@ function indicatorDetails(i) {
     <span class="tag ${h(i.status)}">${h(status[i.status])}</span><h3>${h(i.name)}</h3>
     ${i.value_label ? `<p class="meta">${h(i.value_label)}</p>` : ''}
     <p class="value">${h(indicatorValue(i))}</p>
+    ${isNoisyHeatMean(i) ? '<p class="value-note">Rounded to 1 decimal place from the CDC EJI tract-weighted county mean; exact value and method in Definition and limitations below.</p>' : ''}
     ${native ? `<section class="source-worksheet"><h4>${i.report_measurement ? `2025 report · page ${h(i.report_verification.page)}` : 'Original worksheet'}</h4>${native.definition ? `<p class="native-definition">Native measurement definition: ${h(native.definition)}</p>` : ''}<p>Native measurement: ${h(native.value == null ? 'Not supplied' : formatIndicatorValue(native.value, ['%', 'Yes/No'].includes(native.unit) ? '' : native.unit))}</p><p>Native target: ${h(native.target == null ? 'Not supplied' : formatIndicatorValue(native.target, ['%', 'Yes/No'].includes(native.unit) ? '' : native.unit))}</p><p>${i.report_measurement ? 'Measured period' : 'Measured / published'}: ${h(native.period)}</p>${native.notes ? `<p>${h(native.notes)}</p>` : ''}</section>` : ''}
     ${i.report_verification ? `<details class="original-import"><summary>Original import provenance</summary><p>Imported native value: ${h(i.source_worksheet.value ?? 'Not supplied')}</p><p>Imported measured / published: ${h(i.source_worksheet.period)}</p>${i.imported_percentage?.origin === 'category-average-fallback' ? `<p class="imported-percentage">Archived category average (not indicator overshoot): ${h(i.imported_percentage.value)}%</p>` : `<p>Imported indicator score: ${h(i.imported_percentage?.value == null ? 'Not supplied' : `${i.imported_percentage.value}%`)}</p>`}${i.legacy_record.source_url ? `<p><a href="${h(i.legacy_record.source_url)}" rel="noopener noreferrer">Original underlying source ↗</a></p>` : ''}</details>` : ''}
     <p class="meta">${i.year ? `${i.kind === 'observation' ? 'Period ending' : 'Data year'}: ${h(i.year)} · ` : ''}${h(i.geography || 'Geography: see source notes')}</p>

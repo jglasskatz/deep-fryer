@@ -1,19 +1,48 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { lookup } from 'node:dns/promises';
-import { isIP } from 'node:net';
+import type { LookupAddress, LookupOneOptions, LookupAllOptions } from 'node:dns';
+import https, { type RequestOptions as HttpsRequestOptions } from 'node:https';
+import type { IncomingMessage, ClientRequest } from 'node:http';
+import { isIP, type LookupFunction } from 'node:net';
+import { Readable } from 'node:stream';
+import { matchBlockedSource, type SourceBlocklist } from './source-blocklist.js';
+
+const activeEgressBlocklist = new AsyncLocalStorage<SourceBlocklist | undefined>();
+
+/**
+ * Return the ambient egress `SourceBlocklist` active in the current async
+ * execution context (set via `withEgressBlocklist`), if any.
+ */
+export function getActiveEgressBlocklist(): SourceBlocklist | undefined {
+  return activeEgressBlocklist.getStore();
+}
+
+/**
+ * Run `fn` with `blocklist` enforced automatically on every `guardedFetch`,
+ * `assertPublicHttpsUrl`, and `validateAddress` call inside its async tree
+ * (including `read_source`, `capture_evidence`, `@deep-fryer/civic-data`, and
+ * verifier URL checks).
+ */
+export function withEgressBlocklist<T>(blocklist: SourceBlocklist | undefined, fn: () => T): T {
+  return activeEgressBlocklist.run(blocklist, fn);
+}
 
 /**
  * Worker egress guard (SPEC-v3 §2.3). Research agents choose the URLs the
- * worker fetches (source checks, evidence capture), so every fetch is
- * treated as attacker-influenced: https only, and the host must resolve
- * exclusively to public addresses — never loopback, RFC 1918, link-local
- * (cloud metadata at 169.254.169.254), CGNAT, or the IPv6 equivalents.
- * Redirects are followed by hand so every hop is re-checked.
+ * worker fetches (source checks, evidence capture, read_source), so every
+ * fetch is treated as attacker-influenced: https only, and the host must
+ * resolve exclusively to public addresses — never loopback, RFC 1918,
+ * link-local (cloud metadata at 169.254.169.254), CGNAT, or the IPv6
+ * equivalents. Redirects are followed by hand so every hop is re-checked.
  *
- * DNS is resolved here and checked before connecting. A rebinding race
- * between this lookup and the socket's own lookup remains theoretically
- * possible; production egress additionally goes through the allowlist proxy
- * (apps/worker/README.md), which is the layer that pins connections.
+ * When no allowlist proxy (`WORKER_HTTPS_PROXY` / `HTTPS_PROXY`) is set,
+ * `guardedFetch` closes the DNS-rebinding TOCTOU gap by resolving DNS once
+ * in `validateAddress` and pinning the verified public IP(s) via a custom
+ * lookup callback (`createPinnedLookup`), preserving TLS SNI and the `Host`
+ * header for HTTPS while preventing any second OS DNS lookup on the hop.
  */
+
+const NATIVE_FETCH = globalThis.fetch;
 
 export class EgressBlockedError extends Error {
   constructor(url: string, reason: string) {
@@ -147,16 +176,37 @@ export function isPrivateAddress(ip: string): boolean {
   return true; // not an IP at all — refuse rather than guess
 }
 
-/** Throws EgressBlockedError unless `raw` is an https URL whose host resolves only to public IPs. */
-export async function assertPublicHttpsUrl(
+export interface ValidatedUrl {
+  url: URL;
+  /** Hostname without IPv6 brackets, as resolved and used for TLS SNI. */
+  host: string;
+  /** Verified public IPv4/IPv6 addresses resolved once for this hop. */
+  addresses: string[];
+}
+
+/**
+ * Validate `raw` is an https URL without embedded credentials whose host
+ * resolves exclusively to public IP addresses and does not match any active
+ * `SourceBlocklist`. Returns the parsed URL and its verified public IP(s) so
+ * callers can pin the connection without a second DNS lookup.
+ */
+export async function validateAddress(
   raw: string,
   resolve: (host: string) => Promise<string[]> = defaultResolve,
-): Promise<URL> {
+  blocklist?: SourceBlocklist,
+): Promise<ValidatedUrl> {
   let url: URL;
   try {
     url = new URL(raw);
   } catch {
     throw new EgressBlockedError(raw, 'not a URL');
+  }
+  const effectiveBlocklist = blocklist ?? getActiveEgressBlocklist();
+  if (effectiveBlocklist) {
+    const blocked = matchBlockedSource(raw, effectiveBlocklist);
+    if (blocked) {
+      throw new EgressBlockedError(raw, `blocked benchmark answer-key source: ${blocked.reason}`);
+    }
   }
   if (url.protocol !== 'https:') throw new EgressBlockedError(raw, 'only https is allowed');
   if (url.username || url.password) throw new EgressBlockedError(raw, 'credentials in URL');
@@ -165,6 +215,16 @@ export async function assertPublicHttpsUrl(
   if (addresses.length === 0) throw new EgressBlockedError(raw, 'host does not resolve');
   const bad = addresses.find(isPrivateAddress);
   if (bad) throw new EgressBlockedError(raw, `resolves to non-public address ${bad}`);
+  return { url, host, addresses };
+}
+
+/** Throws EgressBlockedError unless `raw` is an https URL whose host resolves only to public IPs and is not blocked. */
+export async function assertPublicHttpsUrl(
+  raw: string,
+  resolve: (host: string) => Promise<string[]> = defaultResolve,
+  blocklist?: SourceBlocklist,
+): Promise<URL> {
+  const { url } = await validateAddress(raw, resolve, blocklist);
   return url;
 }
 
@@ -173,22 +233,255 @@ async function defaultResolve(host: string): Promise<string[]> {
   return records.map((r) => r.address);
 }
 
+/**
+ * Callback signature accepted by both `undici`'s `Agent({ connect: { lookup } })`
+ * and Node's `net.connect` / `tls.connect` / `https.request({ lookup })`.
+ */
+export type PinnedLookup = LookupFunction;
+
+/**
+ * Build a DNS lookup callback pinned to the exact public IP(s) already verified
+ * for `expectedHost`. Never performs a second OS DNS query, refuses any
+ * hostname mismatch, and defense-in-depth refuses any non-public address.
+ */
+export function createPinnedLookup(expectedHost: string, addresses: readonly string[]): PinnedLookup {
+  const normalizedExpected = expectedHost.replace(/^\[|\]$/g, '').toLowerCase();
+  if (!normalizedExpected || addresses.length === 0) {
+    throw new EgressBlockedError(expectedHost || '(empty)', 'no verified public addresses to pin');
+  }
+  const records: LookupAddress[] = addresses.map((raw) => {
+    const addr = raw.startsWith('[') && raw.endsWith(']') ? raw.slice(1, -1) : raw;
+    const family = isIP(addr);
+    if ((family !== 4 && family !== 6) || isPrivateAddress(addr)) {
+      throw new EgressBlockedError(expectedHost, `refusing to pin non-public address ${raw}`);
+    }
+    return { address: addr, family };
+  });
+
+  const pinnedLookup = (
+    hostname: string,
+    optionsOrCb: LookupOneOptions | LookupAllOptions | number | ((err: NodeJS.ErrnoException | null, address: string | LookupAddress[], family?: number) => void),
+    maybeCb?: (err: NodeJS.ErrnoException | null, address: string | LookupAddress[], family?: number) => void,
+  ): void => {
+    const cb = typeof optionsOrCb === 'function' ? optionsOrCb : maybeCb!;
+    const opts =
+      typeof optionsOrCb === 'number'
+        ? { family: optionsOrCb }
+        : typeof optionsOrCb === 'object' && optionsOrCb !== null
+          ? optionsOrCb
+          : {};
+
+    const requested = hostname.replace(/^\[|\]$/g, '').toLowerCase();
+    if (requested !== normalizedExpected) {
+      const err = new EgressBlockedError(
+        hostname,
+        `pinned lookup refused unexpected host ${hostname} (expected ${normalizedExpected})`,
+      ) as NodeJS.ErrnoException;
+      cb(err, '', 0);
+      return;
+    }
+
+    const family = opts.family === 4 || opts.family === 6 ? opts.family : undefined;
+    const matched = family ? records.filter((r) => r.family === family) : records;
+    if (matched.length === 0) {
+      const err = new Error(`getaddrinfo ENOTFOUND ${hostname} (no pinned IPv${family} address)`) as NodeJS.ErrnoException;
+      err.code = 'ENOTFOUND';
+      cb(err, '', 0);
+      return;
+    }
+
+    if ('all' in opts && opts.all) {
+      cb(
+        null,
+        matched.map((r) => ({ address: r.address, family: r.family })),
+      );
+      return;
+    }
+
+    const first = matched[0]!;
+    cb(null, first.address, first.family);
+  };
+
+  return pinnedLookup as PinnedLookup;
+}
+
+/** Whether an explicit worker/env HTTPS proxy is configured (which pins egress at the proxy layer). */
+export function hasEgressProxy(env: NodeJS.ProcessEnv = process.env): boolean {
+  return Boolean(env.WORKER_HTTPS_PROXY || env.HTTPS_PROXY || env.https_proxy);
+}
+
+type UndiciAgentCtor = new (opts: { connect: { lookup: PinnedLookup } }) => {
+  close?: () => Promise<void>;
+  destroy?: () => Promise<void>;
+};
+
+let cachedUndiciAgent: Promise<UndiciAgentCtor | null> | null = null;
+
+function loadUndiciAgent(): Promise<UndiciAgentCtor | null> {
+  cachedUndiciAgent ??= (async () => {
+    try {
+      const modName = 'undici';
+      const mod = (await import(modName)) as { Agent?: UndiciAgentCtor };
+      return typeof mod.Agent === 'function' ? mod.Agent : null;
+    } catch {
+      return null;
+    }
+  })();
+  return cachedUndiciAgent;
+}
+
+function normalizeHeaders(headersInit?: RequestInit['headers']): Record<string, string | string[]> {
+  const out: Record<string, string | string[]> = {};
+  if (!headersInit) return out;
+  const h = new Headers(headersInit);
+  h.forEach((value, key) => {
+    out[key] = value;
+  });
+  return out;
+}
+
+async function normalizeRequestBody(body: RequestInit['body']): Promise<Buffer | undefined> {
+  if (body === null || body === undefined) return undefined;
+  if (typeof body === 'string') return Buffer.from(body, 'utf8');
+  if (body instanceof Uint8Array) return Buffer.from(body.buffer, body.byteOffset, body.byteLength);
+  if (body instanceof ArrayBuffer) return Buffer.from(body);
+  if (body instanceof URLSearchParams) return Buffer.from(body.toString(), 'utf8');
+  if (typeof Blob !== 'undefined' && body instanceof Blob) return Buffer.from(await body.arrayBuffer());
+  throw new Error('unsupported request body type for pinned HTTPS request');
+}
+
+const NULL_BODY_STATUSES = new Set([101, 204, 205, 304]);
+
+/**
+ * Perform a single HTTPS hop with `lookup` pinned to the verified public IP(s).
+ * Preserves TLS SNI (`servername`) and the `Host` header, never reuses pooled
+ * sockets across hops (`agent: false`), and returns a standard Web `Response`.
+ */
+export async function pinnedHttpsRequest(
+  validated: ValidatedUrl,
+  init: RequestInit,
+  pinnedLookup: PinnedLookup,
+  requestFn: (url: URL, options: HttpsRequestOptions, cb: (res: IncomingMessage) => void) => ClientRequest = https.request,
+): Promise<Response> {
+  const bodyBuf = await normalizeRequestBody(init.body);
+  const method = (init.method ?? 'GET').toUpperCase();
+  const headers = normalizeHeaders(init.headers);
+
+  return new Promise<Response>((resolveResponse, rejectResponse) => {
+    const reqOptions: HttpsRequestOptions = {
+      method,
+      headers,
+      signal: init.signal ?? undefined,
+      lookup: pinnedLookup,
+      servername: isIP(validated.host) ? undefined : validated.host,
+      agent: false,
+    };
+
+    const req = requestFn(validated.url, reqOptions, (res) => {
+      const status = res.statusCode ?? 200;
+      const responseHeaders = new Headers();
+      for (const [key, value] of Object.entries(res.headers)) {
+        if (value === undefined) continue;
+        if (Array.isArray(value)) {
+          for (const v of value) responseHeaders.append(key, v);
+        } else {
+          responseHeaders.set(key, value);
+        }
+      }
+
+      const isRedirect = status >= 300 && status < 400 && responseHeaders.has('location');
+      if (method === 'HEAD' || NULL_BODY_STATUSES.has(status) || isRedirect) {
+        res.resume();
+        resolveResponse(new Response(null, { status, statusText: res.statusMessage ?? '', headers: responseHeaders }));
+        return;
+      }
+
+      const webStream = Readable.toWeb(res) as ReadableStream<Uint8Array>;
+      resolveResponse(new Response(webStream, { status, statusText: res.statusMessage ?? '', headers: responseHeaders }));
+    });
+
+    req.on('error', rejectResponse);
+    if (bodyBuf && bodyBuf.byteLength > 0) {
+      req.end(bodyBuf);
+    } else {
+      req.end();
+    }
+  });
+}
+
+export interface GuardedFetchOptions {
+  /** Override proxy detection (defaults to WORKER_HTTPS_PROXY / HTTPS_PROXY / https_proxy). */
+  proxyUrl?: string | null;
+  /** Injectable fetch function (used when proxied or in tests). */
+  fetch?: typeof globalThis.fetch;
+  /** Injectable pinned-IP transport for tests. */
+  pinnedTransport?: (
+    validated: ValidatedUrl,
+    init: RequestInit,
+    pinnedLookup: PinnedLookup,
+  ) => Promise<Response>;
+  /**
+   * Optional benchmark answer-key source blocklist enforced before DNS lookup
+   * on the initial URL and on every redirect hop. Falls back to any ambient
+   * blocklist set via `withEgressBlocklist`.
+   */
+  blocklist?: SourceBlocklist;
+}
+
 const MAX_REDIRECTS = 5;
 
 /**
  * fetch() with the guard applied to the first URL and every redirect hop.
  * Returns the final response (redirect: 'manual' semantics resolved by us).
+ *
+ * When no egress proxy is active and native `fetch` is in use, every hop binds
+ * its verified public IP(s) via `createPinnedLookup` (through `undici.Agent`
+ * when available, or Node's `node:https` `pinnedHttpsRequest` otherwise),
+ * eliminating the DNS-rebinding TOCTOU race while preserving TLS SNI and `Host`.
  */
 export async function guardedFetch(
   url: string,
   init: RequestInit = {},
   resolve?: (host: string) => Promise<string[]>,
+  options: GuardedFetchOptions = {},
 ): Promise<Response> {
+  const proxyActive =
+    options.proxyUrl !== undefined ? Boolean(options.proxyUrl) : hasEgressProxy();
+  const customFetch = options.fetch ?? (globalThis.fetch !== NATIVE_FETCH ? globalThis.fetch : undefined);
+
   let current = url;
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-    await assertPublicHttpsUrl(current, resolve);
-    const res = await fetch(current, { ...init, redirect: 'manual' });
+    const validated = await validateAddress(current, resolve, options.blocklist);
+    let res: Response;
+
+    if (options.pinnedTransport && !proxyActive) {
+      const pinnedLookup = createPinnedLookup(validated.host, validated.addresses);
+      res = await options.pinnedTransport(validated, { ...init, redirect: 'manual' }, pinnedLookup);
+    } else if (customFetch || proxyActive) {
+      const fetchImpl = customFetch ?? globalThis.fetch;
+      res = await fetchImpl(current, { ...init, redirect: 'manual' });
+    } else {
+      const pinnedLookup = createPinnedLookup(validated.host, validated.addresses);
+      const UndiciAgent = await loadUndiciAgent();
+      if (UndiciAgent) {
+        const dispatcher = new UndiciAgent({ connect: { lookup: pinnedLookup } });
+        try {
+          res = await NATIVE_FETCH(current, {
+            ...init,
+            redirect: 'manual',
+            dispatcher,
+          } as RequestInit & { dispatcher: unknown });
+        } finally {
+          // Close idle connections once the hop finishes (in-flight body stream completes cleanly).
+          void dispatcher.close?.().catch(() => {});
+        }
+      } else {
+        res = await pinnedHttpsRequest(validated, { ...init, redirect: 'manual' }, pinnedLookup);
+      }
+    }
+
     if (res.status >= 300 && res.status < 400 && res.headers.get('location')) {
+      await res.body?.cancel?.().catch(() => {});
       current = new URL(res.headers.get('location')!, current).toString();
       continue;
     }

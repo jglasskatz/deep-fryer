@@ -1,27 +1,77 @@
 import 'server-only';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { frameworkDimension } from '@deep-fryer/contract';
-import type { ResearchStrategy } from '@deep-fryer/core';
+import {
+  PROVIDER_META,
+  parseResearchProvider,
+  providerForModel,
+  type PortraitConfig,
+  type RegionBriefCache,
+  type ResearchPlan,
+  type ResearchStrategy,
+} from '@deep-fryer/core';
 import {
   dimensions,
   gateResearchSpend,
   latestVersion,
+  loadTenantReviewLabels,
   organizationForTenant,
   researchRuns,
+  tenants,
   type DbExecutor,
   type ResearchFunding,
   type RunExecution,
 } from '@deep-fryer/db';
 import {
+  buildHistoricalGuidance,
+  computeConfigHash,
   enqueueResearchApply,
+  isValidRegionBriefCache,
   renderPlan,
   type PlanDimensionSpec,
+  type ReviewLabelEvalRow,
 } from '@deep-fryer/research';
 import { portraitConfigFromMap, tenantConfigMapIn } from './admin-data';
 import { UserError } from './action-result';
 import { assertFundingUsable, firstDoughnutSetting } from './billing';
 import { systemDb, userDb } from './db';
+import { plannedIndicatorsForDimension } from './planned-indicators';
 import { alreadyAppliedMessage } from './run-progress';
+
+export { plannedIndicatorsForDimension };
+
+/**
+ * Pure: return a portrait's cached Phase-0 region brief when planning a
+ * targeted re-run (`dimensionIds?.length > 0`) and the cache entry matches the
+ * current config hash and is <30 days old; otherwise return undefined so a
+ * fresh Phase-0 session is planned.
+ */
+export function resolveCachedRegionBrief(
+  cache: RegionBriefCache | null | undefined,
+  config: PortraitConfig,
+  isTargetedRerun: boolean,
+  now: Date = new Date(),
+): string | undefined {
+  if (!isTargetedRerun) return undefined;
+  const configHash = computeConfigHash(config);
+  return isValidRegionBriefCache(cache, configHash, now) ? cache.brief : undefined;
+}
+
+/**
+ * Pure: combine any explicit reviewer note for a dimension with sanitized,
+ * bounded historical guidance built from prior human defect `review_labels`
+ * so future runs learn from past rejections without dropping explicit notes.
+ */
+export function mergeReviewerNotesWithHistoricalGuidance(
+  explicitNote: string | undefined,
+  labels: readonly ReviewLabelEvalRow[],
+  dimensionSlug: string,
+): string | undefined {
+  const trimmed = explicitNote?.trim() ?? '';
+  const guidance = buildHistoricalGuidance(labels, dimensionSlug);
+  if (!guidance) return trimmed || undefined;
+  return trimmed ? `${trimmed}\n\n${guidance}` : guidance;
+}
 
 /**
  * Plan (SPEC.md §8): render the full session list — prompts, tool
@@ -64,23 +114,20 @@ export async function createPlannedRunIn(db: DbExecutor, input: PlannedRunInput)
       .orderBy(dimensions.displayOrder);
     if (dims.length === 0) throw new UserError('Select at least one dimension.');
 
+    // Load recent tenant review_labels on the same executor (single connection,
+    // RLS-scoped) so each planned dimension benefits from sanitized historical
+    // rejection guidance without opening a nested pooled connection.
+    const recentLabels = await loadTenantReviewLabels(db, input.tenantId);
+
     const specs: PlanDimensionSpec[] = [];
     for (const dim of dims) {
       const frameworkDim = frameworkDimension(dim.slug, dim.canonicalSlug);
       const latest = await latestVersion(db, dim.id);
       const name = latest?.data.name ?? frameworkDim?.name ?? dim.slug;
-      // The editor's actual list is authoritative, including removal of all
-      // indicators. A framework reference supplies thresholds, not a hidden
-      // replacement list. Unversioned seeded dimensions alone use defaults.
-      const indicators = latest
-        ? latest.data.indicators.map(ind => ({
-            slug: ind.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-            name: ind.name,
-            unit: ind.unit,
-            threshold_ref: ind.scoring?.threshold_ref ??
-              frameworkDim?.indicators.find(fi => fi.name === ind.name)?.threshold_ref ?? '',
-          }))
-        : frameworkDim?.indicators ?? [];
+      // Shared helper preserves ind.key (never mangling framework slugs from
+      // display names) and re-includes indicators recorded in latest.data.gaps
+      // so approved gaps are never erased on subsequent runs.
+      const indicators = plannedIndicatorsForDimension(latest, frameworkDim);
 
       specs.push({
         dimensionId: dim.id,
@@ -88,18 +135,41 @@ export async function createPlannedRunIn(db: DbExecutor, input: PlannedRunInput)
         ring: dim.ring,
         name,
         indicators,
-        reviewerNotes: input.reviewerNotes?.[dim.id],
+        reviewerNotes: mergeReviewerNotesWithHistoricalGuidance(
+          input.reviewerNotes?.[dim.id],
+          recentLabels,
+          dim.slug,
+        ),
       });
+    }
+
+    // On targeted re-runs, reuse the portrait's cached Phase-0 region brief
+    // when config_hash matches and cached_at is <30 days old, omitting the
+    // redundant Phase-0 session.
+    const isTargetedRerun = Boolean(input.dimensionIds?.length);
+    let cachedRegionBrief: string | undefined;
+    if (isTargetedRerun) {
+      const [tenantRow] = await db
+        .select({ regionBriefCache: tenants.regionBriefCache })
+        .from(tenants)
+        .where(eq(tenants.id, input.tenantId));
+      cachedRegionBrief = resolveCachedRegionBrief(tenantRow?.regionBriefCache, config, true);
     }
 
     // With no strategy chosen, the plan records operator-defaults with this
     // server's model settings as they are now; a chosen strategy ignores them.
-    const plan = renderPlan({ config, dimensions: specs, strategy: input.strategy, modelDefaults: {
-      session_model: process.env.ANTHROPIC_MODEL,
-      subagent_model: process.env.RESEARCH_SUBAGENT_MODEL || null,
-      verifier_model: process.env.VERIFIER_MODEL,
-      page_reader_model: process.env.ANTHROPIC_SMALL_FAST_MODEL,
-    } });
+    const plan = renderPlan({
+      config,
+      dimensions: specs,
+      strategy: input.strategy,
+      ...(cachedRegionBrief ? { cachedRegionBrief } : {}),
+      modelDefaults: {
+        session_model: process.env.ANTHROPIC_MODEL,
+        subagent_model: process.env.RESEARCH_SUBAGENT_MODEL || null,
+        verifier_model: process.env.VERIFIER_MODEL,
+        page_reader_model: process.env.ANTHROPIC_SMALL_FAST_MODEL,
+      },
+    });
 
     const [run] = await db
       .insert(researchRuns)
@@ -116,9 +186,6 @@ export async function createPlannedRunIn(db: DbExecutor, input: PlannedRunInput)
     return { run, sessionCount: plan.sessions.length };
 }
 
-/** The model API's own host: where sessions go when nothing reroutes them. */
-const FIRST_PARTY_HOST = 'api.anthropic.com';
-
 function hostOf(url: string | undefined): string | null {
   if (!url?.trim()) return null;
   try {
@@ -130,23 +197,29 @@ function hostOf(url: string | undefined): string | null {
 
 /**
  * Where a run applied with this funding will execute, recorded on the run
- * beside `funding`. Every session runs on the shared worker and calls one
- * provider. On the organization's own key the worker withholds any base URL
- * the deployment set (apps/worker session.ts sessionEnv), so the calls go to
- * the first-party host. On the plan they go wherever the worker's own
- * environment points the model client, which this process cannot see: the
- * host is recorded only when the deployment names one to this process too,
- * and is null otherwise. The host region is likewise whatever the deployment
- * states, or null. The record is written once and never updated, so unknown
- * is recorded as unknown, never guessed.
+ * beside `funding`. Resolves the active provider from `RESEARCH_PROVIDER` or
+ * the plan's session model (`providerForModel`), defaulting to `'anthropic'`.
+ * On the organization's own key, calls go straight to the provider's first-party
+ * host; on the plan, the host is recorded only when a custom base URL is named.
  */
 export function runExecution(
   funding: ResearchFunding,
   env: Readonly<Record<string, string | undefined>> = process.env,
+  plan?: Pick<ResearchPlan, 'models'>,
 ): RunExecution {
+  const explicit = parseResearchProvider(env.RESEARCH_PROVIDER);
+  const model = plan?.models?.session_model ?? env.ANTHROPIC_MODEL;
+  const provider = explicit ?? providerForModel(model, 'anthropic');
+  const baseUrlEnv =
+    provider === 'openai'
+      ? env.OPENAI_BASE_URL
+      : provider === 'google'
+        ? env.GEMINI_BASE_URL
+        : env.ANTHROPIC_BASE_URL;
   return {
-    provider: 'anthropic',
-    endpoint_host: funding === 'organization_key' ? FIRST_PARTY_HOST : hostOf(env.ANTHROPIC_BASE_URL),
+    provider,
+    endpoint_host:
+      funding === 'organization_key' ? PROVIDER_META[provider].firstPartyHost : hostOf(baseUrlEnv),
     executor: 'shared_worker',
     host_region: env.DF_HOST_REGION?.trim() || null,
   };
@@ -215,7 +288,11 @@ export async function applyRun(tenantId: string, runId: string) {
 
     const [applied] = await tx
       .update(researchRuns)
-      .set({ appliedAt: new Date(), funding: gate.funding, execution: runExecution(gate.funding) })
+      .set({
+        appliedAt: new Date(),
+        funding: gate.funding,
+        execution: runExecution(gate.funding, process.env, row.plan),
+      })
       .where(eq(researchRuns.id, row.id))
       .returning();
     return applied!;

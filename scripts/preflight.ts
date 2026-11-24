@@ -47,6 +47,9 @@ import {
   oauthCredentialVerdict,
   parseDisabledFeatures,
   productionEnvProblems,
+  providerForModel,
+  providerKeyVerdict,
+  resolveProviderEnvKey,
   type CredentialProbe,
   researchKeyMissingVerdict,
   researchModels,
@@ -188,35 +191,63 @@ async function mailChecks() {
 }
 
 /**
- * The deployment's research key (the worker's ANTHROPIC_API_KEY, given to
- * this ops shell by compose with the worker's model settings). Each model a
- * run calls is looked up in the Models API with that key — the same
- * account, workspace and model access the sessions get — so a wrong key, a
- * workspace not allowed a model, or a mistyped model id fails here instead
- * of in the first paid build. A 401 is the key itself, so the remaining
- * lookups would only repeat it. Talks to api.anthropic.com directly, not
- * through the worker's egress proxy.
+ * Deployment model-provider keys (Anthropic, OpenAI, and/or Google Gemini).
+ * Checks every configured provider key live against its zero-token Models API:
+ * - Anthropic: looks up each Anthropic model in `researchModels(env)`.
+ * - OpenAI: probes `GET https://api.openai.com/v1/models` when `OPENAI_API_KEY` is set.
+ * - Google Gemini: probes `GET https://generativelanguage.googleapis.com/v1beta/models?pageSize=1`
+ *   when `GEMINI_API_KEY` or `GOOGLE_API_KEY` is set.
+ * When no provider key is set at all, emits `researchKeyMissingVerdict()`.
  */
-async function anthropicChecks() {
-  const key = env.ANTHROPIC_API_KEY?.trim();
-  if (!key) return record('anthropic', 'research key (ANTHROPIC_API_KEY)', researchKeyMissingVerdict());
-  for (const m of researchModels(env)) {
-    const check = `${m.role} model (${m.variable})`;
-    const id = modelLookupId(m.model);
-    if (!id) {
-      record('anthropic', check, modelAliasVerdict(m));
-      continue;
+async function modelProviderChecks() {
+  const anthropicKey = resolveProviderEnvKey('anthropic', env);
+  const openaiKey = resolveProviderEnvKey('openai', env);
+  const googleKey = resolveProviderEnvKey('google', env);
+
+  if (!anthropicKey && !openaiKey && !googleKey) {
+    return record('models', 'research key (ANTHROPIC / OPENAI / GEMINI)', researchKeyMissingVerdict());
+  }
+
+  if (anthropicKey) {
+    for (const m of researchModels(env)) {
+      if (providerForModel(m.model, 'anthropic') !== 'anthropic') continue;
+      const check = `${m.role} model (${m.variable})`;
+      const id = modelLookupId(m.model);
+      if (!id) {
+        record('anthropic', check, modelAliasVerdict(m));
+        continue;
+      }
+      let refused = false;
+      await guarded('anthropic', check, async () => {
+        const res = await fetch(`https://api.anthropic.com/v1/models/${encodeURIComponent(id)}`, {
+          headers: { 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
+          signal: AbortSignal.timeout(15_000),
+        });
+        refused = res.status === 401;
+        return anthropicModelVerdict(m, res.status, await res.json().catch(() => null));
+      });
+      if (refused) break;
     }
-    let refused = false;
-    await guarded('anthropic', check, async () => {
-      const res = await fetch(`https://api.anthropic.com/v1/models/${encodeURIComponent(id)}`, {
-        headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+  }
+
+  if (openaiKey) {
+    await guarded('openai', 'API key (OPENAI_API_KEY)', async () => {
+      const res = await fetch('https://api.openai.com/v1/models', {
+        headers: { authorization: `Bearer ${openaiKey}` },
         signal: AbortSignal.timeout(15_000),
       });
-      refused = res.status === 401;
-      return anthropicModelVerdict(m, res.status, await res.json().catch(() => null));
+      return providerKeyVerdict('openai', res.status, await res.json().catch(() => null));
     });
-    if (refused) break;
+  }
+
+  if (googleKey) {
+    await guarded('gemini', 'API key (GEMINI_API_KEY)', async () => {
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1', {
+        headers: { 'x-goog-api-key': googleKey },
+        signal: AbortSignal.timeout(15_000),
+      });
+      return providerKeyVerdict('google', res.status, await res.json().catch(() => null));
+    });
   }
 }
 
@@ -476,7 +507,7 @@ async function main() {
   await mailChecks();
   await signInChecks();
   await stripeChecks();
-  await anthropicChecks();
+  await modelProviderChecks();
   await alertsChecks();
   await webChecks();
   await launchChecks();

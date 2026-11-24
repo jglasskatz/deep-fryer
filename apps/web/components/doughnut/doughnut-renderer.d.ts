@@ -16,13 +16,22 @@ export interface RendererHit {
   path: Path2D | undefined;
 }
 
-export interface DoughnutRendererOptions {
+export interface DoughnutRendererTheme {
+  transparent?: boolean;
+  outerTextColour?: string;
+  limitStrokeColour?: string;
+  separatorColour?: string;
+}
+
+export interface DoughnutRendererOptions extends DoughnutRendererTheme {
   canvas: HTMLCanvasElement;
   size: number;
   /** Backing-store pixels per `size` unit (the screen's devicePixelRatio); default 1. */
   pixelRatio?: number;
   donutScale?: number;
   textSize?: number;
+  /** Whether mouse hover and click selection are enabled; default true. */
+  interactive?: boolean;
   onHover?: (hit: RendererHit | null, event: MouseEvent) => void;
   onSelect?: (hit: RendererHit | null) => void;
 }
@@ -43,6 +52,7 @@ export class DoughnutRenderer {
   clearDoughnut(): void;
   isEmptyDoughnut(): boolean;
   setColours(number: 1 | 2, style: 1 | 2, inner: string, outer: string): void;
+  setTheme(theme: DoughnutRendererTheme): void;
   update(): void;
   destroy(): void;
   export(): string;

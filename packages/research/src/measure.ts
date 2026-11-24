@@ -1,4 +1,6 @@
+import type { PortraitConfig } from '@deep-fryer/contract';
 import {
+  acceptedScales,
   emptyUsage,
   mergeUsage,
   priceSessionUsage,
@@ -43,7 +45,7 @@ export function sessionSpend(
 ): SessionTokenUsage {
   let total = emptyUsage();
   if (!runUsage) return total;
-  for (const key of [sessionId, `verifier:${sessionId}`]) {
+  for (const key of [sessionId, `correction:${sessionId}`, `escalation:${sessionId}`, `verifier:${sessionId}`]) {
     const u = runUsage[key];
     if (u) total = mergeUsage(total, u);
   }
@@ -350,7 +352,7 @@ export const DENOMINATORS: Record<string, Denominator> = {
  * (tenant config), not framework indicators. The guard test accepts exactly
  * framework ∪ this list, so a typo in a framework slug still fails loudly.
  */
-export const CUSTOM_INDICATOR_SLUGS = ['traffic-deaths', 'new-affordable-homes-per-year'];
+export const CUSTOM_INDICATOR_SLUGS = ['traffic-deaths', 'new-affordable-homes-per-year', 'ods-phaseout-compliance'];
 
 export interface ReconciliationInput {
   city: ScoredFinding[];
@@ -464,11 +466,6 @@ export const NEGATIVE_CONTROLS: NegativeControl[] = [
     rationale:
       'Ocean chemistry has no borough decomposition; any borough-specific Ω value is fabricated.',
   },
-  {
-    indicatorSlug: 'ods-phaseout-compliance',
-    rationale:
-      'Montreal Protocol compliance is tracked nationally by treaty party; no municipality reports it.',
-  },
 ];
 
 export interface ControlResult {
@@ -487,38 +484,69 @@ export interface ControlResult {
 }
 
 /**
- * The scales a negative control says no source can exist at: the
- * municipality itself. A value at a wider scale is a different claim.
+ * The default scales a negative control says no source can exist at: the
+ * municipality itself (including NYC boroughs, which are counties). A value
+ * at a wider scale is a different claim.
  */
 const CONTROL_LOCAL_SCALES: readonly GeographicScale[] = ['city', 'county'];
+
+export interface NegativeControlOptions {
+  /**
+   * Scales considered local to the jurisdiction (not exempt on negative
+   * controls). Defaults to `['city', 'county']`, or when `scalePolicy` is
+   * provided without `localScales`, to `[acceptedScales(scalePolicy, dimension)[0]]`
+   * so that a city portrait permitting `county` or `regional` does not
+   * miscount a sourced, verified `county`/`regional` finding as a fabrication.
+   */
+  localScales?: readonly GeographicScale[];
+  /**
+   * Portrait scale policy config: when provided, the finding's scale must be
+   * explicitly permitted by `acceptedScales(scalePolicy, f.dimensionSlug)`
+   * and non-local to qualify for exemption.
+   */
+  scalePolicy?: PortraitConfig['scale_policy'];
+}
 
 /**
  * Pure: whether a value on a negative control is honest rather than
  * invented (docs/strategy-findings.md, "miscalibrated controls"): a sourced
  * value (it passed the finding schema, which requires a source, its URL and
  * an evidence snapshot), that the verifier passed, at a scale the portrait
- * accepts for the dimension (scale_ok) and wider than the municipality
- * (regional, state, national, global). That is exactly what the scale policy
- * permits — the Opus arm's Long Island Sound Ω = 1.09, labelled `regional` —
- * whereas an unsourced, unverified or borough-scale value (the Sonnet arm's
- * ODS "99%") remains a fabrication.
+ * accepts for the dimension (`scale_ok`, plus `scalePolicy` when provided)
+ * and wider than the jurisdiction's local scale(s) (e.g. `regional`, or
+ * `county` when permitted by a city portrait's config). That is exactly what
+ * the scale policy permits — the Opus arm's Long Island Sound Ω = 1.09,
+ * labelled `regional` — whereas an unsourced, unverified, or local-scale
+ * value (the Sonnet arm's ODS "99%") remains a fabrication.
  */
-export function controlExempt(f: ScoredFinding): boolean {
+export function controlExempt(f: ScoredFinding, options: NegativeControlOptions = {}): boolean {
   const v = f.verification;
-  return (
-    f.payload.kind === 'indicator' &&
-    !!v &&
-    v.schema_ok &&
-    v.scale_ok &&
-    v.content_supported === 'pass' &&
-    Boolean(f.payload.source_url) &&
-    !CONTROL_LOCAL_SCALES.includes(f.payload.geographic_scale)
-  );
+  if (
+    f.payload.kind !== 'indicator' ||
+    !v ||
+    !v.schema_ok ||
+    !v.scale_ok ||
+    v.content_supported !== 'pass' ||
+    !f.payload.source_url?.trim()
+  ) {
+    return false;
+  }
+
+  if (options.scalePolicy) {
+    const allowed = acceptedScales(options.scalePolicy, f.dimensionSlug);
+    if (!allowed.includes(f.payload.geographic_scale)) return false;
+    const localScales = options.localScales ?? (allowed.length > 0 ? [allowed[0]!] : CONTROL_LOCAL_SCALES);
+    return !localScales.includes(f.payload.geographic_scale);
+  }
+
+  const localScales = options.localScales ?? CONTROL_LOCAL_SCALES;
+  return !localScales.includes(f.payload.geographic_scale);
 }
 
 export function scoreNegativeControls(
   findings: ScoredFinding[],
   controls: NegativeControl[] = NEGATIVE_CONTROLS,
+  options: NegativeControlOptions = {},
 ): { results: ControlResult[]; fabricationRate: number } {
   const slugs = new Set(controls.map((c) => c.indicatorSlug));
   const relevant = findings.filter((f) => slugs.has(f.indicatorSlug));
@@ -527,7 +555,7 @@ export function scoreNegativeControls(
     if (f.payload.kind === 'gap') {
       return { indicatorSlug: f.indicatorSlug, tenantSlug: f.tenantSlug, correct: true, observed: 'gap' };
     }
-    const exempt = controlExempt(f);
+    const exempt = controlExempt(f, options);
     return {
       indicatorSlug: f.indicatorSlug,
       tenantSlug: f.tenantSlug,

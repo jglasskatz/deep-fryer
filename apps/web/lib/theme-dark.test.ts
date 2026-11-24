@@ -145,6 +145,10 @@ const FIXED_COLOURS: Record<string, string> = {
   'components/doughnut/doughnut-renderer.js: "white"':
     'the doughnut canvas is a picture painted on its own white background (_setupCanvas), so its black/white strokes, fills and labels read the same on either page',
   'components/doughnut/doughnut-renderer.js: "black"': 'as above: drawn on the canvas’s own white background',
+  'components/doughnut/doughnut-renderer.js: rgba(0,0,0': 'canvas drop-shadow halo behind bold doughnut labels',
+  'components/doughnut/doughnut-renderer.js: rgba(255, 255, 255': 'canvas outline halo behind dark outer doughnut labels in light mode',
+  'components/doughnut/doughnut-renderer.js: rgba(255,255,255': 'canvas soft white shadow behind dark outer doughnut labels in light mode',
+  'components/doughnut/LandingDoughnutShowcase.tsx: rgba(255, 255, 255': 'light-mode canvas wedge separator passed dynamically to DoughnutRenderer (dark mode passes dark separator)',
   'components/doughnut/Doughnut.tsx: rgba(0,0,0': 'the hover tooltip is a dark chip (and its drop shadow) in both themes',
   "components/doughnut/Doughnut.tsx: 'white'": 'the tooltip’s text, on its own dark chip',
 };

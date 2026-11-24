@@ -14,10 +14,11 @@ import { roleAtLeast } from '@/lib/auth';
 import { adminPageMetadata } from '@/lib/page-meta';
 import { billingSummary, WARNING_COPY } from '@/lib/billing';
 import { countHeldComments } from '@/lib/discussion';
-import { portraitFeaturesById } from '@/lib/features';
+import { deploymentFeatureOn, portraitFeaturesById } from '@/lib/features';
 import { countNewSubmissions } from '@/lib/involvement-admin';
 import { tenantMembersList } from '@/lib/member-data';
 import { organizationMembersList } from '@/lib/member-data';
+import { portraitStage, portraitStageFacts } from '@/lib/portrait-stage';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,7 +39,7 @@ export default async function TenantAdminPage({
   const ctx = await requireAdminPage(tenant, 'viewer');
 
   const features = await portraitFeaturesById(ctx.tenant.id);
-  const [dims, config, runs, audit, discussed, billing, members, orgMembers, heldComments, newSubmissions] =
+  const [dims, config, runs, audit, discussed, billing, members, orgMembers, heldComments, newSubmissions, stageFacts] =
     await Promise.all([
       tenantDimensions(ctx.tenant.id),
       tenantConfigMap(ctx.tenant.id),
@@ -53,7 +54,15 @@ export default async function TenantAdminPage({
       // anyone below editor, who cannot open that queue anyway.
       features.discussion ? countHeldComments(ctx.tenant.id) : 0,
       features.involvement ? countNewSubmissions(ctx.tenant.id) : 0,
+      portraitStageFacts(ctx.tenant.id),
     ]);
+  // Where the doughnut stands and what to do next, above the checklist and shown whether or not it is.
+  // Anyone below editor is told who does the next step instead of being sent to a page they cannot open.
+  const stage = portraitStage(stageFacts, {
+    tenantSlug: tenant,
+    canEdit: roleAtLeast(ctx.role, 'editor'),
+    addHref: deploymentFeatureOn('self_serve') ? `/start?portrait=${encodeURIComponent(tenant)}` : null,
+  });
   const waiting = [
     heldComments > 0 && {
       href: `/${tenant}/admin/discussion`,
@@ -157,6 +166,29 @@ export default async function TenantAdminPage({
             </ul>
           </section>
         ) : null}
+
+        <section className="mt-6 rounded-lg border border-black/15 p-4" aria-labelledby="where-it-stands">
+          <h2 id="where-it-stands" className="text-base font-semibold">
+            Where your doughnut stands
+          </h2>
+          <p className="mt-2 text-sm break-words">
+            <span className="sr-only">Stage: </span>
+            <strong className="mr-2 inline-block rounded bg-black/[0.06] px-2 py-0.5" data-stage={stage.stage}>
+              {stage.label}
+            </strong>{' '}
+            {stage.summary}
+          </p>
+          <p className="mt-2 text-sm break-words">
+            <strong>Next:</strong>{' '}
+            {stage.next.href ? (
+              <Link className="underline" href={stage.next.href}>
+                {stage.next.text}
+              </Link>
+            ) : (
+              stage.next.text
+            )}
+          </p>
+        </section>
 
         {showChecklist ? (
           <section className="mt-6 rounded-lg border border-black/10 bg-white/60 p-4" aria-labelledby="getting-started">

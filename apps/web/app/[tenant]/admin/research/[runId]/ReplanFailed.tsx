@@ -1,22 +1,26 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import type { ResearchStrategy } from '@deep-fryer/core';
 import { planResearchAction } from '@/lib/research-actions';
 import { unwrap } from '@/lib/action-result';
 import { useAction } from '@/lib/use-action';
 
 /**
  * "Plan a new run for the failed dimensions": plans (never applies) a run of
- * just the dimensions whose sessions failed or never ran, and opens it, so
- * staff inspect it and apply it — the quota-checked step — from its own run
- * page, exactly as for a run planned on the research page. Planning is free.
+ * just the dimensions whose sessions failed or never ran — preserving the
+ * failed run's strategy when one was chosen — and opens it, so staff inspect
+ * it and apply it (the quota-checked step) from its own run page, exactly as
+ * for a run planned on the research page. Planning is free.
  */
 export function ReplanFailed({
   tenantSlug,
   dimensionIds,
+  strategy,
 }: {
   tenantSlug: string;
   dimensionIds: string[];
+  strategy?: ResearchStrategy;
 }) {
   const router = useRouter();
   const { run, pending, error } = useAction();
@@ -29,7 +33,13 @@ export function ReplanFailed({
         className="rounded border px-3 py-1.5 text-sm hover:bg-black/5 disabled:opacity-50"
         onClick={() =>
           run(async () => {
-            const { runId } = unwrap(await planResearchAction({ tenantSlug, dimensionIds }));
+            const { runId } = unwrap(
+              await planResearchAction({
+                tenantSlug,
+                dimensionIds,
+                ...(strategy ? { strategy } : {}),
+              }),
+            );
             router.push(`/${tenantSlug}/admin/research/${runId}`);
           })
         }

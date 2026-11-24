@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { standing, standingMessage } from '@deep-fryer/core';
 import { withPostgresError } from './errors.js';
-import { FIRST_DOUGHNUT_ADD_KEY_MESSAGE, decideResearchSpend } from './billing.js';
+import { FIRST_DOUGHNUT_ADD_KEY_MESSAGE, PAID_FIRST_DOUGHNUT, decideResearchSpend } from './billing.js';
 import type { Subscription } from './schema.js';
 
 /**
@@ -185,6 +185,25 @@ describe('decideResearchSpend with the first-doughnut choice', () => {
         expect(decideResearchSpend(sub, 0, hasKey, 22, now, own(false))).toEqual(decideResearchSpend(sub, 0, hasKey, 22, now));
       }
     }
+  });
+
+  it('weights plan-funded quota checks by strategy (standard 1x, hybrid 1.5x, deep 3x) to prevent quota arbitrage (P2.2)', () => {
+    const sub = paid({ researchSessionsOverride: 30 });
+    // Standard 22-session run needs 22 credits -> fits in 30.
+    expect(decideResearchSpend(sub, 0, false, 22, now, PAID_FIRST_DOUGHNUT, 'standard').check.allowed).toBe(true);
+    // Hybrid 22-session run needs ceil(22 * 1.5) = 33 credits -> refused on a 30-credit plan!
+    const hybrid = decideResearchSpend(sub, 0, false, 22, now, PAID_FIRST_DOUGHNUT, 'hybrid');
+    expect(hybrid.funding).toBe('plan');
+    expect(hybrid.check.allowed).toBe(false);
+    // Deep 22-session run needs ceil(22 * 3) = 66 credits -> refused on a 30-credit plan!
+    const deep = decideResearchSpend(sub, 0, false, 22, now, PAID_FIRST_DOUGHNUT, 'deep');
+    expect(deep.funding).toBe('plan');
+    expect(deep.check.allowed).toBe(false);
+    // On an organization's own key, plan quota is waived for all strategies.
+    expect(decideResearchSpend(sub, 0, true, 22, now, PAID_FIRST_DOUGHNUT, 'deep').check.allowed).toBe(true);
+    // A 66-credit plan allows a 22-session deep run.
+    const larger = paid({ researchSessionsOverride: 66 });
+    expect(decideResearchSpend(larger, 0, false, 22, now, PAID_FIRST_DOUGHNUT, 'deep').check.allowed).toBe(true);
   });
 });
 
