@@ -36,7 +36,11 @@ import {
   DEFAULT_SESSION_MAX_TURNS,
   DEFAULT_SESSION_MODEL,
   checkValueOnPage,
+  getActiveEgressBlocklist,
+  matchBlockedSource,
   valueOnPage,
+  withEgressBlocklist,
+  type SourceBlocklist,
 } from '@deep-fryer/research';
 import { buildCapturePreview, captureEvidence } from './evidence.js';
 import {
@@ -721,6 +725,12 @@ export interface RunSessionArgs {
    * `MAX_ACTIVE_SESSIONS` semaphore (`null` disables permit acquisition).
    */
   semaphore?: SessionSemaphore | null;
+  /**
+   * Optional benchmark answer-key source blocklist enforced across egress
+   * fetches (`read_source`, `capture_evidence`, `civic_data`) and Anthropic
+   * `WebFetch` calls. Defaults to any ambient blocklist set via `withEgressBlocklist`.
+   */
+  sourceBlocklist?: SourceBlocklist;
 }
 
 const READ_SOURCE_SCHEMA = z.object({
@@ -766,11 +776,19 @@ const READ_EXHIBIT_SCHEMA = z.object({
  */
 export async function runSession(input: RunSessionArgs): Promise<SessionResult> {
   const semaphore = input.semaphore === undefined ? getSharedSessionSemaphore() : input.semaphore;
-  const runBody = () => runSessionUnbounded(input);
+  const runBody = () => {
+    if (input.sourceBlocklist && input.sourceBlocklist !== getActiveEgressBlocklist()) {
+      return withEgressBlocklist(input.sourceBlocklist, () =>
+        runSessionUnbounded({ ...input, sourceBlocklist: undefined }),
+      );
+    }
+    return runSessionUnbounded(input);
+  };
   return semaphore ? semaphore.run(runBody) : runBody();
 }
 
 async function runSessionUnbounded(input: RunSessionArgs): Promise<SessionResult> {
+  const effectiveBlocklist = input.sourceBlocklist ?? getActiveEgressBlocklist();
   const effectiveModel = input.model ?? MODEL();
   const provider = input.provider ?? providerForModel(effectiveModel, 'anthropic');
   const effectiveAllowedTools = [
@@ -1191,6 +1209,29 @@ async function runSessionUnbounded(input: RunSessionArgs): Promise<SessionResult
         },
       };
     };
+    const guardBlockedWebFetch: HookCallback = async (hook) => {
+      if (hook.hook_event_name !== 'PreToolUse' || hook.tool_name !== 'WebFetch' || !effectiveBlocklist) return {};
+      const targetUrl = (hook.tool_input as { url?: unknown } | null)?.url;
+      if (typeof targetUrl === 'string') {
+        const blocked = matchBlockedSource(targetUrl, effectiveBlocklist);
+        if (blocked) {
+          return {
+            hookSpecificOutput: {
+              hookEventName: 'PreToolUse',
+              permissionDecision: 'deny',
+              permissionDecisionReason: `blocked benchmark answer-key source: ${blocked.reason}`,
+            },
+          };
+        }
+      }
+      return {};
+    };
+    const preToolUseHooks = [
+      ...(allowed.includes('Read') ? [{ matcher: 'Read', hooks: [guardArchiveRead] }] : []),
+      ...(effectiveBlocklist && allowed.includes('WebFetch')
+        ? [{ matcher: 'WebFetch', hooks: [guardBlockedWebFetch] }]
+        : []),
+    ];
     try {
       const q = query({
         prompt: orchestrated ? input.prompt + DELEGATION_NOTE : input.prompt,
@@ -1201,7 +1242,7 @@ async function runSessionUnbounded(input: RunSessionArgs): Promise<SessionResult
           allowedTools: allowed,
           disallowedTools: LOCAL_MACHINE_TOOLS.filter((t) => !allowed.includes(t)),
           permissionMode: 'dontAsk',
-          ...(allowed.includes('Read') ? { hooks: { PreToolUse: [{ matcher: 'Read', hooks: [guardArchiveRead] }] } } : {}),
+          ...(preToolUseHooks.length > 0 ? { hooks: { PreToolUse: preToolUseHooks } } : {}),
           env: sessionEnv(process.env, {
             apiKey: input.apiKey,
             pageReaderModel: input.pageReaderModel,
