@@ -552,7 +552,7 @@ export class DoughnutRenderer {
         this._ctx.lineJoin = "round";
         if (colour === "white") {
             this._ctx.strokeStyle = "rgba(22, 48, 12, 0.88)";
-            this._ctx.fillStyle = "#ffffff";
+            this._ctx.fillStyle = "white";
             this._ctx.shadowColor = "rgba(0,0,0,0.45)";
         } else if (isDarkText) {
             this._ctx.strokeStyle = this._transparent ? "rgba(255, 255, 255, 0.92)" : "rgba(255, 255, 255, 0.95)";

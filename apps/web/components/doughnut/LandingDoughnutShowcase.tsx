@@ -418,10 +418,10 @@ export function LandingDoughnutShowcase({
   const phase = describeTransformPhase(progress);
   const badgeClasses =
     phase.tone === 'thriving'
-      ? 'border-green-200 bg-green-100/90 text-green-900'
+      ? 'border-green-200 bg-green-100 text-green-900'
       : phase.tone === 'transition'
-        ? 'border-amber-200 bg-amber-100/90 text-amber-900'
-        : 'border-red-200 bg-red-100/90 text-red-900';
+        ? 'border-amber-200 bg-amber-100 text-amber-900'
+        : 'border-red-200 bg-red-100 text-red-900';
 
   return (
     <section
