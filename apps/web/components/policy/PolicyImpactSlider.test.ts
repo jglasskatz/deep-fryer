@@ -14,17 +14,18 @@ import { PolicyImpactSlider } from './PolicyImpactSlider';
 vi.stubGlobal('React', React);
 
 describe('policy slider dataset and interpolation', () => {
-  it('covers the five researched Santa Cruz and NYC policies with sources and caveats', () => {
+  it('covers the five researched Santa Cruz and NYC policies with sources, caveats, and metric alignment', () => {
     expect(POLICY_SLIDER_CASES.map((p) => p.id)).toEqual([
       'sc-water-rationing',
+      'nyc-clean-heat',
       'sc-adu-reform',
       'nyc-right-to-counsel',
-      'nyc-clean-heat',
       'nyc-universal-school-meals',
     ]);
     for (const item of POLICY_SLIDER_CASES) {
       expect(item.baseline.length).toBeGreaterThanOrEqual(21);
       expect(item.impacts.length).toBeGreaterThanOrEqual(1);
+      expect(item.doughnutMetric.trim().length).toBeGreaterThan(10);
       expect(item.caveat.trim().length).toBeGreaterThan(20);
       expect(item.source.url).toMatch(/^https:\/\//);
       expect(item.source.title.trim().length).toBeGreaterThan(10);
@@ -45,7 +46,8 @@ describe('policy slider dataset and interpolation', () => {
     expect(clampSliderProgress(Number.NaN)).toBe(0);
   });
 
-  it('interpolates scored ecological and social wedges smoothly without inventing unscored levels', () => {
+  it('moves wedges ONLY on direct Doughnut-metric matches and holds proxy/output studies at baseline', () => {
+    // Direct match 1: Santa Cruz Water Rationing (residential gpcd: ~64 -> 47 vs 55 gpcd target)
     const water = POLICY_SLIDER_CASES.find((p) => p.id === 'sc-water-rationing')!;
     const before = interpolatePolicyLevels(water, 0);
     const mid = interpolatePolicyLevels(water, 50);
@@ -57,33 +59,47 @@ describe('policy slider dataset and interpolation', () => {
 
     expect(freshBefore.level).toBe(50);
     expect(freshBefore.colour).toBe(POLICY_SLIDER_COLOURS.focus);
-    expect(freshMid.level).toBe(37);
+    expect(freshMid.level).toBe(11);
     expect(freshMid.colour).toBe(POLICY_SLIDER_COLOURS.improves);
-    expect(freshAfter.level).toBe(24);
+    expect(freshAfter.level).toBe(-29);
     expect(freshAfter.colour).toBe(POLICY_SLIDER_COLOURS.improves);
 
-    // Unscored baseline dimensions stay NaN and carry neutral unscored grey.
+    // Santa Cruz Extreme Heat is scored against CDC EJI Climate Burden quintiles;
+    // genuine data gaps (Nitrogen & Phosphorus) stay NaN without inventing a score.
     const heat = after.find((d) => d.slug === 'extreme-heat')!;
-    expect(heat.level).toBe('NaN');
-    expect(heat.colour).toBe(POLICY_SLIDER_COLOURS.unscored);
+    expect(heat.level).toBe(33.6);
+    const nitrogen = after.find((d) => d.slug === 'nitrogen-phosphorus-loading')!;
+    expect(nitrogen.level).toBe('NaN');
+    expect(nitrogen.colour).toBeNull();
 
-    // ADU reform never invents a score for Santa Cruz's unscored Housing baseline.
+    // Direct match 2: NYC Clean Heat (PM2.5 µg/m³ moves; Health stays held at baseline 136).
+    const cleanHeat = POLICY_SLIDER_CASES.find((p) => p.id === 'nyc-clean-heat')!;
+    const airAfter = interpolatePolicyLevels(cleanHeat, 100).find((d) => d.slug === 'air-pollution')!;
+    const healthAfter = interpolatePolicyLevels(cleanHeat, 100).find((d) => d.slug === 'health')!;
+    const chem = interpolatePolicyLevels(cleanHeat, 100).find((d) => d.slug === 'chemical-pollution')!;
+    expect(airAfter.level).toBe(36);
+    expect(airAfter.colour).toBe(POLICY_SLIDER_COLOURS.improves);
+    expect(healthAfter.level).toBe(136);
+    expect(healthAfter.colour).toBe(POLICY_SLIDER_COLOURS.mixed);
+    expect(chem.level).toBe('NaN');
+    expect(chem.colour).toBe(POLICY_SLIDER_COLOURS.unscored);
+
+    // Output-only policy: Santa Cruz ADU permits (28 -> 103) do NOT move the Housing homelessness wedge.
     const adu = POLICY_SLIDER_CASES.find((p) => p.id === 'sc-adu-reform')!;
     const aduBefore = interpolatePolicyLevels(adu, 0).find((d) => d.slug === 'housing')!;
     const aduAfter = interpolatePolicyLevels(adu, 100).find((d) => d.slug === 'housing')!;
-    expect(aduBefore.level).toBe('NaN');
+    expect(aduBefore.level).toBe(150);
     expect(aduBefore.colour).toBe(POLICY_SLIDER_COLOURS.focus);
-    expect(aduAfter.level).toBe('NaN');
-    expect(aduAfter.colour).toBe(POLICY_SLIDER_COLOURS.improves);
+    expect(aduAfter.level).toBe(150);
+    expect(aduAfter.colour).toBe(POLICY_SLIDER_COLOURS.mixed);
 
-    // Inner social wedges capped at 100 on the renderer start moving immediately above 0.
+    // Adjacent-metric policy: NYC School Meals (lunch uptake) holds Food insecurity wedge at baseline 150.
     const meals = POLICY_SLIDER_CASES.find((p) => p.id === 'nyc-universal-school-meals')!;
     const foodBefore = interpolatePolicyLevels(meals, 0).find((d) => d.slug === 'food')!;
-    const foodMid = interpolatePolicyLevels(meals, 50).find((d) => d.slug === 'food')!;
     const foodAfter = interpolatePolicyLevels(meals, 100).find((d) => d.slug === 'food')!;
     expect(foodBefore.level).toBe(150);
-    expect(foodMid.level).toBe(91);
-    expect(foodAfter.level).toBe(82);
+    expect(foodAfter.level).toBe(150);
+    expect(foodAfter.colour).toBe(POLICY_SLIDER_COLOURS.mixed);
   });
 });
 

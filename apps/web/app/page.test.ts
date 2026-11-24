@@ -71,7 +71,7 @@ describe('the landing page', () => {
   /** Every internal link goes to a page a signed-out visitor can open, given what is public. */
   function expectOnlyLiveLinks(hrefs: string[], live: string[]) {
     for (const href of hrefs) {
-      if (href.startsWith('https://')) continue;
+      if (href.startsWith('https://') || href === '#policy-impact' || href === '#portraits') continue;
       expect(live, `link to ${href}`).toContain(href);
     }
   }
@@ -80,10 +80,11 @@ describe('the landing page', () => {
     portraits = [portrait('ithaca', 'Ithaca', ITHACA), portrait('manhattan', 'Manhattan', NYC)];
     const { html, hrefs } = await landing();
     expect(html).toContain('Portraits on this site');
-    expectOnlyLiveLinks(hrefs, ['/start', '/pricing', '/ithaca', '/manhattan']);
+    expectOnlyLiveLinks(hrefs, ['/start', '/ithaca', '/manhattan']);
     expect(hrefs).toEqual(expect.arrayContaining(['/ithaca', '/manhattan']));
     expect(html).not.toContain('See ');
     expect(hrefs).not.toContain('/santacruz');
+    expect(hrefs).not.toContain('/pricing');
   });
 
   it('shows no showcase for an organization with nothing public, and never falls back to a demo link', async () => {
@@ -91,7 +92,7 @@ describe('the landing page', () => {
     portraits = [portrait('ithaca', 'Ithaca', ITHACA)];
     const { html, hrefs } = await landing();
     expect(html).not.toContain('See New York City');
-    expectOnlyLiveLinks(hrefs, ['/start', '/pricing', '/ithaca']);
+    expectOnlyLiveLinks(hrefs, ['/start', '/ithaca']);
   });
 
   it('opens the showcase on the family compare only when two public portraits have it on', async () => {
@@ -101,7 +102,7 @@ describe('the landing page', () => {
     let page = await landing();
     expect(page.html).toContain('See New York City');
     expect(page.hrefs).toContain('/o/nyc/compare');
-    expectOnlyLiveLinks(page.hrefs, ['/start', '/pricing', '/o/nyc/compare', '/o/nyc/progress', '/nyc', '/bronx', '/ithaca']);
+    expectOnlyLiveLinks(page.hrefs, ['/start', '/o/nyc/compare', '/o/nyc/progress', '/nyc', '/bronx', '/ithaca']);
     // The rest of the deployment is still findable.
     expect(page.html).toContain('More portraits on this site');
 
@@ -109,13 +110,13 @@ describe('the landing page', () => {
     compareOn = new Set();
     page = await landing();
     expect(page.hrefs).not.toContain('/o/nyc/compare');
-    expectOnlyLiveLinks(page.hrefs, ['/start', '/pricing', '/o/nyc/progress', '/nyc', '/bronx', '/ithaca']);
+    expectOnlyLiveLinks(page.hrefs, ['/start', '/o/nyc/progress', '/nyc', '/bronx', '/ithaca']);
   });
 
   it('says so plainly when nothing is published yet', async () => {
     const { html, hrefs } = await landing();
     expect(html).toContain('No portraits have been published on this site yet.');
-    expectOnlyLiveLinks(hrefs, ['/start', '/pricing']);
+    expectOnlyLiveLinks(hrefs, ['/start']);
   });
 
   it('links the bundled demo portrait only when there is no database, which is when it exists', async () => {
@@ -127,23 +128,29 @@ describe('the landing page', () => {
   it('invites visitors to build a doughnut only while self-serve start is on, and never offers a trial', async () => {
     portraits = [portrait('ithaca', 'Ithaca', ITHACA)];
     let page = await landing();
-    expect(page.html).toContain('Build your city&#x27;s doughnut');
+    expect(page.html).toContain('Start a portrait');
     expect(page.hrefs).toContain('/start');
     expect(page.html).not.toMatch(/trial/i);
 
     disabled = new Set(['self_serve']);
     page = await landing();
     expect(page.hrefs).not.toContain('/start');
-    expect(page.html).not.toContain('Build your city');
+    expect(page.html).not.toContain('Start a portrait');
     expect(page.html).not.toMatch(/trial/i);
   });
 
-  it('includes the interactive Before/After policy impact explorer without adding internal dead links', async () => {
+  it('leads with the featured doughnut showcase and places the interactive policy impact explorer below portraits', async () => {
     const { html, hrefs } = await landing();
+    expect(html).toContain('What would it take to create a safe, just and thriving world?');
+    expect(html).toContain('Make a portrait for your community today.');
+    expect(html).toContain('Today · Overshoot &amp; shortfall');
+    expect(html).toContain('Explore existing doughnuts');
     expect(html).toContain('Compare before and after real local policies');
     expect(html).toContain('type="range"');
     expect(html).toContain('Drought water rationing');
+    expect(html.indexOf('Today · Overshoot &amp; shortfall')).toBeLessThan(html.indexOf('Portraits on this site'));
+    expect(html.indexOf('Portraits on this site')).toBeLessThan(html.indexOf('Compare before and after real local policies'));
     expect(hrefs.some((href) => href.startsWith('https://'))).toBe(true);
-    expectOnlyLiveLinks(hrefs, ['/start', '/pricing']);
+    expectOnlyLiveLinks(hrefs, ['/start', '#portraits', '#policy-impact']);
   });
 });

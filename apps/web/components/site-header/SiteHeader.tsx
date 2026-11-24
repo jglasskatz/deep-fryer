@@ -119,7 +119,7 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
     // The product links are English (their pages exist only in English), but this header also tops pages in
     // the reader's language — a 404 under /es/… — so they say which language they are in (WCAG 3.1.2).
     const lang = locale === 'en' ? undefined : 'en';
-    links.push({ href: '/pricing', label: 'Pricing', lang });
+    if (variant === 'landing') links.push({ href: '/#portraits', label: 'Existing doughnuts', lang });
     if (auth?.userId) links.push({ href: '/account', label: 'My portraits', lang });
     // Starting a portrait is the deployment's self_serve feature: without it /start is a 404, so no link.
     if (deploymentFeatureOn('self_serve')) links.push({ href: '/start', label: 'Start a portrait', primary: true, lang });
@@ -230,6 +230,13 @@ export async function SiteHeader({ variant, tenant, family, familyView, org }: S
           {m.common.signIn}
         </Link>
       )
+    ) : variant === 'landing' ? (
+      <Link
+        href="/login"
+        className="whitespace-nowrap rounded border border-black/15 px-3 py-1.5 hover:bg-black/5"
+      >
+        {m.common.signIn}
+      </Link>
     ) : null;
 
   return (

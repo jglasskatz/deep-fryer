@@ -59,6 +59,6 @@ export const mockPortrait: PublishedPortrait = {
     dim('ecological', 'land-conversion', 'Land Conversion', 40, 17),
     dim('ecological', 'biodiversity-loss', 'Biodiversity Loss', 75, 18),
     dim('ecological', 'air-pollution', 'Air Pollution', 25, 19),
-    dim('ecological', 'ozone-depletion', 'Ozone Layer Depletion', -30, 20),
+    dim('ecological', 'extreme-heat', 'Extreme Heat', -30, 20),
   ],
 };

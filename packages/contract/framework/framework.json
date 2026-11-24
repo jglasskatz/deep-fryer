@@ -232,14 +232,15 @@
       ]
     },
     {
-      "slug": "ozone-depletion",
+      "slug": "extreme-heat",
       "ring": "ecological",
-      "canonical_slug": "ozone_depletion",
-      "name": "Ozone Layer Depletion",
+      "canonical_slug": "extreme_heat",
+      "name": "Extreme Heat",
       "icon": "sun",
-      "description": "Stratospheric ozone (largely global, not local). Local portraits usually report this as a data gap or a compliance statement.",
+      "description": "The deadliest local climate hazard in most jurisdictions: who is most vulnerable to heat, and how many die of it. Replaces ozone-layer depletion (owner decision 2026-08: stratospheric ozone is a global boundary no municipality can measure or move; NYC precedent in docs/SPEC-v3.md §1.2).",
       "indicators": [
-        { "slug": "ods-phaseout-compliance", "name": "Compliance with ozone-depleting-substance phaseout", "unit": "% of tracked ODS phased out", "threshold_ref": "ozone-depletion.ods-phaseout-compliance" }
+        { "slug": "hvi-high-share", "name": "Residents in the highest heat-vulnerability classes", "unit": "% of residents", "threshold_ref": "extreme-heat.hvi-high-share" },
+        { "slug": "heat-mortality-per-100k", "name": "Heat-attributable deaths per 100,000 residents per year", "unit": "deaths/100k/year", "threshold_ref": "extreme-heat.heat-mortality-per-100k" }
       ]
     }
   ]

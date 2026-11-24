@@ -133,9 +133,9 @@ const ROWS: Record<string, Row[]> = {
     ['Asthma emergency visits', 36, 'per 10,000 residents', 2021, null, 'CalEnviroScreen 4.0', 'https://oehha.ca.gov/calenviroscreen', 'city', 'medium'],
     ['Wildfire smoke days', 11, 'days a year', 2020, null, 'NOAA Hazard Mapping System', 'https://www.ospo.noaa.gov/products/land/hms.html', 'county', 'low'],
   ],
-  'ozone-depletion': [
-    ['ODS phase-out compliance', 99.7, '% of tracked ODS phased out', 2023, 100, 'UNEP Ozone Secretariat', 'https://ozone.unep.org/', 'global', 'high', 0],
-    ['Refrigerant leaks from large systems', 2.1, 'tonnes CO2e a year', 2023, null, 'CARB Refrigerant Management Program', 'https://ww2.arb.ca.gov/our-work/programs/refrigerant-management-program', 'county', 'low'],
+  'extreme-heat': [
+    ['Residents in the highest heat-vulnerability classes', 16.8, '% of residents', 2024, 0, 'CDC/ATSDR Environmental Justice Index 2024', 'https://eji.cdc.gov/', 'county', 'medium', 16.8],
+    ['Heat-attributable deaths per 100,000 residents per year', 0.4, 'deaths/100k/year', 2023, 0, 'CDPH Heat Mortality Surveillance', 'https://www.cdph.ca.gov/', 'county', 'low', 6.7],
   ],
 };
 

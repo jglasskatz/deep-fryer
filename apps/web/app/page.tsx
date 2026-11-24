@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { LandingDoughnutShowcase } from '@/components/doughnut/LandingDoughnutShowcase';
 import { PolicyImpactSlider } from '@/components/policy/PolicyImpactSlider';
 import { SiteHeader } from '@/components/site-header/SiteHeader';
 import { hasDatabase, publicPortraits, type PublicPortraitSummary } from '@/lib/data';
@@ -61,61 +62,88 @@ export default async function HomePage() {
   const listed = (await publicPortraits()).filter((p) => p.organization.slug !== showcase?.organization.slug);
   const demo = hasDatabase() ? null : mockPortrait.tenant;
 
+  const secondaryAction = showcase
+    ? { href: showcase.href, label: `See ${showcase.organization.name}` }
+    : demo
+      ? { href: `/${demo.slug}`, label: 'View the demo portrait' }
+      : null;
+
   return (
     <>
       <SiteHeader variant="landing" />
       <main id="main">
-        <section className="mx-auto max-w-5xl px-4 pb-12 pt-16 sm:px-6 sm:pt-24">
-          <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
-            Know where your city stands — and whether it&apos;s on track.
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg text-[color:var(--color-muted)]">
-            deep-fryer builds and maintains a portrait of your jurisdiction on Kate Raworth&apos;s Doughnut of
-            social and planetary boundaries: the social foundation residents should never fall below, the
-            ecological ceiling the city should not overshoot, every number sourced with the evidence beside it,
-            and progress measured against the goals your council already adopted.
-          </p>
-          {selfServe || showcase || demo ? (
-            <div className="mt-8 flex flex-wrap gap-3">
-              {selfServe ? (
-                <Link
-                  href="/start"
-                  className="rounded bg-[color:var(--color-accent)] px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
-                >
-                  Build your city&apos;s doughnut
-                </Link>
+        <LandingDoughnutShowcase selfServe={selfServe} secondaryAction={secondaryAction} />
+
+        {showcase ? (
+          <section id="portraits" className="border-t border-black/10">
+            <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+              <h2 className="text-2xl font-semibold">{showcase.organization.name}</h2>
+              {showcase.members.length > 1 ? (
+                <p className="mt-2 max-w-2xl text-sm text-[color:var(--color-muted)]">
+                  {showcase.members.length} portraits measured against identical thresholds, so differences
+                  between places are visible instead of averaged away.
+                </p>
               ) : null}
-              {showcase ? (
-                <Link
-                  href={showcase.href}
-                  className="rounded border border-black/20 px-5 py-2.5 text-sm font-medium hover:bg-black/5"
-                >
-                  See {showcase.organization.name}
-                </Link>
-              ) : demo ? (
-                <Link
-                  href={`/${demo.slug}`}
-                  className="rounded border border-black/20 px-5 py-2.5 text-sm font-medium hover:bg-black/5"
-                >
-                  View the demo portrait
-                </Link>
-              ) : null}
+              <ul className="mt-4 flex flex-wrap gap-2 text-sm">
+                {showcase.members.map((m) => (
+                  <li key={m.slug}>
+                    <Link className="inline-block rounded-full border border-black/15 px-3 py-1 hover:bg-black/5" href={`/${m.slug}`}>
+                      {m.name}
+                    </Link>
+                  </li>
+                ))}
+                <li>
+                  <Link
+                    className="inline-block rounded-full bg-black px-3 py-1 text-white"
+                    href={`/o/${showcase.organization.slug}/progress`}
+                  >
+                    Progress since the baseline →
+                  </Link>
+                </li>
+              </ul>
             </div>
-          ) : null}
-          {selfServe ? (
-            <p className="mt-4 max-w-2xl text-sm text-[color:var(--color-muted)]">
-              Published portraits are free for anyone to read. Building one, the research behind every number,
-              needs a plan or a contract —{' '}
-              <Link href="/pricing" className="underline">
-                see pricing
-              </Link>
-              .
-            </p>
-          ) : null}
-        </section>
+          </section>
+        ) : null}
+
+        {/* Every other public portrait, so a visitor can find their city. With a
+            showcase this is "the rest" and is left out when there is none; without
+            one it is the whole directory, and an empty one says so plainly. */}
+        {showcase && listed.length === 0 ? null : (
+          <section id={showcase ? undefined : 'portraits'} aria-labelledby="portraits-heading" className="border-t border-black/10">
+            <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+              <h2 id="portraits-heading" className="text-xl font-semibold">
+                {showcase ? 'More portraits on this site' : 'Portraits on this site'}
+              </h2>
+              {listed.length > 0 ? (
+                <ul className="mt-4 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2 md:grid-cols-3">
+                  {listed.map((p) => (
+                    <li key={p.slug}>
+                      <Link className="inline-block py-1 underline" href={`/${p.slug}`}>
+                        {p.name}
+                      </Link>
+                      {p.region ? <span className="text-[color:var(--color-muted)]"> · {p.region}</span> : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : demo ? (
+                <p className="mt-2 text-sm text-[color:var(--color-muted)]">
+                  This server has no database, so it shows only the bundled{' '}
+                  <Link className="underline" href={`/${demo.slug}`}>
+                    demo portrait
+                  </Link>
+                  .
+                </p>
+              ) : (
+                <p className="mt-2 text-sm text-[color:var(--color-muted)]">No portraits have been published on this site yet.</p>
+              )}
+            </div>
+          </section>
+        )}
+
+        <PolicyImpactSlider />
 
         <section className="border-t border-black/10 bg-white/50">
-          <div className="mx-auto grid max-w-5xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-3">
+          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-3">
             <div>
               <h2 className="font-semibold">Research you can audit</h2>
               <p className="mt-2 text-sm text-[color:var(--color-muted)]">
@@ -142,70 +170,6 @@ export default async function HomePage() {
             </div>
           </div>
         </section>
-
-        <PolicyImpactSlider />
-
-        {showcase ? (
-          <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-            <h2 className="text-2xl font-semibold">{showcase.organization.name}</h2>
-            {showcase.members.length > 1 ? (
-              <p className="mt-2 max-w-2xl text-sm text-[color:var(--color-muted)]">
-                {showcase.members.length} portraits measured against identical thresholds, so differences
-                between places are visible instead of averaged away.
-              </p>
-            ) : null}
-            <ul className="mt-4 flex flex-wrap gap-2 text-sm">
-              {showcase.members.map((m) => (
-                <li key={m.slug}>
-                  <Link className="inline-block rounded-full border border-black/15 px-3 py-1 hover:bg-black/5" href={`/${m.slug}`}>
-                    {m.name}
-                  </Link>
-                </li>
-              ))}
-              <li>
-                <Link
-                  className="inline-block rounded-full bg-black px-3 py-1 text-white"
-                  href={`/o/${showcase.organization.slug}/progress`}
-                >
-                  Progress since the baseline →
-                </Link>
-              </li>
-            </ul>
-          </section>
-        ) : null}
-
-        {/* Every other public portrait, so a visitor can find their city. With a
-            showcase this is "the rest" and is left out when there is none; without
-            one it is the whole directory, and an empty one says so plainly. */}
-        {showcase && listed.length === 0 ? null : (
-          <section aria-labelledby="portraits-heading" className="mx-auto max-w-5xl px-4 pb-16 pt-4 sm:px-6">
-            <h2 id="portraits-heading" className="text-xl font-semibold">
-              {showcase ? 'More portraits on this site' : 'Portraits on this site'}
-            </h2>
-            {listed.length > 0 ? (
-              <ul className="mt-4 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2 md:grid-cols-3">
-                {listed.map((p) => (
-                  <li key={p.slug}>
-                    <Link className="inline-block py-1 underline" href={`/${p.slug}`}>
-                      {p.name}
-                    </Link>
-                    {p.region ? <span className="text-[color:var(--color-muted)]"> · {p.region}</span> : null}
-                  </li>
-                ))}
-              </ul>
-            ) : demo ? (
-              <p className="mt-2 text-sm text-[color:var(--color-muted)]">
-                This server has no database, so it shows only the bundled{' '}
-                <Link className="underline" href={`/${demo.slug}`}>
-                  demo portrait
-                </Link>
-                .
-              </p>
-            ) : (
-              <p className="mt-2 text-sm text-[color:var(--color-muted)]">No portraits have been published on this site yet.</p>
-            )}
-          </section>
-        )}
       </main>
     </>
   );

@@ -178,10 +178,28 @@ export class DoughnutRenderer {
     //   textSize: text size in px
     //   onHover: optional ({dim_type, dim_num, dim_info, lvl_num} | null) => void
     //   onSelect: optional ({dim_type, dim_num, dim_info, lvl_num} | null) => void
-    constructor({ canvas, size, pixelRatio = 1, donutScale = 1.0, textSize = 14, onHover, onSelect }) {
+    constructor({
+        canvas,
+        size,
+        pixelRatio = 1,
+        donutScale = 1.0,
+        textSize = 14,
+        interactive = true,
+        transparent = false,
+        outerTextColour = "black",
+        limitStrokeColour = "gray",
+        separatorColour = "white",
+        onHover,
+        onSelect,
+    }) {
         this._donutSize = size;
         this._pixelRatio = pixelRatio > 0 && Number.isFinite(pixelRatio) ? pixelRatio : 1;
         this._textSize = textSize;
+        this._interactive = interactive !== false;
+        this._transparent = Boolean(transparent);
+        this._outerTextColour = outerTextColour || "black";
+        this._limitStrokeColour = limitStrokeColour || "gray";
+        this._separatorColour = separatorColour || "white";
         if (donutScale >= 0.5 && donutScale <= 1.5) {
             this._donutScale = donutScale;
         } else {
@@ -231,7 +249,7 @@ export class DoughnutRenderer {
 
         this._grdGlobal = this._ctx.createRadialGradient(this._middleX, this._middleY, this._outOuter, this._middleX, this._middleY, this._extraDonut);
         this._grdGlobal.addColorStop(0, "rgb(211,63,54)");
-        this._grdGlobal.addColorStop(1, "white");
+        this._grdGlobal.addColorStop(1, this._transparent ? "rgba(211,63,54,0)" : "white");
 
         this._grdPersonal = this._ctx.createRadialGradient(this._middleX, this._middleY, this._inInner, this._middleX, this._middleY, this._outOuter);
         this._grdPersonal.addColorStop(0, "rgb(136,50,81)");
@@ -247,16 +265,35 @@ export class DoughnutRenderer {
 
         this._mouseMoveListener = (e) => { this._checkMouse(e, false) };
         this._clickListener = (e) => { this._checkMouse(e, true) };
-        this._canvas.addEventListener("mousemove", this._mouseMoveListener);
-        this._canvas.addEventListener("click", this._clickListener);
+        if (this._interactive) {
+            this._canvas.addEventListener("mousemove", this._mouseMoveListener);
+            this._canvas.addEventListener("click", this._clickListener);
+        }
 
         // Call first draw
         this.update();
     }
 
+    setTheme({ transparent, outerTextColour, limitStrokeColour, separatorColour } = {}) {
+        const wasGlobal = this._grd === this._grdGlobal;
+        if (typeof transparent === "boolean") {
+            this._transparent = transparent;
+            this._grdGlobal = this._ctx.createRadialGradient(this._middleX, this._middleY, this._outOuter, this._middleX, this._middleY, this._extraDonut);
+            this._grdGlobal.addColorStop(0, "rgb(211,63,54)");
+            this._grdGlobal.addColorStop(1, this._transparent ? "rgba(211,63,54,0)" : "white");
+            if (wasGlobal) { this._grd = this._grdGlobal; }
+        }
+        if (outerTextColour) { this._outerTextColour = outerTextColour; }
+        if (limitStrokeColour) { this._limitStrokeColour = limitStrokeColour; }
+        if (separatorColour) { this._separatorColour = separatorColour; }
+        this.update();
+    }
+
     destroy() {
-        this._canvas.removeEventListener("mousemove", this._mouseMoveListener);
-        this._canvas.removeEventListener("click", this._clickListener);
+        if (this._interactive) {
+            this._canvas.removeEventListener("mousemove", this._mouseMoveListener);
+            this._canvas.removeEventListener("click", this._clickListener);
+        }
     }
 
     _matchingDimInfos(one, two) {
@@ -504,20 +541,43 @@ export class DoughnutRenderer {
     _writeDim(text, radius, angle, colour) {
         let x = this._middleX + radius * Math.cos(angle);
         let y = this._middleY + radius * Math.sin(angle);
-        this._ctx.fillStyle = colour;
-        this._ctx.shadowColor = "black";
-        if (colour == "black") {
-            this._ctx.shadowColor = "white";
-        }
-        this._ctx.shadowOffsetX = 1;
-        this._ctx.shadowOffsetY = 1;
         let textParts = this._splitText(text);
+        const prevFont = this._ctx.font;
+        const prevStroke = this._ctx.strokeStyle;
+        const prevWidth = this._ctx.lineWidth;
+        const prevJoin = this._ctx.lineJoin;
+        const isDarkText = colour == "black" || colour.startsWith("#1") || colour.startsWith("#2");
+        this._ctx.font = "600 " + this._textSize + "px Arial";
+        this._ctx.lineWidth = 3;
+        this._ctx.lineJoin = "round";
+        if (colour === "white") {
+            this._ctx.strokeStyle = "rgba(22, 48, 12, 0.88)";
+            this._ctx.fillStyle = "#ffffff";
+            this._ctx.shadowColor = "rgba(0,0,0,0.45)";
+        } else if (isDarkText) {
+            this._ctx.strokeStyle = this._transparent ? "rgba(255, 255, 255, 0.92)" : "rgba(255, 255, 255, 0.95)";
+            this._ctx.fillStyle = colour;
+            this._ctx.shadowColor = "rgba(255,255,255,0.6)";
+        } else {
+            this._ctx.strokeStyle = "rgba(14, 18, 14, 0.9)";
+            this._ctx.fillStyle = colour;
+            this._ctx.shadowColor = "rgba(0,0,0,0.55)";
+        }
+        this._ctx.shadowBlur = 2;
+        this._ctx.shadowOffsetX = 0;
+        this._ctx.shadowOffsetY = 1;
         for (let part of textParts) {
+            this._ctx.strokeText(part, x, y);
             this._ctx.fillText(part, x, y);
             y = y + this._textSize;
         }
+        this._ctx.shadowBlur = 0;
         this._ctx.shadowOffsetX = 0;
         this._ctx.shadowOffsetY = 0;
+        this._ctx.font = prevFont;
+        this._ctx.strokeStyle = prevStroke;
+        this._ctx.lineWidth = prevWidth;
+        this._ctx.lineJoin = prevJoin;
     }
 
     _writeDimensions(dimensions, radius, colour) {
@@ -700,7 +760,7 @@ export class DoughnutRenderer {
                 outRadii[dim] = outArcs;
                 colRadii[dim] = cols;
             }
-            paths = this._drawArcs(outRadii, inRadii, colRadii, "white", max, min);
+            paths = this._drawArcs(outRadii, inRadii, colRadii, this._separatorColour, max, min);
         }
         return paths;
     }
@@ -709,7 +769,7 @@ export class DoughnutRenderer {
         if (this._innerDims.length() > 0) {
             this._writeDimensions(this._innerDims, this._textInner, "white") }
         if (this._outerDims.length() > 0) {
-            this._writeDimensions(this._outerDims, this._textOuter, "black");
+            this._writeDimensions(this._outerDims, this._textOuter, this._outerTextColour);
         }
     }
 
@@ -724,7 +784,7 @@ export class DoughnutRenderer {
     _drawLimits() {
         let dash = this._ctx.getLineDash();
         this._ctx.setLineDash([5]);
-        this._ctx.strokeStyle = "gray";
+        this._ctx.strokeStyle = this._limitStrokeColour;
         this._ctx.beginPath();
         this._ctx.arc(this._middleX, this._middleY, this._outOuter, 0, 2 * Math.PI);
         this._ctx.stroke();
@@ -758,11 +818,15 @@ export class DoughnutRenderer {
         this._ctx.shadowColor = "black";
 
         // Clear canvas
-        this._ctx.beginPath();
-        this._ctx.rect(0, 0, this._donutSize, this._donutSize);
-        this._ctx.closePath();
-        this._ctx.fillStyle = "white";
-        this._ctx.fill();
+        if (this._transparent) {
+            this._ctx.clearRect(0, 0, this._donutSize, this._donutSize);
+        } else {
+            this._ctx.beginPath();
+            this._ctx.rect(0, 0, this._donutSize, this._donutSize);
+            this._ctx.closePath();
+            this._ctx.fillStyle = "white";
+            this._ctx.fill();
+        }
     }
 
     export() {
@@ -782,11 +846,11 @@ export class DoughnutRenderer {
         this._drawDoughnutBorders();
         this._drawLimits();
         this._drawLabels();
-        this._ctx.fillStyle = "black";
+        this._ctx.fillStyle = this._outerTextColour;
         this._ctx.fillText("Doughnut", this._middleX, this._middleY - this._textSize);
         this._ctx.fillText("Economics", this._middleX, this._middleY + this._textSize)
 
-        if (this._selectedDimInfo) {
+        if (this._interactive && this._selectedDimInfo) {
             this._ctx.strokeStyle = "blue";
             this._ctx.stroke(this._selectedDimInfo.path)
         }

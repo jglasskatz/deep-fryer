@@ -66,10 +66,12 @@ describe('SiteHeader on the sign-in pages', () => {
   it('carries none of the English-only product links', async () => {
     requestPath = '/login/check-email';
     const html = await header('sign-in');
-    for (const label of ['Pricing', 'Start a portrait', 'My portraits']) expect(html).not.toContain(label);
+    for (const label of ['Pricing', 'Start a portrait', 'My portraits', 'Existing doughnuts']) expect(html).not.toContain(label);
     // The product's own pages keep them.
     requestPath = '/';
-    expect(await header('landing')).toContain('Start a portrait');
+    const landingHtml = await header('landing');
+    expect(landingHtml).toContain('Start a portrait');
+    expect(landingHtml).toContain('Existing doughnuts');
   });
 });
 
@@ -87,15 +89,14 @@ describe('SiteHeader’s product links', () => {
     const html = await header('landing');
     expect(html).not.toContain('href="/start"');
     expect(html).not.toContain('Start a portrait');
-    // Pricing stays: reading what plans cost needs no self-serve start.
-    expect(html).toContain('href="/pricing"');
+    expect(html).not.toContain('href="/pricing"');
   });
 
   it('marks the English product links as English on a page in another language (a 404 under /es/…)', async () => {
     requestPath = '/es/nyc/dim/missing';
     pageLocale = 'es';
     const html = await header('landing');
-    expect(html).toMatch(/<a[^>]*href="\/pricing"[^>]*lang="en"|<a[^>]*lang="en"[^>]*href="\/pricing"/);
+    expect(html).not.toContain('href="/pricing"');
     expect(html).toMatch(/<a[^>]*href="\/start"[^>]*lang="en"|<a[^>]*lang="en"[^>]*href="\/start"/);
     // On an English page they need no attribute of their own.
     pageLocale = 'en';

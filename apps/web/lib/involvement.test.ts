@@ -109,7 +109,7 @@ describe('formDimensionOptions', () => {
 describe('isFrameworkDimension', () => {
   it('accepts the framework’s slugs only', () => {
     expect(isFrameworkDimension('housing')).toBe(true);
-    expect(isFrameworkDimension('ozone-depletion')).toBe(true);
+    expect(isFrameworkDimension('extreme-heat')).toBe(true);
     expect(isFrameworkDimension('Housing')).toBe(false);
     expect(isFrameworkDimension('')).toBe(false);
     expect(isFrameworkDimension(null)).toBe(false);

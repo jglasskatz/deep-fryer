@@ -25,15 +25,24 @@ function progressStateLabel(progress: number): string {
   return `Comparing (${progress}% toward observed shift)`;
 }
 
-function directionBadge(direction: 'improves' | 'mixed'): { label: string; className: string } {
+function impactBadge(
+  direction: 'improves' | 'mixed',
+  alignment: 'direct' | 'proxy',
+): { label: string; className: string } {
+  if (alignment === 'proxy') {
+    return {
+      label: 'Output / proxy only · wedge held',
+      className: 'border-amber-200 bg-amber-50 text-amber-900',
+    };
+  }
   if (direction === 'improves') {
     return {
-      label: 'Directional improvement',
+      label: 'Direct Doughnut metric · improves',
       className: 'border-green-200 bg-green-50 text-green-900',
     };
   }
   return {
-    label: 'Mixed / tradeoff',
+    label: 'Direct Doughnut metric · mixed',
     className: 'border-amber-200 bg-amber-50 text-amber-900',
   };
 }
@@ -119,10 +128,11 @@ export function PolicyImpactSlider({
 
   return (
     <section
+      id="policy-impact"
       aria-labelledby={headingId}
       className="border-t border-black/10"
     >
-      <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16">
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--color-muted)]">
             Policy evidence explorer
@@ -230,8 +240,9 @@ export function PolicyImpactSlider({
               </p>
 
               <p className="mt-2 text-xs text-[color:var(--color-muted)]">
-                Wedge movement illustrates direction and study scale — none of these studies directly
-                establishes a Doughnut threshold crossing.
+                {policy.metricAlignment === 'direct'
+                  ? 'Wedge moves only on the exact Doughnut indicator measured by the study — never from an unrelated output metric.'
+                  : 'This study reports an upstream output or adjacent metric rather than the portrait’s Doughnut indicator, so the wedge stays locked at baseline.'}
               </p>
             </div>
           </div>
@@ -251,11 +262,26 @@ export function PolicyImpactSlider({
               <span className="rounded-full bg-[color:var(--color-accent)]/12 px-2.5 py-0.5 font-medium text-[color:var(--color-accent)]">
                 {policy.evidenceGrade}
               </span>
+              <span
+                className={`rounded-full border px-2.5 py-0.5 font-medium ${
+                  policy.metricAlignment === 'direct'
+                    ? 'border-green-200 bg-green-50 text-green-900'
+                    : 'border-amber-200 bg-amber-50 text-amber-900'
+                }`}
+              >
+                {policy.metricAlignment === 'direct'
+                  ? 'Direct Doughnut metric'
+                  : 'Output / adjacent metric only'}
+              </span>
             </div>
 
             <h3 className="mt-3 text-xl font-semibold tracking-tight">{policy.title}</h3>
             <p className="mt-1 text-xs text-[color:var(--color-muted)]">
               {policy.jurisdiction} · {policy.evidenceKind}
+            </p>
+            <p className="mt-2 text-xs text-[color:var(--color-muted)]">
+              <span className="font-semibold text-[color:var(--color-fg)]">Doughnut metric:</span>{' '}
+              {policy.doughnutMetric}
             </p>
             <p className="mt-3 text-sm text-[color:var(--color-muted)]">{policy.mechanism}</p>
 
@@ -293,7 +319,7 @@ export function PolicyImpactSlider({
               </h4>
               <ul className="mt-2 space-y-2">
                 {impactedNames.map((impact) => {
-                  const badge = directionBadge(impact.direction);
+                  const badge = impactBadge(impact.direction, impact.metricAlignment);
                   return (
                     <li
                       key={impact.slug}

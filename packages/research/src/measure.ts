@@ -352,7 +352,7 @@ export const DENOMINATORS: Record<string, Denominator> = {
  * (tenant config), not framework indicators. The guard test accepts exactly
  * framework ∪ this list, so a typo in a framework slug still fails loudly.
  */
-export const CUSTOM_INDICATOR_SLUGS = ['traffic-deaths', 'new-affordable-homes-per-year'];
+export const CUSTOM_INDICATOR_SLUGS = ['traffic-deaths', 'new-affordable-homes-per-year', 'ods-phaseout-compliance'];
 
 export interface ReconciliationInput {
   city: ScoredFinding[];
@@ -465,11 +465,6 @@ export const NEGATIVE_CONTROLS: NegativeControl[] = [
     indicatorSlug: 'aragonite-saturation',
     rationale:
       'Ocean chemistry has no borough decomposition; any borough-specific Ω value is fabricated.',
-  },
-  {
-    indicatorSlug: 'ods-phaseout-compliance',
-    rationale:
-      'Montreal Protocol compliance is tracked nationally by treaty party; no municipality reports it.',
   },
 ];
 
