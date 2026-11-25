@@ -67,6 +67,16 @@ snapshot next to the claim and returns the storage paths — put them in the
 finding's `evidence` field. A finding without captured evidence will be
 rejected by verification.
 
+When the requested indicator unit is a percentage, rate, or ratio that must be
+computed from primary counts in your captured exhibits (for example, a PIT
+homelessness count divided by Census ACS population, ACS rent-burdened
+brackets divided by total renter households, or violating air basins divided
+by total air basins), call `compute_derived_indicator` with the exact operand
+values and their captured `text_path`s BEFORE calling `submit_findings`. It
+verifies every operand on the captured exhibits and computes the exact figure
+deterministically so you can report the requested unit rather than falling
+back to raw counts or older secondary sources.
+
 ## Data gaps are findings
 
 If no source satisfies the tier, recency, and scale rules for an indicator,

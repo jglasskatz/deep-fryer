@@ -329,7 +329,7 @@ export async function runGoogleSession(input: ProviderSessionInput): Promise<Pro
 
     if (turn >= maxTurns) break;
 
-    const responseParts: GeminiFunctionResponsePart[] = [];
+    const responseParts: Array<Record<string, unknown>> = [];
     for (const call of functionCalls) {
       const executed = input.tools
         ? await input.tools.execute(call.name, call.args ?? {})
@@ -354,9 +354,19 @@ export async function runGoogleSession(input: ProviderSessionInput): Promise<Pro
           response: parseToolResponseObject(executed.output),
         },
       });
+      if ('images' in executed && Array.isArray(executed.images)) {
+        for (const img of executed.images) {
+          responseParts.push({
+            inlineData: {
+              mimeType: img.mimeType,
+              data: img.base64,
+            },
+          });
+        }
+      }
     }
 
-    contents.push({ role: 'user', parts: responseParts });
+    contents.push({ role: 'user', parts: responseParts as GeminiPart[] });
   }
 
   return {

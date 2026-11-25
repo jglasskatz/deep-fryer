@@ -189,6 +189,9 @@ export class DoughnutRenderer {
         outerTextColour = "black",
         limitStrokeColour = "gray",
         separatorColour = "white",
+        donutFrosting = "rgb(71,112,32)",
+        donutFilling = "rgb(140,215,85)",
+        donutFillingOuter = null,
         onHover,
         onSelect,
     }) {
@@ -230,8 +233,9 @@ export class DoughnutRenderer {
         this._arcLineWidth = 2;
         this._textInner = this._outInner + (this._section / 2);
         this._textOuter = this._outOuter - this._textSize;
-        this._donutFrosting = "rgb(71,112,32)";
-        this._donutFilling = "rgb(140,215,85)";
+        this._donutFrosting = donutFrosting || "rgb(71,112,32)";
+        this._donutFilling = donutFilling || "rgb(140,215,85)";
+        this._donutFillingOuter = donutFillingOuter || null;
 
         // Dimension level values
         this._minDonutLevelRadius = -100;
@@ -274,7 +278,7 @@ export class DoughnutRenderer {
         this.update();
     }
 
-    setTheme({ transparent, outerTextColour, limitStrokeColour, separatorColour } = {}) {
+    setTheme({ transparent, outerTextColour, limitStrokeColour, separatorColour, donutFrosting, donutFilling, donutFillingOuter } = {}) {
         const wasGlobal = this._grd === this._grdGlobal;
         if (typeof transparent === "boolean") {
             this._transparent = transparent;
@@ -286,6 +290,9 @@ export class DoughnutRenderer {
         if (outerTextColour) { this._outerTextColour = outerTextColour; }
         if (limitStrokeColour) { this._limitStrokeColour = limitStrokeColour; }
         if (separatorColour) { this._separatorColour = separatorColour; }
+        if (donutFrosting) { this._donutFrosting = donutFrosting; }
+        if (donutFilling) { this._donutFilling = donutFilling; }
+        if (donutFillingOuter !== undefined) { this._donutFillingOuter = donutFillingOuter; }
         this.update();
     }
 
@@ -493,8 +500,18 @@ export class DoughnutRenderer {
 
     _drawDoughnut() {
         this._drawDoughnutBorders();
-        // Fill in between the lines
-        this._ctx.strokeStyle = this._donutFilling;
+        // Fill in between the lines (optionally using a gentle radial gradient when donutFillingOuter is set)
+        if (this._donutFillingOuter) {
+            const fillGrd = this._ctx.createRadialGradient(
+                this._middleX, this._middleY, this._inDonut + this._donutLineSize,
+                this._middleX, this._middleY, this._outDonut - this._donutLineSize
+            );
+            fillGrd.addColorStop(0, this._donutFilling);
+            fillGrd.addColorStop(1, this._donutFillingOuter);
+            this._ctx.strokeStyle = fillGrd;
+        } else {
+            this._ctx.strokeStyle = this._donutFilling;
+        }
         this._ctx.beginPath();
         this._ctx.lineWidth = this._outDonut - this._inDonut - this._donutLineSize * 2;
         let middle = (this._outDonut - this._inDonut) / 2;

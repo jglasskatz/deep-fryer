@@ -2,10 +2,14 @@
 
 Hardened, single-box deployment guide for the full `deep-fryer` platform (Next.js app, Postgres 16 + RLS, SeaweedFS evidence store, research worker, and Caddy automatic HTTPS) — using the `infra/` provisioning kit adapted from our Chameleon VPS architecture.
 
-## Recommended hardware
-- **OS:** Debian 12 (`bookworm`) or Debian 13 (`trixie`)
-- **Size:** 2–4 vCPU, **4 GB+ RAM** (8 GB recommended for concurrent Chromium evidence captures + research workers), **40 GB+ SSD**
-- **DNS:** Point an `A` (and optional `AAAA`) record for `app.yourdomain.org` to the VPS IP before starting Caddy.
+## Recommended hardware (DigitalOcean Droplet or any Debian VPS)
+- **Provider:** Works identically on a **DigitalOcean Droplet** (recommended: **Debian 12 x64**, Basic Regular or Premium Intel/AMD, **4 vCPU / 8 GB RAM / 160 GB NVMe**, ~\$48/mo — or **2 vCPU / 4 GB RAM**, \$24/mo for light traffic with `MAX_ACTIVE_SESSIONS=2`), Hetzner Cloud, Linode/Akamai, or any Debian host.
+- **DigitalOcean creation tips:**
+  1. Choose **Debian 12 (`bookworm`)** (or Debian 13), nearest region (e.g. `SFO3` / `NYC3`).
+  2. Attach your SSH public key in the DigitalOcean console during Droplet creation.
+  3. Enable **DigitalOcean Cloud Firewall** (allow TCP `22`, `80`, `443` inbound only) in addition to the host `nftables` firewall in Step 2.
+  4. Optional: leave **DigitalOcean Backups** off if using the built-in `age`-encrypted nightly Postgres backups (`40-deep-fryer.sh`), or enable Droplet snapshots for belt-and-suspenders recovery.
+- **DNS:** Point an `A` (and optional `AAAA`) record for `app.yourdomain.org` to the Droplet's public IPv4 address before starting Caddy (automatic Let's Encrypt HTTPS).
 
 ---
 

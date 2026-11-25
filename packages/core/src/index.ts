@@ -27,3 +27,4 @@ export * from './source-links.js';
 export * from './review-causes.js';
 export * from './rag.js';
 export * from './providers.js';
+export * from './carbon-intensity.js';

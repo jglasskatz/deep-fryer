@@ -8,7 +8,13 @@ import {
   orgKeyRejected,
 } from '../org-key.js';
 import { runFindingTriage } from '../messages.js';
-import { runSession, runSessionWithRetry } from '../session.js';
+import {
+  executeComputeDerivedIndicator,
+  runSession,
+  runSessionWithRetry,
+  validateAndScoreSubmittedFindings,
+  type VerifiedDerivation,
+} from '../session.js';
 import { resolveRunProviders } from '../tasks/research-apply.js';
 import {
   ToolExecutor,
@@ -16,9 +22,12 @@ import {
   runGoogleStructuredMessage,
   runOpenAiSession,
   runOpenAiStructuredMessage,
+  runOpenAiWebSearch,
   runProviderSession,
   runProviderStructuredMessage,
   sanitizeSchemaForGemini,
+  supportsZeroTemperature,
+  usesResponsesApi,
   zodToJsonSchema,
 } from './index.js';
 
@@ -620,5 +629,297 @@ describe('router, session integration, triage, and org-key classification', () =
       researchProvider: 'google',
       verifierProvider: 'openai',
     });
+  });
+
+  it('omits temperature:0 for gpt-6*/gpt-5.* reasoning models and filters blocked sources in runOpenAiWebSearch', async () => {
+    expect(supportsZeroTemperature('gpt-4.1-mini')).toBe(true);
+    expect(supportsZeroTemperature('gpt-5.6-luna')).toBe(false);
+    expect(supportsZeroTemperature('gpt-6-luna')).toBe(false);
+    expect(supportsZeroTemperature('gpt-6.1-terra')).toBe(false);
+    expect(supportsZeroTemperature('gpt-6.2-sol')).toBe(false);
+    expect(supportsZeroTemperature('gpt-6.2-astra')).toBe(false);
+
+    const fetchMock = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          model: 'gpt-6-luna',
+          status: 'completed',
+          output: [
+            { type: 'web_search_call' },
+            {
+              type: 'message',
+              content: [
+                {
+                  type: 'output_text',
+                  text: JSON.stringify({
+                    results: [
+                      {
+                        title: 'California Doughnut Report (blocked)',
+                        url: 'https://zenodo.org/records/15832541',
+                        snippet: 'Blocked report',
+                      },
+                      {
+                        title: 'HUD 2024 AHAR Part 1',
+                        url: 'https://www.huduser.gov/portal/sites/default/files/pdf/2024-AHAR-Part-1.pdf',
+                        snippet: 'California PIT homelessness total: 187,084',
+                      },
+                    ],
+                  }),
+                },
+              ],
+            },
+          ],
+          usage: {
+            input_tokens: 10000,
+            output_tokens: 400,
+            input_tokens_details: { cached_tokens: 0, cache_write_tokens: 2000 },
+          },
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      ),
+    );
+
+    const out = await runOpenAiWebSearch({
+      query: 'HUD 2024 PIT California homelessness',
+      apiKey: 'sk-test-key',
+      fetch: fetchMock,
+      isBlocked: (url) => (url.includes('zenodo.org/records/15832541') ? 'blocked CA report' : null),
+    });
+
+    expect(out.ok).toBe(true);
+    expect(out.filteredCount).toBe(1);
+    expect(out.searchRequests).toBe(1);
+    expect(out.results).toHaveLength(1);
+    expect(out.results[0]!.url).toContain('huduser.gov');
+    expect(out.usage.by_model?.['gpt-6-luna']?.web_search_requests).toBe(1);
+    expect(out.usage.by_model?.['gpt-6-luna']?.input_tokens).toBe(8000);
+    expect(out.usage.by_model?.['gpt-6-luna']?.cache_write_tokens).toBe(2000);
+    expect(priceSessionUsage(out.usage).unpriced).toEqual([]);
+  });
+
+  it('routes gpt-6* models through /v1/responses with parallel function calls and previous_response_id', async () => {
+    expect(usesResponsesApi('gpt-6-luna')).toBe(true);
+    expect(usesResponsesApi('gpt-6.1-terra')).toBe(true);
+    expect(usesResponsesApi('gpt-6.2-sol')).toBe(true);
+    expect(usesResponsesApi('gpt-6.2-astra')).toBe(true);
+    expect(usesResponsesApi('gpt-4.1-mini')).toBe(false);
+
+    const requests: Array<{ url: string; body: Record<string, unknown> }> = [];
+    let callNum = 0;
+    const fetchMock = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
+      callNum++;
+      const body = JSON.parse(String(init?.body ?? '{}')) as Record<string, unknown>;
+      requests.push({ url: String(url), body });
+      if (callNum === 1) {
+        return new Response(
+          JSON.stringify({
+            id: 'resp_turn_1',
+            model: 'gpt-6-luna',
+            status: 'completed',
+            output: [
+              { type: 'function_call', call_id: 'call_a', name: 'lookup', arguments: '{"k":"a"}' },
+              { type: 'function_call', call_id: 'call_b', name: 'lookup', arguments: '{"k":"b"}' },
+            ],
+            usage: { input_tokens: 500, output_tokens: 40, input_tokens_details: { cached_tokens: 100 } },
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        );
+      }
+      return new Response(
+        JSON.stringify({
+          id: 'resp_turn_2',
+          model: 'gpt-6-luna',
+          status: 'completed',
+          output: [
+            {
+              type: 'message',
+              content: [{ type: 'output_text', text: '{"ok":true}' }],
+            },
+          ],
+          usage: { input_tokens: 700, output_tokens: 20, input_tokens_details: { cached_tokens: 400 } },
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    });
+
+    const tools = new ToolExecutor([
+      {
+        name: 'lookup',
+        description: 'Lookup key',
+        parameters: { type: 'object', properties: { k: { type: 'string' } } },
+        execute: async (args) => JSON.stringify({ got: args.k }),
+      },
+    ]);
+
+    const res = await runOpenAiSession({
+      provider: 'openai',
+      model: 'gpt-6-luna',
+      prompt: 'Look up a and b',
+      apiKey: 'sk-test-key',
+      maxTurns: 4,
+      tools,
+      fetch: fetchMock,
+    });
+
+    expect(res.succeeded).toBe(true);
+    expect(res.resultText).toBe('{"ok":true}');
+    expect(requests).toHaveLength(2);
+    expect(requests[0]!.url).toContain('/responses');
+    expect(requests[1]!.body.previous_response_id).toBe('resp_turn_1');
+    expect(requests[1]!.body.input).toEqual([
+      { type: 'function_call_output', call_id: 'call_a', output: '{"got":"a"}' },
+      { type: 'function_call_output', call_id: 'call_b', output: '{"got":"b"}' },
+    ]);
+    expect(res.usage.input_tokens).toBe(700);
+    expect(res.usage.cache_read_tokens).toBe(500);
+    expect(res.usage.output_tokens).toBe(60);
+  });
+
+  it('verifies derived indicator operands on captured exhibits and accepts verified derivations in submit_findings', async () => {
+    const exhibits: Record<string, string> = {
+      'evidence/pit.txt': 'California January 2024 Point-in-Time count total: 187,084 people.',
+      'evidence/pop.txt': 'ACS 2024 1-Year Table B01003 California total population: 39,431,263.',
+    };
+    const readText = async (p: string) => {
+      if (!(p in exhibits)) throw new Error('missing');
+      return exhibits[p]!;
+    };
+    const derivations: VerifiedDerivation[] = [];
+
+    // Rejects hallucinated operand not on exhibit
+    const bad = JSON.parse(
+      await executeComputeDerivedIndicator(
+        {
+          operation: 'ratio_pct',
+          numerator_operands: [{ label: 'Fake', value: 999999, text_path: 'evidence/pit.txt' }],
+          denominator_operands: [{ label: 'CA Pop', value: 39431263, text_path: 'evidence/pop.txt' }],
+          decimals: 4,
+        },
+        readText,
+        derivations,
+      ),
+    ) as { verified: boolean; errors?: string[] };
+    expect(bad.verified).toBe(false);
+    expect(derivations).toHaveLength(0);
+
+    // Accepts verified operands and computes 0.4745%
+    const ok = JSON.parse(
+      await executeComputeDerivedIndicator(
+        {
+          operation: 'ratio_pct',
+          numerator_operands: [{ label: 'CA PIT', value: 187084, text_path: 'evidence/pit.txt' }],
+          denominator_operands: [{ label: 'CA Pop', value: 39431263, text_path: 'evidence/pop.txt' }],
+          decimals: 4,
+        },
+        readText,
+        derivations,
+      ),
+    ) as { verified: boolean; computed_value: number; worked_math: string };
+    expect(ok.verified).toBe(true);
+    expect(ok.computed_value).toBe(0.4745);
+    expect(derivations).toHaveLength(1);
+
+    const finding = {
+      kind: 'indicator',
+      indicator_slug: 'homelessness',
+      name: 'Homelessness share',
+      value: 0.4745,
+      unit: '%',
+      year: 2024,
+      target: 0,
+      level_pct: 47.45,
+      scoring: {
+        threshold_ref: 'homelessness',
+        function: 'lower_is_better',
+        inputs: { value: 0.4745, target: 0 },
+        worked_math: ok.worked_math,
+      },
+      source: 'HUD 2024 AHAR Part 1',
+      source_url: 'https://www.huduser.gov/portal/sites/default/files/pdf/2024-AHAR-Part-1.pdf',
+      source_tier: 2,
+      evidence: {
+        snapshot_path: 'evidence/pit.png',
+        text_path: 'evidence/pit.txt',
+        captured_at: '2026-11-24T00:00:00Z',
+      },
+      confidence: 'high',
+      geographic_scale: 'state',
+    };
+
+    // Without derivations, literal checkValueOnPage rejects 0.4745
+    const rejected = await validateAndScoreSubmittedFindings([finding], undefined, readText, []);
+    expect(rejected.accepted).toBe(false);
+
+    // With verified derivation, submit_findings accepts 0.4745 cleanly
+    const accepted = await validateAndScoreSubmittedFindings([finding], undefined, readText, derivations);
+    expect(accepted.accepted).toBe(true);
+    expect(accepted.findings).toHaveLength(1);
+  });
+
+  it('attaches archived PNG exhibits as multimodal input_image blocks in OpenAI Responses verifier sessions', async () => {
+    const requests: Array<Record<string, unknown>> = [];
+    let callNum = 0;
+    const fetchMock = vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
+      callNum++;
+      const body = JSON.parse(String(init?.body ?? '{}')) as Record<string, unknown>;
+      requests.push(body);
+      if (callNum === 1) {
+        return new Response(
+          JSON.stringify({
+            id: 'resp_v1',
+            model: 'gpt-6.2-sol',
+            status: 'completed',
+            output: [
+              {
+                type: 'function_call',
+                call_id: 'call_img',
+                name: 'read_exhibit',
+                arguments: '{"filename":"archived-snapshot.png"}',
+              },
+            ],
+            usage: { input_tokens: 200, output_tokens: 20 },
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        );
+      }
+      return new Response(
+        JSON.stringify({
+          id: 'resp_v2',
+          model: 'gpt-6.2-sol',
+          status: 'completed',
+          output: [
+            {
+              type: 'message',
+              content: [{ type: 'output_text', text: '{"content_supported":"pass","verifier_note":"Visible on PNG."}' }],
+            },
+          ],
+          usage: { input_tokens: 400, output_tokens: 30 },
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    });
+
+    const res = await runSession({
+      prompt: 'Verify exhibit',
+      allowedTools: ['Read'],
+      provider: 'openai',
+      model: 'gpt-6.2-sol',
+      apiKey: 'sk-test-key',
+      archivedExhibits: {
+        snapshot: Buffer.from('fake-png-bytes'),
+      },
+      orchestrate: false,
+      maxTurns: 4,
+      providerFetch: fetchMock,
+      semaphore: null,
+    });
+
+    expect(res.succeeded).toBe(true);
+    expect(requests).toHaveLength(2);
+    const turn2Input = requests[1]!.input as Array<Record<string, unknown>>;
+    const visionMsg = turn2Input.find((item) => item.role === 'user');
+    expect(visionMsg).toBeDefined();
+    const content = visionMsg!.content as Array<Record<string, unknown>>;
+    expect(content.some((c) => c.type === 'input_image' && String(c.image_url).startsWith('data:image/png;base64,'))).toBe(true);
   });
 });

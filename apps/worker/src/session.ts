@@ -56,7 +56,7 @@ import {
   type FetchLike,
   type ProviderToolDefinition,
 } from './providers/types.js';
-import { runOpenAiSession } from './providers/openai.js';
+import { runOpenAiSession, runOpenAiWebSearch } from './providers/openai.js';
 import { runGoogleSession } from './providers/google.js';
 import { getSharedSessionSemaphore, type SessionSemaphore } from './session-semaphore.js';
 import type { TenantStorage } from './storage.js';
@@ -91,6 +91,8 @@ export interface SessionResult {
   submittedFindings?: FindingPayload[];
   /** Snapshot paths confirmed captured via `capture_evidence` during this session. */
   capturedSnapshotPaths?: string[];
+  /** Verified derived-indicator receipts computed via `compute_derived_indicator` during this session. */
+  verifiedDerivations?: VerifiedDerivation[];
 }
 
 export interface SubmitFindingsContext {
@@ -134,6 +136,132 @@ export function rescoreIndicatorPayload(
   };
 }
 
+export interface VerifiedDerivation {
+  computedValue: number;
+  workedMath: string;
+  operandTextPaths: string[];
+}
+
+const DERIVED_OPERAND_SCHEMA = z.object({
+  label: z.string().min(1).describe('Human label of the primary figure (e.g. "California 2024 PIT homeless count")'),
+  value: z.number().finite().describe('Exact numeric value appearing verbatim in the captured exhibit'),
+  text_path: z.string().min(1).describe('Captured evidence text_path (from capture_evidence) containing this operand'),
+});
+
+const COMPUTE_DERIVED_INDICATOR_SCHEMA = z.object({
+  operation: z
+    .enum(['ratio_pct', 'sum_ratio_pct', 'difference', 'per_capita'])
+    .describe(
+      'ratio_pct / sum_ratio_pct: sum(numerator) / sum(denominator) * scale (default scale=100); difference: sum(numerator) - sum(denominator); per_capita: sum(numerator) / sum(denominator) * scale (default scale=1)',
+    ),
+  numerator_operands: z.array(DERIVED_OPERAND_SCHEMA).min(1),
+  denominator_operands: z.array(DERIVED_OPERAND_SCHEMA).optional(),
+  denominator_constant: z
+    .number()
+    .finite()
+    .positive()
+    .optional()
+    .describe('Optional fixed structural denominator (e.g. 15 California air basins) when not a single table cell'),
+  scale: z.number().finite().positive().optional().describe('Optional multiplier (default 100 for *_pct, 1 otherwise)'),
+  decimals: z.number().int().min(0).max(4).optional().describe('Decimal places to round computed_value (default 2)'),
+});
+
+/**
+ * Deterministic derived-indicator calculator (Research Routine v3 Phase 1):
+ * verifies every primary operand exists verbatim in its captured exhibit text
+ * before computing a ratio/percentage/difference in TypeScript, eliminating
+ * both LLM mental arithmetic and the literal `value_on_page` false-rejection
+ * trap for derived ratios (e.g. PIT count / Census population, ACS rent-burden
+ * brackets / total renters, violating air basins / total air basins).
+ */
+export async function executeComputeDerivedIndicator(
+  rawArgs: unknown,
+  readEvidenceText: (textPath: string) => Promise<string>,
+  verifiedDerivations: VerifiedDerivation[],
+): Promise<string> {
+  const parsed = COMPUTE_DERIVED_INDICATOR_SCHEMA.safeParse(rawArgs);
+  if (!parsed.success) {
+    return JSON.stringify({ verified: false, error: `invalid arguments: ${parsed.error.message}` });
+  }
+  const { operation, numerator_operands, denominator_operands, denominator_constant } = parsed.data;
+  const scale = parsed.data.scale ?? (operation === 'ratio_pct' || operation === 'sum_ratio_pct' ? 100 : 1);
+  const decimals = parsed.data.decimals ?? 2;
+
+  const allOperands = [...numerator_operands, ...(denominator_operands ?? [])];
+  const operandTextPaths = new Set<string>();
+  const missingOperands: string[] = [];
+
+  for (const op of allOperands) {
+    let text: string;
+    try {
+      text = await readEvidenceText(op.text_path);
+    } catch (err) {
+      missingOperands.push(
+        `Could not read ${op.text_path} for "${op.label}": ${err instanceof Error ? err.message : String(err)}`,
+      );
+      continue;
+    }
+    const status = valueOnPage(op.value, text);
+    if (status === 'not_found') {
+      missingOperands.push(
+        `Operand "${op.label}" (${op.value}) was not found verbatim in captured exhibit ${op.text_path}.`,
+      );
+    } else {
+      operandTextPaths.add(op.text_path);
+    }
+  }
+
+  if (missingOperands.length > 0) {
+    return JSON.stringify({ verified: false, errors: missingOperands });
+  }
+
+  const numSum = numerator_operands.reduce((acc, o) => acc + o.value, 0);
+  const numExpr = numerator_operands.map((o) => `${o.value} (${o.label})`).join(' + ');
+
+  let rawResult: number;
+  let workedMath: string;
+
+  if (operation === 'difference') {
+    const denSum = (denominator_operands ?? []).reduce((acc, o) => acc + o.value, 0);
+    rawResult = (numSum - denSum) * scale;
+    const denExpr = (denominator_operands ?? []).map((o) => `${o.value} (${o.label})`).join(' + ');
+    workedMath = `(${numExpr}) − (${denExpr || '0'})${scale !== 1 ? ` × ${scale}` : ''} = ${rawResult.toFixed(decimals)}`;
+  } else {
+    const denSum =
+      denominator_operands && denominator_operands.length > 0
+        ? denominator_operands.reduce((acc, o) => acc + o.value, 0)
+        : (denominator_constant ?? 0);
+    if (!Number.isFinite(denSum) || denSum <= 0) {
+      return JSON.stringify({
+        verified: false,
+        error: 'ratio/per_capita operations require positive denominator_operands or denominator_constant.',
+      });
+    }
+    rawResult = (numSum / denSum) * scale;
+    const denExpr =
+      denominator_operands && denominator_operands.length > 0
+        ? denominator_operands.map((o) => `${o.value} (${o.label})`).join(' + ')
+        : String(denominator_constant);
+    workedMath = `(${numExpr}) ÷ (${denExpr}) × ${scale} = ${rawResult.toFixed(decimals)}`;
+  }
+
+  const factor = Math.pow(10, decimals);
+  const computedValue = Math.round(rawResult * factor) / factor;
+  verifiedDerivations.push({
+    computedValue,
+    workedMath,
+    operandTextPaths: [...operandTextPaths],
+  });
+
+  return JSON.stringify({
+    verified: true,
+    computed_value: computedValue,
+    worked_math: workedMath,
+    verified_operand_paths: [...operandTextPaths],
+    note: 'All operands verified verbatim on captured exhibits. You may now submit computed_value in submit_findings (include worked_math in notes/scoring) without triggering value_not_found.',
+  });
+}
+
 /**
  * Pure (apart from `readEvidenceText` callback): validate and deterministically
  * score findings submitted via `mcp__evidence__submit_findings` synchronously
@@ -144,6 +272,7 @@ export async function validateAndScoreSubmittedFindings(
   rawFindings: readonly unknown[],
   ctx: SubmitFindingsContext | undefined,
   readEvidenceText?: (textPath: string) => Promise<string>,
+  verifiedDerivations?: readonly VerifiedDerivation[],
 ): Promise<{
   accepted: boolean;
   findings: FindingPayload[];
@@ -224,9 +353,19 @@ export async function validateAndScoreSubmittedFindings(
     if (readEvidenceText && payload.evidence.text_path) {
       const valStatus = await checkValueOnPage(payload, readEvidenceText);
       if (valStatus === 'not_found') {
-        itemErrors.push(
-          `value_not_found: claimed value "${payload.value}" was not found in the captured readable text (${payload.evidence.text_path}). Verify the exact figure on the page, capture the concrete data table/PDF URL, or emit kind: "gap".`,
-        );
+        const numericVal = typeof payload.value === 'number' ? payload.value : Number(payload.value);
+        const matchedDerivation =
+          Number.isFinite(numericVal) &&
+          verifiedDerivations?.find(
+            (d) =>
+              Math.abs(d.computedValue - numericVal) <= Math.max(0.05, Math.abs(numericVal) * 0.005) &&
+              (d.operandTextPaths.includes(payload.evidence.text_path!) || d.operandTextPaths.length > 0),
+          );
+        if (!matchedDerivation) {
+          itemErrors.push(
+            `value_not_found: claimed value "${payload.value}" was not found in the captured readable text (${payload.evidence.text_path}). If this indicator is a derived percentage/ratio computed from primary counts in your captured exhibits, call compute_derived_indicator first so its operands are verified; otherwise verify the exact figure on the page, capture the concrete data table/PDF URL, or emit kind: "gap".`,
+          );
+        }
       }
     }
 
@@ -267,17 +406,19 @@ export class SessionRunError extends Error {
 
 /** Hard turn cap for bounded synthesis-only recovery when a session hits `error_max_turns`. */
 export const MAX_TURNS_RECOVERY_LIMIT = 6;
-const MAX_SYNTHESIS_DIGEST_CHARS = 12_000;
+const MAX_SYNTHESIS_DIGEST_CHARS = 28_000;
 
 /**
- * Pure: extract a bounded digest of assistant findings/notes from a previous
- * session result & transcript so a `error_max_turns` recovery pass can emit
- * findings already gathered without doing any new web searches.
+ * Pure: extract a bounded digest of assistant notes AND tool results
+ * (`capture_evidence`, `query_*`, `read_source`, `web_search`, `submit_findings`)
+ * from a previous session result & transcript so a `error_max_turns` recovery
+ * pass can emit findings already gathered without doing any new web searches.
  */
 function extractGatheredNotesDigest(first: SessionResult): string {
-  const parts: string[] = [];
+  const generalParts: string[] = [];
+  const highPriorityParts: string[] = [];
   if (first.resultText.trim()) {
-    parts.push(first.resultText.trim());
+    generalParts.push(first.resultText.trim());
   }
   if (first.transcript && first.transcript.length > 0) {
     try {
@@ -291,12 +432,30 @@ function extractGatheredNotesDigest(first: SessionResult): string {
         try {
           const frame = JSON.parse(trimmed) as {
             type?: unknown;
+            name?: unknown;
+            output?: unknown;
+            is_error?: unknown;
             message?: { content?: unknown };
             content?: unknown;
           };
-          if (frame.type !== 'assistant') continue;
-          const text = messageText(frame.message?.content ?? frame.content).trim();
-          if (text) parts.push(text);
+          if (frame.type === 'assistant') {
+            const text = messageText(frame.message?.content ?? frame.content).trim();
+            if (text) generalParts.push(text);
+          } else if (frame.type === 'tool_result' && typeof frame.output === 'string' && frame.output.trim()) {
+            const toolName = typeof frame.name === 'string' ? frame.name : 'tool';
+            const snippet = frame.output.trim().slice(0, 3500);
+            const entry = `[tool_result:${toolName}${frame.is_error ? ' ERROR' : ''}]\n${snippet}`;
+            if (
+              toolName.includes('capture_evidence') ||
+              toolName.includes('submit_findings') ||
+              toolName.startsWith('query_') ||
+              toolName.includes('civic_data')
+            ) {
+              highPriorityParts.push(entry);
+            } else {
+              generalParts.push(entry);
+            }
+          }
         } catch {
           // Ignore non-JSON lines.
         }
@@ -305,11 +464,30 @@ function extractGatheredNotesDigest(first: SessionResult): string {
       // Ignore corrupt/unreadable transcript buffers.
     }
   }
-  const combined = parts.join('\n\n---\n\n').trim();
-  if (!combined) return '(no prior assistant notes captured)';
-  if (combined.length <= MAX_SYNTHESIS_DIGEST_CHARS) return combined;
-  // Keep the most recent gathered notes (end of transcript has the final collected figures/paths).
-  return `…[earlier notes truncated]\n${combined.slice(-MAX_SYNTHESIS_DIGEST_CHARS)}`;
+  const priorityBlock = highPriorityParts.join('\n\n---\n\n').trim();
+  const generalBlock = generalParts.join('\n\n---\n\n').trim();
+  if (!priorityBlock && !generalBlock) return '(no prior assistant notes or tool results captured)';
+
+  if (!priorityBlock) {
+    return generalBlock.length <= MAX_SYNTHESIS_DIGEST_CHARS
+      ? generalBlock
+      : `…[earlier notes truncated]\n${generalBlock.slice(-MAX_SYNTHESIS_DIGEST_CHARS)}`;
+  }
+
+  const boundedPriority =
+    priorityBlock.length <= 16_000 ? priorityBlock : `…[earlier captures truncated]\n${priorityBlock.slice(-16_000)}`;
+  const remainingBudget = Math.max(2_000, MAX_SYNTHESIS_DIGEST_CHARS - boundedPriority.length - 80);
+  const boundedGeneral =
+    generalBlock.length <= remainingBudget
+      ? generalBlock
+      : `…[earlier notes truncated]\n${generalBlock.slice(-remainingBudget)}`;
+
+  return [
+    boundedGeneral ? `#### Earlier research notes & source excerpts\n${boundedGeneral}` : '',
+    `#### Captured evidence, civic-data queries & submission feedback (authoritative)\n${boundedPriority}`,
+  ]
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 /**
@@ -370,6 +548,7 @@ export function buildSynthesisRecoveryInput(
     orchestrate: false,
     scoutModel: null,
     maxTurns: MAX_TURNS_RECOVERY_LIMIT,
+    priorVerifiedDerivations: first.verifiedDerivations,
   };
 }
 
@@ -731,6 +910,8 @@ export interface RunSessionArgs {
    * `WebFetch` calls. Defaults to any ambient blocklist set via `withEgressBlocklist`.
    */
   sourceBlocklist?: SourceBlocklist;
+  /** Verified derived-indicator receipts carried over from a prior pass into synthesis recovery. */
+  priorVerifiedDerivations?: VerifiedDerivation[];
 }
 
 const READ_SOURCE_SCHEMA = z.object({
@@ -766,6 +947,22 @@ const READ_EXHIBIT_SCHEMA = z.object({
     .string()
     .describe('Exact archived exhibit filename (e.g. "archived-source-excerpt.txt", "archived-snapshot.png", "archived-source.pdf")'),
 });
+
+const WEB_SEARCH_SCHEMA = z.object({
+  query: z.string().min(2).describe('Targeted web search query for official agencies, statistical datasets, or primary reports'),
+  max_results: z
+    .number()
+    .int()
+    .min(1)
+    .max(10)
+    .optional()
+    .describe('Maximum number of primary-source URLs to return (default 6, max 10)'),
+});
+
+const MAX_OPENAI_WEB_SEARCHES_PER_SESSION = 14;
+const MAX_PHASE0_WEB_SEARCHES = 6;
+const MAX_PHASE0_READ_SOURCES = 8;
+const MAX_VISION_EXHIBIT_BYTES = 6 * 1024 * 1024;
 
 /**
  * One research session = one Agent SDK session (Anthropic open-web CLI),
@@ -824,11 +1021,14 @@ async function runSessionUnbounded(input: RunSessionArgs): Promise<SessionResult
     const readEvidenceText = storage
       ? async (textPath: string) => (await storage.get(textPath)).toString('utf8')
       : undefined;
+    const verifiedDerivations: VerifiedDerivation[] = [...(input.priorVerifiedDerivations ?? [])];
+    const isBoundedPhase0 = !input.submitFindingsContext && (input.maxTurns ?? DEFAULT_SESSION_MAX_TURNS) <= 8;
     const toolDefs: ProviderToolDefinition[] = [];
     const mountEvidence =
       Boolean(storage) || effectiveAllowedTools.includes('mcp__evidence__read_source');
 
     if (mountEvidence) {
+      let readSourcesUsed = 0;
       toolDefs.push({
         name: 'read_source',
         description:
@@ -839,6 +1039,12 @@ async function runSessionUnbounded(input: RunSessionArgs): Promise<SessionResult
           if (!parsed.success) {
             return JSON.stringify({ error: `invalid arguments: ${parsed.error.message}` });
           }
+          if (isBoundedPhase0 && readSourcesUsed >= MAX_PHASE0_READ_SOURCES) {
+            return JSON.stringify({
+              error: `Phase 0 read_source budget reached (${MAX_PHASE0_READ_SOURCES} pages). Synthesize the region brief now from the portals and URLs already verified.`,
+            });
+          }
+          readSourcesUsed++;
           try {
             const payload = await readSourceWithCache(sourceCache, storage, parsed.data);
             return JSON.stringify(payload);
@@ -890,6 +1096,14 @@ async function runSessionUnbounded(input: RunSessionArgs): Promise<SessionResult
             },
           },
           {
+            name: 'compute_derived_indicator',
+            description:
+              'Deterministically compute a derived percentage, ratio, or difference from primary figures already captured via capture_evidence (e.g. PIT homeless count ÷ Census population × 100, ACS rent-burdened brackets ÷ total renters × 100, or violating air basins ÷ total air basins × 100). Verifies every operand verbatim on its captured text_path so submit_findings accepts the derived value.',
+            parameters: zodToJsonSchema(COMPUTE_DERIVED_INDICATOR_SCHEMA),
+            execute: async (rawArgs) =>
+              executeComputeDerivedIndicator(rawArgs, readEvidenceText, verifiedDerivations),
+          },
+          {
             name: 'submit_findings',
             description:
               'Validate, deterministically score, and submit your completed findings array for this dimension. Returns concrete validation errors immediately so you can fix them in-session.',
@@ -903,6 +1117,7 @@ async function runSessionUnbounded(input: RunSessionArgs): Promise<SessionResult
                 parsed.data.findings,
                 input.submitFindingsContext,
                 readEvidenceText,
+                verifiedDerivations,
               );
               if (validation.accepted) {
                 submittedFindings = validation.findings;
@@ -954,10 +1169,72 @@ async function runSessionUnbounded(input: RunSessionArgs): Promise<SessionResult
           if (name.endsWith('.txt')) {
             return body.toString('utf8');
           }
+          if (name.endsWith('.png') && body.byteLength > 0 && body.byteLength <= MAX_VISION_EXHIBIT_BYTES) {
+            return {
+              output: JSON.stringify({
+                filename: name,
+                bytes: body.byteLength,
+                attached_image: true,
+                note: 'Visual PNG screenshot attached directly for multimodal inspection.',
+              }),
+              images: [
+                {
+                  mimeType: 'image/png',
+                  base64: body.toString('base64'),
+                  label: name,
+                },
+              ],
+            };
+          }
           return JSON.stringify({
             filename: name,
             bytes: body.byteLength,
             note: 'Binary exhibit stored in archive; inspect archived-source-excerpt.txt for extracted readable text.',
+          });
+        },
+      });
+    }
+
+    let sideCallUsage: SessionTokenUsage | null = null;
+    if (provider === 'openai' && effectiveAllowedTools.includes('WebSearch')) {
+      let searchCallsUsed = 0;
+      const searchCap = isBoundedPhase0 ? MAX_PHASE0_WEB_SEARCHES : MAX_OPENAI_WEB_SEARCHES_PER_SESSION;
+      toolDefs.push({
+        name: 'web_search',
+        description:
+          'Search the live web for authoritative primary-source URLs (government agencies, statistical tables, official PDFs, research institutes). After finding a promising URL, verify figures with read_source and capture accepted sources with capture_evidence.',
+        parameters: zodToJsonSchema(WEB_SEARCH_SCHEMA),
+        execute: async (rawArgs) => {
+          const parsed = WEB_SEARCH_SCHEMA.safeParse(rawArgs);
+          if (!parsed.success) {
+            return JSON.stringify({ error: `invalid arguments: ${parsed.error.message}` });
+          }
+          if (searchCallsUsed >= searchCap) {
+            return JSON.stringify({
+              error: `web_search cap reached (${searchCap} searches per session). Synthesize from gathered sources or emit kind: "gap".`,
+            });
+          }
+          searchCallsUsed++;
+          const res = await runOpenAiWebSearch({
+            query: parsed.data.query,
+            maxResults: parsed.data.max_results,
+            apiKey: input.apiKey,
+            isOrganizationKey: Boolean(input.apiKey),
+            fetch: input.providerFetch,
+            isBlocked: effectiveBlocklist
+              ? (url, text) =>
+                  matchBlockedSource(url, effectiveBlocklist)?.reason ??
+                  (text ? matchBlockedSource(text, effectiveBlocklist)?.reason ?? null : null)
+              : undefined,
+          });
+          sideCallUsage = sideCallUsage ? mergeUsage(sideCallUsage, res.usage) : res.usage;
+          if (!res.ok) {
+            return JSON.stringify({ error: res.error ?? 'web_search failed' });
+          }
+          return JSON.stringify({
+            query: parsed.data.query,
+            results: res.results,
+            ...(res.filteredCount > 0 ? { filtered_blocked_sources: res.filteredCount } : {}),
           });
         },
       });
@@ -979,15 +1256,17 @@ async function runSessionUnbounded(input: RunSessionArgs): Promise<SessionResult
         ? await runOpenAiSession(providerInput)
         : await runGoogleSession(providerInput);
 
+    const combinedUsage = sideCallUsage ? mergeUsage(out.usage, sideCallUsage) : out.usage;
     return {
       resultText: out.resultText,
       transcript: gzipSync(out.transcriptLines.join('\n')),
-      usage: out.usage,
+      usage: combinedUsage,
       succeeded: out.succeeded,
       ...(out.apiError ? { apiError: out.apiError as SDKAssistantMessageError } : {}),
       ...(out.apiErrorText ? { apiErrorText: redactErrorText(out.apiErrorText, input.apiKey) } : {}),
       ...(submittedFindings ? { submittedFindings } : {}),
       ...(capturedSnapshotPaths.size ? { capturedSnapshotPaths: [...capturedSnapshotPaths] } : {}),
+      ...(verifiedDerivations.length ? { verifiedDerivations } : {}),
     };
   }
 

@@ -11,14 +11,22 @@ import type { ResearchProvider, SessionTokenUsage } from '@deep-fryer/core';
  * schema so every model runs with the exact same deterministic tool surface.
  */
 
+export interface ToolImageAttachment {
+  mimeType: 'image/png' | 'image/jpeg' | 'image/webp';
+  base64: string;
+  label?: string;
+}
+
+export type ToolExecuteReturn = string | { output: string; images?: ToolImageAttachment[] };
+
 export interface ProviderToolDefinition {
   /** Tool name exposed to the model (letters, digits, underscores, hyphens). */
   name: string;
   description: string;
   /** Standard JSON Schema object for the tool's input arguments. */
   parameters: Record<string, unknown>;
-  /** Execute the tool with parsed object arguments and return a string result (usually JSON). */
-  execute: (args: Record<string, unknown>) => Promise<string>;
+  /** Execute the tool with parsed object arguments and return a string result (or text + images). */
+  execute: (args: Record<string, unknown>) => Promise<ToolExecuteReturn>;
 }
 
 export interface OpenAiToolSpec {
@@ -199,7 +207,10 @@ export class ToolExecutor {
     }));
   }
 
-  async execute(name: string, rawArgs: unknown): Promise<{ output: string; isError: boolean }> {
+  async execute(
+    name: string,
+    rawArgs: unknown,
+  ): Promise<{ output: string; isError: boolean; images?: ToolImageAttachment[] }> {
     const tool = this.tools.get(name);
     if (!tool) {
       return {
@@ -228,8 +239,15 @@ export class ToolExecutor {
     }
 
     try {
-      const output = await tool.execute(parsedArgs);
-      return { output, isError: false };
+      const rawRes = await tool.execute(parsedArgs);
+      if (typeof rawRes === 'string') {
+        return { output: rawRes, isError: false };
+      }
+      return {
+        output: rawRes.output,
+        isError: false,
+        ...(rawRes.images?.length ? { images: rawRes.images } : {}),
+      };
     } catch (err) {
       return {
         output: JSON.stringify({
