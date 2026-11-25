@@ -129,14 +129,14 @@ function RenewableFutureLightLines({ progress }: { progress: number }) {
     >
       <defs>
         <radialGradient id="df-thriving-glow" cx="50%" cy="52%" r="48%">
-          <stop offset="0%" stopColor="#8cd755" stopOpacity={0.18 * auraT} />
-          <stop offset="48%" stopColor="#d9b24c" stopOpacity={0.1 * auraT} />
-          <stop offset="100%" stopColor="#d9b24c" stopOpacity="0" />
+          <stop offset="0%" stopColor="#6fa07e" stopOpacity={0.14 * auraT} />
+          <stop offset="48%" stopColor="#cfa959" stopOpacity={0.09 * auraT} />
+          <stop offset="100%" stopColor="#cfa959" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="df-light-gold" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#c79b2c" stopOpacity="0.85" />
-          <stop offset="50%" stopColor="#5b9a32" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#c79b2c" stopOpacity="0.85" />
+          <stop offset="0%" stopColor="#bf9940" stopOpacity="0.8" />
+          <stop offset="50%" stopColor="#528265" stopOpacity="0.85" />
+          <stop offset="100%" stopColor="#bf9940" stopOpacity="0.8" />
         </linearGradient>
       </defs>
 
@@ -154,7 +154,7 @@ function RenewableFutureLightLines({ progress }: { progress: number }) {
       </g>
 
       {/* Rolling regenerative terrain & watershed contours across full width */}
-      <g fill="none" stroke="#5b9a32" strokeLinecap="round" strokeLinejoin="round" opacity={0.16 + 0.54 * horizonT}>
+      <g fill="none" stroke="#538264" strokeLinecap="round" strokeLinejoin="round" opacity={0.16 + 0.54 * horizonT}>
         {/* Far sunlit ridge */}
         <path
           d="M 0 560 Q 170 495 360 545 T 720 565 T 1090 540 T 1440 555"
@@ -225,7 +225,7 @@ function RenewableFutureLightLines({ progress }: { progress: number }) {
       </g>
 
       {/* Left community housing with green roofs, solar lines & trees */}
-      <g fill="none" stroke="#4f8a2b" strokeLinecap="round" strokeLinejoin="round" opacity={0.1 + 0.72 * communityT}>
+      <g fill="none" stroke="#4a765a" strokeLinecap="round" strokeLinejoin="round" opacity={0.1 + 0.72 * communityT}>
         {/* Terraced multifamily homes */}
         <path d="M 272 648 L 272 565 L 332 544 L 332 648" strokeWidth="1.5" pathLength={100} {...dash(communityT)} />
         <path d="M 284 574 L 320 562 M 284 596 L 320 596 M 284 618 L 320 618" stroke="#c49526" strokeWidth="1.1" pathLength={100} {...dash(communityT)} />
@@ -241,7 +241,7 @@ function RenewableFutureLightLines({ progress }: { progress: number }) {
       </g>
 
       {/* RIGHT HORIZON: Clean electric rail viaduct, sunlit civic pavilion, living canopy & solar sails */}
-      <g fill="none" stroke="#4f8a2b" strokeLinecap="round" strokeLinejoin="round" opacity={0.1 + 0.72 * communityT}>
+      <g fill="none" stroke="#4a765a" strokeLinecap="round" strokeLinejoin="round" opacity={0.1 + 0.72 * communityT}>
         {/* Sleek elevated electric rail viaduct */}
         <path d="M 970 612 Q 1200 578 1440 598" strokeWidth="1.6" pathLength={100} {...dash(communityT)} />
         <path d="M 970 622 Q 1200 588 1440 608" strokeWidth="1" pathLength={100} {...dash(communityT)} />
@@ -298,13 +298,19 @@ function heroCanvasTheme(dark: boolean) {
         transparent: true,
         outerTextColour: '#f2f0e8',
         limitStrokeColour: 'rgba(242, 240, 232, 0.34)',
-        separatorColour: 'rgba(20, 24, 20, 0.55)',
+        separatorColour: 'rgba(20, 24, 20, 0.52)',
+        donutFrosting: '#2d503c',
+        donutFilling: '#568567',
+        donutFillingOuter: '#3f6b51',
       }
     : {
         transparent: true,
         outerTextColour: '#1d221c',
-        limitStrokeColour: 'rgba(40, 48, 40, 0.34)',
-        separatorColour: 'rgba(255, 255, 255, 0.85)',
+        limitStrokeColour: 'rgba(40, 48, 40, 0.32)',
+        separatorColour: 'rgba(255, 255, 255, 0.78)',
+        donutFrosting: '#3c664c',
+        donutFilling: '#7ba989',
+        donutFillingOuter: '#5b8a6b',
       };
 }
 

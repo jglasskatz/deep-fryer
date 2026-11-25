@@ -21,6 +21,9 @@ export interface DoughnutRendererTheme {
   outerTextColour?: string;
   limitStrokeColour?: string;
   separatorColour?: string;
+  donutFrosting?: string;
+  donutFilling?: string;
+  donutFillingOuter?: string;
 }
 
 export interface DoughnutRendererOptions extends DoughnutRendererTheme {

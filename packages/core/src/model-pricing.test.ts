@@ -50,6 +50,26 @@ describe('modelPricing', () => {
     expect(modelPricing('claude-3-5-haiku-20241022')).toBeNull();
   });
 
+  it('prices OpenAI gpt-6 (luna, terra, sol, astra) models accurately', () => {
+    expect(modelPricing('gpt-6-luna')).toEqual({ standard: { input: 0.1, output: 0.5, cacheRead: 0.01 } });
+    expect(modelPricing('gpt-6.1-terra')).toEqual({ standard: { input: 1, output: 5, cacheRead: 0.05 } });
+    expect(modelPricing('gpt-6.2-sol')).toEqual({ standard: { input: 2, output: 10, cacheRead: 0.1 } });
+    expect(modelPricing('gpt-6.2-astra')).toEqual({ standard: { input: 8, output: 40, cacheRead: 0.4 } });
+    expect(modelPricing('gemini-4-neon')).toEqual({ standard: { input: 3, output: 15, cacheRead: 0.15 } });
+    expect(modelPricing('gemini-4-hydrogen')).toEqual({ standard: { input: 1.5, output: 7.5, cacheRead: 0.075 } });
+    const priced = priceSessionUsage({
+      ...emptyUsage(),
+      by_model: {
+        'gpt-6-luna': tokens(100_000, 10_000, 50_000, 0, 2),
+        'gpt-6.2-astra': tokens(10_000, 2_000, 0, 0, 0),
+      },
+    });
+    expect(priced.unpriced).toEqual([]);
+    // luna: 0.01 + 0.005 + 0.0005 + 0.02 (2 searches) = 0.0355
+    // astra: 0.08 + 0.08 = 0.16
+    expect(priced.dollars).toBeCloseTo(0.1955, 10);
+  });
+
   it('strips only a trailing release date', () => {
     expect(baseModelId('claude-haiku-4-5-20251001')).toBe('claude-haiku-4-5');
     expect(baseModelId('claude-sonnet-5-5')).toBe('claude-sonnet-5-5');

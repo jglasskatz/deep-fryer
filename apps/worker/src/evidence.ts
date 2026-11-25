@@ -421,11 +421,22 @@ export interface RenderedSourceDocument {
   pdfUrl?: string;
 }
 
+const PDF_FETCH_HEADERS = {
+  'user-agent':
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  accept: 'application/pdf,application/octet-stream,*/*;q=0.8',
+};
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 /**
  * Render a public HTTPS source page in an isolated Playwright context (bounded
  * by `semaphore`), pass the exhibit gate, optionally download and extract text
- * from an associated or direct PDF via pinned-IP `guardedFetch`, and return the
- * raw bytes + composed readable text without writing to storage yet.
+ * from an associated or direct PDF via pinned-IP `guardedFetch` (with browser
+ * download/WAF fallback for headless Chromium direct-PDF navigations), and
+ * return the raw bytes + composed readable text without writing to storage yet.
  */
 export async function renderSourceDocument(
   url: string,
@@ -437,10 +448,12 @@ export async function renderSourceDocument(
   const semaphore = opts.semaphore ?? defaultBrowserSemaphore;
 
   let pngBytes: Buffer;
-  let pageText: string;
+  let pageText = '';
   let finalUrl = url;
   let contentType = 'text/html';
   let status: number | undefined;
+  let pdfBytes: Buffer | undefined;
+  let pdfText: string | undefined;
 
   await semaphore.run(async () => {
     const context = await (await browser()).newContext({
@@ -458,12 +471,6 @@ export async function renderSourceDocument(
         }
       });
       const page = await context.newPage();
-      // The gate judges the document the browser ended on. goto's Response is that document unless the
-      // page navigated again while it settled, which is exactly what a passed challenge does: Cloudflare
-      // answers 403 "Just a moment…", then reloads the real page with 200. So every main-frame document
-      // response is recorded and the last one wins, with goto's own Response as the fallback. (Guarded:
-      // a service-worker request has no frame, and a listener that threw would surface as an unhandled
-      // error, not as this capture's failure.)
       const documents: PageResponse[] = [];
       page.on('response', (res) => {
         try {
@@ -472,42 +479,142 @@ export async function renderSourceDocument(
           // Not a main-frame document.
         }
       });
-      const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 45_000 });
-      const signals = await readExhibitSignals(page, documents.at(-1) ?? response);
-      const problems = classifyExhibit(signals);
-      if (problems.length > 0) throw new ExhibitRefusedError(problems);
-      pageText = signals.visibleText;
-      status = signals.status;
-      contentType = signals.contentType ?? 'text/html';
-      finalUrl = typeof page.url === 'function' ? page.url() || url : url;
-      pngBytes = Buffer.from(await page.screenshot({ fullPage: true }));
+
+      let directDownloadTriggered = false;
+      let response: PageResponse | null = null;
+      try {
+        response = await page.goto(url, { waitUntil: 'networkidle', timeout: 45_000 });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (/Download is starting|ERR_ABORTED/i.test(msg)) {
+          directDownloadTriggered = true;
+        } else {
+          throw err;
+        }
+      }
+
+      if (directDownloadTriggered) {
+        // Headless Chromium aborts navigation when a direct PDF triggers a file download.
+        // Download directly via guardedFetch (falling back to context.request.get on .gov WAFs).
+        let fetchedBytes: Buffer | undefined;
+        let fetchedStatus: number | undefined;
+        let fetchedType = 'application/pdf';
+        try {
+          const res = await guardedFetch(url, {
+            headers: PDF_FETCH_HEADERS,
+            signal: AbortSignal.timeout(PDF_DOWNLOAD_TIMEOUT_MS),
+          });
+          fetchedStatus = res.status;
+          fetchedType = res.headers.get('content-type') || 'application/pdf';
+          if (res.ok) {
+            fetchedBytes = await readResponseBytesCapped(res, MAX_PDF_DOWNLOAD_BYTES);
+            finalUrl = res.url || url;
+          }
+        } catch {
+          // Try Playwright's browser request stack below.
+        }
+        if (!fetchedBytes && typeof context.request?.get === 'function') {
+          try {
+            const pRes = await context.request.get(url, {
+              headers: PDF_FETCH_HEADERS,
+              timeout: PDF_DOWNLOAD_TIMEOUT_MS,
+            });
+            fetchedStatus = pRes.status();
+            fetchedType = pRes.headers()['content-type'] || 'application/pdf';
+            if (pRes.ok()) {
+              const body = await pRes.body();
+              if (body.byteLength <= MAX_PDF_DOWNLOAD_BYTES) {
+                fetchedBytes = Buffer.from(body);
+                finalUrl = pRes.url() || url;
+              }
+            }
+          } catch {
+            // Fall through to refusal check below.
+          }
+        }
+        if (!fetchedBytes) {
+          throw new ExhibitRefusedError([
+            {
+              code: 'http_status',
+              detail: fetchedStatus
+                ? `the server answered HTTP ${fetchedStatus} when downloading the PDF`
+                : 'the PDF download failed or exceeded the size cap',
+            },
+          ]);
+        }
+        status = fetchedStatus ?? 200;
+        contentType = fetchedType;
+        pdfBytes = fetchedBytes;
+        pdfText = (await extractText(pdfBytes, 'application/pdf')) ?? '';
+        pageText = '';
+        const previewText = (pdfText || PDF_WITHOUT_TEXT_NOTE).slice(0, 4000);
+        if (typeof page.setContent === 'function') {
+          await page.setContent(
+            `<!doctype html><html><body style="font-family:system-ui,sans-serif;padding:32px;background:#fff;color:#111;max-width:1180px;">` +
+              `<h2 style="margin:0 0 8px;font-size:16px;">Archived PDF Exhibit</h2>` +
+              `<div style="font-size:12px;color:#555;margin-bottom:16px;word-break:break-all;">${escapeHtml(finalUrl)}</div>` +
+              `<pre style="white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px;line-height:1.45;">${escapeHtml(previewText)}</pre>` +
+              `</body></html>`,
+            { waitUntil: 'load' },
+          );
+        }
+        pngBytes = Buffer.from(await page.screenshot({ fullPage: false }));
+      } else {
+        const signals = await readExhibitSignals(page, documents.at(-1) ?? response);
+        const problems = classifyExhibit(signals);
+        if (problems.length > 0) throw new ExhibitRefusedError(problems);
+        pageText = signals.visibleText;
+        status = signals.status;
+        contentType = signals.contentType ?? 'text/html';
+        finalUrl = typeof page.url === 'function' ? page.url() || url : url;
+        pngBytes = Buffer.from(await page.screenshot({ fullPage: true }));
+      }
+
+      // Fetch companion or direct PDF if not already downloaded above, with browser-stack WAF fallback.
+      const isPdfDoc =
+        Boolean(pdfUrl) ||
+        url.toLowerCase().endsWith('.pdf') ||
+        finalUrl.toLowerCase().endsWith('.pdf') ||
+        /application\/(?:x-)?pdf\b/i.test(contentType);
+      const docUrl = pdfUrl ?? (isPdfDoc ? finalUrl : undefined);
+      if (docUrl && !pdfBytes) {
+        try {
+          const res = await guardedFetch(docUrl, {
+            headers: PDF_FETCH_HEADERS,
+            signal: AbortSignal.timeout(PDF_DOWNLOAD_TIMEOUT_MS),
+          });
+          if (res.ok) {
+            pdfBytes = await readResponseBytesCapped(res, MAX_PDF_DOWNLOAD_BYTES);
+            pdfText = (await extractText(pdfBytes, 'application/pdf')) ?? '';
+          }
+        } catch {
+          // Try Playwright's browser request stack below.
+        }
+        if (!pdfBytes && typeof context.request?.get === 'function') {
+          try {
+            await assertPublicHttpsUrl(docUrl);
+            const pRes = await context.request.get(docUrl, {
+              headers: PDF_FETCH_HEADERS,
+              timeout: PDF_DOWNLOAD_TIMEOUT_MS,
+            });
+            if (pRes.ok()) {
+              const body = await pRes.body();
+              if (body.byteLength <= MAX_PDF_DOWNLOAD_BYTES) {
+                pdfBytes = Buffer.from(body);
+                pdfText = (await extractText(pdfBytes, 'application/pdf')) ?? '';
+              }
+            }
+          } catch {
+            // PDF capture is best-effort; the page screenshot is the primary record.
+          }
+        }
+      }
     } finally {
       await context.close();
     }
   });
 
-  let pdfBytes: Buffer | undefined;
-  let pdfText: string | undefined;
-  const isPdfDoc =
-    Boolean(pdfUrl) ||
-    url.toLowerCase().endsWith('.pdf') ||
-    finalUrl.toLowerCase().endsWith('.pdf') ||
-    /application\/(?:x-)?pdf\b/i.test(contentType);
-  const docUrl = pdfUrl ?? (isPdfDoc ? finalUrl : undefined);
-  if (docUrl) {
-    try {
-      const res = await guardedFetch(docUrl, { signal: AbortSignal.timeout(PDF_DOWNLOAD_TIMEOUT_MS) });
-      if (res.ok) {
-        pdfBytes = await readResponseBytesCapped(res, MAX_PDF_DOWNLOAD_BYTES);
-        // Archived as a PDF, so read as one whatever the server called it.
-        pdfText = (await extractText(pdfBytes, 'application/pdf')) ?? '';
-      }
-    } catch {
-      // PDF capture is best-effort; the page screenshot is the primary record.
-    }
-  }
-
-  const readableText = composeReadableText(pageText!, pdfText);
+  const readableText = composeReadableText(pageText, pdfText);
   return {
     url,
     finalUrl,

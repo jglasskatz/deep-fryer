@@ -24,9 +24,7 @@ research indicators — only the region itself.
 5. **Statistical geographies** — the Census/ACS geographies that match the
    region (place, county subdivision, PUMA), and any mismatch to note.
 
-Keep it factual and link-dense. Every claim needs a URL you actually opened.
-Do not editorialize; do not assess performance — that is the dimension
-sessions' job.
+Keep it factual, concise, and link-dense. Resolve Census/FIPS codes with civic-data tools where available, run at most 4–6 targeted searches, and open at most 6–8 key official portal/agency URLs (do NOT exhaustively crawl dozens of homepages). Do not editorialize; do not assess performance — that is the dimension sessions' job.
 
 ## Output
 

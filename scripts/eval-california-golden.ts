@@ -26,8 +26,11 @@ import {
   emptyUsage,
   mergeUsage,
   parseResearchProvider,
+  priceModelTokens,
+  priceSessionUsage,
   providerForModel,
   resolveProviderEnvKey,
+  WEB_SEARCH_USD_PER_REQUEST,
   type ContentSupported,
   type FindingPayload,
   type IndicatorFindingPayload,
@@ -90,7 +93,9 @@ interface CliOptions {
   dimensions: string[];
   provider: ResearchProvider;
   model?: string;
+  orchestratorModel?: string;
   verifierModel?: string;
+  escalationModel?: string;
   strategy: 'standard' | 'hybrid' | 'deep';
   dryRun: boolean;
   outDir?: string;
@@ -125,7 +130,9 @@ function parseCliArgs(argv: readonly string[]): CliOptions {
   }
 
   const model = argValue(argv, 'model')?.trim() || undefined;
+  const orchestratorModel = argValue(argv, 'orchestrator-model')?.trim() || undefined;
   const verifierModel = argValue(argv, 'verifier-model')?.trim() || undefined;
+  const escalationModel = argValue(argv, 'escalation-model')?.trim() || undefined;
 
   const rawProvider = argValue(argv, 'provider');
   let provider: ResearchProvider;
@@ -151,7 +158,9 @@ function parseCliArgs(argv: readonly string[]): CliOptions {
     dimensions,
     provider,
     model,
+    orchestratorModel,
     verifierModel,
+    escalationModel,
     strategy: rawStrategy,
     dryRun: argv.includes('--dry-run'),
     outDir: argValue(argv, 'out')?.trim() || undefined,
@@ -169,8 +178,10 @@ Usage:
 Options:
   --dimensions <csv>       Comma-separated dimension slugs (default: housing,air-pollution)
   --provider <name>        anthropic | openai | google (default: inferred from --model or anthropic)
-  --model <id>             Explicit model ID for research sessions
+  --model <id>             Explicit model ID for dimension worker sessions
+  --orchestrator-model <id> Explicit model ID for Phase 0 planning (and default verifier/escalation)
   --verifier-model <id>    Explicit model ID for independent verifier sessions
+  --escalation-model <id>  Explicit model ID for selective escalation on failed/gap indicators
   --strategy <name>        standard | hybrid | deep (default: hybrid)
   --max-turns <n>          Override session turn cap
   --out <dir>              Output directory (default: research/evals/california-<timestamp>)
@@ -290,16 +301,18 @@ function resolveEffectivePlanModels(
   const baseModels = { ...(plan.models ?? {}) };
 
   let sessionModel = opts.model ?? baseModels.session_model ?? meta.defaultModel;
-  let verifierModel = opts.verifierModel ?? baseModels.verifier_model ?? meta.defaultModel;
-  let escalationModel = baseModels.escalation_model;
+  let verifierModel = opts.verifierModel ?? opts.orchestratorModel ?? baseModels.verifier_model ?? meta.defaultModel;
+  let escalationModel = opts.escalationModel ?? opts.orchestratorModel ?? baseModels.escalation_model;
   let subagentModel = baseModels.subagent_model ?? null;
 
   // When running a non-Anthropic provider without explicit model overrides, map
   // strategy models cleanly onto that provider's canonical models.
   if (opts.provider !== 'anthropic') {
     if (!opts.model) sessionModel = meta.defaultModel;
-    if (!opts.verifierModel) verifierModel = meta.defaultModel;
-    if (escalationModel) escalationModel = opts.model ?? meta.defaultModel;
+    if (!opts.verifierModel && !opts.orchestratorModel) verifierModel = meta.defaultModel;
+    if (!opts.escalationModel && !opts.orchestratorModel && escalationModel) {
+      escalationModel = opts.model ?? meta.defaultModel;
+    }
     subagentModel = null;
   }
 
@@ -486,11 +499,12 @@ async function main(): Promise<void> {
 
   try {
     await withEgressBlocklist(blocklist, async () => {
-      // Phase 0: region context
+      // Phase 0: region context (runs on orchestratorModel when specified)
       const regionSession = plan.sessions.find((s) => s.kind === 'region_context');
+      const phase0Model = opts.orchestratorModel ?? plan.models?.session_model;
       let regionBrief = '';
       if (regionSession) {
-        console.log(`[phase 0] Running region_context (${opts.provider} / ${plan.models?.session_model})...`);
+        console.log(`[phase 0] Running region_context (${opts.provider} / ${phase0Model})...`);
         const phase0 = await sessionMod.runSessionWithRetry({
           prompt: regionSession.prompt,
           allowedTools: regionSession.tool_allowlist,
@@ -503,16 +517,19 @@ async function main(): Promise<void> {
           storage,
           sourceCache,
           provider: opts.provider,
-          model: plan.models?.session_model,
+          model: phase0Model,
           apiKey,
           orchestrate: false,
-          maxTurns: Math.min(plan.caps?.session_max_turns ?? DEFAULT_SESSION_MAX_TURNS, 24),
+          maxTurns: Math.min(plan.caps?.session_max_turns ?? DEFAULT_SESSION_MAX_TURNS, 6),
           sourceBlocklist: blocklist,
         });
         totalUsage = mergeUsage(totalUsage, phase0.usage);
         transcriptChunks.push(decodeTranscriptToText(phase0.transcript));
         if (!phase0.succeeded || !phase0.resultText.trim()) {
-          throw new Error('Phase 0 region_context session failed or returned empty brief');
+          throw new Error(
+            `Phase 0 region_context session failed or returned empty brief ` +
+              `(succeeded=${phase0.succeeded}, apiError=${phase0.apiError ?? 'none'}, apiErrorText=${phase0.apiErrorText ?? 'none'}, resultLen=${phase0.resultText.length})`,
+          );
         }
         regionBrief = phase0.resultText;
       }
@@ -733,13 +750,16 @@ async function main(): Promise<void> {
   }
 
   const combinedTranscript = transcriptChunks.filter(Boolean).join('\n');
+  const modelLabel = opts.orchestratorModel
+    ? `orch=${opts.orchestratorModel},worker=${plan.models?.session_model}`
+    : plan.models?.session_model;
   const scorecard = scoreGoldenRun(allFindings, selectedGolden, {
     blocklist,
     transcript: combinedTranscript,
     usage: totalUsage,
     dimensionUsage,
     provider: opts.provider,
-    model: plan.models?.session_model,
+    model: modelLabel,
     strategy: `${plan.strategy ?? opts.strategy}@${plan.strategy_version ?? 1}`,
     runId: `california-${stamp}`,
   });
@@ -750,6 +770,19 @@ async function main(): Promise<void> {
   await writeFile(path.join(outDir, 'scorecard.md'), markdown, 'utf8');
 
   console.log(`\n${markdown}`);
+  const priced = priceSessionUsage(totalUsage);
+  console.log('Per-model usage breakdown:');
+  for (const [mId, mu] of Object.entries(totalUsage.by_model ?? {})) {
+    const tokUsd = priceModelTokens(mId, mu);
+    const searchUsd = mu.web_search_requests * WEB_SEARCH_USD_PER_REQUEST;
+    const totalUsd = tokUsd !== null ? `$${(tokUsd + searchUsd).toFixed(4)}` : 'unpriced';
+    console.log(
+      `  - ${mId}: in=${mu.input_tokens} cached=${mu.cache_read_tokens} write=${mu.cache_write_tokens} out=${mu.output_tokens} searches=${mu.web_search_requests} => ${totalUsd}`,
+    );
+  }
+  console.log(
+    `Total verified USD: $${priced.dollars.toFixed(4)}${priced.unpriced.length ? ` (unpriced: ${priced.unpriced.join(', ')})` : ''}`,
+  );
   console.log(`Artifacts written to: ${outDir}`);
 
   if (!scorecard.clean) {
