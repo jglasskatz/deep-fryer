@@ -101,7 +101,7 @@ export function NewRunForm({
           <label className="block text-xs">
             <span className="font-medium">Execution policy</span>
             <select
-              className="mt-1 block w-full rounded border border-black/20 bg-[color:var(--color-bg)] px-2.5 py-2 text-xs"
+              className="mt-1 block w-full rounded border border-field-border bg-[color:var(--color-bg)] px-2.5 py-2 text-xs"
               name="carbon-routing-mode"
               value={carbonMode}
               onChange={(e) => setCarbonMode(e.target.value as CarbonRoutingMode)}
@@ -115,7 +115,7 @@ export function NewRunForm({
           <label className="block text-xs">
             <span className="font-medium">Region / provider profile</span>
             <select
-              className="mt-1 block w-full rounded border border-black/20 bg-[color:var(--color-bg)] px-2.5 py-2 text-xs"
+              className="mt-1 block w-full rounded border border-field-border bg-[color:var(--color-bg)] px-2.5 py-2 text-xs"
               name="carbon-region-id"
               value={carbon.effectiveRegion.id}
               onChange={(e) => setRegionId(e.target.value)}
