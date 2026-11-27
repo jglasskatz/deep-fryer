@@ -38,7 +38,7 @@
     "@keel_flow/schema": "^0.2.0",
     "drizzle-orm": "^0.45.4",
     "nodemailer": "^10.1.4",
-    "stripe": "^23.1.0"
+    "stripe": "^23.2.0"
   },
   "devDependencies": {
     "@keel_flow/cli": "^0.2.0",
